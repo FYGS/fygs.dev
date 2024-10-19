@@ -1,9 +1,9 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import { GeistSans } from "geist/font/sans";
-import { GeistMono } from "geist/font/mono";
-import { Anek_Telugu } from "next/font/google";
 import { cn } from "@/lib/utils";
+import { GeistMono } from "geist/font/mono";
+import { GeistSans } from "geist/font/sans";
+import type { Metadata } from "next";
+import { Anek_Telugu } from "next/font/google";
+import "./globals.css";
 
 const AnekTelugu = Anek_Telugu({
   subsets: ["latin"],
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     description:
       "Fernand SOUALO is a highly skilled Backend Software Engineer based in France, specializing in NodeJS, TypeScript, React, NextJS, NestJS, and AWS serverless services. With extensive experience in building scalable and efficient applications, Fernand delivers top-notch software solutions.",
     type: "website",
-    url: "https://www.fernandsoualo.com",
+    url: "https://fygs-dev.vercel.app",
     images:
       "https://media.licdn.com/dms/image/v2/D4E03AQEG-_pYx_Zp9A/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1701116288245?e=1734566400&v=beta&t=Hzfz8Ks5P2UYOjn5CEtnhmTCkElmC6qJEl8_73GF5fI",
   },
@@ -48,6 +48,45 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full bg-background text-foreground">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+            const devToolsDetector = () => {
+              console.clear();
+              const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+              const greenColor = isDarkMode ? '#00FF00' : '#008000';
+              const purpleColor = isDarkMode ? '#FF00FF' : '#800080';
+              const blueColor = isDarkMode ? '#00FFFF' : '#000080';
+              const redColor = isDarkMode ? '#FF0000' : '#800000';
+
+              console.log(\`%cHello, curious developer! 👋\`, \`font-size: 20px; font-weight: bold; color: \${greenColor};\`);
+              console.log(\`%cWelcome to my professional portfolio site. Feel free to explore the code and learn more about my work!\`, \`font-size: 16px; color: \${purpleColor};\`);
+              console.log(\`%cIf you're interested in collaborating or have any questions, don't hesitate to reach out.\`, \`font-size: 14px; color: \${blueColor};\`);
+              console.log(\`%cHappy coding! 🚀\`, \`font-size: 18px; font-weight: bold; color: \${redColor};\`);
+              console.log(\`%cContact Information:\`, \`font-size: 16px; font-weight: bold; color: \${greenColor};\`);
+              console.log(\`%cLinkedIn: https://www.linkedin.com/in/fernandsoualo/\`, \`font-size: 14px; color: \${purpleColor};\`);
+              console.log(\`%cGitHub: https://github.com/fygs\`, \`font-size: 14px; color: \${blueColor};\`);
+              console.log(\`%cEmail: fygs.dev@gmail.com\`, \`font-size: 14px; color: \${redColor};\`);
+            };
+
+            let devToolsOpen = false;
+
+            setInterval(() => {
+              const widthThreshold = window.outerWidth - window.innerWidth > 160;
+              const heightThreshold = window.outerHeight - window.innerHeight > 160;
+
+              if (!devToolsOpen && (widthThreshold || heightThreshold)) {
+                devToolsOpen = true;
+                devToolsDetector();
+              } else if (devToolsOpen && !widthThreshold && !heightThreshold) {
+                devToolsOpen = false;
+              }
+            }, 1000);
+          `,
+          }}
+        />
+      </head>
       <body
         className={cn(
           GeistSans.variable,
