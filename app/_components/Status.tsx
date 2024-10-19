@@ -6,11 +6,13 @@ import { Work, WORKS } from "./Work";
 
 export const Status = () => {
   return (
-    <Section className="flex max-md:flex-col items-start gap-4">
+    <Section className="flex max-md:flex-col items-start gap-6">
       <div className="flex-[3] w-full">
-        <Card className="p-4 flex flex-col gap-2 w-full">
-          <p className="text-lg text-muted-foreground">Fun Side projects.</p>
-          <div className="flex flex-col gap-4">
+        <Card className="p-6 flex flex-col gap-4 w-full">
+          <p className="text-xl text-muted-foreground font-semibold">
+            Fun Side Projects
+          </p>
+          <div className="flex flex-col gap-6">
             {SIDE_PROJECTS.map((project, index) => (
               <SideProject
                 key={index}
@@ -23,15 +25,19 @@ export const Status = () => {
           </div>
         </Card>
       </div>
-      <div className="flex-[2] flex flex-col gap-4 w-full">
-        <Card className="p-4 flex-1">Work</Card>
-        <div className="flex flex-col gap-4">
-          {WORKS.map((work, index) => (
-            <Work key={index} {...work} />
-          ))}
-        </div>
-        <Card className="p-4 flex-1 flex flex-col gap-2">
-          <p className="text-lg text-muted-foreground">Contact me</p>
+      <div className="flex-[2] flex flex-col gap-6 w-full">
+        <Card className="p-6 flex-1">
+          <p className="text-xl text-muted-foreground font-semibold">Work</p>
+          <div className="flex flex-col gap-6">
+            {WORKS.map((work, index) => (
+              <Work key={index} {...work} />
+            ))}
+          </div>
+        </Card>
+        <Card className="p-6 flex-1 flex flex-col gap-4">
+          <p className="text-xl text-muted-foreground font-semibold">
+            Contact Me
+          </p>
           <ContactCard
             url="https://www.linkedin.com/in/fernandsoualo/"
             name="@fernandsoualo"

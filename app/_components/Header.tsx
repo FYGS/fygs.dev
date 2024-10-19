@@ -8,35 +8,54 @@ import { GitLabIcon } from "./icons/GitlabIcon";
 
 export const Header = () => {
   return (
-    <header className="sticky top-0 py-4">
-      <Section className="flex items-baseline">
-        <Link href="/" className="text-lg font-bold text-primary">
+    <header className="fixed top-0 left-0 right-0 z-50 py-4 bg-card backdrop-blur-md transition-colors duration-300 shadow-lg">
+      <Section className="flex items-center justify-between">
+        <Link
+          href="/"
+          className="text-2xl font-extrabold text-foreground tracking-wide"
+        >
           fygs.dev
         </Link>
-        <div className="flex-1" />
-        <ul className="flex items-center gap-2">
-          <Link
-            href="https://github.com/fygs"
-            target="_blank"
-            className={cn(buttonVariants({ variant: "outline" }), "size-6 p-0")}
-          >
-            <GithubIcon size={12} className="text-foreground" />
-          </Link>
-          <Link
-            href="https://www.linkedin.com/in/fernandsoualo"
-            target="_blank"
-            className={cn(buttonVariants({ variant: "outline" }), "size-6 p-0")}
-          >
-            <LinkedInIcon size={12} className="text-foreground" />
-          </Link>
-          <Link
-            href="https://gitlab.com/fygs"
-            target="_blank"
-            className={cn(buttonVariants({ variant: "outline" }), "size-6 p-0")}
-          >
-            <GitLabIcon size={12} className="text-foreground" />
-          </Link>
-        </ul>
+        <nav>
+          <ul className="flex items-center gap-4">
+            <li>
+              <Link
+                href="https://github.com/fygs"
+                target="_blank"
+                className={cn(
+                  buttonVariants({ variant: "ghost" }),
+                  "size-8 p-1"
+                )}
+              >
+                <GithubIcon size={16} className="text-foreground" />
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="https://www.linkedin.com/in/fernandsoualo"
+                target="_blank"
+                className={cn(
+                  buttonVariants({ variant: "ghost" }),
+                  "size-8 p-1"
+                )}
+              >
+                <LinkedInIcon size={16} className="text-foreground" />
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="https://gitlab.com/fygs"
+                target="_blank"
+                className={cn(
+                  buttonVariants({ variant: "ghost" }),
+                  "size-8 p-1"
+                )}
+              >
+                <GitLabIcon size={16} className="text-foreground" />
+              </Link>
+            </li>
+          </ul>
+        </nav>
       </Section>
     </header>
   );

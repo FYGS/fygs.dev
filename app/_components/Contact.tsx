@@ -5,7 +5,12 @@ import { Section } from "./Section";
 export const Contact = () => {
   return (
     <Section className="flex flex-col items-start gap-4">
-      <Badge variant="outline">Contact me</Badge>
+      <Badge
+        variant="outline"
+        className="text-xl text-muted-foreground font-semibold"
+      >
+        Contact me
+      </Badge>
       <h2 className="pb-2 text-3xl font-semibold tracking-tight first:mt-0">
         Feel free to reach out to me through any of the following platforms.
         I&apos;m always open to discussing new projects, creative ideas, or
@@ -32,7 +37,7 @@ export const Contact = () => {
           className="flex-1"
           url="mailto:fygs.dev@gmail.com"
           name="me@contact.com"
-          description="Email me for business inquiries"
+          description="Email me for any inquiries"
           image="https://lh3.googleusercontent.com/a/ACg8ocIMjYoOFbL2_xkgKy1N114BS3AvMok9pZfr_Qj9W03TOiJNCGw1=s83-c-mo"
           mediumImage="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Gmail_icon_%282020%29.svg/640px-Gmail_icon_%282020%29.svg.png"
         />
