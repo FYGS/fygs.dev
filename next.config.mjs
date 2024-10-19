@@ -7,6 +7,7 @@ const nextConfig = {
       { hostname: "encrypted-tbn0.gstatic.com" },
       { hostname: "avatars.githubusercontent.com" },
       { hostname: "github.githubassets.com" },
+      { hostname: "lh3.googleusercontent.com" },
     ],
   },
 };
