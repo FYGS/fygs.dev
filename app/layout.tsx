@@ -26,18 +26,29 @@ export const metadata: Metadata = {
       "Fernand SOUALO is a highly skilled Backend Software Engineer based in France, specializing in NodeJS, TypeScript, React, NextJS, NestJS, and AWS serverless services. With extensive experience in building scalable and efficient applications, Fernand delivers top-notch software solutions.",
     type: "website",
     url: "https://fygs-dev.vercel.app",
-    images:
-      "https://media.licdn.com/dms/image/v2/D4E03AQEG-_pYx_Zp9A/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1701116288245?e=1734566400&v=beta&t=Hzfz8Ks5P2UYOjn5CEtnhmTCkElmC6qJEl8_73GF5fI",
+    siteName: "fygs.dev",
+    images: [
+      {
+        url: "https://media.licdn.com/dms/image/v2/D4E03AQEG-_pYx_Zp9A/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1701116288245?e=1734566400&v=beta&t=Hzfz8Ks5P2UYOjn5CEtnhmTCkElmC6qJEl8_73GF5fI",
+        width: 200,
+        height: 200,
+        alt: "Fernand SOUALO Profile Picture",
+      },
+    ],
   },
   twitter: {
-    card: "summary_large_image",
+    card: "summary",
     site: "@fernandsoualo",
     title:
       "Fernand SOUALO - Expert Software Engineer | NodeJS, TypeScript, React, NextJS, NestJS, AWS",
     description:
       "Fernand SOUALO is a highly skilled Backend Software Engineer based in France, specializing in NodeJS, TypeScript, React, NextJS, NestJS, and AWS serverless services. With extensive experience in building scalable and efficient applications, Fernand delivers top-notch software solutions.",
-    images:
-      "https://media.licdn.com/dms/image/v2/D4E03AQEG-_pYx_Zp9A/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1701116288245?e=1734566400&v=beta&t=Hzfz8Ks5P2UYOjn5CEtnhmTCkElmC6qJEl8_73GF5fI",
+    images: [
+      {
+        url: "https://media.licdn.com/dms/image/v2/D4E03AQEG-_pYx_Zp9A/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1701116288245?e=1734566400&v=beta&t=Hzfz8Ks5P2UYOjn5CEtnhmTCkElmC6qJEl8_73GF5fI",
+        alt: "Fernand SOUALO Profile Picture",
+      },
+    ],
   },
 };
 
