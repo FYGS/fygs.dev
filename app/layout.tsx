@@ -78,6 +78,7 @@ export default function RootLayout({
               console.log(\`%cContact Information:\`, \`font-size: 16px; font-weight: bold; color: \${greenColor};\`);
               console.log(\`%cLinkedIn: https://www.linkedin.com/in/fernandsoualo/\`, \`font-size: 14px; color: \${purpleColor};\`);
               console.log(\`%cGitHub: https://github.com/fygs\`, \`font-size: 14px; color: \${blueColor};\`);
+              console.log(\`%cHashnode: https://hashnode.com/@FYGS\`, \`font-size: 14px; color: \${greenColor};\`);
               console.log(\`%cEmail: fygs.dev@gmail.com\`, \`font-size: 14px; color: \${redColor};\`);
             };
 

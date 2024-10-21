@@ -5,6 +5,7 @@ import { Section } from "./Section";
 import { GithubIcon } from "./icons/GithubIcon";
 import { LinkedInIcon } from "./icons/LinkedInIcon";
 import { GitLabIcon } from "./icons/GitlabIcon";
+import { HashnodeIcon } from "./icons/HashnodeIcon";
 
 export const Header = () => {
   return (
@@ -14,22 +15,10 @@ export const Header = () => {
           href="/"
           className="text-2xl font-extrabold text-foreground tracking-wide"
         >
-          fygs.dev
+          fygs.dev \_°&lt;
         </Link>
         <nav>
           <ul className="flex items-center gap-4">
-            <li>
-              <Link
-                href="https://github.com/fygs"
-                target="_blank"
-                className={cn(
-                  buttonVariants({ variant: "ghost" }),
-                  "size-8 p-1"
-                )}
-              >
-                <GithubIcon size={16} className="text-foreground" />
-              </Link>
-            </li>
             <li>
               <Link
                 href="https://www.linkedin.com/in/fernandsoualo"
@@ -38,8 +27,22 @@ export const Header = () => {
                   buttonVariants({ variant: "ghost" }),
                   "size-8 p-1"
                 )}
+                title="LinkedIn"
               >
                 <LinkedInIcon size={16} className="text-foreground" />
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="https://github.com/fygs"
+                target="_blank"
+                className={cn(
+                  buttonVariants({ variant: "ghost" }),
+                  "size-8 p-1"
+                )}
+                title="GitHub"
+              >
+                <GithubIcon size={16} className="text-foreground" />
               </Link>
             </li>
             <li>
@@ -50,8 +53,22 @@ export const Header = () => {
                   buttonVariants({ variant: "ghost" }),
                   "size-8 p-1"
                 )}
+                title="GitLab"
               >
                 <GitLabIcon size={16} className="text-foreground" />
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="https://hashnode.com/@FYGS"
+                target="_blank"
+                className={cn(
+                  buttonVariants({ variant: "ghost" }),
+                  "size-8 p-1"
+                )}
+                title="Hashnode"
+              >
+                <HashnodeIcon size={16} className="text-foreground" />
               </Link>
             </li>
           </ul>
