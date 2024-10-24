@@ -67,6 +67,7 @@ export const Work = ({
     <Link
       href={url}
       className="inline-flex items-center gap-4 hover:bg-accent/50 transition-colors p-1 rounded"
+      target="_blank"
     >
       <Image
         src={image}

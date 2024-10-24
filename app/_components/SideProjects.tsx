@@ -74,6 +74,7 @@ export const SideProject = ({
     <Link
       href={url}
       className="inline-flex items-center gap-4 hover:bg-accent/50 transition-colors p-1 rounded"
+      target="_blank"
     >
       <span className="bg-accent text-accent-foreground p-3 rounded-sm">
         {/* <DynamicLogo icon={Logo} /> */}
