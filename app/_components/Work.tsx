@@ -9,7 +9,7 @@ export const WORKS: WorkProps[] = [
     title: "Allianz Technology",
     role: "Backend Developer",
     date: "2023-Present",
-    url: "/",
+    url: "https://www.linkedin.com/company/allianz-technology/posts/?feedView=all",
   },
   {
     image:
@@ -17,7 +17,7 @@ export const WORKS: WorkProps[] = [
     title: "GE Healthcare",
     role: "Software Engineer",
     date: "2019-2023",
-    url: "/",
+    url: "https://www.linkedin.com/company/gehealthcare/posts/?feedView=all",
   },
   {
     image:
@@ -25,7 +25,7 @@ export const WORKS: WorkProps[] = [
     title: "Schneider Electric",
     role: "Software Development Engineer",
     date: "2019-2019",
-    url: "/",
+    url: "https://www.linkedin.com/company/schneider-electric/posts/?feedView=all",
   },
   {
     image:
@@ -33,7 +33,7 @@ export const WORKS: WorkProps[] = [
     title: "Atlanspace",
     role: "Embedded Software Development",
     date: "2017-2017",
-    url: "/",
+    url: "https://www.linkedin.com/company/atlanspace/posts/?feedView=all",
   },
   {
     image:
@@ -41,7 +41,7 @@ export const WORKS: WorkProps[] = [
     title: "Ouestech",
     role: "Full Stack Software Development",
     date: "2019-Present",
-    url: "/",
+    url: "https://www.linkedin.com/company/ouestech-sarl/posts/?feedView=all",
     freelance: true,
   },
 ];
