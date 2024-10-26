@@ -28,18 +28,18 @@ export const SIDE_PROJECTS: SideProjectProps[] = [
     url: "https://js-universe-blog.netlify.app",
   },
   {
+    Logo: GraduationCap,
+    title: "School Management System",
+    description:
+      "A comprehensive School Management System designed to streamline administrative tasks, enhance communication, and improve overall efficiency in educational institutions.",
+    url: "https://school-management-app-psi.vercel.app",
+  },
+  {
     Logo: Gift,
     title: "Idées KDO",
     description:
       "An innovative AI-powered application that generates fantastic gift ideas tailored to age and specific keywords.",
     url: "https://nextjs-projects-chat-gpt-idee-kdo-nextjs.vercel.app",
-  },
-  {
-    Logo: GraduationCap,
-    title: "School Management System",
-    description:
-      "A comprehensive School Management System designed to streamline administrative tasks, enhance communication, and improve overall efficiency in educational institutions.",
-    url: "https://school-management-app-hvm9.onrender.com",
   },
   {
     Logo: Fingerprint,
