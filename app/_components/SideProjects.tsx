@@ -21,6 +21,20 @@ import Link from "next/link";
 
 export const SIDE_PROJECTS: SideProjectProps[] = [
   {
+    Logo: Loader,
+    title: "JS Universe Blog App",
+    description:
+      "A blog application built with Gatsby and TypeScript, featuring static site generation and smooth progressive image loading, offering a delightful frontend experience with advanced rendering optimization techniques.",
+    url: "https://js-universe-blog.netlify.app",
+  },
+  {
+    Logo: Gift,
+    title: "Idées KDO",
+    description:
+      "An innovative AI-powered application that generates fantastic gift ideas tailored to age and specific keywords.",
+    url: "https://nextjs-projects-chat-gpt-idee-kdo-nextjs.vercel.app",
+  },
+  {
     Logo: GraduationCap,
     title: "School Management System",
     description:
@@ -33,20 +47,6 @@ export const SIDE_PROJECTS: SideProjectProps[] = [
     description:
       "A Next.js application that implements authentication using NextAuth v5, featuring user registration, login, logout functionalities, and Multi-Factor Authentication (MFA) with email code verification.",
     url: "https://gitlab.com/js-framework-projects/nextjs-projects/nextauth-v5-app",
-  },
-  {
-    Logo: Gift,
-    title: "Idées KDO",
-    description:
-      "An innovative AI-powered application that generates fantastic gift ideas tailored to age and specific keywords.",
-    url: "https://nextjs-projects-chat-gpt-idee-kdo-nextjs.vercel.app",
-  },
-  {
-    Logo: Loader,
-    title: "JS Universe Blog App",
-    description:
-      "A blog application built with Gatsby and TypeScript, featuring static site generation and smooth progressive image loading, offering a delightful frontend experience with advanced rendering optimization techniques.",
-    url: "https://js-universe-blog.netlify.app",
   },
   {
     Logo: LayoutPanelLeft,
