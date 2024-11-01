@@ -62,3 +62,7 @@ Feel free to reach out to me through any of the following platforms. I'm always 
 - **Email:** [me@contact.com](mailto:fygs.dev@gmail.com)
 
 Thank you for visiting my portfolio!
+
+- ajout page cv (joliment détaillé et présenté)
+- pages de projets avec les détails possibles
+- blog avec des publications pointues sur des sujets de la tech et tutoriels

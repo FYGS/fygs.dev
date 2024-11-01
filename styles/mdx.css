@@ -1,0 +1,35 @@
+/* ./styles/mdx.css */
+/* Ensure the @tailwind typography directive is included */
+@tailwind base;
+@tailwind components;
+@tailwind typography;
+
+@layer components {
+  .mdx-content {
+    @apply prose prose-invert max-w-none
+    prose-headings:text-foreground
+    prose-p:text-muted-foreground
+    prose-a:text-primary hover:prose-a:text-primary/80
+    prose-strong:text-foreground
+    prose-code:text-primary prose-code:bg-primary/10 prose-code:p-1 prose-code:rounded
+    prose-pre:bg-muted prose-pre:border prose-pre:border-border
+    prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:text-muted-foreground
+    prose-li:text-muted-foreground;
+  }
+
+  .mdx-content pre {
+    @apply p-4 rounded-lg overflow-x-auto;
+  }
+
+  .mdx-content code {
+    @apply font-mono text-sm;
+  }
+
+  .mdx-content h2 {
+    @apply scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0;
+  }
+
+  .mdx-content h3 {
+    @apply scroll-m-20 text-2xl font-semibold tracking-tight;
+  }
+}

@@ -1,0 +1,64 @@
+@layer components {
+  .hljs {
+    @apply bg-muted p-4 rounded-lg overflow-x-auto;
+  }
+
+  .hljs-comment,
+  .hljs-quote {
+    @apply text-muted-foreground italic;
+  }
+
+  .hljs-keyword,
+  .hljs-selector-tag,
+  .hljs-subst {
+    @apply text-primary font-semibold;
+  }
+
+  .hljs-number,
+  .hljs-literal,
+  .hljs-variable,
+  .hljs-template-variable,
+  .hljs-built_in {
+    @apply text-orange-500;
+  }
+
+  .hljs-string,
+  .hljs-doctag,
+  .hljs-regexp {
+    @apply text-green-500;
+  }
+
+  .hljs-title,
+  .hljs-section,
+  .hljs-selector-id {
+    @apply text-blue-500 font-semibold;
+  }
+
+  .hljs-type,
+  .hljs-class .hljs-title {
+    @apply text-yellow-500 font-semibold;
+  }
+
+  .hljs-tag,
+  .hljs-name,
+  .hljs-attribute {
+    @apply text-purple-500;
+  }
+
+  .hljs-symbol,
+  .hljs-bullet {
+    @apply text-pink-500;
+  }
+
+  .hljs-addition {
+    @apply text-green-500 bg-green-500/10;
+  }
+
+  .hljs-deletion {
+    @apply text-red-500 bg-red-500/10;
+  }
+
+  .code-line-numbers {
+    @apply select-none text-muted-foreground text-sm pr-4 text-right;
+  }
+}

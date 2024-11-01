@@ -1,4 +1,9 @@
+import { NavigationProgress } from "@/components/ui/navigation-progress";
+import { PageTransition } from "@/components/ui/page-transition";
 import { cn } from "@/lib/utils";
+import { PageMemoryProvider } from "@/providers/page-memory-provider";
+import { ThemeProvider } from "@/providers/theme-provider";
+import { TransitionProvider } from "@/providers/transition-provider";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
@@ -58,7 +63,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full bg-background text-foreground">
+    <html lang="en" className="h-full" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -104,13 +109,17 @@ export default function RootLayout({
           GeistSans.variable,
           GeistMono.variable,
           AnekTelugu.variable,
-          "font-sans h-full"
+          "font-sans h-full bg-background text-foreground"
         )}
-        {...(process.env.NODE_ENV === "development"
-          ? { "cz-shortcut-listen": "true" }
-          : {})}
       >
-        {children}
+        <ThemeProvider defaultTheme="system">
+          <PageMemoryProvider>
+            <NavigationProgress />
+            <TransitionProvider>
+              <PageTransition>{children}</PageTransition>
+            </TransitionProvider>
+          </PageMemoryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,0 +1,133 @@
+import { Project } from "../types";
+
+export const FEATURED_PROJECTS: Project[] = [
+  {
+    id: "js-universe",
+    title: "JS Universe Blog",
+    description:
+      "A high-performance blog platform built with Gatsby and TypeScript, featuring static site generation and smooth progressive image loading, offering a delightful frontend experience with advanced rendering optimization techniques.",
+    image: "/projects/js-universe.png",
+    technologies: ["Gatsby", "TypeScript", "GraphQL", "TailwindCSS"],
+    link: "https://js-universe-blog.netlify.app",
+    githubUrl: "https://github.com/fygs/js-universe-blog",
+    testimonial: {
+      text: "Fernand delivered an exceptional blog platform that exceeded our expectations in terms of performance and user experience.",
+      author: "John Doe",
+      role: "CTO at TechCorp",
+    },
+    stats: {
+      stars: 1000,
+      forks: 50,
+      contributors: 10,
+      linesOfCode: 10000,
+    },
+    features: [
+      "Static Site Generation for optimal performance",
+      "Progressive image loading",
+      "SEO optimization",
+      "Dark/Light mode support",
+    ],
+    technicalDetails: "Built with Gatsby for static site generation, using TypeScript for type safety and GraphQL for efficient data querying. Implemented TailwindCSS for responsive design and custom theming.",
+    challenges: "Optimizing image loading and implementing efficient caching strategies while maintaining a smooth user experience across different devices and network conditions.",
+  },
+  {
+    id: "school-management",
+    title: "School Management System",
+    description:
+      "A comprehensive School Management System designed to streamline administrative tasks, enhance communication, and improve overall efficiency in educational institutions. Features include student management, attendance tracking, grade management, and parent communication portal.",
+    image: "/projects/school-management.png",
+    technologies: ["Next.js", "TypeScript", "Prisma", "PostgreSQL", "TailwindCSS"],
+    link: "https://school-management-app-psi.vercel.app",
+    githubUrl: "https://github.com/fygs/school-management-system",
+    stats: {
+      stars: 750,
+      forks: 35,
+      contributors: 5,
+      linesOfCode: 15000,
+    },
+    features: [
+      "Student information management",
+      "Attendance tracking system",
+      "Grade management",
+      "Parent communication portal",
+      "Administrative dashboard",
+    ],
+    technicalDetails: "Built with Next.js 13 App Router, using Prisma as ORM with PostgreSQL database. Implements real-time updates with WebSocket for attendance and grade notifications.",
+    challenges: "Implementing a scalable database schema that could handle complex relationships between students, classes, and grades while maintaining optimal performance.",
+  },
+  {
+    id: "idees-kdo",
+    title: "Idées KDO",
+    description:
+      "An innovative AI-powered application that generates fantastic gift ideas tailored to age and specific keywords. The app uses advanced natural language processing to understand user preferences and provide personalized gift suggestions.",
+    image: "/projects/idees-kdo.png",
+    technologies: ["Next.js", "OpenAI API", "TailwindCSS", "Vercel AI SDK"],
+    link: "https://nextjs-projects-chat-gpt-idee-kdo-nextjs.vercel.app",
+    githubUrl: "https://github.com/fygs/idees-kdo",
+    stats: {
+      stars: 450,
+      forks: 25,
+      contributors: 3,
+      linesOfCode: 5000,
+    },
+    features: [
+      "AI-powered gift suggestions",
+      "Age-based recommendations",
+      "Keyword filtering",
+      "Price range filtering",
+      "Gift category exploration",
+    ],
+    technicalDetails: "Integrated with OpenAI's GPT model using the Vercel AI SDK for real-time gift suggestions. Implements streaming responses for better user experience.",
+    challenges: "Fine-tuning the AI prompts to generate relevant and appropriate gift suggestions while maintaining response speed and accuracy.",
+  },
+  {
+    id: "nextauth-v5",
+    title: "Next Auth v5 App",
+    description:
+      "A Next.js application that implements authentication using NextAuth v5, featuring user registration, login, logout functionalities, and Multi-Factor Authentication (MFA) with email code verification.",
+    image: "/projects/nextauth-v5.png",
+    technologies: ["Next.js", "NextAuth", "Prisma", "PostgreSQL", "TailwindCSS"],
+    link: "https://gitlab.com/js-framework-projects/nextjs-projects/nextauth-v5-app",
+    githubUrl: "https://github.com/fygs/nextauth-v5-app",
+    stats: {
+      stars: 300,
+      forks: 20,
+      contributors: 2,
+      linesOfCode: 3000,
+    },
+    features: [
+      "OAuth authentication",
+      "Email verification",
+      "Multi-Factor Authentication",
+      "Password reset flow",
+      "Role-based access control",
+    ],
+    technicalDetails: "Implements NextAuth v5 with custom authentication flows, including email verification and MFA. Uses Prisma with PostgreSQL for user data management.",
+    challenges: "Implementing secure authentication flows while maintaining a smooth user experience, especially for the MFA implementation.",
+  },
+  {
+    id: "plura-saas",
+    title: "Plura SaaS App",
+    description:
+      "A comprehensive SaaS application built with Next.js, TypeScript, Prisma, MySQL, NextAuth, and Stripe, featuring a subscription system, organization and sub-organization creation, sales funnel creation, subdomains, and project management module.",
+    image: "/projects/plura-saas.png",
+    technologies: ["Next.js", "TypeScript", "Prisma", "MySQL", "Stripe"],
+    link: "https://gitlab.com/js-framework-projects/nextjs-projects/plura-saas-app",
+    githubUrl: "https://github.com/fygs/plura-saas",
+    stats: {
+      stars: 600,
+      forks: 40,
+      contributors: 4,
+      linesOfCode: 20000,
+    },
+    features: [
+      "Subscription management",
+      "Organization hierarchy",
+      "Sales funnel builder",
+      "Custom subdomain support",
+      "Project management",
+    ],
+    technicalDetails: "Built with Next.js 13 App Router, implements Stripe for subscription handling, and uses Prisma with MySQL for data management. Features custom subdomain routing and organization management.",
+    challenges: "Managing complex organization hierarchies and implementing secure subdomain isolation while maintaining scalability and performance.",
+  },
+];
