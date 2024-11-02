@@ -10,17 +10,26 @@ export interface Project {
   title: string;
   description: string;
   image: string;
+  detailImages: {
+    url: string;
+    alt: string;
+  }[];
   technologies: string[];
   link: string;
   githubUrl?: string;
-  features?: string[];
-  technicalDetails?: string;
-  challenges?: string;
-  results?: string[];
-  stats: ProjectStats;
   testimonial?: {
     text: string;
     author: string;
     role: string;
   };
+  stats?: {
+    stars: number;
+    forks: number;
+    contributors: number;
+    linesOfCode: number;
+  };
+  features: string[];
+  technicalDetails: string;
+  challenges: string;
+  results?: string[];
 }

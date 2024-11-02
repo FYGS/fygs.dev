@@ -8,6 +8,9 @@ import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
 import { Anek_Telugu } from "next/font/google";
+import { Footer } from "./_components/Footer";
+import { Header } from "./_components/Header";
+import { Spacing } from "./_components/Spacing";
 import "./globals.css";
 
 const AnekTelugu = Anek_Telugu({
@@ -116,7 +119,15 @@ export default function RootLayout({
           <PageMemoryProvider>
             <NavigationProgress />
             <TransitionProvider>
-              <PageTransition>{children}</PageTransition>
+              <PageTransition>
+                <main>
+                  <Header />
+                  <Spacing size="md" />
+                  {children}
+                  <Spacing size="md" />
+                  <Footer />
+                </main>
+              </PageTransition>
             </TransitionProvider>
           </PageMemoryProvider>
         </ThemeProvider>
