@@ -3,24 +3,22 @@
 import { Section } from "@/app/_components/Section";
 import { FadeIn, FadeInStagger } from "@/components/ui/motion";
 import { Pagination } from "@/components/ui/pagination";
+import { cn } from "@/lib/utils";
 import { usePageMemoryContext } from "@/providers/page-memory-provider";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ProjectCard } from "./components/project-card";
 import { ProjectListItem } from "./components/project-list-item";
 import { TechnologyFilter } from "./components/technology-filter";
 import { ViewToggle } from "./components/view-toggle";
 import { FEATURED_PROJECTS } from "./data";
-import { cn } from "@/lib/utils";
 
 type ViewMode = "grid" | "list";
 
 const ITEMS_PER_PAGE = 6;
 
-export default function ProjectsPage() {
+function ProjectsContent() {
   const { savePage, getPageScroll } = usePageMemoryContext();
-  const [selectedTechnologies, setSelectedTechnologies] = useState<string[]>(
-    []
-  );
+  const [selectedTechnologies, setSelectedTechnologies] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const hasScrolled = useRef(false);
 
@@ -127,5 +125,13 @@ export default function ProjectsPage() {
         )}
       </FadeInStagger>
     </Section>
+  );
+}
+
+export default function ProjectsPage() {
+  return (
+    <Suspense>
+      <ProjectsContent />
+    </Suspense>
   );
 }

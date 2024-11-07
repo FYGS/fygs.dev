@@ -67,7 +67,6 @@ export function calculateContentSimilarity(
   keywords1: KeywordScore[],
   keywords2: KeywordScore[]
 ): number {
-  const keywords1Map = new Map(keywords1.map((k) => [k.keyword, k.score]));
   const keywords2Map = new Map(keywords2.map((k) => [k.keyword, k.score]));
 
   let similarity = 0;

@@ -12,6 +12,7 @@ import { Footer } from "./_components/Footer";
 import { Header } from "./_components/Header";
 import { Spacing } from "./_components/Spacing";
 import "./globals.css";
+import { Toaster } from "@/components/ui/toaster";
 
 const AnekTelugu = Anek_Telugu({
   subsets: ["latin"],
@@ -114,6 +115,9 @@ export default function RootLayout({
           AnekTelugu.variable,
           "font-sans h-full bg-background text-foreground"
         )}
+        {...(process.env.NODE_ENV === "development"
+          ? { "cz-shortcut-listen": "true" }
+          : {})}
       >
         <ThemeProvider defaultTheme="system">
           <PageMemoryProvider>
@@ -124,6 +128,7 @@ export default function RootLayout({
                   <Header />
                   <Spacing size="md" />
                   {children}
+                  <Toaster />
                   <Spacing size="md" />
                   <Footer />
                 </main>

@@ -2,6 +2,7 @@ import fs from "fs/promises";
 import matter from "gray-matter";
 import { compileMDX } from "next-mdx-remote/rsc";
 import { join } from "path";
+import { ReactNode } from "react";
 import rehypeHighlight from "rehype-highlight";
 import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
@@ -13,7 +14,7 @@ export interface BlogPost {
   date: string;
   author: string;
   categories: string[];
-  content: any;
+  content: ReactNode;
   readingTime: string;
   coverImage?: string;
 }

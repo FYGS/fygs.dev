@@ -5,17 +5,21 @@ import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { Loader2, Mail } from "lucide-react";
 import { useState } from "react";
 
 interface NewsletterFormProps {
   categories: string[];
+  currentEmail?: string;
 }
 
-export function NewsletterForm({ categories }: NewsletterFormProps) {
-  const [email, setEmail] = useState("");
+export function NewsletterForm({
+  categories,
+  currentEmail,
+}: NewsletterFormProps) {
+  const [email, setEmail] = useState(currentEmail || "");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -37,6 +41,7 @@ export function NewsletterForm({ categories }: NewsletterFormProps) {
       setEmail("");
       setSelectedCategories([]);
     } catch (error) {
+      console.error(error);
       toast({
         title: "Error",
         description: "Failed to subscribe. Please try again.",
@@ -127,7 +132,7 @@ export function NewsletterForm({ categories }: NewsletterFormProps) {
             className="overflow-hidden"
           >
             <p className="text-sm text-muted-foreground">
-              You'll receive personalized updates for:{" "}
+              You&apos;ll receive personalized updates for:{" "}
               {selectedCategories.join(", ")}
             </p>
           </motion.div>

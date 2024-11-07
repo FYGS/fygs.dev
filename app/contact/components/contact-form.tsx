@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
@@ -36,6 +36,7 @@ export function ContactForm() {
   const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true);
     try {
+      console.log(data);
       // Ici, vous pouvez ajouter votre logique d'envoi d'email
       // Par exemple avec Resend, SendGrid ou un autre service
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -46,6 +47,7 @@ export function ContactForm() {
       });
       reset();
     } catch (error) {
+      console.error(error);
       toast({
         title: "Error",
         description: "Something went wrong. Please try again.",
@@ -61,12 +63,10 @@ export function ContactForm() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="name">Name</Label>
-          <Input
-            id="name"
-            placeholder="John Doe"
-            {...register("name")}
-            error={errors.name?.message}
-          />
+          <Input id="name" placeholder="John Doe" {...register("name")} />
+          {errors.name && (
+            <span className="text-red-500">{errors.name.message}</span>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -76,8 +76,10 @@ export function ContactForm() {
             type="email"
             placeholder="john@example.com"
             {...register("email")}
-            error={errors.email?.message}
           />
+          {errors.email && (
+            <span className="text-red-500">{errors.email.message}</span>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -86,8 +88,10 @@ export function ContactForm() {
             id="subject"
             placeholder="Project Discussion"
             {...register("subject")}
-            error={errors.subject?.message}
           />
+          {errors.subject && (
+            <span className="text-red-500">{errors.subject.message}</span>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -97,8 +101,10 @@ export function ContactForm() {
             placeholder="Tell me about your project..."
             className="min-h-[150px]"
             {...register("message")}
-            error={errors.message?.message}
           />
+          {errors.message && (
+            <span className="text-red-500">{errors.message.message}</span>
+          )}
         </div>
 
         <Button type="submit" className="w-full" disabled={isSubmitting}>

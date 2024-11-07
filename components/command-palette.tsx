@@ -42,7 +42,7 @@ function CommandShortcutHint({ shortcut }: { shortcut?: string[] }) {
 
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
-  const { commands, searchCommands } = useCommandStore();
+  const { searchCommands } = useCommandStore();
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredCommands = useMemo(() => {

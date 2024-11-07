@@ -34,7 +34,7 @@ export function NewsletterPreferences({
         <DialogHeader>
           <DialogTitle>Newsletter Preferences</DialogTitle>
           <DialogDescription>
-            Customize your newsletter experience. Choose the topics you're
+            Customize your newsletter experience. Choose the topics you&apos;re
             interested in and update your email preferences.
           </DialogDescription>
         </DialogHeader>
