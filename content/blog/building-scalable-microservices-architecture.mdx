@@ -1,0 +1,643 @@
+---
+title: "Building Scalable Microservices Architecture with Node.js: A Complete Guide"
+excerpt: "Master microservices architecture with Node.js, including event-driven patterns, service discovery, API gateways, and deployment strategies using Docker and Kubernetes."
+date: "2024-04-15"
+author: "Fernand SOUALO"
+categories: ["Microservices", "Node.js", "Architecture", "DevOps", "Cloud"]
+---
+
+# Building Scalable Microservices Architecture with Node.js
+
+## Table of Contents
+
+1. [Introduction](#introduction)
+2. [Architecture Overview](#architecture)
+3. [Service Design Patterns](#patterns)
+4. [Communication Patterns](#communication)
+5. [Data Management](#data)
+6. [Service Discovery & Load Balancing](#discovery)
+7. [Monitoring & Observability](#monitoring)
+8. [Deployment & Orchestration](#deployment)
+9. [Security Considerations](#security)
+10. [Best Practices & Pitfalls](#best-practices)
+
+## Introduction <a name="introduction"></a>
+
+Microservices architecture has become the standard for building large-scale applications. This guide will show you how to design, implement, and deploy a production-ready microservices architecture using Node.js.
+
+## Architecture Overview <a name="architecture"></a>
+
+### Project Structure
+
+```plaintext
+microservices-architecture/
+├── services/
+│   ├── api-gateway/
+│   ├── auth-service/
+│   ├── user-service/
+│   ├── order-service/
+│   └── notification-service/
+├── shared/
+│   ├── proto/
+│   ├── events/
+│   └── utils/
+└── infrastructure/
+    ├── kubernetes/
+    ├── terraform/
+    └── monitoring/
+```
+
+### API Gateway Implementation
+
+```typescript
+// services/api-gateway/src/server.ts
+import express from "express";
+import { createProxyMiddleware } from "http-proxy-middleware";
+import { discovery } from "./service-discovery";
+import { rateLimit } from "./middleware/rate-limit";
+import { authenticate } from "./middleware/auth";
+
+const app = express();
+
+// Service routes configuration
+const serviceRoutes = {
+  "/auth": "auth-service",
+  "/users": "user-service",
+  "/orders": "order-service",
+};
+
+// Dynamic service discovery and routing
+Object.entries(serviceRoutes).forEach(([path, serviceName]) => {
+  const proxy = createProxyMiddleware({
+    target: discovery.getServiceUrl(serviceName),
+    changeOrigin: true,
+    pathRewrite: { [`^${path}`]: "" },
+    router: async () => discovery.getServiceUrl(serviceName),
+  });
+
+  app.use(path, rateLimit, authenticate, proxy);
+});
+
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.json({
+    status: "healthy",
+    services: discovery.getHealthStatus(),
+  });
+});
+```
+
+## Service Design Patterns <a name="patterns"></a>
+
+### Event-Driven Architecture
+
+```typescript
+// shared/events/event-bus.ts
+import { Kafka } from "kafkajs";
+import { EventEmitter } from "events";
+
+export class EventBus {
+  private kafka: Kafka;
+  private localEmitter: EventEmitter;
+
+  constructor() {
+    this.kafka = new Kafka({
+      clientId: "my-app",
+      brokers: process.env.KAFKA_BROKERS.split(","),
+    });
+    this.localEmitter = new EventEmitter();
+  }
+
+  async publish(topic: string, message: any) {
+    const producer = this.kafka.producer();
+    await producer.connect();
+
+    await producer.send({
+      topic,
+      messages: [{ value: JSON.stringify(message) }],
+    });
+
+    await producer.disconnect();
+    this.localEmitter.emit(topic, message);
+  }
+
+  async subscribe(topic: string, handler: (message: any) => Promise<void>) {
+    const consumer = this.kafka.consumer({ groupId: "my-group" });
+    await consumer.connect();
+    await consumer.subscribe({ topic });
+
+    await consumer.run({
+      eachMessage: async ({ message }) => {
+        const value = JSON.parse(message.value.toString());
+        await handler(value);
+      },
+    });
+
+    this.localEmitter.on(topic, handler);
+  }
+}
+```
+
+### Circuit Breaker Pattern
+
+```typescript
+// shared/utils/circuit-breaker.ts
+interface CircuitBreakerOptions {
+  timeout: number;
+  failureThreshold: number;
+  resetTimeout: number;
+}
+
+export class CircuitBreaker {
+  private state: "CLOSED" | "OPEN" | "HALF_OPEN" = "CLOSED";
+  private failureCount: number = 0;
+  private lastFailureTime: number = 0;
+  private readonly options: CircuitBreakerOptions;
+
+  constructor(options: CircuitBreakerOptions) {
+    this.options = options;
+  }
+
+  async execute<T>(
+    operation: () => Promise<T>,
+    fallback?: () => Promise<T>
+  ): Promise<T> {
+    if (this.state === "OPEN") {
+      if (Date.now() - this.lastFailureTime >= this.options.resetTimeout) {
+        this.state = "HALF_OPEN";
+      } else if (fallback) {
+        return fallback();
+      } else {
+        throw new Error("Circuit breaker is OPEN");
+      }
+    }
+
+    try {
+      const result = await Promise.race([
+        operation(),
+        new Promise((_, reject) =>
+          setTimeout(
+            () => reject(new Error("Operation timeout")),
+            this.options.timeout
+          )
+        ),
+      ]);
+
+      this.onSuccess();
+      return result as T;
+    } catch (error) {
+      this.onFailure();
+      if (fallback) return fallback();
+      throw error;
+    }
+  }
+
+  private onSuccess() {
+    this.failureCount = 0;
+    this.state = "CLOSED";
+  }
+
+  private onFailure() {
+    this.failureCount++;
+    this.lastFailureTime = Date.now();
+
+    if (
+      this.state === "HALF_OPEN" ||
+      this.failureCount >= this.options.failureThreshold
+    ) {
+      this.state = "OPEN";
+    }
+  }
+}
+```
+
+## Communication Patterns <a name="communication"></a>
+
+### gRPC Service Definition
+
+```protobuf
+// shared/proto/user-service.proto
+syntax = "proto3";
+
+package userservice;
+
+service UserService {
+  rpc GetUser (GetUserRequest) returns (User);
+  rpc CreateUser (CreateUserRequest) returns (User);
+  rpc UpdateUser (UpdateUserRequest) returns (User);
+  rpc DeleteUser (DeleteUserRequest) returns (Empty);
+}
+
+message User {
+  string id = 1;
+  string email = 2;
+  string name = 3;
+  string role = 4;
+  string created_at = 5;
+}
+
+message GetUserRequest {
+  string id = 1;
+}
+
+message CreateUserRequest {
+  string email = 1;
+  string name = 2;
+  string password = 3;
+}
+
+message UpdateUserRequest {
+  string id = 1;
+  optional string email = 2;
+  optional string name = 3;
+}
+
+message DeleteUserRequest {
+  string id = 1;
+}
+
+message Empty {}
+```
+
+### gRPC Service Implementation
+
+```typescript
+// services/user-service/src/grpc-server.ts
+import * as grpc from "@grpc/grpc-js";
+import * as protoLoader from "@grpc/proto-loader";
+import { UserService } from "./services/user.service";
+import { ProtoGrpcType } from "./proto/user-service";
+
+const packageDefinition = protoLoader.loadSync("./proto/user-service.proto");
+const proto = grpc.loadPackageDefinition(
+  packageDefinition
+) as unknown as ProtoGrpcType;
+
+const server = new grpc.Server();
+const userService = new UserService();
+
+server.addService(proto.userservice.UserService.service, {
+  getUser: async (call, callback) => {
+    try {
+      const user = await userService.getUser(call.request.id);
+      callback(null, user);
+    } catch (error) {
+      callback(error as grpc.ServiceError);
+    }
+  },
+
+  createUser: async (call, callback) => {
+    try {
+      const user = await userService.createUser(call.request);
+      callback(null, user);
+    } catch (error) {
+      callback(error as grpc.ServiceError);
+    }
+  },
+
+  // ... other methods
+});
+
+server.bindAsync(
+  `0.0.0.0:${process.env.GRPC_PORT}`,
+  grpc.ServerCredentials.createInsecure(),
+  (error, port) => {
+    if (error) {
+      console.error(error);
+      return;
+    }
+    server.start();
+    console.log(`gRPC server running on port ${port}`);
+  }
+);
+```
+
+## Data Management <a name="data"></a>
+
+### Database Per Service Pattern
+
+```typescript
+// services/order-service/src/config/database.ts
+import { Pool } from "pg";
+import { Prisma, PrismaClient } from "@prisma/client";
+
+export class Database {
+  private static instance: Database;
+  private prisma: PrismaClient;
+  private pool: Pool;
+
+  private constructor() {
+    this.prisma = new PrismaClient({
+      log: ["query", "info", "warn", "error"],
+    });
+
+    this.pool = new Pool({
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      host: process.env.DB_HOST,
+      port: parseInt(process.env.DB_PORT),
+      database: process.env.DB_NAME,
+    });
+  }
+
+  static getInstance(): Database {
+    if (!Database.instance) {
+      Database.instance = new Database();
+    }
+    return Database.instance;
+  }
+
+  async transaction<T>(
+    callback: (prisma: Prisma.TransactionClient) => Promise<T>
+  ): Promise<T> {
+    return this.prisma.$transaction(callback);
+  }
+
+  async query(text: string, params?: any[]) {
+    return this.pool.query(text, params);
+  }
+
+  async disconnect() {
+    await this.prisma.$disconnect();
+    await this.pool.end();
+  }
+}
+```
+
+## Service Discovery & Load Balancing <a name="discovery"></a>
+
+### Service Discovery with Consul
+
+```typescript
+// shared/utils/service-discovery.ts
+import Consul from "consul";
+
+export class ServiceDiscovery {
+  private consul: Consul.Consul;
+  private cache: Map<string, string[]> = new Map();
+  private readonly ttl = 60000; // 1 minute cache
+
+  constructor() {
+    this.consul = new Consul({
+      host: process.env.CONSUL_HOST,
+      port: process.env.CONSUL_PORT,
+    });
+  }
+
+  async register(
+    serviceName: string,
+    address: string,
+    port: number
+  ): Promise<void> {
+    await this.consul.agent.service.register({
+      name: serviceName,
+      address,
+      port,
+      check: {
+        http: `http://${address}:${port}/health`,
+        interval: "10s",
+        timeout: "5s",
+      },
+    });
+  }
+
+  async discover(serviceName: string): Promise<string[]> {
+    const cached = this.cache.get(serviceName);
+    const now = Date.now();
+
+    if (cached && now - cached.timestamp < this.ttl) {
+      return cached.addresses;
+    }
+
+    const { services } = await this.consul.catalog.service.nodes(serviceName);
+    const addresses = services.map(
+      (service) => `${service.ServiceAddress}:${service.ServicePort}`
+    );
+
+    this.cache.set(serviceName, {
+      addresses,
+      timestamp: now,
+    });
+
+    return addresses;
+  }
+
+  async deregister(serviceId: string): Promise<void> {
+    await this.consul.agent.service.deregister(serviceId);
+  }
+}
+```
+
+## Monitoring & Observability <a name="monitoring"></a>
+
+### Distributed Tracing
+
+```typescript
+// shared/utils/tracer.ts
+import { trace, context } from "@opentelemetry/api";
+import { Resource } from "@opentelemetry/resources";
+import { SemanticResourceAttributes } from "@opentelemetry/semantic-conventions";
+import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node";
+import { SimpleSpanProcessor } from "@opentelemetry/sdk-trace-base";
+import { JaegerExporter } from "@opentelemetry/exporter-jaeger";
+
+export class Tracer {
+  static init(serviceName: string) {
+    const provider = new NodeTracerProvider({
+      resource: new Resource({
+        [SemanticResourceAttributes.SERVICE_NAME]: serviceName,
+      }),
+    });
+
+    const exporter = new JaegerExporter({
+      endpoint: process.env.JAEGER_ENDPOINT,
+    });
+
+    provider.addSpanProcessor(new SimpleSpanProcessor(exporter));
+    provider.register();
+
+    return trace.getTracer(serviceName);
+  }
+
+  static async withSpan<T>(
+    name: string,
+    fn: () => Promise<T>,
+    attributes?: Record<string, string>
+  ): Promise<T> {
+    const span = trace.getTracer("default").startSpan(name);
+
+    if (attributes) {
+      span.setAttributes(attributes);
+    }
+
+    try {
+      const result = await context.with(
+        trace.setSpan(context.active(), span),
+        fn
+      );
+      span.end();
+      return result;
+    } catch (error) {
+      span.recordException(error);
+      span.end();
+      throw error;
+    }
+  }
+}
+```
+
+## Deployment & Orchestration <a name="deployment"></a>
+
+### Kubernetes Configuration
+
+```yaml
+# infrastructure/kubernetes/user-service.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+    spec:
+      containers:
+        - name: user-service
+          image: user-service:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: host
+          resources:
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+spec:
+  selector:
+    app: user-service
+  ports:
+    - port: 80
+      targetPort: 3000
+  type: ClusterIP
+```
+
+## Security Considerations <a name="security"></a>
+
+### Service-to-Service Authentication
+
+```typescript
+// shared/utils/service-auth.ts
+import jwt from "jsonwebtoken";
+import { promisify } from "util";
+
+export class ServiceAuth {
+  private static instance: ServiceAuth;
+  private readonly secretKey: string;
+
+  private constructor() {
+    this.secretKey = process.env.SERVICE_AUTH_SECRET;
+  }
+
+  static getInstance(): ServiceAuth {
+    if (!ServiceAuth.instance) {
+      ServiceAuth.instance = new ServiceAuth();
+    }
+    return ServiceAuth.instance;
+  }
+
+  async generateToken(serviceName: string): Promise<string> {
+    return jwt.sign(
+      {
+        service: serviceName,
+        iat: Math.floor(Date.now() / 1000),
+      },
+      this.secretKey,
+      { expiresIn: "1h" }
+    );
+  }
+
+  async verifyToken(token: string): Promise<boolean> {
+    try {
+      await promisify(jwt.verify)(token, this.secretKey);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+}
+```
+
+## Best Practices & Pitfalls <a name="best-practices"></a>
+
+### Key Considerations
+
+1. **Service Boundaries**
+
+   - Keep services focused and cohesive
+   - Define clear domain boundaries
+   - Avoid shared databases
+
+2. **Data Consistency**
+
+   - Implement Saga pattern for distributed transactions
+   - Use event sourcing when appropriate
+   - Handle eventual consistency
+
+3. **Resilience**
+
+   - Implement circuit breakers
+   - Use timeouts and retries
+   - Plan for failure
+
+4. **Monitoring**
+
+   - Implement comprehensive logging
+   - Use distributed tracing
+   - Monitor service health
+
+5. **Security**
+   - Implement service-to-service authentication
+   - Use TLS for all communications
+   - Regular security audits
+
+## Conclusion
+
+Building a microservices architecture requires careful planning and consideration of many factors. This guide provides a solid foundation for building scalable, resilient, and maintainable microservices using Node.js.
+
+## Additional Resources
+
+- [Microservices Pattern](https://microservices.io/patterns/index.html)
+- [The Twelve-Factor App](https://12factor.net/)
+- [Kubernetes Documentation](https://kubernetes.io/docs/home/)
+- [OpenTelemetry Documentation](https://opentelemetry.io/docs/)

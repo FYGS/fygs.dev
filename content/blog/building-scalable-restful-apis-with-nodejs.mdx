@@ -1,0 +1,718 @@
+---
+title: "Complete Guide: Building Production-Ready RESTful APIs with Node.js and Express in 2024"
+excerpt: "A comprehensive, step-by-step guide to creating enterprise-grade RESTful APIs using Node.js, Express, TypeScript, Prisma, JWT authentication, and modern best practices."
+date: "2024-04-10"
+author: "Fernand SOUALO"
+categories:
+  ["API", "Node.js", "Express", "TypeScript", "Backend", "Database", "Security"]
+---
+
+# Complete Guide: Building Production-Ready RESTful APIs with Node.js and Express
+
+## Table of Contents
+
+1. [Introduction](#introduction)
+2. [Project Setup](#project-setup)
+3. [Database Integration with Prisma](#database-integration)
+4. [Authentication & Authorization](#authentication)
+5. [API Implementation](#api-implementation)
+6. [Validation & Error Handling](#validation)
+7. [Testing](#testing)
+8. [Monitoring & Logging](#monitoring)
+9. [Deployment & CI/CD](#deployment)
+10. [Best Practices & Security](#best-practices)
+
+## Introduction <a name="introduction"></a>
+
+Modern web applications require robust, secure, and scalable APIs. This guide will walk you through building a production-ready RESTful API using:
+
+- Node.js & Express for the server
+- TypeScript for type safety
+- Prisma for database operations
+- JWT for authentication
+- Jest for testing
+- Winston for logging
+- Docker for containerization
+
+## Project Setup <a name="project-setup"></a>
+
+### Initial Setup
+
+```bash
+# Create project directory
+mkdir modern-express-api
+cd modern-express-api
+
+# Initialize project
+npm init -y
+
+# Install core dependencies
+npm install express dotenv cors helmet express-validator prisma @prisma/client
+npm install jsonwebtoken bcryptjs winston express-rate-limit compression
+
+# Install development dependencies
+npm install -D typescript @types/express @types/node @types/jsonwebtoken
+npm install -D @types/bcryptjs jest @types/jest supertest ts-node-dev
+npm install -D eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin
+
+# Initialize TypeScript
+npx tsc --init
+```
+
+### Project Structure
+
+```plaintext
+modern-express-api/
+├── src/
+│   ├── config/
+│   │   ├── database.ts
+│   │   ├── logger.ts
+│   │   └── swagger.ts
+│   ├── controllers/
+│   │   ├── authController.ts
+│   │   └── userController.ts
+│   ├── middleware/
+│   │   ├── auth.ts
+│   │   ├── errorHandler.ts
+│   │   ├── rateLimiter.ts
+│   │   └── validation.ts
+│   ├── models/
+│   │   └── prisma/
+│   │       └── schema.prisma
+│   ├── routes/
+│   │   ├── authRoutes.ts
+│   │   └── userRoutes.ts
+│   ├── services/
+│   │   ├── authService.ts
+│   │   └── userService.ts
+│   ├── types/
+│   │   └── index.ts
+│   ├── utils/
+│   │   ├── passwords.ts
+│   │   └── tokens.ts
+│   ├── app.ts
+│   └── server.ts
+├── tests/
+│   ├── integration/
+│   │   └── auth.test.ts
+│   └── unit/
+│       └── userService.test.ts
+├── .env
+├── .env.example
+├── docker-compose.yml
+├── Dockerfile
+├── jest.config.js
+├── package.json
+└── tsconfig.json
+```
+
+### Configuration Files
+
+#### tsconfig.json
+
+```json
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "commonjs",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "tests"]
+}
+```
+
+#### .env.example
+
+```env
+NODE_ENV=development
+PORT=3000
+DATABASE_URL="postgresql://user:password@localhost:5432/mydb?schema=public"
+JWT_SECRET=your-secret-key
+JWT_EXPIRES_IN=24h
+REDIS_URL=redis://localhost:6379
+```
+
+## Database Integration with Prisma <a name="database-integration"></a>
+
+### Prisma Schema (src/models/prisma/schema.prisma)
+
+```prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+```
+
+### Database Configuration (src/config/database.ts)
+
+```typescript
+import { PrismaClient } from "@prisma/client";
+import logger from "./logger";
+
+const prisma = new PrismaClient({
+  log: [
+    { emit: "event", level: "query" },
+    { emit: "event", level: "error" },
+    { emit: "event", level: "info" },
+    { emit: "event", level: "warn" },
+  ],
+});
+
+prisma.$on("query", (e) => {
+  logger.debug("Query: " + e.query);
+  logger.debug("Duration: " + e.duration + "ms");
+});
+
+prisma.$on("error", (e) => {
+  logger.error("Prisma Error: " + e.message);
+});
+
+export default prisma;
+```
+
+## Authentication & Authorization <a name="authentication"></a>
+
+### JWT Authentication (src/middleware/auth.ts)
+
+```typescript
+import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
+import { ApiError } from "../types";
+import { config } from "../config";
+
+export interface AuthRequest extends Request {
+  user?: {
+    id: string;
+    role: string;
+  };
+}
+
+export const authenticate = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+      throw new ApiError(401, "Authentication required");
+    }
+
+    const decoded = jwt.verify(token, config.jwtSecret) as {
+      id: string;
+      role: string;
+    };
+
+    req.user = decoded;
+    next();
+  } catch (error) {
+    next(new ApiError(401, "Invalid or expired token"));
+  }
+};
+
+export const authorize = (...roles: string[]) => {
+  return (req: AuthRequest, res: Response, next: NextFunction) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      throw new ApiError(403, "Insufficient permissions");
+    }
+    next();
+  };
+};
+```
+
+### Auth Service (src/services/authService.ts)
+
+```typescript
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import prisma from "../config/database";
+import { ApiError } from "../types";
+import { config } from "../config";
+
+export class AuthService {
+  static async register(userData: {
+    email: string;
+    password: string;
+    name: string;
+  }) {
+    const existingUser = await prisma.user.findUnique({
+      where: { email: userData.email },
+    });
+
+    if (existingUser) {
+      throw new ApiError(400, "Email already registered");
+    }
+
+    const hashedPassword = await bcrypt.hash(userData.password, 12);
+
+    const user = await prisma.user.create({
+      data: {
+        ...userData,
+        password: hashedPassword,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+      },
+    });
+
+    const token = this.generateToken(user.id, user.role);
+
+    return { user, token };
+  }
+
+  static async login(email: string, password: string) {
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      throw new ApiError(401, "Invalid credentials");
+    }
+
+    const token = this.generateToken(user.id, user.role);
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
+      token,
+    };
+  }
+
+  private static generateToken(userId: string, role: string): string {
+    return jwt.sign({ id: userId, role }, config.jwtSecret, {
+      expiresIn: config.jwtExpiresIn,
+    });
+  }
+}
+```
+
+## API Implementation <a name="api-implementation"></a>
+
+### User Controller (src/controllers/userController.ts)
+
+```typescript
+import { Request, Response, NextFunction } from "express";
+import { UserService } from "../services/userService";
+import { validationResult } from "express-validator";
+import { ApiError } from "../types";
+
+export class UserController {
+  static async getUsers(req: Request, res: Response, next: NextFunction) {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const search = req.query.search as string;
+
+      const users = await UserService.getUsers({ page, limit, search });
+
+      res.json({
+        status: "success",
+        data: users,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getUserById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await UserService.getUserById(req.params.id);
+
+      if (!user) {
+        throw new ApiError(404, "User not found");
+      }
+
+      res.json({
+        status: "success",
+        data: user,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async updateUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        throw new ApiError(400, "Validation error", errors.array());
+      }
+
+      const user = await UserService.updateUser(req.params.id, req.body);
+
+      res.json({
+        status: "success",
+        data: user,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async deleteUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      await UserService.deleteUser(req.params.id);
+
+      res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  }
+}
+```
+
+## Validation & Error Handling <a name="validation"></a>
+
+### Request Validation (src/middleware/validation.ts)
+
+```typescript
+import { body, param, query } from "express-validator";
+
+export const createUserValidation = [
+  body("email").isEmail().normalizeEmail().withMessage("Invalid email address"),
+  body("name")
+    .trim()
+    .isLength({ min: 2, max: 50 })
+    .withMessage("Name must be between 2 and 50 characters"),
+  body("password")
+    .isLength({ min: 8 })
+    .matches(/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*])/)
+    .withMessage(
+      "Password must be at least 8 characters and contain uppercase, lowercase, number and special character"
+    ),
+];
+
+export const updateUserValidation = [
+  param("id").isUUID().withMessage("Invalid user ID"),
+  body("email").optional().isEmail().normalizeEmail(),
+  body("name").optional().trim().isLength({ min: 2, max: 50 }),
+];
+
+export const getUsersValidation = [
+  query("page").optional().isInt({ min: 1 }),
+  query("limit").optional().isInt({ min: 1, max: 100 }),
+  query("search").optional().trim().isLength({ min: 1 }),
+];
+```
+
+### Error Handler (src/middleware/errorHandler.ts)
+
+```typescript
+import { Request, Response, NextFunction } from "express";
+import { ApiError } from "../types";
+import logger from "../config/logger";
+
+export const errorHandler = (
+  error: Error | ApiError,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  logger.error(error);
+
+  if (error instanceof ApiError) {
+    return res.status(error.statusCode).json({
+      status: "error",
+      message: error.message,
+      details: error.details,
+      code: error.statusCode,
+    });
+  }
+
+  // Prisma error handling
+  if (error.name === "PrismaClientKnownRequestError") {
+    return res.status(400).json({
+      status: "error",
+      message: "Database operation failed",
+      code: 400,
+    });
+  }
+
+  // Default error
+  return res.status(500).json({
+    status: "error",
+    message: "Internal server error",
+    code: 500,
+  });
+};
+```
+
+## Testing <a name="testing"></a>
+
+### Integration Test (tests/integration/auth.test.ts)
+
+```typescript
+import request from "supertest";
+import app from "../../src/app";
+import prisma from "../../src/config/database";
+
+describe("Auth Endpoints", () => {
+  beforeAll(async () => {
+    await prisma.user.deleteMany();
+  });
+
+  afterAll(async () => {
+    await prisma.$disconnect();
+  });
+
+  describe("POST /api/v1/auth/register", () => {
+    it("should register a new user", async () => {
+      const res = await request(app).post("/api/v1/auth/register").send({
+        email: "test@example.com",
+        password: "Test123!@#",
+        name: "Test User",
+      });
+
+      expect(res.status).toBe(201);
+      expect(res.body.data).toHaveProperty("token");
+      expect(res.body.data.user).toHaveProperty("id");
+      expect(res.body.data.user.email).toBe("test@example.com");
+    });
+
+    it("should not register with invalid data", async () => {
+      const res = await request(app).post("/api/v1/auth/register").send({
+        email: "invalid-email",
+        password: "weak",
+        name: "T",
+      });
+
+      expect(res.status).toBe(400);
+      expect(res.body).toHaveProperty("details");
+    });
+  });
+});
+```
+
+### Unit Test (tests/unit/userService.test.ts)
+
+```typescript
+import { UserService } from "../../src/services/userService";
+import prisma from "../../src/config/database";
+import { ApiError } from "../../src/types";
+
+jest.mock("../../src/config/database", () => ({
+  user: {
+    findMany: jest.fn(),
+    findUnique: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+  },
+}));
+
+describe("UserService", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe("getUsers", () => {
+    it("should return paginated users", async () => {
+      const mockUsers = [
+        { id: "1", name: "User 1", email: "user1@example.com" },
+        { id: "2", name: "User 2", email: "user2@example.com" },
+      ];
+
+      (prisma.user.findMany as jest.Mock).mockResolvedValue(mockUsers);
+
+      const result = await UserService.getUsers({ page: 1, limit: 10 });
+
+      expect(result.users).toEqual(mockUsers);
+      expect(prisma.user.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          skip: 0,
+          take: 10,
+        })
+      );
+    });
+  });
+});
+```
+
+## Monitoring & Logging <a name="monitoring"></a>
+
+### Logger Configuration (src/config/logger.ts)
+
+```typescript
+import winston from "winston";
+import { config } from ".";
+
+const logger = winston.createLogger({
+  level: config.nodeEnv === "production" ? "info" : "debug",
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.File({ filename: "logs/error.log", level: "error" }),
+    new winston.transports.File({ filename: "logs/combined.log" }),
+  ],
+});
+
+if (config.nodeEnv !== "production") {
+  logger.add(
+    new winston.transports.Console({
+      format: winston.format.combine(
+        winston.format.colorize(),
+        winston.format.simple()
+      ),
+    })
+  );
+}
+
+export default logger;
+```
+
+## Deployment & CI/CD <a name="deployment"></a>
+
+### Dockerfile
+
+```dockerfile
+FROM node:18-alpine as builder
+
+WORKDIR /app
+
+COPY package*.json ./
+COPY prisma ./prisma/
+
+RUN npm ci
+
+COPY . .
+
+RUN npm run build
+
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/prisma ./prisma
+
+EXPOSE 3000
+
+CMD ["npm", "start"]
+```
+
+### docker-compose.yml
+
+```yaml
+version: "3.8"
+
+services:
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://user:password@db:5432/mydb
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:14-alpine
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=mydb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:alpine
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
+```
+
+## Best Practices & Security <a name="best-practices"></a>
+
+### Security Middleware Configuration
+
+```typescript
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import compression from "compression";
+
+// Rate limiting
+export const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: "Too many requests from this IP, please try again later",
+});
+
+// Security headers
+export const securityMiddleware = [helmet(), compression(), limiter];
+
+// CORS configuration
+export const corsOptions = {
+  origin: process.env.ALLOWED_ORIGINS?.split(",") || "*",
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  exposedHeaders: ["Content-Range", "X-Content-Range"],
+  credentials: true,
+  maxAge: 600,
+};
+```
+
+## Conclusion
+
+This comprehensive guide covers all aspects of building a production-ready RESTful API with Node.js and Express. Remember to:
+
+- Keep dependencies updated
+- Regularly audit your security
+- Monitor performance
+- Write comprehensive tests
+- Document your API
+- Follow REST best practices
+
+## Additional Resources
+
+- [Express.js Documentation](https://expressjs.com/)
+- [Prisma Documentation](https://www.prisma.io/docs/)
+- [TypeScript Documentation](https://www.typescriptlang.org/)
+- [Jest Testing Framework](https://jestjs.io/)
+- [OpenAPI Initiative](https://www.openapis.org/)

@@ -40,7 +40,6 @@ export function Pagination({
 
   const {
     paginationRange,
-    totalPages,
     nextPage,
     prevPage,
     firstPage,

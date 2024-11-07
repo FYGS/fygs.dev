@@ -1,15 +1,14 @@
 import { Section } from "@/app/_components/Section";
 import { ArticleStats } from "@/app/blog/components/article-stats";
 import { ReadingProgress } from "@/app/blog/components/reading-progress";
-import { components } from "@/components/mdx";
+import { SimilarArticles } from "@/app/blog/components/similar-articles";
+import { SocialInteractions } from "@/app/blog/components/social-interactions";
 import { Badge } from "@/components/ui/badge";
 import { getAllBlogPosts, getBlogPost } from "@/lib/mdx";
 import { getViewCount, incrementViewCount } from "@/lib/reading-stats";
 import { Calendar, Clock } from "lucide-react";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { SimilarArticles } from "@/app/blog/components/similar-articles";
-import { SocialInteractions } from "@/app/blog/components/social-interactions";
 
 interface Props {
   params: {
@@ -43,9 +42,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function BlogPostPage({ params }: Props) {
   let post;
   let viewCount;
+  let allPosts;
 
   try {
-    post = await getBlogPost(params.slug);
+    [post, allPosts] = await Promise.all([
+      getBlogPost(params.slug),
+      getAllBlogPosts(),
+    ]);
     viewCount = await getViewCount(params.slug);
     await incrementViewCount(params.slug);
   } catch {
@@ -55,9 +58,9 @@ export default async function BlogPostPage({ params }: Props) {
   return (
     <>
       <ReadingProgress />
-      <Section className="prose prose-invert max-w-4xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-8">
-          <article className="space-y-8">
+      <Section>
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-8 max-w-4xl mx-auto">
+          <article className="prose prose-invert space-y-8">
             <header className="space-y-4">
               <div className="flex flex-wrap gap-2">
                 {post.categories.map((category) => (
@@ -87,10 +90,12 @@ export default async function BlogPostPage({ params }: Props) {
               </div>
             </header>
 
-            <div className="mdx-content">{post.content}</div>
+            <div className="mdx-content prose-code:text-primary">
+              {post.content}
+            </div>
           </article>
 
-          <aside className="hidden md:block space-y-6">
+          <aside className="hidden md:block space-y-6 sticky top-24">
             <ArticleStats
               readingTime={post.readingTime}
               views={viewCount}
@@ -103,6 +108,14 @@ export default async function BlogPostPage({ params }: Props) {
               initialBookmarks={0}
             />
           </aside>
+        </div>
+
+        <div className="mt-16 max-w-4xl mx-auto">
+          <SimilarArticles 
+            currentPost={post} 
+            allPosts={allPosts}
+            maxArticles={3} 
+          />
         </div>
       </Section>
     </>

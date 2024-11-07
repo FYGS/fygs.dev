@@ -46,13 +46,6 @@ export default async function BlogPage({ searchParams }: Props) {
     );
   }
 
-  // Pagination
-  const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
-  const paginatedPosts = filteredPosts.slice(
-    (currentPage - 1) * POSTS_PER_PAGE,
-    currentPage * POSTS_PER_PAGE
-  );
-
   return (
     <Section className="space-y-8">
       <div className="space-y-4">
@@ -67,7 +60,7 @@ export default async function BlogPage({ searchParams }: Props) {
         </div>
       </div>
 
-      {paginatedPosts.length === 0 ? (
+      {filteredPosts.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-muted-foreground">
             No articles found {searchTerm && `for "${searchTerm}"`}
@@ -76,15 +69,17 @@ export default async function BlogPage({ searchParams }: Props) {
       ) : (
         <>
           <div className="space-y-6">
-            {paginatedPosts.map((post) => (
-              <BlogPostCard key={post.slug} post={post} />
-            ))}
+            {filteredPosts
+              .slice((currentPage - 1) * POSTS_PER_PAGE, currentPage * POSTS_PER_PAGE)
+              .map((post) => (
+                <BlogPostCard key={post.slug} post={post} />
+              ))}
           </div>
 
-          {totalPages > 1 && (
+          {filteredPosts.length > POSTS_PER_PAGE && (
             <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
+              totalItems={filteredPosts.length}
+              pageSize={POSTS_PER_PAGE}
               baseUrl="/blog"
             />
           )}

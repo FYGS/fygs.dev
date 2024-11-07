@@ -1,0 +1,570 @@
+---
+title: "Advanced Next.js Performance Optimization and Scalability Guide"
+excerpt: "Master advanced techniques for optimizing Next.js applications, including server components, streaming, edge runtime, and advanced caching strategies."
+date: "2024-04-20"
+author: "Fernand SOUALO"
+categories: ["Next.js", "Performance", "React", "Frontend", "Optimization"]
+---
+
+# Advanced Next.js Performance Optimization and Scalability Guide
+
+## Table of Contents
+
+1. [Introduction](#introduction)
+2. [Server Components & Streaming](#server-components)
+3. [Data Fetching & Caching](#data-fetching)
+4. [Edge Runtime Optimization](#edge-runtime)
+5. [Image & Asset Optimization](#assets)
+6. [Route Optimization](#routes)
+7. [State Management](#state)
+8. [Monitoring & Analytics](#monitoring)
+9. [Deployment Strategies](#deployment)
+10. [Performance Checklist](#checklist)
+
+## Introduction <a name="introduction"></a>
+
+Next.js 14 introduces powerful features for building high-performance applications. This guide covers advanced optimization techniques and best practices for scaling Next.js applications.
+
+## Server Components & Streaming <a name="server-components"></a>
+
+### Implementing Server Components
+
+```tsx
+// app/components/ProductList.tsx
+import { Suspense } from "react";
+import { ProductCard } from "./ProductCard";
+import { LoadingSkeleton } from "./LoadingSkeleton";
+
+async function getProducts() {
+  const res = await fetch("https://api.example.com/products", {
+    next: { revalidate: 60 }, // Revalidate every minute
+  });
+  return res.json();
+}
+
+export default async function ProductList() {
+  const products = await getProducts();
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {products.map((product) => (
+        <Suspense key={product.id} fallback={<LoadingSkeleton />}>
+          <ProductCard product={product} />
+        </Suspense>
+      ))}
+    </div>
+  );
+}
+```
+
+### Streaming with Loading UI
+
+```tsx
+// app/products/loading.tsx
+export default function Loading() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-pulse">
+      {Array.from({ length: 6 }).map((_, index) => (
+        <div key={index} className="h-64 bg-gray-200 rounded-lg" />
+      ))}
+    </div>
+  );
+}
+
+// app/products/page.tsx
+import { Suspense } from "react";
+import ProductList from "@/components/ProductList";
+import Loading from "./loading";
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <ProductList />
+    </Suspense>
+  );
+}
+```
+
+## Data Fetching & Caching <a name="data-fetching"></a>
+
+### Advanced Caching Strategies
+
+```typescript
+// lib/cache.ts
+import { unstable_cache } from "next/cache";
+import { redis } from "@/lib/redis";
+
+export async function getCachedData(key: string) {
+  // Try Redis first
+  const cachedData = await redis.get(key);
+  if (cachedData) {
+    return JSON.parse(cachedData);
+  }
+
+  // Fall back to Next.js cache
+  const getData = unstable_cache(
+    async () => {
+      const data = await fetchData(); // Your data fetching logic
+      // Cache in Redis for future requests
+      await redis.set(key, JSON.stringify(data), "EX", 3600);
+      return data;
+    },
+    [key],
+    {
+      revalidate: 3600, // 1 hour
+      tags: [`data-${key}`],
+    }
+  );
+
+  return getData();
+}
+
+// Usage in a component
+export async function ProductDetails({ id }: { id: string }) {
+  const product = await getCachedData(`product-${id}`);
+  return <div>{/* Render product */}</div>;
+}
+```
+
+### Parallel Data Fetching
+
+```typescript
+// lib/parallel-fetch.ts
+export async function getPageData(userId: string) {
+  const [userData, orders, preferences] = await Promise.all([
+    fetch(`/api/users/${userId}`),
+    fetch(`/api/users/${userId}/orders`),
+    fetch(`/api/users/${userId}/preferences`),
+  ]);
+
+  const [user, orderData, preferenceData] = await Promise.all([
+    userData.json(),
+    orders.json(),
+    preferences.json(),
+  ]);
+
+  return {
+    user,
+    orders: orderData,
+    preferences: preferenceData,
+  };
+}
+```
+
+## Edge Runtime Optimization <a name="edge-runtime"></a>
+
+### Edge API Routes
+
+```typescript
+// app/api/products/route.ts
+import { NextResponse } from "next/server";
+import { redis } from "@/lib/redis";
+
+export const runtime = "edge";
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const category = searchParams.get("category");
+
+  try {
+    // Try cache first
+    const cacheKey = `products-${category || "all"}`;
+    const cached = await redis.get(cacheKey);
+
+    if (cached) {
+      return NextResponse.json(JSON.parse(cached));
+    }
+
+    // Fetch from database if not cached
+    const products = await fetchProducts(category);
+
+    // Cache for future requests
+    await redis.set(cacheKey, JSON.stringify(products), "EX", 60);
+
+    return NextResponse.json(products);
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to fetch products" },
+      { status: 500 }
+    );
+  }
+}
+```
+
+### Edge Middleware
+
+```typescript
+// middleware.ts
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+export const config = {
+  matcher: ["/products/:path*", "/api/:path*"],
+};
+
+export function middleware(request: NextRequest) {
+  const country = request.geo?.country || "US";
+  const headers = new Headers(request.headers);
+
+  // Add country code to headers
+  headers.set("x-country", country);
+
+  // Basic rate limiting
+  const ip = request.ip || "";
+  const rateLimit = request.headers.get("x-rate-limit");
+
+  if (rateLimit && parseInt(rateLimit) > 100) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
+  return NextResponse.next({
+    request: {
+      headers,
+    },
+  });
+}
+```
+
+## Image & Asset Optimization <a name="assets"></a>
+
+### Advanced Image Component
+
+```tsx
+// components/OptimizedImage.tsx
+import Image from "next/image";
+import { useState, useEffect } from "react";
+
+interface OptimizedImageProps {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  priority?: boolean;
+}
+
+export function OptimizedImage({
+  src,
+  alt,
+  width,
+  height,
+  priority = false,
+}: OptimizedImageProps) {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    // Preload high-priority images
+    if (priority) {
+      const img = new window.Image();
+      img.src = src;
+      img.onload = () => setLoading(false);
+      img.onerror = () => setError(true);
+    }
+  }, [src, priority]);
+
+  if (error) {
+    return (
+      <div className="bg-gray-100 flex items-center justify-center">
+        Failed to load image
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative">
+      <Image
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        priority={priority}
+        loading={priority ? "eager" : "lazy"}
+        className={cn(
+          "duration-700 ease-in-out",
+          loading
+            ? "scale-110 blur-2xl grayscale"
+            : "scale-100 blur-0 grayscale-0"
+        )}
+        onLoadingComplete={() => setLoading(false)}
+      />
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 animate-pulse">
+          Loading...
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## Route Optimization <a name="routes"></a>
+
+### Dynamic Imports & Code Splitting
+
+```tsx
+// app/products/[id]/page.tsx
+import dynamic from "next/dynamic";
+import { Suspense } from "react";
+
+const ProductReviews = dynamic(() => import("@/components/ProductReviews"), {
+  loading: () => <div>Loading reviews...</div>,
+  ssr: false, // Disable SSR for this component
+});
+
+const RelatedProducts = dynamic(() => import("@/components/RelatedProducts"));
+
+export default function ProductPage({ params }: { params: { id: string } }) {
+  return (
+    <div>
+      <ProductDetails id={params.id} />
+
+      <Suspense fallback={<div>Loading reviews...</div>}>
+        <ProductReviews productId={params.id} />
+      </Suspense>
+
+      <Suspense fallback={<div>Loading related products...</div>}>
+        <RelatedProducts productId={params.id} />
+      </Suspense>
+    </div>
+  );
+}
+```
+
+## State Management <a name="state"></a>
+
+### Optimized Context Provider
+
+```tsx
+// contexts/AppContext.tsx
+import { createContext, useContext, useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
+
+interface AppState {
+  user: User | null;
+  cart: CartItem[];
+  theme: "light" | "dark";
+}
+
+interface AppContextType extends AppState {
+  login: (credentials: Credentials) => Promise<void>;
+  logout: () => void;
+  addToCart: (product: Product) => void;
+  toggleTheme: () => void;
+}
+
+const AppContext = createContext<AppContextType | null>(null);
+
+export function AppProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const [state, dispatch] = useReducer(appReducer, initialState);
+
+  const login = useCallback(
+    async (credentials: Credentials) => {
+      try {
+        const user = await loginUser(credentials);
+        dispatch({ type: "SET_USER", payload: user });
+        router.push("/dashboard");
+      } catch (error) {
+        console.error("Login failed:", error);
+      }
+    },
+    [router]
+  );
+
+  const logout = useCallback(() => {
+    dispatch({ type: "CLEAR_USER" });
+    router.push("/");
+  }, [router]);
+
+  const value = useMemo(
+    () => ({
+      ...state,
+      login,
+      logout,
+      addToCart: (product) =>
+        dispatch({
+          type: "ADD_TO_CART",
+          payload: product,
+        }),
+      toggleTheme: () =>
+        dispatch({
+          type: "TOGGLE_THEME",
+        }),
+    }),
+    [state, login, logout]
+  );
+
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+}
+```
+
+## Monitoring & Analytics <a name="monitoring"></a>
+
+### Performance Monitoring
+
+```typescript
+// lib/monitoring.ts
+import { init, track } from "@amplitude/analytics-node";
+import { NextWebVitals } from "next/app";
+
+export function initializeMonitoring() {
+  if (process.env.NEXT_PUBLIC_AMPLITUDE_API_KEY) {
+    init(process.env.NEXT_PUBLIC_AMPLITUDE_API_KEY);
+  }
+}
+
+export function reportWebVitals(metric: NextWebVitals) {
+  const { id, name, label, value } = metric;
+
+  track("Web Vitals", {
+    metricId: id,
+    metricName: name,
+    metricLabel: label,
+    metricValue: Math.round(value),
+    timestamp: Date.now(),
+  });
+}
+
+// Custom performance tracking
+export function trackPageLoad(route: string) {
+  const performance = window.performance;
+
+  if (performance) {
+    const pageLoadTime = performance.now();
+    const navigationTiming = performance.getEntriesByType("navigation")[0];
+    const resourceTiming = performance.getEntriesByType("resource");
+
+    track("Page Load Performance", {
+      route,
+      loadTime: pageLoadTime,
+      navigationTiming,
+      resourceCount: resourceTiming.length,
+      timestamp: Date.now(),
+    });
+  }
+}
+```
+
+## Deployment Strategies <a name="deployment"></a>
+
+### Custom Server Configuration
+
+```typescript
+// server.js
+const { createServer } = require("http");
+const { parse } = require("url");
+const next = require("next");
+const LRUCache = require("lru-cache");
+
+const dev = process.env.NODE_ENV !== "production";
+const app = next({ dev });
+const handle = app.getRequestHandler();
+
+// Initialize cache
+const ssrCache = new LRUCache({
+  max: 100,
+  ttl: 1000 * 60 * 60, // 1 hour
+});
+
+app.prepare().then(() => {
+  createServer(async (req, res) => {
+    try {
+      const parsedUrl = parse(req.url, true);
+      const { pathname, query } = parsedUrl;
+
+      if (pathname === "/a") {
+        await app.render(req, res, "/a", query);
+      } else if (pathname === "/b") {
+        await app.render(req, res, "/b", query);
+      } else {
+        await handle(req, res, parsedUrl);
+      }
+    } catch (err) {
+      console.error("Error occurred handling", req.url, err);
+      res.statusCode = 500;
+      res.end("Internal server error");
+    }
+  }).listen(3000, (err) => {
+    if (err) throw err;
+    console.log("> Ready on http://localhost:3000");
+  });
+});
+```
+
+## Performance Checklist <a name="checklist"></a>
+
+### Core Web Vitals Optimization
+
+1. **Largest Contentful Paint (LCP)**
+
+   - Optimize images and fonts
+   - Implement preload for critical resources
+   - Use server components for faster initial render
+
+2. **First Input Delay (FID)**
+
+   - Minimize JavaScript execution time
+   - Use Web Workers for heavy computations
+   - Implement code splitting and lazy loading
+
+3. **Cumulative Layout Shift (CLS)**
+   - Set explicit dimensions for images
+   - Reserve space for dynamic content
+   - Use CSS containment
+
+### Implementation Example
+
+```tsx
+// app/layout.tsx
+import { Suspense } from "react";
+import { Analytics } from "@/components/Analytics";
+import { PreloadResources } from "@/components/PreloadResources";
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <head>
+        <PreloadResources />
+      </head>
+      <body>
+        {children}
+        <Suspense fallback={null}>
+          <Analytics />
+        </Suspense>
+      </body>
+    </html>
+  );
+}
+
+// components/PreloadResources.tsx
+export function PreloadResources() {
+  return (
+    <>
+      <link
+        rel="preload"
+        href="/fonts/inter-var.woff2"
+        as="font"
+        type="font/woff2"
+        crossOrigin="anonymous"
+      />
+      <link rel="preconnect" href="https://api.example.com" />
+      <link rel="dns-prefetch" href="https://api.example.com" />
+    </>
+  );
+}
+```
+
+## Conclusion
+
+Optimizing Next.js applications requires a holistic approach, considering server-side rendering, caching strategies, and client-side performance. By implementing these techniques, you can create blazing-fast applications that scale.
+
+## Additional Resources
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Web Vitals](https://web.dev/vitals/)
+- [React Server Components](https://nextjs.org/docs/getting-started/react-essentials)
+- [Edge Runtime](https://nextjs.org/docs/api-reference/edge-runtime)
