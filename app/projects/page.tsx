@@ -5,7 +5,14 @@ import { FadeIn, FadeInStagger } from "@/components/ui/motion";
 import { Pagination } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
 import { usePageMemoryContext } from "@/providers/page-memory-provider";
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { ProjectCard } from "./components/project-card";
 import { ProjectListItem } from "./components/project-list-item";
 import { TechnologyFilter } from "./components/technology-filter";
@@ -18,7 +25,9 @@ const ITEMS_PER_PAGE = 6;
 
 function ProjectsContent() {
   const { savePage, getPageScroll } = usePageMemoryContext();
-  const [selectedTechnologies, setSelectedTechnologies] = useState<string[]>([]);
+  const [selectedTechnologies, setSelectedTechnologies] = useState<string[]>(
+    []
+  );
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const hasScrolled = useRef(false);
 
@@ -66,12 +75,14 @@ function ProjectsContent() {
   }, []);
 
   return (
-    <Section className="space-y-8">
+    <Section className="space-y-8 px-4 sm:px-6">
       <FadeIn>
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-4xl font-bold">Featured Projects</h1>
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <h1 className="text-3xl sm:text-4xl font-bold">
+              Featured Projects
+            </h1>
+            <div className="flex items-center gap-4 self-end sm:self-auto">
               <ViewToggle view={viewMode} onChange={handleViewModeChange} />
               <TechnologyFilter
                 technologies={allTechnologies}
@@ -80,7 +91,7 @@ function ProjectsContent() {
               />
             </div>
           </div>
-          <p className="text-muted-foreground max-w-2xl">
+          <p className="text-muted-foreground max-w-2xl text-sm sm:text-base">
             Each project is crafted with attention to detail, focusing on
             performance, scalability, and user experience.
           </p>
