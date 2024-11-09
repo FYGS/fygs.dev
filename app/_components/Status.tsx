@@ -16,10 +16,10 @@ export const Status = () => {
             {SIDE_PROJECTS.map((project, index) => (
               <SideProject
                 key={index}
+                id={project.id}
                 Logo={project.Logo}
                 title={project.title}
                 description={project.description}
-                url={project.url}
               />
             ))}
           </div>

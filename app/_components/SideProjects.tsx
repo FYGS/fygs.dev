@@ -21,13 +21,7 @@ import Link from "next/link";
 
 export const SIDE_PROJECTS: SideProjectProps[] = [
   {
-    Logo: Loader,
-    title: "JS Universe Blog App",
-    description:
-      "A blog application built with Gatsby and TypeScript, featuring static site generation and smooth progressive image loading, offering a delightful frontend experience with advanced rendering optimization techniques.",
-    url: "https://js-universe-blog.netlify.app",
-  },
-  {
+    id: "school-management",
     Logo: GraduationCap,
     title: "School Management System",
     description:
@@ -35,13 +29,15 @@ export const SIDE_PROJECTS: SideProjectProps[] = [
     url: "https://school-management-app-psi.vercel.app",
   },
   {
-    Logo: Gift,
-    title: "Idées KDO",
+    id: "plura-saas",
+    Logo: LayoutPanelLeft,
+    title: "Plura SaaS App",
     description:
-      "An innovative AI-powered application that generates fantastic gift ideas tailored to age and specific keywords.",
-    url: "https://nextjs-projects-chat-gpt-idee-kdo-nextjs.vercel.app",
+      "A SaaS application built with Next.js, TypeScript, Prisma, MySQL, NextAuth, and Stripe, featuring a subscription system, organization and sub-organization creation, sales funnel creation, subdomains, project management module, and much more.",
+    url: "https://gitlab.com/js-framework-projects/nextjs-projects/plura-saas-app",
   },
   {
+    id: "nextauth-v5",
     Logo: Fingerprint,
     title: "Next Auth v5 App",
     description:
@@ -49,32 +45,41 @@ export const SIDE_PROJECTS: SideProjectProps[] = [
     url: "https://gitlab.com/js-framework-projects/nextjs-projects/nextauth-v5-app",
   },
   {
-    Logo: LayoutPanelLeft,
-    title: "Plura SaaS App",
+    id: "js-universe",
+    Logo: Loader,
+    title: "JS Universe Blog App",
     description:
-      "A SaaS application built with Next.js, TypeScript, Prisma, MySQL, NextAuth, and Stripe, featuring a subscription system, organization and sub-organization creation, sales funnel creation, subdomains, project management module, and much more.",
-    url: "https://gitlab.com/js-framework-projects/nextjs-projects/plura-saas-app",
+      "A blog application built with Gatsby and TypeScript, featuring static site generation and smooth progressive image loading, offering a delightful frontend experience with advanced rendering optimization techniques.",
+    url: "https://js-universe-blog.netlify.app",
+  },
+  {
+    id: "idees-kdo",
+    Logo: Gift,
+    title: "Idées KDO",
+    description:
+      "An innovative AI-powered application that generates fantastic gift ideas tailored to age and specific keywords.",
+    url: "https://nextjs-projects-chat-gpt-idee-kdo-nextjs.vercel.app",
   },
 ];
 
 interface SideProjectProps {
+  id: string;
   Logo: LucideIcon;
   title: string;
   description: string;
-  url: string;
+  url?: string;
 }
 
 export const SideProject = ({
   Logo,
   title,
   description,
-  url,
+  id,
 }: SideProjectProps) => {
   return (
     <Link
-      href={url}
+      href={`/projects/${id}`}
       className="inline-flex items-center gap-4 hover:bg-accent/50 transition-colors p-1 rounded"
-      target="_blank"
     >
       <span className="bg-accent text-accent-foreground p-3 rounded-sm">
         {/* <DynamicLogo icon={Logo} /> */}
