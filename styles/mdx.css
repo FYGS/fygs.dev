@@ -1,8 +1,8 @@
 /* ./styles/mdx.css */
-/* Ensure the @tailwind typography directive is included */
+/* Ensure the @tailwind base, components, and utilities directives are included */
 @tailwind base;
 @tailwind components;
-@tailwind typography;
+@tailwind utilities;
 
 @layer components {
   .mdx-content {
@@ -18,18 +18,30 @@
   }
 
   .mdx-content pre {
-    @apply p-4 rounded-lg overflow-x-auto;
+    @apply bg-background/50 border rounded-lg overflow-x-auto;
   }
 
   .mdx-content code {
-    @apply font-mono text-sm;
+    @apply text-primary bg-primary/10 rounded px-1 py-0.5;
+  }
+
+  .mdx-content pre code {
+    @apply bg-transparent text-foreground p-0;
   }
 
   .mdx-content h2 {
-    @apply scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0;
+    @apply mt-12 scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0;
   }
 
   .mdx-content h3 {
-    @apply scroll-m-20 text-2xl font-semibold tracking-tight;
+    @apply mt-8 scroll-m-20 text-2xl font-semibold tracking-tight;
+  }
+
+  .mdx-content ul {
+    @apply my-6 ml-6 list-disc;
+  }
+
+  .mdx-content ol {
+    @apply my-6 ml-6 list-decimal;
   }
 }

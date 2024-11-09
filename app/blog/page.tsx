@@ -70,7 +70,10 @@ export default async function BlogPage({ searchParams }: Props) {
         <>
           <div className="space-y-6">
             {filteredPosts
-              .slice((currentPage - 1) * POSTS_PER_PAGE, currentPage * POSTS_PER_PAGE)
+              .slice(
+                (currentPage - 1) * POSTS_PER_PAGE,
+                currentPage * POSTS_PER_PAGE
+              )
               .map((post) => (
                 <BlogPostCard key={post.slug} post={post} />
               ))}

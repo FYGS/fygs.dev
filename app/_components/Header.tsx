@@ -121,7 +121,10 @@ export const Header = () => {
                 >
                   <Menu className="size-5" />
                 </SheetTrigger>
-                <SheetContent side="right" className="w-[80vw] sm:w-[350px] p-0">
+                <SheetContent
+                  side="right"
+                  className="w-[80vw] sm:w-[350px] p-0"
+                >
                   <SheetHeader className="p-6 border-b">
                     <div className="flex items-center justify-between">
                       <SheetTitle className="text-left text-lg font-semibold">
@@ -141,7 +144,9 @@ export const Header = () => {
                             ? "bg-accent text-primary font-medium"
                             : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
                         )}
-                        aria-current={pathname === item.href ? "page" : undefined}
+                        aria-current={
+                          pathname === item.href ? "page" : undefined
+                        }
                       >
                         {item.label}
                       </Link>

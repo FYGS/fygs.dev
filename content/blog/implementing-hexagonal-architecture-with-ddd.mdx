@@ -1,0 +1,2193 @@
+---
+title: "Implementing Hexagonal Architecture with DDD: A Comprehensive Guide"
+excerpt: "A deep dive into implementing Domain-Driven Design with Hexagonal Architecture in Node.js, featuring practical examples and a complete e-commerce application."
+date: "2024-11-09"
+author: "Fernand SOUALO"
+categories: ["Architecture", "DDD", "Node.js", "TypeScript", "Best Practices"]
+coverImage: "/blog/hexagonal-ddd.jpg"
+---
+
+# Implementing Hexagonal Architecture with Domain-Driven Design: A Complete Guide
+
+## Table of Contents
+
+1. [Introduction](#introduction)
+2. [Understanding the Concepts](#concepts)
+3. [Project Structure](#structure)
+4. [Domain Layer Implementation](#domain)
+5. [Application Layer](#application)
+6. [Infrastructure Layer](#infrastructure)
+7. [API Layer](#api)
+8. [Testing Strategy](#testing)
+9. [Best Practices & Patterns](#practices)
+10. [Complete Example: E-commerce Application](#example)
+
+## Introduction <a name="introduction"></a>
+
+Hexagonal Architecture (also known as Ports and Adapters) combined with Domain-Driven Design (DDD) provides a robust foundation for building maintainable and scalable applications. This guide will show you how to implement these patterns in a real-world application using Node.js and TypeScript.
+
+## Understanding the Concepts <a name="concepts"></a>
+
+### Hexagonal Architecture
+
+The hexagonal architecture promotes separation of concerns by dividing the application into three main layers:
+
+1. **Domain Layer**: Core business logic
+2. **Application Layer**: Use cases and application services
+3. **Infrastructure Layer**: External concerns (database, external services, etc.)
+
+### Domain-Driven Design
+
+DDD focuses on modeling software to match a domain according to input from domain experts. Key concepts include:
+
+- Aggregates
+- Entities
+- Value Objects
+- Domain Events
+- Repositories
+- Domain Services
+
+## Project Structure <a name="structure"></a>
+
+Let's create a well-organized project structure:
+
+```plaintext
+src/
+├── domain/
+│   ├── aggregates/
+│   │   ├── cart.ts
+│   │   ├── order.ts
+│   │   └── product-catalog.ts
+│   ├── entities/
+│   │   ├── customer.ts
+│   │   ├── order-item.ts
+│   │   ├── product.ts
+│   │   └── review.ts
+│   ├── value-objects/
+│   │   ├── address.ts
+│   │   ├── money.ts
+│   │   ├── order-status.ts
+│   │   ├── product-id.ts
+│   │   └── quantity.ts
+│   ├── events/
+│   │   ├── order-events.ts
+│   │   ├── product-events.ts
+│   │   └── event-types.ts
+│   └── services/
+│       ├── pricing-service.ts
+│       └── inventory-service.ts
+├── application/
+│   ├── use-cases/
+│   │   ├── cart/
+│   │   │   ├── add-to-cart.ts
+│   │   │   └── checkout.ts
+│   │   ├── orders/
+│   │   │   ├── create-order.ts
+│   │   │   └── cancel-order.ts
+│   │   └── products/
+│   │       ├── create-product.ts
+│   │       └── update-stock.ts
+│   ├── ports/
+│   │   ├── repositories/
+│   │   │   ├── cart-repository.ts
+│   │   │   ├── order-repository.ts
+│   │   │   └── product-repository.ts
+│   │   ├── services/
+│   │   │   ├── payment-service.ts
+│   │   │   └── shipping-service.ts
+│   │   └── event-publisher.ts
+│   └── services/
+│       ├── order-service.ts
+│       └── product-service.ts
+├── infrastructure/
+│   ├── persistence/
+│   │   ├── prisma/
+│   │   │   └── schema.prisma
+│   │   └── repositories/
+│   │       ├── prisma-cart-repository.ts
+│   │       ├── prisma-order-repository.ts
+│   │       └── prisma-product-repository.ts
+│   ├── services/
+│   │   ├── stripe-payment-service.ts
+│   │   └── fedex-shipping-service.ts
+│   └── events/
+│       └── kafka-event-publisher.ts
+├── interfaces/
+│   ├── api/
+│   │   ├── routes/
+│   │   │   ├── cart-routes.ts
+│   │   │   ├── order-routes.ts
+│   │   │   └── product-routes.ts
+│   │   ├── middlewares/
+│   │   │   ├── auth.ts
+│   │   │   └── validation.ts
+│   │   └── app.ts
+│   └── events/
+│       └── handlers/
+│           ├── order-handlers.ts
+│           └── product-handlers.ts
+├── tests/
+│   ├── unit/
+│   │   ├── domain/
+│   │   ├── application/
+│   │   └── infrastructure/
+│   └── integration/
+│       ├── api/
+│       └── repositories/
+├── docker/
+│   ├── Dockerfile
+│   └── docker-compose.yml
+└── package.json
+```
+
+## Domain Layer Implementation <a name="domain"></a>
+
+The domain layer represents the heart of our application where we implement business rules and core logic. Let's explore how to implement the key components of this layer using TypeScript.
+
+### Value Objects
+
+Value Objects are immutable objects that describe characteristics of domain concepts. They are defined by their attributes rather than an identity. A perfect example is the Money value object which encapsulates currency and amount while ensuring business rules are respected:
+
+```typescript
+// src/domain/value-objects/money.ts
+export class Money {
+  private constructor(
+    private readonly amount: number,
+    private readonly currency: string
+  ) {
+    this.validate();
+  }
+
+  static create(amount: number, currency: string): Money {
+    return new Money(amount, currency);
+  }
+
+  private validate(): void {
+    if (this.amount < 0) {
+      throw new Error("Amount cannot be negative");
+    }
+    if (!["USD", "EUR", "GBP"].includes(this.currency)) {
+      throw new Error("Invalid currency");
+    }
+  }
+
+  add(other: Money): Money {
+    if (other.currency !== this.currency) {
+      throw new Error("Cannot add different currencies");
+    }
+    return Money.create(this.amount + other.amount, this.currency);
+  }
+
+  equals(other: Money): boolean {
+    return this.amount === other.amount && this.currency === other.currency;
+  }
+
+  get value(): { amount: number; currency: string } {
+    return {
+      amount: this.amount,
+      currency: this.currency,
+    };
+  }
+}
+```
+
+### Entities
+
+Unlike Value Objects, Entities have a unique identity that persists throughout their lifecycle. The Product entity demonstrates how to implement business rules while maintaining identity:
+
+```typescript
+// src/domain/entities/product.ts
+import { Money } from "../value-objects/money";
+
+export class Product {
+  private constructor(
+    private readonly id: string,
+    private name: string,
+    private description: string,
+    private price: Money,
+    private stock: number
+  ) {}
+
+  static create(params: {
+    id: string;
+    name: string;
+    description: string;
+    price: Money;
+    stock: number;
+  }): Product {
+    const product = new Product(
+      params.id,
+      params.name,
+      params.description,
+      params.price,
+      params.stock
+    );
+    product.validate();
+    return product;
+  }
+
+  private validate(): void {
+    if (this.stock < 0) {
+      throw new Error("Stock cannot be negative");
+    }
+    if (this.name.length < 3) {
+      throw new Error("Name must be at least 3 characters");
+    }
+  }
+
+  updateStock(quantity: number): void {
+    const newStock = this.stock + quantity;
+    if (newStock < 0) {
+      throw new Error("Insufficient stock");
+    }
+    this.stock = newStock;
+  }
+
+  // Getters
+  get properties() {
+    return {
+      id: this.id,
+      name: this.name,
+      description: this.description,
+      price: this.price.value,
+      stock: this.stock,
+    };
+  }
+}
+```
+
+### Aggregates
+
+Aggregates are clusters of domain objects (entities and value objects) that we treat as a single unit for data changes. The Order aggregate shows how to maintain consistency boundaries and enforce invariants:
+
+```typescript
+// src/domain/aggregates/order.ts
+import { Money } from "../value-objects/money";
+import { Product } from "../entities/product";
+import { OrderItem } from "../entities/order-item";
+import { OrderStatus } from "../value-objects/order-status";
+import { DomainEvent } from "../events/domain-event";
+
+export class Order {
+  private items: OrderItem[] = [];
+  private status: OrderStatus = OrderStatus.PENDING;
+  private readonly events: DomainEvent[] = [];
+
+  private constructor(
+    private readonly id: string,
+    private readonly customerId: string,
+    private readonly createdAt: Date
+  ) {}
+
+  static create(params: { id: string; customerId: string }): Order {
+    return new Order(params.id, params.customerId, new Date());
+  }
+
+  addItem(product: Product, quantity: number): void {
+    if (this.status !== OrderStatus.PENDING) {
+      throw new Error("Cannot modify a non-pending order");
+    }
+
+    const existingItem = this.items.find(
+      (item) => item.productId === product.properties.id
+    );
+
+    if (existingItem) {
+      existingItem.updateQuantity(quantity);
+    } else {
+      const orderItem = OrderItem.create({
+        productId: product.properties.id,
+        price: product.properties.price,
+        quantity,
+      });
+      this.items.push(orderItem);
+    }
+
+    this.events.push({
+      type: "OrderItemAdded",
+      payload: {
+        orderId: this.id,
+        productId: product.properties.id,
+        quantity,
+      },
+    });
+  }
+
+  confirm(): void {
+    if (this.status !== OrderStatus.PENDING) {
+      throw new Error("Can only confirm pending orders");
+    }
+    if (this.items.length === 0) {
+      throw new Error("Cannot confirm empty order");
+    }
+
+    this.status = OrderStatus.CONFIRMED;
+    this.events.push({
+      type: "OrderConfirmed",
+      payload: {
+        orderId: this.id,
+        customerId: this.customerId,
+        total: this.total.value,
+      },
+    });
+  }
+
+  get total(): Money {
+    return this.items.reduce(
+      (total, item) => total.add(item.subtotal),
+      Money.create(0, "USD")
+    );
+  }
+
+  get properties() {
+    return {
+      id: this.id,
+      customerId: this.customerId,
+      status: this.status,
+      items: this.items.map((item) => item.properties),
+      total: this.total.value,
+      createdAt: this.createdAt,
+    };
+  }
+
+  get domainEvents(): DomainEvent[] {
+    return [...this.events];
+  }
+
+  clearEvents(): void {
+    this.events.length = 0;
+  }
+}
+```
+
+## Application Layer <a name="application"></a>
+
+The application layer defines use cases and ports:
+
+### Ports (Interfaces)
+
+Ports define the contracts that the infrastructure layer must implement. They help maintain the dependency inversion principle and keep our domain layer clean:
+
+```typescript
+// src/application/ports/repositories/order-repository.ts
+import { Order } from "../../../domain/aggregates/order";
+
+export interface OrderRepository {
+  save(order: Order): Promise<void>;
+  findById(id: string): Promise<Order | null>;
+  findByCustomerId(customerId: string): Promise<Order[]>;
+}
+
+// src/application/ports/repositories/product-repository.ts
+import { Product } from "../../../domain/entities/product";
+
+export interface ProductRepository {
+  save(product: Product): Promise<void>;
+  findById(id: string): Promise<Product | null>;
+  findByIds(ids: string[]): Promise<Product[]>;
+  update(product: Product): Promise<void>;
+}
+```
+
+### Use Cases
+
+Use cases represent the specific ways that users interact with our application. They coordinate between different domain objects and ensure business rules are followed:
+
+```typescript
+// src/application/use-cases/create-order.ts
+import { Order } from "../../domain/aggregates/order";
+import { Product } from "../../domain/entities/product";
+import { OrderRepository } from "../ports/repositories/order-repository";
+import { ProductRepository } from "../ports/repositories/product-repository";
+import { EventPublisher } from "../ports/event-publisher";
+
+interface CreateOrderInput {
+  customerId: string;
+  items: Array<{
+    productId: string;
+    quantity: number;
+  }>;
+}
+
+export class CreateOrderUseCase {
+  constructor(
+    private readonly orderRepository: OrderRepository,
+    private readonly productRepository: ProductRepository,
+    private readonly eventPublisher: EventPublisher
+  ) {}
+
+  async execute(input: CreateOrderInput): Promise<string> {
+    // Fetch all products
+    const products = await this.productRepository.findByIds(
+      input.items.map((item) => item.productId)
+    );
+
+    // Validate products existence
+    if (products.length !== input.items.length) {
+      throw new Error("Some products not found");
+    }
+
+    // Create order
+    const order = Order.create({
+      id: crypto.randomUUID(),
+      customerId: input.customerId,
+    });
+
+    // Add items to order
+    for (const item of input.items) {
+      const product = products.find((p) => p.properties.id === item.productId);
+      if (!product) continue;
+      order.addItem(product, item.quantity);
+      product.updateStock(-item.quantity);
+    }
+
+    // Save everything
+    await Promise.all([
+      this.orderRepository.save(order),
+      ...products.map((product) => this.productRepository.update(product)),
+    ]);
+
+    // Publish events
+    const events = order.domainEvents;
+    await Promise.all(
+      events.map((event) => this.eventPublisher.publish(event))
+    );
+    order.clearEvents();
+
+    return order.properties.id;
+  }
+}
+```
+
+## Infrastructure Layer <a name="infrastructure"></a>
+
+The infrastructure layer provides concrete implementations of the interfaces defined in our application layer. This is where we handle technical concerns like persistence, external services, and infrastructure-specific code.
+
+### Repository Implementations
+
+Our repository implementations handle the persistence of domain objects while keeping the domain layer unaware of the storage mechanism:
+
+```typescript
+// src/infrastructure/repositories/prisma-order-repository.ts
+import { PrismaClient } from "@prisma/client";
+import { Order } from "../../domain/aggregates/order";
+import { OrderRepository } from "../../application/ports/repositories/order-repository";
+
+export class PrismaOrderRepository implements OrderRepository {
+  constructor(private readonly prisma: PrismaClient) {}
+
+  async save(order: Order): Promise<void> {
+    const { id, customerId, status, items, total } = order.properties;
+
+    await this.prisma.order.create({
+      data: {
+        id,
+        customerId,
+        status,
+        total: total.amount,
+        currency: total.currency,
+        items: {
+          create: items.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            price: item.price.amount,
+            currency: item.price.currency,
+          })),
+        },
+      },
+    });
+  }
+
+  async findById(id: string): Promise<Order | null> {
+    const orderData = await this.prisma.order.findUnique({
+      where: { id },
+      include: { items: true },
+    });
+
+    if (!orderData) return null;
+
+    // Reconstruct the Order aggregate
+    return this.mapToDomain(orderData);
+  }
+
+  // ... other methods and mapping logic
+}
+```
+
+### Event Publisher Implementation
+
+The event publisher handles the distribution of domain events throughout our system:
+
+```typescript
+// src/infrastructure/events/kafka-event-publisher.ts
+import { Kafka } from "kafkajs";
+import { EventPublisher } from "../../application/ports/event-publisher";
+import { DomainEvent } from "../../domain/events/domain-event";
+
+export class KafkaEventPublisher implements EventPublisher {
+  private readonly kafka: Kafka;
+  private readonly producer: any;
+
+  constructor(brokers: string[]) {
+    this.kafka = new Kafka({
+      clientId: "order-service",
+      brokers,
+    });
+    this.producer = this.kafka.producer();
+  }
+
+  async init(): Promise<void> {
+    await this.producer.connect();
+  }
+
+  async publish(event: DomainEvent): Promise<void> {
+    await this.producer.send({
+      topic: event.type,
+      messages: [
+        {
+          key: event.payload.orderId || crypto.randomUUID(),
+          value: JSON.stringify(event.payload),
+        },
+      ],
+    });
+  }
+
+  async dispose(): Promise<void> {
+    await this.producer.disconnect();
+  }
+}
+```
+
+## API Layer <a name="api"></a>
+
+Let's implement the API layer using Hono:
+
+```typescript
+// src/interfaces/api/orders.ts
+import { Hono } from "hono";
+import { CreateOrderUseCase } from "../../application/use-cases/create-order";
+import { container } from "../container";
+
+const orders = new Hono();
+
+orders.post("/", async (c) => {
+  const createOrder = container.resolve(CreateOrderUseCase);
+  const input = await c.req.json();
+
+  try {
+    const orderId = await createOrder.execute(input);
+    return c.json({ orderId }, 201);
+  } catch (error) {
+    if (error instanceof Error) {
+      return c.json({ error: error.message }, 400);
+    }
+    return c.json({ error: "Internal server error" }, 500);
+  }
+});
+
+export { orders };
+```
+
+## Testing Strategy <a name="testing"></a>
+
+Testing is crucial in a hexagonal architecture as it allows us to verify each layer independently. Let's explore different testing approaches for each layer of our application.
+
+### Domain Tests
+
+Domain tests ensure that our business rules and invariants are properly enforced. These tests focus on the behavior of our domain objects in isolation:
+
+```typescript
+// tests/domain/order.test.ts
+import { describe, it, expect } from "vitest";
+import { Order } from "../../src/domain/aggregates/order";
+import { Product } from "../../src/domain/entities/product";
+import { Money } from "../../src/domain/value-objects/money";
+
+describe("Order Aggregate", () => {
+  it("should create an order", () => {
+    const order = Order.create({
+      id: "order-1",
+      customerId: "customer-1",
+    });
+
+    expect(order.properties.id).toBe("order-1");
+    expect(order.properties.customerId).toBe("customer-1");
+    expect(order.properties.status).toBe("PENDING");
+  });
+
+  it("should add items to order", () => {
+    const order = Order.create({
+      id: "order-1",
+      customerId: "customer-1",
+    });
+
+    const product = Product.create({
+      id: "product-1",
+      name: "Test Product",
+      description: "Test Description",
+      price: Money.create(100, "USD"),
+      stock: 10,
+    });
+
+    order.addItem(product, 2);
+
+    expect(order.properties.items).toHaveLength(1);
+    expect(order.properties.total.amount).toBe(200);
+  });
+
+  // ... more tests
+});
+```
+
+### Use Case Tests
+
+Use case tests verify that our application layer correctly orchestrates domain objects and external services. We use mocking to isolate the use case from its dependencies:
+
+```typescript
+// tests/application/create-order.test.ts
+import { describe, it, expect, vi } from "vitest";
+import { CreateOrderUseCase } from "../../src/application/use-cases/create-order";
+import { OrderRepository } from "../../src/application/ports/repositories/order-repository";
+import { ProductRepository } from "../../src/application/ports/repositories/product-repository";
+import { EventPublisher } from "../../src/application/ports/event-publisher";
+
+describe("CreateOrderUseCase", () => {
+  it("should create an order successfully", async () => {
+    // Arrange
+    const mockOrderRepo = {
+      save: vi.fn(),
+      findById: vi.fn(),
+      findByCustomerId: vi.fn(),
+    } as unknown as OrderRepository;
+
+    const mockProductRepo = {
+      findByIds: vi.fn().mockResolvedValue([
+        {
+          properties: {
+            id: "product-1",
+            price: { amount: 100, currency: "USD" },
+            stock: 10,
+          },
+          updateStock: vi.fn(),
+        },
+      ]),
+      update: vi.fn(),
+    } as unknown as ProductRepository;
+
+    const mockEventPublisher = {
+      publish: vi.fn(),
+    } as unknown as EventPublisher;
+
+    const useCase = new CreateOrderUseCase(
+      mockOrderRepo,
+      mockProductRepo,
+      mockEventPublisher
+    );
+
+    // Act
+    const result = await useCase.execute({
+      customerId: "customer-1",
+      items: [{ productId: "product-1", quantity: 2 }],
+    });
+
+    // Assert
+    expect(result).toBeDefined();
+    expect(mockOrderRepo.save).toHaveBeenCalled();
+    expect(mockProductRepo.update).toHaveBeenCalled();
+    expect(mockEventPublisher.publish).toHaveBeenCalled();
+  });
+
+  // ... more tests
+});
+```
+
+These tests ensure that:
+
+- Business rules are properly applied
+- External services are correctly coordinated
+- Error cases are properly handled
+- Events are published as expected
+
+## Best Practices & Patterns <a name="practices"></a>
+
+1. **Always validate in constructors**
+
+   - Use private constructors with static factory methods
+   - Validate all invariants
+
+2. **Use Value Objects**
+
+   - Immutable
+   - Self-validating
+   - Encapsulate related attributes
+
+3. **Rich Domain Model**
+
+   - Business logic belongs in the domain
+   - Entities should enforce their invariants
+
+4. **Event-Driven**
+
+   - Use domain events for side effects
+   - Maintain eventual consistency
+
+5. **SOLID Principles**
+   - Single Responsibility
+   - Open/Closed
+   - Liskov Substitution
+   - Interface Segregation
+   - Dependency Inversion
+
+## Complete Example: E-commerce Application <a name="example"></a>
+
+Let's build a complete e-commerce application following DDD and Hexagonal Architecture principles.
+
+### Project Structure
+
+```plaintext
+e-commerce/
+├── src/
+│   ├── domain/
+│   │   ├── aggregates/
+│   │   │   ├── cart.ts
+│   │   │   ├── order.ts
+│   │   │   └── product-catalog.ts
+│   │   ├── entities/
+│   │   │   ├── customer.ts
+│   │   │   ├── order-item.ts
+│   │   │   ├── product.ts
+│   │   │   └── review.ts
+│   │   ├── value-objects/
+│   │   │   ├── address.ts
+│   │   │   ├── money.ts
+│   │   │   ├── order-status.ts
+│   │   │   ├── product-id.ts
+│   │   │   └── quantity.ts
+│   │   ├── events/
+│   │   │   ├── order-events.ts
+│   │   │   ├── product-events.ts
+│   │   │   └── event-types.ts
+│   │   └── services/
+│   │       ├── pricing-service.ts
+│   │       └── inventory-service.ts
+│   ├── application/
+│   │   ├── use-cases/
+│   │   │   ├── cart/
+│   │   │   │   ├── add-to-cart.ts
+│   │   │   │   └── checkout.ts
+│   │   │   ├── orders/
+│   │   │   │   ├── create-order.ts
+│   │   │   │   └── cancel-order.ts
+│   │   │   └── products/
+│   │   │       ├── create-product.ts
+│   │   │       └── update-stock.ts
+│   │   ├── ports/
+│   │   │   ├── repositories/
+│   │   │   │   ├── cart-repository.ts
+│   │   │   │   ├── order-repository.ts
+│   │   │   │   └── product-repository.ts
+│   │   │   ├── services/
+│   │   │   │   ├── payment-service.ts
+│   │   │   │   └── shipping-service.ts
+│   │   │   └── event-publisher.ts
+│   │   └── services/
+│   │       ├── order-service.ts
+│   │       └── product-service.ts
+│   ├── infrastructure/
+│   │   ├── persistence/
+│   │   │   ├── prisma/
+│   │   │   │   └── schema.prisma
+│   │   │   └── repositories/
+│   │   │       ├── prisma-cart-repository.ts
+│   │   │       ├── prisma-order-repository.ts
+│   │   │       └── prisma-product-repository.ts
+│   │   ├── services/
+│   │   │   ├── stripe-payment-service.ts
+│   │   │   └── fedex-shipping-service.ts
+│   │   └── events/
+│   │       └── kafka-event-publisher.ts
+│   └── interfaces/
+│       ├── api/
+│       │   ├── routes/
+│       │   │   ├── cart-routes.ts
+│       │   │   ├── order-routes.ts
+│       │   │   └── product-routes.ts
+│       │   ├── middlewares/
+│       │   │   ├── auth.ts
+│       │   │   └── validation.ts
+│       │   └── app.ts
+│       └── events/
+│           └── handlers/
+│               ├── order-handlers.ts
+│               └── product-handlers.ts
+├── tests/
+│   ├── unit/
+│   │   ├── domain/
+│   │   ├── application/
+│   │   └── infrastructure/
+│   └── integration/
+│       ├── api/
+│       └── repositories/
+├── docker/
+│   ├── Dockerfile
+│   └── docker-compose.yml
+└── package.json
+```
+
+### Core Domain Implementation
+
+Let's implement the core domain entities and value objects:
+
+```typescript
+// src/domain/value-objects/product-id.ts
+export class ProductId {
+  private constructor(private readonly value: string) {
+    this.validate();
+  }
+
+  static create(value: string): ProductId {
+    return new ProductId(value);
+  }
+
+  private validate(): void {
+    if (!value.match(/^[A-Z0-9]{8,}$/)) {
+      throw new Error("Invalid product ID format");
+    }
+  }
+
+  toString(): string {
+    return this.value;
+  }
+
+  equals(other: ProductId): boolean {
+    return this.value === other.value;
+  }
+}
+
+// src/domain/value-objects/quantity.ts
+export class Quantity {
+  private constructor(private readonly value: number) {
+    this.validate();
+  }
+
+  static create(value: number): Quantity {
+    return new Quantity(value);
+  }
+
+  private validate(): void {
+    if (this.value < 0) {
+      throw new Error("Quantity cannot be negative");
+    }
+    if (!Number.isInteger(this.value)) {
+      throw new Error("Quantity must be an integer");
+    }
+  }
+
+  add(other: Quantity): Quantity {
+    return Quantity.create(this.value + other.value);
+  }
+
+  subtract(other: Quantity): Quantity {
+    return Quantity.create(this.value - other.value);
+  }
+
+  get amount(): number {
+    return this.value;
+  }
+}
+
+// src/domain/entities/product.ts
+import { ProductId } from "../value-objects/product-id";
+import { Money } from "../value-objects/money";
+import { Quantity } from "../value-objects/quantity";
+import { DomainEvent } from "../events/event-types";
+
+export class Product {
+  private readonly events: DomainEvent[] = [];
+
+  private constructor(
+    private readonly id: ProductId,
+    private name: string,
+    private description: string,
+    private price: Money,
+    private stock: Quantity,
+    private readonly categories: string[],
+    private readonly createdAt: Date,
+    private updatedAt: Date
+  ) {}
+
+  static create(params: {
+    id: string;
+    name: string;
+    description: string;
+    price: Money;
+    stock: number;
+    categories: string[];
+  }): Product {
+    const product = new Product(
+      ProductId.create(params.id),
+      params.name,
+      params.description,
+      params.price,
+      Quantity.create(params.stock),
+      params.categories,
+      new Date(),
+      new Date()
+    );
+
+    product.validate();
+    product.addEvent({
+      type: "ProductCreated",
+      payload: product.properties,
+    });
+
+    return product;
+  }
+
+  updateStock(quantity: number): void {
+    const newStock = this.stock.add(Quantity.create(quantity));
+
+    if (newStock.amount < 0) {
+      throw new Error("Insufficient stock");
+    }
+
+    this.stock = newStock;
+    this.updatedAt = new Date();
+
+    this.addEvent({
+      type: "ProductStockUpdated",
+      payload: {
+        productId: this.id.toString(),
+        newStock: this.stock.amount,
+        change: quantity,
+      },
+    });
+  }
+
+  updatePrice(newPrice: Money): void {
+    const oldPrice = this.price;
+    this.price = newPrice;
+    this.updatedAt = new Date();
+
+    this.addEvent({
+      type: "ProductPriceUpdated",
+      payload: {
+        productId: this.id.toString(),
+        oldPrice: oldPrice.value,
+        newPrice: newPrice.value,
+      },
+    });
+  }
+
+  private validate(): void {
+    if (this.name.length < 3) {
+      throw new Error("Product name must be at least 3 characters");
+    }
+    if (this.description.length < 10) {
+      throw new Error("Product description must be at least 10 characters");
+    }
+    if (this.categories.length === 0) {
+      throw new Error("Product must have at least one category");
+    }
+  }
+
+  private addEvent(event: DomainEvent): void {
+    this.events.push(event);
+  }
+
+  get properties() {
+    return {
+      id: this.id.toString(),
+      name: this.name,
+      description: this.description,
+      price: this.price.value,
+      stock: this.stock.amount,
+      categories: this.categories,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+    };
+  }
+
+  get domainEvents(): DomainEvent[] {
+    return [...this.events];
+  }
+
+  clearEvents(): void {
+    this.events.length = 0;
+  }
+}
+```
+
+### Application Layer Implementation
+
+Let's implement a use case for creating a product:
+
+```typescript
+// src/application/use-cases/products/create-product.ts
+import { Product } from "../../../domain/entities/product";
+import { Money } from "../../../domain/value-objects/money";
+import { ProductRepository } from "../../ports/repositories/product-repository";
+import { EventPublisher } from "../../ports/event-publisher";
+import { CreateProductDTO } from "./create-product.dto";
+
+export class CreateProductUseCase {
+  constructor(
+    private readonly productRepository: ProductRepository,
+    private readonly eventPublisher: EventPublisher
+  ) {}
+
+  async execute(input: CreateProductDTO): Promise<string> {
+    // Create product
+    const product = Product.create({
+      id: crypto.randomUUID(),
+      name: input.name,
+      description: input.description,
+      price: Money.create(input.price.amount, input.price.currency),
+      stock: input.initialStock,
+      categories: input.categories,
+    });
+
+    // Save to repository
+    await this.productRepository.save(product);
+
+    // Publish events
+    const events = product.domainEvents;
+    await Promise.all(
+      events.map((event) => this.eventPublisher.publish(event))
+    );
+    product.clearEvents();
+
+    return product.properties.id;
+  }
+}
+
+// src/application/use-cases/products/create-product.dto.ts
+export interface CreateProductDTO {
+  name: string;
+  description: string;
+  price: {
+    amount: number;
+    currency: string;
+  };
+  initialStock: number;
+  categories: string[];
+}
+```
+
+### Infrastructure Layer Implementation
+
+Let's implement the Prisma repository:
+
+```typescript
+// src/infrastructure/persistence/repositories/prisma-product-repository.ts
+import { PrismaClient } from "@prisma/client";
+import { Product } from "../../../domain/entities/product";
+import { Money } from "../../../domain/value-objects/money";
+import { ProductRepository } from "../../../application/ports/repositories/product-repository";
+
+export class PrismaProductRepository implements ProductRepository {
+  constructor(private readonly prisma: PrismaClient) {}
+
+  async save(product: Product): Promise<void> {
+    const {
+      id,
+      name,
+      description,
+      price,
+      stock,
+      categories,
+      createdAt,
+      updatedAt,
+    } = product.properties;
+
+    await this.prisma.product.create({
+      data: {
+        id,
+        name,
+        description,
+        priceAmount: price.amount,
+        priceCurrency: price.currency,
+        stock,
+        categories: {
+          create: categories.map((name) => ({
+            name,
+          })),
+        },
+        createdAt,
+        updatedAt,
+      },
+    });
+  }
+
+  async findById(id: string): Promise<Product | null> {
+    const product = await this.prisma.product.findUnique({
+      where: { id },
+      include: {
+        categories: true,
+      },
+    });
+
+    if (!product) return null;
+
+    return Product.create({
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: Money.create(product.priceAmount, product.priceCurrency),
+      stock: product.stock,
+      categories: product.categories.map((c) => c.name),
+    });
+  }
+
+  async update(product: Product): Promise<void> {
+    const { id, name, description, price, stock, updatedAt } =
+      product.properties;
+
+    await this.prisma.product.update({
+      where: { id },
+      data: {
+        name,
+        description,
+        priceAmount: price.amount,
+        priceCurrency: price.currency,
+        stock,
+        updatedAt,
+      },
+    });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.product.delete({
+      where: { id },
+    });
+  }
+}
+```
+
+### API Layer Implementation
+
+Let's implement the product routes using Hono:
+
+```typescript
+// src/interfaces/api/routes/product-routes.ts
+import { Hono } from "hono";
+import { zValidator } from "@hono/zod-validator";
+import { z } from "zod";
+import { CreateProductUseCase } from "../../../application/use-cases/products/create-product";
+import { container } from "../../container";
+
+const products = new Hono();
+
+const createProductSchema = z.object({
+  name: z.string().min(3),
+  description: z.string().min(10),
+  price: z.object({
+    amount: z.number().positive(),
+    currency: z.enum(["USD", "EUR", "GBP"]),
+  }),
+  initialStock: z.number().int().min(0),
+  categories: z.array(z.string()).min(1),
+});
+
+products.post("/", zValidator("json", createProductSchema), async (c) => {
+  const createProduct = container.resolve(CreateProductUseCase);
+  const input = c.req.valid("json");
+
+  try {
+    const productId = await createProduct.execute(input);
+    return c.json({ productId }, 201);
+  } catch (error) {
+    if (error instanceof Error) {
+      return c.json({ error: error.message }, 400);
+    }
+    return c.json({ error: "Internal server error" }, 500);
+  }
+});
+
+export { products };
+```
+
+### Testing Implementation
+
+Let's write some tests:
+
+```typescript
+// tests/unit/domain/product.test.ts
+import { describe, it, expect } from "vitest";
+import { Product } from "../../../src/domain/entities/product";
+import { Money } from "../../../src/domain/value-objects/money";
+
+describe("Product Entity", () => {
+  const validProductData = {
+    id: "PROD12345",
+    name: "Test Product",
+    description: "A test product description that is long enough",
+    price: Money.create(100, "USD"),
+    stock: 10,
+    categories: ["Test Category"],
+  };
+
+  it("should create a valid product", () => {
+    const product = Product.create(validProductData);
+    expect(product.properties.id).toBe(validProductData.id);
+    expect(product.properties.name).toBe(validProductData.name);
+    expect(product.domainEvents).toHaveLength(1);
+    expect(product.domainEvents[0].type).toBe("ProductCreated");
+  });
+
+  it("should throw error for invalid name", () => {
+    expect(() =>
+      Product.create({
+        ...validProductData,
+        name: "ab",
+      })
+    ).toThrow("Product name must be at least 3 characters");
+  });
+
+  it("should update stock correctly", () => {
+    const product = Product.create(validProductData);
+    product.updateStock(-5);
+    expect(product.properties.stock).toBe(5);
+    expect(product.domainEvents).toHaveLength(2);
+    expect(product.domainEvents[1].type).toBe("ProductStockUpdated");
+  });
+
+  it("should throw error for insufficient stock", () => {
+    const product = Product.create(validProductData);
+    expect(() => product.updateStock(-15)).toThrow("Insufficient stock");
+  });
+});
+
+// tests/integration/api/products.test.ts
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { app } from "../../../src/interfaces/api/app";
+import { prisma } from "../../../src/infrastructure/persistence/prisma";
+import request from "supertest";
+
+describe("Product API", () => {
+  beforeAll(async () => {
+    await prisma.product.deleteMany();
+  });
+
+  afterAll(async () => {
+    await prisma.$disconnect();
+  });
+
+  it("should create a product", async () => {
+    const response = await request(app)
+      .post("/api/products")
+      .send({
+        name: "Test Product",
+        description: "A test product description that is long enough",
+        price: {
+          amount: 100,
+          currency: "USD",
+        },
+        initialStock: 10,
+        categories: ["Test Category"],
+      });
+
+    expect(response.status).toBe(201);
+    expect(response.body.productId).toBeDefined();
+
+    // Verify product was created in database
+    const product = await prisma.product.findUnique({
+      where: { id: response.body.productId },
+    });
+    expect(product).toBeDefined();
+    expect(product?.name).toBe("Test Product");
+  });
+
+  it("should validate product input", async () => {
+    const response = await request(app)
+      .post("/api/products")
+      .send({
+        name: "ab", // Too short
+        description: "short", // Too short
+        price: {
+          amount: -100, // Negative price
+          currency: "INVALID", // Invalid currency
+        },
+        initialStock: -1, // Negative stock
+        categories: [], // Empty categories
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBeDefined();
+  });
+});
+```
+
+### Running the Application
+
+To run the application:
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Set up the database:
+
+```bash
+npx prisma migrate dev
+```
+
+3. Start the application:
+
+```bash
+npm run dev
+```
+
+4. Run tests:
+
+```bash
+npm test
+```
+
+The complete example demonstrates:
+
+- Clean Architecture principles
+- Domain-Driven Design patterns
+- Type safety with TypeScript
+- Validation and error handling
+- Event-driven architecture
+- Testing strategies
+- API implementation
+- Database integration
+
+The source code is available at: [E-commerce DDD Example](https://github.com/example/ddd-ecommerce)
+
+## Conclusion
+
+Hexagonal Architecture with DDD provides a solid foundation for building complex applications. Key benefits include:
+
+- Clear separation of concerns
+- Testable code
+- Maintainable codebase
+- Business-focused design
+- Scalable architecture
+
+Remember to:
+
+- Start with the domain model
+- Keep the domain pure
+- Use ports and adapters
+- Test thoroughly
+- Document decisions
+
+## Additional Resources
+
+- [Domain-Driven Design by Eric Evans](https://domainlanguage.com/ddd/)
+- [Clean Architecture by Robert C. Martin](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
+- [Hexagonal Architecture by Alistair Cockburn](https://alistair.cockburn.us/hexagonal-architecture/)
+
+## Tactical DDD Patterns
+
+### Aggregates
+
+An aggregate is a cluster of domain objects that can be treated as a single unit. Here's how to implement them effectively:
+
+```typescript
+// src/domain/aggregates/order-aggregate.ts
+export class OrderAggregate {
+  private readonly items: Map<ProductId, OrderItem> = new Map();
+  private readonly events: DomainEvent[] = [];
+
+  constructor(
+    private readonly id: OrderId,
+    private readonly customerId: CustomerId,
+    private status: OrderStatus,
+    private readonly createdAt: Date
+  ) {}
+
+  addItem(product: Product, quantity: Quantity): void {
+    // Business rule: Cannot modify cancelled orders
+    if (this.status === OrderStatus.CANCELLED) {
+      throw new OrderDomainError("Cannot modify cancelled order");
+    }
+
+    const existingItem = this.items.get(product.id);
+    if (existingItem) {
+      existingItem.updateQuantity(quantity);
+    } else {
+      const newItem = OrderItem.create(product, quantity);
+      this.items.set(product.id, newItem);
+    }
+
+    this.addEvent(new OrderItemAddedEvent(this.id, product.id, quantity));
+  }
+
+  // ... autres méthodes
+}
+```
+
+### Specification Pattern
+
+The Specification Pattern helps encapsulate business rules:
+
+```typescript
+// src/domain/specifications/order-specifications.ts
+export interface Specification<T> {
+  isSatisfiedBy(candidate: T): boolean;
+}
+
+export class MinimumOrderAmountSpecification implements Specification<Order> {
+  constructor(private readonly minimumAmount: Money) {}
+
+  isSatisfiedBy(order: Order): boolean {
+    return order.total.isGreaterThanOrEqual(this.minimumAmount);
+  }
+}
+
+export class OrderCancellationSpecification implements Specification<Order> {
+  isSatisfiedBy(order: Order): boolean {
+    return (
+      order.status !== OrderStatus.DELIVERED &&
+      order.status !== OrderStatus.CANCELLED
+    );
+  }
+}
+```
+
+## Error Handling in DDD
+
+### Domain Errors
+
+Create specific error types for domain rules:
+
+```typescript
+// src/domain/errors/domain-error.ts
+export class DomainError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "DomainError";
+  }
+}
+
+export class OrderDomainError extends DomainError {
+  constructor(message: string) {
+    super(message);
+    this.name = "OrderDomainError";
+  }
+}
+
+export class ProductDomainError extends DomainError {
+  constructor(message: string) {
+    super(message);
+    this.name = "ProductDomainError";
+  }
+}
+```
+
+### Error Handling in Use Cases
+
+Implement proper error handling in application layer:
+
+```typescript
+// src/application/use-cases/create-order.ts
+export class CreateOrderUseCase {
+  async execute(
+    input: CreateOrderInput
+  ): Promise<Result<string, ApplicationError>> {
+    try {
+      // Validate input
+      const validationResult = this.validateInput(input);
+      if (!validationResult.isSuccess) {
+        return Result.failure(new ValidationError(validationResult.error));
+      }
+
+      // Business logic
+      const order = await this.createOrder(input);
+
+      // Return success
+      return Result.success(order.id);
+    } catch (error) {
+      // Handle different types of errors
+      if (error instanceof DomainError) {
+        return Result.failure(new BusinessError(error.message));
+      }
+      if (error instanceof InfrastructureError) {
+        return Result.failure(new SystemError(error.message));
+      }
+      return Result.failure(new UnexpectedError());
+    }
+  }
+}
+```
+
+## Event Sourcing Implementation
+
+### Event Store
+
+```typescript
+// src/infrastructure/event-store/event-store.ts
+export interface EventStore {
+  saveEvents(streamId: string, events: DomainEvent[]): Promise<void>;
+  getEvents(streamId: string): Promise<DomainEvent[]>;
+}
+
+export class PostgresEventStore implements EventStore {
+  constructor(private readonly pool: Pool) {}
+
+  async saveEvents(streamId: string, events: DomainEvent[]): Promise<void> {
+    const client = await this.pool.connect();
+    try {
+      await client.query("BEGIN");
+
+      for (const event of events) {
+        await client.query(
+          "INSERT INTO events (stream_id, type, data, metadata, occurred_at) VALUES ($1, $2, $3, $4, $5)",
+          [streamId, event.type, event.data, event.metadata, event.occurredAt]
+        );
+      }
+
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  async getEvents(streamId: string): Promise<DomainEvent[]> {
+    const result = await this.pool.query(
+      "SELECT * FROM events WHERE stream_id = $1 ORDER BY sequence_number",
+      [streamId]
+    );
+    return result.rows.map(this.deserializeEvent);
+  }
+}
+```
+
+### Event Sourced Aggregate
+
+```typescript
+// src/domain/aggregates/event-sourced-aggregate.ts
+export abstract class EventSourcedAggregate {
+  private version: number = 0;
+  protected events: DomainEvent[] = [];
+
+  abstract apply(event: DomainEvent): void;
+
+  protected addEvent(event: DomainEvent): void {
+    this.apply(event);
+    this.events.push(event);
+    this.version++;
+  }
+
+  getUncommittedEvents(): DomainEvent[] {
+    return [...this.events];
+  }
+
+  clearUncommittedEvents(): void {
+    this.events = [];
+  }
+
+  loadFromHistory(events: DomainEvent[]): void {
+    events.forEach((event) => {
+      this.apply(event);
+      this.version++;
+    });
+  }
+}
+```
+
+## Advanced Testing Strategies
+
+### Testing Aggregates with Event Sourcing
+
+```typescript
+describe("Order Aggregate", () => {
+  it("should reconstruct state from events", () => {
+    // Given
+    const events = [
+      new OrderCreatedEvent("order-1", "customer-1"),
+      new ProductAddedToOrderEvent("order-1", "product-1", 2),
+      new ProductAddedToOrderEvent("order-1", "product-2", 1),
+      new OrderConfirmedEvent("order-1"),
+    ];
+
+    // When
+    const order = new Order();
+    order.loadFromHistory(events);
+
+    // Then
+    expect(order.status).toBe(OrderStatus.CONFIRMED);
+    expect(order.items).toHaveLength(2);
+  });
+});
+```
+
+### Testing Use Cases with Mocks
+
+```typescript
+describe("CreateOrderUseCase", () => {
+  let useCase: CreateOrderUseCase;
+  let orderRepo: MockOrderRepository;
+  let productRepo: MockProductRepository;
+  let eventPublisher: MockEventPublisher;
+
+  beforeEach(() => {
+    orderRepo = new MockOrderRepository();
+    productRepo = new MockProductRepository();
+    eventPublisher = new MockEventPublisher();
+    useCase = new CreateOrderUseCase(orderRepo, productRepo, eventPublisher);
+  });
+
+  it("should create order and publish events", async () => {
+    // Given
+    const input = {
+      customerId: "customer-1",
+      items: [{ productId: "product-1", quantity: 2 }],
+    };
+
+    productRepo.findById.mockResolvedValue(
+      Product.create({
+        id: "product-1",
+        name: "Test Product",
+        price: Money.create(100, "USD"),
+        stock: 10,
+      })
+    );
+
+    // When
+    const result = await useCase.execute(input);
+
+    // Then
+    expect(result.isSuccess).toBe(true);
+    expect(orderRepo.save).toHaveBeenCalled();
+    expect(eventPublisher.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "OrderCreated",
+      })
+    );
+  });
+});
+```
+
+## CQRS Implementation
+
+### Command and Query Separation
+
+```typescript
+// src/application/commands/create-order.command.ts
+export class CreateOrderCommand {
+  constructor(
+    public readonly customerId: string,
+    public readonly items: Array<{
+      productId: string;
+      quantity: number;
+    }>
+  ) {}
+}
+
+// src/application/queries/get-order-details.query.ts
+export class GetOrderDetailsQuery {
+  constructor(public readonly orderId: string) {}
+}
+
+// src/application/handlers/create-order.handler.ts
+@CommandHandler(CreateOrderCommand)
+export class CreateOrderHandler implements ICommandHandler<CreateOrderCommand> {
+  constructor(
+    private readonly orderRepository: OrderRepository,
+    private readonly productRepository: ProductRepository,
+    private readonly eventBus: EventBus
+  ) {}
+
+  async execute(command: CreateOrderCommand): Promise<void> {
+    // Validation
+    const products = await this.productRepository.findByIds(
+      command.items.map((item) => item.productId)
+    );
+
+    // Business Logic
+    const order = Order.create({
+      customerId: command.customerId,
+      items: command.items.map((item) => ({
+        product: products.find((p) => p.id === item.productId)!,
+        quantity: item.quantity,
+      })),
+    });
+
+    // Persistence
+    await this.orderRepository.save(order);
+
+    // Event Publishing
+    order.events.forEach((event) => this.eventBus.publish(event));
+  }
+}
+
+// src/application/handlers/get-order-details.handler.ts
+@QueryHandler(GetOrderDetailsQuery)
+export class GetOrderDetailsHandler
+  implements IQueryHandler<GetOrderDetailsQuery>
+{
+  constructor(private readonly orderReadModel: OrderReadModel) {}
+
+  async execute(query: GetOrderDetailsQuery): Promise<OrderDetailsDTO> {
+    return this.orderReadModel.getOrderDetails(query.orderId);
+  }
+}
+```
+
+### Read Models
+
+```typescript
+// src/infrastructure/read-models/order.read-model.ts
+export class OrderReadModel {
+  constructor(private readonly prisma: PrismaClient) {}
+
+  async getOrderDetails(orderId: string): Promise<OrderDetailsDTO> {
+    const order = await this.prisma.orderView.findUnique({
+      where: { id: orderId },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+        customer: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
+
+    return this.mapToDTO(order);
+  }
+
+  private mapToDTO(order: any): OrderDetailsDTO {
+    return {
+      id: order.id,
+      customerName: order.customer.name,
+      totalAmount: order.totalAmount,
+      status: order.status,
+      items: order.items.map((item) => ({
+        productName: item.product.name,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        subtotal: item.subtotal,
+      })),
+      createdAt: order.createdAt,
+    };
+  }
+}
+```
+
+### Event Handlers for Read Model Updates
+
+```typescript
+// src/application/event-handlers/order-created.handler.ts
+@EventHandler(OrderCreatedEvent)
+export class OrderCreatedHandler implements IEventHandler<OrderCreatedEvent> {
+  constructor(private readonly prisma: PrismaClient) {}
+
+  async handle(event: OrderCreatedEvent): Promise<void> {
+    await this.prisma.orderView.create({
+      data: {
+        id: event.orderId,
+        customerId: event.customerId,
+        status: "CREATED",
+        totalAmount: event.totalAmount,
+        items: {
+          create: event.items.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            subtotal: item.quantity * item.unitPrice,
+          })),
+        },
+      },
+    });
+  }
+}
+```
+
+### Benefits of CQRS
+
+1. **Performance Optimization**
+
+   - Separate databases for reads and writes
+   - Optimized read models for specific use cases
+   - Scalable query side
+
+2. **Complexity Management**
+
+   - Clear separation of concerns
+   - Simplified command validation
+   - Dedicated models for different purposes
+
+3. **Scalability**
+
+   - Independent scaling of read and write sides
+   - Optimized database schemas
+   - Better caching strategies
+
+4. **Flexibility**
+   - Different storage technologies for reads and writes
+   - Easy to add new read models
+   - Simplified eventual consistency
+
+## Bounded Contexts and Context Mapping
+
+In large enterprise applications, different parts of the system often need to maintain their own versions of similar concepts. Bounded Contexts help us manage this complexity effectively.
+
+### Strategic Design
+
+Strategic Design helps us identify natural boundaries in our domain model and organize our code accordingly:
+
+```typescript
+// src/contexts/shipping/domain/models/shipment.ts
+export class Shipment {
+  private constructor(
+    private readonly id: ShipmentId,
+    private readonly orderId: OrderId,
+    private status: ShipmentStatus,
+    private readonly address: ShippingAddress,
+    private readonly trackingNumber: TrackingNumber
+  ) {}
+
+  static create(params: {
+    orderId: OrderId;
+    address: ShippingAddress;
+  }): Shipment {
+    return new Shipment(
+      ShipmentId.generate(),
+      params.orderId,
+      ShipmentStatus.PENDING,
+      params.address,
+      TrackingNumber.generate()
+    );
+  }
+}
+
+// src/contexts/billing/domain/models/invoice.ts
+export class Invoice {
+  private constructor(
+    private readonly id: InvoiceId,
+    private readonly orderId: OrderId,
+    private readonly amount: Money,
+    private status: InvoiceStatus,
+    private readonly issuedAt: Date
+  ) {}
+
+  static create(params: { orderId: OrderId; amount: Money }): Invoice {
+    return new Invoice(
+      InvoiceId.generate(),
+      params.orderId,
+      params.amount,
+      InvoiceStatus.PENDING,
+      new Date()
+    );
+  }
+}
+```
+
+This approach allows teams to:
+
+- Work independently on their contexts
+- Maintain separate domain models
+- Evolve at different speeds
+- Focus on their specific business needs
+
+### Anti-Corruption Layer
+
+The Anti-Corruption Layer protects our domain model from external concepts and formats:
+
+```typescript
+// src/contexts/shipping/infrastructure/anti-corruption/order-translator.ts
+export class OrderTranslator {
+  static toShippingAddress(orderAddress: OrderContextAddress): ShippingAddress {
+    return ShippingAddress.create({
+      street: orderAddress.streetLine1,
+      city: orderAddress.city,
+      state: orderAddress.state,
+      country: orderAddress.countryCode,
+      zipCode: orderAddress.postalCode,
+    });
+  }
+
+  static toShipmentOrder(order: OrderContext): ShipmentOrder {
+    return {
+      orderId: order.id,
+      customerName: `${order.customer.firstName} ${order.customer.lastName}`,
+      address: this.toShippingAddress(order.shippingAddress),
+      items: order.items.map((item) => ({
+        sku: item.productId,
+        quantity: item.quantity,
+      })),
+    };
+  }
+}
+
+// src/contexts/shipping/application/services/shipping-facade.ts
+export class ShippingFacade {
+  constructor(
+    private readonly shipmentRepository: ShipmentRepository,
+    private readonly shippingService: ShippingService
+  ) {}
+
+  async createShipment(order: OrderContext): Promise<ShipmentId> {
+    const shipmentOrder = OrderTranslator.toShipmentOrder(order);
+    const shipment = await this.shippingService.createShipment(shipmentOrder);
+    await this.shipmentRepository.save(shipment);
+    return shipment.id;
+  }
+}
+```
+
+This layer provides:
+
+- Translation between different models
+- Protection from external system complexities
+- Clean integration points
+- Maintainable boundaries between contexts
+
+### Context Map Implementation
+
+The Context Map shows how different bounded contexts interact and share information:
+
+```typescript
+// src/contexts/shared-kernel/domain/value-objects/money.ts
+export class Money {
+  // Shared between all contexts
+  private constructor(
+    private readonly amount: number,
+    private readonly currency: Currency
+  ) {}
+
+  static create(amount: number, currency: Currency): Money {
+    return new Money(amount, currency);
+  }
+}
+
+// src/contexts/order/domain/services/shipping-service.ts
+export interface ShippingService {
+  requestShipment(order: Order): Promise<ShipmentDetails>;
+  getShipmentStatus(shipmentId: string): Promise<ShipmentStatus>;
+}
+
+// src/contexts/order/infrastructure/services/shipping-service-adapter.ts
+export class ShippingServiceAdapter implements ShippingService {
+  constructor(private readonly shippingFacade: ShippingFacade) {}
+
+  async requestShipment(order: Order): Promise<ShipmentDetails> {
+    const shipmentId = await this.shippingFacade.createShipment(order);
+    return { shipmentId: shipmentId.toString() };
+  }
+}
+```
+
+## Performance and Scalability
+
+As your application grows, you need robust strategies to handle increased load and maintain responsiveness. Here are key patterns for scaling your application effectively.
+
+### Distributed Caching
+
+Caching is essential for reducing database load and improving response times:
+
+```typescript
+// src/infrastructure/cache/redis-cache-service.ts
+export class RedisCacheService implements CacheService {
+  constructor(
+    private readonly redis: Redis,
+    private readonly ttl: number = 3600
+  ) {}
+
+  async get<T>(key: string): Promise<T | null> {
+    const cached = await this.redis.get(key);
+    return cached ? JSON.parse(cached) : null;
+  }
+
+  async set<T>(key: string, value: T, ttl?: number): Promise<void> {
+    await this.redis.set(key, JSON.stringify(value), "EX", ttl || this.ttl);
+  }
+
+  async invalidate(key: string): Promise<void> {
+    await this.redis.del(key);
+  }
+}
+
+// src/application/services/cached-product-service.ts
+export class CachedProductService implements ProductService {
+  constructor(
+    private readonly productRepository: ProductRepository,
+    private readonly cacheService: CacheService
+  ) {}
+
+  async getProduct(id: string): Promise<Product | null> {
+    const cacheKey = `product:${id}`;
+
+    // Try cache first
+    const cached = await this.cacheService.get<Product>(cacheKey);
+    if (cached) return cached;
+
+    // Get from repository
+    const product = await this.productRepository.findById(id);
+    if (product) {
+      await this.cacheService.set(cacheKey, product);
+    }
+
+    return product;
+  }
+}
+```
+
+Key benefits include:
+
+- Reduced database load
+- Improved response times
+- Better scalability
+- Configurable cache policies
+- Support for distributed systems
+
+### Distributed Transactions
+
+Managing transactions across services requires careful handling to maintain data consistency:
+
+```typescript
+// src/infrastructure/transactions/distributed-transaction.ts
+export class DistributedTransaction {
+  private operations: Array<() => Promise<void>> = [];
+  private compensations: Array<() => Promise<void>> = [];
+
+  addOperation(
+    operation: () => Promise<void>,
+    compensation: () => Promise<void>
+  ): void {
+    this.operations.push(operation);
+    this.compensations.push(compensation);
+  }
+
+  async execute(): Promise<void> {
+    const executedOperations: number[] = [];
+
+    try {
+      for (let i = 0; i < this.operations.length; i++) {
+        await this.operations[i]();
+        executedOperations.push(i);
+      }
+    } catch (error) {
+      // Compensate in reverse order
+      for (const index of executedOperations.reverse()) {
+        try {
+          await this.compensations[index]();
+        } catch (compensationError) {
+          // Log compensation error
+          console.error("Compensation failed:", compensationError);
+        }
+      }
+      throw error;
+    }
+  }
+}
+
+// Usage in Order Service
+export class OrderService {
+  async createOrder(command: CreateOrderCommand): Promise<void> {
+    const transaction = new DistributedTransaction();
+
+    // Prepare order creation
+    const order = Order.create(command);
+    transaction.addOperation(
+      () => this.orderRepository.save(order),
+      () => this.orderRepository.delete(order.id)
+    );
+
+    // Prepare inventory update
+    transaction.addOperation(
+      () => this.inventoryService.reserveStock(order.items),
+      () => this.inventoryService.releaseStock(order.items)
+    );
+
+    // Prepare payment processing
+    transaction.addOperation(
+      () => this.paymentService.processPayment(order.id, order.total),
+      () => this.paymentService.refundPayment(order.id)
+    );
+
+    // Execute all operations
+    await transaction.execute();
+  }
+}
+```
+
+This implementation provides:
+
+- Atomic operations across services
+- Automatic compensation for failures
+- Transaction monitoring
+- Error recovery
+- Data consistency guarantees
+
+### Replication Strategies
+
+Data replication is crucial for scaling read operations and ensuring high availability:
+
+```typescript
+// src/infrastructure/database/replica-set.ts
+export class ReplicaSet {
+  constructor(
+    private readonly primary: Database,
+    private readonly replicas: Database[]
+  ) {}
+
+  async write<T>(operation: (db: Database) => Promise<T>): Promise<T> {
+    // Write to primary
+    const result = await operation(this.primary);
+
+    // Asynchronously replicate to secondaries
+    Promise.all(
+      this.replicas.map((replica) =>
+        operation(replica).catch((error) => {
+          console.error("Replication failed:", error);
+          // Mark replica as potentially stale
+          this.markReplicaStale(replica);
+        })
+      )
+    );
+
+    return result;
+  }
+
+  async read<T>(operation: (db: Database) => Promise<T>): Promise<T> {
+    // Round-robin between healthy replicas
+    const replica = this.getHealthyReplica();
+    return operation(replica || this.primary);
+  }
+
+  private getHealthyReplica(): Database | null {
+    return this.replicas.find((replica) => !this.isStale(replica)) || null;
+  }
+}
+
+// Usage in Repository
+export class ProductRepository {
+  constructor(private readonly replicaSet: ReplicaSet) {}
+
+  async save(product: Product): Promise<void> {
+    await this.replicaSet.write(async (db) => {
+      await db.products.save(product);
+    });
+  }
+
+  async findById(id: string): Promise<Product | null> {
+    return this.replicaSet.read(async (db) => {
+      return db.products.findOne({ id });
+    });
+  }
+}
+```
+
+Benefits include:
+
+- Improved read scalability
+- High availability
+- Disaster recovery
+- Geographic distribution
+- Load balancing

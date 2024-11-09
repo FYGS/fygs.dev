@@ -9,8 +9,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Info, ChevronDown, ChevronUp } from "lucide-react";
 import { motion } from "framer-motion";
+import { ChevronDown, ChevronUp, Info } from "lucide-react";
 import { useState } from "react";
 
 interface TimelineItemProps {

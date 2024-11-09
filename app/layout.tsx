@@ -1,5 +1,6 @@
 import { NavigationProgress } from "@/components/ui/navigation-progress";
 import { PageTransition } from "@/components/ui/page-transition";
+import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { PageMemoryProvider } from "@/providers/page-memory-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
@@ -12,7 +13,6 @@ import { Footer } from "./_components/Footer";
 import { Header } from "./_components/Header";
 import { Spacing } from "./_components/Spacing";
 import "./globals.css";
-import { Toaster } from "@/components/ui/toaster";
 
 const AnekTelugu = Anek_Telugu({
   subsets: ["latin"],

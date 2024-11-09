@@ -1,8 +1,8 @@
 "use client";
 
+import { useNavigationProgress } from "@/hooks/use-navigation-progress";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { useNavigationProgress } from "@/hooks/use-navigation-progress";
 
 interface NavigationProgressProps {
   className?: string;

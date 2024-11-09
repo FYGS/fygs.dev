@@ -10,8 +10,8 @@ import { ArrowRight, ExternalLink, Github } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { ProjectStats } from "./project-stats";
 import type { Project } from "../types";
+import { ProjectStats } from "./project-stats";
 
 interface ProjectCardProps {
   project: Project;
@@ -110,13 +110,21 @@ export function ProjectCard({ project }: ProjectCardProps) {
             </Link>
             <div className="flex gap-2">
               {project.githubUrl && (
-                <Link href={project.githubUrl} target="_blank" rel="noopener noreferrer">
+                <Link
+                  href={project.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <Button variant="outline" size="icon">
                     <Github className="h-4 w-4" />
                   </Button>
                 </Link>
               )}
-              <Link href={project.link} target="_blank" rel="noopener noreferrer">
+              <Link
+                href={project.link}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Button variant="outline" size="icon">
                   <ExternalLink className="h-4 w-4" />
                 </Button>

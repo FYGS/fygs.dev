@@ -4,6 +4,7 @@ excerpt: "Learn how to design and implement scalable microservices architecture 
 date: "2024-03-20"
 author: "Fernand SOUALO"
 categories: ["Architecture", "AWS", "NestJS"]
+coverImage: "/blog/scalable-microservices.jpg"
 ---
 
 # Building Scalable Microservices with NestJS and AWS
@@ -68,7 +69,7 @@ nest generate service users
 In the `users.service.ts` file, you can add methods to manage users:
 
 ```typescript
-import { Injectable } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
 
 @Injectable()
 export class UsersService {
@@ -96,10 +97,10 @@ nest generate controller users
 In the `users.controller.ts` file, you can define the routes:
 
 ```typescript
-import { Controller, Get, Post, Body } from '@nestjs/common';
-import { UsersService } from './users.service';
+import { Controller, Get, Post, Body } from "@nestjs/common";
+import { UsersService } from "./users.service";
 
-@Controller('users')
+@Controller("users")
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 

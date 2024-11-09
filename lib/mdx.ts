@@ -10,13 +10,13 @@ import remarkGfm from "remark-gfm";
 export interface BlogPost {
   slug: string;
   title: string;
-  excerpt: string;
   date: string;
+  excerpt: string;
   author: string;
   categories: string[];
   content: ReactNode;
   readingTime: string;
-  coverImage?: string;
+  coverImage: string;
 }
 
 const BLOG_DIR = join(process.cwd(), "content/blog");

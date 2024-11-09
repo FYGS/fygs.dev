@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { usePagination } from "@/hooks/use-pagination";
 import { cn } from "@/lib/utils";
 import {
   ChevronFirst,
@@ -16,7 +17,6 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { usePagination } from "@/hooks/use-pagination";
 
 interface PaginationProps {
   totalItems: number;
