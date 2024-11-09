@@ -7,11 +7,11 @@ export const Contact = () => {
     <Section className="flex flex-col items-start gap-4">
       <Badge
         variant="outline"
-        className="text-xl text-muted-foreground font-semibold"
+        className="text-lg sm:text-xl text-muted-foreground font-semibold"
       >
         Contact me
       </Badge>
-      <h2 className="pb-2 text-3xl font-semibold tracking-tight first:mt-0">
+      <h2 className="pb-2 text-xl sm:text-2xl md:text-3xl font-semibold tracking-tight first:mt-0 leading-relaxed">
         Feel free to reach out to me through any of the following platforms.
         I&apos;m always open to discussing new projects, creative ideas, or
         opportunities to be part of your vision.

@@ -3,7 +3,6 @@ import { Section } from "@/app/_components/Section";
 import { Timeline } from "@/app/_components/Timeline";
 import { AvailabilityIndicator } from "@/components/ui/availability-indicator";
 import { Badge } from "@/components/ui/badge";
-import { BookingCalendar } from "@/components/ui/booking-calendar";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DownloadCVButton } from "@/components/ui/download-cv-button";
@@ -17,6 +16,7 @@ import { cn } from "@/lib/utils";
 import {
   Award,
   Briefcase,
+  Calendar,
   Code2,
   ExternalLink,
   Globe2,
@@ -421,7 +421,19 @@ export default function ResumePage() {
             </Link>
 
             {/* Calendrier de réservation */}
-            <BookingCalendar />
+            {/* <BookingCalendar /> */}
+            <Link
+              href="https://calendly.com/fygs-dev/first-contact"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(
+                buttonVariants({ variant: "secondary", size: "lg" }),
+                "flex items-center gap-2 bg-primary/10 text-primary hover:bg-primary/20 px-4 py-2 rounded-md transition-colors duration-300"
+              )}
+            >
+              <Calendar className="mr-2 h-5 w-5" />
+              Schedule a Meeting
+            </Link>
 
             <Link
               href="https://www.linkedin.com/in/fernandsoualo"
