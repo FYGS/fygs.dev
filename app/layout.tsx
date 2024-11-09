@@ -13,7 +13,7 @@ import { Footer } from "./_components/Footer";
 import { Header } from "./_components/Header";
 import { Spacing } from "./_components/Spacing";
 import "./globals.css";
-
+import { Analytics } from "@vercel/analytics/react";
 const AnekTelugu = Anek_Telugu({
   subsets: ["latin"],
   variable: "--font-caption",
@@ -131,6 +131,7 @@ export default function RootLayout({
                   <Toaster />
                   <Spacing size="md" />
                   <Footer />
+                  <Analytics />
                 </main>
               </PageTransition>
             </TransitionProvider>
