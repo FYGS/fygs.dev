@@ -1,0 +1,865 @@
+---
+title: "Advanced Next.js Authentication & Security: Building Enterprise-Grade Auth Systems"
+excerpt: "A comprehensive guide to implementing secure, scalable authentication and authorization in Next.js applications, including OAuth, JWT, Session Management, and Security Best Practices."
+date: "2024-11-20"
+author: "Fernand SOUALO"
+categories: ["Next.js", "Security", "Authentication", "TypeScript", "Backend"]
+coverImage: "/blog/nextjs-auth-security.jpg"
+---
+
+# Advanced Next.js Authentication & Security: The Complete Guide
+
+## Table of Contents
+
+1. [Introduction](#introduction)
+2. [Authentication Architecture](#architecture)
+3. [JWT Implementation](#jwt)
+4. [OAuth Integration](#oauth)
+5. [Session Management](#sessions)
+6. [Role-Based Access Control](#rbac)
+7. [Security Best Practices](#security)
+8. [Middleware Implementation](#middleware)
+9. [Real-World Example: Multi-tenant Auth System](#example)
+10. [Testing Auth Systems](#testing)
+
+## Introduction <a name="introduction"></a>
+
+Building secure authentication systems in Next.js requires careful consideration of security best practices, user experience, and scalability. This guide provides a comprehensive approach to implementing enterprise-grade authentication.
+
+## Authentication Architecture <a name="architecture"></a>
+
+### Core Authentication Service
+
+```typescript
+// lib/auth/auth-service.ts
+import { SignJWT, jwtVerify } from "jose";
+import { hash, compare } from "bcryptjs";
+import { createSecureToken } from "./crypto";
+import type { User, Session, AuthToken } from "./types";
+
+export class AuthService {
+  private readonly secretKey: Uint8Array;
+
+  constructor() {
+    this.secretKey = new TextEncoder().encode(process.env.JWT_SECRET_KEY);
+  }
+
+  async createSession(user: User): Promise<Session> {
+    const sessionToken = await createSecureToken();
+    const refreshToken = await createSecureToken();
+
+    const session = await prisma.session.create({
+      data: {
+        userId: user.id,
+        sessionToken,
+        refreshToken,
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+        refreshTokenExpiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 days
+      },
+    });
+
+    const accessToken = await this.createAccessToken(user, session.id);
+
+    return {
+      sessionId: session.id,
+      accessToken,
+      refreshToken: session.refreshToken,
+      expiresAt: session.expiresAt,
+    };
+  }
+
+  async createAccessToken(user: User, sessionId: string): Promise<AuthToken> {
+    const token = await new SignJWT({
+      sub: user.id,
+      sessionId,
+      role: user.role,
+      permissions: user.permissions,
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .setIssuedAt()
+      .setExpirationTime("15m")
+      .setJti(await createSecureToken())
+      .sign(this.secretKey);
+
+    return {
+      token,
+      expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
+    };
+  }
+
+  async verifyAccessToken(token: string): Promise<{
+    userId: string;
+    sessionId: string;
+    role: string;
+    permissions: string[];
+  }> {
+    try {
+      const { payload } = await jwtVerify(token, this.secretKey, {
+        algorithms: ["HS256"],
+      });
+
+      // Verify if session is still valid
+      const session = await prisma.session.findUnique({
+        where: { id: payload.sessionId as string },
+      });
+
+      if (!session || session.revokedAt || new Date() > session.expiresAt) {
+        throw new Error("Session invalid or expired");
+      }
+
+      return {
+        userId: payload.sub as string,
+        sessionId: payload.sessionId as string,
+        role: payload.role as string,
+        permissions: payload.permissions as string[],
+      };
+    } catch (error) {
+      throw new Error("Invalid token");
+    }
+  }
+
+  async refreshSession(refreshToken: string): Promise<Session> {
+    const session = await prisma.session.findFirst({
+      where: {
+        refreshToken,
+        revokedAt: null,
+        refreshTokenExpiresAt: {
+          gt: new Date(),
+        },
+      },
+      include: {
+        user: true,
+      },
+    });
+
+    if (!session) {
+      throw new Error("Invalid refresh token");
+    }
+
+    // Create new session
+    const newSession = await this.createSession(session.user);
+
+    // Revoke old session
+    await prisma.session.update({
+      where: { id: session.id },
+      data: { revokedAt: new Date() },
+    });
+
+    return newSession;
+  }
+
+  async revokeSession(sessionId: string): Promise<void> {
+    await prisma.session.update({
+      where: { id: sessionId },
+      data: { revokedAt: new Date() },
+    });
+  }
+
+  async revokeAllUserSessions(userId: string): Promise<void> {
+    await prisma.session.updateMany({
+      where: {
+        userId,
+        revokedAt: null,
+      },
+      data: {
+        revokedAt: new Date(),
+      },
+    });
+  }
+}
+```
+
+### Secure Password Management
+
+```typescript
+// lib/auth/password-service.ts
+import { hash, compare } from "bcryptjs";
+import { createHash } from "crypto";
+import { zxcvbn } from "zxcvbn-ts";
+
+interface PasswordValidationResult {
+  isValid: boolean;
+  score: number;
+  feedback: {
+    warning?: string;
+    suggestions: string[];
+  };
+}
+
+export class PasswordService {
+  private readonly SALT_ROUNDS = 12;
+  private readonly MIN_PASSWORD_SCORE = 3;
+
+  async hashPassword(password: string): Promise<string> {
+    return hash(password, this.SALT_ROUNDS);
+  }
+
+  async verifyPassword(
+    password: string,
+    hashedPassword: string
+  ): Promise<boolean> {
+    return compare(password, hashedPassword);
+  }
+
+  validatePasswordStrength(password: string): PasswordValidationResult {
+    const result = zxcvbn(password);
+
+    return {
+      isValid: result.score >= this.MIN_PASSWORD_SCORE,
+      score: result.score,
+      feedback: {
+        warning: result.feedback.warning,
+        suggestions: result.feedback.suggestions,
+      },
+    };
+  }
+
+  generateResetToken(userId: string): string {
+    const timestamp = Date.now().toString();
+    const random = Math.random().toString();
+    return createHash("sha256")
+      .update(`${userId}${timestamp}${random}${process.env.RESET_TOKEN_SECRET}`)
+      .digest("hex");
+  }
+
+  async initiatePasswordReset(email: string): Promise<void> {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) return; // Don't reveal user existence
+
+    const resetToken = this.generateResetToken(user.id);
+    const resetTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        resetToken,
+        resetTokenExpiry,
+      },
+    });
+
+    // Send reset email
+    await sendPasswordResetEmail(user.email, resetToken);
+  }
+
+  async resetPassword(
+    resetToken: string,
+    newPassword: string
+  ): Promise<boolean> {
+    const user = await prisma.user.findFirst({
+      where: {
+        resetToken,
+        resetTokenExpiry: {
+          gt: new Date(),
+        },
+      },
+    });
+
+    if (!user) {
+      throw new Error("Invalid or expired reset token");
+    }
+
+    // Validate password strength
+    const validation = this.validatePasswordStrength(newPassword);
+    if (!validation.isValid) {
+      throw new Error(
+        validation.feedback.warning || "Password not strong enough"
+      );
+    }
+
+    const hashedPassword = await this.hashPassword(newPassword);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        resetToken: null,
+        resetTokenExpiry: null,
+      },
+    });
+
+    // Revoke all existing sessions
+    await authService.revokeAllUserSessions(user.id);
+
+    return true;
+  }
+}
+```
+
+## OAuth Integration <a name="oauth"></a>
+
+### OAuth Provider Implementation
+
+```typescript
+// lib/auth/oauth/provider.ts
+import { OAuth2Client } from "google-auth-library";
+import { AuthProvider, OAuthProfile } from "../types";
+
+export class OAuthProviderService {
+  private readonly providers: Map<AuthProvider, OAuth2Client>;
+
+  constructor() {
+    this.providers = new Map([
+      [
+        "google",
+        new OAuth2Client({
+          clientId: process.env.GOOGLE_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          redirectUri: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback/google`,
+        }),
+      ],
+      // Add other providers
+    ]);
+  }
+
+  async getAuthorizationUrl(
+    provider: AuthProvider,
+    state: string
+  ): Promise<string> {
+    const client = this.providers.get(provider);
+    if (!client) throw new Error(`Provider ${provider} not supported`);
+
+    const scopes = this.getProviderScopes(provider);
+
+    return client.generateAuthUrl({
+      access_type: "offline",
+      scope: scopes,
+      state,
+      prompt: "consent",
+    });
+  }
+
+  async validateCallback(
+    provider: AuthProvider,
+    code: string
+  ): Promise<OAuthProfile> {
+    const client = this.providers.get(provider);
+    if (!client) throw new Error(`Provider ${provider} not supported`);
+
+    const { tokens } = await client.getToken(code);
+    client.setCredentials(tokens);
+
+    const profile = await this.fetchUserProfile(provider, client);
+    return this.normalizeProfile(provider, profile);
+  }
+
+  private async fetchUserProfile(
+    provider: AuthProvider,
+    client: OAuth2Client
+  ): Promise<any> {
+    switch (provider) {
+      case "google": {
+        const { data } = await client.request({
+          url: "https://www.googleapis.com/oauth2/v3/userinfo",
+        });
+        return data;
+      }
+      // Add other providers
+      default:
+        throw new Error(`Provider ${provider} not supported`);
+    }
+  }
+
+  private normalizeProfile(provider: AuthProvider, profile: any): OAuthProfile {
+    switch (provider) {
+      case "google":
+        return {
+          provider,
+          providerId: profile.sub,
+          email: profile.email,
+          emailVerified: profile.email_verified,
+          name: profile.name,
+          picture: profile.picture,
+        };
+      // Add other providers
+      default:
+        throw new Error(`Provider ${provider} not supported`);
+    }
+  }
+
+  private getProviderScopes(provider: AuthProvider): string[] {
+    switch (provider) {
+      case "google":
+        return [
+          "https://www.googleapis.com/auth/userinfo.email",
+          "https://www.googleapis.com/auth/userinfo.profile",
+        ];
+      // Add other providers
+      default:
+        throw new Error(`Provider ${provider} not supported`);
+    }
+  }
+}
+```
+
+## Session Management <a name="sessions"></a>
+
+### Advanced Session Store
+
+```typescript
+// lib/auth/session-store.ts
+import { Redis } from "ioredis";
+import { Session, SessionData } from "./types";
+
+export class SessionStore {
+  private readonly redis: Redis;
+  private readonly prefix = "session:";
+  private readonly ttl = 30 * 24 * 60 * 60; // 30 days
+
+  constructor() {
+    this.redis = new Redis(process.env.REDIS_URL, {
+      maxRetriesPerRequest: 3,
+      enableOfflineQueue: false,
+    });
+  }
+
+  async create(sessionId: string, data: SessionData): Promise<void> {
+    const key = this.getKey(sessionId);
+    await this.redis
+      .multi()
+      .hset(key, this.serialize(data))
+      .expire(key, this.ttl)
+      .exec();
+  }
+
+  async get(sessionId: string): Promise<SessionData | null> {
+    const data = await this.redis.hgetall(this.getKey(sessionId));
+    return Object.keys(data).length ? this.deserialize(data) : null;
+  }
+
+  async update(sessionId: string, data: Partial<SessionData>): Promise<void> {
+    const key = this.getKey(sessionId);
+    await this.redis
+      .multi()
+      .hset(key, this.serialize(data))
+      .expire(key, this.ttl)
+      .exec();
+  }
+
+  async delete(sessionId: string): Promise<void> {
+    await this.redis.del(this.getKey(sessionId));
+  }
+
+  async touch(sessionId: string): Promise<void> {
+    await this.redis.expire(this.getKey(sessionId), this.ttl);
+  }
+
+  private getKey(sessionId: string): string {
+    return `${this.prefix}${sessionId}`;
+  }
+
+  private serialize(data: Partial<SessionData>): Record<string, string> {
+    return Object.entries(data).reduce(
+      (acc, [key, value]) => ({
+        ...acc,
+        [key]:
+          typeof value === "object" ? JSON.stringify(value) : String(value),
+      }),
+      {}
+    );
+  }
+
+  private deserialize(data: Record<string, string>): SessionData {
+    return Object.entries(data).reduce(
+      (acc, [key, value]) => ({
+        ...acc,
+        [key]: this.tryParseJSON(value),
+      }),
+      {} as SessionData
+    );
+  }
+
+  private tryParseJSON(value: string): any {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return value;
+    }
+  }
+}
+```
+
+## Role-Based Access Control <a name="rbac"></a>
+
+### RBAC Implementation
+
+```typescript
+// lib/auth/rbac/index.ts
+import { Permission, Role, Resource } from "./types";
+
+export class RBACService {
+  private readonly roles: Map<Role, Set<Permission>>;
+  private readonly roleHierarchy: Map<Role, Set<Role>>;
+
+  constructor() {
+    this.roles = new Map();
+    this.roleHierarchy = new Map();
+    this.initializeRoles();
+  }
+
+  private initializeRoles() {
+    // Define base permissions
+    this.defineRole("user", [
+      "read:own_profile",
+      "update:own_profile",
+      "read:public_content",
+    ]);
+
+    this.defineRole("editor", [
+      "create:content",
+      "update:own_content",
+      "delete:own_content",
+    ]);
+
+    this.defineRole("admin", [
+      "manage:users",
+      "manage:content",
+      "manage:settings",
+    ]);
+
+    // Define role hierarchy
+    this.addRoleInheritance("editor", "user");
+    this.addRoleInheritance("admin", "editor");
+  }
+
+  defineRole(role: Role, permissions: Permission[]) {
+    this.roles.set(role, new Set(permissions));
+  }
+
+  addRoleInheritance(role: Role, inherits: Role) {
+    const inherited = this.roleHierarchy.get(role) || new Set();
+    inherited.add(inherits);
+    this.roleHierarchy.set(role, inherited);
+  }
+
+  getRolePermissions(role: Role): Set<Permission> {
+    const permissions = new Set<Permission>();
+
+    // Add direct permissions
+    const directPermissions = this.roles.get(role);
+    if (directPermissions) {
+      directPermissions.forEach((p) => permissions.add(p));
+    }
+
+    // Add inherited permissions
+    const inherited = this.roleHierarchy.get(role);
+    if (inherited) {
+      inherited.forEach((inheritedRole) => {
+        const inheritedPermissions = this.getRolePermissions(inheritedRole);
+        inheritedPermissions.forEach((p) => permissions.add(p));
+      });
+    }
+
+    return permissions;
+  }
+
+  can(role: Role, permission: Permission, resource?: Resource): boolean {
+    const permissions = this.getRolePermissions(role);
+
+    if (permissions.has(permission)) {
+      return true;
+    }
+
+    if (resource) {
+      return permissions.has(`${permission}:${resource}`);
+    }
+
+    return false;
+  }
+
+  async enforcePermission(
+    userId: string,
+    permission: Permission,
+    resource?: Resource
+  ): Promise<boolean> {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { roles: true },
+    });
+
+    if (!user) return false;
+
+    return user.roles.some((role) =>
+      this.can(role.name as Role, permission, resource)
+    );
+  }
+}
+```
+
+## Security Best Practices <a name="security"></a>
+
+### Security Headers Middleware
+
+```typescript
+// middleware/security.ts
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+export function securityHeaders(request: NextRequest) {
+  const response = NextResponse.next();
+  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+
+  // CSP Header
+  const csp = [
+    `default-src 'self'`,
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
+    `style-src 'self' 'nonce-${nonce}'`,
+    `img-src 'self' data: https:`,
+    `font-src 'self'`,
+    `object-src 'none'`,
+    `base-uri 'self'`,
+    `form-action 'self'`,
+    `frame-ancestors 'none'`,
+    `block-all-mixed-content`,
+    `upgrade-insecure-requests`,
+  ].join("; ");
+
+  const headers = response.headers;
+
+  // Security headers
+  headers.set("Content-Security-Policy", csp);
+  headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  headers.set("X-Frame-Options", "DENY");
+  headers.set("X-Content-Type-Options", "nosniff");
+  headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  headers.set(
+    "Strict-Transport-Security",
+    "max-age=31536000; includeSubDomains"
+  );
+
+  // Add nonce to response for use in components
+  headers.set("x-nonce", nonce);
+
+  return response;
+}
+```
+
+## Real-World Example: Multi-tenant Auth System <a name="example"></a>
+
+```typescript
+// app/api/auth/[...nextauth]/route.ts
+import { NextAuth } from "next-auth";
+import { AuthService } from "@/lib/auth/auth-service";
+import { OAuthProviderService } from "@/lib/auth/oauth/provider";
+import { SessionStore } from "@/lib/auth/session-store";
+import { RBACService } from "@/lib/auth/rbac";
+
+const authService = new AuthService();
+const oauthService = new OAuthProviderService();
+const sessionStore = new SessionStore();
+const rbacService = new RBACService();
+
+export const authOptions = {
+  providers: [
+    {
+      id: "credentials",
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Invalid credentials");
+        }
+
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+          include: { tenant: true },
+        });
+
+        if (
+          !user ||
+          !(await authService.verifyPassword(
+            credentials.password,
+            user.password
+          ))
+        ) {
+          throw new Error("Invalid credentials");
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          tenantId: user.tenant.id,
+        };
+      },
+    },
+    // OAuth providers configuration
+  ],
+  callbacks: {
+    async signIn({ user, account, profile, tenant }) {
+      if (account.provider !== "credentials") {
+        const oauthProfile = await oauthService.validateCallback(
+          account.provider,
+          account.access_token
+        );
+
+        // Link OAuth account to user
+        await prisma.account.create({
+          data: {
+            userId: user.id,
+            type: account.type,
+            provider: account.provider,
+            providerAccountId: account.providerAccountId,
+            access_token: account.access_token,
+            refresh_token: account.refresh_token,
+            expires_at: account.expires_at,
+          },
+        });
+      }
+
+      // Create session
+      const session = await authService.createSession(user);
+      await sessionStore.create(session.sessionId, {
+        userId: user.id,
+        tenantId: user.tenantId,
+        expiresAt: session.expiresAt,
+      });
+
+      return true;
+    },
+    async session({ session, user }) {
+      const sessionData = await sessionStore.get(session.id);
+      if (!sessionData) return null;
+
+      // Check permissions
+      const permissions = await rbacService.getRolePermissions(user.role);
+
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          tenantId: sessionData.tenantId,
+          permissions: Array.from(permissions),
+        },
+      };
+    },
+    async jwt({ token, user, account }) {
+      if (user) {
+        token.userId = user.id;
+        token.tenantId = user.tenantId;
+      }
+      return token;
+    },
+  },
+  events: {
+    async signOut({ session }) {
+      await authService.revokeSession(session.id);
+      await sessionStore.delete(session.id);
+    },
+  },
+  pages: {
+    signIn: "/auth/login",
+    signOut: "/auth/logout",
+    error: "/auth/error",
+  },
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+};
+
+const handler = NextAuth(authOptions);
+export { handler as GET, handler as POST };
+```
+
+## Testing Auth Systems <a name="testing"></a>
+
+```typescript
+// __tests__/auth/auth-service.test.ts
+import { AuthService } from "@/lib/auth/auth-service";
+import { createTestUser, clearTestData } from "../helpers";
+
+describe("AuthService", () => {
+  let authService: AuthService;
+  let testUser: User;
+
+  beforeAll(async () => {
+    authService = new AuthService();
+    testUser = await createTestUser();
+  });
+
+  afterAll(async () => {
+    await clearTestData();
+  });
+
+  describe("Session Management", () => {
+    it("should create a valid session", async () => {
+      const session = await authService.createSession(testUser);
+
+      expect(session).toHaveProperty("sessionId");
+      expect(session).toHaveProperty("accessToken");
+      expect(session).toHaveProperty("refreshToken");
+      expect(session.expiresAt).toBeInstanceOf(Date);
+    });
+
+    it("should verify access token", async () => {
+      const session = await authService.createSession(testUser);
+      const verified = await authService.verifyAccessToken(
+        session.accessToken.token
+      );
+
+      expect(verified.userId).toBe(testUser.id);
+      expect(verified.sessionId).toBeDefined();
+    });
+
+    it("should refresh session", async () => {
+      const session = await authService.createSession(testUser);
+      const newSession = await authService.refreshSession(session.refreshToken);
+
+      expect(newSession.sessionId).not.toBe(session.sessionId);
+      expect(newSession.accessToken).toBeDefined();
+    });
+
+    it("should revoke session", async () => {
+      const session = await authService.createSession(testUser);
+      await authService.revokeSession(session.sessionId);
+
+      await expect(
+        authService.verifyAccessToken(session.accessToken.token)
+      ).rejects.toThrow();
+    });
+  });
+
+  describe("OAuth Integration", () => {
+    it("should link OAuth account", async () => {
+      const oauthProfile = {
+        provider: "google",
+        providerId: "123",
+        email: testUser.email,
+        name: testUser.name,
+      };
+
+      const linked = await authService.linkOAuthAccount(
+        testUser.id,
+        oauthProfile
+      );
+
+      expect(linked).toBeTruthy();
+    });
+  });
+
+  describe("RBAC", () => {
+    it("should enforce permissions", async () => {
+      const hasPermission = await authService.enforcePermission(
+        testUser.id,
+        "read:own_profile"
+      );
+
+      expect(hasPermission).toBeTruthy();
+    });
+  });
+});
+```
+
+## Conclusion
+
+Building a secure authentication system requires careful attention to security, scalability, and user experience. This guide provides a comprehensive foundation for implementing enterprise-grade authentication in Next.js applications.
+
+## Additional Resources
+
+- [Next.js Authentication Documentation](https://nextjs.org/docs/authentication)
+- [OAuth 2.0 Specification](https://oauth.net/2/)
+- [JWT Best Practices](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-jwt-bcp)
+- [OWASP Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)
