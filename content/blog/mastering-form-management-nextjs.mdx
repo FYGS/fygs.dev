@@ -32,6 +32,20 @@ Let's start by setting up a robust form architecture using React Hook Form, Zod,
 
 ### Base Form Setup
 
+This implementation presents a robust form management system built with React Hook Form and Zod. Key features include:
+
+- Type-safe form validation
+- Efficient form state management
+- Reusable form components
+- Performance optimization strategies
+
+Benefits:
+
+- Reduced boilerplate code
+- Improved type safety
+- Better developer experience
+- Enhanced performance
+
 ```typescript
 // lib/hooks/useForm.ts
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -129,6 +143,20 @@ export function FormField({
 
 ### Advanced Validation Patterns
 
+Form validation is critical for data integrity. This section covers:
+
+- Complex validation rules with Zod
+- Cross-field validation
+- Async validation
+- Custom validation messages
+
+Key concepts:
+
+- Schema-based validation
+- Real-time validation
+- Error handling
+- Validation performance optimization
+
 ```typescript
 // lib/validations/booking.ts
 import { z } from "zod";
@@ -173,6 +201,21 @@ export type BookingFormData = z.infer<typeof bookingFormSchema>;
 ## Advanced Form Patterns <a name="patterns"></a>
 
 ### Multi-step Form Implementation
+
+Multi-step forms require careful state management and user experience considerations:
+
+- State persistence between steps
+- Validation per step
+- Navigation logic
+- Progress tracking
+- Data preservation
+
+Implementation benefits:
+
+- Improved user experience
+- Better error handling
+- Efficient state management
+- Smooth transitions
 
 ```typescript
 // components/multi-step-form/use-multi-step-form.ts
@@ -254,6 +297,20 @@ export function FormStep({
 
 ### Form Performance Patterns
 
+Performance is crucial for complex forms. This section demonstrates:
+
+- Debounced validation
+- Optimized re-renders
+- Field-level updates
+- Memory management
+
+Key optimization techniques:
+
+- Controlled vs Uncontrolled components
+- Form state isolation
+- Efficient validation strategies
+- Memory leak prevention
+
 ```typescript
 // components/optimized-form/use-debounced-validation.ts
 import { useCallback, useEffect } from "react";
@@ -322,6 +379,13 @@ export function AsyncSelect({
 ## Accessibility & UX <a name="accessibility"></a>
 
 ### Accessible Form Components
+
+Accessibility is essential for modern web applications:
+
+- ARIA attributes
+- Keyboard navigation
+- Screen reader support
+- Focus management
 
 ```typescript
 // components/ui/form-control.tsx
