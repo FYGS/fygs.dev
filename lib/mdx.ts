@@ -17,6 +17,7 @@ export interface BlogPost {
   content: ReactNode;
   readingTime: string;
   coverImage: string;
+  draft?: boolean;
 }
 
 const BLOG_DIR = join(process.cwd(), "content/blog");
@@ -47,6 +48,7 @@ export async function getBlogPost(slug: string): Promise<BlogPost> {
     content: mdxContent,
     readingTime: calculateReadingTime(content),
     coverImage: data.coverImage,
+    draft: data.draft || false,
   };
 }
 
@@ -61,9 +63,16 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
       })
   );
 
-  return posts.sort(
+  const sortedPosts = posts.sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
+
+  // En production, on filtre les drafts
+  if (process.env.NODE_ENV === "production") {
+    return sortedPosts.filter((post) => !post.draft);
+  }
+
+  return sortedPosts;
 }
 
 function calculateReadingTime(content: string): string {
