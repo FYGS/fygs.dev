@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { BlogPost } from "@/lib/mdx";
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, Clock, FileEdit } from "lucide-react";
 import Link from "next/link";
 import { CoverImage } from "./cover-image";
 
@@ -23,6 +23,15 @@ export function BlogPostCard({ post }: BlogPostCardProps) {
         
         <div className="p-4 sm:p-5 md:p-6 space-y-4">
           <div className="flex flex-wrap gap-2">
+            {post.draft && (
+              <Badge 
+                variant="destructive"
+                className="text-xs sm:text-sm flex items-center gap-1"
+              >
+                <FileEdit className="h-3 w-3" />
+                Draft
+              </Badge>
+            )}
             {post.categories.map((category) => (
               <Badge 
                 key={category} 

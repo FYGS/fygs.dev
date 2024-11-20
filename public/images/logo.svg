@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="256" fill="#000000"/>
+  
+  <!-- Main Logo Group -->
+  <g transform="translate(76, 156) scale(1.1)">
+    <!-- Backslash -->
+    <path d="M40 80 L100 200" 
+          stroke="#4F46E5" 
+          stroke-width="16" 
+          stroke-linecap="round"
+          fill="none"/>
+    
+    <!-- Underscore -->
+    <rect x="120" y="180" width="60" height="16" rx="8" fill="#4F46E5"/>
+    
+    <!-- Degree Symbol -->
+    <circle cx="220" cy="120" r="20" stroke="#4F46E5" stroke-width="16" fill="none"/>
+    
+    <!-- Less Than -->
+    <path d="M280 160 L320 120 L280 80" 
+          stroke="#4F46E5" 
+          stroke-width="16" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"
+          fill="none"/>
+  </g>
+
+  <!-- Gradient Overlay -->
+  <rect width="512" height="512" fill="url(#gradient)" fill-opacity="0.1"/>
+  
+  <!-- Gradient Definition -->
+  <defs>
+    <linearGradient id="gradient" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#4F46E5"/>
+      <stop offset="100%" stop-color="#818CF8"/>
+    </linearGradient>
+  </defs>
+</svg>

@@ -7,59 +7,21 @@ import { ThemeProvider } from "@/providers/theme-provider";
 import { TransitionProvider } from "@/providers/transition-provider";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
-import type { Metadata } from "next";
 import { Anek_Telugu } from "next/font/google";
 import { Footer } from "./_components/Footer";
 import { Header } from "./_components/Header";
+import { JsonLd } from "./_components/JsonLd";
 import { Spacing } from "./_components/Spacing";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
+import { defaultMetadata } from "./_lib/metadata";
+
 const AnekTelugu = Anek_Telugu({
   subsets: ["latin"],
   variable: "--font-caption",
 });
 
-export const metadata: Metadata = {
-  title:
-    "Fernand SOUALO - Expert Software Engineer | NodeJS, TypeScript, React, NextJS, NestJS, AWS",
-  description:
-    "Fernand SOUALO is a highly skilled Backend Software Engineer based in France, specializing in NodeJS, TypeScript, React, NextJS, NestJS, and AWS serverless services. With extensive experience in building scalable and efficient applications, Fernand delivers top-notch software solutions.",
-  keywords:
-    "Fernand SOUALO, Software Engineer, Backend Developer, NodeJS, TypeScript, React, NextJS, NestJS, AWS, Serverless, France, Scalable Applications, Software Solutions",
-  authors: [{ name: "Fernand SOUALO" }],
-  robots: "index, follow",
-  openGraph: {
-    title:
-      "Fernand SOUALO - Expert Software Engineer | NodeJS, TypeScript, React, NextJS, NestJS, AWS",
-    description:
-      "Fernand SOUALO is a highly skilled Backend Software Engineer based in France, specializing in NodeJS, TypeScript, React, NextJS, NestJS, and AWS serverless services. With extensive experience in building scalable and efficient applications, Fernand delivers top-notch software solutions.",
-    type: "website",
-    url: "https://fygs-dev.vercel.app",
-    siteName: "fygs.dev",
-    images: [
-      {
-        url: "https://media.licdn.com/dms/image/v2/D4E03AQEG-_pYx_Zp9A/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1701116288245?e=1734566400&v=beta&t=Hzfz8Ks5P2UYOjn5CEtnhmTCkElmC6qJEl8_73GF5fI",
-        width: 200,
-        height: 200,
-        alt: "Fernand SOUALO Profile Picture",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary",
-    site: "@fernandsoualo",
-    title:
-      "Fernand SOUALO - Expert Software Engineer | NodeJS, TypeScript, React, NextJS, NestJS, AWS",
-    description:
-      "Fernand SOUALO is a highly skilled Backend Software Engineer based in France, specializing in NodeJS, TypeScript, React, NextJS, NestJS, and AWS serverless services. With extensive experience in building scalable and efficient applications, Fernand delivers top-notch software solutions.",
-    images: [
-      {
-        url: "https://media.licdn.com/dms/image/v2/D4E03AQEG-_pYx_Zp9A/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1701116288245?e=1734566400&v=beta&t=Hzfz8Ks5P2UYOjn5CEtnhmTCkElmC6qJEl8_73GF5fI",
-        alt: "Fernand SOUALO Profile Picture",
-      },
-    ],
-  },
-};
+export const metadata = defaultMetadata;
 
 export default function RootLayout({
   children,
@@ -69,6 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full" suppressHydrationWarning>
       <head>
+        <JsonLd />
         <script
           dangerouslySetInnerHTML={{
             __html: `
