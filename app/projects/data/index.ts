@@ -112,16 +112,12 @@ export const FEATURED_PROJECTS: Project[] = [
     image: "/projects/plura-saas.png",
     detailImages: [
       {
-        url: "/projects/plura-saas/detail-1.png",
-        alt: "Plura SaaS App Homepage",
+        url: "/projects/plura-saas-details.png",
+        alt: "Plura SaaS App Overview",
       },
       {
-        url: "/projects/plura-saas/detail-2.png",
-        alt: "Subscription System",
-      },
-      {
-        url: "/projects/plura-saas/detail-3.png",
-        alt: "Organization and Sub-organization Creation",
+        url: "/projects/plura-saas.png",
+        alt: "Plura SaaS App",
       },
     ],
     technologies: ["Next.js", "TypeScript", "Prisma", "MySQL", "Stripe"],

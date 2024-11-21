@@ -2,6 +2,7 @@ import { Section } from "@/app/_components/Section";
 import { Pagination } from "@/components/ui/pagination";
 import { Search } from "@/components/ui/search";
 import { getAllBlogPosts } from "@/lib/mdx";
+import { generateMetadata } from "../_lib/seo-utils";
 import { BlogPostCard } from "./components/blog-post-card";
 import { CategoryFilter } from "./components/category-filter";
 
@@ -14,6 +15,26 @@ interface Props {
     category?: string;
   };
 }
+
+export const metadata = generateMetadata({
+  title: "Technical Blog - Software Engineering Insights & Best Practices",
+  description: "Explore in-depth articles on software engineering, web development, cloud architecture, and best practices. Learn about React, TypeScript, Node.js, and modern development techniques.",
+  keywords: [
+    "Software Engineering Blog",
+    "Web Development Articles",
+    "Technical Tutorials",
+    "Programming Best Practices",
+    "React Development",
+    "TypeScript Guides",
+    "Cloud Architecture",
+    "Full-Stack Development",
+  ],
+  path: "/blog",
+  type: "website",
+  image: "/api/og/blog",
+});
+
+export const revalidate = 3600; // Revalidate every hour
 
 export default async function BlogPage({ searchParams }: Props) {
   const posts = await getAllBlogPosts();
