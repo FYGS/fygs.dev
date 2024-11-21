@@ -42,6 +42,17 @@ export const metadata: Metadata = {
   title: "Fernand SOUALO - Professional Resume | Senior Software Engineer",
   description:
     "View my professional experience, skills, and achievements. Download my resume to learn more about my expertise in NodeJS, TypeScript, React, and AWS.",
+  openGraph: {
+    title: "Resume | Senior Software Engineer with 5+ Years Experience",
+    description:
+      "Experienced Software Engineer with expertise in TypeScript, Node.js, React, and AWS. View my professional experience, skills, and achievements.",
+    images: [{ url: "/api/og/resume", width: 1200, height: 630 }],
+    type: "profile",
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/api/og/resume"],
+  },
 };
 
 export default function ResumePage() {

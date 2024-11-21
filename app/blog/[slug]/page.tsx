@@ -3,6 +3,11 @@ import { ArticleStats } from "@/app/blog/components/article-stats";
 import { ReadingProgress } from "@/app/blog/components/reading-progress";
 import { SimilarArticles } from "@/app/blog/components/similar-articles";
 import { SocialInteractions } from "@/app/blog/components/social-interactions";
+import { generateArticleMetadata } from "@/app/_lib/seo-utils";
+import {
+  generateArticleJsonLd,
+  generateJsonLdScript,
+} from "@/app/_lib/jsonld-utils";
 import { Badge } from "@/components/ui/badge";
 import { getAllBlogPosts, getBlogPost } from "@/lib/mdx";
 import { getViewCount, incrementViewCount } from "@/lib/reading-stats";
@@ -10,6 +15,7 @@ import { Calendar, Clock } from "lucide-react";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CoverImage } from "../components/cover-image";
+import { SITE_URL } from "@/app/_lib/constants";
 
 interface Props {
   params: {
@@ -27,18 +33,59 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = await getBlogPost(params.slug);
 
-  return {
-    title: `${post.title} - Fernand SOUALO's Blog`,
+  if (!post) {
+    return {};
+  }
+
+  const baseUrl = SITE_URL;
+  const articleUrl = `${baseUrl}/blog/${params.slug}`;
+  const imageUrl = post.coverImage.startsWith("http")
+    ? post.coverImage
+    : `${baseUrl}${post.coverImage}`;
+
+  const metadata = generateArticleMetadata({
+    title: post.title,
     description: post.excerpt,
-    openGraph: {
-      title: post.title,
-      description: post.excerpt,
-      type: "article",
-      authors: [post.author],
-      publishedTime: post.date,
+    image: imageUrl,
+    path: `/blog/${params.slug}`,
+    publishedTime: post.date,
+    modifiedTime: post.lastModified,
+    authors: [{ name: post.author, url: `${baseUrl}/resume` }],
+    tags: post.categories,
+    keywords: [
+      ...post.categories,
+      "Software Development",
+      "Technical Article",
+      "Programming Tutorial",
+      ...post.title.toLowerCase().split(" "),
+    ],
+  });
+
+  // Generate JSON-LD
+  const jsonLd = generateArticleJsonLd({
+    title: post.title,
+    description: post.excerpt,
+    authorName: post.author,
+    authorUrl: `${baseUrl}/resume`,
+    publishedTime: post.date,
+    modifiedTime: post.lastModified,
+    image: imageUrl,
+    url: articleUrl,
+    tags: post.categories,
+  });
+
+  return {
+    ...metadata,
+    alternates: {
+      canonical: articleUrl,
+    },
+    other: {
+      "json-ld": generateJsonLdScript(jsonLd),
     },
   };
 }
+
+export const revalidate = 3600; // Revalidate every hour
 
 export default async function BlogPostPage({ params }: Props) {
   let post;

@@ -11,6 +11,7 @@ export interface BlogPost {
   slug: string;
   title: string;
   date: string;
+  lastModified: string;
   excerpt: string;
   author: string;
   categories: string[];
@@ -22,10 +23,21 @@ export interface BlogPost {
 
 const BLOG_DIR = join(process.cwd(), "content/blog");
 
+async function getFileLastModifiedDate(filePath: string): Promise<string> {
+  try {
+    const stats = await fs.stat(filePath);
+    return stats.mtime.toISOString();
+  } catch (error) {
+    console.error(`Error getting last modified date for ${filePath}:`, error);
+    return new Date().toISOString();
+  }
+}
+
 export async function getBlogPost(slug: string): Promise<BlogPost> {
   const filePath = join(BLOG_DIR, `${slug}.mdx`);
   const fileContent = await fs.readFile(filePath, "utf8");
   const { data, content } = matter(fileContent);
+  const lastModified = await getFileLastModifiedDate(filePath);
 
   const { content: mdxContent } = await compileMDX({
     source: content,
@@ -43,12 +55,13 @@ export async function getBlogPost(slug: string): Promise<BlogPost> {
     title: data.title,
     excerpt: data.excerpt,
     date: data.date,
+    lastModified: data.lastModified ?? lastModified,
     author: data.author,
     categories: data.categories,
     content: mdxContent,
     readingTime: calculateReadingTime(content),
     coverImage: data.coverImage,
-    draft: data.draft || false,
+    draft: data.draft ?? false,
   };
 }
 

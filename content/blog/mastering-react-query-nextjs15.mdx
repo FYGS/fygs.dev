@@ -1,0 +1,437 @@
+---
+title: "Mastering React Query in Next.js 15: Building Data-Driven Applications"
+excerpt: "A comprehensive guide to implementing React Query in Next.js 15, covering server components integration, advanced patterns, and production-ready best practices for building performant data-driven applications."
+date: "2024-11-21"
+lastModified: "2024-11-21"
+author: "Fernand SOUALO"
+categories:
+  ["Next.js", "React Query", "TypeScript", "Performance", "State Management"]
+coverImage: "/blog/react-query-nextjs.jpg"
+draft: true
+---
+
+# Mastering React Query in Next.js 15: The Ultimate Guide
+
+## Table of Contents
+
+1. [Introduction](#introduction)
+2. [Understanding React Query Fundamentals](#understanding-react-query-fundamentals)
+   - [Installation and Dependencies](#installation-and-dependencies)
+   - [Basic Setup in Next.js 15](#basic-setup-in-next.js-15)
+   - [Query Patterns and Best Practices](#query-patterns-and-best-practices)
+3. [Server-Side Integration with Next.js 15](#server-side-integration-with-next.js-15)
+   - [Hydration Strategies](#hydration-strategies)
+   - [Optimizing Server Components](#optimizing-server-components)
+4. [Testing & Best Practices](#testing--best-practices)
+   - [Comprehensive Testing Setup](#comprehensive-testing-setup)
+   - [Error Boundary Integration](#error-boundary-integration)
+5. [Real-World Implementation](#real-world-implementation)
+   - [Let's Build a Complete User Management System](#lets-build-a-complete-user-management-system)
+6. [Optimizing Performance](#optimizing-performance)
+   - [Optimistic Updates](#optimistic-updates)
+   - [Selective Updates](#selective-updates)
+7. [Conclusion](#conclusion)
+
+## Introduction
+
+React Query (now TanStack Query) has revolutionized data management in React applications by providing a powerful and intuitive solution for server state management. When combined with Next.js 15's server components and enhanced data fetching capabilities, it creates an unparalleled developer experience for building modern web applications.
+
+In this comprehensive guide, we'll explore:
+
+- Setting up React Query with Next.js 15 server components
+- Understanding core concepts and best practices
+- Implementing advanced patterns for real-world scenarios
+- Optimizing performance and user experience
+- Testing and maintaining React Query applications
+
+Let's dive in and master React Query in Next.js 15!
+
+## Understanding React Query Fundamentals
+
+Before we dive into advanced patterns, let's establish a solid foundation with React Query's core concepts and how they integrate with Next.js 15.
+
+### Installation and Dependencies
+
+First, install the required packages:
+
+```bash
+npm install @tanstack/react-query@latest @tanstack/react-query-devtools@latest
+```
+
+### Basic Setup in Next.js 15
+
+Create a provider component to wrap your application:
+
+```tsx
+// app/providers/react-query-provider.tsx
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { useState } from "react";
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 60 * 1000, // 1 minute
+            gcTime: 5 * 60 * 1000, // 5 minutes
+            retry: 1,
+            refetchOnWindowFocus: false,
+          },
+        },
+      })
+  );
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      {children}
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
+  );
+}
+```
+
+### Query Patterns and Best Practices
+
+Let's explore some common query patterns and best practices:
+
+```tsx
+// hooks/queries/useTypedQuery.ts
+import { useQuery, UseQueryOptions } from "@tanstack/react-query";
+import { AxiosError } from "axios";
+
+// Type-safe query hook
+export function useTypedQuery<TData, TError = AxiosError>(
+  key: readonly unknown[],
+  queryFn: () => Promise<TData>,
+  options?: Omit<UseQueryOptions<TData, TError, TData>, "queryKey" | "queryFn">
+) {
+  return useQuery({
+    queryKey: key,
+    queryFn,
+    ...options,
+  });
+}
+
+// Usage example
+export function useUser(userId: string) {
+  return useTypedQuery(["user", userId], () => api.users.getUser(userId), {
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    enabled: !!userId,
+  });
+}
+```
+
+## Server-Side Integration with Next.js 15
+
+### Hydration Strategies
+
+Next.js 15 introduces new patterns for server-side data fetching. Here's how to effectively combine it with React Query:
+
+```tsx
+// app/(dashboard)/users/page.tsx
+import { Hydrate, dehydrate } from "@tanstack/react-query";
+import { getQueryClient } from "@/lib/get-query-client";
+
+export default async function UsersPage() {
+  const queryClient = getQueryClient();
+
+  // Prefetch data on the server
+  await queryClient.prefetchQuery({
+    queryKey: ["users"],
+    queryFn: () => fetchUsers(),
+  });
+
+  const dehydratedState = dehydrate(queryClient);
+
+  return (
+    <Hydrate state={dehydratedState}>
+      <UsersContent />
+    </Hydrate>
+  );
+}
+```
+
+### Optimizing Server Components
+
+```tsx
+// lib/get-query-client.ts
+import { QueryClient } from "@tanstack/react-query";
+import { cache } from "react";
+
+export const getQueryClient = cache(
+  () =>
+    new QueryClient({
+      defaultOptions: {
+        queries: {
+          staleTime: 60 * 1000,
+          gcTime: 5 * 60 * 1000,
+        },
+      },
+    })
+);
+```
+
+## Testing & Best Practices
+
+### Comprehensive Testing Setup
+
+```tsx
+// test/utils/test-utils.tsx
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render } from "@testing-library/react";
+import { ReactElement } from "react";
+
+export function renderWithClient(ui: ReactElement) {
+  const testClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        cacheTime: Infinity,
+      },
+    },
+    logger: {
+      log: console.log,
+      warn: console.warn,
+      error: () => {},
+    },
+  });
+
+  return {
+    ...render(
+      <QueryClientProvider client={testClient}>{ui}</QueryClientProvider>
+    ),
+    testClient,
+  };
+}
+```
+
+### Error Boundary Integration
+
+```tsx
+// components/query-error-boundary.tsx
+import { QueryErrorResetBoundary } from "@tanstack/react-query";
+import { ErrorBoundary } from "react-error-boundary";
+
+export function QueryErrorBoundary({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <QueryErrorResetBoundary>
+      {({ reset }) => (
+        <ErrorBoundary
+          onReset={reset}
+          fallbackRender={({ resetErrorBoundary }) => (
+            <div>
+              <h2>Something went wrong!</h2>
+              <button onClick={resetErrorBoundary}>Try again</button>
+            </div>
+          )}
+        >
+          {children}
+        </ErrorBoundary>
+      )}
+    </QueryErrorResetBoundary>
+  );
+}
+```
+
+## Real-World Implementation
+
+### Let's Build a Complete User Management System
+
+```tsx
+// features/users/types.ts
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: "admin" | "user";
+  status: "active" | "inactive";
+}
+
+// features/users/api.ts
+import axios from "axios";
+
+const api = axios.create({
+  baseURL: "/api",
+});
+
+export const usersApi = {
+  getUsers: async (params?: {
+    search?: string;
+    status?: User["status"];
+    role?: User["role"];
+  }) => {
+    const { data } = await api.get("/users", { params });
+    return data;
+  },
+
+  getUser: async (id: string) => {
+    const { data } = await api.get(`/users/${id}`);
+    return data;
+  },
+
+  createUser: async (userData: Omit<User, "id">) => {
+    const { data } = await api.post("/users", userData);
+    return data;
+  },
+
+  updateUser: async (id: string, userData: Partial<User>) => {
+    const { data } = await api.patch(`/users/${id}`, userData);
+    return data;
+  },
+
+  deleteUser: async (id: string) => {
+    await api.delete(`/users/${id}`);
+  },
+};
+
+// features/users/hooks/useUsers.ts
+import { useQuery } from "@tanstack/react-query";
+import { usersApi } from "../api";
+
+export function useUsers(params?: Parameters<typeof usersApi.getUsers>[0]) {
+  return useQuery({
+    queryKey: ["users", params],
+    queryFn: () => usersApi.getUsers(params),
+  });
+}
+
+// features/users/components/UsersList.tsx
+("use client");
+
+import { useUsers } from "../hooks/useUsers";
+import { UserCard } from "./UserCard";
+
+export function UsersList() {
+  const { data: users, isLoading, error } = useUsers();
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {users?.map((user) => (
+        <UserCard key={user.id} user={user} />
+      ))}
+    </div>
+  );
+}
+
+// features/users/components/UserForm.tsx
+("use client");
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useCreateUser } from "../hooks/useCreateUser";
+
+const userSchema = z.object({
+  name: z.string().min(2),
+  email: z.string().email(),
+  role: z.enum(["admin", "user"]),
+  status: z.enum(["active", "inactive"]),
+});
+
+export function UserForm() {
+  const { mutate, isLoading } = useCreateUser();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(userSchema),
+  });
+
+  const onSubmit = handleSubmit((data) => {
+    mutate(data);
+  });
+
+  return (
+    <form onSubmit={onSubmit} className="space-y-4">
+      {/* Form fields */}
+    </form>
+  );
+}
+```
+
+## Optimizing Performance
+
+### Optimistic Updates
+
+```tsx
+// hooks/useCreateUser.ts
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+export function useCreateUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (userData: CreateUserData) => {
+      const { data } = await axios.post("/api/users", userData);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+    onMutate: async (newUserData) => {
+      await queryClient.cancelQueries({ queryKey: ["users"] });
+      const previousUsers = queryClient.getQueryData(["users"]);
+      queryClient.setQueryData(["users"], (old: User[] | undefined) => [
+        { id: Date.now(), ...newUserData },
+        ...(old || []),
+      ]);
+      return { previousUsers };
+    },
+    onError: (_, __, context) => {
+      queryClient.setQueryData(["users"], context?.previousUsers);
+    },
+  });
+}
+```
+
+### Selective Updates
+
+```tsx
+// hooks/useUpdateUser.ts
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+export function useUpdateUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user", userId] });
+    },
+    onMutate: async (newUser) => {
+      await queryClient.cancelQueries({ queryKey: ["user", userId] });
+      const previousUser = queryClient.getQueryData(["user", userId]);
+      queryClient.setQueryData(["user", userId], newUser);
+      return { previousUser };
+    },
+    onError: (_, __, context) => {
+      queryClient.setQueryData(["user", userId], context?.previousUser);
+    },
+  });
+}
+```
+
+## Conclusion
+
+React Query, combined with Next.js 15, provides a robust foundation for building data-driven applications. We've covered everything from basic setup to advanced patterns and real-world implementations. The key takeaways are:
+
+1. **Proper Setup**: Configure React Query with appropriate defaults for your use case
+2. **Server Integration**: Leverage Next.js 15's server components and actions
+3. **Advanced Patterns**: Use infinite queries and parallel queries when needed
+4. **Performance**: Implement optimistic updates and selective updates
+5. **Testing**: Maintain comprehensive test coverage
+6. **Best Practices**: Follow consistent patterns for query keys and error handling
+
+Remember that React Query is not just a data fetching library – it's a complete state management solution for server state. When used correctly with Next.js 15, it can significantly reduce the complexity of your application while improving user experience through efficient data synchronization and caching.
+
+For your next project, consider starting with this foundation and adapting it to your specific needs. The patterns and practices shown here are battle-tested and ready for production use.

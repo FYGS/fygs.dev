@@ -1,12 +1,13 @@
 import { Metadata } from "next";
+import { SITE_BASE_URL, SITE_URL } from "./constants";
 
 const defaultTitle =
   "Fernand SOUALO - Expert Software Engineer | Full-Stack Development";
 const defaultDescription =
-  "Experienced Software Engineer specializing in building modern, scalable web applications with TypeScript, React, Node.js, and cloud technologies. Explore my portfolio and technical insights.";
+  "Experienced Software Engineer specializing in building modern, scalable web applications with TypeScript, Node.js, Next.js, React, and cloud technologies. Explore my portfolio and technical insights.";
 
 export const defaultMetadata: Metadata = {
-  metadataBase: new URL("https://fygs-dev.vercel.app"),
+  metadataBase: SITE_BASE_URL,
   title: {
     default: defaultTitle,
     template: "%s | Fernand SOUALO",
@@ -17,16 +18,16 @@ export const defaultMetadata: Metadata = {
     "Software Engineer",
     "Full-Stack Developer",
     "TypeScript",
-    "React",
     "Node.js",
     "Next.js",
+    "React",
     "AWS",
     "Cloud Architecture",
     "Web Development",
     "Technical Blog",
     "Software Architecture",
   ],
-  authors: [{ name: "Fernand SOUALO", url: "https://fygs-dev.vercel.app" }],
+  authors: [{ name: "Fernand SOUALO", url: SITE_URL }],
   creator: "Fernand SOUALO",
   publisher: "Fernand SOUALO",
   robots: {
@@ -43,7 +44,7 @@ export const defaultMetadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://fygs-dev.vercel.app",
+    url: SITE_URL,
     siteName: "Fernand SOUALO",
     title: defaultTitle,
     description: defaultDescription,
@@ -62,7 +63,7 @@ export const defaultMetadata: Metadata = {
     description: defaultDescription,
     images: ["/images/og-image.png"],
     creator: "Fernand SOUALO",
-    site: "https://fygs-dev.vercel.app",
+    site: SITE_URL,
   },
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
@@ -73,10 +74,10 @@ export const defaultMetadata: Metadata = {
     },
   },
   alternates: {
-    canonical: "https://fygs-dev.vercel.app",
+    canonical: SITE_URL,
     languages: {
-      "en-US": "https://fygs-dev.vercel.app",
-      "fr-FR": "https://fygs-dev.vercel.app/fr",
+      "en-US": SITE_URL,
+      "fr-FR": `${SITE_URL}/fr`,
     },
   },
   manifest: "/site.webmanifest",

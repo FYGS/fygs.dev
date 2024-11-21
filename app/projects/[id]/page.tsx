@@ -12,6 +12,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProjectStats } from "../components/project-stats";
 import { FEATURED_PROJECTS } from "../data";
+import { SITE_URL } from "@/app/_lib/constants";
 
 interface Props {
   params: {
@@ -25,12 +26,42 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!project) {
     return {
       title: "Project Not Found",
+      description: "The requested project could not be found.",
     };
   }
 
+  const { title, description, technologies } = project;
+
   return {
-    title: `${project.title} - Fernand SOUALO's Projects`,
-    description: project.description,
+    title: `${title} - Project Details | Fernand SOUALO`,
+    description,
+    keywords: [
+      "Software Project",
+      "Web Development",
+      "Portfolio",
+      ...technologies,
+    ],
+    openGraph: {
+      title: `${title} - Full Project Details`,
+      description,
+      type: "article",
+      url: `${SITE_URL}/projects/${params.id}`,
+      images: [
+        {
+          url: `/api/og/project/${params.id}`,
+          width: 1200,
+          height: 630,
+          alt: `${title} Project Details`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} - Project Details`,
+      description,
+      images: [`/api/og/project/${params.id}`],
+      creator: "@FernandSOUALO",
+    },
   };
 }
 
