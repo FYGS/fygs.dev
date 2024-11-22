@@ -1,12 +1,12 @@
-# https://fygs-dev.vercel.app/robots.txt
+# https://www.fygs.dev/robots.txt
 User-agent: *
 Allow: /
 
 # Sitemaps
-Sitemap: https://fygs-dev.vercel.app/sitemap.xml
+Sitemap: https://www.fygs.dev/sitemap.xml
 
 # Host
-Host: https://fygs-dev.vercel.app
+Host: https://www.fygs.dev
 
 # Crawl-delay
 Crawl-delay: 10

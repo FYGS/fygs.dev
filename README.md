@@ -13,13 +13,13 @@
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 
   <h3>
-    <a href="https://fygs-dev.vercel.app">Website</a>
+    <a href="https://www.fygs.dev">Website</a>
     <span> · </span>
-    <a href="https://fygs-dev.vercel.app/blog">Blog</a>
+    <a href="https://www.fygs.dev/blog">Blog</a>
     <span> · </span>
-    <a href="https://fygs-dev.vercel.app/projects">Projects</a>
+    <a href="https://www.fygs.dev/projects">Projects</a>
     <span> · </span>
-    <a href="https://fygs-dev.vercel.app/resume">Contact</a>
+    <a href="https://www.fygs.dev/resume">Contact</a>
   </h3>
 
   <img src="public/images/og-image.png" alt="FYGS.dev Banner" width="100%"/>
