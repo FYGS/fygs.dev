@@ -6,7 +6,7 @@ export function JsonLd() {
     jobTitle: "Software Engineer",
     description:
       "Expert Software Engineer specializing in full-stack development with TypeScript, NestJS, Node.js, Next.js, React, and cloud technologies.",
-    url: "https://fygs-dev.vercel.app",
+    url: "https://www.fygs.dev",
     sameAs: [
       "https://github.com/fygs",
       "https://www.linkedin.com/in/fernandsoualo/",
