@@ -21,6 +21,17 @@ export interface BlogPost {
   draft?: boolean;
 }
 
+export interface BlogPostMeta {
+  slug: string;
+  title: string;
+  date: string;
+  excerpt: string;
+  author: string;
+  categories: string[];
+  coverImage: string;
+  draft?: boolean;
+}
+
 const BLOG_DIR = join(process.cwd(), "content/blog");
 
 async function getFileLastModifiedDate(filePath: string): Promise<string> {
@@ -63,6 +74,41 @@ export async function getBlogPost(slug: string): Promise<BlogPost> {
     coverImage: data.coverImage,
     draft: data.draft ?? false,
   };
+}
+
+export async function getBlogPostsMeta(): Promise<BlogPostMeta[]> {
+  const files = await fs.readdir(BLOG_DIR);
+  const posts = await Promise.all(
+    files
+      .filter((file) => file.endsWith(".mdx"))
+      .map(async (file) => {
+        const slug = file.replace(/\.mdx$/, "");
+        const filePath = join(BLOG_DIR, file);
+        const fileContent = await fs.readFile(filePath, "utf8");
+        const { data } = matter(fileContent);
+
+        return {
+          slug,
+          title: data.title,
+          date: data.date,
+          excerpt: data.excerpt,
+          author: data.author,
+          categories: data.categories || [],
+          coverImage: data.coverImage,
+          draft: data.draft,
+        };
+      })
+  );
+
+  const sortedPosts = posts.sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
+  if (process.env.NODE_ENV === "production") {
+    return sortedPosts.filter((post) => !post.draft);
+  }
+
+  return sortedPosts;
 }
 
 export async function getAllBlogPosts(): Promise<BlogPost[]> {

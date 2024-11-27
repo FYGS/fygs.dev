@@ -1,7 +1,7 @@
 import { Section } from "@/app/_components/Section";
 import { Pagination } from "@/components/ui/pagination";
 import { Search } from "@/components/ui/search";
-import { getAllBlogPosts } from "@/lib/mdx";
+import { getBlogPostsMeta } from "@/lib/mdx";
 import { generateMetadata } from "../_lib/seo-utils";
 import { BlogPostCard } from "./components/blog-post-card";
 import { CategoryFilter } from "./components/category-filter";
@@ -13,12 +13,14 @@ interface Props {
     q?: string;
     page?: string;
     category?: string;
+    size?: string;
   };
 }
 
 export const metadata = generateMetadata({
   title: "Technical Blog - Software Engineering Insights & Best Practices",
-  description: "Explore in-depth articles on software engineering, web development, cloud architecture, and best practices. Learn about React, TypeScript, Node.js, and modern development techniques.",
+  description:
+    "Explore in-depth articles on software engineering, web development, cloud architecture, and best practices. Learn about React, TypeScript, Node.js, and modern development techniques.",
   keywords: [
     "Software Engineering Blog",
     "Web Development Articles",
@@ -37,10 +39,11 @@ export const metadata = generateMetadata({
 export const revalidate = 3600; // Revalidate every hour
 
 export default async function BlogPage({ searchParams }: Props) {
-  const posts = await getAllBlogPosts();
+  const posts = await getBlogPostsMeta();
   const searchTerm = searchParams.q?.toLowerCase() || "";
   const currentPage = Number(searchParams.page) || 1;
   const selectedCategory = searchParams.category;
+  const pageSize = Number(searchParams.size) || POSTS_PER_PAGE;
 
   // Get all unique categories
   const categories = Array.from(
@@ -51,13 +54,10 @@ export default async function BlogPage({ searchParams }: Props) {
   let filteredPosts = posts;
 
   if (searchTerm) {
-    filteredPosts = filteredPosts.filter(
+    filteredPosts = posts.filter(
       (post) =>
         post.title.toLowerCase().includes(searchTerm) ||
-        post.excerpt.toLowerCase().includes(searchTerm) ||
-        post.categories.some((category) =>
-          category.toLowerCase().includes(searchTerm)
-        )
+        post.excerpt.toLowerCase().includes(searchTerm)
     );
   }
 
@@ -67,48 +67,56 @@ export default async function BlogPage({ searchParams }: Props) {
     );
   }
 
-  return (
-    <Section className="space-y-8">
-      <div className="space-y-4">
-        <h1 className="text-4xl font-bold">Technical Blog</h1>
-        <p className="text-muted-foreground max-w-2xl">
-          Sharing insights and experiences from my journey in software
-          engineering, with a focus on practical solutions and best practices.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <Search className="flex-1" />
-          <CategoryFilter categories={categories} selected={selectedCategory} />
-        </div>
-      </div>
+  // Pagination
+  const totalPosts = filteredPosts.length;
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedPosts = filteredPosts.slice(startIndex, endIndex);
 
-      {filteredPosts.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">
-            No articles found {searchTerm && `for "${searchTerm}"`}
+  return (
+    <Section>
+      <div className="space-y-8">
+        <div className="space-y-4">
+          <h1 className="text-4xl font-bold" id="blog-title">
+            Technical Blog
+          </h1>
+          <p className="text-muted-foreground max-w-2xl">
+            Expert software engineering articles covering modern web
+            development, cloud architecture, and best practices. Written by a
+            seasoned Full-Stack Developer with real-world experience.
           </p>
         </div>
-      ) : (
-        <>
-          <div className="space-y-6">
-            {filteredPosts
-              .slice(
-                (currentPage - 1) * POSTS_PER_PAGE,
-                currentPage * POSTS_PER_PAGE
-              )
-              .map((post) => (
-                <BlogPostCard key={post.slug} post={post} />
-              ))}
-          </div>
 
-          {filteredPosts.length > POSTS_PER_PAGE && (
-            <Pagination
-              totalItems={filteredPosts.length}
-              pageSize={POSTS_PER_PAGE}
-              baseUrl="/blog"
-            />
-          )}
-        </>
-      )}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <Search />
+          <CategoryFilter categories={categories} />
+        </div>
+
+        <div
+          className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3"
+          role="feed"
+          aria-busy={false}
+        >
+          {paginatedPosts.map((post) => (
+            <BlogPostCard key={post.slug} post={post} />
+          ))}
+        </div>
+
+        {filteredPosts.length > 0 && (
+          <Pagination
+            totalItems={totalPosts}
+            pageSize={pageSize}
+            baseUrl="/blog"
+            searchParams={searchParams}
+          />
+        )}
+
+        {filteredPosts.length === 0 && (
+          <p className="text-center text-muted-foreground" role="alert">
+            No blog posts found {searchTerm && `for "${searchTerm}"`}
+          </p>
+        )}
+      </div>
     </Section>
   );
 }
