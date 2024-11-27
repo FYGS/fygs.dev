@@ -1,12 +1,12 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { BlogPost } from "@/lib/mdx";
-import { Calendar, Clock, FileEdit } from "lucide-react";
+import { BlogPostMeta } from "@/lib/mdx";
+import { Calendar, FileEdit } from "lucide-react";
 import Link from "next/link";
 import { CoverImage } from "./cover-image";
 
 interface BlogPostCardProps {
-  post: BlogPost;
+  post: BlogPostMeta;
 }
 
 export function BlogPostCard({ post }: BlogPostCardProps) {
@@ -20,11 +20,11 @@ export function BlogPostCard({ post }: BlogPostCardProps) {
             sizes="(max-width: 640px) 100vw, (max-width: 768px) 90vw, (max-width: 1024px) 45vw, 400px"
           />
         </div>
-        
+
         <div className="p-4 sm:p-5 md:p-6 space-y-4">
           <div className="flex flex-wrap gap-2">
             {post.draft && (
-              <Badge 
+              <Badge
                 variant="destructive"
                 className="text-xs sm:text-sm flex items-center gap-1"
               >
@@ -33,8 +33,8 @@ export function BlogPostCard({ post }: BlogPostCardProps) {
               </Badge>
             )}
             {post.categories.map((category) => (
-              <Badge 
-                key={category} 
+              <Badge
+                key={category}
                 variant="secondary"
                 className="text-xs sm:text-sm"
               >
@@ -52,20 +52,16 @@ export function BlogPostCard({ post }: BlogPostCardProps) {
             </p>
           </div>
 
-          <div className="flex items-center gap-4 text-xs sm:text-sm text-muted-foreground">
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
-              <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+              <Calendar className="h-4 w-4" />
               <time dateTime={post.date}>
                 {new Date(post.date).toLocaleDateString("en-US", {
                   year: "numeric",
-                  month: "short",
+                  month: "long",
                   day: "numeric",
                 })}
               </time>
-            </div>
-            <div className="flex items-center gap-1">
-              <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
-              {post.readingTime}
             </div>
           </div>
         </div>
