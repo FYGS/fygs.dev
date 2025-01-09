@@ -768,5 +768,5 @@ export const generatePDF = () => {
   generateDocument();
   return doc;
 };
-
 export default generatePDF;
+
