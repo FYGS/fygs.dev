@@ -53,7 +53,7 @@ export const Hero = () => {
           >
             <Code className="inline-flex items-center gap-1">
               <Image
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/Flag_of_France_%281794%E2%80%931815%2C_1830%E2%80%931974%2C_2020%E2%80%93present%29.svg/110px-Flag_of_France_%281794%E2%80%931815%2C_1830%E2%80%931974%2C_2020%E2%80%93present%29.svg.png"
+                src="/drapeau-france.webp"
                 alt="France"
                 width={16}
                 height={16}
@@ -67,7 +67,7 @@ export const Hero = () => {
       </div>
       <div className="flex-1 flex justify-center md:justify-end">
         <Image
-          src="https://media.licdn.com/dms/image/v2/D4E03AQEG-_pYx_Zp9A/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1701116288245?e=1734566400&v=beta&t=Hzfz8Ks5P2UYOjn5CEtnhmTCkElmC6qJEl8_73GF5fI"
+          src="/linkedin_profile_photo.jpeg"
           alt="Fernand Soualo"
           width={200}
           height={200}

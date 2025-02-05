@@ -89,7 +89,7 @@ export const Header = () => {
               ))}
 
               <div className="flex items-center gap-2 ml-2 border-l pl-4 border-border">
-                <ThemeToggle />
+                {/* <ThemeToggle /> */}
                 {SOCIAL_LINKS.map(({ href, icon: Icon, label }) => (
                   <Link
                     key={href}

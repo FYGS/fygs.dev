@@ -1,0 +1,485 @@
+---
+title: "10 Tips to Boost Your NestJS API Performance"
+excerpt: "A comprehensive guide to optimizing your NestJS API performance, covering caching, database queries, lazy loading, and more."
+date: "2025-02-05"
+author: "Fernand SOUALO"
+categories: ["NestJS", "Performance", "API", "Backend", "Optimization"]
+coverImage: "/blog/10-tips-nestjs-performance.png"
+---
+
+# 10 Tips to Boost Your NestJS API Performance
+
+In modern web development, performance is crucial for delivering an optimal user experience. NestJS, a powerful and flexible Node.js framework, offers numerous possibilities for creating high-performance APIs. Here are 10 proven tips to maximize your NestJS API performance.
+
+## Table of Contents
+
+1. [Smart Caching](#smart-caching)
+2. [Query Optimization](#query-optimization)
+3. [Lazy Loading](#lazy-loading)
+4. [Compression](#compression)
+5. [Load Balancing](#load-balancing)
+6. [Asynchronous Code](#async-code)
+7. [Data Streaming](#streaming)
+8. [Message Brokers](#message-brokers)
+9. [Middleware Optimization](#middlewares)
+10. [Performance Monitoring](#monitoring)
+
+## 1. Smart Caching <a name="smart-caching"></a>
+
+Caching is a powerful technique to improve performance by reducing the number of database queries. NestJS integrates seamlessly with Redis.
+
+```typescript
+// Installation
+// npm install @nestjs/cache-manager cache-manager redis
+
+// app.module.ts
+import { CacheModule } from '@nestjs/cache-manager';
+import * as redisStore from 'cache-manager-redis-store';
+
+@Module({
+  imports: [
+    CacheModule.register({
+      store: redisStore,
+      host: 'localhost',
+      port: 6379,
+      ttl: 60 * 60, // 1 hour
+    }),
+  ],
+})
+export class AppModule {}
+
+// users.controller.ts
+@Controller('users')
+@UseInterceptors(CacheInterceptor)
+export class UsersController {
+  @Get()
+  @CacheTTL(30) // 30 seconds for this route
+  async findAll() {
+    return this.usersService.findAll();
+  }
+}
+```
+
+## 2. Query Optimization <a name="query-optimization"></a>
+
+Optimized queries are essential for good performance.
+
+```typescript
+// entity/user.entity.ts
+@Entity()
+export class User {
+  @Index(['email', 'status'])
+  @Column()
+  email: string;
+
+  @Column()
+  status: string;
+}
+
+// users.service.ts
+@Injectable()
+export class UsersService {
+  async findUsers(page = 1, limit = 10) {
+    const [users, total] = await this.userRepository
+      .createQueryBuilder('user')
+      .select(['user.id', 'user.email', 'user.status'])
+      .where('user.status = :status', { status: 'active' })
+      .take(limit)
+      .skip((page - 1) * limit)
+      .getManyAndCount();
+
+    return {
+      data: users,
+      meta: {
+        total,
+        page,
+        lastPage: Math.ceil(total / limit),
+      }
+    };
+  }
+}
+```
+
+## 3. Lazy Loading <a name="lazy-loading"></a>
+
+```typescript
+// app.module.ts
+@Module({
+  imports: [
+    RouterModule.register([
+      {
+        path: 'users',
+        module: UsersModule,
+        children: [
+          {
+            path: 'profile',
+            module: UserProfileModule,
+          },
+        ],
+      },
+    ]),
+  ],
+})
+export class AppModule {}
+```
+
+## 4. Compression <a name="compression"></a>
+
+```typescript
+// main.ts
+import * as compression from 'compression';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  app.use(compression({
+    filter: shouldCompress,
+    threshold: 0,
+    level: 6,
+  }));
+
+  await app.listen(3000);
+}
+
+function shouldCompress(req, res) {
+  if (req.headers['x-no-compression']) {
+    return false;
+  }
+  return compression.filter(req, res);
+}
+
+bootstrap();
+```
+
+## 5. Load Balancing <a name="load-balancing"></a>
+
+The load balancing is crucial for the scalability of your API. Here is a robust configuration with Nginx and Docker.
+
+```nginx
+# nginx.conf
+http {
+  upstream nestjs_cluster {
+    least_conn; # Load distribution algorithm
+    server app1:3000;
+    server app2:3000;
+    server app3:3000;
+    keepalive 32; # Persistent connections
+  }
+
+  server {
+    listen 80;
+    server_name api.example.com;
+
+    location / {
+      proxy_pass http://nestjs_cluster;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection 'upgrade';
+      proxy_set_header Host $host;
+      proxy_cache_bypass $http_upgrade;
+      proxy_set_header X-Real-IP $remote_addr;
+
+      # Configuration of timeouts
+      proxy_connect_timeout 60s;
+      proxy_send_timeout 60s;
+      proxy_read_timeout 60s;
+    }
+  }
+}
+```
+
+```yaml
+# docker-compose.yml
+version: '3.8'
+
+services:
+  app1:
+    build: .
+    environment:
+      - NODE_ENV=production
+      - INSTANCE_ID=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  app2:
+    build: .
+    environment:
+      - NODE_ENV=production
+      - INSTANCE_ID=2
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80"
+    depends_on:
+      - app1
+      - app2
+```
+
+## 6. Asynchronous Code <a name="async-code"></a>
+
+Optimizing asynchronous code is essential for the performance of your API.
+
+```typescript
+// services/dashboard.service.ts
+@Injectable()
+export class DashboardService {
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly ordersService: OrdersService,
+    private readonly analyticsService: AnalyticsService,
+  ) {}
+
+  async getDashboardData(userId: string) {
+    // Parallel execution of independent queries
+    const [
+      userDetails,
+      recentOrders,
+      analytics
+    ] = await Promise.all([
+      this.usersService.findById(userId),
+      this.ordersService.getRecentOrders(userId),
+      this.analyticsService.getUserMetrics(userId),
+    ]);
+
+    // Conditional processing based on results
+    const enrichedOrders = await this.enrichOrdersData(recentOrders);
+
+    return {
+      user: userDetails,
+      orders: enrichedOrders,
+      metrics: analytics,
+    };
+  }
+
+  private async enrichOrdersData(orders: Order[]) {
+    return Promise.all(
+      orders.map(async (order) => ({
+        ...order,
+        extendedInfo: await this.ordersService.getOrderDetails(order.id),
+      }))
+    );
+  }
+}
+```
+
+## 7. Data Streaming <a name="streaming"></a>
+
+Streaming is ideal for efficiently handling large data sets.
+
+```typescript
+// controllers/export.controller.ts
+@Controller('export')
+export class ExportController {
+  @Get('users')
+  async exportUsers(@Res() response: Response) {
+    response.setHeader('Content-Type', 'application/json');
+    response.setHeader('Transfer-Encoding', 'chunked');
+
+    const stream = this.userRepository.createQueryBuilder('user')
+      .stream();
+
+    response.write('[\n');
+    let isFirst = true;
+
+    return new Promise((resolve, reject) => {
+      stream.on('data', (user) => {
+        if (!isFirst) {
+          response.write(',\n');
+        }
+        isFirst = false;
+        response.write(JSON.stringify(user));
+      });
+
+      stream.on('end', () => {
+        response.write('\n]');
+        response.end();
+        resolve(true);
+      });
+
+      stream.on('error', (error) => {
+        reject(error);
+      });
+    });
+  }
+}
+```
+
+## 8. Message Brokers <a name="message-brokers"></a>
+
+Using message brokers allows you to efficiently handle asynchronous tasks.
+
+```typescript
+// config/rabbitmq.config.ts
+import { ClientsModuleOptions, Transport } from '@nestjs/microservices';
+
+export const rabbitmqConfig: ClientsModuleOptions = [
+  {
+    name: 'TASK_SERVICE',
+    transport: Transport.RMQ,
+    options: {
+      urls: [process.env.RABBITMQ_URL],
+      queue: 'tasks_queue',
+      queueOptions: {
+        durable: true,
+        deadLetterExchange: 'tasks.dlx',
+        deadLetterRoutingKey: 'tasks.dlq',
+      },
+      prefetchCount: 1,
+      noAck: false,
+    },
+  },
+];
+
+// services/task.service.ts
+@Injectable()
+export class TaskService {
+  constructor(
+    @Inject('TASK_SERVICE') private readonly client: ClientProxy,
+  ) {}
+
+  async processLongRunningTask(data: any) {
+    return this.client.emit('process_task', {
+      id: uuid(),
+      data,
+      timestamp: new Date(),
+    });
+  }
+}
+```
+
+## 9. Middleware Optimization <a name="middlewares"></a>
+
+```typescript
+// middlewares/combined.middleware.ts
+@Injectable()
+export class CombinedMiddleware implements NestMiddleware {
+  constructor(
+    private readonly logger: Logger,
+    private readonly configService: ConfigService,
+  ) {}
+
+  async use(req: Request, res: Response, next: NextFunction) {
+    const startTime = Date.now();
+    const requestId = uuid();
+
+    // Combine multiple middleware functionalities
+    this.addRequestContext(req, requestId);
+    await this.validateRequest(req);
+    this.setupResponseHeaders(res);
+
+    res.on('finish', () => {
+      const duration = Date.now() - startTime;
+      this.logRequest(req, res, duration, requestId);
+    });
+
+    next();
+  }
+
+  private addRequestContext(req: Request, requestId: string) {
+    req['context'] = {
+      requestId,
+      timestamp: new Date(),
+      correlationId: req.headers['x-correlation-id'] || requestId,
+    };
+  }
+
+  private async validateRequest(req: Request) {
+    // Validation logic here
+  }
+
+  private setupResponseHeaders(res: Response) {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+  }
+
+  private logRequest(req: Request, res: Response, duration: number, requestId: string) {
+    this.logger.log({
+      requestId,
+      method: req.method,
+      url: req.url,
+      statusCode: res.statusCode,
+      duration,
+      userAgent: req.headers['user-agent'],
+    });
+  }
+}
+```
+
+## 10. Performance Monitoring <a name="monitoring"></a>
+
+```typescript
+// monitoring/metrics.service.ts
+import { PrometheusHistogram } from 'prom-client';
+
+@Injectable()
+export class MetricsService {
+  private readonly httpRequestDuration: PrometheusHistogram;
+
+  constructor() {
+    this.httpRequestDuration = new PrometheusHistogram({
+      name: 'http_request_duration_seconds',
+      help: 'Duration of HTTP requests in seconds',
+      labelNames: ['method', 'route', 'status_code'],
+      buckets: [0.1, 0.3, 0.5, 0.7, 1, 3, 5, 7, 10],
+    });
+  }
+
+  recordHttpRequest(method: string, route: string, statusCode: number, duration: number) {
+    this.httpRequestDuration.labels(method, route, statusCode.toString())
+      .observe(duration / 1000);
+  }
+}
+
+// interceptors/metrics.interceptor.ts
+@Injectable()
+export class MetricsInterceptor implements NestInterceptor {
+  constructor(private metricsService: MetricsService) {}
+
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    const start = Date.now();
+    const http = context.switchToHttp();
+    const request = http.getRequest();
+
+    return next.handle().pipe(
+      tap(() => {
+        const duration = Date.now() - start;
+        const response = http.getResponse();
+
+        this.metricsService.recordHttpRequest(
+          request.method,
+          request.route.path,
+          response.statusCode,
+          duration,
+        );
+      }),
+    );
+  }
+}
+```
+
+## Conclusion
+
+Optimizing a NestJS API's performance requires a multifaceted approach and careful attention to detail. By thoughtfully applying these ten techniques and adapting them to your specific needs, you can build robust, high-performance, and easily maintainable APIs.
+
+Remember that optimization is an ongoing process. Regularly monitor your performance metrics, identify bottlenecks, and adjust your implementation accordingly.
+
+## Additional Resources
+
+- [NestJS Official Documentation](https://docs.nestjs.com/)
+- [Node.js Performance Guide](https://nodejs.org/en/docs/guides/dont-block-the-event-loop)
+- [Redis Documentation](https://redis.io/documentation)
+- [TypeORM Performance Guide](https://typeorm.io/#/select-query-builder)
+- [RabbitMQ Documentation](https://www.rabbitmq.com/documentation.html)
+- [Prometheus for Node.js](https://prometheus.io/docs/instrumenting/clientlibs/)

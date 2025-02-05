@@ -42,7 +42,7 @@ export const Status = () => {
             url="https://www.linkedin.com/in/fernandsoualo/"
             name="@fernandsoualo"
             description="Follow me on LinkedIn"
-            image="https://media.licdn.com/dms/image/v2/D4E03AQEG-_pYx_Zp9A/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1701116288245?e=1734566400&v=beta&t=Hzfz8Ks5P2UYOjn5CEtnhmTCkElmC6qJEl8_73GF5fI"
+            image="/linkedin_profile_photo.jpeg"
             mediumImage="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRokEYt0yyh6uNDKL8uksVLlhZ35laKNQgZ9g&s"
           />
           <ContactCard
