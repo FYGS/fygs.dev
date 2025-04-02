@@ -1,0 +1,22 @@
+// .vscode/nextjs.code-snippets
+{
+  "Next.js Server Action": {
+    "prefix": "nsa",
+    "body": [
+      "'use server'",
+      "import { z } from 'zod'",
+      "import { createSafeAction } from 'next-safe-action'",
+      "",
+      "const schema = z.object({$1})",
+      "",
+      "export const ${2:actionName} = createSafeAction(schema, async (input) => {",
+      "  try {",
+      "    // Business logic",
+      "    return { success: true, data: result }",
+      "  } catch (error) {",
+      "    return { success: false, error: error.message }",
+      "  }",
+      "})"
+    ]
+  }
+}

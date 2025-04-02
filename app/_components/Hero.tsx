@@ -36,7 +36,7 @@ export const Hero = () => {
           >
             <Code className="inline-flex items-center gap-1">
               <Image
-                src="https://media.licdn.com/dms/image/v2/D4D0BAQHFm07UkgElyg/company-logo_200_200/company-logo_200_200/0/1719827406274/allianz_technology_logo?e=1736985600&v=beta&t=maWuQQGFCwsaZ_9zY10y7mgj4PqYHVav-6fEmQBON3E"
+                src="/companies/allianz_technology_logo.jpg"
                 alt="Allianz Technology"
                 width={16}
                 height={16}

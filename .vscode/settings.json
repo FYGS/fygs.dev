@@ -1,0 +1,44 @@
+// .vscode/settings.json
+{
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "emmet.includeLanguages": {
+    "javascript": "javascriptreact",
+    "typescript": "typescriptreact"
+  },
+  "javascript.suggest.paths": false,
+  "typescript.suggest.paths": false,
+  "github.copilot.chat.codeGeneration.instructions": [
+    {
+      "file": ".github/copilot-instructions.md"
+    },
+    {
+      "file": ".github/better-auth-instructions.md"
+      // "instruction": "Generate a better authentication flow for the app. The current flow is too simple and doesn't handle errors properly. Make sure to include error handling and user feedback in the new flow.",
+      // "instructionType": "improve",
+      // "instructionId": "better-auth-flow",
+      // "instructionDescription": "Improve the authentication flow for the app. The current flow is too simple and doesn't handle errors properly. Make sure to include error handling and user feedback in the new flow.",
+    },
+    {
+      "file": ".github/prisma-postgresql-instructions.md"
+    },
+    {
+      "file": ".github/zod-validation-instructions.md"
+    },
+    {
+      "file": ".github/zustand-nuqs-instructions.md"
+    },
+    {
+      "file": ".github/next-safe-action-instructions.md"
+    }
+  ],
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    {
+      "text": "Use conventional commit message format.\n\nUse the following format for commit messages:\n\n- feat: A new feature\n- fix: A bug fix\n- docs: Documentation only changes\n- style: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)\n- refactor: A code change that neither fixes a bug nor adds a feature\n- perf: A code change that improves performance\n- test: Adding missing or correcting existing tests\n- chore: Changes to the build process or auxiliary tools and libraries such as documentation generation",
+      "instruction": "Be extremely detailed with the file changes and the reason for the change. Add lots of emoji."
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "context": {
+    "stack": [
+      "Next.js 15.2+",
+      "TypeScript 5.0+",
+      "Prisma 5.12+",
+      "Zod 3.22+",
+      "PostgreSQL 16"
+    ]
+  },
+  "patterns": {
+    "auth": "Utiliser Better-Auth avec validation Zod et middleware de sécurité",
+    "server-action": "Toujours inclure la gestion d'erreur structurée"
+  },
+  "anti-patterns": [
+    "Éviter les raw SQL dans Prisma",
+    "Pas de logique métier dans les composants React"
+  ]
+}

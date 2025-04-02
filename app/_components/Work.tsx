@@ -4,40 +4,35 @@ import Link from "next/link";
 
 export const WORKS: WorkProps[] = [
   {
-    image:
-      "https://media.licdn.com/dms/image/v2/D4D0BAQHFm07UkgElyg/company-logo_100_100/company-logo_100_100/0/1719827406274/allianz_technology_logo?e=1737590400&v=beta&t=YNk3EHsDR2GUIQK2_xjIociM3jV1rxLhIR1Vw7CsJ7c",
+    image: "/companies/allianz_technology_logo.jpg",
     title: "Allianz Technology",
     role: "Backend Developer",
     date: "2023-Present",
     url: "https://www.linkedin.com/company/allianz-technology/posts/?feedView=all",
   },
   {
-    image:
-      "https://media.licdn.com/dms/image/v2/D4E0BAQGsvnH_VaICpQ/company-logo_100_100/company-logo_100_100/0/1695806357731/gehealthcare_logo?e=1737590400&v=beta&t=xdAnPGlSQCtnw3SDM7s0DMpM4Mts68drCAdd8jKE4zE",
+    image: "/companies/ge_healthcare_logo.png",
     title: "GE Healthcare",
     role: "Software Engineer",
     date: "2019-2023",
     url: "https://www.linkedin.com/company/gehealthcare/posts/?feedView=all",
   },
   {
-    image:
-      "https://media.licdn.com/dms/image/v2/C4E0BAQGNfeTPCu6Z-w/company-logo_100_100/company-logo_100_100/0/1631312208065?e=1737590400&v=beta&t=3cjBMwLhAPbiLn7BqhUd5I_hS__L-KteLkfQKNPGuVY",
+    image: "/companies/schneider_electric_logo.webp",
     title: "Schneider Electric",
     role: "Software Development Engineer",
     date: "2019-2019",
     url: "https://www.linkedin.com/company/schneider-electric/posts/?feedView=all",
   },
   {
-    image:
-      "https://media.licdn.com/dms/image/v2/C4E0BAQHcRamGpx8bhQ/company-logo_100_100/company-logo_100_100/0/1660121048665/atlanspace_logo?e=1737590400&v=beta&t=IpbOkXBAh2pufA0aD_175eKvYEp9rwLgKV78VWMcWO8",
+    image: "/companies/atlan_space_logo.png",
     title: "Atlanspace",
     role: "Embedded Software Development",
     date: "2017-2017",
     url: "https://www.linkedin.com/company/atlanspace/posts/?feedView=all",
   },
   {
-    image:
-      "https://media.licdn.com/dms/image/v2/D4D0BAQEdBM5K05bx3Q/company-logo_100_100/company-logo_100_100/0/1724419301337?e=1737590400&v=beta&t=d7Vk6bFmYo2JmGeIoXTbykAwT-8Lgztp7h-vuEEMXoY",
+    image: "/companies/ouestech_logo.png",
     title: "Ouestech",
     role: "Full Stack Software Development",
     date: "2019-Present",
