@@ -24,16 +24,7 @@ type ViewMode = "grid" | "list";
 
 const ITEMS_PER_PAGE = 6;
 
-interface Props {
-  searchParams?: {
-    page?: string;
-    size?: string;
-    technologies?: string;
-    view?: ViewMode;
-  };
-}
-
-function ProjectsContent({ searchParams }: Props) {
+function ProjectsContent() {
   const { savePage, getPageScroll } = usePageMemoryContext();
   const router = useRouter();
   const dynamicSearchParams = useSearchParams();
@@ -102,21 +93,24 @@ function ProjectsContent({ searchParams }: Props) {
     };
   }, [savePage]);
 
-  const createQueryString = (
-    params: Record<string, string | number | null>
-  ) => {
-    const newSearchParams = new URLSearchParams(dynamicSearchParams.toString());
+  const createQueryString = useCallback(
+    (params: Record<string, string | number | null>) => {
+      const newSearchParams = new URLSearchParams(
+        dynamicSearchParams.toString()
+      );
 
-    Object.entries(params).forEach(([key, value]) => {
-      if (value !== null) {
-        newSearchParams.set(key, String(value));
-      } else {
-        newSearchParams.delete(key);
-      }
-    });
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== null) {
+          newSearchParams.set(key, String(value));
+        } else {
+          newSearchParams.delete(key);
+        }
+      });
 
-    return newSearchParams.toString() ? `?${newSearchParams}` : "";
-  };
+      return newSearchParams.toString() ? `?${newSearchParams}` : "";
+    },
+    [dynamicSearchParams]
+  );
 
   const handleViewModeChange = useCallback(
     (mode: ViewMode) => {
@@ -127,7 +121,7 @@ function ProjectsContent({ searchParams }: Props) {
       router.push(`/projects${query}`);
       setViewMode(mode);
     },
-    [router, searchParams, currentPage]
+    [createQueryString, currentPage, router]
   );
 
   const handleTechnologiesChange = useCallback(
@@ -141,7 +135,7 @@ function ProjectsContent({ searchParams }: Props) {
       router.push(`/projects${query}`);
       setSelectedTechnologies(technologies);
     },
-    [router, dynamicSearchParams, viewMode, pageSize]
+    [createQueryString, pageSize, viewMode, router]
   );
 
   return (
@@ -212,10 +206,10 @@ function ProjectsContent({ searchParams }: Props) {
   );
 }
 
-export default function ProjectsPage({ searchParams }: Props) {
+export default function ProjectsPage() {
   return (
     <Suspense>
-      <ProjectsContent searchParams={searchParams} />
+      <ProjectsContent />
     </Suspense>
   );
 }
