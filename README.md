@@ -202,3 +202,8 @@ Fernand SOUALO - [@fygs](https://twitter.com/fygs) - contact@fygs.dev
 Project Link: [https://gitlab.com/fygs/fygs.dev](https://gitlab.com/fygs/fygs.dev)
 
 https://code.visualstudio.com/docs/copilot/copilot-customization#_reusable-prompt-files-experimental
+
+Comptes vercel:
+
+- ouestech@contact.com => anumerique / annonce NCR
+- fernandsoualo@gmail.com => fygs.dev

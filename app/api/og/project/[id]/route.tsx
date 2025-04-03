@@ -5,10 +5,11 @@ export const runtime = "edge";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const project = FEATURED_PROJECTS.find((p) => p.id === params.id);
+    const { id } = await params;
+    const project = FEATURED_PROJECTS.find((p) => p.id === id);
 
     if (!project) {
       return new Response("Project not found", { status: 404 });
