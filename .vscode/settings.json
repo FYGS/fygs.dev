@@ -11,6 +11,7 @@
   },
   "javascript.suggest.paths": false,
   "typescript.suggest.paths": false,
+  "chat.promptFiles": true,
   "github.copilot.chat.codeGeneration.instructions": [
     {
       "file": ".github/copilot-instructions.md"

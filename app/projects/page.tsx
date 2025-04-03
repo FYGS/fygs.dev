@@ -5,6 +5,7 @@ import { FadeIn, FadeInStagger } from "@/components/ui/motion";
 import { Pagination } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
 import { usePageMemoryContext } from "@/providers/page-memory-provider";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Suspense,
   useCallback,
@@ -23,14 +24,38 @@ type ViewMode = "grid" | "list";
 
 const ITEMS_PER_PAGE = 6;
 
-function ProjectsContent() {
+interface Props {
+  searchParams?: {
+    page?: string;
+    size?: string;
+    technologies?: string;
+    view?: ViewMode;
+  };
+}
+
+function ProjectsContent({ searchParams }: Props) {
   const { savePage, getPageScroll } = usePageMemoryContext();
+  const router = useRouter();
+  const dynamicSearchParams = useSearchParams();
+
   const [selectedTechnologies, setSelectedTechnologies] = useState<string[]>(
     []
   );
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const hasScrolled = useRef(false);
-  const [currentPage, setCurrentPage] = useState(1);
+
+  // Initialize state from URL parameters using useEffect
+  useEffect(() => {
+    const technologies =
+      dynamicSearchParams.get("technologies")?.split(",") || [];
+    const view = (dynamicSearchParams.get("view") as ViewMode) || "grid";
+
+    setSelectedTechnologies(technologies);
+    setViewMode(view);
+  }, [dynamicSearchParams]);
+
+  const currentPage = Number(dynamicSearchParams.get("page")) || 1;
+  const pageSize = Number(dynamicSearchParams.get("size")) || ITEMS_PER_PAGE;
 
   // Mémoriser les technologies uniques
   const allTechnologies = useMemo(() => {
@@ -49,29 +74,16 @@ function ProjectsContent() {
 
   // Memorize paginated projects
   const paginatedProjects = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
     // Ensure we don't exceed array bounds
     return filteredProjects.slice(
       startIndex,
       Math.min(endIndex, filteredProjects.length)
     );
-  }, [filteredProjects, currentPage]);
+  }, [filteredProjects, currentPage, pageSize]); // Add pageSize dependency
 
-  // Reset to first page when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedTechnologies]);
-
-  // Add validation for current page
-  useEffect(() => {
-    const maxPage = Math.ceil(filteredProjects.length / ITEMS_PER_PAGE);
-    if (currentPage > maxPage) {
-      setCurrentPage(Math.max(1, maxPage));
-    }
-  }, [filteredProjects.length, currentPage]);
-
-  // Restaurer la position de défilement une seule fois
+  // Scroll position management
   useEffect(() => {
     if (!hasScrolled.current) {
       const scroll = getPageScroll("/projects");
@@ -84,27 +96,53 @@ function ProjectsContent() {
     }
   }, [getPageScroll]);
 
-  // Sauvegarder la position au démontage
   useEffect(() => {
     return () => {
       savePage("/projects");
     };
   }, [savePage]);
 
-  const handleTechnologiesChange = useCallback((technologies: string[]) => {
-    setSelectedTechnologies(technologies);
-  }, []);
+  const createQueryString = (
+    params: Record<string, string | number | null>
+  ) => {
+    const newSearchParams = new URLSearchParams(dynamicSearchParams.toString());
 
-  // Update view mode handler to maintain current page
-  const handleViewModeChange = useCallback((mode: ViewMode) => {
-    setViewMode(mode);
-    // Don't reset page when changing view
-  }, []);
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== null) {
+        newSearchParams.set(key, String(value));
+      } else {
+        newSearchParams.delete(key);
+      }
+    });
 
-  const handlePageChange = useCallback((page: number) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
+    return newSearchParams.toString() ? `?${newSearchParams}` : "";
+  };
+
+  const handleViewModeChange = useCallback(
+    (mode: ViewMode) => {
+      const query = createQueryString({
+        view: mode === "grid" ? null : mode,
+        page: currentPage === 1 ? null : currentPage,
+      });
+      router.push(`/projects${query}`);
+      setViewMode(mode);
+    },
+    [router, searchParams, currentPage]
+  );
+
+  const handleTechnologiesChange = useCallback(
+    (technologies: string[]) => {
+      const query = createQueryString({
+        technologies: technologies.length > 0 ? technologies.join(",") : null,
+        page: null, // Reset to first page when changing filters
+        size: pageSize === ITEMS_PER_PAGE ? null : pageSize, // Preserve page size
+        view: viewMode === "grid" ? null : viewMode,
+      });
+      router.push(`/projects${query}`);
+      setSelectedTechnologies(technologies);
+    },
+    [router, dynamicSearchParams, viewMode, pageSize]
+  );
 
   return (
     <Section className="space-y-8 px-4 sm:px-6">
@@ -161,10 +199,9 @@ function ProjectsContent() {
             {filteredProjects.length > ITEMS_PER_PAGE && (
               <Pagination
                 totalItems={filteredProjects.length}
-                pageSize={ITEMS_PER_PAGE}
-                currentPage={currentPage}
-                onPageChange={handlePageChange}
+                pageSize={pageSize}
                 baseUrl="/projects"
+                searchParams={Object.fromEntries(dynamicSearchParams.entries())}
                 className="mt-8"
               />
             )}
@@ -175,10 +212,10 @@ function ProjectsContent() {
   );
 }
 
-export default function ProjectsPage() {
+export default function ProjectsPage({ searchParams }: Props) {
   return (
     <Suspense>
-      <ProjectsContent />
+      <ProjectsContent searchParams={searchParams} />
     </Suspense>
   );
 }

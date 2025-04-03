@@ -18,9 +18,9 @@ import { CoverImage } from "../components/cover-image";
 import { SITE_URL } from "@/app/_lib/constants";
 
 interface Props {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 export async function generateStaticParams() {
@@ -31,14 +31,15 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const post = await getBlogPost(params.slug);
+  const { slug } = await params;
+  const post = await getBlogPost(slug);
 
   if (!post) {
     return {};
   }
 
   const baseUrl = SITE_URL;
-  const articleUrl = `${baseUrl}/blog/${params.slug}`;
+  const articleUrl = `${baseUrl}/blog/${slug}`;
   const imageUrl = post.coverImage.startsWith("http")
     ? post.coverImage
     : `${baseUrl}${post.coverImage}`;
@@ -47,7 +48,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: post.title,
     description: post.excerpt,
     image: imageUrl,
-    path: `/blog/${params.slug}`,
+    path: `/blog/${slug}`,
     publishedTime: post.date,
     modifiedTime: post.lastModified,
     authors: [{ name: post.author, url: `${baseUrl}/resume` }],
@@ -93,12 +94,14 @@ export default async function BlogPostPage({ params }: Props) {
   let allPosts;
 
   try {
+    const { slug } = await params;
+    // Fetch the blog post and all posts in parallel
     [post, allPosts] = await Promise.all([
-      getBlogPost(params.slug),
+      getBlogPost(slug),
       getAllBlogPosts(),
     ]);
-    viewCount = await getViewCount(params.slug);
-    await incrementViewCount(params.slug);
+    viewCount = await getViewCount(slug);
+    await incrementViewCount(slug);
   } catch {
     notFound();
   }

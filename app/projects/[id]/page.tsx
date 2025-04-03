@@ -15,13 +15,14 @@ import { FEATURED_PROJECTS } from "../data";
 import { SITE_URL } from "@/app/_lib/constants";
 
 interface Props {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const project = FEATURED_PROJECTS.find((p) => p.id === params.id);
+  const { id: projectId } = await params;
+  const project = FEATURED_PROJECTS.find((p) => p.id === projectId);
 
   if (!project) {
     return {
@@ -45,10 +46,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: `${title} - Full Project Details`,
       description,
       type: "article",
-      url: `${SITE_URL}/projects/${params.id}`,
+      url: `${SITE_URL}/projects/${projectId}`,
       images: [
         {
-          url: `/api/og/project/${params.id}`,
+          url: `/api/og/project/${projectId}`,
           width: 1200,
           height: 630,
           alt: `${title} Project Details`,
@@ -59,14 +60,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: "summary_large_image",
       title: `${title} - Project Details`,
       description,
-      images: [`/api/og/project/${params.id}`],
+      images: [`/api/og/project/${projectId}`],
       creator: "@FernandSOUALO",
     },
   };
 }
 
-export default function ProjectPage({ params }: Props) {
-  const project = FEATURED_PROJECTS.find((p) => p.id === params.id);
+export default async function ProjectPage({ params }: Props) {
+  const { id } = await params;
+  const project = FEATURED_PROJECTS.find((p) => p.id === id);
 
   if (!project) {
     notFound();
