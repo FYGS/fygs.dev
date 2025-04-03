@@ -107,12 +107,8 @@ export const Pagination = ({
 
   const handlePageSizeChange = (newSize: string) => {
     const size = Number(newSize);
-    // Recalculate current page based on new size to maintain position
-    const currentStartIndex = (currentPage - 1) * currentSize;
-    const newPage = Math.floor(currentStartIndex / size) + 1;
-
     const query = createQueryString({
-      page: newPage === 1 ? null : newPage,
+      page: null, // Reset to first page when changing size
       size: size === initialPageSize ? null : size,
     });
     router.push(`${baseUrl}${query}`);

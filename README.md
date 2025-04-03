@@ -206,4 +206,4 @@ https://code.visualstudio.com/docs/copilot/copilot-customization#_reusable-promp
 Comptes vercel:
 
 - ouestech@contact.com => anumerique / annonce NCR
-- fernandsoualo@gmail.com => fygs.dev
+- fernandsoualo@gmail.com => fygs.dev / school mgt system
