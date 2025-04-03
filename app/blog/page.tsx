@@ -70,7 +70,7 @@ export default async function BlogPage({ searchParams }: Props) {
   // Pagination
   const totalPosts = filteredPosts.length;
   const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalPosts);
   const paginatedPosts = filteredPosts.slice(startIndex, endIndex);
 
   return (

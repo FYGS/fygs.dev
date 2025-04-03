@@ -30,6 +30,7 @@ function ProjectsContent() {
   );
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const hasScrolled = useRef(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Mémoriser les technologies uniques
   const allTechnologies = useMemo(() => {
@@ -45,6 +46,30 @@ function ProjectsContent() {
       project.technologies.some((tech) => selectedTechnologies.includes(tech))
     );
   }, [selectedTechnologies]);
+
+  // Memorize paginated projects
+  const paginatedProjects = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    // Ensure we don't exceed array bounds
+    return filteredProjects.slice(
+      startIndex,
+      Math.min(endIndex, filteredProjects.length)
+    );
+  }, [filteredProjects, currentPage]);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedTechnologies]);
+
+  // Add validation for current page
+  useEffect(() => {
+    const maxPage = Math.ceil(filteredProjects.length / ITEMS_PER_PAGE);
+    if (currentPage > maxPage) {
+      setCurrentPage(Math.max(1, maxPage));
+    }
+  }, [filteredProjects.length, currentPage]);
 
   // Restaurer la position de défilement une seule fois
   useEffect(() => {
@@ -70,8 +95,15 @@ function ProjectsContent() {
     setSelectedTechnologies(technologies);
   }, []);
 
+  // Update view mode handler to maintain current page
   const handleViewModeChange = useCallback((mode: ViewMode) => {
     setViewMode(mode);
+    // Don't reset page when changing view
+  }, []);
+
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   return (
@@ -115,7 +147,7 @@ function ProjectsContent() {
                   : "grid-cols-1"
               )}
             >
-              {filteredProjects.map((project) => (
+              {paginatedProjects.map((project) => (
                 <FadeIn key={project.id}>
                   {viewMode === "grid" ? (
                     <ProjectCard project={project} />
@@ -126,12 +158,16 @@ function ProjectsContent() {
               ))}
             </div>
 
-            <Pagination
-              totalItems={filteredProjects.length}
-              pageSize={ITEMS_PER_PAGE}
-              baseUrl="/projects"
-              className="mt-8"
-            />
+            {filteredProjects.length > ITEMS_PER_PAGE && (
+              <Pagination
+                totalItems={filteredProjects.length}
+                pageSize={ITEMS_PER_PAGE}
+                currentPage={currentPage}
+                onPageChange={handlePageChange}
+                baseUrl="/projects"
+                className="mt-8"
+              />
+            )}
           </>
         )}
       </FadeInStagger>

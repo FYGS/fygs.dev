@@ -1,10 +1,14 @@
 import {
+  BrainCircuit,
+  Building2,
   Fingerprint,
   Gift,
   GraduationCap,
   LayoutPanelLeft,
   Loader,
   LucideIcon,
+  Network,
+  Utensils,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -20,6 +24,38 @@ import Link from "next/link";
 // );
 
 export const SIDE_PROJECTS: SideProjectProps[] = [
+  {
+    id: "ncr",
+    Logo: Building2,
+    title: "NCR - Certificats de Résidence",
+    description:
+      "A next-generation platform modernizing residence certificate management, streamlining administrative processes for local authorities and citizens alike.",
+    url: "https://ncr.ouestech.com/",
+  },
+  {
+    id: "quizzen",
+    Logo: BrainCircuit,
+    title: "QuizZen",
+    description:
+      "A specialized interactive platform for French naturalization interview preparation, covering history, values, and institutions of the French Republic.",
+    url: "https://quizzen.fr/fr",
+  },
+  {
+    id: "anumerique",
+    Logo: Network,
+    title: "A'Numérique",
+    description:
+      "An innovative service bridging the digital divide through personalized, at-home digital literacy training, fostering an inclusive digital society.",
+    url: "https://www.anumerique.com/",
+  },
+  {
+    id: "delices-rachetee",
+    Logo: Utensils,
+    title: "Les Délices de la Rachetée",
+    description:
+      "An artisanal French pastry showcase combining traditional craftsmanship with innovative techniques to deliver unique culinary experiences.",
+    url: "https://lesdelicesdelarachetee.vercel.app/",
+  },
   {
     id: "school-management",
     Logo: GraduationCap,

@@ -16,35 +16,44 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+
+const pageSizeOptions = [6, 12, 24, 48];
+const initialPageSize = 6;
 
 interface PaginationProps {
   totalItems: number;
-  pageSize?: number;
-  pageSizeOptions?: number[];
-  className?: string;
+  pageSize: number;
   baseUrl: string;
+  className?: string;
+  // Support both interfaces
+  currentPage?: number;
+  onPageChange?: (page: number) => void;
   searchParams?: {
     q?: string;
     page?: string;
     category?: string;
-    [key: string]: string | undefined;
+    size?: string;
   };
 }
 
-export function Pagination({
+export const Pagination = ({
   totalItems,
-  pageSize: initialPageSize = 10,
-  pageSizeOptions = [6, 10, 20, 30, 50],
-  className,
+  pageSize,
   baseUrl,
-  searchParams: externalSearchParams,
-}: PaginationProps) {
+  className,
+  currentPage: propCurrentPage,
+  onPageChange,
+  searchParams,
+}: PaginationProps) => {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const currentPage = Number(searchParams.get("page")) || 1;
-  const currentSize = Number(searchParams.get("size")) || initialPageSize;
-  const pageSize = currentSize;
+
+  // Use either provided currentPage or get from searchParams
+  const currentSize = searchParams
+    ? Number(searchParams.size) || pageSize
+    : pageSize;
+  const currentPage =
+    propCurrentPage || (searchParams ? Number(searchParams.page) || 1 : 1);
 
   const {
     paginationRange,
@@ -58,7 +67,7 @@ export function Pagination({
     hasPrevPage,
   } = usePagination({
     totalItems,
-    pageSize,
+    pageSize: currentSize,
     currentPage,
     siblingsCount: 1,
   });
@@ -66,18 +75,9 @@ export function Pagination({
   const createQueryString = (
     params: Record<string, string | number | null>
   ) => {
-    const newSearchParams = new URLSearchParams();
+    const newSearchParams = new URLSearchParams(searchParams?.toString() || "");
 
-    // Préserver les paramètres existants de l'URL
-    if (externalSearchParams) {
-      Object.entries(externalSearchParams).forEach(([key, value]) => {
-        if (value && key !== "page" && key !== "size") {
-          newSearchParams.set(key, value);
-        }
-      });
-    }
-
-    // Ajouter ou mettre à jour les nouveaux paramètres
+    // Update or remove parameters
     Object.entries(params).forEach(([key, value]) => {
       if (value !== null) {
         newSearchParams.set(key, String(value));
@@ -91,17 +91,25 @@ export function Pagination({
   };
 
   const handlePageChange = (page: number) => {
-    const query = createQueryString({
-      page: page === 1 ? null : page,
-      size: pageSize === initialPageSize ? null : pageSize,
-    });
-    router.push(`${baseUrl}${query}`);
+    if (onPageChange) {
+      onPageChange(page);
+      return;
+    }
+
+    if (searchParams) {
+      const query = createQueryString({
+        page: page === 1 ? null : page,
+        size: currentSize === initialPageSize ? null : currentSize,
+      });
+      router.push(`${baseUrl}${query}`);
+    }
   };
 
   const handlePageSizeChange = (newSize: string) => {
+    const size = Number(newSize);
     const query = createQueryString({
-      page: null,
-      size: Number(newSize) === initialPageSize ? null : newSize,
+      page: null, // Reset to first page when changing size
+      size: size === initialPageSize ? null : size,
     });
     router.push(`${baseUrl}${query}`);
   };
@@ -122,9 +130,12 @@ export function Pagination({
               )} of ${totalItems} items`
             : "No items"}
         </span>
-        <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
+        <Select
+          value={String(currentSize)}
+          onValueChange={handlePageSizeChange}
+        >
           <SelectTrigger className="h-8 w-[70px]">
-            <SelectValue placeholder={pageSize} />
+            <SelectValue placeholder={currentSize} />
           </SelectTrigger>
           <SelectContent side="top">
             {pageSizeOptions.map((size) => (
@@ -205,4 +216,4 @@ export function Pagination({
       </div>
     </div>
   );
-}
+};

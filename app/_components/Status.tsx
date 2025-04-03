@@ -12,7 +12,7 @@ export const Status = () => {
           <p className="text-xl text-muted-foreground font-semibold">
             Fun Side Projects
           </p>
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-6 max-h-[600px] overflow-y-auto pr-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-accent hover:scrollbar-thumb-accent/80">
             {SIDE_PROJECTS.map((project, index) => (
               <SideProject
                 key={index}
@@ -38,6 +38,13 @@ export const Status = () => {
           <p className="text-xl text-muted-foreground font-semibold">
             Contact Me
           </p>
+          <ContactCard
+            url="mailto:fygs.dev@gmail.com"
+            name="me@contact.com"
+            description="Email me for any inquiries"
+            image="https://lh3.googleusercontent.com/a/ACg8ocIMjYoOFbL2_xkgKy1N114BS3AvMok9pZfr_Qj9W03TOiJNCGw1=s83-c-mo"
+            mediumImage="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Gmail_icon_%282020%29.svg/640px-Gmail_icon_%282020%29.svg.png"
+          />
           <ContactCard
             url="https://www.linkedin.com/in/fernandsoualo/"
             name="@fernandsoualo"
