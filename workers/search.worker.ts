@@ -1,4 +1,4 @@
-import { BlogPost } from "@/lib/mdx";
+import { BlogPost } from "@/lib/types";
 
 const searchIndex = new Map<string, BlogPost[]>();
 
@@ -10,7 +10,7 @@ self.onmessage = (e: MessageEvent) => {
       indexPosts(payload.posts);
       break;
     case "SEARCH":
-      const results = search(payload.term, payload.posts);
+      const results = search(payload.term);
       self.postMessage({ type: "SEARCH_RESULTS", results });
       break;
   }
@@ -37,7 +37,7 @@ function indexPosts(posts: BlogPost[]) {
   });
 }
 
-function search(term: string, posts: BlogPost[]): BlogPost[] {
+function search(term: string): BlogPost[] {
   const searchTerms = term.toLowerCase().split(/\s+/);
   const results = new Map<string, { post: BlogPost; score: number }>();
 

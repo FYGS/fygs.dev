@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { BlogPostMeta } from "@/lib/mdx";
+import { BlogPostMeta } from "@/lib/types";
 import { Calendar, FileEdit } from "lucide-react";
 import Link from "next/link";
 import { CoverImage } from "./cover-image";

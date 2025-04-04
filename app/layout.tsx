@@ -3,6 +3,7 @@ import { PageTransition } from "@/components/ui/page-transition";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { PageMemoryProvider } from "@/providers/page-memory-provider";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { TransitionProvider } from "@/providers/transition-provider";
 import { GeistMono } from "geist/font/mono";
@@ -90,7 +91,7 @@ export default function RootLayout({
                 <main>
                   <Header />
                   <Spacing size="md" />
-                  {children}
+                  <NuqsAdapter>{children}</NuqsAdapter>
                   <Toaster />
                   <Spacing size="md" />
                   <Footer />

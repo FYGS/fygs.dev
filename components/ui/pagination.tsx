@@ -31,9 +31,9 @@ interface PaginationProps {
   onPageChange?: (page: number) => void;
   searchParams?: {
     q?: string;
-    page?: string;
+    page?: number;
     category?: string;
-    size?: string;
+    size?: number;
   };
 }
 

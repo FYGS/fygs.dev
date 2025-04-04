@@ -1,7 +1,7 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import { BlogPost } from "@/lib/mdx";
+import { BlogPost } from "@/lib/types";
 import { motion } from "framer-motion";
 import Link from "next/link";
 

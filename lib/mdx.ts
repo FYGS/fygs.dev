@@ -1,38 +1,14 @@
+"use server";
+
 import fs from "fs/promises";
 import matter from "gray-matter";
 import { compileMDX } from "next-mdx-remote/rsc";
 import { join } from "path";
-import { ReactNode } from "react";
 import rehypeHighlight from "rehype-highlight";
 import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
-
-export interface BlogPost {
-  slug: string;
-  title: string;
-  date: string;
-  lastModified: string;
-  excerpt: string;
-  author: string;
-  categories: string[];
-  content: ReactNode;
-  readingTime: string;
-  coverImage: string;
-  draft?: boolean;
-}
-
-export interface BlogPostMeta {
-  slug: string;
-  title: string;
-  date: string;
-  excerpt: string;
-  author: string;
-  categories: string[];
-  coverImage: string;
-  draft?: boolean;
-}
-
-const BLOG_DIR = join(process.cwd(), "content/blog");
+import { BLOG_DIR, BlogPost, BlogPostMeta } from "./types";
+import { calculateReadingTime } from "./utils";
 
 async function getFileLastModifiedDate(filePath: string): Promise<string> {
   try {
@@ -132,11 +108,4 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
   }
 
   return sortedPosts;
-}
-
-function calculateReadingTime(content: string): string {
-  const wordsPerMinute = 200;
-  const words = content.trim().split(/\s+/).length;
-  const minutes = Math.ceil(words / wordsPerMinute);
-  return `${minutes} min read`;
 }

@@ -2,7 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { BlogPost } from "@/lib/mdx";
+import { BlogPost } from "@/lib/types";
 import { AnimatePresence, motion } from "framer-motion";
 import { Calendar, Clock } from "lucide-react";
 import Image from "next/image";

@@ -1,6 +1,6 @@
 "use client";
 
-import { BlogPost } from "@/lib/mdx";
+import { BlogPost } from "@/lib/types";
 import Fuse from "fuse.js";
 import { useCallback, useEffect, useRef, useState } from "react";
 

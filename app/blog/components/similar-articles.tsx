@@ -6,7 +6,7 @@ import {
   calculateContentSimilarity,
   extractKeywords,
 } from "@/lib/content-analysis";
-import { BlogPost } from "@/lib/mdx";
+import { BlogPost } from "@/lib/types";
 import { motion } from "framer-motion";
 import { Calendar, Clock, Sparkles } from "lucide-react";
 import Link from "next/link";
