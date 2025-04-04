@@ -15,6 +15,7 @@ import { JsonLd } from "./_components/JsonLd";
 import { Spacing } from "./_components/Spacing";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { defaultMetadata } from "./_lib/metadata";
 
 const AnekTelugu = Anek_Telugu({
@@ -96,6 +97,7 @@ export default function RootLayout({
                   <Spacing size="md" />
                   <Footer />
                   <Analytics />
+                  <SpeedInsights />
                 </main>
               </PageTransition>
             </TransitionProvider>

@@ -1,5 +1,3 @@
-// "use server";
-
 import { getBlogPostsMeta } from "@/lib/mdx";
 import BlogClientPage from "./page.client";
 import { Suspense } from "react";

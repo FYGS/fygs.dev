@@ -12,6 +12,7 @@
   "javascript.suggest.paths": false,
   "typescript.suggest.paths": false,
   "chat.promptFiles": true,
+  "github.copilot.chat.codeGeneration.useInstructionFiles": true,
   "github.copilot.chat.codeGeneration.instructions": [
     {
       "file": ".github/copilot-instructions.md"
@@ -42,4 +43,10 @@
       "instruction": "Be extremely detailed with the file changes and the reason for the change. Add lots of emoji."
     }
   ]
+  // "github.copilot.chat.testGeneration.instructions": [
+  //   {
+  //     "text": "Generate unit tests for the following code. Use the following format for test names:\n\n- should return true if the input is valid\n- should return false if the input is invalid\n- should throw an error if the input is invalid\n- should return the expected output\n- should call the expected function with the expected arguments",
+  //     "instruction": "Be extremely detailed with the test cases and the reason for each test case. Add lots of emoji."
+  //   }
+  // ]
 }
