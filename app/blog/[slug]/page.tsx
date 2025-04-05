@@ -21,6 +21,7 @@ import { Calendar, Clock } from "lucide-react";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CoverImage } from "../components/cover-image";
+import { PopularArticles } from "../components/popular-articles";
 
 interface Props {
   params: Promise<{
@@ -214,12 +215,13 @@ export default async function BlogPostPage({ params }: Props) {
           </aside>
         </div>
 
-        <div className="mt-16 max-w-4xl mx-auto">
+        <div className="mt-16 max-w-4xl mx-auto space-y-16">
           <SimilarArticles
             currentPost={post}
             allPosts={allPosts}
             maxArticles={3}
           />
+          <PopularArticles currentPost={post} maxArticles={3} />
         </div>
       </Section>
     </>
