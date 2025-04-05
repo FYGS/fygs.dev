@@ -72,6 +72,7 @@ export async function getBlogPostsMeta(): Promise<BlogPostMeta[]> {
           categories: data.categories || [],
           coverImage: data.coverImage,
           draft: data.draft,
+          readingTime: calculateReadingTime(fileContent),
         };
       })
   );
@@ -94,7 +95,14 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
       .filter((file) => file.endsWith(".mdx"))
       .map(async (file) => {
         const slug = file.replace(/\.mdx$/, "");
-        return getBlogPost(slug);
+        const filePath = join(BLOG_DIR, `${slug}.mdx`);
+        const fileContent = await fs.readFile(filePath, "utf8");
+        const { content } = matter(fileContent);
+        const blogPost = await getBlogPost(slug);
+        return {
+          ...blogPost,
+          readingTime: calculateReadingTime(content),
+        };
       })
   );
 
@@ -102,7 +110,6 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
-  // En production, on filtre les drafts
   if (process.env.NODE_ENV === "production") {
     return sortedPosts.filter((post) => !post.draft);
   }

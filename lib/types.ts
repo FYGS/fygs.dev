@@ -1,5 +1,5 @@
-import { ReactNode } from "react";
 import { join } from "path";
+import { ReactNode } from "react";
 
 export interface BlogPost {
   slug: string;
@@ -24,6 +24,7 @@ export interface BlogPostMeta {
   categories: string[];
   coverImage: string;
   draft?: boolean;
+  readingTime: string;
 }
 
 export const BLOG_DIR = join(process.cwd(), "content/blog");

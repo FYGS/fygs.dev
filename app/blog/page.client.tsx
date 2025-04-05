@@ -3,19 +3,27 @@
 import { Section } from "@/app/_components/Section";
 import { Pagination } from "@/components/ui/pagination";
 import { Search } from "@/components/ui/search";
+import { BlogPostMeta } from "@/lib/types";
+import { parseAsInteger, useQueryState } from "nuqs";
 import { BlogPostCard } from "./components/blog-post-card";
 import { CategoryFilter } from "./components/category-filter";
-import { parseAsInteger, useQueryState } from "nuqs";
-import { BlogPostMeta } from "@/lib/types";
-import { use } from "react";
+
+interface BlogClientPageProps {
+  posts: BlogPostMeta[];
+  initialStats: Array<{
+    slug: string;
+    views: number;
+    likes: number;
+    shares: number;
+  }>;
+}
 
 const POSTS_PER_PAGE = 6;
 
 export default function BlogClientPage({
   posts,
-}: {
-  posts: Promise<BlogPostMeta[]>;
-}) {
+  initialStats,
+}: BlogClientPageProps) {
   // Fetch blog posts metadata
   const [searchTerm] = useQueryState("q", { defaultValue: "" });
   const [currentPage] = useQueryState("page", parseAsInteger.withDefault(1));
@@ -32,18 +40,16 @@ export default function BlogClientPage({
     size: pageSize,
   };
 
-  const allPosts = use(posts);
-
   // Get all unique categories
   const categories = Array.from(
-    new Set(allPosts.flatMap((post) => post.categories))
+    new Set(posts.flatMap((post) => post.categories))
   ).sort();
 
   // Filter posts
-  let filteredPosts = allPosts;
+  let filteredPosts = posts;
 
   if (searchTerm) {
-    filteredPosts = allPosts.filter(
+    filteredPosts = posts.filter(
       (post) =>
         post.title.toLowerCase().includes(searchTerm) ||
         post.excerpt.toLowerCase().includes(searchTerm)
@@ -61,6 +67,11 @@ export default function BlogClientPage({
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = Math.min(startIndex + pageSize, totalPosts);
   const paginatedPosts = filteredPosts.slice(startIndex, endIndex);
+
+  // Use initialStats for visible posts
+  const paginatedStats = initialStats.filter((stat) =>
+    paginatedPosts.some((post) => post.slug === stat.slug)
+  );
 
   return (
     <Section>
@@ -86,9 +97,16 @@ export default function BlogClientPage({
           role="feed"
           aria-busy={false}
         >
-          {paginatedPosts.map((post) => (
-            <BlogPostCard key={post.slug} post={post} />
-          ))}
+          {paginatedPosts.map((post) => {
+            const postStats = paginatedStats.find((s) => s.slug === post.slug);
+            return (
+              <BlogPostCard
+                key={post.slug}
+                post={post}
+                initialStats={postStats}
+              />
+            );
+          })}
         </div>
 
         {filteredPosts.length > 0 && (
