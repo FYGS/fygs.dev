@@ -1,26 +1,41 @@
 "use client";
 
 import { useReadingProgress } from "@/hooks/use-reading-progress";
-import { motion } from "framer-motion";
+import { formatReadingTime } from "@/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
+import { Timer } from "lucide-react";
 
 export function ReadingProgress() {
   const { progress, timeSpent, isComplete } = useReadingProgress();
 
   return (
-    <div className="fixed top-16 left-0 right-0 h-1 bg-muted z-50">
-      <motion.div
-        className="h-full bg-primary"
-        initial={{ width: "0%" }}
-        animate={{ width: `${progress}%` }}
-        transition={{ duration: 0.1 }}
-      />
-      {isComplete && (
-        <div className="fixed bottom-4 right-4 bg-card p-4 rounded-lg shadow-lg">
-          <p className="text-sm text-muted-foreground">
-            Time spent: {Math.floor(timeSpent / 60)}m {timeSpent % 60}s
-          </p>
-        </div>
-      )}
-    </div>
+    <>
+      <div className="fixed top-16 left-0 right-0 h-1 bg-muted z-50">
+        <motion.div
+          className="h-full bg-primary"
+          initial={{ width: "0%" }}
+          animate={{ width: `${progress}%` }}
+          transition={{ type: "spring", damping: 20, stiffness: 100 }}
+        />
+      </div>
+
+      <AnimatePresence>
+        {isComplete && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="fixed bottom-4 right-4 bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg border border-muted/50"
+          >
+            <div className="flex items-center gap-2 text-sm">
+              <Timer className="h-4 w-4 text-primary" />
+              <p className="text-muted-foreground">
+                Time spent reading: {formatReadingTime(timeSpent)}
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
