@@ -1,10 +1,10 @@
-import { kv } from "@vercel/kv";
+import { type Pipeline } from "@upstash/redis";
+import redis from "./redis";
 
 export async function incrementViewCount(slug: string): Promise<number> {
   try {
     const key = `blog:${slug}:views`;
-    const newCount = await kv.incr(key);
-    return newCount;
+    return await redis.incr(key);
   } catch (error) {
     console.error("Error incrementing view count:", error);
     return 0;
@@ -14,8 +14,8 @@ export async function incrementViewCount(slug: string): Promise<number> {
 export async function getViewCount(slug: string): Promise<number> {
   try {
     const key = `blog:${slug}:views`;
-    const count = await kv.get<number>(key);
-    return count || 0;
+    const count = await redis.get<number>(key);
+    return count ?? 0;
   } catch (error) {
     console.error("Error getting view count:", error);
     return 0;
@@ -24,16 +24,21 @@ export async function getViewCount(slug: string): Promise<number> {
 
 export async function getPopularPosts(limit = 5): Promise<string[]> {
   try {
-    const keys = await kv.keys("blog:*:views");
-    const counts = await Promise.all(
-      keys.map(async (key) => ({
-        slug: key.split(":")[1],
-        views: await kv.get<number>(key),
-      }))
-    );
+    const keys = await redis.keys("blog:*:views");
+    if (!keys.length) return [];
 
-    return counts
-      .sort((a, b) => (b.views || 0) - (a.views || 0))
+    const pipeline = redis.pipeline() as Pipeline;
+    keys.forEach((key) => pipeline.get(key));
+
+    const counts = await pipeline.exec();
+    if (!counts) return [];
+
+    return keys
+      .map((key, index) => ({
+        slug: key.split(":")[1],
+        views: (counts[index] as number) ?? 0,
+      }))
+      .sort((a, b) => b.views - a.views)
       .slice(0, limit)
       .map((item) => item.slug);
   } catch (error) {

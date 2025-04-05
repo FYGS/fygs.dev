@@ -1,13 +1,14 @@
 import { Section } from "@/app/_components/Section";
-import { ArticleStats } from "@/app/blog/components/article-stats";
-import { ReadingProgress } from "@/app/blog/components/reading-progress";
-import { SimilarArticles } from "@/app/blog/components/similar-articles";
-import { SocialInteractions } from "@/app/blog/components/social-interactions";
-import { generateArticleMetadata } from "@/app/_lib/seo-utils";
+import { SITE_URL } from "@/app/_lib/constants";
 import {
   generateArticleJsonLd,
   generateJsonLdScript,
 } from "@/app/_lib/jsonld-utils";
+import { generateArticleMetadata } from "@/app/_lib/seo-utils";
+import { ArticleStats } from "@/app/blog/components/article-stats";
+import { ReadingProgress } from "@/app/blog/components/reading-progress";
+import { SimilarArticles } from "@/app/blog/components/similar-articles";
+import { SocialInteractions } from "@/app/blog/components/social-interactions";
 import { Badge } from "@/components/ui/badge";
 import { getAllBlogPosts, getBlogPost } from "@/lib/mdx";
 import { getViewCount, incrementViewCount } from "@/lib/reading-stats";
@@ -15,7 +16,6 @@ import { Calendar, Clock } from "lucide-react";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CoverImage } from "../components/cover-image";
-import { SITE_URL } from "@/app/_lib/constants";
 
 interface Props {
   params: Promise<{
@@ -100,8 +100,8 @@ export default async function BlogPostPage({ params }: Props) {
       getBlogPost(slug),
       getAllBlogPosts(),
     ]);
-    viewCount = await getViewCount(slug);
     await incrementViewCount(slug);
+    viewCount = await getViewCount(slug);
   } catch {
     notFound();
   }
