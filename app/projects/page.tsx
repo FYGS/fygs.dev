@@ -3,6 +3,7 @@
 import { Section } from "@/app/_components/Section";
 import { FadeIn, FadeInStagger } from "@/components/ui/motion";
 import { Pagination } from "@/components/ui/pagination";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { usePageMemoryContext } from "@/providers/page-memory-provider";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -23,6 +24,52 @@ import { FEATURED_PROJECTS } from "./data";
 type ViewMode = "grid" | "list";
 
 const ITEMS_PER_PAGE = 6;
+
+function LoadingSkeleton() {
+  return (
+    <Section className="space-y-8 px-4 sm:px-6">
+      {/* Header Section */}
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <Skeleton className="h-10 w-48" /> {/* Title */}
+          <div className="flex items-center gap-4 self-end sm:self-auto">
+            <Skeleton className="h-9 w-20" /> {/* View toggle */}
+            <Skeleton className="h-9 w-36" /> {/* Technology filter */}
+          </div>
+        </div>
+        <Skeleton className="h-12 max-w-2xl" /> {/* Description */}
+      </div>
+
+      {/* Projects Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="group space-y-4">
+            <Skeleton className="aspect-video w-full rounded-lg" />{" "}
+            {/* Image */}
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                {[...Array(3)].map((_, j) => (
+                  <Skeleton key={j} className="h-5 w-16" /> // Tech badges
+                ))}
+              </div>
+              <Skeleton className="h-7 w-3/4" /> {/* Title */}
+              <Skeleton className="h-20 w-full" /> {/* Description */}
+              <div className="flex justify-between items-center pt-4">
+                <Skeleton className="h-5 w-24" /> {/* Status */}
+                <Skeleton className="h-9 w-24" /> {/* Link button */}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Pagination */}
+      <div className="flex justify-center mt-8">
+        <Skeleton className="h-10 w-72" />
+      </div>
+    </Section>
+  );
+}
 
 function ProjectsContent() {
   const { savePage, getPageScroll } = usePageMemoryContext();
@@ -208,7 +255,7 @@ function ProjectsContent() {
 
 export default function ProjectsPage() {
   return (
-    <Suspense>
+    <Suspense fallback={<LoadingSkeleton />}>
       <ProjectsContent />
     </Suspense>
   );
