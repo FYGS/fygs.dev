@@ -1,6 +1,6 @@
-- **Best Practices** :
-  1. Activer le logging des requêtes en développement
-  2. Utiliser `npx prisma format` avant chaque commit
-  3. Créer des extensions PostgreSQL personnalisées pour les fonctions récurrentes
-- **Exemple** :
-  "Génère un modèle Prisma pour les utilisateurs avec relations many-to-many et index composites"
+- **Best Practices**:
+  1. Enable request logging in development
+  2. Use `npx prisma format` before each commit
+  3. Create custom PostgreSQL extensions for recurring functions
+- **Example**:
+  "Generate a Prisma model for users with many-to-many relations and composite indexes"

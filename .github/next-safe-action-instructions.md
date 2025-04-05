@@ -1,6 +1,6 @@
-- **Règles** :
-  1. Toujours séparer les actions serveur des composants React
-  2. Utiliser Zod pour valider les inputs avant traitement
-  3. Implémenter un système de retry avec exponential backoff
-- **Exemple** :
-  "Génère une action serveur pour la création d'utilisateur avec validation Zod et gestion d'erreurs détaillée"
+- **Rules**:
+  1. Always separate server actions from React components
+  2. Use Zod for input validation before processing
+  3. Implement retry system with exponential backoff
+- **Example**:
+  "Generate a server action for user creation with Zod validation and detailed error handling"

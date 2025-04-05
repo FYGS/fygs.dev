@@ -46,3 +46,61 @@ export async function getPopularPosts(limit = 5): Promise<string[]> {
     return [];
   }
 }
+
+export async function getLikeCount(slug: string): Promise<number> {
+  try {
+    const key = `blog:${slug}:likes`;
+    const count = await redis.get<number>(key);
+    return count ?? 0;
+  } catch (error) {
+    console.error("Error getting like count:", error);
+    return 0;
+  }
+}
+
+export async function toggleLike(
+  slug: string,
+  userId: string
+): Promise<boolean> {
+  try {
+    const key = `blog:${slug}:likes`;
+    const userLikeKey = `blog:${slug}:likes:users`;
+
+    // Using the proper Redis command names in uppercase
+    const hasLiked = await redis.sismember(userLikeKey, userId);
+
+    if (hasLiked) {
+      await redis.srem(userLikeKey, userId);
+      await redis.decr(key);
+      return false;
+    } else {
+      await redis.sadd(userLikeKey, userId);
+      await redis.incr(key);
+      return true;
+    }
+  } catch (error) {
+    console.error("Error toggling like:", error);
+    return false;
+  }
+}
+
+export async function incrementShareCount(slug: string): Promise<number> {
+  try {
+    const key = `blog:${slug}:shares`;
+    return await redis.incr(key);
+  } catch (error) {
+    console.error("Error incrementing share count:", error);
+    return 0;
+  }
+}
+
+export async function getShareCount(slug: string): Promise<number> {
+  try {
+    const key = `blog:${slug}:shares`;
+    const count = await redis.get<number>(key);
+    return count ?? 0;
+  } catch (error) {
+    console.error("Error getting share count:", error);
+    return 0;
+  }
+}

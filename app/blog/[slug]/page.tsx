@@ -11,7 +11,12 @@ import { SimilarArticles } from "@/app/blog/components/similar-articles";
 import { SocialInteractions } from "@/app/blog/components/social-interactions";
 import { Badge } from "@/components/ui/badge";
 import { getAllBlogPosts, getBlogPost } from "@/lib/mdx";
-import { getViewCount, incrementViewCount } from "@/lib/reading-stats";
+import {
+  getLikeCount,
+  getShareCount,
+  getViewCount,
+  incrementViewCount,
+} from "@/lib/reading-stats";
 import { Calendar, Clock } from "lucide-react";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -91,17 +96,22 @@ export const revalidate = 3600; // Revalidate every hour
 export default async function BlogPostPage({ params }: Props) {
   let post;
   let viewCount;
+  let likeCount;
+  let shareCount;
   let allPosts;
 
   try {
     const { slug } = await params;
-    // Fetch the blog post and all posts in parallel
-    [post, allPosts] = await Promise.all([
+    // Always increment views before fetching the view count to ensure the view count is accurate
+    await incrementViewCount(slug);
+    // Fetch all stats in parallel;
+    [post, allPosts, viewCount, likeCount, shareCount] = await Promise.all([
       getBlogPost(slug),
       getAllBlogPosts(),
+      getViewCount(slug),
+      getLikeCount(slug),
+      getShareCount(slug),
     ]);
-    await incrementViewCount(slug);
-    viewCount = await getViewCount(slug);
   } catch {
     notFound();
   }
@@ -110,6 +120,21 @@ export default async function BlogPostPage({ params }: Props) {
     <>
       <ReadingProgress />
       <Section>
+        {/* Mobile Stats */}
+        <div className="md:hidden mb-8 max-w-4xl mx-auto">
+          <ArticleStats
+            readingTime={post.readingTime}
+            views={viewCount}
+            likes={likeCount}
+            shares={shareCount}
+          />
+          <SocialInteractions
+            slug={post.slug}
+            initialLikes={likeCount}
+            shareCount={shareCount}
+          />
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-8 max-w-4xl mx-auto">
           <article className="prose prose-invert space-y-8">
             <div className="w-full -mx-4 px-4 sm:px-0 sm:-mx-0">
@@ -156,19 +181,35 @@ export default async function BlogPostPage({ params }: Props) {
             <div className="mdx-content prose-code:text-primary prose-headings:tracking-tight prose-h1:text-2xl prose-h1:sm:text-3xl prose-h1:md:text-4xl prose-h2:text-xl prose-h2:sm:text-2xl prose-h2:md:text-3xl prose-h3:text-lg prose-h3:sm:text-xl prose-h3:md:text-2xl">
               {post.content}
             </div>
+
+            {/* Add article footer with social interactions */}
+            <footer className="mt-16 pt-8 border-t border-muted">
+              <div className="flex flex-col items-center gap-4">
+                <h3 className="text-lg font-medium text-muted-foreground">
+                  Did you find this article helpful?
+                </h3>
+                <SocialInteractions
+                  slug={post.slug}
+                  initialLikes={likeCount}
+                  shareCount={shareCount}
+                  variant="large"
+                />
+              </div>
+            </footer>
           </article>
 
+          {/* Desktop Stats - Keep existing aside */}
           <aside className="hidden md:block space-y-6 sticky top-24">
             <ArticleStats
               readingTime={post.readingTime}
               views={viewCount}
-              likes={0}
-              shares={0}
+              likes={likeCount}
+              shares={shareCount}
             />
             <SocialInteractions
               slug={post.slug}
-              initialLikes={0}
-              initialBookmarks={0}
+              initialLikes={likeCount}
+              shareCount={shareCount}
             />
           </aside>
         </div>

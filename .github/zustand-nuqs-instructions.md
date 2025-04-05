@@ -1,6 +1,6 @@
-- **Patterns** :
-  1. Séparer les stores par domaine fonctionnel
-  2. Combiner Zustand avec nuqs pour la sync URL/store
-  3. Utiliser des middlewares pour le logging des state changes
-- **Exemple** :
-  "Crée un store Zustand pour le panier utilisateur avec persistance dans localStorage et synchronisation URL"
+- **Patterns**:
+  1. Separate stores by functional domain
+  2. Combine Zustand with nuqs for URL/store sync
+  3. Use middlewares for state change logging
+- **Example**:
+  "Create a Zustand store for user cart with localStorage persistence and URL synchronization"

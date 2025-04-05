@@ -1,7 +1,7 @@
-- **Contexte** : Implémentez une authentification sécurisée avec sessions JWT
-- **Patterns** :
-  1. Créez toujours des wrappers `withAuth` pour les routes protégées
-  2. Utilisez des cookies HTTPOnly pour le stockage des tokens
-  3. Validez les tokens côté serveur avec Zod
-- **Exemple** :
-  "Crée un middleware Better-Auth qui vérifie le rôle utilisateur et log les tentatives échouées"
+- **Context**: Implement secure authentication with JWT sessions
+- **Patterns**:
+  1. Always create `withAuth` wrappers for protected routes
+  2. Use HTTPOnly cookies for token storage
+  3. Validate tokens server-side with Zod
+- **Example**:
+  "Create a Better-Auth middleware that checks user roles and logs failed attempts"

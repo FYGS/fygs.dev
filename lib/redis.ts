@@ -11,8 +11,12 @@ interface IRedisClient {
   get<T>(key: string): Promise<T | null>;
   set<T>(key: string, value: T): Promise<void>;
   incr(key: string): Promise<number>;
+  decr(key: string): Promise<number>;
   keys(pattern: string): Promise<string[]>;
   pipeline(): ReturnType<Redis["pipeline"]>;
+  sadd(key: string, member: string): Promise<number>;
+  srem(key: string, member: string): Promise<number>;
+  sismember(key: string, member: string): Promise<number>;
 }
 
 export class RedisClient implements IRedisClient {
@@ -56,12 +60,28 @@ export class RedisClient implements IRedisClient {
     return this.client.incr(key);
   }
 
+  async decr(key: string): Promise<number> {
+    return this.client.decr(key);
+  }
+
   keys(pattern: string): Promise<string[]> {
     return this.client.keys(pattern);
   }
 
   pipeline(): ReturnType<Redis["pipeline"]> {
     return this.client.pipeline();
+  }
+
+  async sadd(key: string, member: string): Promise<number> {
+    return this.client.sadd(key, member);
+  }
+
+  async srem(key: string, member: string): Promise<number> {
+    return this.client.srem(key, member);
+  }
+
+  async sismember(key: string, member: string): Promise<number> {
+    return this.client.sismember(key, member);
   }
 
   // Add dispose method for cleanup
