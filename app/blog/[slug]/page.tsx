@@ -159,9 +159,7 @@ export default async function BlogPostPage({ params }: Props) {
                 </div>
               </header>
 
-              <div className="mdx-content prose-code:text-primary prose-headings:tracking-tight prose-h1:text-2xl prose-h1:sm:text-3xl prose-h1:md:text-4xl prose-h2:text-xl prose-h2:sm:text-2xl prose-h2:md:text-3xl prose-h3:text-lg prose-h3:sm:text-xl prose-h3:md:text-2xl">
-                {post.content}
-              </div>
+              <div className="mdx-content">{post.content}</div>
 
               {/* Mobile Stats */}
               <footer className="mt-16 pt-8 border-t border-muted md:hidden">
