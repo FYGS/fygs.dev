@@ -2,7 +2,6 @@
 
 import { Card } from "@/components/ui/card";
 import { fadeIn } from "@/lib/animations";
-import { useBlogStats } from "@/stores/use-blog-stats";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Clock, Eye, ThumbsUp, Users } from "lucide-react";
 import { useRef } from "react";
@@ -14,8 +13,12 @@ interface ArticleStatsProps {
   shares: number;
 }
 
-export function ArticleStats({ readingTime, views }: ArticleStatsProps) {
-  const { likes: currentLikes, shares: currentShares } = useBlogStats();
+export function ArticleStats({
+  readingTime,
+  views,
+  likes,
+  shares,
+}: ArticleStatsProps) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -61,7 +64,7 @@ export function ArticleStats({ readingTime, views }: ArticleStatsProps) {
           >
             <ThumbsUp className="h-4 w-4 text-primary transition-colors group-hover:text-primary/80" />
             <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-              {currentLikes.toLocaleString()} likes
+              {likes.toLocaleString()} likes
             </span>
           </motion.div>
           <motion.div
@@ -71,7 +74,7 @@ export function ArticleStats({ readingTime, views }: ArticleStatsProps) {
           >
             <Users className="h-4 w-4 text-primary transition-colors group-hover:text-primary/80" />
             <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-              {currentShares.toLocaleString()} shares
+              {shares.toLocaleString()} shares
             </span>
           </motion.div>
         </div>

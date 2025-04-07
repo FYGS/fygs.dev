@@ -1,6 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { getBlogPostsMeta } from "@/lib/mdx";
-import { getLikeCount, getShareCount, getViewCount } from "@/lib/reading-stats";
 import { Suspense } from "react";
 import BlogClientPage from "./page.client";
 
@@ -57,21 +56,12 @@ function LoadingSkeleton() {
 }
 
 export default async function BlogPage() {
-  const posts = await getBlogPostsMeta();
-
-  // Fetch initial stats for all posts
-  const stats = await Promise.all(
-    posts.map(async (post) => ({
-      slug: post.slug,
-      views: await getViewCount(post.slug),
-      likes: await getLikeCount(post.slug),
-      shares: await getShareCount(post.slug),
-    }))
-  );
+  // Move posts fetching to the top level for instant SSR
+  const postsPromise = getBlogPostsMeta();
 
   return (
     <Suspense fallback={<LoadingSkeleton />}>
-      <BlogClientPage posts={posts} initialStats={stats} />
+      <BlogClientPage postsPromise={postsPromise} />
     </Suspense>
   );
 }
