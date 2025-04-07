@@ -1,19 +1,82 @@
 {
   "context": {
-    "stack": [
-      "Next.js 15.2+",
-      "TypeScript 5.0+",
-      "Prisma 5.12+",
-      "Zod 3.22+",
-      "PostgreSQL 16"
-    ]
+    "stack": {
+      "framework": {
+        "core": "Next.js 15.2+",
+        "runtime": "Node.js 20.x",
+        "typescript": "TypeScript 5.3+"
+      },
+      "database": {
+        "orm": "Prisma 5.12+",
+        "engine": "PostgreSQL 16",
+        "extensions": ["pgvector", "timescaledb"]
+      },
+      "validation": {
+        "schema": "Zod 3.22+",
+        "api": "OpenAPI 3.1"
+      }
+    }
   },
   "patterns": {
-    "auth": "Utiliser Better-Auth avec validation Zod et middleware de sécurité",
-    "server-action": "Toujours inclure la gestion d'erreur structurée"
+    "auth": {
+      "strategy": "Better-Auth with JWT",
+      "validation": "Zod schemas for all auth flows",
+      "security": {
+        "middleware": [
+          "CSRF protection",
+          "Rate limiting",
+          "Input sanitization"
+        ],
+        "headers": ["CORS", "CSP", "HSTS"],
+        "cookies": "HTTPOnly, Secure, SameSite=Strict"
+      }
+    },
+    "data": {
+      "fetching": "React Server Components by default",
+      "mutations": "Server Actions with optimistic updates",
+      "caching": ["React Cache", "Vercel KV"]
+    },
+    "server-actions": {
+      "validation": "Pre-execution Zod validation",
+      "error-handling": {
+        "types": ["Validation", "Database", "Authentication", "Network"],
+        "reporting": "Structured error responses with codes"
+      },
+      "transactions": "Prisma atomic operations"
+    }
   },
-  "anti-patterns": [
-    "Éviter les raw SQL dans Prisma",
-    "Pas de logique métier dans les composants React"
-  ]
+  "anti-patterns": {
+    "database": [
+      "Direct SQL queries",
+      "Non-typed Prisma calls",
+      "Missing index declarations"
+    ],
+    "components": [
+      "Business logic in React components",
+      "Prop drilling beyond 2 levels",
+      "Non-memoized expensive computations"
+    ],
+    "security": [
+      "Client-side JWT storage",
+      "Unsanitized user input",
+      "Missing rate limiters"
+    ],
+    "performance": [
+      "Non-edge API routes",
+      "Unnecessary client components",
+      "Unoptimized images"
+    ]
+  },
+  "best-practices": {
+    "development": {
+      "linting": ["eslint-config-next", "prettier"],
+      "testing": ["Playwright", "Vitest", "MSW"],
+      "monitoring": ["OpenTelemetry", "Sentry"]
+    },
+    "deployment": {
+      "ci-cd": ["GitHub Actions", "Vercel"],
+      "environment": ["Docker", "pnpm"],
+      "analytics": ["Vercel Analytics", "PostHog"]
+    }
+  }
 }

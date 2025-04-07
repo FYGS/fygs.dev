@@ -139,3 +139,26 @@
   scrollbar-width: thin;
   scrollbar-color: hsl(var(--accent)) transparent;
 }
+
+/* Code block styles */
+.mdx-content {
+  @apply prose-code:text-primary prose-pre:bg-muted/50 prose-pre:border prose-pre:border-border;
+}
+
+.mdx-content pre {
+  @apply rounded-lg overflow-x-auto backdrop-blur-sm transition-all duration-300;
+}
+
+.mdx-content code {
+  @apply bg-muted/50 rounded px-1.5 py-0.5 font-mono text-sm;
+}
+
+/* Line highlight for code blocks */
+.line-highlight {
+  @apply bg-primary/5 border-l-2 border-primary transition-all duration-200;
+}
+
+/* Code block line numbers */
+.line-number {
+  @apply text-muted-foreground/50 select-none text-right pr-4 inline-block w-[2.5rem] -ml-[3.5rem];
+}

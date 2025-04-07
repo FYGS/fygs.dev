@@ -769,4 +769,3 @@ export const generatePDF = () => {
   return doc;
 };
 export default generatePDF;
-

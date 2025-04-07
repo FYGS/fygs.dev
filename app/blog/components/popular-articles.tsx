@@ -6,24 +6,29 @@ import {
   getViewCount,
 } from "@/lib/reading-stats";
 import { BlogPost } from "@/lib/types";
-import { BlogPostCard } from "./blog-post-card";
 import { TrendingUp } from "lucide-react";
+import { BlogPostCard } from "./blog-post-card";
 
 interface PopularArticlesProps {
   currentPost: BlogPost;
   maxArticles?: number;
+  excludeSlugs?: string[]; // Add this prop
 }
 
 export async function PopularArticles({
   currentPost,
   maxArticles = 3,
+  excludeSlugs = [],
 }: PopularArticlesProps) {
-  const popularSlugs = await getPopularPosts(maxArticles + 1);
+  const popularSlugs = await getPopularPosts(maxArticles * 2); // Fetch more to ensure we have enough after filtering
   const allPosts = await getAllBlogPosts();
 
   const popularPosts = allPosts
     .filter((post) => popularSlugs.includes(post.slug))
-    .filter((post) => post.slug !== currentPost.slug)
+    .filter(
+      (post) =>
+        post.slug !== currentPost.slug && !excludeSlugs.includes(post.slug)
+    )
     .slice(0, maxArticles);
 
   if (popularPosts.length === 0) return null;
