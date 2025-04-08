@@ -1,6 +1,14 @@
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { AlertCircle, BookOpen, Brain, Clock, Code2, Laptop2, MessageSquare, Target } from "lucide-react";
+import {
+  AlertCircle,
+  BookOpen,
+  Brain,
+  Clock,
+  Code2,
+  Laptop2,
+  MessageSquare,
+  Target,
+} from "lucide-react";
 
 const preparationSteps = [
   {
@@ -126,7 +134,7 @@ export function PreparationGuide() {
       <section className="space-y-6">
         <h2 className="text-2xl font-bold">Timeline de Préparation</h2>
         <div className="grid gap-6 md:grid-cols-2">
-          {timelineItems.map((item, index) => (
+          {timelineItems.map((item) => (
             <Card key={item.title} className="p-6">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -159,8 +167,12 @@ export function PreparationGuide() {
                 <div className="flex items-start gap-3">
                   <AlertCircle className="w-5 h-5 text-red-500 mt-0.5" />
                   <div>
-                    <h3 className="font-semibold text-red-500">{item.mistake}</h3>
-                    <p className="text-muted-foreground mt-2">{item.solution}</p>
+                    <h3 className="font-semibold text-red-500">
+                      {item.mistake}
+                    </h3>
+                    <p className="text-muted-foreground mt-2">
+                      {item.solution}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -185,7 +197,8 @@ export function PreparationGuide() {
                 </li>
                 <li className="text-muted-foreground text-sm flex items-start gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5" />
-                  Considérez chaque erreur comme une opportunité d&apos;apprentissage
+                  Considérez chaque erreur comme une opportunité
+                  d&apos;apprentissage
                 </li>
                 <li className="text-muted-foreground text-sm flex items-start gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5" />

@@ -2,13 +2,12 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Brain,
-  Code2,
   Database,
   Network,
   Settings,
   Shield,
   Terminal,
-  Tool,
+  Wrench,
 } from "lucide-react";
 
 const categories = [
@@ -204,7 +203,7 @@ export function QAGuide() {
           <Card className="p-6">
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <Tool className="w-5 h-5 text-primary" />
+                <Wrench className="w-5 h-5 text-primary" />
                 <h3 className="font-semibold">Approche</h3>
               </div>
               <ul className="space-y-2">

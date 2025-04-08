@@ -138,7 +138,8 @@ const methodologies = [
   },
   {
     name: "Divide & Conquer",
-    description: "Décomposez les problèmes complexes en sous-problèmes gérables.",
+    description:
+      "Décomposez les problèmes complexes en sous-problèmes gérables.",
     steps: [
       {
         title: "Divide",
@@ -165,12 +166,8 @@ export function ProblemSolvingGuide() {
         {steps.map((step) => (
           <Card key={step.title} className="p-6 space-y-6">
             <div className="space-y-4">
-              <h3 className="text-xl font-semibold">
-                {step.title}
-              </h3>
-              <p className="text-muted-foreground">
-                {step.description}
-              </p>
+              <h3 className="text-xl font-semibold">{step.title}</h3>
+              <p className="text-muted-foreground">{step.description}</p>
             </div>
 
             <div className="space-y-4">
@@ -194,21 +191,31 @@ export function ProblemSolvingGuide() {
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Badge variant="outline">Problème</Badge>
-                  <p className="text-muted-foreground">{step.example.problem}</p>
+                  <p className="text-muted-foreground">
+                    {step.example.problem}
+                  </p>
                 </div>
                 <div className="grid gap-2">
                   <div className="flex items-start gap-2">
                     <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5" />
                     <div>
-                      <Badge className="bg-green-500/10 text-green-500 mb-1">Bon exemple</Badge>
-                      <p className="text-muted-foreground">{step.example.good}</p>
+                      <Badge className="bg-green-500/10 text-green-500 mb-1">
+                        Bon exemple
+                      </Badge>
+                      <p className="text-muted-foreground">
+                        {step.example.good}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-start gap-2">
                     <XCircle className="w-5 h-5 text-red-500 mt-0.5" />
                     <div>
-                      <Badge className="bg-red-500/10 text-red-500 mb-1">À éviter</Badge>
-                      <p className="text-muted-foreground">{step.example.bad}</p>
+                      <Badge className="bg-red-500/10 text-red-500 mb-1">
+                        À éviter
+                      </Badge>
+                      <p className="text-muted-foreground">
+                        {step.example.bad}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -225,16 +232,12 @@ export function ProblemSolvingGuide() {
           {methodologies.map((method) => (
             <Card key={method.name} className="p-6 space-y-6">
               <div className="space-y-4">
-                <h3 className="text-xl font-semibold">
-                  {method.name}
-                </h3>
-                <p className="text-muted-foreground">
-                  {method.description}
-                </p>
+                <h3 className="text-xl font-semibold">{method.name}</h3>
+                <p className="text-muted-foreground">{method.description}</p>
               </div>
 
               <div className="space-y-4">
-                {method.steps.map((step, index) => (
+                {method.steps.map((step) => (
                   <div key={step.title} className="flex items-start gap-3">
                     <ArrowRight className="w-5 h-5 text-primary mt-0.5" />
                     <div>
@@ -259,16 +262,16 @@ export function ProblemSolvingGuide() {
             <h3 className="font-semibold">Conseils Pro</h3>
             <div className="space-y-2 text-muted-foreground">
               <p>
-                • La clé d'une bonne résolution de problème est la communication constante. 
-                Expliquez votre pensée à chaque étape.
+                • La clé d&apos;une bonne résolution de problème est la
+                communication constante. Expliquez votre pensée à chaque étape.
               </p>
               <p>
-                • N'hésitez pas à demander des clarifications. C'est souvent une partie 
-                attendue du processus.
+                • N&apos;hésitez pas à demander des clarifications. C&apos;est
+                souvent une partie attendue du processus.
               </p>
               <p>
-                • Si vous êtes bloqué, revenez aux bases. Parfois, la solution la plus 
-                simple est la meilleure.
+                • Si vous êtes bloqué, revenez aux bases. Parfois, la solution
+                la plus simple est la meilleure.
               </p>
             </div>
           </div>

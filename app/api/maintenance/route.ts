@@ -22,20 +22,20 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    
+
     // Mettre à jour la configuration
     if (typeof body.enabled === "boolean") {
       maintenanceConfig.enabled = body.enabled;
     }
-    
+
     if (body.startTime) {
       maintenanceConfig.startTime = new Date(body.startTime);
     }
-    
+
     if (body.endTime) {
       maintenanceConfig.endTime = new Date(body.endTime);
     }
-    
+
     if (body.allowedIPs) {
       maintenanceConfig.allowedIPs = body.allowedIPs;
     }
@@ -50,6 +50,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    console.error("Maintenance update error:", error);
     return new NextResponse("Erreur lors de la mise à jour", { status: 400 });
   }
 }

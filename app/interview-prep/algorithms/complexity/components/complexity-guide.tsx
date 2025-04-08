@@ -1,9 +1,14 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
-  Clock,
-  HardDrive,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   LineChart,
   Binary,
   BarChart4,
@@ -15,15 +20,23 @@ const complexityClasses = [
   {
     name: "O(1)",
     type: "Constant",
-    description: "Temps d'exécution constant, indépendant de la taille des données",
-    examples: ["Accès à un élément de tableau", "Opérations arithmétiques simples"],
+    description:
+      "Temps d'exécution constant, indépendant de la taille des données",
+    examples: [
+      "Accès à un élément de tableau",
+      "Opérations arithmétiques simples",
+    ],
     realWorld: "Vérifier si un nombre est pair",
   },
   {
     name: "O(log n)",
     type: "Logarithmique",
-    description: "Croissance très lente, divise le problème en parties plus petites",
-    examples: ["Recherche binaire", "Certaines opérations sur les arbres équilibrés"],
+    description:
+      "Croissance très lente, divise le problème en parties plus petites",
+    examples: [
+      "Recherche binaire",
+      "Certaines opérations sur les arbres équilibrés",
+    ],
     realWorld: "Rechercher un mot dans un dictionnaire",
   },
   {
@@ -36,7 +49,8 @@ const complexityClasses = [
   {
     name: "O(n log n)",
     type: "Linéarithmique",
-    description: "Légèrement plus que linéaire, typique des algorithmes efficaces",
+    description:
+      "Légèrement plus que linéaire, typique des algorithmes efficaces",
     examples: ["Tri fusion", "Tri rapide (cas moyen)"],
     realWorld: "Trier une liste de noms",
   },
@@ -152,10 +166,11 @@ export function ComplexityGuide() {
           Complexité Algorithmique
         </h1>
         <p className="text-lg text-muted-foreground">
-          La complexité algorithmique est un concept fondamental en programmation qui
-          mesure l&apos;efficacité d&apos;un algorithme en termes de temps d&apos;exécution
-          et d&apos;espace mémoire utilisé. Comprendre et analyser la complexité est
-          crucial pour développer des solutions performantes.
+          La complexité algorithmique est un concept fondamental en
+          programmation qui mesure l&apos;efficacité d&apos;un algorithme en
+          termes de temps d&apos;exécution et d&apos;espace mémoire utilisé.
+          Comprendre et analyser la complexité est crucial pour développer des
+          solutions performantes.
         </p>
       </div>
 
@@ -239,7 +254,9 @@ export function ComplexityGuide() {
           {commonMistakes.map((mistake) => (
             <Card key={mistake.mistake} className="p-6">
               <div className="space-y-4">
-                <h3 className="font-semibold text-red-500">{mistake.mistake}</h3>
+                <h3 className="font-semibold text-red-500">
+                  {mistake.mistake}
+                </h3>
                 <p className="text-muted-foreground text-sm">
                   {mistake.explanation}
                 </p>
@@ -307,12 +324,13 @@ export function ComplexityGuide() {
             <h3 className="font-semibold">Conseils Pro</h3>
             <div className="space-y-2 text-muted-foreground">
               <p>
-                • Commencez toujours par une solution qui fonctionne, même si elle
-                n&apos;est pas optimale. Vous pourrez l&apos;optimiser ensuite.
+                • Commencez toujours par une solution qui fonctionne, même si
+                elle n&apos;est pas optimale. Vous pourrez l&apos;optimiser
+                ensuite.
               </p>
               <p>
-                • Lors de l&apos;analyse de complexité, concentrez-vous sur le cas le
-                plus défavorable (worst case) sauf indication contraire.
+                • Lors de l&apos;analyse de complexité, concentrez-vous sur le
+                cas le plus défavorable (worst case) sauf indication contraire.
               </p>
               <p>
                 • N&apos;oubliez pas que la lisibilité du code est souvent plus
