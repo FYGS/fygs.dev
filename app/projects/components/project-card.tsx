@@ -15,16 +15,17 @@ import { ProjectStats } from "./project-stats";
 
 interface ProjectCardProps {
   project: Project;
+  isPriority?: boolean;
 }
 
-export function ProjectCard({ project }: ProjectCardProps) {
+export function ProjectCard({ project, isPriority = false }: ProjectCardProps) {
   const { x, y, scale } = useHoverAnimation();
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <motion.div style={{ x, y, scale }} whileHover="hover" className="h-full">
       <Card className="overflow-hidden h-full flex flex-col">
-        <div className="relative">
+        <div className="relative aspect-video rounded-lg overflow-hidden">
           <motion.div
             className="relative h-48"
             variants={{
@@ -36,8 +37,10 @@ export function ProjectCard({ project }: ProjectCardProps) {
               src={project.image}
               alt={project.title}
               fill
-              className="object-cover"
-              priority
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-cover transition-transform group-hover:scale-105"
+              priority={isPriority}
+              quality={85}
             />
           </motion.div>
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
@@ -56,7 +59,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
         <div className="p-6 flex-1 flex flex-col">
           <motion.h3
-            className="text-2xl font-semibold mb-3"
+            className="text-2xl font-semibold mb-3 transition-colors"
             variants={{
               hover: { color: "var(--primary)" },
             }}

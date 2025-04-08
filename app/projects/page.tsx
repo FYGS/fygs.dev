@@ -226,12 +226,18 @@ function ProjectsContent() {
                   : "grid-cols-1"
               )}
             >
-              {paginatedProjects.map((project) => (
+              {paginatedProjects.map((project, index) => (
                 <FadeIn key={project.id}>
                   {viewMode === "grid" ? (
-                    <ProjectCard project={project} />
+                    <ProjectCard
+                      project={project}
+                      isPriority={index === 0 && currentPage === 1}
+                    />
                   ) : (
-                    <ProjectListItem project={project} />
+                    <ProjectListItem
+                      project={project}
+                      isPriority={index === 0 && currentPage === 1}
+                    />
                   )}
                 </FadeIn>
               ))}

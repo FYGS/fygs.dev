@@ -15,9 +15,13 @@ import { ProjectStats } from "./project-stats";
 
 interface ProjectListItemProps {
   project: Project;
+  isPriority?: boolean;
 }
 
-export function ProjectListItem({ project }: ProjectListItemProps) {
+export function ProjectListItem({
+  project,
+  isPriority = false,
+}: ProjectListItemProps) {
   const { x, y, scale } = useHoverAnimation();
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -37,8 +41,10 @@ export function ProjectListItem({ project }: ProjectListItemProps) {
                 src={project.image}
                 alt={project.title}
                 fill
+                sizes="(max-width: 768px) 100vw, 50vw"
                 className="object-cover"
-                priority
+                priority={isPriority}
+                quality={85}
               />
             </motion.div>
           </div>
