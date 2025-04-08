@@ -20,25 +20,25 @@ export async function generateSitemap(): Promise<Route[]> {
   // Base routes
   const routes: Route[] = [
     {
-      url: "https://www.fygs.dev",
+      url: "https://fygs.dev",
       lastModified: new Date().toISOString(),
       changeFrequency: "weekly",
       priority: 1,
     },
     {
-      url: "https://www.fygs.dev/resume",
+      url: "https://fygs.dev/resume",
       lastModified: new Date().toISOString(),
       changeFrequency: "monthly",
       priority: 0.8,
     },
     {
-      url: "https://www.fygs.dev/blog",
+      url: "https://fygs.dev/blog",
       lastModified: new Date().toISOString(),
       changeFrequency: "daily",
       priority: 0.9,
     },
     {
-      url: "https://www.fygs.dev/projects",
+      url: "https://fygs.dev/projects",
       lastModified: new Date().toISOString(),
       changeFrequency: "weekly",
       priority: 0.8,
@@ -53,7 +53,7 @@ export async function generateSitemap(): Promise<Route[]> {
 
   // Add blog posts
   const blogRoutes = blogPosts.map((post) => ({
-    url: `https://www.fygs.dev/blog/${post.slug}`,
+    url: `https://fygs.dev/blog/${post.slug}`,
     lastModified: post.date,
     changeFrequency: "monthly" as const,
     priority: 0.7,
@@ -62,7 +62,7 @@ export async function generateSitemap(): Promise<Route[]> {
   // Add tag pages if they exist
   const tagRoutes = [
     {
-      url: "https://www.fygs.dev/blog/tags",
+      url: "https://fygs.dev/blog/tags",
       lastModified: new Date().toISOString(),
       changeFrequency: "weekly" as const,
       priority: 0.6,

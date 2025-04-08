@@ -16,15 +16,12 @@ import { Spacing } from "./_components/Spacing";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { defaultMetadata } from "./_lib/metadata";
 import { AutoLoader } from "@/components/auto-loader";
 
 const AnekTelugu = Anek_Telugu({
   subsets: ["latin"],
   variable: "--font-caption",
 });
-
-export const metadata = defaultMetadata;
 
 export default function RootLayout({
   children,

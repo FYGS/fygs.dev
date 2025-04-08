@@ -3,9 +3,9 @@ import { InterviewPrepHero } from "./_components/hero";
 import { PracticeSections } from "./_components/practice-sections";
 
 export const metadata: Metadata = {
-  title: "Interview Prep | Fernand SOUALO",
+  title: "Préparation aux Entretiens Techniques",
   description:
-    "Préparation structurée aux entretiens techniques - Algorithmes, System Design, Frontend, Backend et plus",
+    "Guide complet de préparation aux entretiens techniques : algorithmes, structures de données, systèmes distribués et bonnes pratiques.",
 };
 
 export default function InterviewPrepPage() {

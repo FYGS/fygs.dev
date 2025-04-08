@@ -5,14 +5,29 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ArrowUpRight, Menu, Search } from "lucide-react";
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { SITE_URL } from "../_lib/constants";
+import { generateMetadata } from "../_lib/seo-utils";
 import { Breadcrumbs } from "./_components/breadcrumbs";
 import { TopicsNav } from "./_components/topics-nav";
 
-export const metadata: Metadata = {
-  title: "Préparation aux Entretiens Techniques",
+export const metadata: Metadata = generateMetadata({
+  title: "Préparation aux Entretiens Techniques | Guide Complet FYGS",
   description:
-    "Guide complet de préparation aux entretiens techniques : algorithmes, structures de données, systèmes distribués et bonnes pratiques.",
-};
+    "Guide complet de préparation aux entretiens techniques : algorithmes, structures de données, systèmes distribués et bonnes pratiques. Ressources essentielles pour les développeurs.",
+  keywords: [
+    "Entretiens Techniques",
+    "Algorithmes",
+    "Structures de Données",
+    "Systèmes Distribués",
+    "Architecture Cloud",
+    "Guide Développeur",
+    "Préparation Entretien",
+    "Best Practices",
+  ],
+  path: "/interview-prep",
+  type: "article",
+  image: `${SITE_URL}/interview-prep/og.png`,
+});
 
 export default function InterviewPrepLayout({
   children,
