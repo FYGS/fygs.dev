@@ -1,4 +1,5 @@
 import { Section } from "@/app/_components/Section";
+import { SITE_URL } from "@/app/_lib/constants";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,9 +11,8 @@ import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ProjectStats } from "../components/project-stats";
+import { ProjectStats } from "../_components/project-stats";
 import { FEATURED_PROJECTS } from "../data";
-import { SITE_URL } from "@/app/_lib/constants";
 
 interface Props {
   params: Promise<{

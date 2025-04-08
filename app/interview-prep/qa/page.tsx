@@ -1,4 +1,4 @@
-import { QAGuide } from "./components/qa-guide";
+import { QAGuide } from "./_components/qa-guide";
 
 export const metadata = {
   title: "Questions & Réponses | Préparation aux Entretiens",

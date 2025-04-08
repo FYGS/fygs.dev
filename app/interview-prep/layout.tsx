@@ -1,12 +1,12 @@
-import type { Metadata } from "next";
-import { TopicsNav } from "./components/topics-nav";
-import { Breadcrumbs } from "./components/breadcrumbs";
-import { Button } from "@/components/ui/button";
-import { Menu, Search, ArrowUpRight } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { ArrowUpRight, Menu, Search } from "lucide-react";
+import type { Metadata } from "next";
 import { Suspense } from "react";
+import { Breadcrumbs } from "./_components/breadcrumbs";
+import { TopicsNav } from "./_components/topics-nav";
 
 export const metadata: Metadata = {
   title: "Préparation aux Entretiens Techniques",
@@ -61,7 +61,9 @@ export default function InterviewPrepLayout({
       <div className="hidden border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:block md:w-72 lg:w-80">
         <div className="flex h-full flex-col">
           <div className="flex h-14 items-center justify-between px-6 border-b">
-            <span className="font-semibold tracking-tight">Guide d&apos;Entretien</span>
+            <span className="font-semibold tracking-tight">
+              Guide d&apos;Entretien
+            </span>
             <Badge variant="secondary" className="font-normal">
               Beta
             </Badge>
@@ -69,10 +71,7 @@ export default function InterviewPrepLayout({
           <div className="p-4 border-b">
             <div className="relative">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Rechercher..."
-                className="pl-8 bg-muted/50"
-              />
+              <Input placeholder="Rechercher..." className="pl-8 bg-muted/50" />
             </div>
           </div>
           <div className="flex-1 overflow-y-auto py-6 px-2">
@@ -85,7 +84,9 @@ export default function InterviewPrepLayout({
               rel="noopener noreferrer"
               className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2 text-sm transition-colors hover:bg-muted"
             >
-              <span className="text-muted-foreground">Contribuer sur GitHub</span>
+              <span className="text-muted-foreground">
+                Contribuer sur GitHub
+              </span>
               <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
             </a>
           </div>
@@ -98,7 +99,8 @@ export default function InterviewPrepLayout({
         <header className="sticky top-0 z-30 h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="container flex h-full max-w-7xl items-center justify-between px-6 lg:px-8">
             <div className="flex items-center gap-6">
-              <div className="md:hidden w-4" /> {/* Spacer for mobile menu button */}
+              <div className="md:hidden w-4" />{" "}
+              {/* Spacer for mobile menu button */}
               <Breadcrumbs />
             </div>
             <div className="flex items-center gap-4">
@@ -136,7 +138,8 @@ export default function InterviewPrepLayout({
         <footer className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="container flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-6 md:h-14 md:flex-row lg:px-8">
             <p className="text-sm text-muted-foreground">
-              Créé avec ❤️ pour aider les développeurs à réussir leurs entretiens
+              Créé avec ❤️ pour aider les développeurs à réussir leurs
+              entretiens
             </p>
             <div className="flex items-center gap-4">
               <p className="text-sm text-muted-foreground">

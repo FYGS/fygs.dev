@@ -9,7 +9,7 @@ export function middleware(request: NextRequest) {
   }
 
   const requestPath = request.nextUrl.pathname;
-  
+
   // Permettre l'accès à la page de maintenance elle-même
   if (requestPath === "/maintenance") {
     return NextResponse.next();
@@ -21,7 +21,7 @@ export function middleware(request: NextRequest) {
   }
 
   // Vérifier si l'IP est autorisée
-  const clientIP = request.ip || request.headers.get("x-forwarded-for") || "";
+  const clientIP = request.headers.get("x-forwarded-for") || "";
   if (maintenanceConfig.allowedIPs?.includes(clientIP)) {
     return NextResponse.next();
   }

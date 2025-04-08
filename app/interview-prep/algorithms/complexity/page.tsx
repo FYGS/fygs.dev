@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { ComplexityGuide } from "./components/complexity-guide";
+import { ComplexityGuide } from "./_components/complexity-guide";
 
 export const metadata: Metadata = {
   title: "Complexité Algorithmique | Algorithmes",

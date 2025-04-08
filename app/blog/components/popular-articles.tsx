@@ -7,7 +7,7 @@ import {
 } from "@/lib/reading-stats";
 import { BlogPost } from "@/lib/types";
 import { TrendingUp } from "lucide-react";
-import { BlogPostCard } from "./blog-post-card";
+import { BlogPostCard } from "@/components/blog/blog-post-card";
 
 interface PopularArticlesProps {
   currentPost: BlogPost;

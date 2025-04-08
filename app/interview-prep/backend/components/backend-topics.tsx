@@ -2,7 +2,17 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 
-const topics = [
+type Category = "Fondamental" | "Intermédiaire" | "Avancé" | "Expert";
+
+type Topic = {
+  title: string;
+  description: string;
+  category: Category;
+  topics: string[];
+  href: string;
+};
+
+const topics: Topic[] = [
   {
     title: "API Design & REST",
     description: "Conception d'APIs RESTful et bonnes pratiques.",
@@ -47,7 +57,7 @@ const topics = [
   },
 ];
 
-const categoryColors = {
+const categoryColors: Record<Category, string> = {
   Fondamental: "bg-green-500/10 text-green-500",
   Intermédiaire: "bg-yellow-500/10 text-yellow-500",
   Avancé: "bg-red-500/10 text-red-500",
@@ -65,15 +75,16 @@ export function BackendTopics() {
                 <h2 className="text-xl font-semibold group-hover:text-primary transition-colors">
                   {topic.title}
                 </h2>
-                <Badge variant="secondary" className={categoryColors[topic.category]}>
+                <Badge
+                  variant="secondary"
+                  className={categoryColors[topic.category]}
+                >
                   {topic.category}
                 </Badge>
               </div>
-              
-              <p className="text-muted-foreground">
-                {topic.description}
-              </p>
-              
+
+              <p className="text-muted-foreground">{topic.description}</p>
+
               <div className="flex flex-wrap gap-2">
                 {topic.topics.map((t) => (
                   <Badge key={t} variant="outline">

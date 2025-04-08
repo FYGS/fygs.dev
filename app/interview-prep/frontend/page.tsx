@@ -1,10 +1,11 @@
 import { Metadata } from "next";
-import { FrontendHero } from "./components/hero";
-import { FrontendTopics } from "./components/frontend-topics";
+import { FrontendHero } from "./_components/hero";
+import { FrontendTopics } from "./_components/frontend-topics";
 
 export const metadata: Metadata = {
   title: "Frontend Development | Interview Prep",
-  description: "Préparation aux questions de développement frontend, React, performance et accessibilité",
+  description:
+    "Préparation aux questions de développement frontend, React, performance et accessibilité",
 };
 
 export default function FrontendPage() {

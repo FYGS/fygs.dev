@@ -15,10 +15,10 @@ import {
   useRef,
   useState,
 } from "react";
-import { ProjectCard } from "./components/project-card";
-import { ProjectListItem } from "./components/project-list-item";
-import { TechnologyFilter } from "./components/technology-filter";
-import { ViewToggle } from "./components/view-toggle";
+import { ProjectCard } from "./_components/project-card";
+import { ProjectListItem } from "./_components/project-list-item";
+import { TechnologyFilter } from "./_components/technology-filter";
+import { ViewToggle } from "./_components/view-toggle";
 import { FEATURED_PROJECTS } from "./data";
 
 type ViewMode = "grid" | "list";

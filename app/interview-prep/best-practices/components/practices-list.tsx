@@ -1,11 +1,21 @@
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import Link from "next/link";
+import { type Category } from "./practice-header";
 
-const practices = [
+type Practice = {
+  title: string;
+  description: string;
+  category: Category;
+  topics: string[];
+  href: string;
+};
+
+const practices: Practice[] = [
   {
     title: "Communication",
-    description: "Comment communiquer efficacement pendant un entretien technique.",
+    description:
+      "Comment communiquer efficacement pendant un entretien technique.",
     category: "Soft Skills",
     topics: ["Clarification", "Pensée à voix haute", "Questions pertinentes"],
     href: "/interview-prep/best-practices/communication",
@@ -26,7 +36,8 @@ const practices = [
   },
   {
     title: "Préparation",
-    description: "Comment se préparer efficacement pour un entretien technique.",
+    description:
+      "Comment se préparer efficacement pour un entretien technique.",
     category: "Organisation",
     topics: ["Planning", "Mock Interviews", "Resources"],
     href: "/interview-prep/best-practices/preparation",
@@ -47,11 +58,11 @@ const practices = [
   },
 ];
 
-const categoryColors = {
+const categoryColors: Record<Category, string> = {
   "Soft Skills": "bg-blue-500/10 text-blue-500",
-  "Technique": "bg-green-500/10 text-green-500",
-  "Organisation": "bg-yellow-500/10 text-yellow-500",
-  "Carrière": "bg-purple-500/10 text-purple-500",
+  Technique: "bg-green-500/10 text-green-500",
+  Organisation: "bg-yellow-500/10 text-yellow-500",
+  Carrière: "bg-purple-500/10 text-purple-500",
 };
 
 export function PracticesList() {
@@ -65,15 +76,16 @@ export function PracticesList() {
                 <h2 className="text-xl font-semibold group-hover:text-primary transition-colors">
                   {practice.title}
                 </h2>
-                <Badge variant="secondary" className={categoryColors[practice.category]}>
+                <Badge
+                  variant="secondary"
+                  className={categoryColors[practice.category]}
+                >
                   {practice.category}
                 </Badge>
               </div>
-              
-              <p className="text-muted-foreground">
-                {practice.description}
-              </p>
-              
+
+              <p className="text-muted-foreground">{practice.description}</p>
+
               <div className="flex flex-wrap gap-2">
                 {practice.topics.map((topic) => (
                   <Badge key={topic} variant="outline">

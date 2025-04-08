@@ -1,8 +1,8 @@
 "use client";
 
+import { Pagination } from "@/app/interview-prep/_components/pagination";
 import { Card } from "@/components/ui/card";
-import { Pagination } from "@/app/interview-prep/components/pagination";
-import { usePagination } from "@/app/interview-prep/hooks/use-pagination";
+import { usePagination } from "@/hooks/interview-prep/use-pagination";
 import {
   BookOpen,
   Brain,
@@ -11,6 +11,7 @@ import {
   Database,
   DollarSign,
   Layout,
+  LucideIcon,
   MessageSquare,
   Network,
   Shield,
@@ -18,7 +19,6 @@ import {
   Timer,
 } from "lucide-react";
 import Link from "next/link";
-import { LucideIcon } from "lucide-react";
 
 interface Section {
   title: string;

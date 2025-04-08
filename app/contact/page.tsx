@@ -2,7 +2,7 @@ import { Section } from "@/app/_components/Section";
 import { Card } from "@/components/ui/card";
 import { Calendar, Mail, MapPin, MessageSquare } from "lucide-react";
 import { Metadata } from "next";
-import { ContactForm } from "./components/contact-form";
+import { ContactForm } from "@/components/contact/contact-form";
 
 export const metadata: Metadata = {
   title: "Contact - Fernand SOUALO | Let's Work Together",

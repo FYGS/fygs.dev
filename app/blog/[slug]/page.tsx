@@ -7,8 +7,8 @@ import {
   generateJsonLdScript,
 } from "@/app/_lib/jsonld-utils";
 import { generateArticleMetadata } from "@/app/_lib/seo-utils";
-import { ReadingProgress } from "@/app/blog/components/reading-progress";
-import { SimilarArticles } from "@/app/blog/components/similar-articles";
+import { ReadingProgress } from "@/components/blog/reading-progress";
+import { SimilarArticles } from "@/components/blog/similar-articles";
 import { TableOfContents } from "@/components/mdx/toc";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,11 +17,11 @@ import { Calendar, Clock } from "lucide-react";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { CoverImage } from "@/components/blog/cover-image";
+import { PopularArticles } from "@/components/blog/popular-articles";
+import { PostStatsView } from "@/components/blog/post-stats-view";
 import { handleView } from "../actions/social-interactions";
 import { getPostStats } from "../actions/stats";
-import { CoverImage } from "../components/cover-image";
-import { PopularArticles } from "../components/popular-articles";
-import { PostStatsView } from "../components/post-stats-view";
 
 interface Props {
   params: Promise<{

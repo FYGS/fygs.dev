@@ -1,11 +1,15 @@
-import { Card } from "@/components/ui/card";
+"use client";
+
+import { Section } from "@/app/_components/Section";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { AlertCircle, CheckCircle2, XCircle } from "lucide-react";
 
 const sections = [
   {
     title: "Clarification des Problèmes",
-    description: "Comment poser les bonnes questions pour bien comprendre le problème.",
+    description:
+      "Comment poser les bonnes questions pour bien comprendre le problème.",
     tips: [
       {
         type: "do",
@@ -28,7 +32,8 @@ const sections = [
   },
   {
     title: "Pensée à Voix Haute",
-    description: "L'importance d'expliquer votre raisonnement pendant que vous résolvez le problème.",
+    description:
+      "L'importance d'expliquer votre raisonnement pendant que vous résolvez le problème.",
     tips: [
       {
         type: "do",
@@ -76,75 +81,84 @@ const sections = [
 
 export function CommunicationGuide() {
   return (
-    <div className="space-y-8">
-      {sections.map((section) => (
-        <Card key={section.title} className="p-6 space-y-6">
-          <div className="space-y-4">
-            <h2 className="text-2xl font-semibold">
-              {section.title}
-            </h2>
-            <p className="text-muted-foreground">
-              {section.description}
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            <h3 className="font-semibold">Conseils :</h3>
-            <div className="grid gap-3">
-              {section.tips.map((tip, index) => (
-                <div key={index} className="flex items-start gap-2">
-                  {tip.type === "do" ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5" />
-                  ) : (
-                    <XCircle className="w-5 h-5 text-red-500 mt-0.5" />
-                  )}
-                  <p className="text-muted-foreground">{tip.text}</p>
-                </div>
-              ))}
+    <Section>
+      <div className="space-y-8">
+        {sections.map((section) => (
+          <Card key={section.title} className="p-6 space-y-6">
+            <div className="space-y-4">
+              <h2 className="text-2xl font-semibold">{section.title}</h2>
+              <p className="text-muted-foreground">{section.description}</p>
             </div>
-          </div>
 
-          <div className="space-y-4">
-            <h3 className="font-semibold">Exemple :</h3>
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Badge variant="outline">Situation</Badge>
-                <p className="text-muted-foreground">{section.example.situation}</p>
+            <div className="space-y-4">
+              <h3 className="font-semibold">Conseils :</h3>
+              <div className="grid gap-3">
+                {section.tips.map((tip, index) => (
+                  <div key={index} className="flex items-start gap-2">
+                    {tip.type === "do" ? (
+                      <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5" />
+                    ) : (
+                      <XCircle className="w-5 h-5 text-red-500 mt-0.5" />
+                    )}
+                    <p className="text-muted-foreground">{tip.text}</p>
+                  </div>
+                ))}
               </div>
-              <div className="grid gap-2">
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5" />
-                  <div>
-                    <Badge className="bg-green-500/10 text-green-500 mb-1">Bon exemple</Badge>
-                    <p className="text-muted-foreground">{section.example.good}</p>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="font-semibold">Exemple :</h3>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">Situation</Badge>
+                  <p className="text-muted-foreground">
+                    {section.example.situation}
+                  </p>
+                </div>
+                <div className="grid gap-2">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5" />
+                    <div>
+                      <Badge className="bg-green-500/10 text-green-500 mb-1">
+                        Bon exemple
+                      </Badge>
+                      <p className="text-muted-foreground">
+                        {section.example.good}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <XCircle className="w-5 h-5 text-red-500 mt-0.5" />
+                    <div>
+                      <Badge className="bg-red-500/10 text-red-500 mb-1">
+                        À éviter
+                      </Badge>
+                      <p className="text-muted-foreground">
+                        {section.example.bad}
+                      </p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-start gap-2">
-                  <XCircle className="w-5 h-5 text-red-500 mt-0.5" />
-                  <div>
-                    <Badge className="bg-red-500/10 text-red-500 mb-1">À éviter</Badge>
-                    <p className="text-muted-foreground">{section.example.bad}</p>
-                  </div>
-                </div>
               </div>
+            </div>
+          </Card>
+        ))}
+
+        <Card className="p-6 bg-muted">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-primary mt-0.5" />
+            <div className="space-y-2">
+              <h3 className="font-semibold">Conseil Pro</h3>
+              <p className="text-muted-foreground">
+                La communication est souvent aussi importante que la solution
+                technique elle-même. Les recruteurs évaluent non seulement vos
+                compétences techniques, mais aussi votre capacité à collaborer
+                et à expliquer clairement vos idées.
+              </p>
             </div>
           </div>
         </Card>
-      ))}
-
-      <Card className="p-6 bg-muted">
-        <div className="flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-primary mt-0.5" />
-          <div className="space-y-2">
-            <h3 className="font-semibold">Conseil Pro</h3>
-            <p className="text-muted-foreground">
-              La communication est souvent aussi importante que la solution technique elle-même. 
-              Les recruteurs évaluent non seulement vos compétences techniques, mais aussi 
-              votre capacité à collaborer et à expliquer clairement vos idées.
-            </p>
-          </div>
-        </div>
-      </Card>
-    </div>
+      </div>
+    </Section>
   );
 }

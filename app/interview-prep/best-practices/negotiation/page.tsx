@@ -1,17 +1,19 @@
 import { Metadata } from "next";
-import { PracticeHeader } from "../components/practice-header";
-import { NegotiationGuide } from "./components/negotiation-guide";
+import { PracticeHeader } from "../_components/practice-header";
+import { NegotiationGuide } from "./_components/negotiation-guide";
 
 export const metadata: Metadata = {
   title: "Négociation | Best Practices",
-  description: "Apprenez à négocier efficacement votre salaire et vos avantages lors d'un entretien",
+  description:
+    "Apprenez à négocier efficacement votre salaire et vos avantages lors d'un entretien",
 };
 
 const practiceData = {
   title: "Négociation",
-  category: "Carrière",
+  category: "Carrière" as const,
   topics: ["Salaire", "Avantages", "Contre-offres"],
-  description: "Maîtrisez l'art de la négociation pour obtenir le package qui correspond à votre valeur.",
+  description:
+    "Maîtrisez l'art de la négociation pour obtenir le package qui correspond à votre valeur.",
 };
 
 export default function NegotiationPage() {

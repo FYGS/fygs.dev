@@ -1,4 +1,4 @@
-import { CodeQualityGuide } from "./components/code-quality-guide";
+import { CodeQualityGuide } from "./_components/code-quality-guide";
 
 export const metadata = {
   title: "Guide de Qualité de Code | Préparation aux Entretiens",

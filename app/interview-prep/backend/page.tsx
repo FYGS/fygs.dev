@@ -1,10 +1,11 @@
 import { Metadata } from "next";
-import { BackendHero } from "./components/hero";
-import { BackendTopics } from "./components/backend-topics";
+import { BackendHero } from "./_components/hero";
+import { BackendTopics } from "./_components/backend-topics";
 
 export const metadata: Metadata = {
   title: "Backend Development | Interview Prep",
-  description: "Préparation aux questions de développement backend, API, bases de données et architecture",
+  description:
+    "Préparation aux questions de développement backend, API, bases de données et architecture",
 };
 
 export default function BackendPage() {

@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { DynamicProgrammingGuide } from "../components/dynamic-programming-guide";
+import { DynamicProgrammingGuide } from "../_components/dynamic-programming-guide";
 
 export const metadata: Metadata = {
   title: "Programmation Dynamique | Interview Prep",

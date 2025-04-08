@@ -1,4 +1,4 @@
-import { PreparationGuide } from "./components/preparation-guide";
+import { PreparationGuide } from "./_components/preparation-guide";
 
 export const metadata = {
   title: "Guide de Préparation | Préparation aux Entretiens",

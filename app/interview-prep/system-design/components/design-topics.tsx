@@ -1,11 +1,22 @@
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import Link from "next/link";
 
-const topics = [
+type Category = "Fondamental" | "Intermédiaire" | "Avancé" | "Expert";
+
+type Topic = {
+  title: string;
+  description: string;
+  category: Category;
+  topics: string[];
+  href: string;
+};
+
+const topics: Topic[] = [
   {
     title: "Scalabilité & Performance",
-    description: "Techniques pour concevoir des systèmes hautement évolutifs et performants.",
+    description:
+      "Techniques pour concevoir des systèmes hautement évolutifs et performants.",
     category: "Fondamental",
     topics: ["Load Balancing", "Caching", "Database Sharding", "CDN"],
     href: "/interview-prep/system-design/scalability",
@@ -42,12 +53,17 @@ const topics = [
     title: "Études de Cas",
     description: "Analyses détaillées de systèmes réels à grande échelle.",
     category: "Expert",
-    topics: ["URL Shortener", "Chat System", "Social Network", "Video Streaming"],
+    topics: [
+      "URL Shortener",
+      "Chat System",
+      "Social Network",
+      "Video Streaming",
+    ],
     href: "/interview-prep/system-design/case-studies",
   },
 ];
 
-const categoryColors = {
+const categoryColors: Record<Category, string> = {
   Fondamental: "bg-green-500/10 text-green-500",
   Intermédiaire: "bg-yellow-500/10 text-yellow-500",
   Avancé: "bg-red-500/10 text-red-500",
@@ -65,15 +81,16 @@ export function DesignTopics() {
                 <h2 className="text-xl font-semibold group-hover:text-primary transition-colors">
                   {topic.title}
                 </h2>
-                <Badge variant="secondary" className={categoryColors[topic.category]}>
+                <Badge
+                  variant="secondary"
+                  className={categoryColors[topic.category]}
+                >
                   {topic.category}
                 </Badge>
               </div>
-              
-              <p className="text-muted-foreground">
-                {topic.description}
-              </p>
-              
+
+              <p className="text-muted-foreground">{topic.description}</p>
+
               <div className="flex flex-wrap gap-2">
                 {topic.topics.map((t) => (
                   <Badge key={t} variant="outline">

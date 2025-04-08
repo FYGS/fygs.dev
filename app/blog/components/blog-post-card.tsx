@@ -1,4 +1,5 @@
 "use client";
+import { CoverImage } from "@/components/blog/cover-image";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -6,7 +7,6 @@ import { BlogPostMeta } from "@/lib/types";
 import { motion } from "framer-motion";
 import { Calendar, Clock, Eye, FileEdit, Heart, Share2 } from "lucide-react";
 import Link from "next/link";
-import { CoverImage } from "./cover-image";
 
 interface BlogPostCardProps {
   post: BlogPostMeta;

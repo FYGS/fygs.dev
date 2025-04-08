@@ -1,10 +1,11 @@
 import { Metadata } from "next";
-import { ChallengesHero } from "./components/hero";
-import { ChallengesList } from "./components/challenges-list";
+import { ChallengesList } from "./_components/challenges-list";
+import { ChallengesHero } from "./_components/hero";
 
 export const metadata: Metadata = {
   title: "Coding Challenges | Interview Prep",
-  description: "Pratiquez avec des défis de programmation réels et améliorez vos compétences en résolution de problèmes",
+  description:
+    "Pratiquez avec des défis de programmation réels et améliorez vos compétences en résolution de problèmes",
 };
 
 export default function CodingChallengesPage() {

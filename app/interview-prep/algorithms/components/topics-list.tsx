@@ -2,17 +2,29 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 
-const topics = [
+type Difficulty = "Fondamental" | "Intermédiaire" | "Avancé";
+
+type Topic = {
+  title: string;
+  description: string;
+  difficulty: Difficulty;
+  topics: string[];
+  href: string;
+};
+
+const topics: Topic[] = [
   {
     title: "Complexité Algorithmique",
-    description: "Comprendre et analyser la complexité temporelle et spatiale des algorithmes.",
+    description:
+      "Comprendre et analyser la complexité temporelle et spatiale des algorithmes.",
     difficulty: "Fondamental",
     topics: ["Notation Big O", "Analyse de cas", "Optimisation"],
     href: "/interview-prep/algorithms/complexity",
   },
   {
     title: "Structures de Données",
-    description: "Les structures de données essentielles et leurs applications.",
+    description:
+      "Les structures de données essentielles et leurs applications.",
     difficulty: "Intermédiaire",
     topics: ["Arrays", "LinkedList", "HashTable", "Tree", "Graph"],
     href: "/interview-prep/algorithms/data-structures",
@@ -26,7 +38,8 @@ const topics = [
   },
   {
     title: "Recherche & Parcours",
-    description: "Techniques de recherche et parcours dans différentes structures.",
+    description:
+      "Techniques de recherche et parcours dans différentes structures.",
     difficulty: "Avancé",
     topics: ["BFS", "DFS", "Binary Search", "Dijkstra"],
     href: "/interview-prep/algorithms/search",
@@ -40,7 +53,7 @@ const topics = [
   },
 ];
 
-const difficultyColors = {
+const difficultyColors: Record<Difficulty, string> = {
   Fondamental: "bg-green-500/10 text-green-500",
   Intermédiaire: "bg-yellow-500/10 text-yellow-500",
   Avancé: "bg-red-500/10 text-red-500",
@@ -57,15 +70,16 @@ export function TopicsList() {
                 <h2 className="text-xl font-semibold group-hover:text-primary transition-colors">
                   {topic.title}
                 </h2>
-                <Badge variant="secondary" className={difficultyColors[topic.difficulty]}>
+                <Badge
+                  variant="secondary"
+                  className={difficultyColors[topic.difficulty]}
+                >
                   {topic.difficulty}
                 </Badge>
               </div>
-              
-              <p className="text-muted-foreground">
-                {topic.description}
-              </p>
-              
+
+              <p className="text-muted-foreground">{topic.description}</p>
+
               <div className="flex flex-wrap gap-2">
                 {topic.topics.map((t) => (
                   <Badge key={t} variant="outline">

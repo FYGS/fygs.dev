@@ -1,24 +1,17 @@
 import { Metadata } from "next";
-import { PracticeHeader } from "../components/practice-header";
-import { CommunicationGuide } from "./components/communication-guide";
+import { Suspense } from "react";
+import { CommunicationGuide } from "./_components/communication-guide";
 
 export const metadata: Metadata = {
-  title: "Communication Efficace | Best Practices",
-  description: "Apprenez à communiquer efficacement lors d'un entretien technique",
-};
-
-const practiceData = {
-  title: "Communication Efficace",
-  category: "Soft Skills",
-  topics: ["Clarification", "Pensée à voix haute", "Questions pertinentes"],
-  description: "Maîtrisez l'art de la communication technique pour impressionner vos intervieweurs.",
+  title: "Communication Skills | Interview Best Practices",
+  description:
+    "Learn effective communication techniques for technical interviews.",
 };
 
 export default function CommunicationPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
-      <PracticeHeader {...practiceData} />
+    <Suspense fallback={<div>Loading...</div>}>
       <CommunicationGuide />
-    </main>
+    </Suspense>
   );
 }

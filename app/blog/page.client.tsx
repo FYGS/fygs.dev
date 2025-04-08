@@ -7,9 +7,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { BlogPostMeta } from "@/lib/types";
 import { parseAsInteger, useQueryState } from "nuqs";
 import { Suspense, use } from "react";
-import { BlogPostCard } from "./components/blog-post-card";
-import { CategoryFilter } from "./components/category-filter";
-import { StatsProvider } from "./providers/stats-provider";
+import { BlogPostCard } from "@/components/blog/blog-post-card";
+import { CategoryFilter } from "@/components/blog/category-filter";
+import { StatsProvider } from "@/providers/blog/stats-provider";
 
 interface BlogClientPageProps {
   postsPromise: Promise<BlogPostMeta[]>;

@@ -11,7 +11,7 @@ import { motion } from "framer-motion";
 import { Calendar, Clock, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ArticlePreview } from "./article-preview";
+import { ArticlePreview } from "@/components/blog/article-preview";
 
 interface SimilarArticlesProps {
   currentPost: BlogPost;

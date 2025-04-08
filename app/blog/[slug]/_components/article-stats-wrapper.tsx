@@ -1,7 +1,7 @@
 "use client";
 
-import { ArticleStats } from "@/app/blog/components/article-stats";
-import { SocialInteractions } from "@/app/blog/components/social-interactions";
+import { ArticleStats } from "@/components/blog/article-stats";
+import { SocialInteractions } from "@/components/blog/social-interactions";
 import { cn } from "@/lib/utils";
 import { useBlogStats } from "@/stores/use-blog-stats";
 import { useEffect } from "react";

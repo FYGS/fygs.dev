@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { SocialInteractions } from "../../components/social-interactions";
-import { useStats } from "../../providers/stats-provider";
+import { SocialInteractions } from "../../../../components/blog/social-interactions";
+import { useStats } from "@/providers/blog/stats-provider";
 
 interface BlogFooterProps {
   slug: string;

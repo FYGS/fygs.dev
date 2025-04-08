@@ -1,6 +1,6 @@
 import { Metadata } from "next";
-import { ChallengeHeader } from "../components/challenge-header";
-import { StringChallenge } from "./components/string-challenge";
+import { ChallengeHeader } from "../_components/challenge-header";
+import { StringChallenge } from "./_components/string-challenge";
 
 export const metadata: Metadata = {
   title: "String Manipulation | Coding Challenges",
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 const challengeData = {
   title: "String Manipulation",
-  difficulty: "Facile",
+  difficulty: "Facile" as const,
   estimatedTime: "30 min",
   description:
     "Série de défis sur la manipulation de chaînes de caractères, incluant les palindromes et les anagrammes.",

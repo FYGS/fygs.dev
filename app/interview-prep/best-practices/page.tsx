@@ -1,10 +1,11 @@
 import { Metadata } from "next";
-import { BestPracticesHero } from "./components/hero";
-import { PracticesList } from "./components/practices-list";
+import { BestPracticesHero } from "./_components/hero";
+import { PracticesList } from "./_components/practices-list";
 
 export const metadata: Metadata = {
   title: "Best Practices | Interview Prep",
-  description: "Découvrez les meilleures pratiques pour réussir vos entretiens techniques",
+  description:
+    "Découvrez les meilleures pratiques pour réussir vos entretiens techniques",
 };
 
 export default function BestPracticesPage() {

@@ -2,7 +2,18 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 
-const challenges = [
+type Difficulty = "Facile" | "Intermédiaire" | "Difficile" | "Expert";
+
+type Challenge = {
+  title: string;
+  description: string;
+  difficulty: Difficulty;
+  topics: string[];
+  estimatedTime: string;
+  href: string;
+};
+
+const challenges: Challenge[] = [
   {
     title: "String Manipulation",
     description: "Série de défis sur la manipulation de chaînes de caractères.",
@@ -13,7 +24,8 @@ const challenges = [
   },
   {
     title: "Array Operations",
-    description: "Défis sur les opérations de tableaux et les algorithmes de tri.",
+    description:
+      "Défis sur les opérations de tableaux et les algorithmes de tri.",
     difficulty: "Intermédiaire",
     topics: ["Two Pointers", "Sliding Window", "Sorting"],
     estimatedTime: "45 min",
@@ -53,7 +65,7 @@ const challenges = [
   },
 ];
 
-const difficultyColors = {
+const difficultyColors: Record<Difficulty, string> = {
   Facile: "bg-green-500/10 text-green-500",
   Intermédiaire: "bg-yellow-500/10 text-yellow-500",
   Difficile: "bg-red-500/10 text-red-500",
@@ -72,19 +84,18 @@ export function ChallengesList() {
                   {challenge.title}
                 </h2>
                 <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className={difficultyColors[challenge.difficulty]}>
+                  <Badge
+                    variant="secondary"
+                    className={difficultyColors[challenge.difficulty]}
+                  >
                     {challenge.difficulty}
                   </Badge>
-                  <Badge variant="outline">
-                    {challenge.estimatedTime}
-                  </Badge>
+                  <Badge variant="outline">{challenge.estimatedTime}</Badge>
                 </div>
               </div>
-              
-              <p className="text-muted-foreground">
-                {challenge.description}
-              </p>
-              
+
+              <p className="text-muted-foreground">{challenge.description}</p>
+
               <div className="flex flex-wrap gap-2">
                 {challenge.topics.map((topic) => (
                   <Badge key={topic} variant="outline">

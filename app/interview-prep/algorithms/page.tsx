@@ -1,10 +1,11 @@
 import { Metadata } from "next";
-import { AlgorithmsHero } from "./components/hero";
-import { TopicsList } from "./components/topics-list";
+import { AlgorithmsHero } from "./_components/hero";
+import { TopicsList } from "./_components/topics-list";
 
 export const metadata: Metadata = {
   title: "Algorithmes & Structures de Données | Interview Prep",
-  description: "Préparation aux questions d'algorithmes et structures de données pour les entretiens techniques",
+  description:
+    "Préparation aux questions d'algorithmes et structures de données pour les entretiens techniques",
 };
 
 export default function AlgorithmsPage() {

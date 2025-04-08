@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DataStructuresGuide } from "../components/data-structures-guide";
+import { DataStructuresGuide } from "../_components/data-structures-guide";
 
 export const metadata: Metadata = {
   title:
