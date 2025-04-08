@@ -60,7 +60,7 @@ export function usePagination({
     }
 
     return [];
-  }, [totalItems, pageSize, currentPage, siblingsCount, totalPages]);
+  }, [currentPage, siblingsCount, totalPages]);
 
   const nextPage = useCallback(() => {
     return Math.min(currentPage + 1, totalPages);

@@ -201,6 +201,123 @@ Fernand SOUALO - [@fygs](https://twitter.com/fygs) - contact@fygs.dev
 
 Project Link: [https://gitlab.com/fygs/fygs.dev](https://gitlab.com/fygs/fygs.dev)
 
+## 🚀 FYGS.dev - Portfolio & Technical Interview Platform
+
+Un portfolio moderne et une plateforme de préparation aux entretiens techniques, construit avec Next.js 14, TypeScript, et TailwindCSS.
+
+## ✨ Fonctionnalités
+
+### 🎯 Plateforme d'Entretiens Techniques
+
+- **Défis de Codage Interactifs**
+  - Exercices de manipulation de chaînes
+  - Défis sur les tableaux
+  - Chronomètre intégré de 5 minutes
+  - Solutions détaillées et indices
+  - Validation en temps réel
+
+### 🎨 Design & UX
+
+- **Interface Moderne**
+  - Design responsive et adaptatif
+  - Thème clair/sombre automatique
+  - Animations fluides avec Framer Motion
+  - Loader automatique lors des transitions
+  - Composants UI personnalisés avec shadcn/ui
+
+### 🛡️ Gestion des Erreurs & Maintenance
+
+- **Pages d'Erreur Personnalisées**
+  - Page 404 animée
+  - Page d'erreur globale
+  - Page d'accès non autorisé
+  - Mode maintenance configurable
+
+### 🔧 Caractéristiques Techniques
+
+- **Performance**
+  - Rendu côté serveur (SSR)
+  - Optimisation des images
+  - Transitions de page fluides
+  - Chargement progressif
+
+## 🛠️ Technologies
+
+- **Framework**: Next.js 14
+- **Language**: TypeScript
+- **Styling**: TailwindCSS
+- **UI Components**: shadcn/ui
+- **Animations**: Framer Motion
+- **State Management**: Zustand
+- **Icons**: Lucide React
+
+## 📦 Installation
+
+1. Cloner le repository :
+
+```bash
+git clone https://github.com/fygs/fygs.dev.git
+```
+
+2. Installer les dépendances :
+
+```bash
+npm install
+# ou
+yarn install
+```
+
+3. Configurer les variables d'environnement :
+
+```bash
+cp .env.example .env.local
+```
+
+4. Lancer le serveur de développement :
+
+```bash
+npm run dev
+# ou
+yarn dev
+```
+
+## 🔐 Configuration
+
+### Variables d'Environnement
+
+- `NODE_ENV`: Environnement (development/production)
+- `ADMIN_API_KEY`: Clé API pour le mode maintenance
+- `NEXT_PUBLIC_*`: Variables publiques diverses
+
+### Mode Maintenance
+
+Le mode maintenance peut être activé via :
+
+- Configuration dans `config/maintenance.ts`
+- API REST sécurisée (`/api/maintenance`)
+- Variables d'environnement
+
+## 📚 Documentation
+
+- [Guide de Contribution](./CONTRIBUTING.md)
+- [Journal des Modifications](./CHANGELOG.md)
+- [Guide de Style](./STYLE_GUIDE.md)
+
+## 🤝 Contribution
+
+Les contributions sont les bienvenues ! Consultez notre [Guide de Contribution](./CONTRIBUTING.md) pour plus d'informations.
+
+## 📝 Licence
+
+Ce projet est sous licence MIT - voir le fichier [LICENSE](./LICENSE) pour plus de détails.
+
+## 📧 Contact
+
+- LinkedIn: [Fernand Soualo](https://www.linkedin.com/in/fernandsoualo/)
+- GitHub: [@fygs](https://github.com/fygs)
+- Hashnode: [@FYGS](https://hashnode.com/@FYGS)
+- Email: fygs.dev@gmail.com
+
 https://code.visualstudio.com/docs/copilot/copilot-customization#_reusable-prompt-files-experimental
 
 Comptes vercel:

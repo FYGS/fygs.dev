@@ -5,6 +5,78 @@
 [![Keep a Changelog](https://img.shields.io/badge/Keep%20a%20Changelog-1.0.0-orange?style=flat-square)](https://keepachangelog.com/en/1.0.0/)
 [![Semantic Versioning](https://img.shields.io/badge/Semantic%20Versioning-2.0.0-blue?style=flat-square)](https://semver.org/spec/v2.0.0.html)
 
+## [1.2.0] - 2024-01-10 🚀
+
+### ✨ Added
+
+- Nouveau système de chargement automatique avec animation du favicon
+  - Chargement automatique
+  - Animation du favicon
+- Pages d'erreur personnalisées (404, erreur globale, accès non autorisé)
+  - Erreur 404
+  - Erreur globale
+  - Accès non autorisé
+- Mode maintenance configurable avec API sécurisée
+  - Mode maintenance
+  - API sécurisée
+- Système de gestion des erreurs global
+  - Gestion des erreurs
+- Middleware pour le routage en mode maintenance
+  - Routage en mode maintenance
+
+### 🔄 Changed
+
+- Refonte du système de chargement pour une activation automatique
+  - Activation automatique
+- Amélioration des transitions de page avec Framer Motion
+  - Transitions de page
+- Optimisation des performances de chargement
+  - Performances de chargement
+
+### 🗑️ Removed
+
+- Ancien système de chargement manuel (LoadingProvider)
+  - LoadingProvider
+- Composants de chargement obsolètes
+  - Composants de chargement
+
+## [1.1.0] - 2024-01-05 📈
+
+### ✨ Added
+
+- Plateforme de défis de codage
+  - Défis de codage
+- Exercices de manipulation de chaînes
+  - Manipulation de chaînes
+- Défis sur les tableaux
+  - Tableaux
+- Chronomètre de 5 minutes
+  - Chronomètre
+- Système de validation en temps réel
+  - Validation en temps réel
+
+### 🔄 Changed
+
+- Amélioration de l'interface utilisateur
+  - Interface utilisateur
+- Optimisation des performances
+  - Performances
+
+## [1.0.0] - 2024-01-01 🎉
+
+### 🚀 Initial Release
+
+- Version initiale du portfolio
+  - Portfolio
+- Design responsive avec TailwindCSS
+  - Design responsive
+- Thème clair/sombre
+  - Thème clair/sombre
+- Navigation fluide
+  - Navigation fluide
+- Optimisation SEO
+  - Optimisation SEO
+
 ## [1.0.2] - 2024-11-14 🚀
 
 ### ✨ Added
@@ -156,6 +228,8 @@
   - User behavior
   - Page insights
 
+[1.2.0]: https://gitlab.com/fygs/fygs.dev/compare/v1.1.0...v1.2.0
+[1.1.0]: https://gitlab.com/fygs/fygs.dev/compare/v1.0.0...v1.1.0
 [1.0.2]: https://gitlab.com/fygs/fygs.dev/compare/v1.0.1...v1.0.2
 [1.0.1]: https://gitlab.com/fygs/fygs.dev/compare/v1.0.0...v1.0.1
 [1.0.0]: https://gitlab.com/fygs/fygs.dev/releases/tag/v1.0.0

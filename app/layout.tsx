@@ -17,6 +17,7 @@ import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { defaultMetadata } from "./_lib/metadata";
+import { AutoLoader } from "@/components/auto-loader";
 
 const AnekTelugu = Anek_Telugu({
   subsets: ["latin"],
@@ -31,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full" suppressHydrationWarning>
+    <html lang="fr" suppressHydrationWarning>
       <head>
         <JsonLd />
         <script
@@ -83,6 +84,7 @@ export default function RootLayout({
         {...(process.env.NODE_ENV === "development"
           ? { "cz-shortcut-listen": "true" }
           : {})}
+        suppressHydrationWarning
       >
         <ThemeProvider defaultTheme="system">
           <PageMemoryProvider>
@@ -98,6 +100,7 @@ export default function RootLayout({
                   <Footer />
                   <Analytics />
                   <SpeedInsights />
+                  <AutoLoader />
                 </main>
               </PageTransition>
             </TransitionProvider>
