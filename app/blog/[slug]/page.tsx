@@ -7,6 +7,9 @@ import {
   generateJsonLdScript,
 } from "@/app/_lib/jsonld-utils";
 import { generateArticleMetadata } from "@/app/_lib/seo-utils";
+import { CoverImage } from "@/components/blog/cover-image";
+import { PopularArticles } from "@/components/blog/popular-articles";
+import { PostStatsView } from "@/components/blog/post-stats-view";
 import { ReadingProgress } from "@/components/blog/reading-progress";
 import { SimilarArticles } from "@/components/blog/similar-articles";
 import { TableOfContents } from "@/components/mdx/toc";
@@ -17,11 +20,8 @@ import { Calendar, Clock } from "lucide-react";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { CoverImage } from "@/components/blog/cover-image";
-import { PopularArticles } from "@/components/blog/popular-articles";
-import { PostStatsView } from "@/components/blog/post-stats-view";
-import { handleView } from "../actions/social-interactions";
 import { getPostStats } from "../actions/stats";
+import { ViewCounter } from "./_components/view-counter";
 
 interface Props {
   params: Promise<{
@@ -92,8 +92,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-// export const revalidate = 3600; // Revalidate every hour
-
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
   const post = await getBlogPost(slug);
@@ -102,8 +100,8 @@ export default async function BlogPostPage({ params }: Props) {
     notFound();
   }
 
-  // Fetch stats and increment view count server-side
-  const [stats] = await Promise.all([getPostStats(slug), handleView(slug)]);
+  // Fetch stats - view count will be handled client-side
+  const stats = await getPostStats(slug);
 
   // Ensure unique posts across sections
   const allPosts = await getAllBlogPosts();
@@ -111,16 +109,17 @@ export default async function BlogPostPage({ params }: Props) {
 
   return (
     <>
+      <ViewCounter slug={slug} />
       <ReadingProgress />
       <Section>
-        <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr_200px] gap-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr_200px] gap-8">
           {/* Table of Contents - Desktop */}
           <div className="hidden lg:block">
             <TableOfContents className="sticky top-24" />
           </div>
 
           {/* Main Content */}
-          <article className="prose prose-invert max-w-4xl space-y-8">
+          <article className="prose prose-invert space-y-8">
             <div>
               {/* Article Content */}
               <div className="w-full -mx-4 px-4 sm:px-0 sm:-mx-0">

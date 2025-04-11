@@ -1,9 +1,9 @@
 "use client";
 
 // import { ThemeToggle } from "@/components/theme-toggle";
+import { NavItem } from "@/app/_components/ui/nav-item";
 import { buttonVariants } from "@/components/ui/button";
 import { NavigationIndicator } from "@/components/ui/navigation-indicator";
-import { NavItem } from "@/app/_components/ui/nav-item";
 import {
   Sheet,
   SheetContent,
@@ -56,7 +56,7 @@ export const Header = () => {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-md transition-colors duration-300 shadow-lg">
-        <div className="max-w-4xl mx-auto px-4 py-3 md:py-4">
+        <div className="container-xl py-3 md:py-4">
           <nav className="flex items-center justify-between">
             <Link
               href="/"

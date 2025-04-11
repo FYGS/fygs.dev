@@ -1,27 +1,33 @@
+import { AutoLoader } from "@/components/auto-loader";
 import { NavigationProgress } from "@/components/ui/navigation-progress";
 import { PageTransition } from "@/components/ui/page-transition";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { PageMemoryProvider } from "@/providers/page-memory-provider";
-import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { TransitionProvider } from "@/providers/transition-provider";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
+import { Metadata } from "next";
 import { Anek_Telugu } from "next/font/google";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Footer } from "./_components/Footer";
 import { Header } from "./_components/Header";
 import { JsonLd } from "./_components/JsonLd";
 import { Spacing } from "./_components/Spacing";
+import { SITE_URL } from "./_lib/constants";
 import "./globals.css";
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import { AutoLoader } from "@/components/auto-loader";
 
 const AnekTelugu = Anek_Telugu({
   subsets: ["latin"],
   variable: "--font-caption",
 });
+
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+};
 
 export default function RootLayout({
   children,

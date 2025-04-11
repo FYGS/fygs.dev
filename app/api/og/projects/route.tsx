@@ -1,7 +1,4 @@
-import { ImageResponse } from "@vercel/og";
-
-export const runtime = "edge";
-export const revalidate = 3600;
+import { ImageResponse } from "next/og";
 
 export async function GET() {
   try {

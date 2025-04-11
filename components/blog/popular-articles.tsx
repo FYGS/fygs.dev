@@ -1,10 +1,4 @@
-import { getAllBlogPosts } from "@/lib/mdx";
-import {
-  getLikeCount,
-  getPopularPosts,
-  getShareCount,
-  getViewCount,
-} from "@/lib/reading-stats";
+import { getPopularBlogPosts } from "@/app/blog/actions/popular-posts";
 import { BlogPost } from "@/lib/types";
 import { TrendingUp } from "lucide-react";
 import { BlogPostCard } from "./blog-post-card";
@@ -20,28 +14,14 @@ export async function PopularArticles({
   maxArticles = 3,
   excludeSlugs = [],
 }: PopularArticlesProps) {
-  const popularSlugs = await getPopularPosts(maxArticles * 2); // Fetch more to ensure we have enough after filtering
-  const allPosts = await getAllBlogPosts();
-
-  const popularPosts = allPosts
-    .filter((post) => popularSlugs.includes(post.slug))
-    .filter(
-      (post) =>
-        post.slug !== currentPost.slug && !excludeSlugs.includes(post.slug)
-    )
-    .slice(0, maxArticles);
+  // Get popular posts using our server action with fallback
+  const { posts: popularPosts, stats: postsStats } = await getPopularBlogPosts(
+    currentPost.slug,
+    maxArticles,
+    excludeSlugs
+  );
 
   if (popularPosts.length === 0) return null;
-
-  // Fetch stats for all posts in parallel
-  const stats = await Promise.all(
-    popularPosts.map(async (post) => ({
-      slug: post.slug,
-      views: await getViewCount(post.slug),
-      likes: await getLikeCount(post.slug),
-      shares: await getShareCount(post.slug),
-    }))
-  );
 
   return (
     <section className="space-y-4">
@@ -51,7 +31,7 @@ export async function PopularArticles({
       </h2>
       <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
         {popularPosts.map((post) => {
-          const postStats = stats.find((s) => s.slug === post.slug);
+          const postStats = postsStats[post.slug];
           return (
             <BlogPostCard
               key={post.slug}

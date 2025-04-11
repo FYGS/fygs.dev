@@ -5,7 +5,7 @@ import BlogClientPage from "./page.client";
 
 function LoadingSkeleton() {
   return (
-    <div className="space-y-8 max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+    <div className="space-y-8 container-xl">
       {/* Header Section */}
       <div className="space-y-4">
         <Skeleton className="h-12 w-48" /> {/* Title */}

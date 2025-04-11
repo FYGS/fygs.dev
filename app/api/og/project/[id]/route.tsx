@@ -1,7 +1,5 @@
-import { ImageResponse } from "@vercel/og";
+import { ImageResponse } from "next/og";
 import { FEATURED_PROJECTS } from "../../../../projects/data";
-
-export const runtime = "edge";
 
 export async function GET(
   request: Request,

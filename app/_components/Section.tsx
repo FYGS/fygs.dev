@@ -4,9 +4,12 @@ import { PropsWithChildren } from "react";
 export const Section = ({
   children,
   className,
-}: PropsWithChildren<{ className?: string }>) => {
+  content = false,
+}: PropsWithChildren<{ className?: string; content?: boolean }>) => {
   return (
-    <section className={cn("max-w-4xl px-4 m-auto", className)}>
+    <section
+      className={cn(content ? "container-content" : "container-xl", className)}
+    >
       {children}
     </section>
   );

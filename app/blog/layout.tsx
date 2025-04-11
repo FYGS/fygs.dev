@@ -20,8 +20,6 @@ export const metadata: Metadata = generateMetadata({
   image: "/api/og/blog",
 });
 
-export const revalidate = 3600; // Revalidate every hour
-
 export default function ProjectsLayout({
   children,
 }: {

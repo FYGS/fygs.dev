@@ -50,10 +50,23 @@ export function SocialInteractionsClient({
     setHasLiked(liked === "true");
   }, [slug]);
 
+  const { syncStats } = useBlogStats();
+
   useEffect(() => {
+    // Initialize with the provided values
     setLikes(initialLikes);
     setShares(shareCount);
-  }, [initialLikes, shareCount, setLikes, setShares]);
+
+    // Then sync with the latest values from the server
+    syncStats(slug);
+
+    // Set up an interval to periodically sync stats
+    const intervalId = setInterval(() => {
+      syncStats(slug);
+    }, 5000); // Sync every 5 seconds
+
+    return () => clearInterval(intervalId);
+  }, [initialLikes, shareCount, setLikes, setShares, syncStats, slug]);
 
   const handleLike = async () => {
     try {
@@ -65,7 +78,7 @@ export function SocialInteractionsClient({
       const userId = "anonymous"; // Replace with actual user ID when auth is added
       const isLiked = await onLike(userId);
 
-      // Update the store directly instead of using a function
+      // Update the local state immediately for a responsive feel
       if (isLiked) {
         incrementLikes();
       } else {
@@ -73,6 +86,9 @@ export function SocialInteractionsClient({
       }
       setHasLiked(isLiked);
       localStorage.setItem(`blog-like-${slug}`, String(isLiked));
+
+      // Then sync with the server to get the accurate count
+      await syncStats(slug);
 
       toast({
         title: isLiked ? "Article liked!" : "Like removed",
@@ -97,9 +113,11 @@ export function SocialInteractionsClient({
           title: document.title,
           url: window.location.href,
         });
-        const newShareCount = await onShare();
-        setShares(newShareCount);
+        await onShare();
         incrementShares();
+
+        // Sync with the server to get the accurate count
+        await syncStats(slug);
       }
     } catch (error) {
       if (!(error instanceof Error && error.name === "AbortError")) {

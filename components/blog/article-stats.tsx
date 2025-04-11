@@ -2,6 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { fadeIn } from "@/lib/animations";
+import { useBlogStats } from "@/stores/use-blog-stats";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Clock, Eye, ThumbsUp, Users } from "lucide-react";
 import { useRef } from "react";
@@ -15,10 +16,16 @@ interface ArticleStatsProps {
 
 export function ArticleStats({
   readingTime,
-  views,
-  likes,
-  shares,
+  // We're using the global state for all stats, so we don't need these props
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  views: initialViews,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  likes: initialLikes,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  shares: initialShares,
 }: ArticleStatsProps) {
+  // Use the global state for all stats
+  const { views, likes, shares } = useBlogStats();
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
