@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import specialized CSS files */
+@import "../styles/playground-layout.css";
+@import "../styles/playground-animations.css";
+@import "../styles/editor.css";
+@import "../styles/monaco.css";
+@import "../styles/mdx.css";
+@import "../styles/syntax-highlighting.css";
+@import "../styles/layout.css";
+@import "../styles/animations.css";
+@import "../styles/html-preview.css";
+@import "../styles/tooltip-styles.css";
+@import "../styles/output-panel.css";
+
 @layer components {
   /* Main container with responsive width for all sections */
   .container-xl {
@@ -11,6 +24,88 @@
   /* Narrower container for content-heavy sections (blog posts, articles) */
   .container-content {
     @apply w-full mx-auto px-5 sm:px-6 md:px-8 max-w-[768px] lg:max-w-[896px];
+  }
+
+  .hover-scale {
+    transition: transform 0.2s ease-in-out;
+  }
+
+  .hover-scale:hover {
+    transform: scale(1.05);
+  }
+
+  .hover-lift {
+    transition: all 0.2s ease-in-out;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Add other animations if needed */
+
+  .shadow-glow {
+    box-shadow: 0 0 10px rgba(var(--primary), 0.3);
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.5s ease-in-out forwards;
+  }
+
+  .hover-bounce {
+    animation: subtle-bounce 2s ease-in-out infinite;
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s infinite linear;
+  }
+
+  /* Modern Scrollbar Styles */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--accent));
+    border-radius: 20px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--accent) / 0.8);
+  }
+
+  /* Firefox */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--accent)) transparent;
+  }
+
+  /* Code block styles */
+  .mdx-content {
+    @apply prose-code:text-primary prose-pre:bg-muted/50 prose-pre:border prose-pre:border-border;
+  }
+
+  .mdx-content pre {
+    @apply rounded-lg overflow-x-auto backdrop-blur-sm transition-all duration-300;
+  }
+
+  .mdx-content code {
+    @apply bg-muted/50 rounded px-1.5 py-0.5 font-mono text-sm;
+  }
+
+  /* Line highlight for code blocks */
+  .line-highlight {
+    @apply bg-primary/5 border-l-2 border-primary transition-all duration-200;
+  }
+
+  /* Code block line numbers */
+  .line-number {
+    @apply text-muted-foreground/50 select-none text-right pr-4 inline-block w-[2.5rem] -ml-[3.5rem];
   }
 }
 
@@ -50,8 +145,6 @@
   }
 }
 
-@import "../styles/mdx.css";
-
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -61,10 +154,6 @@
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-.animate-fadeIn {
-  animation: fadeIn 0.5s ease-in-out forwards;
 }
 
 @keyframes fadeInSlideUp {
@@ -78,29 +167,6 @@
   }
 }
 
-.hover-scale {
-  transition: transform 0.2s ease-in-out;
-}
-
-.hover-scale:hover {
-  transform: scale(1.05);
-}
-
-.hover-lift {
-  transition: all 0.2s ease-in-out;
-}
-
-.hover-lift:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* Ajoutez d'autres animations si nécessaire */
-
-.shadow-glow {
-  box-shadow: 0 0 10px rgba(var(--primary), 0.3);
-}
-
 @keyframes subtle-bounce {
   0%,
   100% {
@@ -111,10 +177,6 @@
   }
 }
 
-.hover-bounce {
-  animation: subtle-bounce 2s ease-in-out infinite;
-}
-
 @keyframes shimmer {
   0% {
     background-position: -200% 0;
@@ -122,55 +184,4 @@
   100% {
     background-position: 200% 0;
   }
-}
-
-.animate-shimmer {
-  animation: shimmer 2s infinite linear;
-}
-
-/* Modern Scrollbar Styles */
-.scrollbar-thin::-webkit-scrollbar {
-  width: 6px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: hsl(var(--accent));
-  border-radius: 20px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background-color: hsl(var(--accent) / 0.8);
-}
-
-/* Firefox */
-.scrollbar-thin {
-  scrollbar-width: thin;
-  scrollbar-color: hsl(var(--accent)) transparent;
-}
-
-/* Code block styles */
-.mdx-content {
-  @apply prose-code:text-primary prose-pre:bg-muted/50 prose-pre:border prose-pre:border-border;
-}
-
-.mdx-content pre {
-  @apply rounded-lg overflow-x-auto backdrop-blur-sm transition-all duration-300;
-}
-
-.mdx-content code {
-  @apply bg-muted/50 rounded px-1.5 py-0.5 font-mono text-sm;
-}
-
-/* Line highlight for code blocks */
-.line-highlight {
-  @apply bg-primary/5 border-l-2 border-primary transition-all duration-200;
-}
-
-/* Code block line numbers */
-.line-number {
-  @apply text-muted-foreground/50 select-none text-right pr-4 inline-block w-[2.5rem] -ml-[3.5rem];
 }

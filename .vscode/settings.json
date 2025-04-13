@@ -42,11 +42,13 @@
       "text": "Use conventional commit message format.\n\nUse the following format for commit messages:\n\n- feat: A new feature\n- fix: A bug fix\n- docs: Documentation only changes\n- style: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)\n- refactor: A code change that neither fixes a bug nor adds a feature\n- perf: A code change that improves performance\n- test: Adding missing or correcting existing tests\n- chore: Changes to the build process or auxiliary tools and libraries such as documentation generation",
       "instruction": "Be extremely detailed with the file changes and the reason for the change. Add lots of emoji."
     }
-  ]
+  ],
   // "github.copilot.chat.testGeneration.instructions": [
   //   {
   //     "text": "Generate unit tests for the following code. Use the following format for test names:\n\n- should return true if the input is valid\n- should return false if the input is invalid\n- should throw an error if the input is invalid\n- should return the expected output\n- should call the expected function with the expected arguments",
   //     "instruction": "Be extremely detailed with the test cases and the reason for each test case. Add lots of emoji."
   //   }
   // ]
+  "css.validate": false,
+  "tailwindCSS.experimental.configFile": "tailwind.config.ts"
 }

@@ -4,10 +4,12 @@ import { Pagination } from "@/app/interview-prep/_components/pagination";
 import { Card } from "@/components/ui/card";
 import { usePagination } from "@/hooks/interview-prep/use-pagination";
 import {
+  BarChart3,
   BookOpen,
   Brain,
   BrainCircuit,
   Code,
+  Code2,
   Database,
   DollarSign,
   Layout,
@@ -137,6 +139,26 @@ const sections: Section[] = [
     href: "/interview-prep/resources",
     color: "text-rose-500",
     bgColor: "bg-rose-500/10",
+  },
+  // Playground section
+  {
+    title: "Code Playground",
+    description:
+      "Interactive coding environment with real-time execution, collaboration, and interview simulation.",
+    icon: Code2,
+    href: "/interview-prep/playground",
+    color: "text-lime-500",
+    bgColor: "bg-lime-500/10",
+  },
+  // Dashboard section
+  {
+    title: "Learning Dashboard",
+    description:
+      "Track your progress, identify strengths and weaknesses, and plan your learning journey.",
+    icon: BarChart3,
+    href: "/interview-prep/dashboard",
+    color: "text-cyan-500",
+    bgColor: "bg-cyan-500/10",
   },
 ];
 

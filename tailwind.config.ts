@@ -1,5 +1,5 @@
-import type { Config } from "tailwindcss";
 import typography from "@tailwindcss/typography";
+import type { Config } from "tailwindcss";
 import animate from "tailwindcss-animate";
 
 const config: Config = {
@@ -15,6 +15,38 @@ const config: Config = {
         sans: ["var(--font-geist-sans)"],
         mono: ["var(--font-geist-mono)"],
         caption: ["var(--font-caption)"],
+      },
+      animation: {
+        blob: "blob 7s infinite",
+        gradient: "gradient 15s ease infinite",
+        "pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+      },
+      gridTemplateColumns: {
+        "15": "repeat(15, minmax(0, 1fr))",
+      },
+      keyframes: {
+        blob: {
+          "0%": {
+            transform: "translate(0px, 0px) scale(1)",
+          },
+          "33%": {
+            transform: "translate(30px, -50px) scale(1.1)",
+          },
+          "66%": {
+            transform: "translate(-20px, 20px) scale(0.9)",
+          },
+          "100%": {
+            transform: "translate(0px, 0px) scale(1)",
+          },
+        },
+        gradient: {
+          "0%, 100%": {
+            "background-position": "0% 50%",
+          },
+          "50%": {
+            "background-position": "100% 50%",
+          },
+        },
       },
       colors: {
         background: "hsl(var(--background))",
@@ -65,6 +97,24 @@ const config: Config = {
       },
     },
   },
-  plugins: [animate, typography],
+  plugins: [
+    animate,
+    typography,
+    function ({
+      addUtilities,
+    }: {
+      addUtilities: (utilities: Record<string, Record<string, string>>) => void;
+    }) {
+      const newUtilities = {
+        ".animation-delay-2000": {
+          "animation-delay": "2s",
+        },
+        ".animation-delay-4000": {
+          "animation-delay": "4s",
+        },
+      };
+      addUtilities(newUtilities);
+    },
+  ],
 };
 export default config;

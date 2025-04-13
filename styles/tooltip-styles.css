@@ -1,0 +1,42 @@
+@tailwind components;
+@tailwind base;
+
+@layer base {
+  /* Custom styles for tooltips */
+  :root {
+    --primary-rgb: 37, 99, 235; /* Blue color in RGB format */
+  }
+
+  .dark {
+    --primary-rgb: 59, 130, 246; /* Lighter blue for dark mode */
+  }
+}
+
+@layer components {
+  .shortcut-kbd {
+    display: inline-block;
+    background-color: rgba(var(--primary-rgb), 0.2);
+    color: rgb(var(--primary-rgb));
+    padding: 2px 6px;
+    margin-left: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+      "Liberation Mono", "Courier New", monospace;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+
+  .tooltip-content {
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+  }
+
+  .tooltip-content p {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+  }
+}

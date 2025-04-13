@@ -1,0 +1,26 @@
+@tailwind components;
+
+@layer components {
+  /* Styles for HTML Preview component */
+  .preview-iframe-container {
+    height: calc(100% - 40px); /* Subtract header height */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    position: relative;
+  }
+
+  .preview-iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+    flex: 1;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+}

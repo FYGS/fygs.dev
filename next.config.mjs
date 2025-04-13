@@ -1,3 +1,5 @@
+import MonacoWebpackPlugin from "monaco-editor-webpack-plugin";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -24,7 +26,20 @@ const nextConfig = {
       },
     ],
   },
-  // Enable optimizations
+  webpack: (config, { isServer }) => {
+    // Add Monaco Editor webpack plugin only on client side
+    if (!isServer) {
+      config.plugins.push(
+        new MonacoWebpackPlugin({
+          languages: ["typescript", "javascript", "html", "css"],
+          filename: "static/monaco/[name].worker.js",
+          publicPath: "/_next/",
+        })
+      );
+    }
+    return config;
+  },
+  // Performance optimizations
   poweredByHeader: false,
   reactStrictMode: true,
 };

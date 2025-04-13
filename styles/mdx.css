@@ -1,8 +1,4 @@
-/* ./styles/mdx.css */
-/* Ensure the @tailwind base, components, and utilities directives are included */
-@tailwind base;
 @tailwind components;
-@tailwind utilities;
 
 @layer components {
   .mdx-content {

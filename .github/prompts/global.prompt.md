@@ -5,7 +5,7 @@ You are assisting with a modern Next.js 15+ application. Follow these guidelines
 ## 🎯 Core Principles
 
 1. Write type-safe, maintainable, and performant code
-2. Follow SOLID principles and clean architecture
+2. Follow SOLID principles and clean architecture, follow DRY basics (centralize repetitive logics: css into app/globals.css, and code accordingly)
 3. Optimize for Edge Runtime by default
 4. Implement proper error boundaries and logging
 5. Ensure code is testable and well-documented

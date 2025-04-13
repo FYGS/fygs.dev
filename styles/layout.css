@@ -1,0 +1,107 @@
+@tailwind components;
+
+@layer components {
+  /* Full height container styles */
+  .full-height-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* Important for flex child to respect parent height */
+    overflow: hidden;
+  }
+
+  .full-height-content {
+    flex: 1;
+    min-height: 0; /* Important for flex child to respect parent height */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .scrollable-container {
+    flex: 1;
+    min-height: 0; /* Important for flex child to respect parent height */
+    overflow-y: auto;
+  }
+
+  /* Ensure proper height for editor and output panels */
+  .editor-container,
+  .output-panel-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0; /* Important for flex child to respect parent height */
+    overflow: hidden;
+  }
+
+  /* Ensure tabs take full height */
+  .tabs-with-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0; /* Important for flex child to respect parent height */
+  }
+
+  .tab-content-container {
+    flex: 1;
+    min-height: 0; /* Important for flex child to respect parent height */
+    overflow: hidden;
+  }
+  /* Layout control styles */
+  button[data-active="true"] {
+    background-color: hsl(var(--primary) / 0.2);
+    color: hsl(var(--primary));
+  }
+
+  /* Drag handle animations */
+  .drag-handle {
+    transition: background-color 0.2s ease;
+  }
+
+  .drag-handle:hover {
+    background-color: hsl(var(--primary) / 0.5);
+  }
+
+  /* Layout transitions */
+  .layout-transition {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Glass effect enhancements */
+  .glass-panel {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background: linear-gradient(
+      135deg,
+      hsl(var(--background) / 0.7),
+      hsl(var(--background) / 0.3)
+    );
+    border: 1px solid hsl(var(--border) / 0.2);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Futuristic UI elements */
+  .neon-border {
+    position: relative;
+  }
+
+  .neon-border::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      45deg,
+      hsl(var(--primary) / 0.7),
+      transparent,
+      hsl(var(--primary) / 0.7)
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+}
