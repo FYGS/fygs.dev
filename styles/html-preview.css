@@ -9,6 +9,7 @@
     flex-direction: column;
     flex: 1;
     position: relative;
+    background-color: white; /* Ensure white background for HTML content */
   }
 
   .preview-iframe {
@@ -22,5 +23,15 @@
     left: 0;
     right: 0;
     bottom: 0;
+    background-color: white; /* Ensure white background for HTML content */
+  }
+
+  /* Dark mode support */
+  .dark .preview-iframe-container {
+    background-color: #1a1a1a; /* Dark background for dark mode */
+  }
+
+  .dark .preview-iframe {
+    background-color: #1a1a1a; /* Dark background for dark mode */
   }
 }

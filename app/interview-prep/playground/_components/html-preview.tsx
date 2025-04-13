@@ -17,11 +17,9 @@ interface HtmlPreviewProps {
 
 export function HtmlPreview({ dataUrl }: HtmlPreviewProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const editorStore = useEditorStore();
-  // Height is controlled by CSS
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_iframeHeight, setIframeHeight] = useState<string>("100%");
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Handle messages from the iframe
   useEffect(() => {
@@ -30,42 +28,60 @@ export function HtmlPreview({ dataUrl }: HtmlPreviewProps) {
         const { method, message } = event.data;
 
         // Update the store based on the message type
+        const store = useEditorStore.getState();
         if (method === "log") {
-          // Add to logs array - using mutable approach since this is how the store is designed
-          editorStore.logs.push(message);
+          // Use the store's method to add logs
+          store.addLog(message);
         } else if (method === "error") {
-          // Add to errors array
-          editorStore.errors.push(message);
+          // Use the store's method to add errors
+          store.addError(message);
+        } else if (method === "warn") {
+          // Handle warnings
+          store.addLog(message);
+        } else if (method === "info") {
+          // Handle info messages
+          store.addLog(message);
         }
       }
     };
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [editorStore]);
+  }, []);
 
-  // Adjust iframe height based on content
+  // Create a blob URL from the data URL for better iframe handling
   useEffect(() => {
-    const adjustHeight = () => {
-      if (iframeRef.current) {
-        try {
-          // Use a safer approach that doesn't require accessing the document
-          // Just set the iframe to 100% height of its container
-          setIframeHeight("100%");
-        } catch (error) {
-          console.error("Error adjusting iframe height:", error);
-        }
+    if (!dataUrl) return;
+
+    try {
+      // Clean up previous blob URL if it exists
+      if (blobUrl) {
+        URL.revokeObjectURL(blobUrl);
       }
-    };
 
-    // Adjust height when iframe loads
-    const iframe = iframeRef.current;
-    if (iframe) {
-      iframe.onload = adjustHeight;
+      // Extract the HTML content from the data URL
+      const htmlContent = dataUrl.startsWith("data:text/html")
+        ? decodeURIComponent(dataUrl.split(",")[1])
+        : dataUrl;
+
+      // Create a blob with the HTML content
+      const blob = new Blob([htmlContent], { type: "text/html" });
+
+      // Create a URL for the blob
+      const newBlobUrl = URL.createObjectURL(blob);
+
+      // Store the blob URL
+      setBlobUrl(newBlobUrl);
+      setError(null);
+
+      // Log success for debugging
+      console.log("Created blob URL for HTML preview");
+    } catch (error) {
+      console.error("Error creating blob URL:", error);
+      setError("Failed to create preview");
     }
-
-    // Initial adjustment
-    adjustHeight();
+    // Only depend on dataUrl, not blobUrl to prevent infinite loops
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataUrl]);
 
   // Cleanup blob URL when component unmounts
@@ -79,25 +95,10 @@ export function HtmlPreview({ dataUrl }: HtmlPreviewProps) {
 
   // Open preview in new tab
   const openInNewTab = () => {
-    // Create a blob URL from the HTML content to avoid cross-origin issues
-    try {
-      // Extract the HTML content from the data URL
-      const htmlContent = decodeURIComponent(dataUrl.split(",")[1]);
-
-      // Create a blob with the HTML content
-      const blob = new Blob([htmlContent], { type: "text/html" });
-
-      // Create a URL for the blob
-      const newBlobUrl = URL.createObjectURL(blob);
-
-      // Store the blob URL for cleanup
-      setBlobUrl(newBlobUrl);
-
-      // Open the blob URL in a new tab
-      window.open(newBlobUrl, "_blank");
-    } catch (error) {
-      console.error("Error opening preview in new tab:", error);
-      // Fallback to the original data URL if there's an error
+    if (blobUrl) {
+      window.open(blobUrl, "_blank");
+    } else if (dataUrl) {
+      // Fallback to the original data URL if there's no blob URL
       window.open(dataUrl, "_blank");
     }
   };
@@ -111,6 +112,8 @@ export function HtmlPreview({ dataUrl }: HtmlPreviewProps) {
         <div className="flex items-center">
           <span className="text-xs text-green-500 font-semibold">
             HTML Preview
+            {isLoading && " (Loading...)"}
+            {error && " (Error)"}
           </span>
         </div>
         <TooltipProvider>
@@ -121,6 +124,7 @@ export function HtmlPreview({ dataUrl }: HtmlPreviewProps) {
                 size="sm"
                 className="text-xs gap-1 bg-primary hover:bg-primary/90"
                 onClick={openInNewTab}
+                disabled={!blobUrl && !dataUrl}
               >
                 <ExternalLink className="h-3.5 w-3.5" />
                 Open in New Tab
@@ -133,24 +137,28 @@ export function HtmlPreview({ dataUrl }: HtmlPreviewProps) {
         </TooltipProvider>
       </div>
       <div className="preview-iframe-container w-full h-full overflow-hidden">
-        <iframe
-          ref={iframeRef}
-          src={dataUrl}
-          className="preview-iframe"
-          sandbox="allow-scripts allow-same-origin allow-modals allow-forms allow-popups"
-          title="HTML Preview"
-          height="100%"
-          width="100%"
-          onLoad={() => {
-            setIsLoading(false);
-            console.log("HTML preview loaded successfully");
-          }}
-          onError={() => {
-            setIsLoading(false);
-            setError("Failed to load HTML preview");
-            console.error("Failed to load HTML preview");
-          }}
-        />
+        {error ? (
+          <div className="p-4 text-destructive">{error}</div>
+        ) : (
+          <iframe
+            ref={iframeRef}
+            src={blobUrl || dataUrl}
+            className="preview-iframe"
+            sandbox="allow-scripts allow-same-origin allow-modals allow-forms allow-popups"
+            title="HTML Preview"
+            height="100%"
+            width="100%"
+            onLoad={() => {
+              setIsLoading(false);
+              console.log("HTML preview loaded successfully");
+            }}
+            onError={() => {
+              setIsLoading(false);
+              setError("Failed to load HTML preview");
+              console.error("Failed to load HTML preview");
+            }}
+          />
+        )}
       </div>
     </div>
   );

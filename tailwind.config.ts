@@ -19,6 +19,7 @@ const config: Config = {
       animation: {
         blob: "blob 7s infinite",
         gradient: "gradient 15s ease infinite",
+        "gradient-xy": "gradient-xy 15s ease infinite",
         "pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
       },
       gridTemplateColumns: {
@@ -45,6 +46,20 @@ const config: Config = {
           },
           "50%": {
             "background-position": "100% 50%",
+          },
+        },
+        "gradient-xy": {
+          "0%, 100%": {
+            "background-position": "0% 0%",
+          },
+          "25%": {
+            "background-position": "100% 0%",
+          },
+          "50%": {
+            "background-position": "100% 100%",
+          },
+          "75%": {
+            "background-position": "0% 100%",
           },
         },
       },

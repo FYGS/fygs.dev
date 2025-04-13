@@ -62,6 +62,8 @@ export interface EditorStore extends OutputState {
   resetCode: () => void;
   executeCode: (options?: { runScript?: string }) => Promise<void>;
   clearOutput: () => void;
+  addLog: (log: string) => void;
+  addError: (error: string) => void;
   history: EditorHistory;
   createSnapshot: () => void;
   restoreSnapshot: (id: string) => void;

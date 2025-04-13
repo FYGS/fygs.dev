@@ -94,20 +94,34 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
     }
   }, [messages]);
 
+  // Track the current code for analysis to prevent repeated analysis
+  const codeRef = useRef(code);
+  const analyzedRef = useRef(false);
+
   // Analyze code when tab changes to "analyze"
   useEffect(() => {
-    if (activeTab === "analyze" && !codeAnalysis && !isAnalyzing) {
+    // Only auto-analyze when the tab is selected and we haven't analyzed this code yet
+    if (
+      activeTab === "analyze" &&
+      !codeAnalysis &&
+      !isAnalyzing &&
+      !analyzedRef.current
+    ) {
       analyzeCode();
+      analyzedRef.current = true;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, codeAnalysis, isAnalyzing]);
 
-  // Reset code analysis when code changes significantly
+  // Reset analysis state when code changes significantly
   useEffect(() => {
-    if (codeAnalysis) {
+    // If code has changed since last analysis
+    if (code !== codeRef.current) {
+      codeRef.current = code;
+      analyzedRef.current = false;
       setCodeAnalysis(null);
     }
-  }, [code, codeAnalysis]);
+  }, [code]);
 
   const handleSendMessage = async () => {
     if (!input.trim()) return;
@@ -173,7 +187,27 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
       return;
     }
 
+    // If we're already analyzing or have analyzed this code, don't do it again
+    if (isAnalyzing || (analyzedRef.current && code === codeRef.current)) {
+      return;
+    }
+
+    // Reset state and start analyzing
     setIsAnalyzing(true);
+    setCodeAnalysis(null);
+
+    // Create a timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      if (isAnalyzing) {
+        setIsAnalyzing(false);
+        analyzedRef.current = false; // Allow retry
+        toast({
+          title: "Analysis timeout",
+          description: "The analysis took too long. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }, 10000); // 10 second timeout
 
     try {
       // In a production environment, this would call an API
@@ -189,12 +223,35 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
       // }).then((res) => res.json());
 
       // Simulate API call
-      setTimeout(() => {
-        const analysis = simulateCodeAnalysis(code, language);
-        setCodeAnalysis(analysis);
-        setIsAnalyzing(false);
-      }, 1500);
+      const analysisPromise = new Promise<CodeAnalysis>((resolve) => {
+        setTimeout(() => {
+          const analysis = simulateCodeAnalysis(code, language);
+          resolve(analysis);
+        }, 1500);
+      });
+
+      // Wait for the analysis to complete
+      const analysis = await analysisPromise;
+
+      // Clear the timeout since we got a response
+      clearTimeout(timeoutId);
+
+      // Update state with the analysis results
+      setCodeAnalysis(analysis);
+      setIsAnalyzing(false);
+      analyzedRef.current = true;
+      codeRef.current = code;
+
+      // Show success toast
+      toast({
+        title: "Analysis complete",
+        description: "Your code has been analyzed successfully.",
+        variant: "default",
+      });
     } catch (error) {
+      // Clear the timeout since we got an error
+      clearTimeout(timeoutId);
+
       console.error("Error analyzing code:", error);
       toast({
         title: "Error",
@@ -202,6 +259,7 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
         variant: "destructive",
       });
       setIsAnalyzing(false);
+      analyzedRef.current = false; // Allow retry
     }
   };
 
@@ -430,9 +488,10 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
       <AnimatePresence>
         {!isOpen && (
           <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
+            initial={{ scale: 0, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0, opacity: 0, y: 20 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
             className="fixed bottom-6 right-6 z-50"
           >
             <TooltipProvider>
@@ -441,13 +500,25 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
                   <Button
                     onClick={() => setIsOpen(true)}
                     size="lg"
-                    className="rounded-full h-14 w-14 shadow-lg bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
+                    className="rounded-full h-14 w-14 shadow-lg relative overflow-hidden group border-0"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 50%, #ec4899 100%)",
+                    }}
                   >
-                    <Sparkles className="h-6 w-6" />
+                    <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/20 via-violet-500/20 to-fuchsia-500/20 animate-gradient-xy"></div>
+                    <Sparkles className="h-6 w-6 text-white relative z-10 group-hover:scale-110 transition-transform duration-300" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side="left">
-                  <p>AI Code Assistant</p>
+                <TooltipContent
+                  side="left"
+                  className="bg-gradient-to-r from-sky-500/90 to-violet-500/90 border-0 text-white font-medium px-4 py-2 shadow-lg"
+                >
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4" />
+                    <p>AI Code Assistant</p>
+                  </div>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -605,111 +676,233 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
                 <TabsContent value="analyze" className="m-0">
                   <CardContent className="p-4 space-y-4">
                     {isAnalyzing ? (
-                      <div className="flex flex-col items-center justify-center py-12 space-y-4">
-                        <Loader2 className="h-8 w-8 text-primary animate-spin" />
-                        <p className="text-sm text-muted-foreground">
-                          Analyzing your code...
-                        </p>
-                      </div>
+                      <motion.div
+                        className="flex flex-col items-center justify-center py-12 space-y-4"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="relative">
+                          <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                          <motion.div
+                            className="absolute inset-0 rounded-full bg-primary/10"
+                            animate={{
+                              scale: [1, 1.2, 1],
+                              opacity: [0.5, 0.8, 0.5],
+                            }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                          />
+                        </div>
+                        <div className="text-center">
+                          <p className="text-sm font-medium">
+                            Analyzing your code...
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Checking complexity, patterns, and potential
+                            improvements
+                          </p>
+                        </div>
+                      </motion.div>
                     ) : codeAnalysis ? (
                       <div className="space-y-6">
                         <div>
-                          <h3 className="text-sm font-medium mb-2">Summary</h3>
+                          <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
+                            <FileCode className="h-4 w-4 text-primary" />
+                            Summary
+                          </h3>
                           <p className="text-sm text-muted-foreground">
                             {codeAnalysis.explanation}
                           </p>
                         </div>
 
                         <div>
-                          <h3 className="text-sm font-medium mb-2">
+                          <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
+                            <Cpu className="h-4 w-4 text-primary" />
                             Complexity
                           </h3>
                           <div className="grid grid-cols-3 gap-2">
-                            <div className="p-2 bg-muted/30 rounded-md">
-                              <p className="text-xs text-muted-foreground">
-                                Time
-                              </p>
+                            <motion.div
+                              className="p-3 bg-muted/30 rounded-md border border-border/50 hover:bg-muted/50 transition-colors"
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ duration: 0.3, delay: 0.1 }}
+                            >
+                              <div className="flex items-center justify-between mb-1">
+                                <p className="text-xs font-medium text-muted-foreground">
+                                  Time
+                                </p>
+                                <Badge variant="outline" className="text-xs">
+                                  {codeAnalysis.complexity.time}
+                                </Badge>
+                              </div>
                               <p className="text-sm font-medium">
                                 {codeAnalysis.complexity.time}
                               </p>
-                            </div>
-                            <div className="p-2 bg-muted/30 rounded-md">
-                              <p className="text-xs text-muted-foreground">
-                                Space
-                              </p>
+                            </motion.div>
+                            <motion.div
+                              className="p-3 bg-muted/30 rounded-md border border-border/50 hover:bg-muted/50 transition-colors"
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ duration: 0.3, delay: 0.2 }}
+                            >
+                              <div className="flex items-center justify-between mb-1">
+                                <p className="text-xs font-medium text-muted-foreground">
+                                  Space
+                                </p>
+                                <Badge variant="outline" className="text-xs">
+                                  {codeAnalysis.complexity.space}
+                                </Badge>
+                              </div>
                               <p className="text-sm font-medium">
                                 {codeAnalysis.complexity.space}
                               </p>
-                            </div>
-                            <div className="p-2 bg-muted/30 rounded-md">
-                              <p className="text-xs text-muted-foreground">
-                                Score
-                              </p>
-                              <p className="text-sm font-medium">
-                                {codeAnalysis.complexity.score}/10
-                              </p>
-                            </div>
+                            </motion.div>
+                            <motion.div
+                              className="p-3 bg-muted/30 rounded-md border border-border/50 hover:bg-muted/50 transition-colors"
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ duration: 0.3, delay: 0.3 }}
+                            >
+                              <div className="flex items-center justify-between mb-1">
+                                <p className="text-xs font-medium text-muted-foreground">
+                                  Score
+                                </p>
+                                <Badge
+                                  variant={
+                                    codeAnalysis.complexity.score >= 7
+                                      ? "default"
+                                      : codeAnalysis.complexity.score >= 4
+                                      ? "secondary"
+                                      : "destructive"
+                                  }
+                                  className="text-xs"
+                                >
+                                  {codeAnalysis.complexity.score}/10
+                                </Badge>
+                              </div>
+                              <div className="w-full bg-muted rounded-full h-1.5 mt-2">
+                                <motion.div
+                                  className={`h-1.5 rounded-full ${
+                                    codeAnalysis.complexity.score >= 7
+                                      ? "bg-green-500"
+                                      : codeAnalysis.complexity.score >= 4
+                                      ? "bg-yellow-500"
+                                      : "bg-red-500"
+                                  }`}
+                                  initial={{ width: 0 }}
+                                  animate={{
+                                    width: `${
+                                      codeAnalysis.complexity.score * 10
+                                    }%`,
+                                  }}
+                                  transition={{ duration: 0.5, delay: 0.4 }}
+                                />
+                              </div>
+                            </motion.div>
                           </div>
                         </div>
 
                         <div>
-                          <h3 className="text-sm font-medium mb-2">
+                          <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
+                            <Wand2 className="h-4 w-4 text-primary" />
                             Suggestions
                           </h3>
-                          <div className="space-y-2">
+                          <div className="space-y-3">
                             {codeAnalysis.suggestions.map(
                               (suggestion, index) => (
-                                <div
+                                <motion.div
                                   key={index}
                                   className={cn(
-                                    "p-3 rounded-md border flex items-start gap-2",
-                                    getSeverityColor(suggestion.severity)
+                                    "p-3 rounded-md border flex items-start gap-3",
+                                    getSeverityColor(suggestion.severity),
+                                    "hover:shadow-md transition-all duration-200"
                                   )}
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{
+                                    duration: 0.3,
+                                    delay: 0.1 * index,
+                                  }}
                                 >
                                   <div className="mt-0.5">
                                     {getTypeIcon(suggestion.type)}
                                   </div>
-                                  <div>
-                                    <div className="flex items-center gap-2">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 flex-wrap">
                                       <p className="text-sm font-medium capitalize">
                                         {suggestion.type}
                                       </p>
                                       <Badge
-                                        variant="outline"
+                                        variant={
+                                          suggestion.severity === "critical"
+                                            ? "destructive"
+                                            : suggestion.severity === "warning"
+                                            ? "secondary"
+                                            : "default"
+                                        }
                                         className="text-[10px] h-4"
                                       >
                                         {suggestion.severity}
                                       </Badge>
+                                      {suggestion.lineNumber && (
+                                        <Badge
+                                          variant="outline"
+                                          className="text-[10px] h-4 ml-auto"
+                                        >
+                                          Line {suggestion.lineNumber}
+                                        </Badge>
+                                      )}
                                     </div>
-                                    <p className="text-sm mt-1">
+                                    <p className="text-sm mt-2">
                                       {suggestion.description}
                                     </p>
                                     {suggestion.code && (
-                                      <div className="mt-2 p-2 bg-background/50 rounded-md text-xs font-mono overflow-x-auto">
+                                      <motion.div
+                                        className="mt-2 p-2 bg-background/50 rounded-md text-xs font-mono overflow-x-auto border border-border/50"
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: "auto" }}
+                                        transition={{
+                                          duration: 0.3,
+                                          delay: 0.2 + 0.1 * index,
+                                        }}
+                                      >
                                         <pre>{suggestion.code}</pre>
-                                      </div>
+                                      </motion.div>
                                     )}
                                   </div>
-                                </div>
+                                </motion.div>
                               )
                             )}
                           </div>
                         </div>
                       </div>
                     ) : (
-                      <div className="flex flex-col items-center justify-center py-12 space-y-4">
-                        <CodeXml className="h-12 w-12 text-muted-foreground" />
+                      <div className="flex flex-col items-center justify-center py-12 space-y-5">
+                        <div className="relative">
+                          <div className="absolute -inset-4 rounded-full bg-primary/5 animate-pulse" />
+                          <CodeXml className="h-16 w-16 text-primary relative" />
+                        </div>
+
                         <div className="text-center">
-                          <h3 className="font-medium">Analyze Your Code</h3>
-                          <p className="text-sm text-muted-foreground max-w-xs mt-1">
+                          <h3 className="font-medium text-lg">
+                            Analyze Your Code
+                          </h3>
+                          <p className="text-sm text-muted-foreground max-w-xs mt-2">
                             Get insights about your code&apos;s complexity,
                             potential issues, and optimization opportunities.
                           </p>
                         </div>
-                        <Button onClick={analyzeCode} className="mt-2">
-                          <Search className="mr-2 h-4 w-4" />
-                          Analyze Code
-                        </Button>
+
+                        <div>
+                          <Button
+                            onClick={analyzeCode}
+                            className="mt-2 gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
+                            size="lg"
+                          >
+                            <Search className="h-4 w-4" />
+                            Analyze Code
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </CardContent>

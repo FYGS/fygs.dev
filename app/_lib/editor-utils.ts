@@ -69,3 +69,23 @@ export function disposeEditor(
     editorInstance.dispose();
   }
 }
+
+export async function formatCode(
+  editorInstance: Monaco.editor.IStandaloneCodeEditor
+): Promise<boolean> {
+  // SSR protection
+  if (typeof window === "undefined" || !editorInstance) return false;
+
+  try {
+    // Get the current model
+    const model = editorInstance.getModel();
+    if (!model) return false;
+
+    // Format the document using Monaco's built-in formatter
+    await editorInstance.getAction("editor.action.formatDocument")?.run();
+    return true;
+  } catch (error) {
+    console.error("Error formatting code:", error);
+    return false;
+  }
+}

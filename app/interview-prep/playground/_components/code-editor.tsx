@@ -13,6 +13,11 @@ import { useEffect, useRef, useState } from "react";
 import { useLanguage } from "../_hooks/use-language";
 import { useTheme } from "../_hooks/use-theme";
 import { useEditorStore } from "../_stores/editor-store";
+import { FormatAnimation } from "./format-animation";
+
+// Create a global reference to the editor instance for external access
+export let globalEditorInstance: monaco.editor.IStandaloneCodeEditor | null =
+  null;
 
 function CodeEditorComponent() {
   const editorRef = useRef<HTMLDivElement>(null);
@@ -27,6 +32,21 @@ function CodeEditorComponent() {
   const [monacoInstance, setMonacoInstance] = useState<typeof monaco | null>(
     null
   );
+  const [showFormatAnimation, setShowFormatAnimation] = useState(false);
+
+  // Subscribe to format events
+  useEffect(() => {
+    const handleFormatEvent = () => {
+      setShowFormatAnimation(true);
+    };
+
+    // Create a custom event for format success
+    window.addEventListener("format-success", handleFormatEvent);
+
+    return () => {
+      window.removeEventListener("format-success", handleFormatEvent);
+    };
+  }, []);
 
   // Initialize Monaco Editor
   useEffect(() => {
@@ -64,6 +84,9 @@ function CodeEditorComponent() {
           language,
           theme,
         });
+
+        // Set the global reference for external access
+        globalEditorInstance = editorInstanceRef.current;
 
         // Set up content change listener
         editorInstanceRef.current.onDidChangeModelContent(() => {
@@ -104,6 +127,7 @@ function CodeEditorComponent() {
       if (editorInstanceRef.current) {
         disposeEditor(editorInstanceRef.current);
         editorInstanceRef.current = null;
+        globalEditorInstance = null;
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -140,7 +164,9 @@ function CodeEditorComponent() {
     <div className="editor-container full-height-container">
       <div
         ref={editorRef}
-        className="editor-monaco flex-1"
+        className={`editor-monaco flex-1 ${
+          showFormatAnimation ? "format-success-animation" : ""
+        }`}
         style={{
           height: "100%",
           width: "100%",
@@ -149,7 +175,14 @@ function CodeEditorComponent() {
           borderRadius: "0.5rem",
           overflow: "hidden",
         }}
-      />
+      >
+        {showFormatAnimation && (
+          <FormatAnimation
+            show={showFormatAnimation}
+            onAnimationComplete={() => setShowFormatAnimation(false)}
+          />
+        )}
+      </div>
     </div>
   );
 }

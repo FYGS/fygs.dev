@@ -64,7 +64,7 @@ export function OutputPanel() {
 
     // Debug output content
     if (isHtml) {
-      console.log("HTML output detected:", output.substring(0, 100) + "...");
+      console.log("HTML output detected, length:", output.length);
     }
   }, [output]);
 
@@ -219,7 +219,7 @@ export function OutputPanel() {
                                 const parsed = JSON.parse(log);
                                 formattedLog = JSON.stringify(parsed, null, 2);
                               }
-                            } catch (e) {
+                            } catch {
                               // If parsing fails, use the original log
                               formattedLog = log;
                             }

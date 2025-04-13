@@ -44,7 +44,7 @@ export function ToolbarActions() {
     getPackageJson,
     clearOutput,
   } = useEditorStore();
-  const { language, changeLanguage } = useLanguage();
+  const { language } = useLanguage(); // Language is now read-only, determined by template
   const { toast } = useToast();
 
   const handleCopyCode = async () => {
@@ -110,7 +110,21 @@ export function ToolbarActions() {
                         console.error("Invalid package.json:", error);
                       }
                     }
-                    // Otherwise just execute the code normally
+
+                    // Get all files to check if we have CSS and HTML files
+                    const files = useEditorStore.getState().files;
+                    const htmlFile = files.find(
+                      (f) => f.name.endsWith(".html") || f.name.endsWith(".htm")
+                    );
+                    const cssFile = files.find((f) => f.name.endsWith(".css"));
+
+                    // If we have both HTML and CSS files, make sure to execute with the HTML file as active
+                    if (htmlFile && cssFile) {
+                      // Set the HTML file as active before executing
+                      useEditorStore.getState().setActiveFile(htmlFile.id);
+                    }
+
+                    // Execute the code normally
                     executeCode();
                   }}
                 >
@@ -207,38 +221,11 @@ export function ToolbarActions() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Language Selector */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="gap-2">
-                <Code2 className="w-4 h-4" />
-                <span className="capitalize">{language}</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => changeLanguage("javascript")}>
-                JavaScript
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => changeLanguage("typescript")}>
-                TypeScript
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => changeLanguage("python")}>
-                Python
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => changeLanguage("html")}>
-                HTML
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => changeLanguage("css")}>
-                CSS
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => changeLanguage("go")}>
-                Go
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => changeLanguage("rust")}>
-                Rust
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Language Indicator (Read-only) */}
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-border/50 bg-muted/30 text-sm">
+            <Code2 className="w-4 h-4 text-muted-foreground" />
+            <span className="capitalize text-muted-foreground">{language}</span>
+          </div>
 
           {/* History */}
           <DropdownMenu>

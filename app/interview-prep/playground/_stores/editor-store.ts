@@ -276,9 +276,47 @@ export const useEditorStore = create<EditorStore>()(
         }
       },
 
-      formatCode: () => {
-        // Add code formatting logic here
-        // This is a placeholder
+      formatCode: async () => {
+        try {
+          // Import the formatCode function and the editor instance
+          const { formatCode } = await import("@/app/_lib/editor-utils");
+          const { globalEditorInstance } = await import(
+            "../_components/code-editor"
+          );
+
+          // Check if we have an editor instance
+          if (!globalEditorInstance) {
+            console.error("No editor instance available for formatting");
+            return;
+          }
+
+          // Format the code using Monaco's formatter
+          const success = await formatCode(globalEditorInstance);
+
+          if (success) {
+            // Update the code in the store with the formatted code
+            const formattedCode = globalEditorInstance.getValue();
+            get().setCode(formattedCode);
+
+            // Update the active file with the formatted code
+            const { activeFileId } = get();
+            if (activeFileId) {
+              const files = get().files.map((file) =>
+                file.id === activeFileId
+                  ? { ...file, content: formattedCode }
+                  : file
+              );
+              set({ files });
+
+              // Trigger the format success animation
+              if (typeof window !== "undefined") {
+                window.dispatchEvent(new Event("format-success"));
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error formatting code:", error);
+        }
       },
 
       updateSettings: (newSettings) =>
@@ -286,74 +324,13 @@ export const useEditorStore = create<EditorStore>()(
           settings: { ...state.settings, ...newSettings },
         })),
 
-      // File operations
-      addFile: (file) => {
-        const id = crypto.randomUUID();
-        const newFile: EditorFile = {
-          ...file,
-          id,
-        };
+      // File operations - implementation moved to the File management methods section
 
-        set((state) => ({
-          files: [...state.files, newFile],
-        }));
+      // updateFile method moved to the File management methods section
 
-        return id;
-      },
+      // removeFile method moved to the File management methods section
 
-      updateFile: (id, content) => {
-        set((state) => ({
-          files: state.files.map((file) =>
-            file.id === id ? { ...file, content } : file
-          ),
-          // If the active file is being updated, also update the code field
-          ...(state.activeFileId === id ? { code: content } : {}),
-        }));
-      },
-
-      removeFile: (id) => {
-        const { files, activeFileId } = get();
-
-        // Don't remove the last file
-        if (files.length <= 1) return;
-
-        // If removing the active file, set a new active file
-        let newActiveFileId = activeFileId;
-        if (activeFileId === id) {
-          const index = files.findIndex((f) => f.id === id);
-          const newIndex = index > 0 ? index - 1 : 1;
-          newActiveFileId = files[newIndex].id;
-        }
-
-        set((state) => ({
-          files: state.files.filter((file) => file.id !== id),
-          activeFileId: newActiveFileId,
-          // If changing the active file, update code and language
-          ...(activeFileId === id
-            ? {
-                code:
-                  state.files.find((f) => f.id === newActiveFileId)?.content ||
-                  "",
-                language:
-                  state.files.find((f) => f.id === newActiveFileId)?.language ||
-                  "typescript",
-              }
-            : {}),
-        }));
-      },
-
-      setActiveFile: (id) => {
-        const { files } = get();
-        const file = files.find((f) => f.id === id);
-
-        if (file) {
-          set({
-            activeFileId: id,
-            code: file.content,
-            language: file.language,
-          });
-        }
-      },
+      // setActiveFile method moved to the File management methods section
 
       // File management methods
       addFile: (name, content, language, isEntryPoint = false) => {

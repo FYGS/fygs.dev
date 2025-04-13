@@ -14,6 +14,7 @@
 @import "../styles/html-preview.css";
 @import "../styles/tooltip-styles.css";
 @import "../styles/output-panel.css";
+@import "../styles/format-animation.css";
 
 @layer components {
   /* Main container with responsive width for all sections */

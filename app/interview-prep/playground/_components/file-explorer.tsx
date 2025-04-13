@@ -31,11 +31,11 @@ export function FileExplorer() {
     addFile,
     removeFile,
     setEntryPoint,
-    getEntryPointFile,
-    updatePackageJson,
+    // getEntryPointFile, // Commented out as it's not used
+    // updatePackageJson, // Commented out as it's not used
   } = useEditorStore();
 
-  const entryPointFile = getEntryPointFile();
+  // const entryPointFile = getEntryPointFile(); // Commented out as it's not used
   const [isCreatingFile, setIsCreatingFile] = useState(false);
   const [newFileName, setNewFileName] = useState("");
   const { toast } = useToast();
