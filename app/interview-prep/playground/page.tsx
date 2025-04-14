@@ -2,6 +2,7 @@ import { EditorLoading } from "@/app/interview-prep/playground/_components/edito
 import { Metadata } from "next";
 import { Suspense } from "react";
 import { EnhancedAIAssistantWrapper } from "./_components/enhanced-ai-assistant-wrapper";
+import { FormatAnimation } from "./_components/format-animation";
 import { ModernEditorLayout } from "./_components/modern-editor-layout";
 import { MonacoInit } from "./_components/monaco-init";
 import { ToolbarActions } from "./_components/toolbar-actions";
@@ -20,6 +21,9 @@ export default function PlaygroundPage() {
     <main className="relative flex flex-col h-[calc(100vh-4rem)] overflow-hidden bg-gradient-to-br from-background/80 via-background/90 to-background/95">
       {/* Initialize Monaco Editor */}
       <MonacoInit />
+
+      {/* Format Animation - Confetti effect */}
+      <FormatAnimation />
 
       {/* Ambient Background Effect */}
       <div className="absolute inset-0 bg-grid-small-white/[0.2] -z-[1]" />

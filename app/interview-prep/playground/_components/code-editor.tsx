@@ -13,7 +13,6 @@ import { useEffect, useRef, useState } from "react";
 import { useLanguage } from "../_hooks/use-language";
 import { useTheme } from "../_hooks/use-theme";
 import { useEditorStore } from "../_stores/editor-store";
-import { FormatAnimation } from "./format-animation";
 
 // Create a global reference to the editor instance for external access
 export let globalEditorInstance: monaco.editor.IStandaloneCodeEditor | null =
@@ -32,21 +31,9 @@ function CodeEditorComponent() {
   const [monacoInstance, setMonacoInstance] = useState<typeof monaco | null>(
     null
   );
-  const [showFormatAnimation, setShowFormatAnimation] = useState(false);
+  // Format animation is now handled by the FormatAnimation component
 
-  // Subscribe to format events
-  useEffect(() => {
-    const handleFormatEvent = () => {
-      setShowFormatAnimation(true);
-    };
-
-    // Create a custom event for format success
-    window.addEventListener("format-success", handleFormatEvent);
-
-    return () => {
-      window.removeEventListener("format-success", handleFormatEvent);
-    };
-  }, []);
+  // Format animation is now handled by the FormatAnimation component directly
 
   // Initialize Monaco Editor
   useEffect(() => {
@@ -164,24 +151,9 @@ function CodeEditorComponent() {
     <div className="editor-container full-height-container">
       <div
         ref={editorRef}
-        className={`editor-monaco flex-1 ${
-          showFormatAnimation ? "format-success-animation" : ""
-        }`}
-        style={{
-          height: "100%",
-          width: "100%",
-          position: "relative",
-          backgroundColor: "transparent",
-          borderRadius: "0.5rem",
-          overflow: "hidden",
-        }}
+        className="editor-monaco flex-1 h-full w-full relative bg-transparent rounded-lg overflow-hidden"
       >
-        {showFormatAnimation && (
-          <FormatAnimation
-            show={showFormatAnimation}
-            onAnimationComplete={() => setShowFormatAnimation(false)}
-          />
-        )}
+        {/* FormatAnimation component is now mounted at the app level */}
       </div>
     </div>
   );

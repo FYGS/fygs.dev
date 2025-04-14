@@ -1,6 +1,7 @@
 import typography from "@tailwindcss/typography";
 import type { Config } from "tailwindcss";
 import animate from "tailwindcss-animate";
+import playgroundAnimations from "./lib/tailwind-plugins/playground-animations";
 
 const config: Config = {
   darkMode: ["class"],
@@ -115,6 +116,7 @@ const config: Config = {
   plugins: [
     animate,
     typography,
+    playgroundAnimations,
     function ({
       addUtilities,
     }: {

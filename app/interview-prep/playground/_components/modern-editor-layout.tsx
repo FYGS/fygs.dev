@@ -197,7 +197,7 @@ export function ModernEditorLayout() {
 
     return (
       <div
-        className={`absolute ${positionClasses[controlsPosition]} z-20 glass-panel rounded-md p-1 border border-border/40 shadow-lg`}
+        className={`absolute ${positionClasses[controlsPosition]} z-20 glass-effect p-1`}
       >
         <div className="flex items-center justify-between mb-1 px-1">
           <span className="text-xs font-medium">Layout</span>
@@ -371,7 +371,7 @@ export function ModernEditorLayout() {
             {layoutMode !== "vertical" && (
               <div
                 ref={fileExplorerDragRef}
-                className="w-1 h-full cursor-col-resize bg-border/30 hover:bg-primary/50 transition-colors drag-handle"
+                className="drag-handle-horizontal"
                 style={{
                   cursor: isDraggingFileExplorer ? "col-resize" : "default",
                 }}
@@ -414,10 +414,9 @@ export function ModernEditorLayout() {
               className={`
                 ${
                   layoutMode === "vertical"
-                    ? "h-1 w-full cursor-row-resize"
-                    : "w-1 h-full cursor-col-resize"
+                    ? "drag-handle-vertical"
+                    : "drag-handle-horizontal"
                 }
-                bg-border/30 hover:bg-primary/50 transition-colors drag-handle
               `}
               style={{
                 cursor: isDraggingMain

@@ -104,10 +104,7 @@ export function HtmlPreview({ dataUrl }: HtmlPreviewProps) {
   };
 
   return (
-    <div
-      className="w-full h-full flex flex-col bg-white dark:bg-gray-900 rounded-md overflow-hidden"
-      style={{ display: "flex", flexDirection: "column", height: "100%" }}
-    >
+    <div className="w-full h-full flex flex-col bg-white dark:bg-gray-900 rounded-md overflow-hidden">
       <div className="flex justify-between p-2 border-b border-border/30 bg-muted/30">
         <div className="flex items-center">
           <span className="text-xs text-green-500 font-semibold">
@@ -136,7 +133,7 @@ export function HtmlPreview({ dataUrl }: HtmlPreviewProps) {
           </Tooltip>
         </TooltipProvider>
       </div>
-      <div className="preview-iframe-container w-full h-full overflow-hidden">
+      <div className="preview-container">
         {error ? (
           <div className="p-4 text-destructive">{error}</div>
         ) : (

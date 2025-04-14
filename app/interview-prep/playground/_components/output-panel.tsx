@@ -82,7 +82,7 @@ export function OutputPanel() {
   }, [errors, status]);
 
   return (
-    <div className="output-panel-container h-full flex flex-col full-height-container">
+    <div className="output-panel full-height-container">
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
@@ -153,7 +153,7 @@ export function OutputPanel() {
           </div>
         </div>
 
-        <div className="output-panel-content h-full flex-1 flex flex-col full-height-content">
+        <div className="output-content full-height-content">
           <TabsContent
             value="output"
             className="tab-content-container p-0 mt-0 data-[state=active]:flex data-[state=active]:flex-col h-full full-height-content"
@@ -171,13 +171,13 @@ export function OutputPanel() {
               </div>
             ) : (
               <ScrollArea
-                className="scrollable-content h-full w-full"
+                className="h-full w-full scrollable-area"
                 scrollHideDelay={0}
               >
                 <pre
                   ref={outputRef}
                   className={cn(
-                    "output-display p-4 whitespace-pre-wrap font-mono text-sm",
+                    "output-display",
                     "transition-colors min-h-full",
                     status === "error" && "text-destructive/90",
                     status === "success" && "text-green-500/90"
@@ -272,10 +272,7 @@ export function OutputPanel() {
             value="problems"
             className="tab-content-container p-0 mt-0 data-[state=active]:flex data-[state=active]:flex-col full-height-content"
           >
-            <ScrollArea
-              className="scrollable-content w-full"
-              scrollHideDelay={0}
-            >
+            <ScrollArea className="w-full scrollable-area" scrollHideDelay={0}>
               <div className="p-4 space-y-3">
                 {errors.length > 0 ? (
                   errors.map((error, i) => (

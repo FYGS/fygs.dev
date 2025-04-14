@@ -160,37 +160,67 @@ export function TemplateSelector() {
                 className="flex-1 overflow-auto p-1"
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-2">
-                  {categoryTemplates.map((template) => (
-                    <motion.div
-                      key={template.name}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className={`
-                      border rounded-lg p-4 cursor-pointer transition-all
-                      ${
-                        selectedTemplate?.name === template.name
-                          ? "border-primary bg-primary/5"
-                          : "hover:border-primary/50 hover:bg-muted/50"
-                      }
-                    `}
-                      onClick={() => handleSelectTemplate(template)}
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <h3 className="text-lg font-medium">{template.name}</h3>
-                        <div className="px-2 py-1 bg-primary/10 text-primary rounded text-xs">
-                          {template.files[0].language}
+                  {categoryTemplates.map((template) => {
+                    // Check if template is TypeScript or React (not fully functional yet)
+                    const isDisabled =
+                      template.name === "TypeScript" ||
+                      template.name === "React";
+
+                    return (
+                      <motion.div
+                        key={template.name}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className={`
+                          border rounded-lg p-4 transition-all
+                          ${
+                            selectedTemplate?.name === template.name
+                              ? "border-primary bg-primary/5"
+                              : isDisabled
+                              ? "opacity-50 cursor-not-allowed border-muted"
+                              : "hover:border-primary/50 hover:bg-muted/50 cursor-pointer"
+                          }
+                        `}
+                        onClick={() =>
+                          !isDisabled && handleSelectTemplate(template)
+                        }
+                        title={
+                          isDisabled
+                            ? "This template is coming soon stay tuned."
+                            : ""
+                        }
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <h3 className="text-lg font-medium">
+                            {template.name}
+                          </h3>
+                          <div className="flex gap-2">
+                            {isDisabled && (
+                              <div className="px-2 py-1 bg-yellow-500/10 text-yellow-500 rounded text-xs">
+                                Coming Soon
+                              </div>
+                            )}
+                            <div className="px-2 py-1 bg-primary/10 text-primary rounded text-xs">
+                              {template.files[0].language}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        {template.name} starter template
-                      </p>
-                      <div className="text-xs text-muted-foreground">
-                        {template.files.length} file
-                        {template.files.length !== 1 ? "s" : ""}
-                      </div>
-                    </motion.div>
-                  ))}
+                        <p className="text-sm text-muted-foreground mb-4">
+                          {template.name} starter template
+                          {isDisabled && (
+                            <span className="block mt-1 text-yellow-500">
+                              This template will be available soon.
+                            </span>
+                          )}
+                        </p>
+                        <div className="text-xs text-muted-foreground">
+                          {template.files.length} file
+                          {template.files.length !== 1 ? "s" : ""}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
                 </div>
               </TabsContent>
             )

@@ -1,40 +1,26 @@
 "use client";
 
-import { CheckCircle } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { triggerSuccessConfetti } from "../_utils/confetti";
 
-interface FormatAnimationProps {
-  show: boolean;
-  onAnimationComplete: () => void;
-}
-
-export function FormatAnimation({
-  show,
-  onAnimationComplete,
-}: FormatAnimationProps) {
-  const [isVisible, setIsVisible] = useState(false);
-
+// This component listens for format-success events and triggers confetti
+export function FormatAnimation() {
   useEffect(() => {
-    if (show) {
-      setIsVisible(true);
-      const timer = setTimeout(() => {
-        setIsVisible(false);
-        onAnimationComplete();
-      }, 1500); // Match animation duration
-      return () => clearTimeout(timer);
-    }
-  }, [show, onAnimationComplete]);
+    // Function to handle the format success event
+    const handleFormatSuccess = () => {
+      // Trigger confetti animation
+      triggerSuccessConfetti();
+    };
 
-  if (!isVisible) return null;
+    // Add event listener for format-success
+    window.addEventListener("format-success", handleFormatSuccess);
 
-  return (
-    <>
-      <div className="format-checkmark">
-        <CheckCircle size={64} strokeWidth={2.5} />
-      </div>
-      <div className="format-success-text">
-        Code formatted successfully
-      </div>
-    </>
-  );
+    // Clean up the event listener when the component unmounts
+    return () => {
+      window.removeEventListener("format-success", handleFormatSuccess);
+    };
+  }, []);
+
+  // No visible UI elements - just confetti
+  return null;
 }
