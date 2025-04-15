@@ -1,4 +1,4 @@
-import { AutoLoader } from "@/components/auto-loader";
+// import { AutoLoader } from "@/components/auto-loader";
 import { NavigationProgress } from "@/components/ui/navigation-progress";
 import { PageTransition } from "@/components/ui/page-transition";
 import { Toaster } from "@/components/ui/toaster";
@@ -104,7 +104,7 @@ export default function RootLayout({
                   <Footer />
                   <Analytics />
                   <SpeedInsights />
-                  <AutoLoader />
+                  {/* <AutoLoader /> */}
                   <MonacoInit />
                 </main>
               </PageTransition>

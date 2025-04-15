@@ -1,4 +1,5 @@
 import typography from "@tailwindcss/typography";
+import scrollbar from "tailwind-scrollbar";
 import type { Config } from "tailwindcss";
 import animate from "tailwindcss-animate";
 import playgroundAnimations from "./lib/tailwind-plugins/playground-animations";
@@ -117,6 +118,7 @@ const config: Config = {
     animate,
     typography,
     playgroundAnimations,
+    scrollbar,
     function ({
       addUtilities,
     }: {

@@ -1,28 +1,43 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Binary,
+  Book,
+  BrainCircuit,
+  ChevronRight,
+  Code2,
+  Database,
+  DollarSign,
+  GitMerge,
+  HelpCircle,
+  Layers,
+  MessagesSquare,
+  Search,
+  Server,
+  Swords,
+  Workflow,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
-import {
-  Book,
-  Binary,
-  Database,
-  Search,
-  GitMerge,
-  Workflow,
-  BrainCircuit,
-  MessagesSquare,
-  DollarSign,
-  Code2,
-  HelpCircle,
-  Swords,
-  ChevronRight,
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
 
-const topics = [
+export const topics = [
+  {
+    title: "Playground",
+    icon: Code2,
+    items: [
+      {
+        title: "Code Playground",
+        href: "/interview-prep/playground",
+        icon: Code2,
+        description: "Environnement interactif de codage",
+        badge: "Interactif",
+      },
+    ],
+  },
   {
     title: "Algorithmes",
     icon: Code2,
@@ -117,6 +132,50 @@ const topics = [
         icon: BrainCircuit,
         description: "Conception de systèmes distribués",
         badge: "Expert",
+      },
+    ],
+  },
+  {
+    title: "Développement",
+    icon: Code2,
+    items: [
+      {
+        title: "Frontend",
+        href: "/interview-prep/frontend",
+        icon: Layers,
+        description: "Technologies et frameworks frontend",
+      },
+      {
+        title: "Backend",
+        href: "/interview-prep/backend",
+        icon: Server,
+        description: "Technologies et frameworks backend",
+      },
+      {
+        title: "System Design",
+        href: "/interview-prep/system-design",
+        icon: BrainCircuit,
+        description: "Conception de systèmes distribués",
+        badge: "Avancé",
+      },
+    ],
+  },
+  {
+    title: "Préparation",
+    icon: Book,
+    items: [
+      {
+        title: "Dashboard",
+        href: "/interview-prep/dashboard",
+        icon: Layers,
+        description: "Tableau de bord de préparation",
+      },
+      {
+        title: "Plan de préparation",
+        href: "/interview-prep/preparation",
+        icon: Workflow,
+        description: "Guide étape par étape pour se préparer",
+        badge: "Essentiel",
       },
     ],
   },
