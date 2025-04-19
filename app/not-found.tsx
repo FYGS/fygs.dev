@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 import { ArrowLeft, Home, Search } from "lucide-react";
+import Link from "next/link";
 
 export default function NotFound() {
   // Animation variants pour les éléments
@@ -107,7 +107,7 @@ export default function NotFound() {
             <ArrowLeft className="w-4 h-4" />
             Retour
           </Button>
-          <Link href="/interview-prep">
+          <Link href="/tech-mastry">
             <Button variant="secondary" size="lg" className="gap-2">
               <Home className="w-4 h-4" />
               Accueil

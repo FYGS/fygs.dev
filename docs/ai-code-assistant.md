@@ -1,6 +1,6 @@
 # AI Code Assistant Documentation
 
-The AI Code Assistant is a sophisticated feature that provides real-time code analysis, suggestions, and assistance to users of the Interview Preparation Platform.
+The AI Code Assistant is a sophisticated feature that provides real-time code analysis, suggestions, and assistance to users of TechMastry Platform.
 
 ## Overview
 

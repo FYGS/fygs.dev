@@ -1,6 +1,6 @@
-# Interview Preparation Platform Documentation
+# TechMastry Platform Documentation
 
-Welcome to the comprehensive documentation for the Interview Preparation Platform. This documentation provides detailed information about the platform's features, architecture, and development guidelines.
+Welcome to the comprehensive documentation for the TechMastry Platform. This documentation provides detailed information about the platform's features, architecture, and development guidelines.
 
 ## Getting Started
 
@@ -62,4 +62,4 @@ Welcome to the comprehensive documentation for the Interview Preparation Platfor
 
 ---
 
-This documentation is continuously updated. If you find any issues or have suggestions for improvement, please [create an issue](https://github.com/fygs/interview-prep-platform/issues) or submit a pull request following our [contribution guidelines](CONTRIBUTING.md).
+This documentation is continuously updated. If you find any issues or have suggestions for improvement, please [create an issue](https://github.com/fygs/tech-mastry-platform/issues) or submit a pull request following our [contribution guidelines](CONTRIBUTING.md).

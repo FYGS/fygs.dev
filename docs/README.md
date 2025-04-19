@@ -1,8 +1,8 @@
-# Interview Preparation Platform
+# TechMastry Platform
 
-A comprehensive online learning and technical interview preparation platform with cutting-edge features and a modern UI/UX.
+A comprehensive online learning and technical concept platform with cutting-edge features and a modern UI/UX.
 
-![TechMastry Platform](https://fygs.dev/images/interview-prep-platform.png)
+![TechMastry Platform](https://fygs.dev/images/tech-mastry-platform.png)
 
 ## Overview
 
@@ -28,10 +28,10 @@ This platform provides a complete environment for learning, practicing, and mast
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/interview-prep-platform.git
+git clone https://github.com/yourusername/tech-mastry-platform.git
 
 # Navigate to the project directory
-cd interview-prep-platform
+cd tech-mastry-platform
 
 # Install dependencies
 pnpm install
@@ -127,7 +127,7 @@ Track your progress and focus your learning:
 │   ├── _services/        # Service layer
 │   ├── api/              # API routes
 │   ├── blog/             # Blog section
-│   └── interview-prep/   # Interview preparation section
+│   └── tech-mastry/   # TechMastry section
 ├── components/           # Reusable UI components
 ├── lib/                  # Core libraries
 ├── public/               # Static assets
@@ -137,8 +137,8 @@ Track your progress and focus your learning:
 
 ### Key Directories
 
-- `app/interview-prep/playground/`: Code playground implementation
-- `app/interview-prep/dashboard/`: Learning dashboard
+- `app/tech-mastry/playground/`: Code playground implementation
+- `app/tech-mastry/dashboard/`: Learning dashboard
 - `app/_services/ai-code-service.ts`: AI code analysis service
 - `components/ui/`: Reusable UI components
 
@@ -163,7 +163,7 @@ pnpm test
 
 ## Contributing
 
-We welcome contributions to the Interview Preparation Platform! Please see our [Contributing Guide](CONTRIBUTING.md) for more information.
+We welcome contributions to TechMastry Platform! Please see our [Contributing Guide](CONTRIBUTING.md) for more information.
 
 ## License
 

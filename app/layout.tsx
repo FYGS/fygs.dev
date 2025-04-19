@@ -19,7 +19,7 @@ import { JsonLd } from "./_components/JsonLd";
 import { Spacing } from "./_components/Spacing";
 import { SITE_URL } from "./_lib/constants";
 import "./globals.css";
-import { MonacoInit } from "./interview-prep/playground/_components/monaco-init";
+import { MonacoInit } from "./tech-mastry/playground/_components/monaco-init";
 
 const AnekTelugu = Anek_Telugu({
   subsets: ["latin"],

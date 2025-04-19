@@ -1,6 +1,6 @@
 # API Reference Documentation
 
-This document provides a comprehensive reference for the Interview Preparation Platform's API endpoints, including request formats, response structures, and authentication requirements.
+This document provides a comprehensive reference for TechMastry Platform's API endpoints, including request formats, response structures, and authentication requirements.
 
 ## Overview
 
@@ -475,17 +475,17 @@ The platform supports webhooks for real-time notifications of events:
 The platform provides a JavaScript SDK for easier integration:
 
 ```javascript
-import { InterviewPrepSDK } from '@fygs/interview-prep-sdk';
+import { InterviewPrepSDK } from "@fygs/tech-mastry-sdk";
 
 const sdk = new InterviewPrepSDK({
-  apiKey: 'your_api_key',
-  baseUrl: 'https://api.fygs.dev'
+  apiKey: "your_api_key",
+  baseUrl: "https://api.fygs.dev",
 });
 
 // Execute code
 const result = await sdk.executeCode({
   code: 'console.log("Hello, World!");',
-  language: 'javascript'
+  language: "javascript",
 });
 
 console.log(result.output); // "Hello, World!"

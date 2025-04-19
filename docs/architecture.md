@@ -1,10 +1,10 @@
 # Project Architecture Documentation
 
-This document provides a comprehensive overview of the Interview Preparation Platform's architecture, explaining the design decisions, component structure, and technical implementation.
+This document provides a comprehensive overview of the TechMastry Platform's architecture, explaining the design decisions, component structure, and technical implementation.
 
 ## System Overview
 
-The Interview Preparation Platform is built as a modern web application using Next.js 15 with the App Router, React, TypeScript, and a suite of supporting technologies. It follows a modular architecture with clear separation of concerns.
+The TechMastry Platform is built as a modern web application using Next.js 15 with the App Router, React, TypeScript, and a suite of supporting technologies. It follows a modular architecture with clear separation of concerns.
 
 ![Architecture Diagram](https://fygs.dev/images/architecture-diagram.png)
 
@@ -89,8 +89,8 @@ The project follows a structured organization:
 │   ├── _services/        # Service layer
 │   ├── api/              # API routes
 │   ├── blog/             # Blog section
-│   └── interview-prep/   # Interview preparation section
-│       ├── _components/  # Interview prep components
+│   └── tech-mastry/   # TechMastry section
+│       ├── _components/  # TechMastry-specific components
 │       ├── _stores/      # Client-side state stores
 │       ├── dashboard/    # Learning dashboard
 │       └── playground/   # Code playground

@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, RefreshCcw, Home } from "lucide-react";
+import { motion } from "framer-motion";
+import { AlertCircle, Home, RefreshCcw } from "lucide-react";
 import Link from "next/link";
+import { useEffect } from "react";
 
 export default function Error({
   error,
@@ -60,7 +60,7 @@ export default function Error({
             <RefreshCcw className="w-4 h-4" />
             Réessayer
           </Button>
-          <Link href="/interview-prep">
+          <Link href="/tech-mastry">
             <Button variant="secondary" size="lg" className="gap-2">
               <Home className="w-4 h-4" />
               Retour à l&apos;accueil

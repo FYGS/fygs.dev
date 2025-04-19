@@ -1,6 +1,6 @@
 # 404 Page Implementation
 
-This document explains the implementation of the 404 Not Found page in the Interview Preparation Platform.
+This document explains the implementation of the 404 Not Found page in TechMastry Platform.
 
 ## Overview
 

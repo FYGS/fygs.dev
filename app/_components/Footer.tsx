@@ -15,7 +15,7 @@ import { Section } from "./Section";
 const FOOTER_LINKS = {
   main: [
     { href: "/projects", label: "Projects" },
-    { href: "/interview-prep", label: "TechMastry" },
+    { href: "/tech-mastry", label: "TechMastry" },
     { href: "/blog", label: "Blog" },
     { href: "/resume", label: "Resume" },
   ],

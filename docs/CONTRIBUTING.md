@@ -1,6 +1,6 @@
-# Contributing to the Interview Preparation Platform
+# Contributing to TechMastry Platform
 
-Thank you for your interest in contributing to the Interview Preparation Platform! This document provides guidelines and instructions for contributing to the project.
+Thank you for your interest in contributing to TechMastry Platform! This document provides guidelines and instructions for contributing to the project.
 
 ## Table of Contents
 
@@ -32,12 +32,12 @@ This project adheres to a Code of Conduct that all contributors are expected to 
 1. Fork the repository on GitHub
 2. Clone your fork locally:
    ```bash
-   git clone https://github.com/yourusername/interview-prep-platform.git
-   cd interview-prep-platform
+   git clone https://github.com/yourusername/tech-mastry-platform.git
+   cd tech-mastry-platform
    ```
 3. Add the original repository as a remote:
    ```bash
-   git remote add upstream https://github.com/originalowner/interview-prep-platform.git
+   git remote add upstream https://github.com/originalowner/tech-mastry-platform.git
    ```
 4. Install dependencies:
    ```bash
