@@ -1,9 +1,9 @@
 import { Metadata } from "next";
-import { AccessibilityHero } from "./_components/hero";
 import { AccessibilityContent } from "./_components/content";
+import { AccessibilityHero } from "./_components/hero";
 
 export const metadata: Metadata = {
-  title: "Accessibility & UX | Interview Prep",
+  title: "Accessibility & UX | TechMastry",
   description:
     "Best practices for creating accessible and user-friendly interfaces in React applications",
 };

@@ -62,6 +62,7 @@ The dashboard monitors learning activities:
 The Learning Dashboard is implemented with the following components:
 
 1. **Core Components**:
+
    - Progress Dashboard (`progress-dashboard.tsx`)
    - Skill Radar Chart (`skill-radar-chart.tsx`)
    - Streak Calendar (`streak-calendar.tsx`)
@@ -69,6 +70,7 @@ The Learning Dashboard is implemented with the following components:
    - Recent Activities (`recent-activities.tsx`)
 
 2. **Data Services**:
+
    - Progress Tracking Service
    - Skill Assessment Service
    - Achievement Service
@@ -102,7 +104,7 @@ The dashboard adapts to each user's learning journey:
 
 ### Accessing the Dashboard
 
-1. Navigate to the Interview Prep section
+1. Navigate to the TechMastry section
 2. Click on "Learning Dashboard" in the navigation
 3. The dashboard will load with personalized data
 

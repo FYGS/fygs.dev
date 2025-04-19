@@ -1,9 +1,9 @@
 import { Metadata } from "next";
-import { BackendHero } from "./_components/hero";
 import { BackendTopics } from "./_components/backend-topics";
+import { BackendHero } from "./_components/hero";
 
 export const metadata: Metadata = {
-  title: "Backend Development | Interview Prep",
+  title: "Backend Development | TechMastry",
   description:
     "Préparation aux questions de développement backend, API, bases de données et architecture",
 };

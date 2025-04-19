@@ -210,6 +210,7 @@ const sections: Section[] = [
 ];
 
 export function PracticeSections() {
+  // Augmenter le nombre d'éléments par page pour afficher plus de cartes
   const ITEMS_PER_PAGE = 6;
 
   const {
@@ -230,11 +231,24 @@ export function PracticeSections() {
 
   return (
     <section
-      className="space-y-8"
+      className="space-y-12 relative"
       aria-label="Sections de préparation aux entretiens"
     >
+      {/* Section title */}
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold mb-3 inline-flex items-center gap-2">
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600">
+            Explorez des domaines d&apos;expertise variés
+          </span>
+        </h2>
+        <p className="text-muted-foreground max-w-2xl mx-auto">
+          Découvrez une sélection de ressources et d&apos;exercices pour
+          maîtriser les compétences techniques essentielles
+        </p>
+      </div>
+
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
             <Card
               key={i}
@@ -246,56 +260,76 @@ export function PracticeSections() {
       ) : (
         <>
           <div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10"
             key={currentPage}
           >
             {currentSections.map((section) => (
-              <div key={section.title}>
+              <div key={section.title} className="group">
                 <Link
                   href={section.href}
-                  className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg"
+                  className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl block h-full"
                 >
-                  <Card className="p-6 h-full hover:shadow-lg transition-all duration-300 space-y-4 group">
-                    <div
-                      className={`inline-flex p-3 rounded-xl ${section.bgColor}`}
-                      aria-hidden="true"
-                    >
-                      <section.icon className={`w-6 h-6 ${section.color}`} />
-                    </div>
+                  <Card className="p-6 h-[200px] border border-border/40 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 overflow-hidden relative backdrop-blur-sm bg-background/80 group-hover:bg-gradient-to-br group-hover:from-background group-hover:to-primary/5">
+                    {/* Background glow effect */}
+                    <div className="absolute -inset-1 bg-gradient-to-r from-transparent via-primary/10 to-transparent opacity-0 group-hover:opacity-100 blur-xl transition-all duration-500 -z-10" />
 
-                    <div className="space-y-2">
-                      <h2 className="text-xl font-semibold group-hover:text-primary transition-colors">
-                        {section.title}
-                      </h2>
-                      <p className="text-muted-foreground line-clamp-2">
-                        {section.description}
-                      </p>
+                    <div className="flex flex-col h-full justify-between">
+                      <div className="space-y-3">
+                        <div
+                          className={`inline-flex p-3 rounded-xl ${section.bgColor} group-hover:scale-110 transition-transform duration-300`}
+                          aria-hidden="true"
+                        >
+                          <section.icon
+                            className={`w-6 h-6 ${section.color}`}
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <h2 className="text-lg font-semibold group-hover:text-primary transition-colors line-clamp-1">
+                            {section.title}
+                          </h2>
+                          <p className="text-sm text-muted-foreground line-clamp-3 group-hover:text-foreground/80 transition-colors">
+                            {section.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Subtle arrow indicator */}
+                      <div className="self-end opacity-0 transform translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                        <div className="text-primary">
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 20 20"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M4.16667 10H15.8333"
+                              stroke="currentColor"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                            <path
+                              d="M10.8333 5L15.8333 10L10.8333 15"
+                              stroke="currentColor"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </div>
+                      </div>
                     </div>
                   </Card>
                 </Link>
-
-                {section.subsections && (
-                  <div className="mt-4 ml-6 space-y-2">
-                    {section.subsections.map((subsection) => (
-                      <Link
-                        key={subsection.href}
-                        href={subsection.href}
-                        className="block p-3 rounded-lg hover:bg-muted transition-colors"
-                      >
-                        <h3 className="font-medium">{subsection.title}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {subsection.description}
-                        </p>
-                      </Link>
-                    ))}
-                  </div>
-                )}
               </div>
             ))}
           </div>
 
           {totalPages > 1 && (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 mt-12 mb-8">
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}

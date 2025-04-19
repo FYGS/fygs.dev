@@ -1,9 +1,9 @@
 import { Metadata } from "next";
-import { ComponentPatternsHero } from "./_components/hero";
 import { ComponentPatternsContent } from "./_components/content";
+import { ComponentPatternsHero } from "./_components/hero";
 
 export const metadata: Metadata = {
-  title: "Component Patterns | Interview Prep",
+  title: "Component Patterns | TechMastry",
   description:
     "Maîtrisez les patterns de conception de composants React: Compound Components, Render Props, HOCs, et Custom Hooks",
 };

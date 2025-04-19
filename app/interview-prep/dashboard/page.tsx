@@ -2,7 +2,7 @@ import { BarChart3, Brain, GraduationCap, Trophy } from "lucide-react";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Learning Progress Dashboard | Interview Prep",
+  title: "Learning Progress Dashboard | TechMastry",
   description:
     "Track your progress, identify strengths and weaknesses, and plan your learning journey.",
 };

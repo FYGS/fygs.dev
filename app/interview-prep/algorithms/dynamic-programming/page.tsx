@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { DynamicProgrammingGuide } from "../_components/dynamic-programming-guide";
 
 export const metadata: Metadata = {
-  title: "Programmation Dynamique | Interview Prep",
+  title: "Programmation Dynamique | TechMastry",
   description:
     "Guide complet sur la programmation dynamique : concepts, problèmes classiques et techniques d'optimisation",
 };

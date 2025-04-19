@@ -51,7 +51,7 @@ export default function InterviewPrepLayout({
         <SheetContent side="left" className="w-72 p-0">
           <nav className="flex h-full flex-col bg-background">
             <div className="flex h-14 items-center justify-between px-4 border-b">
-              <span className="font-semibold">Guide d&apos;Entretien</span>
+              <span className="font-semibold">TechMastery</span>
               <Badge variant="secondary" className="font-normal">
                 Beta
               </Badge>
@@ -72,10 +72,10 @@ export default function InterviewPrepLayout({
           <div className="flex h-16 items-center justify-between px-6 border-b bg-gradient-to-r from-background via-background/80 to-background">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center">
-                <span className="text-primary font-bold text-sm">IP</span>
+                <span className="text-primary font-bold text-sm">TM</span>
               </div>
               <span className="font-semibold tracking-tight text-lg">
-                Guide d&apos;Entretien
+                TechMastery
               </span>
             </div>
             <Badge
@@ -155,7 +155,7 @@ export default function InterviewPrepLayout({
             </div>
             <div className="flex items-center gap-4">
               <span className="hidden text-sm font-medium text-muted-foreground md:block">
-                Votre chemin vers la réussite
+                Maîtrisez les compétences techniques avancées
               </span>
               <div className="h-4 w-px bg-border hidden md:block" />
               <Badge variant="secondary" className="hidden md:inline-flex">
@@ -188,8 +188,8 @@ export default function InterviewPrepLayout({
         <footer className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="container flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-6 md:h-14 md:flex-row lg:px-8">
             <p className="text-sm text-muted-foreground">
-              Créé avec ❤️ pour aider les développeurs à réussir leurs
-              entretiens
+              Créé avec ❤️ pour aider les développeurs à maîtriser les
+              compétences techniques avancées
             </p>
             <div className="flex items-center gap-4">
               <p className="text-sm text-muted-foreground">

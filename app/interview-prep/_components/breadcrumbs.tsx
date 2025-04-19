@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const routeNameMap: { [key: string]: string } = {
-  "interview-prep": "Guide d'Entretien",
+  "interview-prep": "Accueil",
   algorithms: "Algorithmes",
   complexity: "Complexité",
   sorting: "Tri",

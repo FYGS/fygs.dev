@@ -24,7 +24,7 @@ const NAVIGATION_ITEMS = [
   { href: "/projects", label: "Projects" },
   { href: "/resume", label: "Resume" },
   { href: "/blog", label: "Blog" },
-  { href: "/interview-prep", label: "Interview Prep" },
+  { href: "/interview-prep", label: "TechMastry" },
 ] as const;
 
 const SOCIAL_LINKS = [

@@ -1,9 +1,9 @@
 import { Metadata } from "next";
-import { ReactBasicsHero } from "./_components/hero";
 import { ReactBasicsContent } from "./_components/content";
+import { ReactBasicsHero } from "./_components/hero";
 
 export const metadata: Metadata = {
-  title: "React Fondamentaux | Interview Prep",
+  title: "React Fondamentaux | TechMastry",
   description:
     "Maîtrisez les concepts fondamentaux de React: composants, hooks, props, state et context API",
 };

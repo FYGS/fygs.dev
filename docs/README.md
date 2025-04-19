@@ -2,7 +2,7 @@
 
 A comprehensive online learning and technical interview preparation platform with cutting-edge features and a modern UI/UX.
 
-![Interview Prep Platform](https://fygs.dev/images/interview-prep-platform.png)
+![TechMastry Platform](https://fygs.dev/images/interview-prep-platform.png)
 
 ## Overview
 

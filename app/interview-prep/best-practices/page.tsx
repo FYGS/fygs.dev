@@ -3,7 +3,7 @@ import { BestPracticesHero } from "./_components/hero";
 import { PracticesList } from "./_components/practices-list";
 
 export const metadata: Metadata = {
-  title: "Best Practices | Interview Prep",
+  title: "Best Practices | TechMastry",
   description:
     "Découvrez les meilleures pratiques pour réussir vos entretiens techniques",
 };

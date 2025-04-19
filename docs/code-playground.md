@@ -70,12 +70,14 @@ The playground integrates with other platform features:
 The Code Playground is implemented with the following components:
 
 1. **Core Components**:
+
    - Code Editor (`code-editor.tsx`)
    - Output Panel (`output-panel.tsx`)
    - Toolbar Actions (`toolbar-actions.tsx`)
    - Editor Store (`editor-store.ts`)
 
 2. **Technologies**:
+
    - Monaco Editor for code editing
    - WebAssembly for code execution
    - Service Workers for background processing
@@ -110,7 +112,7 @@ The editor is highly configurable:
 
 ### Basic Usage
 
-1. Navigate to the Interview Prep section
+1. Navigate to the TechMastry section
 2. Click on "Code Playground"
 3. Select a programming language
 4. Write your code in the editor

@@ -3,7 +3,7 @@ import { AlgorithmsHero } from "./_components/hero";
 import { TopicsList } from "./_components/topics-list";
 
 export const metadata: Metadata = {
-  title: "Algorithmes & Structures de Données | Interview Prep",
+  title: "Algorithmes & Structures de Données | TechMastry",
   description:
     "Préparation aux questions d'algorithmes et structures de données pour les entretiens techniques",
 };

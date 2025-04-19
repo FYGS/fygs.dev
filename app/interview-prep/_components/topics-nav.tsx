@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  BarChart3,
   Binary,
   Book,
   BrainCircuit,
@@ -26,7 +27,7 @@ import { useState } from "react";
 
 export const topics = [
   {
-    title: "Playground",
+    title: "Outils Pratiques",
     icon: Code2,
     items: [
       {
@@ -35,6 +36,12 @@ export const topics = [
         icon: Code2,
         description: "Environnement interactif de codage",
         badge: "Interactif",
+      },
+      {
+        title: "Dashboard",
+        href: "/interview-prep/dashboard",
+        icon: BarChart3,
+        description: "Tableau de bord de progression",
       },
     ],
   },
@@ -103,22 +110,9 @@ export const topics = [
     ],
   },
   {
-    title: "Bonnes Pratiques",
+    title: "Architecture & Design",
     icon: BrainCircuit,
     items: [
-      {
-        title: "Communication",
-        href: "/interview-prep/best-practices/communication",
-        icon: MessagesSquare,
-        description: "Communication efficace en entretien",
-        badge: "Soft Skills",
-      },
-      {
-        title: "Négociation",
-        href: "/interview-prep/best-practices/negotiation",
-        icon: DollarSign,
-        description: "Techniques de négociation salariale",
-      },
       {
         title: "Design Patterns",
         href: "/interview-prep/best-practices/design-patterns",
@@ -133,17 +127,30 @@ export const topics = [
         description: "Conception de systèmes distribués",
         badge: "Expert",
       },
+      {
+        title: "Architecture Distribuée",
+        href: "/interview-prep/system-design/distributed",
+        icon: BrainCircuit,
+        description: "Microservices, Event-Driven, Service Mesh",
+        badge: "Avancé",
+      },
+      {
+        title: "Scalabilité",
+        href: "/interview-prep/system-design/scalability",
+        icon: BrainCircuit,
+        description: "Techniques de mise à l'échelle",
+      },
     ],
   },
   {
-    title: "Développement",
-    icon: Code2,
+    title: "Frontend",
+    icon: Layers,
     items: [
       {
-        title: "Frontend",
-        href: "/interview-prep/frontend",
-        icon: Layers,
-        description: "Technologies et frameworks frontend",
+        title: "React Basics",
+        href: "/interview-prep/frontend/react-basics",
+        icon: Code2,
+        description: "Fondamentaux de React",
       },
       {
         title: "Component Patterns",
@@ -151,6 +158,12 @@ export const topics = [
         icon: Code2,
         description: "Patterns de conception de composants React",
         badge: "Nouveau",
+      },
+      {
+        title: "State Management",
+        href: "/interview-prep/frontend/state-management",
+        icon: Code2,
+        description: "Gestion d'état avancée dans React",
       },
       {
         title: "Performance",
@@ -166,37 +179,49 @@ export const topics = [
         description: "Création d'interfaces accessibles",
         badge: "Nouveau",
       },
+    ],
+  },
+  {
+    title: "Backend",
+    icon: Server,
+    items: [
       {
-        title: "Backend",
+        title: "API Design",
         href: "/interview-prep/backend",
         icon: Server,
-        description: "Technologies et frameworks backend",
+        description: "Conception d'APIs RESTful",
       },
       {
-        title: "System Design",
-        href: "/interview-prep/system-design",
-        icon: BrainCircuit,
-        description: "Conception de systèmes distribués",
-        badge: "Avancé",
+        title: "Bases de Données",
+        href: "/interview-prep/system-design/storage",
+        icon: Database,
+        description: "SQL, NoSQL et stratégies de stockage",
       },
     ],
   },
   {
-    title: "Préparation",
+    title: "Carrière & Préparation",
     icon: Book,
     items: [
-      {
-        title: "Dashboard",
-        href: "/interview-prep/dashboard",
-        icon: Layers,
-        description: "Tableau de bord de préparation",
-      },
       {
         title: "Plan de préparation",
         href: "/interview-prep/preparation",
         icon: Workflow,
         description: "Guide étape par étape pour se préparer",
         badge: "Essentiel",
+      },
+      {
+        title: "Négociation",
+        href: "/interview-prep/best-practices/negotiation",
+        icon: DollarSign,
+        description: "Techniques de négociation salariale",
+      },
+      {
+        title: "Communication",
+        href: "/interview-prep/best-practices/communication",
+        icon: MessagesSquare,
+        description: "Communication efficace en entretien",
+        badge: "Soft Skills",
       },
     ],
   },

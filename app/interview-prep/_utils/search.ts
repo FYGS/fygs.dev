@@ -63,6 +63,8 @@ function calculateRelevance(
   return score;
 }
 
+import { searchIndex, SearchIndexItem } from "./search-index";
+
 // Main search function
 export function searchTopics(query: string): SearchResult[] {
   if (!query || query.trim() === "") {
@@ -70,6 +72,66 @@ export function searchTopics(query: string): SearchResult[] {
   }
 
   const normalizedQuery = normalizeText(query);
+
+  // Recherche dans l'index avancé
+  const indexResults = searchInIndex(normalizedQuery);
+
+  // Fusionner avec les résultats de la navigation (pour les icônes et badges)
+  const navResults = searchInNavigation(normalizedQuery);
+
+  // Combiner les résultats
+  const combinedResults = mergeResults(indexResults, navResults);
+
+  // Trier par pertinence (la plus élevée en premier)
+  return combinedResults.sort((a, b) => b.relevance - a.relevance);
+}
+
+// Recherche dans l'index avancé
+function searchInIndex(normalizedQuery: string): SearchResult[] {
+  const results: SearchResult[] = [];
+
+  searchIndex.forEach((item) => {
+    const relevance = calculateIndexRelevance(item, normalizedQuery);
+
+    if (relevance > 0) {
+      // Utiliser une icône par défaut pour les résultats de l'index
+      // Nous utiliserons l'icône du premier élément de navigation qui correspond au même href
+      const defaultIcon = findIconForPath(item.href);
+
+      results.push({
+        title: item.title,
+        description: item.description,
+        href: item.href,
+        category: item.category,
+        icon: defaultIcon,
+        relevance,
+      });
+    }
+  });
+
+  return results;
+}
+
+// Fonction utilitaire pour trouver une icône pour un chemin donné
+function findIconForPath(
+  path: string
+): React.ComponentType<{ className?: string }> {
+  // Parcourir tous les éléments de navigation pour trouver une correspondance
+  for (const category of topics) {
+    for (const item of category.items) {
+      if (item.href === path) {
+        return item.icon;
+      }
+    }
+  }
+
+  // Icône par défaut si aucune correspondance n'est trouvée
+  // Utiliser l'icône du premier élément de la première catégorie
+  return topics[0].items[0].icon;
+}
+
+// Recherche dans la navigation pour obtenir les icônes et badges
+function searchInNavigation(normalizedQuery: string): SearchResult[] {
   const results: SearchResult[] = [];
 
   // Iterate through all topics and their items
@@ -92,8 +154,88 @@ export function searchTopics(query: string): SearchResult[] {
     });
   });
 
-  // Sort by relevance (highest first)
-  return results.sort((a, b) => b.relevance - a.relevance);
+  return results;
+}
+
+// Fusionner les résultats de l'index et de la navigation
+function mergeResults(
+  indexResults: SearchResult[],
+  navResults: SearchResult[]
+): SearchResult[] {
+  const mergedResults: SearchResult[] = [...indexResults];
+
+  // Ajouter les icônes et badges des résultats de navigation
+  navResults.forEach((navResult) => {
+    const existingIndex = mergedResults.findIndex(
+      (r) => r.href === navResult.href
+    );
+
+    if (existingIndex >= 0) {
+      // Mettre à jour avec l'icône et le badge
+      mergedResults[existingIndex].icon = navResult.icon;
+      mergedResults[existingIndex].badge = navResult.badge;
+      // Prendre la relevance la plus élevée
+      mergedResults[existingIndex].relevance = Math.max(
+        mergedResults[existingIndex].relevance,
+        navResult.relevance
+      );
+    } else {
+      // Ajouter le résultat s'il n'existe pas déjà
+      mergedResults.push(navResult);
+    }
+  });
+
+  return mergedResults;
+}
+
+// Calculer la pertinence pour les éléments de l'index
+function calculateIndexRelevance(item: SearchIndexItem, query: string): number {
+  let relevance = 0;
+
+  // Vérifier le titre (poids élevé)
+  if (normalizeText(item.title).includes(query)) {
+    relevance += 10;
+    // Bonus si le titre commence par la requête
+    if (normalizeText(item.title).startsWith(query)) {
+      relevance += 5;
+    }
+  }
+
+  // Vérifier la description (poids moyen)
+  if (normalizeText(item.description).includes(query)) {
+    relevance += 5;
+  }
+
+  // Vérifier la catégorie et sous-catégorie (poids moyen)
+  if (normalizeText(item.category).includes(query)) {
+    relevance += 3;
+  }
+
+  if (item.subcategory && normalizeText(item.subcategory).includes(query)) {
+    relevance += 3;
+  }
+
+  // Vérifier les mots-clés (poids élevé pour les correspondances exactes)
+  item.keywords.forEach((keyword) => {
+    const normalizedKeyword = normalizeText(keyword);
+    if (normalizedKeyword === query) {
+      relevance += 8; // Correspondance exacte
+    } else if (
+      normalizedKeyword.includes(query) ||
+      query.includes(normalizedKeyword)
+    ) {
+      relevance += 4; // Correspondance partielle
+    }
+  });
+
+  // Bonus pour les éléments essentiels ou de haute importance
+  if (item.importance === "essential") {
+    relevance += 3;
+  } else if (item.importance === "high") {
+    relevance += 2;
+  }
+
+  return relevance;
 }
 
 // Function to highlight search terms in text

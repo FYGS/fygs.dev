@@ -1,9 +1,9 @@
 import { Metadata } from "next";
-import { StateManagementHero } from "./_components/hero";
 import { StateManagementContent } from "./_components/content";
+import { StateManagementHero } from "./_components/hero";
 
 export const metadata: Metadata = {
-  title: "State Management | Interview Prep",
+  title: "State Management | TechMastry",
   description:
     "Maîtrisez les différentes approches de gestion d&apos;état dans React: Context API, Redux, Zustand, et React Query",
 };

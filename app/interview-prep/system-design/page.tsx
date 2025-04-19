@@ -1,9 +1,9 @@
 import { Metadata } from "next";
-import { SystemDesignHero } from "./_components/hero";
 import { DesignTopics } from "./_components/design-topics";
+import { SystemDesignHero } from "./_components/hero";
 
 export const metadata: Metadata = {
-  title: "System Design | Interview Prep",
+  title: "System Design | TechMastry",
   description:
     "Préparation aux questions de conception de systèmes distribués et d'architecture logicielle",
 };
