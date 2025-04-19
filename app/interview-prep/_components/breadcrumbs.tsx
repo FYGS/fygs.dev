@@ -1,9 +1,9 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-import Link from "next/link";
-import { ChevronRight, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ChevronRight, Home } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const routeNameMap: { [key: string]: string } = {
   "interview-prep": "Guide d'Entretien",
@@ -22,6 +22,8 @@ const routeNameMap: { [key: string]: string } = {
   "system-design": "System Design",
   "coding-challenges": "Défis de Code",
   qa: "Questions & Réponses",
+  frontend: "Frontend",
+  "component-patterns": "Component Patterns",
 };
 
 export function Breadcrumbs() {
@@ -43,7 +45,10 @@ export function Breadcrumbs() {
   if (breadcrumbs.length === 0) return null;
 
   return (
-    <nav aria-label="Fil d'Ariane" className="flex items-center space-x-1 text-sm">
+    <nav
+      aria-label="Fil d'Ariane"
+      className="flex items-center space-x-1 text-sm"
+    >
       <Link
         href="/interview-prep"
         className={cn(

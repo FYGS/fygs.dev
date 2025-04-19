@@ -3,12 +3,11 @@
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-debounce";
-import { useHotkeys } from "@/hooks/use-hotkeys";
 import { useOnClickOutside } from "@/hooks/use-on-click-outside";
 import { cn } from "@/lib/utils";
 import { Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { SearchResult, highlightText, searchTopics } from "../_utils/search";
 
 export function SearchBar() {
@@ -40,87 +39,80 @@ export function SearchBar() {
     setSelectedIndex(-1);
   }, [debouncedQuery]);
 
-  // Handle keyboard navigation
-  useHotkeys([
-    {
-      key: "ArrowDown",
-      handler: (e) => {
-        e.preventDefault();
-        if (results.length > 0) {
-          setSelectedIndex((prev) => (prev + 1) % results.length);
+  // Handle result click
+  const handleResultClick = useCallback(
+    (result: SearchResult) => {
+      router.push(result.href);
+      setQuery("");
+      setResults([]);
+      setIsOpen(false);
+    },
+    [router]
+  );
 
-          // Scroll to selected item
-          if (resultsRef.current && selectedIndex >= 0) {
-            const items =
-              resultsRef.current.querySelectorAll('[role="option"]');
-            if (items[(selectedIndex + 1) % results.length]) {
-              items[(selectedIndex + 1) % results.length].scrollIntoView({
-                block: "nearest",
-              });
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isOpen) {
+        // Global shortcuts when dropdown is closed
+        if (
+          e.key === "/" ||
+          ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k")
+        ) {
+          e.preventDefault();
+          inputRef.current?.focus();
+        }
+        return;
+      }
+
+      // Shortcuts when dropdown is open
+      switch (e.key) {
+        case "ArrowDown":
+          e.preventDefault();
+          if (results.length > 0) {
+            setSelectedIndex((prev) => (prev + 1) % results.length);
+            // Scroll to selected item
+            if (resultsRef.current) {
+              const items =
+                resultsRef.current.querySelectorAll('[role="option"]');
+              const nextIndex = (selectedIndex + 1) % results.length;
+              items[nextIndex]?.scrollIntoView({ block: "nearest" });
             }
           }
-        }
-      },
-      enabled: isOpen,
-    },
-    {
-      key: "ArrowUp",
-      handler: (e) => {
-        e.preventDefault();
-        if (results.length > 0) {
-          setSelectedIndex((prev) =>
-            prev <= 0 ? results.length - 1 : prev - 1
-          );
+          break;
 
-          // Scroll to selected item
-          if (resultsRef.current && selectedIndex >= 0) {
-            const items =
-              resultsRef.current.querySelectorAll('[role="option"]');
+        case "ArrowUp":
+          e.preventDefault();
+          if (results.length > 0) {
             const newIndex =
               selectedIndex <= 0 ? results.length - 1 : selectedIndex - 1;
-            if (items[newIndex]) {
-              items[newIndex].scrollIntoView({
-                block: "nearest",
-              });
+            setSelectedIndex(newIndex);
+            // Scroll to selected item
+            if (resultsRef.current) {
+              const items =
+                resultsRef.current.querySelectorAll('[role="option"]');
+              items[newIndex]?.scrollIntoView({ block: "nearest" });
             }
           }
-        }
-      },
-      enabled: isOpen,
-    },
-    {
-      key: "Enter",
-      handler: () => {
-        if (selectedIndex >= 0 && results[selectedIndex]) {
-          handleResultClick(results[selectedIndex]);
-        }
-      },
-      enabled: isOpen && selectedIndex >= 0,
-    },
-    {
-      key: "Escape",
-      handler: () => {
-        setIsOpen(false);
-      },
-      enabled: isOpen,
-    },
-    {
-      key: "/",
-      handler: (e) => {
-        e.preventDefault();
-        inputRef.current?.focus();
-      },
-      enabled: true,
-    },
-  ]);
+          break;
 
-  // Handle result click
-  const handleResultClick = (result: SearchResult) => {
-    router.push(result.href);
-    setQuery("");
-    setResults([]);
-    setIsOpen(false);
-  };
+        case "Enter":
+          if (selectedIndex >= 0 && results[selectedIndex]) {
+            e.preventDefault();
+            handleResultClick(results[selectedIndex]);
+          }
+          break;
+
+        case "Escape":
+          e.preventDefault();
+          setIsOpen(false);
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, results, selectedIndex, handleResultClick]);
 
   // Clear search
   const handleClearSearch = () => {
@@ -140,11 +132,13 @@ export function SearchBar() {
           ref={inputRef}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Rechercher dans le guide..."
-          className="pl-10 pr-16 py-6 bg-background border-muted/80 rounded-xl shadow-sm transition-all duration-200
+          placeholder="Rechercher..."
+          className="pl-10 pr-28 py-6 bg-background border-muted/80 rounded-xl shadow-sm transition-all duration-200
                      focus-visible:shadow-md focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20
-                     group-hover:border-muted-foreground/30"
+                     group-hover:border-muted-foreground/30 text-base"
           onFocus={() => query.trim() !== "" && setIsOpen(true)}
+          aria-label="Search input (Ctrl+K or / to focus)"
+          onClick={() => inputRef.current?.focus()}
         />
 
         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
@@ -158,9 +152,14 @@ export function SearchBar() {
             </button>
           )}
 
-          <kbd className="hidden md:flex items-center gap-1 px-2 py-1 text-[10px] font-mono font-medium text-muted-foreground bg-muted rounded border border-border">
-            <span>/</span>
-          </kbd>
+          <div className="flex items-center gap-1">
+            <kbd className="hidden md:inline-flex items-center px-1 py-0.5 text-[9px] font-mono font-medium text-muted-foreground bg-muted rounded border border-border">
+              <span>/</span>
+            </kbd>
+            <kbd className="hidden md:inline-flex items-center px-1 py-0.5 text-[9px] font-mono font-medium text-muted-foreground bg-muted rounded border border-border">
+              <span>⌘K</span>
+            </kbd>
+          </div>
         </div>
       </div>
 
@@ -168,8 +167,11 @@ export function SearchBar() {
       {isOpen && results.length > 0 && (
         <div
           ref={resultsRef}
-          className="absolute z-[9999] top-full mt-3 w-full md:w-[min(calc(100%+4rem),36rem)] left-0 md:left-[max(0px,calc(50% - 18rem))] bg-background/95 backdrop-blur-sm border rounded-xl shadow-xl max-h-[70vh] overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200 isolate origin-top"
+          className="absolute search-dropdown z-[99999] top-full mt-3 w-full md:w-[min(calc(100%+4rem),36rem)] left-0 md:left-[max(0px,calc(50% - 18rem))] bg-background/95 backdrop-blur-sm border rounded-xl shadow-xl max-h-[70vh] overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200 isolate origin-top"
           role="listbox"
+          style={{
+            pointerEvents: "auto",
+          }}
         >
           <div className="sticky top-0 z-10 p-3 text-xs font-medium text-muted-foreground bg-background/95 backdrop-blur-sm border-b flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -260,7 +262,10 @@ export function SearchBar() {
 
       {/* No results message */}
       {isOpen && query.trim() !== "" && results.length === 0 && (
-        <div className="absolute z-[9999] top-full mt-3 w-full md:w-[min(calc(100%+4rem),36rem)] left-0 md:left-[max(0px,calc(50% - 18rem))] bg-background/95 backdrop-blur-sm border rounded-xl shadow-xl p-6 text-center animate-in fade-in-0 zoom-in-95 duration-200 isolate origin-top">
+        <div
+          className="absolute z-[99999] top-full mt-3 w-full md:w-[min(calc(100%+4rem),36rem)] left-0 md:left-[max(0px,calc(50% - 18rem))] bg-background/95 backdrop-blur-sm border rounded-xl shadow-xl p-6 text-center animate-in fade-in-0 zoom-in-95 duration-200 isolate origin-top"
+          style={{ pointerEvents: "auto" }}
+        >
           <div className="flex flex-col items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
               <Search className="h-6 w-6 text-muted-foreground" />

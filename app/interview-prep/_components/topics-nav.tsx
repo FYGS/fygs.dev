@@ -146,6 +146,27 @@ export const topics = [
         description: "Technologies et frameworks frontend",
       },
       {
+        title: "Component Patterns",
+        href: "/interview-prep/frontend/component-patterns",
+        icon: Code2,
+        description: "Patterns de conception de composants React",
+        badge: "Nouveau",
+      },
+      {
+        title: "Performance",
+        href: "/interview-prep/frontend/performance",
+        icon: Code2,
+        description: "Optimisation des performances React",
+        badge: "Nouveau",
+      },
+      {
+        title: "Accessibility",
+        href: "/interview-prep/frontend/accessibility",
+        icon: Code2,
+        description: "Création d'interfaces accessibles",
+        badge: "Nouveau",
+      },
+      {
         title: "Backend",
         href: "/interview-prep/backend",
         icon: Server,

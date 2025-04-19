@@ -22,6 +22,12 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+interface Subsection {
+  title: string;
+  href: string;
+  description: string;
+}
+
 interface Section {
   title: string;
   description: string;
@@ -29,6 +35,7 @@ interface Section {
   href: string;
   color: string;
   bgColor: string;
+  subsections?: Subsection[];
 }
 
 const sections: Section[] = [
@@ -58,6 +65,30 @@ const sections: Section[] = [
     href: "/interview-prep/frontend",
     color: "text-green-500",
     bgColor: "bg-green-500/10",
+    subsections: [
+      {
+        title: "React Basics",
+        href: "/interview-prep/frontend/react-basics",
+        description: "Fondamentaux de React, composants, props, et state",
+      },
+      {
+        title: "State Management",
+        href: "/interview-prep/frontend/state-management",
+        description:
+          "Context API, Redux, et autres solutions de gestion d'état",
+      },
+      {
+        title: "Accessibility",
+        href: "/interview-prep/frontend/accessibility",
+        description:
+          "Bonnes pratiques ARIA, navigation au clavier, et lecteurs d'écran",
+      },
+      {
+        title: "Performance",
+        href: "/interview-prep/frontend/performance",
+        description: "Optimisation, lazy loading, et meilleures pratiques",
+      },
+    ],
   },
   {
     title: "Backend Development",
@@ -67,6 +98,22 @@ const sections: Section[] = [
     href: "/interview-prep/backend",
     color: "text-orange-500",
     bgColor: "bg-orange-500/10",
+  },
+  {
+    title: "Data Structures",
+    description:
+      "Implémentation et utilisation des structures de données fondamentales.",
+    icon: BrainCircuit,
+    href: "/interview-prep/data-structures",
+    color: "text-pink-500",
+    bgColor: "bg-pink-500/10",
+    subsections: [
+      {
+        title: "Trees",
+        href: "/interview-prep/data-structures/trees",
+        description: "Arbres binaires, AVL, et parcours d'arbres",
+      },
+    ],
   },
   {
     title: "Coding Challenges",
@@ -203,29 +250,47 @@ export function PracticeSections() {
             key={currentPage}
           >
             {currentSections.map((section) => (
-              <Link
-                key={section.title}
-                href={section.href}
-                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg"
-              >
-                <Card className="p-6 h-full hover:shadow-lg transition-all duration-300 space-y-4 group">
-                  <div
-                    className={`inline-flex p-3 rounded-xl ${section.bgColor}`}
-                    aria-hidden="true"
-                  >
-                    <section.icon className={`w-6 h-6 ${section.color}`} />
-                  </div>
+              <div key={section.title}>
+                <Link
+                  href={section.href}
+                  className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg"
+                >
+                  <Card className="p-6 h-full hover:shadow-lg transition-all duration-300 space-y-4 group">
+                    <div
+                      className={`inline-flex p-3 rounded-xl ${section.bgColor}`}
+                      aria-hidden="true"
+                    >
+                      <section.icon className={`w-6 h-6 ${section.color}`} />
+                    </div>
 
-                  <div className="space-y-2">
-                    <h2 className="text-xl font-semibold group-hover:text-primary transition-colors">
-                      {section.title}
-                    </h2>
-                    <p className="text-muted-foreground line-clamp-2">
-                      {section.description}
-                    </p>
+                    <div className="space-y-2">
+                      <h2 className="text-xl font-semibold group-hover:text-primary transition-colors">
+                        {section.title}
+                      </h2>
+                      <p className="text-muted-foreground line-clamp-2">
+                        {section.description}
+                      </p>
+                    </div>
+                  </Card>
+                </Link>
+
+                {section.subsections && (
+                  <div className="mt-4 ml-6 space-y-2">
+                    {section.subsections.map((subsection) => (
+                      <Link
+                        key={subsection.href}
+                        href={subsection.href}
+                        className="block p-3 rounded-lg hover:bg-muted transition-colors"
+                      >
+                        <h3 className="font-medium">{subsection.title}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {subsection.description}
+                        </p>
+                      </Link>
+                    ))}
                   </div>
-                </Card>
-              </Link>
+                )}
+              </div>
             ))}
           </div>
 

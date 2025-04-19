@@ -45,6 +45,26 @@
     box-shadow: 0 0 10px rgba(var(--primary), 0.3);
   }
 
+  /* Search dropdown styles */
+  .search-dropdown {
+    @apply z-[99999]; /* Ensure it's always on top */
+    pointer-events: auto !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+      0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    animation: fadeInSearch 0.2s ease-out forwards;
+  }
+
+  @keyframes fadeInSearch {
+    from {
+      opacity: 0;
+      transform: translateY(-10px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
   .animate-fadeIn {
     animation: fadeIn 0.5s ease-in-out forwards;
   }

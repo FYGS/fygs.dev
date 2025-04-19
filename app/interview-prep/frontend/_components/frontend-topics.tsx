@@ -1,5 +1,5 @@
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import Link from "next/link";
 
 type Category = "Fondamental" | "Intermédiaire" | "Avancé" | "Expert";
@@ -32,7 +32,14 @@ const topics: Topic[] = [
     description: "Gestion avancée de l'état dans les applications React.",
     category: "Intermédiaire",
     topics: ["Redux", "Zustand", "React Query", "Context API"],
-    href: "/interview-prep/frontend/state",
+    href: "/interview-prep/frontend/state-management",
+  },
+  {
+    title: "Component Patterns",
+    description: "Patterns de conception de composants React.",
+    category: "Avancé",
+    topics: ["Compound Components", "Render Props", "HOC", "Custom Hooks"],
+    href: "/interview-prep/frontend/component-patterns",
   },
   {
     title: "Testing & Qualité",
