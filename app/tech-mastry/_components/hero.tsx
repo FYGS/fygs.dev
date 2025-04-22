@@ -31,7 +31,7 @@ export function InterviewPrepHero() {
         <div className="inline-flex items-center justify-center mb-6 bg-primary/10 text-primary px-4 py-1.5 rounded-full border border-primary/20 backdrop-blur-sm animate-pulse-slow">
           <Sparkles className="w-4 h-4 mr-2" />
           <span className="text-sm font-medium">
-            Plateforme d'Excellence Technique
+            Plateforme d&apos;Excellence Technique
           </span>
         </div>
 
@@ -56,8 +56,8 @@ export function InterviewPrepHero() {
               </div>
             </div>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Une plateforme d'excellence pour maîtriser les concepts techniques
-              avancés,
+              Une plateforme d&apos;excellence pour maîtriser les concepts
+              techniques avancés,
               <span className="font-medium text-primary">
                 {" "}
                 exceller lors de vos entretiens techniques
