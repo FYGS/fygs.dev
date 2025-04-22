@@ -1,8 +1,22 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 import { maintenanceConfig } from "@/config/maintenance";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export function middleware(request: NextRequest) {
+  // Rediriger /interview-prep vers /tech-mastry
+  if (request.nextUrl.pathname === "/interview-prep") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/tech-mastry";
+
+    // Retourner une redirection permanente (301) pour un meilleur SEO
+    return NextResponse.redirect(url, {
+      status: 301, // Redirection permanente
+      headers: {
+        "Cache-Control": "public, max-age=31536000, immutable", // Cache pour 1 an
+      },
+    });
+  }
+
   // Vérifier si le mode maintenance est activé
   if (!maintenanceConfig.enabled) {
     return NextResponse.next();
@@ -50,5 +64,8 @@ export const config = {
      * 5. /favicon.ico, /robots.txt, /sitemap.xml
      */
     "/((?!api/health|maintenance|_next|static|favicon.ico|robots.txt|sitemap.xml).*)",
+
+    // Matcher spécifique pour la redirection /interview-prep
+    "/interview-prep",
   ],
 };

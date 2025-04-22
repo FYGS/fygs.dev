@@ -5,7 +5,7 @@ import { PracticeSections } from "./_components/practice-sections";
 export const metadata: Metadata = {
   title: "TechMastery | Plateforme de maîtrise technique avancée",
   description:
-    "Plateforme complète pour maîtriser les compétences techniques avancées : algorithmes, structures de données, systèmes distribués, architecture et développement frontend/backend.",
+    "Plateforme complète pour maîtriser les compétences techniques avancées : algorithmes, structures de données, systèmes distribués, architecture et développement frontend/backend. Et préparer ses entretiens techniques séreinement.",
 };
 
 export default function InterviewPrepPage() {

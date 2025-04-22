@@ -1,6 +1,15 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BarChart3, Code, GraduationCap, Sparkles, Zap } from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  BarChart3,
+  BrainCircuit,
+  Code,
+  GraduationCap,
+  Sparkles,
+  Target,
+  Zap,
+} from "lucide-react";
 import Link from "next/link";
 
 export function InterviewPrepHero() {
@@ -19,20 +28,42 @@ export function InterviewPrepHero() {
 
       <div className="container max-w-6xl mx-auto px-4 text-center relative z-10">
         {/* Badge */}
-        <div className="inline-flex items-center justify-center mb-6 bg-primary/10 text-primary px-4 py-1.5 rounded-full border border-primary/20 backdrop-blur-sm">
+        <div className="inline-flex items-center justify-center mb-6 bg-primary/10 text-primary px-4 py-1.5 rounded-full border border-primary/20 backdrop-blur-sm animate-pulse-slow">
           <Sparkles className="w-4 h-4 mr-2" />
-          <span className="text-sm font-medium">Nouvelle Plateforme</span>
+          <span className="text-sm font-medium">
+            Plateforme d'Excellence Technique
+          </span>
         </div>
 
         {/* Main content */}
         <div className="space-y-6 max-w-3xl mx-auto">
-          <div className="space-y-2">
+          <div className="space-y-4">
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600 pb-1">
               TechMastery
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Une plateforme complète pour maîtriser les concepts techniques
-              avancés et exceller dans votre carrière de développeur.
+            <div className="flex items-center justify-center mb-2">
+              <div
+                className={cn(
+                  "px-4 py-2 rounded-full",
+                  "bg-gradient-to-r from-indigo-500/10 to-purple-500/10",
+                  "border border-indigo-500/20",
+                  "text-base md:text-lg font-medium text-indigo-500",
+                  "flex items-center gap-2"
+                )}
+              >
+                <Target className="w-4 h-4" />
+                <span>Préparation aux Entretiens Techniques</span>
+              </div>
+            </div>
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              Une plateforme d'excellence pour maîtriser les concepts techniques
+              avancés,
+              <span className="font-medium text-primary">
+                {" "}
+                exceller lors de vos entretiens techniques
+              </span>{" "}
+              et propulser votre carrière de développeur vers de nouveaux
+              sommets.
             </p>
           </div>
 
@@ -40,24 +71,31 @@ export function InterviewPrepHero() {
           <div className="flex flex-wrap justify-center gap-4 py-6">
             <Badge
               variant="outline"
-              className="px-4 py-1.5 text-sm bg-background/80 backdrop-blur-sm border-primary/20"
+              className="px-4 py-1.5 text-sm bg-background/80 backdrop-blur-sm border-primary/20 hover:bg-background/95 transition-all duration-300 hover:scale-105 cursor-default"
             >
               <Zap className="w-3.5 h-3.5 mr-1.5 text-yellow-500" />
               Algorithmes & Structures
             </Badge>
             <Badge
               variant="outline"
-              className="px-4 py-1.5 text-sm bg-background/80 backdrop-blur-sm border-primary/20"
+              className="px-4 py-1.5 text-sm bg-background/80 backdrop-blur-sm border-primary/20 hover:bg-background/95 transition-all duration-300 hover:scale-105 cursor-default"
             >
               <Code className="w-3.5 h-3.5 mr-1.5 text-green-500" />
               Frontend & Backend
             </Badge>
             <Badge
               variant="outline"
-              className="px-4 py-1.5 text-sm bg-background/80 backdrop-blur-sm border-primary/20"
+              className="px-4 py-1.5 text-sm bg-background/80 backdrop-blur-sm border-primary/20 hover:bg-background/95 transition-all duration-300 hover:scale-105 cursor-default"
             >
               <BarChart3 className="w-3.5 h-3.5 mr-1.5 text-blue-500" />
               System Design
+            </Badge>
+            <Badge
+              variant="outline"
+              className="px-4 py-1.5 text-sm bg-background/80 backdrop-blur-sm border-primary/20 hover:bg-background/95 transition-all duration-300 hover:scale-105 cursor-default"
+            >
+              <BrainCircuit className="w-3.5 h-3.5 mr-1.5 text-purple-500" />
+              Entretiens Techniques
             </Badge>
           </div>
 
