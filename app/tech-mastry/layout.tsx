@@ -155,7 +155,7 @@ export default function InterviewPrepLayout({
             </div>
             <div className="flex items-center gap-4">
               <span className="hidden text-sm font-medium text-muted-foreground md:block">
-                Maîtrisez les compétences techniques avancées
+                Maîtrisez les compétences techniques avancées plus facilement
               </span>
               <div className="h-4 w-px bg-border hidden md:block" />
               <Badge variant="secondary" className="hidden md:inline-flex">
