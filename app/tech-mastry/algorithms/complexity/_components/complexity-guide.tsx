@@ -1,5 +1,5 @@
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -9,12 +9,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  LineChart,
-  Binary,
-  BarChart4,
-  BookOpen,
   AlertCircle,
+  BarChart4,
+  Binary,
+  BookOpen,
+  LineChart,
 } from "lucide-react";
+import { ComplexityVisualizations } from "./complexity-visualizations";
+import { StepByStepSolutions } from "./step-by-step-solutions";
 
 const complexityClasses = [
   {
@@ -174,6 +176,9 @@ export function ComplexityGuide() {
         </p>
       </div>
 
+      {/* Visualisations Interactives */}
+      <ComplexityVisualizations />
+
       {/* Classes de Complexité */}
       <div className="space-y-6">
         <h2 className="text-2xl font-bold flex items-center gap-2">
@@ -315,6 +320,9 @@ export function ComplexityGuide() {
           ))}
         </div>
       </div>
+
+      {/* Solutions Étape par Étape */}
+      <StepByStepSolutions />
 
       {/* Pro Tips */}
       <Card className="p-6 bg-muted">
