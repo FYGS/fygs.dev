@@ -20,8 +20,8 @@ import {
   Network,
 } from "lucide-react";
 import { useState } from "react";
-import { BinaryTreeVisualization } from "./binary-tree-visualization-robust";
-import { GraphVisualization } from "./graph-visualization-fixed";
+import { BinaryTreeVisualization } from "./binary-tree-visualization";
+import { GraphVisualization } from "./graph-visualization";
 import { PracticeExercises } from "./practice-exercises";
 
 // Code examples
