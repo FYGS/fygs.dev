@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import * as d3 from "d3";
 import { BarChart, LineChart } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -279,6 +279,8 @@ export function PerformanceChart({ metric }: PerformanceChartProps) {
       .attr("x", innerWidth / 2)
       .attr("y", innerHeight + 40)
       .attr("text-anchor", "middle")
+      .attr("class", "chart-text")
+      .style("fill", "currentColor")
       .text("Taille des données");
 
     svg
@@ -287,6 +289,8 @@ export function PerformanceChart({ metric }: PerformanceChartProps) {
       .attr("x", -innerHeight / 2)
       .attr("y", -40)
       .attr("text-anchor", "middle")
+      .attr("class", "chart-text")
+      .style("fill", "currentColor")
       .text("Temps (ms)");
 
     // Lignes
@@ -297,17 +301,30 @@ export function PerformanceChart({ metric }: PerformanceChartProps) {
       .curve(d3.curveMonotoneX);
 
     performanceData.forEach((algorithm) => {
-      // Ligne
-      svg
+      // Ligne avec animation
+      const path = svg
         .append("path")
         .datum(algorithm.values)
         .attr("fill", "none")
         .attr("stroke", algorithm.color)
-        .attr("stroke-width", 2)
+        .attr("stroke-width", 2.5)
+        .attr("stroke-opacity", 0.8)
+        .attr("stroke-linecap", "round")
+        .attr("stroke-linejoin", "round")
         .attr("d", line);
 
-      // Points
-      svg
+      // Animation de la ligne
+      const pathLength = path.node()?.getTotalLength() || 0;
+      path
+        .attr("stroke-dasharray", pathLength)
+        .attr("stroke-dashoffset", pathLength)
+        .transition()
+        .duration(1000)
+        .ease(d3.easeLinear)
+        .attr("stroke-dashoffset", 0);
+
+      // Points avec animation et interactivité
+      const points = svg
         .selectAll(`.dot-${algorithm.name.replace(/\s+/g, "-")}`)
         .data(algorithm.values)
         .enter()
@@ -315,8 +332,40 @@ export function PerformanceChart({ metric }: PerformanceChartProps) {
         .attr("class", `.dot-${algorithm.name.replace(/\s+/g, "-")}`)
         .attr("cx", (d) => xScale(d.size))
         .attr("cy", (d) => yScale(d.time))
-        .attr("r", 4)
-        .attr("fill", algorithm.color);
+        .attr("r", 0) // Commencer avec un rayon de 0 pour l'animation
+        .attr("fill", algorithm.color)
+        .attr("stroke", "white")
+        .attr("stroke-width", 1.5)
+        .style("cursor", "pointer");
+
+      // Animation des points
+      points
+        .transition()
+        .delay((_d, i) => i * 150 + 500) // Délai progressif pour chaque point
+        .duration(300)
+        .attr("r", 5);
+
+      // Ajouter des tooltips sur les points
+      points
+        .append("title")
+        .text((d) => `Taille: ${d.size}, Temps: ${d.time}ms`);
+
+      // Effet de survol
+      points
+        .on("mouseover", function () {
+          d3.select(this)
+            .transition()
+            .duration(150)
+            .attr("r", 7)
+            .attr("stroke-width", 2);
+        })
+        .on("mouseout", function () {
+          d3.select(this)
+            .transition()
+            .duration(150)
+            .attr("r", 5)
+            .attr("stroke-width", 1.5);
+        });
     });
 
     // Légende
@@ -351,7 +400,9 @@ export function PerformanceChart({ metric }: PerformanceChartProps) {
         .attr("x", 15)
         .attr("y", 10)
         .attr("text-anchor", "start")
+        .attr("class", "chart-text")
         .style("font-size", "12px")
+        .style("fill", "currentColor")
         .text(`${algorithm.name} - ${algorithm.complexity}`);
     });
   };
@@ -396,10 +447,20 @@ export function PerformanceChart({ metric }: PerformanceChartProps) {
       .range([0, innerWidth])
       .padding(0.2);
 
+    // Assurer que toutes les valeurs sont > 0 pour l'échelle logarithmique
+    const minValue = 0.01;
+    const maxValue =
+      Math.max(...barData.map((d) => Math.max(d.time, minValue))) * 1.1;
+
     const yScale = d3
       .scaleLog()
-      .domain([0.01, Math.max(...barData.map((d) => d.time)) * 1.1])
+      .domain([minValue, maxValue])
       .range([innerHeight, 0]);
+
+    // S'assurer que les valeurs nulles ou trop petites sont gérées correctement
+    barData.forEach((d) => {
+      if (d.time < minValue) d.time = minValue;
+    });
 
     // Axes
     const xAxis = d3.axisBottom(xScale);
@@ -416,9 +477,16 @@ export function PerformanceChart({ metric }: PerformanceChartProps) {
       .attr("transform", "rotate(-45)")
       .attr("text-anchor", "end")
       .attr("dx", "-.8em")
-      .attr("dy", ".15em");
+      .attr("dy", ".15em")
+      .attr("class", "chart-text")
+      .style("fill", "currentColor");
 
-    svg.append("g").call(yAxis);
+    svg
+      .append("g")
+      .call(yAxis)
+      .selectAll("text")
+      .attr("class", "chart-text")
+      .style("fill", "currentColor");
 
     // Étiquettes des axes
     svg
@@ -426,6 +494,8 @@ export function PerformanceChart({ metric }: PerformanceChartProps) {
       .attr("x", innerWidth / 2)
       .attr("y", innerHeight + 40)
       .attr("text-anchor", "middle")
+      .attr("class", "chart-text")
+      .style("fill", "currentColor")
       .text("Algorithme");
 
     svg
@@ -434,20 +504,57 @@ export function PerformanceChart({ metric }: PerformanceChartProps) {
       .attr("x", -innerHeight / 2)
       .attr("y", -40)
       .attr("text-anchor", "middle")
+      .attr("class", "chart-text")
+      .style("fill", "currentColor")
       .text("Temps (ms)");
 
-    // Barres
-    svg
+    // Barres avec animation et interactivité
+    const bars = svg
       .selectAll(".bar")
       .data(barData)
       .enter()
       .append("rect")
       .attr("class", "bar")
       .attr("x", (d) => xScale(d.name) || 0)
-      .attr("y", (d) => yScale(d.time))
+      .attr("y", innerHeight) // Commencer du bas pour l'animation
       .attr("width", xScale.bandwidth())
-      .attr("height", (d) => innerHeight - yScale(d.time))
-      .attr("fill", (d) => d.color);
+      .attr("height", 0) // Hauteur initiale 0 pour l'animation
+      .attr("fill", (d) => d.color)
+      .attr("rx", 4) // Coins arrondis
+      .attr("ry", 4) // Coins arrondis
+      .attr("opacity", 0.8)
+      .style("cursor", "pointer");
+
+    // Animation des barres
+    bars
+      .transition()
+      .duration(800)
+      .delay((_d, i) => i * 100)
+      .attr("y", (d) => yScale(d.time))
+      .attr("height", (d) => innerHeight - yScale(d.time));
+
+    // Ajouter des tooltips sur les barres
+    bars
+      .append("title")
+      .text((d) => `${d.name}: ${d.time}ms (${d.complexity})`);
+
+    // Effet de survol
+    bars
+      .on("mouseover", function () {
+        d3.select(this)
+          .transition()
+          .duration(150)
+          .attr("opacity", 1)
+          .attr("stroke", "white")
+          .attr("stroke-width", 2);
+      })
+      .on("mouseout", function () {
+        d3.select(this)
+          .transition()
+          .duration(150)
+          .attr("opacity", 0.8)
+          .attr("stroke", "none");
+      });
 
     // Légende
     const legend = svg
@@ -481,7 +588,9 @@ export function PerformanceChart({ metric }: PerformanceChartProps) {
         .attr("x", 15)
         .attr("y", 10)
         .attr("text-anchor", "start")
+        .attr("class", "chart-text")
         .style("font-size", "12px")
+        .style("fill", "currentColor")
         .text(`${algorithm.name} - ${algorithm.complexity}`);
     });
   };
@@ -535,9 +644,16 @@ export function PerformanceChart({ metric }: PerformanceChartProps) {
       .attr("transform", "rotate(-45)")
       .attr("text-anchor", "end")
       .attr("dx", "-.8em")
-      .attr("dy", ".15em");
+      .attr("dy", ".15em")
+      .attr("class", "chart-text")
+      .style("fill", "currentColor");
 
-    svg.append("g").call(yAxis);
+    svg
+      .append("g")
+      .call(yAxis)
+      .selectAll("text")
+      .attr("class", "chart-text")
+      .style("fill", "currentColor");
 
     // Étiquettes des axes
     svg
@@ -545,6 +661,8 @@ export function PerformanceChart({ metric }: PerformanceChartProps) {
       .attr("x", innerWidth / 2)
       .attr("y", innerHeight + 40)
       .attr("text-anchor", "middle")
+      .attr("class", "chart-text")
+      .style("fill", "currentColor")
       .text("Algorithme");
 
     svg
@@ -553,20 +671,55 @@ export function PerformanceChart({ metric }: PerformanceChartProps) {
       .attr("x", -innerHeight / 2)
       .attr("y", -40)
       .attr("text-anchor", "middle")
+      .attr("class", "chart-text")
+      .style("fill", "currentColor")
       .text("Utilisation de mémoire (relative)");
 
-    // Barres
-    svg
+    // Barres avec animation et interactivité
+    const bars = svg
       .selectAll(".bar")
       .data(memoryData)
       .enter()
       .append("rect")
       .attr("class", "bar")
       .attr("x", (d) => xScale(d.name) || 0)
-      .attr("y", (d) => yScale(d.value))
+      .attr("y", innerHeight) // Commencer du bas pour l'animation
       .attr("width", xScale.bandwidth())
-      .attr("height", (d) => innerHeight - yScale(d.value))
-      .attr("fill", (d) => d.color);
+      .attr("height", 0) // Hauteur initiale 0 pour l'animation
+      .attr("fill", (d) => d.color)
+      .attr("rx", 4) // Coins arrondis
+      .attr("ry", 4) // Coins arrondis
+      .attr("opacity", 0.8)
+      .style("cursor", "pointer");
+
+    // Animation des barres
+    bars
+      .transition()
+      .duration(800)
+      .delay((_d, i) => i * 100)
+      .attr("y", (d) => yScale(d.value))
+      .attr("height", (d) => innerHeight - yScale(d.value));
+
+    // Ajouter des tooltips sur les barres
+    bars.append("title").text((d) => `${d.name}: ${d.complexity}`);
+
+    // Effet de survol
+    bars
+      .on("mouseover", function () {
+        d3.select(this)
+          .transition()
+          .duration(150)
+          .attr("opacity", 1)
+          .attr("stroke", "white")
+          .attr("stroke-width", 2);
+      })
+      .on("mouseout", function () {
+        d3.select(this)
+          .transition()
+          .duration(150)
+          .attr("opacity", 0.8)
+          .attr("stroke", "none");
+      });
 
     // Légende
     const legend = svg
@@ -600,7 +753,9 @@ export function PerformanceChart({ metric }: PerformanceChartProps) {
         .attr("x", 15)
         .attr("y", 10)
         .attr("text-anchor", "start")
+        .attr("class", "chart-text")
         .style("font-size", "12px")
+        .style("fill", "currentColor")
         .text(`${algorithm.name} - ${algorithm.complexity}`);
     });
   };
@@ -649,26 +804,33 @@ export function PerformanceChart({ metric }: PerformanceChartProps) {
       .append("line")
       .attr("x1", 0)
       .attr("y1", 0)
-      .attr("x2", (d, i) => rScale(10) * Math.cos(angleSlice * i - Math.PI / 2))
-      .attr("y2", (d, i) => rScale(10) * Math.sin(angleSlice * i - Math.PI / 2))
+      .attr(
+        "x2",
+        (_d, i) => rScale(10) * Math.cos(angleSlice * i - Math.PI / 2)
+      )
+      .attr(
+        "y2",
+        (_d, i) => rScale(10) * Math.sin(angleSlice * i - Math.PI / 2)
+      )
       .attr("class", "line")
-      .style("stroke", "rgba(0, 0, 0, 0.1)")
+      .style("stroke", "var(--muted-foreground)")
       .style("stroke-width", "1px");
 
     // Étiquettes des axes
     axes
       .append("text")
-      .attr("class", "legend")
+      .attr("class", "legend chart-text")
       .attr("text-anchor", "middle")
       .attr("dy", "0.35em")
       .attr(
         "x",
-        (d, i) => rScale(10.5) * Math.cos(angleSlice * i - Math.PI / 2)
+        (_d, i) => rScale(10.5) * Math.cos(angleSlice * i - Math.PI / 2)
       )
       .attr(
         "y",
-        (d, i) => rScale(10.5) * Math.sin(angleSlice * i - Math.PI / 2)
+        (_d, i) => rScale(10.5) * Math.sin(angleSlice * i - Math.PI / 2)
       )
+      .style("fill", "currentColor")
       .text((d) => d);
 
     // Cercles concentriques
@@ -681,14 +843,14 @@ export function PerformanceChart({ metric }: PerformanceChartProps) {
       .attr("class", "gridCircle")
       .attr("r", (d) => (radius / levels) * d)
       .style("fill", "none")
-      .style("stroke", "rgba(0, 0, 0, 0.1)")
+      .style("stroke", "var(--muted-foreground)")
       .style("stroke-width", "1px");
 
     // Fonction pour créer le chemin du radar
     const radarLine = d3
       .lineRadial<{ name: string; value: number }>()
       .radius((d) => rScale(d.value))
-      .angle((d, i) => i * angleSlice)
+      .angle((_d, i) => i * angleSlice)
       .curve(d3.curveLinearClosed);
 
     // Dessiner les polygones pour chaque algorithme
@@ -702,25 +864,57 @@ export function PerformanceChart({ metric }: PerformanceChartProps) {
         };
       });
 
-      // Dessiner le polygone
-      svg
+      // Dessiner le polygone avec animation
+      const path = svg
         .append("path")
         .datum(dataPoints)
         .attr("class", "radarArea")
         .attr("d", radarLine)
         .style("fill", algorithm.color)
-        .style("fill-opacity", 0.1)
+        .style("fill-opacity", 0)
         .style("stroke", algorithm.color)
-        .style("stroke-width", "2px");
+        .style("stroke-width", "2.5px")
+        .style("stroke-linecap", "round")
+        .style("stroke-linejoin", "round");
 
-      // Ajouter des points aux sommets
-      svg
+      // Animation du polygone
+      const pathLength = path.node()?.getTotalLength() || 0;
+      path
+        .attr("stroke-dasharray", pathLength)
+        .attr("stroke-dashoffset", pathLength)
+        .transition()
+        .duration(1000)
+        .ease(d3.easeLinear)
+        .attr("stroke-dashoffset", 0)
+        .transition()
+        .duration(500)
+        .style("fill-opacity", 0.2);
+
+      // Effet de survol sur le polygone
+      path
+        .on("mouseover", function () {
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .style("fill-opacity", 0.4)
+            .style("stroke-width", "3px");
+        })
+        .on("mouseout", function () {
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .style("fill-opacity", 0.2)
+            .style("stroke-width", "2.5px");
+        });
+
+      // Ajouter des points aux sommets avec animation et interactivité
+      const points = svg
         .selectAll(`.radarCircle-${algorithm.name.replace(/\s+/g, "-")}`)
         .data(dataPoints)
         .enter()
         .append("circle")
         .attr("class", `radarCircle-${algorithm.name.replace(/\s+/g, "-")}`)
-        .attr("r", 4)
+        .attr("r", 0) // Commencer avec un rayon de 0 pour l'animation
         .attr(
           "cx",
           (d, i) => rScale(d.value) * Math.cos(angleSlice * i - Math.PI / 2)
@@ -730,7 +924,39 @@ export function PerformanceChart({ metric }: PerformanceChartProps) {
           (d, i) => rScale(d.value) * Math.sin(angleSlice * i - Math.PI / 2)
         )
         .style("fill", algorithm.color)
-        .style("fill-opacity", 0.8);
+        .style("fill-opacity", 0.8)
+        .style("stroke", "white")
+        .style("stroke-width", 1.5)
+        .style("cursor", "pointer");
+
+      // Animation des points
+      points
+        .transition()
+        .delay((_d, i) => i * 150 + 1000) // Délai progressif après l'animation du polygone
+        .duration(300)
+        .attr("r", 5);
+
+      // Ajouter des tooltips sur les points
+      points.append("title").text((d) => `${d.name}: ${d.value}`);
+
+      // Effet de survol
+      points
+        .on("mouseover", function () {
+          d3.select(this)
+            .transition()
+            .duration(150)
+            .attr("r", 7)
+            .style("fill-opacity", 1)
+            .style("stroke-width", 2);
+        })
+        .on("mouseout", function () {
+          d3.select(this)
+            .transition()
+            .duration(150)
+            .attr("r", 5)
+            .style("fill-opacity", 0.8)
+            .style("stroke-width", 1.5);
+        });
     });
 
     // Légende
@@ -765,7 +991,9 @@ export function PerformanceChart({ metric }: PerformanceChartProps) {
         .attr("x", 15)
         .attr("y", 10)
         .attr("text-anchor", "start")
+        .attr("class", "chart-text")
         .style("font-size", "12px")
+        .style("fill", "currentColor")
         .text(algorithm.name);
     });
   };
@@ -810,32 +1038,35 @@ export function PerformanceChart({ metric }: PerformanceChartProps) {
       <CardContent className="p-6">
         {metric === "performance" && (
           <div className="mb-4 flex justify-end">
-            <TabsList>
-              <TabsTrigger
-                value="line"
-                onClick={() => setChartType("line")}
-                className={
-                  chartType === "line"
-                    ? "bg-primary text-primary-foreground"
-                    : ""
-                }
-              >
-                <LineChart className="w-4 h-4 mr-2" />
-                Ligne
-              </TabsTrigger>
-              <TabsTrigger
-                value="bar"
-                onClick={() => setChartType("bar")}
-                className={
-                  chartType === "bar"
-                    ? "bg-primary text-primary-foreground"
-                    : ""
-                }
-              >
-                <BarChart className="w-4 h-4 mr-2" />
-                Barres
-              </TabsTrigger>
-            </TabsList>
+            <Tabs
+              value={chartType}
+              onValueChange={(value) => setChartType(value as ChartType)}
+            >
+              <TabsList>
+                <TabsTrigger
+                  value="line"
+                  className={
+                    chartType === "line"
+                      ? "bg-primary text-primary-foreground"
+                      : ""
+                  }
+                >
+                  <LineChart className="w-4 h-4 mr-2" />
+                  Ligne
+                </TabsTrigger>
+                <TabsTrigger
+                  value="bar"
+                  className={
+                    chartType === "bar"
+                      ? "bg-primary text-primary-foreground"
+                      : ""
+                  }
+                >
+                  <BarChart className="w-4 h-4 mr-2" />
+                  Barres
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
         )}
         <div
@@ -847,5 +1078,3 @@ export function PerformanceChart({ metric }: PerformanceChartProps) {
     </Card>
   );
 }
-
-// Importer useState

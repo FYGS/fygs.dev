@@ -123,6 +123,11 @@
   .line-number {
     @apply text-muted-foreground/50 select-none text-right pr-4 inline-block w-[2.5rem] -ml-[3.5rem];
   }
+
+  /* Styles pour les textes des graphiques */
+  .chart-text {
+    @apply text-foreground font-medium;
+  }
 }
 
 @layer base {
