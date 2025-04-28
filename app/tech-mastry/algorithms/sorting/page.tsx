@@ -1,16 +1,16 @@
 import { Metadata } from "next";
-import { SortingGuide } from "./_components/sorting-guide";
+import { ModernSortingGuide } from "./_components/modern-sorting-guide";
 
 export const metadata: Metadata = {
   title: "Algorithmes de Tri | Algorithmes",
   description:
-    "Guide complet des algorithmes de tri avec analyses de complexité et implémentations",
+    "Guide interactif et moderne des algorithmes de tri avec visualisations, comparaisons et exemples pratiques",
 };
 
 export default function SortingPage() {
   return (
     <main className="container py-8 space-y-12 animate-fadeIn">
-      <SortingGuide />
+      <ModernSortingGuide />
     </main>
   );
 }
