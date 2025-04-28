@@ -5,6 +5,9 @@ import { DataStructuresComparison } from "./data-structures-comparison";
 import { PracticeExercises } from "./practice-exercises";
 import { RealWorldExamples } from "./real-world-examples";
 import { ArrayVisualization } from "./visualizations/array-visualization";
+import { BinaryTreeVisualization } from "./visualizations/binary-tree-visualization";
+import { HashTableVisualization } from "./visualizations/hash-table-visualization";
+import { HeapVisualization } from "./visualizations/heap-visualization";
 import { LinkedListVisualization } from "./visualizations/linked-list-visualization";
 
 export function DataStructuresVisualizations() {
@@ -21,9 +24,12 @@ export function DataStructuresVisualizations() {
         </p>
 
         <Tabs defaultValue="arrays" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="arrays">Tableaux</TabsTrigger>
             <TabsTrigger value="linked-lists">Listes Chaînées</TabsTrigger>
+            <TabsTrigger value="hash-tables">Tables de Hachage</TabsTrigger>
+            <TabsTrigger value="binary-trees">Arbres Binaires</TabsTrigger>
+            <TabsTrigger value="heaps">Tas (Heaps)</TabsTrigger>
           </TabsList>
 
           <TabsContent value="arrays">
@@ -32,6 +38,18 @@ export function DataStructuresVisualizations() {
 
           <TabsContent value="linked-lists">
             <LinkedListVisualization />
+          </TabsContent>
+
+          <TabsContent value="hash-tables">
+            <HashTableVisualization />
+          </TabsContent>
+
+          <TabsContent value="binary-trees">
+            <BinaryTreeVisualization />
+          </TabsContent>
+
+          <TabsContent value="heaps">
+            <HeapVisualization />
           </TabsContent>
         </Tabs>
       </section>

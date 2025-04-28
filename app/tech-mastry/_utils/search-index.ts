@@ -79,7 +79,7 @@ export const searchIndex: SearchIndexItem[] = [
     title: "Recherche & Parcours",
     description:
       "Techniques de recherche et parcours dans différentes structures.",
-    href: "/tech-mastry/algorithms/search",
+    href: "/tech-mastry/algorithms/searching",
     category: "Algorithmes",
     subcategory: "Intermédiaire",
     keywords: [

@@ -42,7 +42,7 @@ const topics: Topic[] = [
       "Techniques de recherche et parcours dans différentes structures.",
     difficulty: "Avancé",
     topics: ["BFS", "DFS", "Binary Search", "Dijkstra"],
-    href: "/tech-mastry/algorithms/search",
+    href: "/tech-mastry/algorithms/searching",
   },
   {
     title: "Programmation Dynamique",
