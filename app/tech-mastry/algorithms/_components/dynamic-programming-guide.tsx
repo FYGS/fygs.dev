@@ -19,6 +19,7 @@ import { DPRealWorld } from "./dp-real-world";
 import { FibonacciVisualization } from "./visualizations/fibonacci-visualization";
 import { KnapsackVisualization } from "./visualizations/knapsack-visualization";
 import { LCSVisualization } from "./visualizations/lcs-visualization";
+import { ParticlesContainer } from "./visualizations/particles-container";
 
 const dpProblems = [
   {
@@ -179,8 +180,10 @@ export function DynamicProgrammingGuide() {
 
   return (
     <div className="space-y-12">
-      <section className="space-y-6">
-        <h1 className="text-3xl font-bold">Programmation Dynamique</h1>
+      <section className="space-y-6 animate-fadeIn">
+        <h1 className="text-3xl font-bold relative inline-block after:absolute after:bottom-0 after:left-0 after:h-1 after:w-1/2 after:bg-gradient-to-r after:from-indigo-500 after:to-purple-500 after:rounded-full after:transition-all after:duration-300 hover:after:w-full">
+          Programmation Dynamique
+        </h1>
         <p className="text-xl text-muted-foreground">
           Une technique puissante pour résoudre des problèmes complexes en les
           décomposant en sous-problèmes plus simples.
@@ -190,22 +193,52 @@ export function DynamicProgrammingGuide() {
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
-        className="space-y-8"
+        className="space-y-8 animate-fadeIn opacity-0 animation-delay-300"
       >
-        <TabsList className="grid grid-cols-2 md:grid-cols-6 w-full">
-          <TabsTrigger value="introduction">Introduction</TabsTrigger>
-          <TabsTrigger value="visualizations">Visualisations</TabsTrigger>
-          <TabsTrigger value="comparison">
-            Mémoïsation vs Tabulation
-          </TabsTrigger>
-          <TabsTrigger value="problems">Problèmes Classiques</TabsTrigger>
-          <TabsTrigger value="real-world">Applications Réelles</TabsTrigger>
-          <TabsTrigger value="practice">Exercices Pratiques</TabsTrigger>
-        </TabsList>
+        <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-indigo-500/5 to-purple-500/5 p-1">
+          <TabsList className="grid grid-cols-2 md:grid-cols-6 w-full bg-background/50 backdrop-blur-sm">
+            <TabsTrigger
+              value="introduction"
+              className="relative z-10 transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500/20 data-[state=active]:to-purple-500/20 data-[state=active]:text-foreground"
+            >
+              Introduction
+            </TabsTrigger>
+            <TabsTrigger
+              value="visualizations"
+              className="relative z-10 transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500/20 data-[state=active]:to-purple-500/20 data-[state=active]:text-foreground"
+            >
+              Visualisations
+            </TabsTrigger>
+            <TabsTrigger
+              value="comparison"
+              className="relative z-10 transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500/20 data-[state=active]:to-purple-500/20 data-[state=active]:text-foreground"
+            >
+              Mémoïsation vs Tabulation
+            </TabsTrigger>
+            <TabsTrigger
+              value="problems"
+              className="relative z-10 transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500/20 data-[state=active]:to-purple-500/20 data-[state=active]:text-foreground"
+            >
+              Problèmes Classiques
+            </TabsTrigger>
+            <TabsTrigger
+              value="real-world"
+              className="relative z-10 transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500/20 data-[state=active]:to-purple-500/20 data-[state=active]:text-foreground"
+            >
+              Applications Réelles
+            </TabsTrigger>
+            <TabsTrigger
+              value="practice"
+              className="relative z-10 transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500/20 data-[state=active]:to-purple-500/20 data-[state=active]:text-foreground"
+            >
+              Exercices Pratiques
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="introduction" className="space-y-8">
-          <section className="space-y-6">
-            <h2 className="text-2xl font-bold">
+          <section className="space-y-6 animate-fadeIn opacity-0 animation-delay-500">
+            <h2 className="text-2xl font-bold relative inline-block after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-1/3 after:bg-gradient-to-r after:from-indigo-500 after:to-purple-500 after:rounded-full">
               Qu&apos;est-ce que la Programmation Dynamique ?
             </h2>
             <p className="text-muted-foreground">
@@ -218,35 +251,41 @@ export function DynamicProgrammingGuide() {
             </p>
 
             <div className="grid gap-6">
-              <Card className="p-6 border-primary/20">
+              <Card className="p-6 border border-indigo-500/20 bg-background/60 backdrop-blur-sm hover:shadow-md hover:shadow-indigo-500/10 hover:-translate-y-1 transition-all duration-300">
                 <div className="space-y-4">
-                  <h3 className="text-xl font-semibold">
+                  <h3 className="text-xl font-semibold relative inline-block after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-1/4 after:bg-gradient-to-r after:from-indigo-500 after:to-purple-500 after:rounded-full">
                     Caractéristiques principales
                   </h3>
                   <ul className="space-y-2">
-                    <li className="flex items-start gap-2">
-                      <span className="text-primary font-medium">•</span>
+                    <li className="flex items-start gap-2 hover:translate-x-1 transition-transform duration-300 group">
+                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center text-white text-xs group-hover:scale-110 transition-transform duration-300">
+                        •
+                      </span>
                       <span className="text-muted-foreground">
-                        <span className="font-medium text-foreground">
+                        <span className="font-medium text-foreground group-hover:text-indigo-400 transition-colors duration-300">
                           Sous-problèmes qui se chevauchent
                         </span>{" "}
                         : Les mêmes sous-problèmes sont résolus plusieurs fois.
                       </span>
                     </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-primary font-medium">•</span>
+                    <li className="flex items-start gap-2 hover:translate-x-1 transition-transform duration-300 group">
+                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white text-xs group-hover:scale-110 transition-transform duration-300">
+                        •
+                      </span>
                       <span className="text-muted-foreground">
-                        <span className="font-medium text-foreground">
+                        <span className="font-medium text-foreground group-hover:text-purple-400 transition-colors duration-300">
                           Sous-structure optimale
                         </span>{" "}
                         : La solution optimale du problème contient les
                         solutions optimales des sous-problèmes.
                       </span>
                     </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-primary font-medium">•</span>
+                    <li className="flex items-start gap-2 hover:translate-x-1 transition-transform duration-300 group">
+                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 flex items-center justify-center text-white text-xs group-hover:scale-110 transition-transform duration-300">
+                        •
+                      </span>
                       <span className="text-muted-foreground">
-                        <span className="font-medium text-foreground">
+                        <span className="font-medium text-foreground group-hover:text-pink-400 transition-colors duration-300">
                           Mémorisation des résultats
                         </span>{" "}
                         : Les résultats des sous-problèmes sont stockés pour
@@ -259,17 +298,36 @@ export function DynamicProgrammingGuide() {
             </div>
           </section>
 
-          <section className="space-y-6">
-            <h2 className="text-2xl font-bold">
+          <section className="space-y-6 animate-fadeIn opacity-0 animation-delay-700">
+            <h2 className="text-2xl font-bold relative inline-block after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-1/3 after:bg-gradient-to-r after:from-indigo-500 after:to-purple-500 after:rounded-full">
               Approches de la Programmation Dynamique
             </h2>
             <div className="grid gap-6">
-              {concepts.map((concept) => (
-                <Card key={concept.name} className="p-6">
+              {concepts.map((concept, idx) => (
+                <Card
+                  key={concept.name}
+                  className={`p-6 border border-${
+                    idx === 0 ? "indigo" : "purple"
+                  }-500/20 bg-background/60 backdrop-blur-sm hover:shadow-lg hover:shadow-${
+                    idx === 0 ? "indigo" : "purple"
+                  }-500/10 hover:-translate-y-1 transition-all duration-300 animate-fadeIn opacity-0`}
+                  style={{ animationDelay: `${(idx + 1) * 200}ms` }}
+                >
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-xl font-semibold">{concept.name}</h3>
-                      <Badge variant="secondary">Concept</Badge>
+                      <h3 className="text-xl font-semibold relative inline-block after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-1/4 after:bg-gradient-to-r after:from-indigo-500 after:to-purple-500 after:rounded-full">
+                        {concept.name}
+                      </h3>
+                      <Badge
+                        variant="secondary"
+                        className={`bg-gradient-to-r ${
+                          idx === 0
+                            ? "from-indigo-500/20 to-purple-500/20"
+                            : "from-purple-500/20 to-pink-500/20"
+                        } hover:from-indigo-500/30 hover:to-purple-500/30 transition-colors duration-300`}
+                      >
+                        Concept
+                      </Badge>
                     </div>
 
                     <p className="text-muted-foreground">
@@ -278,19 +336,38 @@ export function DynamicProgrammingGuide() {
 
                     <div className="space-y-2">
                       <h4 className="font-medium">Exemples courants :</h4>
-                      <ul className="list-disc list-inside text-muted-foreground">
+                      <ul className="list-none space-y-1 text-muted-foreground">
                         {concept.examples.map((example, index) => (
-                          <li key={index}>{example}</li>
+                          <li
+                            key={index}
+                            className="hover:text-indigo-400 transition-colors duration-300 flex items-center gap-2 before:content-[''] before:block before:w-1.5 before:h-1.5 before:rounded-full before:bg-gradient-to-r before:from-indigo-500 before:to-purple-500 before:mr-1"
+                          >
+                            {example}
+                          </li>
                         ))}
                       </ul>
                     </div>
 
                     <div>
                       <h4 className="font-medium mb-2">Avantages :</h4>
-                      <ul className="space-y-1">
+                      <ul className="space-y-2">
                         {concept.advantages.map((advantage, index) => (
-                          <li key={index} className="text-muted-foreground">
-                            • {advantage}
+                          <li
+                            key={index}
+                            className="text-muted-foreground hover:translate-x-1 transition-transform duration-300 flex items-start gap-2 group"
+                          >
+                            <span
+                              className={`flex-shrink-0 w-5 h-5 rounded-full bg-gradient-to-r ${
+                                index === 0
+                                  ? "from-indigo-500 to-purple-500"
+                                  : index === 1
+                                  ? "from-purple-500 to-pink-500"
+                                  : "from-pink-500 to-rose-500"
+                              } flex items-center justify-center text-white text-xs group-hover:scale-110 transition-transform duration-300`}
+                            >
+                              •
+                            </span>
+                            {advantage}
                           </li>
                         ))}
                       </ul>
@@ -301,23 +378,45 @@ export function DynamicProgrammingGuide() {
             </div>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold">Conseils d&apos;Optimisation</h2>
-            <Card className="p-6">
+          <section className="space-y-4 animate-fadeIn opacity-0 animation-delay-1000">
+            <h2 className="text-2xl font-bold relative inline-block after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-1/3 after:bg-gradient-to-r after:from-indigo-500 after:to-purple-500 after:rounded-full">
+              Conseils d&apos;Optimisation
+            </h2>
+            <Card className="p-6 border border-indigo-500/20 bg-background/60 backdrop-blur-sm hover:shadow-md hover:shadow-indigo-500/10 transition-all duration-300">
               <div className="space-y-4">
-                <p className="text-muted-foreground">
-                  • Identifiez les sous-problèmes qui se chevauchent
+                <p className="text-muted-foreground hover:translate-x-1 transition-transform duration-300 flex items-center gap-2 group">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center text-white text-xs group-hover:scale-110 transition-transform duration-300">
+                    1
+                  </span>
+                  <span className="group-hover:text-indigo-400 transition-colors duration-300">
+                    Identifiez les sous-problèmes qui se chevauchent
+                  </span>
                 </p>
-                <p className="text-muted-foreground">
-                  • Choisissez entre mémoïsation et tabulation selon le contexte
+                <p className="text-muted-foreground hover:translate-x-1 transition-transform duration-300 flex items-center gap-2 group">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white text-xs group-hover:scale-110 transition-transform duration-300">
+                    2
+                  </span>
+                  <span className="group-hover:text-purple-400 transition-colors duration-300">
+                    Choisissez entre mémoïsation et tabulation selon le contexte
+                  </span>
                 </p>
-                <p className="text-muted-foreground">
-                  • Optimisez l&apos;espace en réutilisant la mémoire quand
-                  possible
+                <p className="text-muted-foreground hover:translate-x-1 transition-transform duration-300 flex items-center gap-2 group">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 flex items-center justify-center text-white text-xs group-hover:scale-110 transition-transform duration-300">
+                    3
+                  </span>
+                  <span className="group-hover:text-pink-400 transition-colors duration-300">
+                    Optimisez l&apos;espace en réutilisant la mémoire quand
+                    possible
+                  </span>
                 </p>
-                <p className="text-muted-foreground">
-                  • Commencez par écrire la solution récursive avant
-                  d&apos;optimiser
+                <p className="text-muted-foreground hover:translate-x-1 transition-transform duration-300 flex items-center gap-2 group">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-gradient-to-r from-rose-500 to-orange-500 flex items-center justify-center text-white text-xs group-hover:scale-110 transition-transform duration-300">
+                    4
+                  </span>
+                  <span className="group-hover:text-rose-400 transition-colors duration-300">
+                    Commencez par écrire la solution récursive avant
+                    d&apos;optimiser
+                  </span>
                 </p>
               </div>
             </Card>
@@ -325,8 +424,10 @@ export function DynamicProgrammingGuide() {
         </TabsContent>
 
         <TabsContent value="visualizations" className="space-y-8">
-          <section className="space-y-6">
-            <h2 className="text-2xl font-bold">Visualisations Interactives</h2>
+          <section className="space-y-6 animate-fadeIn opacity-0 animation-delay-300">
+            <h2 className="text-2xl font-bold relative inline-block after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-1/3 after:bg-gradient-to-r after:from-indigo-500 after:to-purple-500 after:rounded-full">
+              Visualisations Interactives
+            </h2>
             <p className="text-muted-foreground">
               Explorez ces visualisations interactives pour mieux comprendre
               comment fonctionnent les algorithmes de programmation dynamique.
@@ -334,30 +435,52 @@ export function DynamicProgrammingGuide() {
               comment les sous-problèmes sont résolus.
             </p>
 
-            <div className="space-y-8">
-              <FibonacciVisualization />
-              <KnapsackVisualization />
-              <LCSVisualization />
+            <div className="space-y-8 relative p-4 rounded-lg bg-gradient-to-br from-indigo-500/5 via-transparent to-purple-500/5 backdrop-blur-sm">
+              <ParticlesContainer />
+              <div
+                className="animate-fadeIn opacity-0"
+                style={{ animationDelay: "200ms" }}
+              >
+                <FibonacciVisualization />
+              </div>
+              <div
+                className="animate-fadeIn opacity-0"
+                style={{ animationDelay: "400ms" }}
+              >
+                <KnapsackVisualization />
+              </div>
+              <div
+                className="animate-fadeIn opacity-0"
+                style={{ animationDelay: "600ms" }}
+              >
+                <LCSVisualization />
+              </div>
             </div>
           </section>
         </TabsContent>
 
         <TabsContent value="comparison" className="space-y-8">
-          <section className="space-y-6">
-            <h2 className="text-2xl font-bold">Comparaison des Approches</h2>
+          <section className="space-y-6 animate-fadeIn opacity-0 animation-delay-300">
+            <h2 className="text-2xl font-bold relative inline-block after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-1/3 after:bg-gradient-to-r after:from-indigo-500 after:to-purple-500 after:rounded-full">
+              Comparaison des Approches
+            </h2>
             <p className="text-muted-foreground">
               La programmation dynamique peut être implémentée de deux façons
               principales : la mémoïsation (top-down) et la tabulation
               (bottom-up). Chaque approche a ses avantages et ses inconvénients.
             </p>
 
-            <DPComparison />
+            <div className="p-4 rounded-lg border border-indigo-500/20 bg-background/60 backdrop-blur-sm hover:shadow-md hover:shadow-indigo-500/10 transition-all duration-300 animate-fadeIn opacity-0 animation-delay-500">
+              <DPComparison />
+            </div>
           </section>
         </TabsContent>
 
         <TabsContent value="problems" className="space-y-8">
-          <section className="space-y-6">
-            <h2 className="text-2xl font-bold">Problèmes Classiques</h2>
+          <section className="space-y-6 animate-fadeIn opacity-0 animation-delay-300">
+            <h2 className="text-2xl font-bold relative inline-block after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-1/3 after:bg-gradient-to-r after:from-indigo-500 after:to-purple-500 after:rounded-full">
+              Problèmes Classiques
+            </h2>
             <p className="text-muted-foreground">
               Voici quelques problèmes classiques qui sont souvent résolus à
               l&apos;aide de la programmation dynamique. Ces problèmes
@@ -366,19 +489,25 @@ export function DynamicProgrammingGuide() {
             </p>
 
             <div className="grid gap-8">
-              {dpProblems.map((problem) => (
-                <Card key={problem.name} className="p-6">
+              {dpProblems.map((problem, idx) => (
+                <Card
+                  key={problem.name}
+                  className="p-6 border border-indigo-500/20 bg-background/60 backdrop-blur-sm hover:shadow-lg hover:shadow-indigo-500/10 hover:-translate-y-1 transition-all duration-300 animate-fadeIn opacity-0"
+                  style={{ animationDelay: `${(idx + 1) * 200}ms` }}
+                >
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-xl font-semibold">{problem.name}</h3>
+                      <h3 className="text-xl font-semibold relative inline-block after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-1/4 after:bg-gradient-to-r after:from-indigo-500 after:to-purple-500 after:rounded-full">
+                        {problem.name}
+                      </h3>
                       <Badge
                         variant="outline"
                         className={
                           problem.difficulty === "Facile"
-                            ? "bg-green-500/10 text-green-500"
+                            ? "bg-green-500/20 text-green-500 hover:bg-green-500/30 transition-colors duration-300"
                             : problem.difficulty === "Intermédiaire"
-                            ? "bg-yellow-500/10 text-yellow-500"
-                            : "bg-red-500/10 text-red-500"
+                            ? "bg-yellow-500/20 text-yellow-500 hover:bg-yellow-500/30 transition-colors duration-300"
+                            : "bg-red-500/20 text-red-500 hover:bg-red-500/30 transition-colors duration-300"
                         }
                       >
                         {problem.difficulty}
@@ -391,10 +520,24 @@ export function DynamicProgrammingGuide() {
 
                     <div className="space-y-3">
                       <h4 className="font-medium">Approche :</h4>
-                      <ul className="space-y-1">
+                      <ul className="space-y-2">
                         {problem.approach.map((step, index) => (
-                          <li key={index} className="text-muted-foreground">
-                            • {step}
+                          <li
+                            key={index}
+                            className="text-muted-foreground hover:translate-x-1 transition-transform duration-300 flex items-start gap-2 group"
+                          >
+                            <span
+                              className={`flex-shrink-0 w-5 h-5 rounded-full bg-gradient-to-r ${
+                                index === 0
+                                  ? "from-indigo-500 to-purple-500"
+                                  : index === 1
+                                  ? "from-purple-500 to-pink-500"
+                                  : "from-pink-500 to-rose-500"
+                              } flex items-center justify-center text-white text-xs group-hover:scale-110 transition-transform duration-300`}
+                            >
+                              •
+                            </span>
+                            {step}
                           </li>
                         ))}
                       </ul>
@@ -402,29 +545,35 @@ export function DynamicProgrammingGuide() {
 
                     <div className="space-y-2">
                       <h4 className="font-medium">Complexités :</h4>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Type</TableHead>
-                            <TableHead>Complexité</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          <TableRow>
-                            <TableCell>Temps</TableCell>
-                            <TableCell>{problem.timeComplexity}</TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell>Espace</TableCell>
-                            <TableCell>{problem.spaceComplexity}</TableCell>
-                          </TableRow>
-                        </TableBody>
-                      </Table>
+                      <div className="bg-background/50 backdrop-blur-sm rounded-lg overflow-hidden border border-indigo-500/10">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="bg-indigo-500/5">
+                                Type
+                              </TableHead>
+                              <TableHead className="bg-indigo-500/5">
+                                Complexité
+                              </TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            <TableRow className="hover:bg-indigo-500/5 transition-colors duration-300">
+                              <TableCell>Temps</TableCell>
+                              <TableCell>{problem.timeComplexity}</TableCell>
+                            </TableRow>
+                            <TableRow className="hover:bg-indigo-500/5 transition-colors duration-300">
+                              <TableCell>Espace</TableCell>
+                              <TableCell>{problem.spaceComplexity}</TableCell>
+                            </TableRow>
+                          </TableBody>
+                        </Table>
+                      </div>
                     </div>
 
                     <div>
                       <h4 className="font-medium mb-2">Implémentation :</h4>
-                      <pre className="p-4 rounded-lg bg-muted overflow-x-auto">
+                      <pre className="p-4 rounded-lg bg-background/50 backdrop-blur-sm overflow-x-auto border border-indigo-500/10 hover:border-indigo-500/20 transition-colors duration-300">
                         <code className="text-sm">{problem.code}</code>
                       </pre>
                     </div>
@@ -436,8 +585,10 @@ export function DynamicProgrammingGuide() {
         </TabsContent>
 
         <TabsContent value="real-world" className="space-y-8">
-          <section className="space-y-6">
-            <h2 className="text-2xl font-bold">Applications Réelles</h2>
+          <section className="space-y-6 animate-fadeIn opacity-0 animation-delay-300">
+            <h2 className="text-2xl font-bold relative inline-block after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-1/3 after:bg-gradient-to-r after:from-indigo-500 after:to-purple-500 after:rounded-full">
+              Applications Réelles
+            </h2>
             <p className="text-muted-foreground">
               La programmation dynamique n&apos;est pas seulement un concept
               théorique, elle est largement utilisée dans de nombreux domaines
@@ -445,20 +596,26 @@ export function DynamicProgrammingGuide() {
               technique est appliquée dans l&apos;industrie.
             </p>
 
-            <DPRealWorld />
+            <div className="p-4 rounded-lg border border-indigo-500/20 bg-background/60 backdrop-blur-sm hover:shadow-md hover:shadow-indigo-500/10 transition-all duration-300 animate-fadeIn opacity-0 animation-delay-500">
+              <DPRealWorld />
+            </div>
           </section>
         </TabsContent>
 
         <TabsContent value="practice" className="space-y-8">
-          <section className="space-y-6">
-            <h2 className="text-2xl font-bold">Exercices Pratiques</h2>
+          <section className="space-y-6 animate-fadeIn opacity-0 animation-delay-300">
+            <h2 className="text-2xl font-bold relative inline-block after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-1/3 after:bg-gradient-to-r after:from-indigo-500 after:to-purple-500 after:rounded-full">
+              Exercices Pratiques
+            </h2>
             <p className="text-muted-foreground">
               Mettez en pratique vos connaissances en programmation dynamique
               avec ces exercices. Ils sont classés par niveau de difficulté pour
               vous permettre de progresser à votre rythme.
             </p>
 
-            <DPPractice />
+            <div className="p-4 rounded-lg border border-indigo-500/20 bg-background/60 backdrop-blur-sm hover:shadow-md hover:shadow-indigo-500/10 transition-all duration-300 animate-fadeIn opacity-0 animation-delay-500">
+              <DPPractice />
+            </div>
           </section>
         </TabsContent>
       </Tabs>

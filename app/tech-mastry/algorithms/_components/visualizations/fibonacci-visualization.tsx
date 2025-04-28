@@ -277,7 +277,7 @@ export function FibonacciVisualization() {
             <div className="space-y-4">
               <div>
                 <h4 className="text-sm font-medium mb-2">Arbre de récursion</h4>
-                <div className="bg-muted/30 rounded-lg p-4 min-h-[200px] overflow-auto">
+                <div className="bg-background/60 backdrop-blur-sm border border-indigo-500/20 rounded-lg p-4 min-h-[200px] overflow-auto hover:shadow-md hover:shadow-indigo-500/10 transition-all duration-300">
                   <RecursionTree
                     n={n}
                     callStack={currentStep.callStack}
@@ -288,14 +288,14 @@ export function FibonacciVisualization() {
 
               <div>
                 <h4 className="text-sm font-medium mb-2">Pile d&apos;appels</h4>
-                <div className="bg-muted/30 rounded-lg p-4 min-h-[100px] flex flex-col-reverse">
+                <div className="bg-background/60 backdrop-blur-sm border border-indigo-500/20 rounded-lg p-4 min-h-[100px] flex flex-col-reverse hover:shadow-md hover:shadow-indigo-500/10 transition-all duration-300">
                   {currentStep.callStack.map((call, index) => (
                     <div
                       key={index}
-                      className={`py-1 px-3 rounded mb-1 text-sm ${
+                      className={`py-1 px-3 rounded mb-1 text-sm transition-all duration-300 ${
                         index === currentStep.callStack.length - 1
-                          ? "bg-primary/20 border border-primary/30"
-                          : "bg-muted"
+                          ? "bg-gradient-to-r from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 shadow-sm transform translate-x-1"
+                          : "bg-background/60 border border-border hover:border-indigo-500/20 hover:bg-indigo-500/5"
                       }`}
                     >
                       fib({call})
@@ -314,20 +314,28 @@ export function FibonacciVisualization() {
                 <h4 className="text-sm font-medium mb-2">
                   Table de mémoïsation
                 </h4>
-                <div className="bg-muted/30 rounded-lg p-4 min-h-[200px]">
+                <div className="bg-background/60 backdrop-blur-sm border border-indigo-500/20 rounded-lg p-4 min-h-[200px] hover:shadow-md hover:shadow-indigo-500/10 transition-all duration-300">
                   <div className="grid grid-cols-2 gap-2">
                     {Object.entries(currentStep.memo).map(([key, value]) => (
                       <div
                         key={key}
-                        className={`flex justify-between items-center p-2 rounded border ${
+                        className={`flex justify-between items-center p-2 rounded border transition-all duration-300 ${
                           parseInt(key) === currentStep.n &&
                           !currentStep.fromCache
-                            ? "border-primary/50 bg-primary/10"
-                            : "border-border"
+                            ? "border-indigo-500/50 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 shadow-sm"
+                            : currentStep.fromCache &&
+                              parseInt(key) === currentStep.n
+                            ? "border-emerald-500/50 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 shadow-sm"
+                            : "border-border hover:border-indigo-500/30 hover:bg-indigo-500/5"
                         }`}
                       >
                         <span>fib({key})</span>
-                        <Badge variant="outline">{value}</Badge>
+                        <Badge
+                          variant="outline"
+                          className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border-indigo-500/30 hover:from-indigo-500/20 hover:to-purple-500/20 transition-all duration-300"
+                        >
+                          {value}
+                        </Badge>
                       </div>
                     ))}
                   </div>
@@ -341,7 +349,7 @@ export function FibonacciVisualization() {
 
               <div>
                 <h4 className="text-sm font-medium mb-2">Explication</h4>
-                <div className="bg-muted/30 rounded-lg p-4 min-h-[100px]">
+                <div className="bg-background/60 backdrop-blur-sm border border-indigo-500/20 rounded-lg p-4 min-h-[100px] hover:shadow-md hover:shadow-indigo-500/10 transition-all duration-300">
                   {currentStep.result !== undefined ? (
                     currentStep.fromCache ? (
                       <p>
@@ -400,7 +408,7 @@ export function FibonacciVisualization() {
           <div className="space-y-6">
             <div>
               <h4 className="text-sm font-medium mb-2">Table de tabulation</h4>
-              <div className="bg-muted/30 rounded-lg">
+              <div className="bg-background/60 backdrop-blur-sm border border-indigo-500/20 rounded-lg hover:shadow-md hover:shadow-indigo-500/10 transition-all duration-300">
                 <ScrollArea className="h-[200px]">
                   <div
                     className="p-4 overflow-x-auto"
@@ -410,22 +418,24 @@ export function FibonacciVisualization() {
                       {currentStep.table?.map((value, index) => (
                         <div
                           key={index}
-                          className={`flex flex-col items-center min-w-[60px] ${
+                          className={`flex flex-col items-center min-w-[60px] transition-all duration-300 ${
                             index === currentStep.n
-                              ? "text-primary font-medium"
-                              : ""
+                              ? "text-indigo-500 font-medium transform scale-105"
+                              : index < currentStep.n
+                              ? "text-foreground"
+                              : "text-muted-foreground"
                           }`}
                         >
                           <div className="text-xs text-muted-foreground mb-1">
                             fib({index})
                           </div>
                           <div
-                            className={`w-12 h-12 flex items-center justify-center rounded-lg border ${
+                            className={`w-12 h-12 flex items-center justify-center rounded-lg border transition-all duration-300 ${
                               index === currentStep.n
-                                ? "border-primary bg-primary/10"
+                                ? "border-indigo-500/50 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 shadow-sm transform scale-110"
                                 : index < currentStep.n
-                                ? "border-border bg-muted/50"
-                                : "border-dashed border-border/50"
+                                ? "border-indigo-500/20 bg-gradient-to-r from-indigo-500/5 to-purple-500/5"
+                                : "border-dashed border-border/50 hover:border-indigo-500/20"
                             }`}
                           >
                             {index <= currentStep.n ? value : "?"}
@@ -440,7 +450,7 @@ export function FibonacciVisualization() {
 
             <div>
               <h4 className="text-sm font-medium mb-2">Explication</h4>
-              <div className="bg-muted/30 rounded-lg p-4">
+              <div className="bg-background/60 backdrop-blur-sm border border-indigo-500/20 rounded-lg p-4 hover:shadow-md hover:shadow-indigo-500/10 transition-all duration-300">
                 {currentStep.n <= 1 ? (
                   <p>
                     Initialisation : fib({currentStep.n}) = {currentStep.result}
@@ -461,7 +471,7 @@ export function FibonacciVisualization() {
               <h4 className="text-sm font-medium mb-2">
                 Comparaison avec la mémoïsation
               </h4>
-              <div className="bg-muted/30 rounded-lg p-4">
+              <div className="bg-background/60 backdrop-blur-sm border border-indigo-500/20 rounded-lg p-4 hover:shadow-md hover:shadow-indigo-500/10 transition-all duration-300">
                 <p>
                   La tabulation (bottom-up) calcule les valeurs de Fibonacci de
                   manière itérative, en commençant par les cas de base (0 et 1)
@@ -499,10 +509,12 @@ function RecursionTree({
       return (
         <div className="flex flex-col items-center">
           <div
-            className={`w-10 h-10 rounded-full flex items-center justify-center text-xs ${
+            className={`w-10 h-10 rounded-full flex items-center justify-center text-xs transition-all duration-300 transform ${
               callStack.includes(value)
-                ? "bg-primary/20 border border-primary/30"
-                : "bg-muted border border-border"
+                ? "bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 shadow-md shadow-indigo-500/10 scale-110"
+                : memo[value] !== undefined
+                ? "bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-500/30"
+                : "bg-background/80 border border-border hover:border-indigo-500/30 hover:bg-indigo-500/5"
             }`}
           >
             {value}
@@ -518,10 +530,12 @@ function RecursionTree({
       return (
         <div className="flex flex-col items-center">
           <div
-            className={`w-10 h-10 rounded-full flex items-center justify-center text-xs ${
+            className={`w-10 h-10 rounded-full flex items-center justify-center text-xs transition-all duration-300 transform ${
               callStack.includes(value)
-                ? "bg-primary/20 border border-primary/30"
-                : "bg-muted border border-border"
+                ? "bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 shadow-md shadow-indigo-500/10 scale-110"
+                : memo[value] !== undefined
+                ? "bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-500/30"
+                : "bg-background/80 border border-border hover:border-indigo-500/30 hover:bg-indigo-500/5"
             }`}
           >
             {value}
@@ -533,27 +547,29 @@ function RecursionTree({
     return (
       <div className="flex flex-col items-center">
         <div
-          className={`w-10 h-10 rounded-full flex items-center justify-center text-xs ${
+          className={`w-10 h-10 rounded-full flex items-center justify-center text-xs transition-all duration-300 transform ${
             callStack.includes(value)
-              ? "bg-primary/20 border border-primary/30"
-              : "bg-muted border border-border"
+              ? "bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 shadow-md shadow-indigo-500/10 scale-110"
+              : memo[value] !== undefined
+              ? "bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-500/30"
+              : "bg-background/80 border border-border hover:border-indigo-500/30 hover:bg-indigo-500/5"
           }`}
         >
           {value}
           {memo[value] !== undefined && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full text-[10px] text-white flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full text-[10px] text-white flex items-center justify-center shadow-sm animate-pulse">
               ✓
             </span>
           )}
         </div>
-        <div className="h-4 w-px bg-border"></div>
+        <div className="h-4 w-px bg-gradient-to-b from-indigo-500/30 to-purple-500/30"></div>
         <div className="flex gap-6">
           <div className="flex flex-col items-center">
-            <div className="w-6 border-t border-l border-border h-6 rounded-tl-md"></div>
+            <div className="w-6 border-t border-l border-indigo-500/30 h-6 rounded-tl-md transition-colors duration-300"></div>
             {renderNode(value - 1, depth + 1, maxDepth)}
           </div>
           <div className="flex flex-col items-center">
-            <div className="w-6 border-t border-r border-border h-6 rounded-tr-md"></div>
+            <div className="w-6 border-t border-r border-purple-500/30 h-6 rounded-tr-md transition-colors duration-300"></div>
             {renderNode(value - 2, depth + 1, maxDepth)}
           </div>
         </div>
