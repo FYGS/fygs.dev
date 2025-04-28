@@ -118,7 +118,7 @@ export function LoadBalancerVisualization() {
     // Position servers in a semi-circle
     const updatedServers = state.servers.map((server, index) => {
       const angle =
-        Math.PI * (0.2 + (index / (state.servers.length - 1)) * 0.6);
+        Math.PI * (0.2 + (index / Math.max(1, state.servers.length - 1)) * 0.6);
       return {
         ...server,
         position: {
@@ -133,7 +133,7 @@ export function LoadBalancerVisualization() {
       servers: updatedServers,
     }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.servers]);
+  }, [serverCount]); // Only recalculate positions when server count changes
 
   // Handle server count changes
   useEffect(() => {

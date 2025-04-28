@@ -282,7 +282,9 @@ export function CachingVisualization() {
         timesSaved,
       }));
     },
-    [cache.hits, cache.misses]
+    // Nous utilisons les valeurs actuelles de cache.hits et cache.misses, pas les références
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
   );
 
   // Update cache capacity when cacheSize changes
