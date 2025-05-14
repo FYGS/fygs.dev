@@ -83,7 +83,7 @@ export const EXPERIENCE_ITEMS = [
   },
   {
     date: "2019 - 2023",
-    title: "Front-end Developer | TypeScript, Node.js Developer",
+    title: "Software Engineer | TypeScript, Node.js Developer",
     company: "GE Healthcare",
     location: "Paris, France",
     type: "Full-time",
@@ -120,8 +120,8 @@ export const EXPERIENCE_ITEMS = [
     I joined GE Healthcare in 2019 as a Software Developer, contributing to the development of Web Front-end and the improvement of the Imaging Fabric (IF) project - a Web SDK for advanced medical imaging visualization. My role was crucial in creating a robust and evolving platform capable of meeting the changing needs of healthcare professionals worldwide.`,
   },
   {
-    date: "2019 - 2020",
-    title: "Full Stack Developer",
+    date: "2019 - 2021",
+    title: "Sofware Engineer | Full Stack Developer",
     company: "GE Healthcare",
     location: "Paris, France",
     type: "Full-time",
@@ -152,7 +152,7 @@ export const EXPERIENCE_ITEMS = [
   },
   {
     date: "2019 - 2019",
-    title: "Full Stack Developer",
+    title: "Software Engineer | Full Stack Developer",
     company: "Schneider Electric",
     location: "Grenoble, France",
     type: "Internship",
@@ -400,7 +400,7 @@ export const DESCRIPTION = {
     mainText:
       "I'm a Software Engineer | Expert in TypeScript, Next.js, Node.js, NestJS, and React",
     description:
-      "With over 5 years of experience as a fullstack developer, I transform ambitious ideas into high-performance, scalable web solutions. My passion for technological innovation enables me to create robust applications that meet the complex needs of modern businesses.",
+      "With over 7 years of experience as a fullstack developer, I transform ambitious ideas into high-performance, scalable web solutions. My passion for technological innovation enables me to create robust applications that meet the complex needs of modern businesses.",
   },
   experience: {
     title: "Experience in Leading Companies",
