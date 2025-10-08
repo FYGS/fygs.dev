@@ -1,6 +1,6 @@
 "use client";
 
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Check, Copy, Download, Share2, Terminal } from "lucide-react";
 import { useState } from "react";
@@ -20,13 +20,11 @@ export function CodeBlock({
   highlightLines = [],
 }: CodeBlockProps) {
   const [isCopied, setIsCopied] = useState(false);
-  const { toast } = useToast();
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(code);
     setIsCopied(true);
-    toast({
-      title: "Code copied!",
+    toast("Code copied!", {
       description: "The code has been copied to your clipboard",
       duration: 2000,
     });
@@ -53,6 +51,7 @@ export function CodeBlock({
       });
     } catch (error) {
       console.error("Error sharing:", error);
+      toast.error("Failed to share code. Please try again.");
     }
   };
 

@@ -162,7 +162,8 @@ export const mdxComponents: MDXComponents = {
     const code = children.props.children || "";
     const lang = children.props.className?.replace(/^language-/, "") || "";
     const filename = children.props["data-filename"];
-    const theme = children.props["data-theme"] || "dark";
+    const themeValue = children.props["data-theme"] || "dark";
+    const theme = (themeValue === "light" || themeValue === "dark") ? themeValue : "dark";
 
     return (
       <EnhancedCodeViewer

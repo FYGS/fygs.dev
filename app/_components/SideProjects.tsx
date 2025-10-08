@@ -5,6 +5,7 @@ import {
   Gift,
   GraduationCap,
   LayoutPanelLeft,
+  LeafyGreenIcon,
   Loader,
   LucideIcon,
   Network,
@@ -24,6 +25,14 @@ import Link from "next/link";
 // );
 
 export const SIDE_PROJECTS: SideProjectProps[] = [
+  {
+    id: "evopur",
+    Logo: LeafyGreenIcon,
+    title: "Evopur",
+    description:
+      "Professional ecological household cleaning services platform offering comprehensive home cleaning solutions with eco-friendly products and sustainable practices for a healthier living environment.",
+    url: "https://evopur.ca",
+  },
   {
     id: "ncr",
     Logo: Building2,

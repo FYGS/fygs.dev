@@ -32,7 +32,7 @@ export function PageMemoryProvider({
   const pageMemory = usePageMemory();
   const isInitialMount = useRef(true);
   const lastPathname = useRef(pathname);
-  const saveTimeout = useRef<NodeJS.Timeout>();
+  const saveTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Fonction optimisée pour sauvegarder la page
   const debouncedSavePage = useCallback(

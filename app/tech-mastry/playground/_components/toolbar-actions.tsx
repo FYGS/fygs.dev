@@ -14,7 +14,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
   Code2,
@@ -45,36 +45,31 @@ export function ToolbarActions() {
     clearOutput,
   } = useEditorStore();
   const { language } = useLanguage(); // Language is now read-only, determined by template
-  const { toast } = useToast();
 
   const handleCopyCode = async () => {
     const code = useEditorStore.getState().code;
     await navigator.clipboard.writeText(code);
-    toast({
-      title: "Code copied to clipboard",
+    toast.success("Code copied to clipboard", {
       description: "You can now paste it anywhere",
     });
   };
 
   const handleSaveCode = () => {
     createSnapshot();
-    toast({
-      title: "Code saved",
+    toast.success("Code saved", {
       description: "Your code has been saved to history",
     });
   };
 
   const handleShareCode = () => {
-    toast({
-      title: "Share feature coming soon",
+    toast.success("Share feature coming soon", {
       description: "This feature is not yet implemented",
     });
   };
 
   const handleFormatCode = () => {
     formatCode();
-    toast({
-      title: "Code formatted",
+    toast.success("Code formatted", {
       description: "Your code has been formatted",
     });
   };

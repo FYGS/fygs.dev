@@ -1,3 +1,5 @@
+import { SITE_BASE_URL } from "./constants";
+
 type BlogPosting = {
   '@context': 'https://schema.org';
   '@type': 'BlogPosting';
@@ -52,7 +54,7 @@ export function generateArticleJsonLd({
     '@type': 'BlogPosting',
     headline: title,
     description: description,
-    image: image.startsWith('http') ? image : `${process.env.NEXT_PUBLIC_SITE_URL}${image}`,
+    image: image.startsWith('http') ? image : `${SITE_BASE_URL}/${image}`,
     datePublished: publishedTime,
     dateModified: modifiedTime || publishedTime,
     author: {

@@ -1,4 +1,4 @@
-import { Redis, RedisConfigNodejs } from "@upstash/redis";
+import Redis, { ChainableCommander } from "ioredis";
 
 // Add proper typing for global
 declare global {
@@ -8,15 +8,19 @@ declare global {
 
 // Improve interface with proper types
 interface IRedisClient {
-  get<T>(key: string): Promise<T | null>;
-  set<T>(key: string, value: T): Promise<void>;
+  get(key: string): Promise<string | null>;
+  set(key: string, value: string, mode?: string, duration?: number): Promise<"OK" | null>;
+  setex(key: string, seconds: number, value: string): Promise<"OK">;
+  setnx(key: string, value: string): Promise<number>;
   incr(key: string): Promise<number>;
   decr(key: string): Promise<number>;
   keys(pattern: string): Promise<string[]>;
-  pipeline(): ReturnType<Redis["pipeline"]>;
-  sadd(key: string, member: string): Promise<number>;
-  srem(key: string, member: string): Promise<number>;
+  pipeline(): ChainableCommander;
+  sadd(key: string, ...members: string[]): Promise<number>;
+  srem(key: string, ...members: string[]): Promise<number>;
   sismember(key: string, member: string): Promise<number>;
+  expire(key: string, seconds: number): Promise<number>;
+  multi(): ChainableCommander;
 }
 
 export class RedisClient implements IRedisClient {
@@ -24,16 +28,25 @@ export class RedisClient implements IRedisClient {
   private readonly client: Redis;
 
   private constructor() {
-    const config: RedisConfigNodejs = {
-      url: process.env.blog_stats_KV_REST_API_URL,
-      token: process.env.blog_stats_KV_REST_API_TOKEN,
-    };
+    const redisUrl = process.env.REDIS_URL || process.env.blog_stats_KV_REST_API_URL;
 
-    if (!config.url || !config.token) {
-      throw new Error("Missing required Upstash Redis environment variables");
+    if (!redisUrl) {
+      throw new Error("Missing required Redis environment variables (REDIS_URL)");
     }
 
-    this.client = new Redis(config);
+    this.client = new Redis(redisUrl, {
+      maxRetriesPerRequest: 3,
+      lazyConnect: true,
+    });
+
+    // Error handling
+    this.client.on('error', (err: Error) => {
+      console.error('Redis connection error:', err);
+    });
+
+    this.client.on('connect', () => {
+      console.log('Redis connected successfully');
+    });
 
     // Preserve instance in development
     if (process.env.NODE_ENV === "development") {
@@ -48,12 +61,23 @@ export class RedisClient implements IRedisClient {
     return RedisClient.instance;
   }
 
-  async get<T>(key: string): Promise<T | null> {
-    return this.client.get<T>(key);
+  async get(key: string): Promise<string | null> {
+    return this.client.get(key);
   }
 
-  async set<T>(key: string, value: T): Promise<void> {
-    await this.client.set(key, value);
+  async set(key: string, value: string, mode?: string, duration?: number): Promise<"OK" | null> {
+    if (mode === 'EX' && duration) {
+      return this.client.set(key, value, 'EX', duration);
+    }
+    return this.client.set(key, value);
+  }
+
+  async setex(key: string, seconds: number, value: string): Promise<"OK"> {
+    return this.client.setex(key, seconds, value);
+  }
+
+  async setnx(key: string, value: string): Promise<number> {
+    return this.client.setnx(key, value);
   }
 
   async incr(key: string): Promise<number> {
@@ -68,25 +92,48 @@ export class RedisClient implements IRedisClient {
     return this.client.keys(pattern);
   }
 
-  pipeline(): ReturnType<Redis["pipeline"]> {
+  pipeline(): ChainableCommander {
     return this.client.pipeline();
   }
 
-  async sadd(key: string, member: string): Promise<number> {
-    return this.client.sadd(key, member);
+  async sadd(key: string, ...members: string[]): Promise<number> {
+    return this.client.sadd(key, ...members);
   }
 
-  async srem(key: string, member: string): Promise<number> {
-    return this.client.srem(key, member);
+  async srem(key: string, ...members: string[]): Promise<number> {
+    return this.client.srem(key, ...members);
   }
 
   async sismember(key: string, member: string): Promise<number> {
     return this.client.sismember(key, member);
   }
 
+  async expire(key: string, seconds: number): Promise<number> {
+    return this.client.expire(key, seconds);
+  }
+
+  multi(): ChainableCommander {
+    return this.client.multi();
+  }
+
+  // Add utility methods for JSON handling
+  async getJSON<T>(key: string): Promise<T | null> {
+    const data = await this.get(key);
+    return data ? JSON.parse(data) : null;
+  }
+
+  async setJSON<T>(key: string, value: T, ttl?: number): Promise<"OK" | null> {
+    const serialized = JSON.stringify(value);
+    if (ttl) {
+      return this.set(key, serialized, 'EX', ttl);
+    }
+    return this.set(key, serialized);
+  }
+
   // Add dispose method for cleanup
   public static dispose(): void {
     if (RedisClient.instance) {
+      RedisClient.instance.client.disconnect();
       delete global.redis;
       delete RedisClient.instance;
     }

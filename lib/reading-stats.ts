@@ -1,4 +1,3 @@
-import { type Pipeline } from "@upstash/redis";
 import redis from "./redis";
 
 export async function incrementViewCount(slug: string): Promise<number> {
@@ -14,8 +13,8 @@ export async function incrementViewCount(slug: string): Promise<number> {
 export async function getViewCount(slug: string): Promise<number> {
   try {
     const key = `blog:${slug}:views`;
-    const count = await redis.get<number>(key);
-    return count ?? 0;
+    const count = await redis.get(key);
+    return count ? parseInt(count, 10) : 0;
   } catch (error) {
     console.error("Error getting view count:", error);
     return 0;
@@ -27,16 +26,16 @@ export async function getPopularPosts(limit = 5): Promise<string[]> {
     const keys = await redis.keys("blog:*:views");
     if (!keys.length) return [];
 
-    const pipeline = redis.pipeline() as Pipeline;
+    const pipeline = redis.pipeline();
     keys.forEach((key) => pipeline.get(key));
 
-    const counts = await pipeline.exec();
-    if (!counts) return [];
+    const results = await pipeline.exec();
+    if (!results) return [];
 
     return keys
       .map((key, index) => ({
         slug: key.split(":")[1],
-        views: (counts[index] as number) ?? 0,
+        views: parseInt(String(results[index]?.[1] || 0), 10),
       }))
       .sort((a, b) => b.views - a.views)
       .slice(0, limit)
@@ -50,8 +49,8 @@ export async function getPopularPosts(limit = 5): Promise<string[]> {
 export async function getLikeCount(slug: string): Promise<number> {
   try {
     const key = `blog:${slug}:likes`;
-    const count = await redis.get<number>(key);
-    return count ?? 0;
+    const count = await redis.get(key);
+    return count ? parseInt(count, 10) : 0;
   } catch (error) {
     console.error("Error getting like count:", error);
     return 0;
@@ -97,8 +96,8 @@ export async function incrementShareCount(slug: string): Promise<number> {
 export async function getShareCount(slug: string): Promise<number> {
   try {
     const key = `blog:${slug}:shares`;
-    const count = await redis.get<number>(key);
-    return count ?? 0;
+    const count = await redis.get(key);
+    return count ? parseInt(count, 10) : 0;
   } catch (error) {
     console.error("Error getting share count:", error);
     return 0;

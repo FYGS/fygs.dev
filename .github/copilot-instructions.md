@@ -13,7 +13,6 @@ const stack = {
   database: {
     orm: "Prisma",
     type: "PostgreSQL",
-    extensions: ["pgvector", "timescaledb"],
   },
   state: {
     client: "Zustand",

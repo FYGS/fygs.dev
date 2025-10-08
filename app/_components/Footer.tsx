@@ -1,5 +1,3 @@
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import {
   BrainCircuitIcon,
   Code2Icon,
@@ -8,18 +6,35 @@ import {
   MailIcon,
   PhoneIcon,
   RocketIcon,
+  Leaf,
 } from "lucide-react";
 import Link from "next/link";
 import { Section } from "./Section";
 
 const FOOTER_LINKS = {
-  main: [
-    { href: "/projects", label: "Projects" },
-    { href: "/tech-mastry", label: "TechMastry" },
-    { href: "/blog", label: "Blog" },
-    { href: "/resume", label: "Resume" },
+  information: [
+    { href: "/resume", label: "CV", description: "Mon parcours professionnel" },
+    { href: "/projects", label: "Projets", description: "Portfolio technique" },
+    { href: "/blog", label: "Blog", description: "Articles & tutoriels" },
+    { href: "/contact", label: "Contact", description: "Nous contacter" },
+  ],
+  apprentissage: [
+    { href: "/formations", label: "Formations", description: "Cours premium" },
+    { href: "/pricing", label: "Tarifs", description: "Plans & abonnements" },
+    { href: "/tech-mastry", label: "TechMastry", description: "Préparation entretiens" },
+    { href: "/dashboard", label: "Dashboard", description: "Espace apprenant" },
+  ],
+  legal: [
+    { href: "/terms", label: "Conditions d'utilisation" },
+    { href: "/privacy", label: "Politique de confidentialité" },
   ],
   projects: [
+    {
+      href: "https://evopur.ca",
+      label: "Evopur",
+      description: "Ecological Household Cleaning Services in Montreal",
+      icon: Leaf,
+    },
     {
       href: "https://ncr.ouestech.com",
       label: "NCR",
@@ -69,111 +84,166 @@ export function Footer() {
       <div className="absolute inset-0 bg-gradient-to-b from-background/0 to-background/5 pointer-events-none" />
 
       <Section className="relative pt-16 pb-8">
+        {/* Main Footer Content - 4 Colonnes égales */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Brand Column */}
-          <div className="space-y-4 p-4 rounded-lg bg-card/50 border shadow-sm">
-            <Link
-              href="/"
-              className="text-2xl font-bold tracking-tight hover:text-primary transition-colors"
-            >
-              fygs.dev \_°&lt;
-            </Link>
-            <p className="text-sm text-muted-foreground">
-              Freelance Full-Stack Developer specialized in modern web
-              applications and technical consulting.
-            </p>
-          </div>
-
-          {/* Navigation Links */}
-          <div className="space-y-4 p-4 rounded-lg bg-accent/5">
-            <h3 className="text-sm font-semibold flex items-center gap-2 pb-2 border-b">
-              <span className="w-1 h-1 rounded-full bg-primary" />
-              Navigation
-            </h3>
-            <ul className="space-y-2">
-              {FOOTER_LINKS.main.map(({ href, label }) => (
-                <li key={href}>
-                  <Link
-                    href={href}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    {label}
-                  </Link>
-                </li>
+          
+          {/* Colonne 1: fygs.dev */}
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <Link
+                href="/"
+                className="text-2xl font-bold tracking-tight hover:text-primary transition-colors block"
+              >
+                fygs.dev \_°&lt;
+              </Link>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Plateforme d&apos;apprentissage premium pour développeurs modernes. 
+                Formations JavaScript, TypeScript, React, Next.js, Node.js, IA et Cloud.
+              </p>
+            </div>
+            
+            {/* Social Links */}
+            <div className="flex flex-wrap gap-2">
+              {FOOTER_LINKS.contact.slice(2).map(({ href, label, icon: Icon }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2.5 rounded-lg bg-muted/50 hover:bg-primary/10 hover:scale-105 transition-all duration-200"
+                  aria-label={label}
+                >
+                  <Icon className="h-4 w-4" />
+                </Link>
               ))}
-            </ul>
+            </div>
+
+            {/* Contact Info */}
+            <div className="space-y-2">
+              {FOOTER_LINKS.contact.slice(0, 2).map(({ href, label, icon: Icon }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors"
+                >
+                  <Icon className="h-3 w-3 flex-shrink-0" />
+                  <span className="truncate">{label}</span>
+                </Link>
+              ))}
+            </div>
           </div>
 
-          {/* Featured Projects */}
-          <div className="space-y-4 p-4 rounded-lg bg-accent/5">
+          {/* Colonne 2: Information */}
+          <div className="space-y-4">
             <h3 className="text-sm font-semibold flex items-center gap-2 pb-2 border-b">
-              <span className="w-1 h-1 rounded-full bg-primary" />
-              Featured Projects
+              <span className="w-2 h-2 rounded-full bg-gradient-to-r from-primary to-primary/60" />
+              Information
             </h3>
-            <ul className="space-y-3 [&_li]:relative [&_li]:pl-2 [&_li]:before:absolute [&_li]:before:left-0 [&_li]:before:top-2 [&_li]:before:w-0.5 [&_li]:before:h-4 [&_li]:before:bg-muted-foreground/20 [&_li:hover]:before:bg-primary [&_li]:before:transition-colors">
-              {FOOTER_LINKS.projects.map(
-                ({ href, label, description, icon: Icon }) => (
-                  <li key={href}>
-                    <Link
-                      href={href}
-                      className="group block space-y-1"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <div className="flex items-center gap-2 text-sm font-medium group-hover:text-primary transition-colors">
-                        <Icon className="h-4 w-4" />
+            <div className="space-y-2">
+              {FOOTER_LINKS.information.map(({ href, label, description }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="group block p-2 rounded-lg hover:bg-muted/50 transition-all duration-200"
+                >
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                      {label}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {description}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Colonne 3: Apprentissage */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold flex items-center gap-2 pb-2 border-b">
+              <span className="w-2 h-2 rounded-full bg-gradient-to-r from-primary to-primary/60" />
+              Apprentissage
+            </h3>
+            <div className="space-y-2">
+              {FOOTER_LINKS.apprentissage.map(({ href, label, description }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="group block p-2 rounded-lg hover:bg-muted/50 transition-all duration-200"
+                >
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                      {label}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {description}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Colonne 4: Projets Phares */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold flex items-center gap-2 pb-2 border-b">
+              <span className="w-2 h-2 rounded-full bg-gradient-to-r from-primary to-primary/60" />
+              Projets Phares
+            </h3>
+            <div className="space-y-3">
+              {FOOTER_LINKS.projects.map(({ href, label, description, icon: Icon }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group block p-3 rounded-xl bg-gradient-to-br from-muted/30 to-muted/10 border hover:border-primary/30 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="p-1.5 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors flex-shrink-0">
+                      <Icon className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">
                         {label}
-                      </div>
-                      <p className="text-xs text-muted-foreground">
+                      </h4>
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
                         {description}
                       </p>
-                    </Link>
-                  </li>
-                )
-              )}
-            </ul>
-          </div>
-
-          {/* Contact Information */}
-          <div className="space-y-4 p-4 rounded-lg bg-primary/5 border border-primary/10">
-            <h3 className="text-sm font-semibold flex items-center gap-2 pb-2 border-b border-primary/10">
-              <span className="w-1 h-1 rounded-full bg-primary" />
-              Get in Touch
-            </h3>
-            <ul className="space-y-2">
-              {FOOTER_LINKS.contact.map(({ href, label, icon: Icon }) => (
-                <li key={href}>
-                  <Link
-                    href={href}
-                    className={cn(
-                      buttonVariants({ variant: "link", size: "sm" }),
-                      "p-0 h-auto text-muted-foreground hover:text-primary"
-                    )}
-                    target={href.startsWith("http") ? "_blank" : undefined}
-                    rel={
-                      href.startsWith("http")
-                        ? "noopener noreferrer"
-                        : undefined
-                    }
-                  >
-                    <Icon className="h-4 w-4 mr-2" />
-                    {label}
-                  </Link>
-                </li>
+                    </div>
+                  </div>
+                </Link>
               ))}
-            </ul>
+            </div>
           </div>
         </div>
 
-        {/* Copyright with enhanced separator */}
-        <div className="mt-16 pt-8 border-t relative before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-border before:to-transparent before:-top-px before:h-px">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-center">
-            <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} Fernand Soualo. All rights reserved.
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Built with Next.js 15, Tailwind CSS & Shadcn UI
-            </p>
+        {/* Copyright - Compact */}
+        <div className="mt-12 pt-6 border-t">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+              <p className="text-sm text-muted-foreground">
+                © {new Date().getFullYear()} Fernand Soualo. All rights reserved.
+              </p>
+              <div className="hidden sm:block w-1 h-1 rounded-full bg-muted-foreground/50" />
+              <span className="text-xs text-muted-foreground">
+                Built with Next.js 15, Tailwind CSS & Shadcn UI
+              </span>
+            </div>
+            <div className="flex flex-wrap justify-center gap-3 text-xs text-muted-foreground">
+              <Link href="/terms" className="hover:text-primary transition-colors">
+                CGU
+              </Link>
+              <span>•</span>
+              <Link href="/privacy" className="hover:text-primary transition-colors">
+                Confidentialité
+              </Link>
+              <span>•</span>
+              <Link href="/resume" className="hover:text-primary transition-colors">
+                CV
+              </Link>
+            </div>
           </div>
         </div>
       </Section>

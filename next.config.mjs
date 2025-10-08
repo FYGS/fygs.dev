@@ -6,6 +6,10 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
+        hostname: "picsum.photos",
+      },
+      {
+        protocol: "https",
         hostname: "encrypted-tbn0.gstatic.com",
       },
       {
@@ -27,6 +31,10 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "i.pravatar.cc",
+      },
+      {
+        protocol: "https",
+        hostname: "www.pexels.com",
       },
     ],
   },

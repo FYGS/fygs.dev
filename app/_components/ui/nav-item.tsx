@@ -35,10 +35,11 @@ export function NavItem({
             )
           : cn(
               buttonVariants({ variant: "ghost", size: "sm" }),
-              "text-base font-medium transition-all relative",
-              "after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-center after:scale-x-0 after:bg-primary after:transition-transform",
+              "text-base font-medium transition-all duration-300 relative group",
+              "after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-center after:scale-x-0 after:bg-gradient-to-r after:from-primary after:to-primary/60 after:transition-transform after:duration-300",
+              "hover:scale-105 hover:shadow-sm",
               isActive
-                ? "text-primary after:scale-x-100"
+                ? "text-primary after:scale-x-100 shadow-sm"
                 : "text-muted-foreground hover:text-foreground hover:after:scale-x-100"
             )
       )}

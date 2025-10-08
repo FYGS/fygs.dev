@@ -1,5 +1,5 @@
-import { useToast } from "@/hooks/use-toast";
 import { useCallback, useEffect } from "react";
+import { toast } from "sonner";
 import { useEditorStore } from "../_stores/editor-store";
 
 export const SHORTCUTS = {
@@ -13,17 +13,20 @@ export const SHORTCUTS = {
 export function useShortcuts() {
   const { executeCode, createSnapshot, clearOutput, formatCode } =
     useEditorStore();
-  const { toast } = useToast();
 
   const handleShortcut = useCallback(
     (shortcut: keyof typeof SHORTCUTS, action: () => void) => {
-      toast({
-        title: SHORTCUTS[shortcut].description,
+      toast(SHORTCUTS[shortcut].description, {
         duration: 1000,
+        action: {
+          label: "Run",
+          onClick: () => {
+            action();
+          },
+        },
       });
-      action();
     },
-    [toast]
+    [] // Remove toast from dependencies
   );
 
   useEffect(() => {

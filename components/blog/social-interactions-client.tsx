@@ -7,7 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { fadeIn, scaleIn } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 import { useBlogStats } from "@/stores/use-blog-stats";
@@ -33,7 +33,6 @@ export function SocialInteractionsClient({
   variant = "default",
 }: SocialInteractionsClientProps) {
   const [hasLiked, setHasLiked] = useState(false);
-  const { toast } = useToast();
   const controls = useAnimation();
   const {
     likes,
@@ -90,19 +89,14 @@ export function SocialInteractionsClient({
       // Then sync with the server to get the accurate count
       await syncStats(slug);
 
-      toast({
-        title: isLiked ? "Article liked!" : "Like removed",
+      toast.success(isLiked ? "Article liked!" : "Like removed", {
         description: isLiked
           ? "Thank you for your appreciation."
           : "You've removed your like.",
       });
     } catch (error) {
       console.error(error);
-      toast({
-        title: "Error",
-        description: "Could not process your like. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Could not process your like. Please try again.");
     }
   };
 
@@ -122,11 +116,7 @@ export function SocialInteractionsClient({
     } catch (error) {
       if (!(error instanceof Error && error.name === "AbortError")) {
         console.error(error);
-        toast({
-          title: "Error",
-          description: "Could not share the article. Please try again.",
-          variant: "destructive",
-        });
+        toast.error("Could not share the article. Please try again.");
       }
     }
   };

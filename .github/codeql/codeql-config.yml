@@ -1,0 +1,22 @@
+name: "FYGS.dev CodeQL Config"
+
+queries:
+  - uses: security-and-quality
+  - uses: security-extended
+
+paths:
+  - "app/"
+  - "lib/"
+  - "components/"
+  - "hooks/"
+  - "stores/"
+  - "types/"
+
+paths-ignore:
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/*.spec.ts"
+  - "**/node_modules/"
+  - "**/.next/"
+  - "**/dist/"
+  - "**/build/"

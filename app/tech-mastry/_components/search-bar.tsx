@@ -7,7 +7,7 @@ import { useOnClickOutside } from "@/hooks/use-on-click-outside";
 import { cn } from "@/lib/utils";
 import { Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, RefObject } from "react";
 import { SearchResult, highlightText, searchTopics } from "../_utils/search";
 
 export function SearchBar() {
@@ -24,7 +24,7 @@ export function SearchBar() {
   const debouncedQuery = useDebounce(query, 300);
 
   // Close search results when clicking outside
-  useOnClickOutside(searchRef, () => setIsOpen(false));
+  useOnClickOutside(searchRef as RefObject<HTMLElement>, () => setIsOpen(false));
 
   // Perform search when debounced query changes
   useEffect(() => {

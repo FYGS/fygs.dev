@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Loader2, Mail } from "lucide-react";
 import { useState } from "react";
@@ -22,7 +22,6 @@ export function NewsletterForm({
   const [email, setEmail] = useState(currentEmail || "");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,8 +31,7 @@ export function NewsletterForm({
       // Ici, vous pouvez ajouter votre logique d'API pour l'inscription à la newsletter
       await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulation d'appel API
 
-      toast({
-        title: "Successfully subscribed!",
+      toast.success("Successfully subscribed!", {
         description: "Thank you for subscribing to our newsletter.",
       });
 
@@ -42,11 +40,7 @@ export function NewsletterForm({
       setSelectedCategories([]);
     } catch (error) {
       console.error(error);
-      toast({
-        title: "Error",
-        description: "Failed to subscribe. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to subscribe. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

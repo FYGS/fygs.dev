@@ -2,6 +2,336 @@ import { Project } from "../types";
 
 export const FEATURED_PROJECTS: Project[] = [
   {
+    id: "evopur",
+    title: "Evopur",
+    description: "Professional ecological household cleaning services platform offering comprehensive home cleaning solutions with eco-friendly products and sustainable practices for a healthier living environment.",
+    image: "/projects/evopur.png",
+    detailImages: [
+      {
+        url: "/projects/evopur-home.png",
+        alt: "Evopur Homepage"
+      },
+      {
+        url: "/projects/evopur-home2.png",
+        alt: "Evopur Services Page"
+      },
+      {
+        url: "/projects/evopur-about.png",
+        alt: "Evopur About Page"
+      },
+      {
+        url: "/projects/evopur-contact.png",
+        alt: "Evopur Contact Page"
+      },
+      {
+        url: "/projects/evopur-blog.png",
+        alt: "Evopur Blog Page"
+      },
+      {
+        url: "/projects/evopur-testimonials.png",
+        alt: "Evopur Testimonials Page"
+      }
+    ],
+    technologies: [
+      "Next.js 15",
+      "TypeScript",
+      "TailwindCSS",
+      "Framer Motion",
+      "React Hook Form",
+      "Zod",
+      "Nodemailer",
+      "Translation",
+      "VPS",
+      "Coolify",
+    ],
+    link: "https://evopur.ca",
+    features: [
+      "🌿 Eco-friendly cleaning services showcase",
+      "📅 Online booking system",
+      "💚 Sustainable practices information",
+      "📱 Mobile-responsive design",
+      "✨ Smooth animations and transitions",
+      "📧 Contact form with email notifications",
+      "🏠 Service area coverage map",
+      "💰 Transparent pricing structure",
+      "⭐ Customer testimonials section",
+      "🔒 Secure booking process"
+    ],
+    technicalDetails: "Built with Next.js 15 using the App Router, featuring server-side rendering for optimal SEO performance. Implements Framer Motion for smooth animations, React Hook Form with Zod validation for form handling, and Nodemailer for reliable email delivery. The design emphasizes sustainability with a green color palette and eco-friendly imagery.",
+    challenges: "Creating a trustworthy and professional image for a cleaning service while emphasizing environmental responsibility. Implementing an intuitive booking system that captures all necessary service details while maintaining a simple user experience.",
+    stats: {
+      stars: 0,
+      forks: 0,
+      contributors: 1,
+      linesOfCode: 3500
+    },
+    testimonial: {
+      text: "Evopur transformed our approach to home cleaning with their exceptional eco-friendly services. The website perfectly reflects their commitment to sustainability.",
+      author: "Marie Dubois",
+      role: "Satisfied Customer"
+    }
+  },
+  {
+    id: "ncr",
+    title: "NCR - Certificats de Résidence",
+    description:
+      "A next-generation platform modernizing residence certificate management, streamlining administrative processes for local authorities and citizens alike.",
+    image: "/projects/ncr.png",
+    detailImages: [
+      {
+        url: "/projects/ncr-home.png",
+        alt: "NCR Homepage",
+      },
+      {
+        url: "/projects/ncr-home-2.png",
+        alt: "NCR Homepage 2",
+      },
+      {
+        url: "/projects/ncr-home-3.png",
+        alt: "NCR Homepage 3",
+      },
+      {
+        url: "/projects/ncr-register-page.png",
+        alt: "NCR Register Page",
+      },
+      {
+        url: "/projects/ncr-login-page.png",
+        alt: "NCR Login Page",
+      },
+      {
+        url: "/projects/ncr-admin-dashboard.png",
+        alt: "NCR Admin Dashboard",
+      },
+      {
+        url: "/projects/ncr-admin-dashboard-2.png",
+        alt: "NCR Admin Dashboard 2",
+      },
+      {
+        url: "/projects/ncr-admin-dashboard-3.png",
+        alt: "NCR Admin Dashboard 3",
+      },
+      {
+        url: "/projects/ncr-admin-dashboard-4.png",
+        alt: "NCR Admin Dashboard 4",
+      },
+    ],
+    technologies: [
+      "Next.js 15",
+      "TypeScript",
+      "Prisma",
+      "Appwrite",
+      "TailwindCSS",
+      "Docker",
+      "Orange Money API",
+    ],
+    link: "https://ncr.ouestech.com",
+    features: [
+      "📝 Digital certificate requests",
+      "🏢 Multi-tenant architecture",
+      "👥 Role-based access control",
+      "📊 Administrative dashboard",
+      "🔍 Advanced search and filtering",
+      "📱 Responsive design",
+      "🔒 Secure document handling",
+      "💳 Orange Money payment integration",
+      "🧾 Automated payment receipts",
+      "📱 Mobile money transactions",
+    ],
+    stats: {
+      stars: 0,
+      forks: 0,
+      contributors: 1,
+      linesOfCode: 3700
+    },
+    testimonial: {
+      text: "NCR transformed our approach to certificate requests with their exceptional digitalization services. The website perfectly reflects their commitment to sustainability.",
+      author: "Mohamed Kaba",
+      role: "Satisfied Customer"
+    },
+    technicalDetails:
+      "Built with Next.js 14, implementing a multi-tenant architecture for different municipalities. Uses Appwrite database as a service for robust data management and Docker for containerization. Integrates Orange Money API for secure mobile payments with real-time transaction validation.",
+    challenges:
+      "Implementing a secure and compliant system for handling sensitive administrative documents while ensuring ease of use for both citizens and municipal staff. Integrating Orange Money payment system with proper error handling and transaction reconciliation.",
+  },
+  {
+    id: "quizzen",
+    title: "QuizZen",
+    description:
+      "A specialized interactive platform for French naturalization interview preparation, covering history, values, and institutions of the French Republic.",
+    image: "/projects/quizzen.png",
+    detailImages: [
+      {
+        url: "/projects/quizzen-home.png",
+        alt: "QuizZen Homepage",
+      },
+
+      {
+        url: "/projects/quizzen-home-2.png",
+        alt: "QuizZen Homepage 2",
+      },
+      {
+        url: "/projects/quizzen-home-3.png",
+        alt: "QuizZen Homepage 3",
+      },
+      {
+        url: "/projects/quizzen-home-4.png",
+        alt: "QuizZen Homepage 4",
+      },
+      {
+        url: "/projects/quizzen-home-5.png",
+        alt: "QuizZen Homepage 5",
+      },
+      {
+        url: "/projects/quizzen-home-6.png",
+        alt: "QuizZen Homepage 6",
+      },
+      {
+        url: "/projects/quizzen-home-7.png",
+        alt: "QuizZen Homepage 7",
+      },
+      {
+        url: "/projects/quizzen-register-page.png",
+        alt: "QuizZen Register Page",
+      },
+      {
+        url: "/projects/quizzen-login-page.png",
+        alt: "QuizZen Login Page",
+      },
+    ],
+    technologies: [
+      "Next.js 15",
+      "TypeScript",
+      "Prisma",
+      "PostgreSQL",
+      "TailwindCSS",
+      "Stripe",
+      "i18n",
+    ],
+    link: "https://quizzen.fr/fr",
+    features: [
+      "📚 Comprehensive study material",
+      "✅ Practice tests",
+      "📊 Progress tracking",
+      "🎯 Personalized learning paths",
+      "🌍 Multi-language support",
+      "📱 Mobile-responsive design",
+    ],
+    stats: {
+      stars: 0,
+      forks: 0,
+      contributors: 1,
+      linesOfCode: 2500
+    },
+    technicalDetails:
+      "Built with Next.js 15, using Prisma ORM with PostgreSQL for robust data management. Implements spaced repetition algorithms for optimal learning with efficient database querying. Features a robust assessment system with detailed analytics and progress tracking.",
+    challenges:
+      "Creating an engaging learning experience while maintaining historical accuracy and official requirements for naturalization interviews. Optimizing database queries for efficient spaced repetition algorithm implementation.",
+  },
+  {
+    id: "anumerique",
+    title: "A'Numérique",
+    description:
+      "An innovative service bridging the digital divide through personalized, at-home digital literacy training, fostering an inclusive digital society.",
+    image: "/projects/anumerique.png",
+    detailImages: [
+      {
+        url: "/projects/anumerique-home.png",
+        alt: "A'Numérique Homepage",
+      },
+      {
+        url: "/projects/anumerique-home-2.png",
+        alt: "A'Numérique Homepage 2",
+      },
+      {
+        url: "/projects/anumerique-home-3.png",
+        alt: "A'Numérique Homepage 3",
+      },
+      {
+        url: "/projects/anumerique-home-4.png",
+        alt: "A'Numérique Homepage 4",
+      },
+    ],
+    technologies: [
+      "Next.js 15",
+      "TypeScript",
+      "PostgreSQL",
+      "TailwindCSS",
+      "Stripe",
+      "Google Calendar API",
+    ],
+    link: "https://www.anumerique.com",
+    features: [
+      "📅 Appointment scheduling",
+      "👨‍🏫 Personalized training sessions",
+      "📊 Progress tracking",
+      "🏠 At-home service management",
+      "💳 Secure payment processing",
+      "📱 Mobile-first design",
+    ],
+    stats: {
+      stars: 0,
+      forks: 0,
+      contributors: 1,
+      linesOfCode: 2000
+    },
+    technicalDetails:
+      "Integrates with Google Calendar for scheduling and Stripe for payments. Features a custom CRM system for managing client relationships and training progress.",
+    challenges:
+      "Developing an intuitive interface for both trainers and clients while managing complex scheduling and resource allocation.",
+  },
+  {
+    id: "delices-rachetee",
+    title: "Les Délices de la Rachetée",
+    description:
+      "An artisanal French pastry showcase combining traditional craftsmanship with innovative techniques to deliver unique culinary experiences.",
+    image: "/projects/delices-rachetee.png",
+    detailImages: [
+      {
+        url: "/projects/delices-rachetee-home.png",
+        alt: "Les Délices de la Rachetée Homepage",
+      },
+      {
+        url: "/projects/delices-creation.png",
+        alt: "Les Délices de la Rachetée Creation",
+      },
+      {
+        url: "/projects/delices-galerie.png",
+        alt: "Les Délices de la Rachetée Galerie",
+      },
+      {
+        url: "/projects/delices-histoire.png",
+        alt: "Les Délices de la Rachetée Histoire",
+      },
+    ],
+    technologies: [
+      "Next.js 15",
+      "TypeScript",
+      "Prisma",
+      "PostgreSQL",
+      "TailwindCSS",
+      "Stripe",
+    ],
+    link: "https://lesdelicesdelarachetee.vercel.app",
+    features: [
+      "🛒 Online ordering system",
+      "🎂 Custom cake designer",
+      "📅 Event scheduling",
+      "🏷️ Product catalog",
+      "💳 Secure payments",
+      "📱 Responsive design",
+    ],
+    stats: {
+      stars: 0,
+      forks: 0,
+      contributors: 1,
+      linesOfCode: 2000
+    },
+    technicalDetails:
+      "Built with Next.js 15, featuring a custom product configuration system and real-time order tracking. Implements Stripe for secure payment processing.",
+    challenges:
+      "Creating an intuitive interface for custom cake orders while managing complex product configurations and delivery scheduling.",
+  },
+  {
     id: "school-management",
     title: "School Management System",
     description:
@@ -89,8 +419,8 @@ export const FEATURED_PROJECTS: Project[] = [
     stats: {
       stars: 750,
       forks: 35,
-      contributors: 5,
-      linesOfCode: 15000,
+      contributors: 1,
+      linesOfCode: 3000,
     },
     features: [
       "👧 Student information management",
@@ -126,7 +456,7 @@ export const FEATURED_PROJECTS: Project[] = [
     stats: {
       stars: 600,
       forks: 40,
-      contributors: 4,
+      contributors: 1,
       linesOfCode: 20000,
     },
     features: [
@@ -211,7 +541,7 @@ export const FEATURED_PROJECTS: Project[] = [
     stats: {
       stars: 300,
       forks: 20,
-      contributors: 2,
+      contributors: 1,
       linesOfCode: 3000,
     },
     features: [
@@ -286,10 +616,10 @@ export const FEATURED_PROJECTS: Project[] = [
       role: "CTO at TechCorp",
     },
     stats: {
-      stars: 1000,
-      forks: 50,
-      contributors: 10,
-      linesOfCode: 10000,
+      stars: 0,
+      forks: 0,
+      contributors: 1,
+      linesOfCode: 700,
     },
     features: [
       "💻 Static Site Generation for optimal performance",
@@ -317,10 +647,10 @@ export const FEATURED_PROJECTS: Project[] = [
     link: "https://nextjs-projects-chat-gpt-idee-kdo-nextjs.vercel.app",
     githubUrl: "https://github.com/fygs/idees-kdo",
     stats: {
-      stars: 450,
-      forks: 25,
-      contributors: 3,
-      linesOfCode: 1000,
+      stars: 0,
+      forks: 0,
+      contributors: 1,
+      linesOfCode: 500,
     },
     features: [
       "🎁 AI-powered gift suggestions",
@@ -332,236 +662,5 @@ export const FEATURED_PROJECTS: Project[] = [
       "Integrated with OpenAI's GPT model using the Vercel AI SDK for real-time gift suggestions. Implements streaming responses for better user experience.",
     challenges:
       "Fine-tuning the AI prompts to generate relevant and appropriate gift suggestions while maintaining response speed and accuracy.",
-  },
-  {
-    id: "ncr",
-    title: "NCR - Certificats de Résidence",
-    description:
-      "A next-generation platform modernizing residence certificate management, streamlining administrative processes for local authorities and citizens alike.",
-    image: "/projects/ncr.png",
-    detailImages: [
-      {
-        url: "/projects/ncr-home.png",
-        alt: "NCR Homepage",
-      },
-      {
-        url: "/projects/ncr-home-2.png",
-        alt: "NCR Homepage 2",
-      },
-      {
-        url: "/projects/ncr-home-3.png",
-        alt: "NCR Homepage 3",
-      },
-      {
-        url: "/projects/ncr-register-page.png",
-        alt: "NCR Register Page",
-      },
-      {
-        url: "/projects/ncr-login-page.png",
-        alt: "NCR Login Page",
-      },
-      {
-        url: "/projects/ncr-admin-dashboard.png",
-        alt: "NCR Admin Dashboard",
-      },
-      {
-        url: "/projects/ncr-admin-dashboard-2.png",
-        alt: "NCR Admin Dashboard 2",
-      },
-      {
-        url: "/projects/ncr-admin-dashboard-3.png",
-        alt: "NCR Admin Dashboard 3",
-      },
-      {
-        url: "/projects/ncr-admin-dashboard-4.png",
-        alt: "NCR Admin Dashboard 4",
-      },
-    ],
-    technologies: [
-      "Next.js 14",
-      "TypeScript",
-      "Prisma",
-      "Appwrite",
-      "TailwindCSS",
-      "Docker",
-      "Orange Money API",
-    ],
-    link: "https://ncr.ouestech.com",
-    features: [
-      "📝 Digital certificate requests",
-      "🏢 Multi-tenant architecture",
-      "👥 Role-based access control",
-      "📊 Administrative dashboard",
-      "🔍 Advanced search and filtering",
-      "📱 Responsive design",
-      "🔒 Secure document handling",
-      "💳 Orange Money payment integration",
-      "🧾 Automated payment receipts",
-      "📱 Mobile money transactions",
-    ],
-    technicalDetails:
-      "Built with Next.js 14, implementing a multi-tenant architecture for different municipalities. Uses Appwrite database as a service for robust data management and Docker for containerization. Integrates Orange Money API for secure mobile payments with real-time transaction validation.",
-    challenges:
-      "Implementing a secure and compliant system for handling sensitive administrative documents while ensuring ease of use for both citizens and municipal staff. Integrating Orange Money payment system with proper error handling and transaction reconciliation.",
-  },
-  {
-    id: "quizzen",
-    title: "QuizZen",
-    description:
-      "A specialized interactive platform for French naturalization interview preparation, covering history, values, and institutions of the French Republic.",
-    image: "/projects/quizzen.png",
-    detailImages: [
-      {
-        url: "/projects/quizzen-home.png",
-        alt: "QuizZen Homepage",
-      },
-
-      {
-        url: "/projects/quizzen-home-2.png",
-        alt: "QuizZen Homepage 2",
-      },
-      {
-        url: "/projects/quizzen-home-3.png",
-        alt: "QuizZen Homepage 3",
-      },
-      {
-        url: "/projects/quizzen-home-4.png",
-        alt: "QuizZen Homepage 4",
-      },
-      {
-        url: "/projects/quizzen-home-5.png",
-        alt: "QuizZen Homepage 5",
-      },
-      {
-        url: "/projects/quizzen-home-6.png",
-        alt: "QuizZen Homepage 6",
-      },
-      {
-        url: "/projects/quizzen-home-7.png",
-        alt: "QuizZen Homepage 7",
-      },
-      {
-        url: "/projects/quizzen-register-page.png",
-        alt: "QuizZen Register Page",
-      },
-      {
-        url: "/projects/quizzen-login-page.png",
-        alt: "QuizZen Login Page",
-      },
-    ],
-    technologies: [
-      "Next.js 15",
-      "TypeScript",
-      "Prisma",
-      "PostgreSQL",
-      "TailwindCSS",
-      "Stripe",
-      "i18n",
-    ],
-    link: "https://quizzen.fr/fr",
-    features: [
-      "📚 Comprehensive study material",
-      "✅ Practice tests",
-      "📊 Progress tracking",
-      "🎯 Personalized learning paths",
-      "🌍 Multi-language support",
-      "📱 Mobile-responsive design",
-    ],
-    technicalDetails:
-      "Built with Next.js 15, using Prisma ORM with PostgreSQL for robust data management. Implements spaced repetition algorithms for optimal learning with efficient database querying. Features a robust assessment system with detailed analytics and progress tracking.",
-    challenges:
-      "Creating an engaging learning experience while maintaining historical accuracy and official requirements for naturalization interviews. Optimizing database queries for efficient spaced repetition algorithm implementation.",
-  },
-  {
-    id: "anumerique",
-    title: "A'Numérique",
-    description:
-      "An innovative service bridging the digital divide through personalized, at-home digital literacy training, fostering an inclusive digital society.",
-    image: "/projects/anumerique.png",
-    detailImages: [
-      {
-        url: "/projects/anumerique-home.png",
-        alt: "A'Numérique Homepage",
-      },
-      {
-        url: "/projects/anumerique-home-2.png",
-        alt: "A'Numérique Homepage 2",
-      },
-      {
-        url: "/projects/anumerique-home-3.png",
-        alt: "A'Numérique Homepage 3",
-      },
-      {
-        url: "/projects/anumerique-home-4.png",
-        alt: "A'Numérique Homepage 4",
-      },
-    ],
-    technologies: [
-      "Next.js",
-      "TypeScript",
-      "PostgreSQL",
-      "TailwindCSS",
-      "Stripe",
-      "Google Calendar API",
-    ],
-    link: "https://www.anumerique.com",
-    features: [
-      "📅 Appointment scheduling",
-      "👨‍🏫 Personalized training sessions",
-      "📊 Progress tracking",
-      "🏠 At-home service management",
-      "💳 Secure payment processing",
-      "📱 Mobile-first design",
-    ],
-    technicalDetails:
-      "Integrates with Google Calendar for scheduling and Stripe for payments. Features a custom CRM system for managing client relationships and training progress.",
-    challenges:
-      "Developing an intuitive interface for both trainers and clients while managing complex scheduling and resource allocation.",
-  },
-  {
-    id: "delices-rachetee",
-    title: "Les Délices de la Rachetée",
-    description:
-      "An artisanal French pastry showcase combining traditional craftsmanship with innovative techniques to deliver unique culinary experiences.",
-    image: "/projects/delices-rachetee.png",
-    detailImages: [
-      {
-        url: "/projects/delices-rachetee-home.png",
-        alt: "Les Délices de la Rachetée Homepage",
-      },
-      {
-        url: "/projects/delices-creation.png",
-        alt: "Les Délices de la Rachetée Creation",
-      },
-      {
-        url: "/projects/delices-galerie.png",
-        alt: "Les Délices de la Rachetée Galerie",
-      },
-      {
-        url: "/projects/delices-histoire.png",
-        alt: "Les Délices de la Rachetée Histoire",
-      },
-    ],
-    technologies: [
-      "Next.js 14",
-      "TypeScript",
-      "Prisma",
-      "PostgreSQL",
-      "TailwindCSS",
-      "Stripe",
-    ],
-    link: "https://lesdelicesdelarachetee.vercel.app",
-    features: [
-      "🛒 Online ordering system",
-      "🎂 Custom cake designer",
-      "📅 Event scheduling",
-      "🏷️ Product catalog",
-      "💳 Secure payments",
-      "📱 Responsive design",
-    ],
-    technicalDetails:
-      "Built with Next.js 14, featuring a custom product configuration system and real-time order tracking. Implements Stripe for secure payment processing.",
-    challenges:
-      "Creating an intuitive interface for custom cake orders while managing complex product configurations and delivery scheduling.",
   },
 ];

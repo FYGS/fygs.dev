@@ -1,7 +1,6 @@
 // import { AutoLoader } from "@/components/auto-loader";
 import { NavigationProgress } from "@/components/ui/navigation-progress";
 import { PageTransition } from "@/components/ui/page-transition";
-import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { PageMemoryProvider } from "@/providers/page-memory-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
@@ -20,6 +19,9 @@ import { Spacing } from "./_components/Spacing";
 import { SITE_URL } from "./_lib/constants";
 import "./globals.css";
 import { MonacoInit } from "./tech-mastry/playground/_components/monaco-init";
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { NotificationProvider } from "@/components/providers/notification-provider";
 
 const AnekTelugu = Anek_Telugu({
   subsets: ["latin"],
@@ -94,12 +96,13 @@ export default function RootLayout({
           <PageMemoryProvider>
             <NavigationProgress />
             <TransitionProvider>
+              <TooltipProvider>
               <PageTransition>
                 <main>
                   <Header />
                   <Spacing size="md" />
                   <NuqsAdapter>{children}</NuqsAdapter>
-                  <Toaster />
+                  <Toaster richColors closeButton />
                   <Spacing size="md" />
                   <Footer />
                   <Analytics />
@@ -108,6 +111,8 @@ export default function RootLayout({
                   <MonacoInit />
                 </main>
               </PageTransition>
+              <NotificationProvider />
+              </TooltipProvider>
             </TransitionProvider>
           </PageMemoryProvider>
         </ThemeProvider>

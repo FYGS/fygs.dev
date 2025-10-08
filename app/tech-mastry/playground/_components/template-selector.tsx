@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Code, FileCode, Layers, Server, Sparkles } from "lucide-react";
 import { useState } from "react";
@@ -48,7 +48,6 @@ export function TemplateSelector() {
   );
   const [activeCategory, setActiveCategory] =
     useState<TemplateCategory>("language");
-  const { toast } = useToast();
 
   const handleSelectTemplate = (template: Template) => {
     setSelectedTemplate(template);
@@ -75,10 +74,8 @@ export function TemplateSelector() {
       useEditorStore.getState().loadTemplate(templateFiles, mainFile);
 
       // Show success toast
-      toast({
-        title: "Template Applied",
+      toast.success("Template Applied", {
         description: `${selectedTemplate.name} template has been loaded.`,
-        duration: 3000,
       });
 
       setIsOpen(false);

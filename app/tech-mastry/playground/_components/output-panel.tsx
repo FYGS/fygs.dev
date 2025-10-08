@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
   AlertCircle,
@@ -22,7 +22,6 @@ export function OutputPanel() {
   const outputRef = useRef<HTMLPreElement>(null);
   const { output, logs, errors, status, clearOutput } = useEditorStore();
   const { language } = useLanguage();
-  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<string>("output");
   const [isHtmlOutput, setIsHtmlOutput] = useState<boolean>(false);
 
@@ -30,10 +29,8 @@ export function OutputPanel() {
   const copyToClipboard = async () => {
     if (output) {
       await navigator.clipboard.writeText(output);
-      toast({
-        title: "Output copied to clipboard",
+      toast.success("Output copied to clipboard", {
         description: "The output has been copied to your clipboard",
-        duration: 3000,
       });
     }
   };
@@ -41,10 +38,8 @@ export function OutputPanel() {
   // Clear output
   const handleClearOutput = () => {
     clearOutput();
-    toast({
-      title: "Output cleared",
+    toast.success("Output cleared", {
       description: "The output has been cleared",
-      duration: 3000,
     });
   };
 

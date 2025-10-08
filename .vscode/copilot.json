@@ -8,8 +8,7 @@
       },
       "database": {
         "orm": "Prisma 5.12+",
-        "engine": "PostgreSQL 16",
-        "extensions": ["pgvector", "timescaledb"]
+        "engine": "PostgreSQL 16"
       },
       "validation": {
         "schema": "Zod 3.22+",

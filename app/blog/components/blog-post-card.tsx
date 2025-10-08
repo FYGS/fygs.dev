@@ -2,7 +2,7 @@
 import { CoverImage } from "@/components/blog/cover-image";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { BlogPostMeta } from "@/lib/types";
 import { motion } from "framer-motion";
 import { Calendar, Clock, Eye, FileEdit, Heart, Share2 } from "lucide-react";
@@ -18,7 +18,6 @@ interface BlogPostCardProps {
 }
 
 export function BlogPostCard({ post, initialStats }: BlogPostCardProps) {
-  const { toast } = useToast();
 
   const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -29,14 +28,16 @@ export function BlogPostCard({ post, initialStats }: BlogPostCardProps) {
           text: post.excerpt,
           url: `${window.location.origin}/blog/${post.slug}`,
         });
-        toast({
-          title: "Shared successfully",
+        toast.success("Shared successfully", {
           description: "Thank you for sharing!",
         });
       }
     } catch (error) {
       if (!(error instanceof Error && error.name === "AbortError")) {
         console.error(error);
+        toast.error("Une erreur s'est produite", {
+          description: "Une erreur est survenue lors de la partage",
+        });
       }
     }
   };

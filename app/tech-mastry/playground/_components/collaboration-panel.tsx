@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import {
@@ -53,7 +53,6 @@ export function CollaborationPanel() {
     { id: string; sender: string; text: string; timestamp: Date }[]
   >([]);
   const [newMessage, setNewMessage] = useState("");
-  const { toast } = useToast();
 
   // Mock participants - in a real app, this would come from a WebSocket connection
   const [participants, setParticipants] = useState<Participant[]>([
@@ -69,10 +68,8 @@ export function CollaborationPanel() {
 
   const createSession = () => {
     if (!userName.trim()) {
-      toast({
-        title: "Please enter your name",
+      toast.error("Please enter your name", {
         description: "A name is required to create a session",
-        variant: "destructive",
       });
       return;
     }
@@ -86,18 +83,15 @@ export function CollaborationPanel() {
       prev.map((p) => (p.id === "1" ? { ...p, name: userName } : p))
     );
 
-    toast({
-      title: "Collaboration session created!",
+    toast.success("Collaboration session created!", {
       description: "Share the link with others to collaborate",
     });
   };
 
   const joinSession = (id: string) => {
     if (!userName.trim()) {
-      toast({
-        title: "Please enter your name",
+      toast.error("Please enter your name", {
         description: "A name is required to join a session",
-        variant: "destructive",
       });
       return;
     }
@@ -109,8 +103,7 @@ export function CollaborationPanel() {
       prev.map((p) => (p.id === "1" ? { ...p, name: userName } : p))
     );
 
-    toast({
-      title: "Joined collaboration session!",
+    toast.success("Joined collaboration session!", {
       description: "You are now connected with others",
     });
   };
@@ -149,8 +142,7 @@ export function CollaborationPanel() {
     const link = `${window.location.origin}/tech-mastry/playground?session=${sessionId}`;
     navigator.clipboard.writeText(link);
 
-    toast({
-      title: "Link copied!",
+    toast.success("Link copied!", {
       description: "Share this link to collaborate",
     });
   };

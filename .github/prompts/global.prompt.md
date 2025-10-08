@@ -6,9 +6,10 @@ You are assisting with a modern Next.js 15+ application. Follow these guidelines
 
 1. Write type-safe, maintainable, and performant code
 2. Follow SOLID principles and clean architecture, follow DRY basics (centralize repetitive logics: css into app/globals.css, and code accordingly)
-3. Optimize for Edge Runtime by default
+3. Optimize with using server actions as far as possible by default
 4. Implement proper error boundaries and logging
-5. Ensure code is testable and well-documented
+5. Ensure code is testable and well-documented, do not keep non used variables, code not needed and useless has to be removed/deleted
+6. Do not produced non-sense code, any provided code MUST work fine and perform it goal feature actions
 
 ## 🏗️ Technical Requirements
 

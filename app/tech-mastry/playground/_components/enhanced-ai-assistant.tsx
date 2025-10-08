@@ -20,7 +20,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -84,7 +84,6 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
   const [codeHint, setCodeHint] = useState<CodeHint | null>(null);
   const [hintRequested, setHintRequested] = useState(false);
   const { code, language } = useEditorStore();
-  const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Scroll to bottom of messages when new messages are added
@@ -168,21 +167,15 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
       }, 1000);
     } catch (error) {
       console.error("Error sending message:", error);
-      toast({
-        title: "Error",
-        description: "Failed to send message. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to send message. Please try again.");
       setIsLoading(false);
     }
   };
 
   const analyzeCode = async () => {
     if (!code.trim()) {
-      toast({
-        title: "No code to analyze",
+      toast.error("No code to analyze", {
         description: "Please write some code first.",
-        variant: "default",
       });
       return;
     }
@@ -201,10 +194,8 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
       if (isAnalyzing) {
         setIsAnalyzing(false);
         analyzedRef.current = false; // Allow retry
-        toast({
-          title: "Analysis timeout",
+        toast.error("Analysis timeout", {
           description: "The analysis took too long. Please try again.",
-          variant: "destructive",
         });
       }
     }, 10000); // 10 second timeout
@@ -243,21 +234,15 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
       codeRef.current = code;
 
       // Show success toast
-      toast({
-        title: "Analysis complete",
+      toast.success("Analysis complete", {
         description: "Your code has been analyzed successfully.",
-        variant: "default",
       });
     } catch (error) {
       // Clear the timeout since we got an error
       clearTimeout(timeoutId);
 
       console.error("Error analyzing code:", error);
-      toast({
-        title: "Error",
-        description: "Failed to analyze code. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to analyze code. Please try again.");
       setIsAnalyzing(false);
       analyzedRef.current = false; // Allow retry
     }
@@ -265,10 +250,8 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
 
   const getHint = async () => {
     if (!challengeId) {
-      toast({
-        title: "No challenge selected",
+      toast.error("No challenge selected", {
         description: "Please select a challenge first.",
-        variant: "default",
       });
       return;
     }
@@ -312,11 +295,7 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
       }, 1000);
     } catch (error) {
       console.error("Error getting hint:", error);
-      toast({
-        title: "Error",
-        description: "Failed to get hint. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to get hint. Please try again.");
       setHintRequested(false);
     }
   };

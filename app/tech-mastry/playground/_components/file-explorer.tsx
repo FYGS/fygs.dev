@@ -9,7 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
   File,
@@ -38,7 +38,6 @@ export function FileExplorer() {
   // const entryPointFile = getEntryPointFile(); // Commented out as it's not used
   const [isCreatingFile, setIsCreatingFile] = useState(false);
   const [newFileName, setNewFileName] = useState("");
-  const { toast } = useToast();
 
   const getFileIcon = (fileName: string) => {
     const extension = fileName.split(".").pop()?.toLowerCase();
@@ -66,11 +65,7 @@ export function FileExplorer() {
 
   const handleCreateFile = () => {
     if (!newFileName.trim()) {
-      toast({
-        title: "Error",
-        description: "File name cannot be empty",
-        variant: "destructive",
-      });
+      toast.error("File name cannot be empty");
       return;
     }
 
@@ -132,8 +127,7 @@ export function FileExplorer() {
     setNewFileName("");
     setIsCreatingFile(false);
 
-    toast({
-      title: "File Created",
+    toast.success("File Created", {
       description: `${newFileName} has been created`,
     });
   };
@@ -141,8 +135,7 @@ export function FileExplorer() {
   const handleDeleteFile = (id: string, name: string) => {
     removeFile(id);
 
-    toast({
-      title: "File Deleted",
+    toast.success("File Deleted", {
       description: `${name} has been deleted`,
     });
   };
@@ -150,8 +143,7 @@ export function FileExplorer() {
   const handleSetEntryPoint = (id: string, name: string) => {
     setEntryPoint(id);
 
-    toast({
-      title: "Entry Point Set",
+    toast.success("Entry Point Set", {
       description: `${name} is now the entry point`,
     });
   };

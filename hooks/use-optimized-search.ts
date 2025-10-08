@@ -12,8 +12,8 @@ const SEARCH_OPTIONS = {
 
 export function useOptimizedSearch(initialPosts: BlogPost[]) {
   const [searchResults, setSearchResults] = useState<BlogPost[]>(initialPosts);
-  const fuseRef = useRef<Fuse<BlogPost>>();
-  const workerRef = useRef<Worker>();
+  const fuseRef = useRef<Fuse<BlogPost> | null>(null);
+  const workerRef = useRef<Worker | null>(null);
 
   useEffect(() => {
     fuseRef.current = new Fuse(initialPosts, SEARCH_OPTIONS);

@@ -69,8 +69,8 @@ const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
     );
 
     // Use refs to avoid circular dependencies
-    const handleMouseMoveRef = React.useRef<(event: MouseEvent) => void>();
-    const handleMouseUpRef = React.useRef<() => void>();
+    const handleMouseMoveRef = React.useRef<(event: MouseEvent) => void>(null);
+    const handleMouseUpRef = React.useRef<() => void>(null);
 
     // Define handleMouseMove
     const handleMouseMove = React.useCallback(
