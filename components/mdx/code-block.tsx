@@ -56,7 +56,7 @@ export function CodeBlock({
   };
 
   return (
-    <div className="relative group rounded-lg overflow-hidden border border-border bg-card/50 backdrop-blur-sm">
+    <div className="relative group rounded-lg overflow-hidden border border-border bg-card/50 backdrop-blur-xs">
       <div className="flex items-center justify-between p-3 bg-muted/30 border-b border-border">
         <div className="flex items-center gap-2">
           <Terminal className="h-4 w-4 text-primary" />
@@ -109,7 +109,7 @@ export function CodeBlock({
           ))}
         </pre>
 
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-linear-to-l from-background to-transparent pointer-events-none" />
       </div>
     </div>
   );

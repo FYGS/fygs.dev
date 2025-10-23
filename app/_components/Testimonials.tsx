@@ -103,7 +103,7 @@ export function Testimonials() {
   const currentTestimonial = TESTIMONIALS[currentIndex];
 
   return (
-    <section className="py-16 lg:py-24 bg-gradient-to-br from-muted/30 via-background to-muted/20">
+    <section className="py-16 lg:py-24 bg-linear-to-br from-muted/30 via-background to-muted/20">
       <div className="container max-w-7xl mx-auto px-4">
         
         {/* Header */}
@@ -113,7 +113,7 @@ export function Testimonials() {
               <Quote className="h-4 w-4" />
               Témoignages
             </div>
-            <h2 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent">
+            <h2 className="text-3xl lg:text-4xl font-bold bg-linear-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent">
               Ils ont transformé leur carrière
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -144,7 +144,7 @@ export function Testimonials() {
         {/* Testimonial Carousel */}
         <FadeInWhenVisible delay={0.2}>
           <div className="relative max-w-4xl mx-auto">
-            <Card className="border-0 shadow-2xl bg-gradient-to-br from-card via-card to-muted/10">
+            <Card className="border-0 shadow-2xl bg-linear-to-br from-card via-card to-muted/10">
               <CardContent className="p-8 lg:p-12">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
                   
@@ -199,7 +199,7 @@ export function Testimonials() {
                         <div className="text-sm text-muted-foreground">Avant</div>
                         <div className="font-medium">{currentTestimonial.beforeRole}</div>
                       </div>
-                      <div className="flex-1 h-px bg-gradient-to-r from-muted-foreground/50 to-primary/50" />
+                      <div className="flex-1 h-px bg-linear-to-r from-muted-foreground/50 to-primary/50" />
                       <div className="text-center">
                         <div className="text-sm text-muted-foreground">Après</div>
                         <div className="font-medium text-primary">{currentTestimonial.afterRole}</div>

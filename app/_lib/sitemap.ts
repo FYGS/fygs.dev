@@ -26,7 +26,7 @@ export async function generateSitemap(): Promise<Route[]> {
       priority: 1,
     },
     {
-      url: "https://fygs.dev/resume",
+      url: "https://fygs.dev/me",
       lastModified: new Date().toISOString(),
       changeFrequency: "monthly",
       priority: 0.8,

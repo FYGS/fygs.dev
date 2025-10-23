@@ -25,14 +25,14 @@ export function CallToAction() {
   return (
     <section className="py-16 lg:py-24 relative overflow-hidden">
       {/* Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-primary/5" />
+      <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-background to-primary/5" />
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl opacity-20" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl opacity-20" />
       
       <div className="container max-w-6xl mx-auto px-4 relative">
         <FadeInWhenVisible>
-          <Card className="border-0 shadow-2xl bg-gradient-to-br from-card via-card to-muted/20 overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5" />
+          <Card className="border-0 shadow-2xl bg-linear-to-br from-card via-card to-muted/20 overflow-hidden">
+            <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-primary/5" />
             
             <div className="relative p-8 lg:p-16">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -47,7 +47,7 @@ export function CallToAction() {
                     
                     <h2 className="text-3xl lg:text-4xl font-bold leading-tight">
                       Transformez votre carrière de{" "}
-                      <span className="bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+                      <span className="bg-linear-to-r from-primary to-primary/80 bg-clip-text text-transparent">
                         développeur
                       </span>
                     </h2>
@@ -63,7 +63,7 @@ export function CallToAction() {
                     {BENEFITS.map((benefit, index) => (
                       <FadeInWhenVisible key={benefit} delay={index * 0.1}>
                         <div className="flex items-center gap-3">
-                          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                          <div className="shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
                             <CheckCircle className="h-4 w-4 text-primary" />
                           </div>
                           <span className="text-foreground">{benefit}</span>
@@ -76,7 +76,7 @@ export function CallToAction() {
                   <div className="flex flex-col sm:flex-row gap-4">
                     <Button 
                       size="lg" 
-                      className="group hover:scale-105 transition-transform bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
+                      className="group hover:scale-105 transition-transform bg-linear-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
                       asChild
                     >
                       <Link href="/formations">
@@ -120,7 +120,7 @@ export function CallToAction() {
                 <div className="relative">
                   <div className="relative z-10">
                     {/* Main Card */}
-                    <Card className="p-6 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+                    <Card className="p-6 bg-linear-to-br from-primary/10 to-primary/5 border-primary/20">
                       <div className="space-y-4">
                         <div className="flex items-center gap-3">
                           <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
@@ -160,7 +160,7 @@ export function CallToAction() {
                   </div>
 
                   {/* Background Decoration */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent rounded-lg -rotate-3 scale-105" />
+                  <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent rounded-lg -rotate-3 scale-105" />
                 </div>
               </div>
             </div>

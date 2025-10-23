@@ -23,13 +23,13 @@ export function CoverImage({
 
   return (
     <div className={cn(
-      "relative aspect-[16/9] sm:aspect-[2/1] w-full overflow-hidden bg-background/50 rounded-lg",
+      "relative aspect-video sm:aspect-2/1 w-full overflow-hidden bg-background/50 rounded-lg",
       className
     )}>
       {/* Placeholder shimmer effect */}
       <div
         className={cn(
-          "absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent",
+          "absolute inset-0 bg-linear-to-r from-transparent via-primary/5 to-transparent",
           "animate-shimmer",
           imageLoading ? "opacity-100" : "opacity-0"
         )}

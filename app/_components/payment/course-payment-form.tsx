@@ -17,7 +17,7 @@ import {
   PlayCircle
 } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
-import { enrollCourse } from "@/app/(dashboard)/actions/enrollCourse";
+import { enrollCourse } from "@/app/(main)/dashboard/actions/enrollCourse";
 import { formatPrice as formatPriceCentral } from "@/lib/price-format";
 import { logger, createLogger } from "@/lib/structured-logger";
 import { Analytics } from "@/lib/analytics";
@@ -293,27 +293,27 @@ export function CoursePaymentForm({ course, isEnrolled = false, canPreview = fal
           <h4 className="font-semibold text-center">Cette formation inclut :</h4>
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <Check className="h-5 w-5 text-green-600 flex-shrink-0" />
+              <Check className="h-5 w-5 text-green-600 shrink-0" />
               <span className="text-sm">{totalHours}h de contenu vidéo HD</span>
             </div>
             <div className="flex items-center gap-3">
-              <Check className="h-5 w-5 text-green-600 flex-shrink-0" />
+              <Check className="h-5 w-5 text-green-600 shrink-0" />
               <span className="text-sm">Accès à vie sur tous vos appareils</span>
             </div>
             <div className="flex items-center gap-3">
-              <Check className="h-5 w-5 text-green-600 flex-shrink-0" />
+              <Check className="h-5 w-5 text-green-600 shrink-0" />
               <span className="text-sm">Certificat de completion</span>
             </div>
             <div className="flex items-center gap-3">
-              <Check className="h-5 w-5 text-green-600 flex-shrink-0" />
+              <Check className="h-5 w-5 text-green-600 shrink-0" />
               <span className="text-sm">Ressources téléchargeables</span>
             </div>
             <div className="flex items-center gap-3">
-              <Check className="h-5 w-5 text-green-600 flex-shrink-0" />
+              <Check className="h-5 w-5 text-green-600 shrink-0" />
               <span className="text-sm">Support communautaire</span>
             </div>
             <div className="flex items-center gap-3">
-              <Check className="h-5 w-5 text-green-600 flex-shrink-0" />
+              <Check className="h-5 w-5 text-green-600 shrink-0" />
               <span className="text-sm">Mises à jour gratuites</span>
             </div>
           </div>

@@ -1,13 +1,37 @@
-@tailwind components;
-
-@layer components {
-  .editor-monaco .monaco-editor,
-  .editor-monaco .monaco-editor .overflow-guard {
+@utility editor-monaco {
+  & .monaco-editor {
+    width: 100% !important;
+    height: 100% !important;
+  }
+  & .monaco-editor .overflow-guard {
     width: 100% !important;
     height: 100% !important;
   }
 
-  .editor-monaco .monaco-editor {
+  & .monaco-editor {
     background: transparent !important;
+  }
+}
+
+@utility monaco-editor {
+  .editor-monaco & {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .editor-monaco & .overflow-guard {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .editor-monaco & {
+    background: transparent !important;
+  }
+}
+
+@utility overflow-guard {
+  .editor-monaco .monaco-editor & {
+    width: 100% !important;
+    height: 100% !important;
   }
 }

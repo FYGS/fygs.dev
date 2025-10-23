@@ -50,7 +50,8 @@ const CourseCardStateService = {
     const activeSubscription = await db.subscription.findFirst({
       where: {
         userId,
-        status: 'ACTIVE'
+        status: 'ACTIVE',
+        cancelAtPeriodEnd: false
       }
     })
 

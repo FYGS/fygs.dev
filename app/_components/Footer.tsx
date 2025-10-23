@@ -13,7 +13,7 @@ import { Section } from "./Section";
 
 const FOOTER_LINKS = {
   information: [
-    { href: "/resume", label: "CV", description: "Mon parcours professionnel" },
+    { href: "/me", label: "CV", description: "Mon parcours professionnel" },
     { href: "/projects", label: "Projets", description: "Portfolio technique" },
     { href: "/blog", label: "Blog", description: "Articles & tutoriels" },
     { href: "/contact", label: "Contact", description: "Nous contacter" },
@@ -81,7 +81,7 @@ const FOOTER_LINKS = {
 export function Footer() {
   return (
     <footer className="relative bg-card border-t">
-      <div className="absolute inset-0 bg-gradient-to-b from-background/0 to-background/5 pointer-events-none" />
+      <div className="absolute inset-0 bg-linear-to-b from-background/0 to-background/5 pointer-events-none" />
 
       <Section className="relative pt-16 pb-8">
         {/* Main Footer Content - 4 Colonnes égales */}
@@ -126,7 +126,7 @@ export function Footer() {
                   href={href}
                   className="flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors"
                 >
-                  <Icon className="h-3 w-3 flex-shrink-0" />
+                  <Icon className="h-3 w-3 shrink-0" />
                   <span className="truncate">{label}</span>
                 </Link>
               ))}
@@ -136,7 +136,7 @@ export function Footer() {
           {/* Colonne 2: Information */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold flex items-center gap-2 pb-2 border-b">
-              <span className="w-2 h-2 rounded-full bg-gradient-to-r from-primary to-primary/60" />
+              <span className="w-2 h-2 rounded-full bg-linear-to-r from-primary to-primary/60" />
               Information
             </h3>
             <div className="space-y-2">
@@ -162,7 +162,7 @@ export function Footer() {
           {/* Colonne 3: Apprentissage */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold flex items-center gap-2 pb-2 border-b">
-              <span className="w-2 h-2 rounded-full bg-gradient-to-r from-primary to-primary/60" />
+              <span className="w-2 h-2 rounded-full bg-linear-to-r from-primary to-primary/60" />
               Apprentissage
             </h3>
             <div className="space-y-2">
@@ -188,7 +188,7 @@ export function Footer() {
           {/* Colonne 4: Projets Phares */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold flex items-center gap-2 pb-2 border-b">
-              <span className="w-2 h-2 rounded-full bg-gradient-to-r from-primary to-primary/60" />
+              <span className="w-2 h-2 rounded-full bg-linear-to-r from-primary to-primary/60" />
               Projets Phares
             </h3>
             <div className="space-y-3">
@@ -198,10 +198,10 @@ export function Footer() {
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group block p-3 rounded-xl bg-gradient-to-br from-muted/30 to-muted/10 border hover:border-primary/30 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]"
+                  className="group block p-3 rounded-xl bg-linear-to-br from-muted/30 to-muted/10 border hover:border-primary/30 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="p-1.5 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors flex-shrink-0">
+                    <div className="p-1.5 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors shrink-0">
                       <Icon className="h-4 w-4 text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -240,7 +240,7 @@ export function Footer() {
                 Confidentialité
               </Link>
               <span>•</span>
-              <Link href="/resume" className="hover:text-primary transition-colors">
+              <Link href="/me" className="hover:text-primary transition-colors">
                 CV
               </Link>
             </div>

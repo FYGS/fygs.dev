@@ -453,7 +453,7 @@ class EmailService {
                             'Retour sous 24-48h avec une proposition de rendez-vous'
                         ],
                         cta: 'Voir mon profil',
-                        ctaUrl: `${SITE_BASE_URL}/resume`
+                        ctaUrl: `${SITE_BASE_URL}/me`
                     };
                 case 'collaboration':
                     return {

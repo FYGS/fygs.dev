@@ -61,7 +61,7 @@ export default function NotFound() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-b from-background to-muted flex items-center justify-center p-4">
       <motion.div
         className="max-w-2xl mx-auto text-center space-y-8"
         variants={containerVariants}
@@ -70,7 +70,7 @@ export default function NotFound() {
       >
         {/* Animated 404 number */}
         <motion.div
-          className="text-9xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/50"
+          className="text-9xl font-bold bg-clip-text text-transparent bg-linear-to-r from-primary to-primary/50"
           variants={numberVariants}
         >
           404

@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest'
 import { db } from '@/lib/db'
-import { enrollCourse, type EnrollCourseResult } from '@/app/(dashboard)/actions/enrollCourse'
+import { enrollCourse, type EnrollCourseResult } from '@/app/(main)/dashboard/actions/enrollCourse'
 
 // Mock auth for testing
 vi.mock('@/lib/auth', () => ({

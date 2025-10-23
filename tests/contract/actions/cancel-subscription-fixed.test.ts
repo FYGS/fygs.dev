@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest'
 import { db } from '@/lib/db'
-import { cancelSubscription, type CancelSubscriptionResult } from '@/app/(dashboard)/actions/cancelSubscription'
+import { cancelSubscription, type CancelSubscriptionResult } from '@/app/(main)/dashboard/actions/cancelSubscription'
 import { createTestEnvironment } from '../../utils/test-database'
 import { mockAuthenticatedUser, AuthMock } from '../../utils/auth-mock'
 

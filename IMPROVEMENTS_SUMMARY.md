@@ -83,7 +83,7 @@
 
 ### **Design System Cohérent**
 - **Mobile-first** : Toutes les pages optimisées pour mobile
-- **Gradients** : `bg-gradient-to-br from-background via-background to-muted/20`
+- **Gradients** : `bg-linear-to-br from-background via-background to-muted/20`
 - **Centrage** : `max-w-7xl mx-auto` pour un contenu optimal
 - **Animations** : Transitions fluides et loading states
 

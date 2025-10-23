@@ -15,7 +15,7 @@ export function PremiumBadge({ className, variant = "default" }: PremiumBadgePro
       <Badge
         variant="secondary"
         className={cn(
-          "bg-gradient-to-r from-purple-100 to-indigo-100",
+          "bg-linear-to-r from-purple-100 to-indigo-100",
           "dark:from-purple-950/50 dark:to-indigo-950/50",
           "text-purple-700 dark:text-purple-300",
           "border-purple-200 dark:border-purple-800",
@@ -34,10 +34,10 @@ export function PremiumBadge({ className, variant = "default" }: PremiumBadgePro
     <Badge
       className={cn(
         "relative overflow-hidden",
-        "bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600",
+        "bg-linear-to-r from-purple-600 via-indigo-600 to-blue-600",
         "hover:from-purple-500 hover:via-indigo-500 hover:to-blue-500",
         "border-0 text-white font-medium",
-        "animate-gradient bg-[length:200%_auto]",
+        "animate-gradient bg-size-[200%_auto]",
         className
       )}
     >

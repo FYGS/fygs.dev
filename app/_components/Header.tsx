@@ -9,10 +9,10 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
+ SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { Menu, MoreHorizontal, ExternalLink } from "lucide-react";
+import { Menu, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import {
@@ -37,19 +37,16 @@ import { AuthNav } from "./auth-nav";
 // Primary navigation items (always visible)
 const PRIMARY_NAVIGATION = [
   { 
-    href: "/formations", 
-    label: "Formations",
-    description: "Cours premium de développement web"
+    href: "/me", 
+    label: "Resume"
   },
   { 
-    href: "/pricing", 
-    label: "Tarifs",
-    description: "Plans et abonnements"
+    href: "/formations", 
+    label: "Formations"
   },
   { 
     href: "/projects", 
-    label: "Projets",
-    description: "Portfolio et réalisations"
+    label: "Projets"
   }
 ] as const;
 
@@ -57,18 +54,15 @@ const PRIMARY_NAVIGATION = [
 const SECONDARY_NAVIGATION = [
   { 
     href: "/blog", 
-    label: "Blog",
-    description: "Articles et tutoriels"
+    label: "Blog"
   },
   { 
     href: "/tech-mastry", 
-    label: "TechMastry",
-    description: "Préparation entretiens techniques"
+    label: "TechMastry"
   },
   { 
     href: "/contact", 
-    label: "Contact",
-    description: "Nous contacter"
+    label: "Contact"
   }
 ] as const;
 
@@ -98,14 +92,17 @@ const SOCIAL_LINKS = [
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
 
+  // Include admin in navigation if user has admin access
+  const ALL_NAVIGATION = [...PRIMARY_NAVIGATION, ...SECONDARY_NAVIGATION];
+
   return (
     <>
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60">
         <div className="container flex h-16 items-center justify-between px-4 md:px-6">
           <nav className="flex items-center justify-between w-full" role="navigation" aria-label="Main navigation">
             <Link
               href="/"
-              className="text-lg md:text-2xl font-extrabold text-foreground tracking-wide hover:text-primary transition-colors whitespace-nowrap flex-shrink-0"
+              className="text-lg md:text-2xl font-extrabold text-foreground tracking-wide hover:text-primary transition-colors whitespace-nowrap shrink-0"
               aria-label="Go to homepage"
             >
               <span className="sr-only">FYGS.dev - Homepage</span>
@@ -114,41 +111,13 @@ export const Header = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-4">
-              {/* Primary Navigation */}
+              {/* All Navigation Items - Displayed directly instead of in dropdown */}
               {PRIMARY_NAVIGATION.map((item) => (
                 <NavItem key={item.href} href={item.href} label={item.label} />
               ))}
-
-              {/* More Menu Dropdown */}
-              <Tooltip>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <TooltipTrigger asChild>
-                        <button className={cn(
-                          buttonVariants({ variant: "ghost", size: "sm" }),
-                          "gap-1"
-                        )}>
-                          <MoreHorizontal className="h-4 w-4" />
-                          Plus
-                        </button>
-                      </TooltipTrigger>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuLabel>Navigation</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      {SECONDARY_NAVIGATION.map((item) => (
-                        <DropdownMenuItem key={item.href} asChild>
-                          <Link href={item.href} className="cursor-pointer">
-                            {item.label}
-                          </Link>
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                <TooltipContent>
-                  <p>Plus de pages : Blog, TechMastry, Contact</p>
-                </TooltipContent>
-              </Tooltip>
+              {SECONDARY_NAVIGATION.map((item) => (
+                <NavItem key={item.href} href={item.href} label={item.label} />
+              ))}
 
               <div className="flex items-center gap-2 ml-2 border-l pl-4 border-border">
                 <AuthNav />
@@ -196,12 +165,13 @@ export const Header = () => {
               <Sheet open={isOpen} onOpenChange={setIsOpen}>
                 <SheetTrigger
                   className={cn(
-                    buttonVariants({ variant: "ghost", size: "icon" }),
-                    "flex-shrink-0"
+                    buttonVariants({ variant: "outline", size: "icon" }),
+                    "shrink-0 relative overflow-hidden group"
                   )}
                   aria-label="Open menu"
                 >
-                  <Menu className="size-5" />
+                  <div className="absolute inset-0 bg-linear-to-r from-primary/10 to-secondary/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <Menu className="size-5 relative z-10" />
                 </SheetTrigger>
                 <SheetContent
                   side="right"
@@ -212,36 +182,58 @@ export const Header = () => {
                       Navigation
                     </SheetTitle>
                   </SheetHeader>
-                  <div className="flex flex-col py-4">
-                    {/* Main Navigation */}
-                    <div className="px-6 space-y-1">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                        Navigation principale
-                      </p>
-                      {[...PRIMARY_NAVIGATION, ...SECONDARY_NAVIGATION].map((item) => (
-                        <NavItem
-                          key={item.href}
-                          href={item.href}
-                          label={item.label}
-                          onClick={() => setIsOpen(false)}
-                          isMobile
-                        />
-                      ))}
-                    </div>
-                    
-                    
-                    {/* Authentication Section for Mobile */}
-                    <div className="border-t border-border mt-4 pt-4 px-6">
-                      <div className="mb-4">
-                        <AuthNav />
+                  <div className="flex flex-col h-full">
+                    <div className="flex-1 py-4 overflow-y-auto">
+                      {/* Main Navigation - Primary Items */}
+                      <div className="px-6 space-y-1 mb-6">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                          Navigation principale
+                        </p>
+                        <div className="space-y-1">
+                          {PRIMARY_NAVIGATION.map((item) => (
+                            <NavItem
+                              key={item.href}
+                              href={item.href}
+                              label={item.label}
+                              onClick={() => setIsOpen(false)}
+                              isMobile
+                            />
+                          ))}
+                        </div>
                       </div>
+                      
+                      {/* Secondary Navigation */}
+                      <div className="px-6 space-y-1 mb-6">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                          Autres pages
+                        </p>
+                        <div className="space-y-1">
+                          {SECONDARY_NAVIGATION.map((item) => (
+                            <NavItem
+                              key={item.href}
+                              href={item.href}
+                              label={item.label}
+                              onClick={() => setIsOpen(false)}
+                              isMobile
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* Authentication Section for Mobile */}
+                      <div className="px-6 mb-6">
+                        <div className="p-5 bg-linear-to-br from-primary/5 to-secondary/5 rounded-xl border border-border/30 shadow-xs">
+                          <AuthNav isMobile onItemClick={() => setIsOpen(false)} />
+                        </div>
+                      </div>
+                      
                     </div>
                     
-                    <div className="border-t border-border pt-4 px-6">
+                    <div className="px-6 py-4 border-t border-border bg-muted/20 mt-auto">
                       <p className="text-sm text-muted-foreground mb-3">
                         Suivez-moi
                       </p>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-col space-y-2">
                         {SOCIAL_LINKS.map(({ href, icon: Icon, label }) => (
                           <Link
                             key={href}
@@ -251,13 +243,13 @@ export const Header = () => {
                             className={cn(
                               buttonVariants({
                                 variant: "outline",
-                                size: "icon",
                               }),
-                              "size-9"
+                              "w-full justify-start"
                             )}
                             aria-label={label}
                           >
-                            <Icon className="size-4" />
+                            <Icon className="size-4 mr-2" />
+                            {label}
                           </Link>
                         ))}
                       </div>
@@ -270,7 +262,7 @@ export const Header = () => {
         </div>
       </header>
       <NavigationIndicator
-        items={[...PRIMARY_NAVIGATION, ...SECONDARY_NAVIGATION]}
+        items={ALL_NAVIGATION}
         className="z-40 hidden md:block"
       />
     </>

@@ -6,8 +6,8 @@ import { ArrowLeft, Home, Search } from "lucide-react";
 import Link from "next/link";
 
 export default function NotFound() {
-  // Animation variants pour les éléments
-  const containerVariants = {
+  // Animation variants for elements
+ const containerVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
@@ -24,7 +24,7 @@ export default function NotFound() {
     visible: { opacity: 1, y: 0 },
   };
 
-  // Animation pour le grand 404
+  // Animation for the big 404
   const numberVariants = {
     hidden: { scale: 0.5, opacity: 0 },
     visible: {
@@ -32,7 +32,7 @@ export default function NotFound() {
       opacity: 1,
       transition: {
         type: "spring",
-        stiffness: 100,
+        stiffness: 10,
         damping: 15,
       },
     },
@@ -46,7 +46,7 @@ export default function NotFound() {
         initial="hidden"
         animate="visible"
       >
-        {/* Nombre 404 animé */}
+        {/* Animated 404 number */}
         <motion.div
           className="text-9xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/50"
           variants={numberVariants}
@@ -54,7 +54,7 @@ export default function NotFound() {
           404
         </motion.div>
 
-        {/* Message principal */}
+        {/* Main message */}
         <motion.h1
           className="text-4xl font-bold tracking-tight"
           variants={itemVariants}
@@ -93,7 +93,7 @@ export default function NotFound() {
           </ul>
         </motion.div>
 
-        {/* Boutons d'action */}
+        {/* Action buttons */}
         <motion.div
           className="flex flex-wrap gap-4 justify-center"
           variants={itemVariants}
@@ -107,7 +107,7 @@ export default function NotFound() {
             <ArrowLeft className="w-4 h-4" />
             Retour
           </Button>
-          <Link href="/tech-mastry">
+          <Link href="/">
             <Button variant="secondary" size="lg" className="gap-2">
               <Home className="w-4 h-4" />
               Accueil

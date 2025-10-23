@@ -4,7 +4,6 @@ import { Card } from "@/components/ui/card";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
@@ -129,7 +128,7 @@ export function SocialInteractionsClient({
   return (
     <Card
       className={cn(
-        "p-4 backdrop-blur-sm bg-card/80 border-muted/50",
+        "p-4 backdrop-blur-xs bg-card/80 border-muted/50",
         variant === "large" && "p-6"
       )}
     >
@@ -137,8 +136,8 @@ export function SocialInteractionsClient({
         className="flex justify-center sm:justify-around gap-8 sm:gap-4"
         {...fadeIn}
       >
-        <TooltipProvider>
-          <Tooltip>
+        <>
+        <Tooltip>
             <TooltipTrigger asChild>
               <motion.button
                 {...scaleIn}
@@ -186,7 +185,7 @@ export function SocialInteractionsClient({
               <p>Share this article</p>
             </TooltipContent>
           </Tooltip>
-        </TooltipProvider>
+        </>
       </motion.div>
     </Card>
   );

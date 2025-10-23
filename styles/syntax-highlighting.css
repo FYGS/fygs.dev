@@ -1,98 +1,214 @@
-@tailwind components;
+@utility hljs {
+  @apply bg-muted p-4 rounded-lg overflow-x-auto;
+}
 
-@layer components {
-  .hljs {
-    @apply bg-muted p-4 rounded-lg overflow-x-auto;
-  }
+@utility hljs-comment {
+  @apply text-muted-foreground italic;
+}
 
-  .hljs-comment,
-  .hljs-quote {
-    @apply text-muted-foreground italic;
-  }
+@utility hljs-quote {
+  @apply text-muted-foreground italic;
+}
 
-  .hljs-keyword,
-  .hljs-selector-tag,
-  .hljs-subst {
-    @apply text-primary font-semibold;
-  }
+@utility hljs-keyword {
+  @apply text-primary font-semibold;
+}
 
-  .hljs-number,
-  .hljs-literal,
-  .hljs-variable,
-  .hljs-template-variable,
-  .hljs-built_in {
-    @apply text-orange-500;
-  }
+@utility hljs-selector-tag {
+  @apply text-primary font-semibold;
+}
 
-  .hljs-string,
-  .hljs-doctag,
-  .hljs-regexp {
-    @apply text-green-500;
-  }
+@utility hljs-subst {
+  @apply text-primary font-semibold;
+}
 
-  .hljs-title,
-  .hljs-section,
-  .hljs-selector-id {
-    @apply text-blue-500 font-semibold;
-  }
+@utility hljs-number {
+  @apply text-orange-500;
+}
 
-  .hljs-type,
-  .hljs-class .hljs-title {
+@utility hljs-literal {
+  @apply text-orange-500;
+}
+
+@utility hljs-variable {
+  @apply text-orange-500;
+}
+
+@utility hljs-template-variable {
+  @apply text-orange-500;
+}
+
+@utility hljs-built_in {
+  @apply text-orange-500;
+}
+
+@utility hljs-string {
+  @apply text-green-500;
+}
+
+@utility hljs-doctag {
+  @apply text-green-500;
+}
+
+@utility hljs-regexp {
+  @apply text-green-500;
+}
+
+@utility hljs-title {
+  @apply text-blue-500 font-semibold;
+
+  .hljs-class & {
     @apply text-yellow-500 font-semibold;
   }
+}
 
-  .hljs-tag,
-  .hljs-name,
-  .hljs-attribute {
-    @apply text-purple-500;
+@utility hljs-section {
+  @apply text-blue-500 font-semibold;
+}
+
+@utility hljs-selector-id {
+  @apply text-blue-500 font-semibold;
+}
+
+@utility hljs-type {
+  @apply text-yellow-500 font-semibold;
+}
+
+@utility hljs-class {
+  & .hljs-title {
+    @apply text-yellow-500 font-semibold;
   }
+}
 
-  .hljs-symbol,
-  .hljs-bullet {
-    @apply text-pink-500;
-  }
+@utility hljs-tag {
+  @apply text-purple-500;
+}
 
-  .hljs-addition {
-    @apply text-green-500 bg-green-500/10;
-  }
+@utility hljs-name {
+  @apply text-purple-500;
+}
 
-  .hljs-deletion {
-    @apply text-red-500 bg-red-500/10;
-  }
+@utility hljs-attribute {
+  @apply text-purple-500;
+}
 
-  .code-line-numbers {
-    @apply select-none text-muted-foreground text-sm pr-4 text-right;
-  }
+@utility hljs-symbol {
+  @apply text-pink-500;
+}
 
+@utility hljs-bullet {
+  @apply text-pink-500;
+}
+
+@utility hljs-addition {
+  @apply text-green-500 bg-green-500/10;
+}
+
+@utility hljs-deletion {
+  @apply text-red-500 bg-red-500/10;
+}
+
+@utility code-line-numbers {
+  @apply select-none text-muted-foreground text-sm pr-4 text-right;
+}
+
+@utility token {
   /* Styles pour la coloration syntaxique */
-  .token.comment,
-  .token.prolog,
-  .token.doctype,
-  .token.cdata {
+  &.comment {
+    @apply text-muted-foreground;
+  }
+  &.prolog {
+    @apply text-muted-foreground;
+  }
+  &.doctype {
+    @apply text-muted-foreground;
+  }
+  &.cdata {
     @apply text-muted-foreground;
   }
 
-  .token.function {
+  &.function {
     @apply text-primary;
   }
 
-  .token.keyword {
+  &.keyword {
     @apply text-pink-500;
   }
 
-  .token.string {
+  &.string {
     @apply text-green-500;
   }
 
-  .token.number {
+  &.number {
     @apply text-orange-500;
   }
 
-  .token.boolean {
+  &.boolean {
     @apply text-purple-500;
   }
 
-  .token.property {
+  &.property {
+    @apply text-blue-500;
+  }
+}
+
+@utility comment {
+  /* Styles pour la coloration syntaxique */
+  &.token {
+    @apply text-muted-foreground;
+  }
+}
+
+@utility prolog {
+  & .token {
+    @apply text-muted-foreground;
+  }
+}
+
+@utility doctype {
+  & .token {
+    @apply text-muted-foreground;
+  }
+}
+
+@utility cdata {
+  & .token {
+    @apply text-muted-foreground;
+  }
+}
+
+@utility function {
+  &.token {
+    @apply text-primary;
+  }
+}
+
+@utility keyword {
+  &.token {
+    @apply text-pink-500;
+  }
+}
+
+@utility string {
+  &.token {
+    @apply text-green-500;
+  }
+}
+
+@utility number {
+  &.token {
+    @apply text-orange-500;
+  }
+}
+
+@utility boolean {
+  &.token {
+    @apply text-purple-500;
+  }
+}
+
+@utility property {
+  &.token {
     @apply text-blue-500;
   }
 }

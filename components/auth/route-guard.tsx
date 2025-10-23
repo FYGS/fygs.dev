@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { Loader2 } from "lucide-react";
+import { Role } from "@prisma/client";
 
 interface RouteGuardProps {
   children: React.ReactNode;
   requireAuth?: boolean;
-  requireRole?: "STUDENT" | "INSTRUCTOR" | "ADMIN";
+  requireRole?: Role;
   fallbackUrl?: string;
 }
 
@@ -125,8 +126,8 @@ export function useAuthGuard() {
     user,
     isLoading,
     isAuthenticated: !!user,
-    isInstructor: user?.role === "INSTRUCTOR",
-    isAdmin: user?.role === "ADMIN",
-    isStudent: user?.role === "STUDENT" || !user?.role,
+    isInstructor: user?.role === Role.INSTRUCTOR,
+    isAdmin: user?.role === Role.ADMIN,
+    isStudent: user?.role === Role.STUDENT || !user?.role,
   };
 }

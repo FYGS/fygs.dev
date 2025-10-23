@@ -15,7 +15,7 @@ export function LoadingTransition({
   return (
     <motion.div
       className={cn(
-        "fixed inset-0 z-50 bg-background/80 backdrop-blur-sm",
+        "fixed inset-0 z-50 bg-background/80 backdrop-blur-xs",
         className
       )}
       initial={false}

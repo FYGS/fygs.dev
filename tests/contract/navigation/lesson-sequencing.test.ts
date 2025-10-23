@@ -95,7 +95,7 @@ class LessonNavigationService {
     // Premium courses require enrollment or active subscription
     if (user.enrollments.length > 0) return true
 
-    const hasActiveSubscription = user.subscriptions.some(sub => sub.status === 'ACTIVE')
+    const hasActiveSubscription = user.subscriptions.some(sub => sub.status === 'ACTIVE' && !sub.cancelAtPeriodEnd)
     return hasActiveSubscription
   }
 

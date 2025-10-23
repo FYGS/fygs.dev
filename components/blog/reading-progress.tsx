@@ -25,7 +25,7 @@ export function ReadingProgress() {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-4 right-4 bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg border border-muted/50"
+            className="fixed bottom-4 right-4 bg-card/80 backdrop-blur-xs p-4 rounded-lg shadow-lg border border-muted/50"
           >
             <div className="flex items-center gap-2 text-sm">
               <Timer className="h-4 w-4 text-primary" />

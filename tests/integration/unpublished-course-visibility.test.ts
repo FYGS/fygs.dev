@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest'
 import { db } from '@/lib/db'
-import { enrollCourse } from '@/app/(dashboard)/actions/enrollCourse'
+import { enrollCourse } from '@/app/(main)/dashboard/actions/enrollCourse'
 import { getCachedCourseList } from '@/lib/repositories/course-repository'
 import { AccessService } from '@/lib/access-service'
 

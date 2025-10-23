@@ -103,7 +103,7 @@ export function TableWithPagination<T>({
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-1">
-              <CardTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+              <CardTitle className="text-2xl font-bold bg-linear-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
                 {title}
               </CardTitle>
               {description && (
@@ -182,7 +182,7 @@ export function TableWithPagination<T>({
           {/* Table */}
           <div className="relative">
             {isLoading && (
-              <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
+              <div className="absolute inset-0 bg-background/50 backdrop-blur-xs z-10 flex items-center justify-center">
                 <LoadingSpinner size="lg" />
               </div>
             )}

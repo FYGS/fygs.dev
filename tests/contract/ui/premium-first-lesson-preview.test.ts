@@ -38,7 +38,7 @@ class PremiumPreviewService {
     if (user.enrollments.length > 0) return true
     
     // If has active subscription, can preview first lesson
-    const activeSubscription = user.subscriptions.find(sub => sub.status === 'ACTIVE')
+    const activeSubscription = user.subscriptions.find(sub => sub.status === 'ACTIVE' && !sub.cancelAtPeriodEnd)
     if (activeSubscription) return true
     
     // Otherwise, can still preview first lesson for PREMIUM courses

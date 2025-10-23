@@ -5,7 +5,7 @@ import {
   EXPERIENCE_ITEMS,
   PREFERENCES,
   SKILLS,
-} from "@/app/resume/data";
+} from "@/app/(main)/me/data";
 import type {
   Certification,
   Education,

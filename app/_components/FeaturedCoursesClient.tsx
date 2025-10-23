@@ -33,7 +33,7 @@ export function FeaturedCoursesClient({ courses }: FeaturedCoursesClientProps) {
               <Trophy className="h-4 w-4" />
               Formations Premium
             </div>
-            <h2 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent">
+            <h2 className="text-3xl lg:text-4xl font-bold bg-linear-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent">
               Formations les plus populaires
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">

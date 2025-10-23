@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { z } from "zod";
 import { createLogger } from "@/lib/structured-logger";
+import { SubscriptionStatus } from "@prisma/client";
 
 const updateProfileSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
@@ -105,6 +106,7 @@ export async function GET() {
           select: {
             status: true,
             currentPeriodEnd: true,
+            cancelAtPeriodEnd: true,
           },
           take: 1,
           orderBy: { createdAt: 'desc' },
@@ -182,8 +184,8 @@ export async function GET() {
       user: {
         ...user,
         subscriptions: undefined, // Remove from user object
-        enrollments: undefined,   // Remove from user object
-        progress: undefined,      // Remove from user object
+        enrollments: undefined, // Remove from user object
+        progress: undefined, // Remove from user object
         certificates: undefined, // Remove from user object
       },
       stats: {
@@ -193,8 +195,10 @@ export async function GET() {
         averageProgress,
       },
       recentEnrollments: user.enrollments,
-      hasActiveSubscription: user.subscriptions.length > 0 && 
-        user.subscriptions[0].status === 'ACTIVE',
+      hasActiveSubscription:
+        user.subscriptions.length > 0 &&
+        user.subscriptions[0].status === SubscriptionStatus.ACTIVE &&
+        !user.subscriptions[0].cancelAtPeriodEnd,
     });
 
   } catch (error) {

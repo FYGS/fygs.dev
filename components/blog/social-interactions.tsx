@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  handleLike,
-  handleShare,
-} from "../../app/blog/actions/social-interactions";
+import { handleLike, handleShare } from "@/app/(main)/blog/actions/social-interactions";
 import { SocialInteractionsClient } from "./social-interactions-client";
 
 interface SocialInteractionsProps {

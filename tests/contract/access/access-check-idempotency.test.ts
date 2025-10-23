@@ -48,7 +48,7 @@ class AccessCheckService {
     }
 
     // Check active subscription
-    const hasActiveSubscription = user.subscriptions.some(sub => sub.status === 'ACTIVE')
+    const hasActiveSubscription = user.subscriptions.some(sub => sub.status === 'ACTIVE' && !sub.cancelAtPeriodEnd)
     if (hasActiveSubscription) {
       return { hasAccess: true, reason: 'Active subscription' }
     }

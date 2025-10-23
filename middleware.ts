@@ -29,20 +29,21 @@ const PROTECTED_PREFIXES = [
   "/profile", 
   "/settings",
   "/certificates",
+  "/admin",
 ];
 
-const PUBLIC_PREFIXES = [
-  "/",
-  "/formations",
-  "/pricing",
-  "/blog", 
-  "/projects",
-  "/tech-mastry",
-  "/contact",
-  "/resume",
-  "/terms",
-  "/privacy",
-];
+// const PUBLIC_PREFIXES = [
+//   "/",
+//   "/formations",
+//   "/pricing",
+//   "/blog", 
+//   "/projects",
+//   "/tech-mastry",
+//   "/contact",
+//   "/me",
+//   "/terms",
+//   "/privacy",
+// ];
 
 // Utility: safe internal redirect (prevents open redirect)
 function buildInternalRedirect(base: string, target: string | null | undefined): URL | null {
@@ -66,9 +67,9 @@ function isProtectedRoute(path: string): boolean {
   return PROTECTED_PREFIXES.some(p => path === p || path.startsWith(p + '/'));
 }
 
-function isPublicRoute(path: string): boolean {
-  return PUBLIC_PREFIXES.some(p => path === p || path.startsWith(p + '/'));
-}
+// function isPublicRoute(path: string): boolean {
+//   return PUBLIC_PREFIXES.some(p => path === p || path.startsWith(p + '/'));
+// }
 
 // Determine if request should bypass middleware logic
 function shouldBypass(path: string): boolean {
@@ -119,7 +120,6 @@ export async function middleware(request: NextRequest) {
 
   // Get user session using Better Auth
   let userId: string | undefined;
-  let userRole: string | undefined;
 
   try {
     const session = await auth.api.getSession({
@@ -128,7 +128,6 @@ export async function middleware(request: NextRequest) {
 
     if (session?.user) {
       userId = session.user.id;
-      userRole = session.user.role as string;
     }
   } catch (error) {
     // Session resolution failed - treat as unauthenticated

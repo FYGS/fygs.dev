@@ -1,31 +1,95 @@
-@tailwind components;
+@utility animate-blob {
+  animation: blob 10s infinite;
+}
 
-/* Enhanced blob animations */
-@keyframes blob {
-  0% {
-    transform: translate(0px, 0px) scale(1);
+@utility animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+@utility animate-gradient {
+  /* Animated gradient background for badges */
+  animation: gradient 4s ease infinite;
+}
+
+@utility animation-delay-3000 {
+  animation-delay: 3s;
+}
+
+@utility animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+@utility animation-delay-100 {
+  /* Animation delays for dynamic programming page */
+  animation-delay: 100ms;
+}
+
+@utility animation-delay-200 {
+  animation-delay: 200ms;
+}
+
+@utility animation-delay-300 {
+  animation-delay: 300ms;
+}
+
+@utility animation-delay-500 {
+  animation-delay: 500ms;
+}
+
+@utility animation-delay-700 {
+  animation-delay: 700ms;
+}
+
+@utility animation-delay-1000 {
+  animation-delay: 1000ms;
+}
+
+@utility pulse-glow {
+  animation: pulse-glow 2s infinite;
+}
+
+@utility hover-scale {
+  /* Subtle hover effects */
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.02);
   }
-  33% {
-    transform: translate(30px, -50px) scale(1.1);
-  }
-  66% {
-    transform: translate(-20px, 20px) scale(0.9);
-  }
-  100% {
-    transform: translate(0px, 0px) scale(1);
+}
+
+@utility animate-fadeIn {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@utility futuristic-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid;
+  border-color: hsl(var(--primary) / 0.8) transparent hsl(var(--primary) / 0.2)
+    transparent;
+  border-radius: 50%;
+  animation: futuristic-spin 1.5s linear infinite;
+}
+
+@layer components {
+  /* Enhanced blob animations */
+  @keyframes blob {
+    0% {
+      transform: translate(0px, 0px) scale(1);
+    }
+    33% {
+      transform: translate(30px, -50px) scale(1.1);
+    }
+    66% {
+      transform: translate(-20px, 20px) scale(0.9);
+    }
+    100% {
+      transform: translate(0px, 0px) scale(1);
+    }
   }
 }
 
 @layer components {
-  .animate-blob {
-    animation: blob 10s infinite;
-  }
-
-  .animation-delay-2000 {
-    animation-delay: 2s;
-  }
-
-    /* Animated gradient background for badges */
     @keyframes gradient {
       0% {
         background-position: 0% 50%;
@@ -39,115 +103,52 @@
         background-position: 0% 50%;
       }
     }
-  
-    .animate-gradient {
-      animation: gradient 4s ease infinite;
+}
+@layer components {
+  /* Futuristic pulse effect */
+  @keyframes pulse-glow {
+    0% {
+      box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4);
     }
-  .animation-delay-3000 {
-    animation-delay: 3s;
-  }
-
-  .animation-delay-4000 {
-    animation-delay: 4s;
-  }
-
-  /* Animation delays for dynamic programming page */
-  .animation-delay-100 {
-    animation-delay: 100ms;
-  }
-
-  .animation-delay-200 {
-    animation-delay: 200ms;
-  }
-
-  .animation-delay-300 {
-    animation-delay: 300ms;
-  }
-
-  .animation-delay-500 {
-    animation-delay: 500ms;
-  }
-
-  .animation-delay-700 {
-    animation-delay: 700ms;
-  }
-
-  .animation-delay-1000 {
-    animation-delay: 1000ms;
+    70% {
+      box-shadow: 0 0 0 10px hsl(var(--primary) / 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 hsl(var(--primary) / 0);
+    }
   }
 }
-/* Futuristic pulse effect */
-@keyframes pulse-glow {
-  0% {
-    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 10px hsl(var(--primary) / 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 hsl(var(--primary) / 0);
+@layer components {
+  /* Fade in animation */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
 
 @layer components {
-  .pulse-glow {
-    animation: pulse-glow 2s infinite;
-  }
-
-  /* Subtle hover effects */
-  .hover-scale {
-    transition: transform 0.2s ease;
-  }
-
-  .hover-scale:hover {
-    transform: scale(1.02);
-  }
-}
-/* Fade in animation */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@layer components {
-  .animate-fadeIn {
-    animation: fadeIn 0.5s ease-out forwards;
-  }
-}
-
-/* Futuristic loading animation */
-@keyframes futuristic-spin {
-  0% {
-    transform: rotate(0deg);
-    border-color: hsl(var(--primary) / 0.8) transparent
-      hsl(var(--primary) / 0.2) transparent;
-  }
-  50% {
-    transform: rotate(180deg);
-    border-color: hsl(var(--primary) / 0.2) transparent
-      hsl(var(--primary) / 0.8) transparent;
-  }
-  100% {
-    transform: rotate(360deg);
-    border-color: hsl(var(--primary) / 0.8) transparent
-      hsl(var(--primary) / 0.2) transparent;
-  }
-}
-
-@layer components {
-  .futuristic-spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid;
-    border-color: hsl(var(--primary) / 0.8) transparent
-      hsl(var(--primary) / 0.2) transparent;
-    border-radius: 50%;
-    animation: futuristic-spin 1.5s linear infinite;
+  /* Futuristic loading animation */
+  @keyframes futuristic-spin {
+    0% {
+      transform: rotate(0deg);
+      border-color: hsl(var(--primary) / 0.8) transparent
+        hsl(var(--primary) / 0.2) transparent;
+    }
+    50% {
+      transform: rotate(180deg);
+      border-color: hsl(var(--primary) / 0.2) transparent
+        hsl(var(--primary) / 0.8) transparent;
+    }
+    100% {
+      transform: rotate(360deg);
+      border-color: hsl(var(--primary) / 0.8) transparent
+        hsl(var(--primary) / 0.2) transparent;
+    }
   }
 }

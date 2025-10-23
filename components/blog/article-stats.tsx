@@ -42,7 +42,7 @@ export function ArticleStats({
       className="md:sticky md:top-20 mb-6 md:mb-0"
       {...fadeIn}
     >
-      <Card className="p-4 backdrop-blur-sm bg-card/80 border-muted/50">
+      <Card className="p-4 backdrop-blur-xs bg-card/80 border-muted/50">
         <div className="grid grid-cols-2 gap-4 sm:gap-6">
           <motion.div
             className="flex items-center gap-2 group"

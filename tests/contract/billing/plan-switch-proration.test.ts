@@ -55,7 +55,7 @@ vi.mock('@/lib/auth', () => ({
 }))
 
 // Import plan switch action after mocking
-import { switchSubscriptionPlan } from '@/app/(dashboard)/actions/switchSubscriptionPlan'
+import { switchSubscriptionPlan } from '@/app/(main)/dashboard/actions/switchSubscriptionPlan'
 
 describe('T104: Plan Switch Proration Audit Tests', () => {
   const testEnv = createTestEnvironment()

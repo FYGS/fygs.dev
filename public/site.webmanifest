@@ -27,6 +27,11 @@
   "prefer_related_applications": false,
   "shortcuts": [
     {
+      "name": "Formations",
+      "url": "/formations",
+      "description": "Latest courses"
+    },
+    {
       "name": "Blog",
       "url": "/blog",
       "description": "Read my latest blog posts"
@@ -38,7 +43,7 @@
     },
     {
       "name": "Resume",
-      "url": "/resume",
+      "url": "/me",
       "description": "View my resume"
     }
   ]

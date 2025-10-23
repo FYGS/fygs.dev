@@ -7,7 +7,7 @@ import { Work, WORKS } from "./Work";
 export const Status = () => {
   return (
     <Section className="flex max-md:flex-col items-start gap-6">
-      <div className="flex-[3] w-full">
+      <div className="flex-3 w-full">
         <Card className="p-6 flex flex-col gap-4 w-full">
           <p className="text-xl text-muted-foreground font-semibold">
             Fun Side Projects
@@ -25,7 +25,7 @@ export const Status = () => {
           </div>
         </Card>
       </div>
-      <div className="flex-[2] flex flex-col gap-6 w-full">
+      <div className="flex-2 flex flex-col gap-6 w-full">
         <Card className="p-6 flex-1">
           <p className="text-xl text-muted-foreground font-semibold">Work</p>
           <div className="flex flex-col gap-6">

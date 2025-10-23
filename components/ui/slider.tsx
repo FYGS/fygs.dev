@@ -156,7 +156,7 @@ const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
           />
         </div>
         <div
-          className="absolute block h-4 w-4 rounded-full border border-primary/50 bg-background shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none"
+          className="absolute block h-4 w-4 rounded-full border border-primary/50 bg-background shadow-sm transition-colors focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none"
           style={{ left: `calc(${percentage}% - 0.5rem)` }}
         />
       </div>

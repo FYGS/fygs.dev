@@ -149,7 +149,7 @@ export function CourseProgressGrid({ initialData, refreshIntervalMs = 60000, ini
             )}
           > 
             {highlighted.has(c.courseId) && (
-              <span className="absolute -top-2 -right-2 bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-full shadow">
+              <span className="absolute -top-2 -right-2 bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-full shadow-sm">
                 Nouveau ✔
               </span>
             )}

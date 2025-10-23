@@ -17,7 +17,7 @@ export const ContactSection = () => {
         </Badge>
         <h2 className="pb-4 text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-tight">
           Travaillons ensemble sur votre{" "}
-          <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+          <span className="bg-linear-to-r from-primary to-primary/60 bg-clip-text text-transparent">
             prochain projet
           </span>
         </h2>
@@ -94,7 +94,7 @@ export const ContactSection = () => {
           </div>
 
           {/* Call to Action */}
-          <div className="p-6 rounded-lg bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
+          <div className="p-6 rounded-lg bg-linear-to-br from-primary/5 to-primary/10 border border-primary/20">
             <h4 className="font-semibold text-primary mb-2">Prêt à commencer ?</h4>
             <p className="text-sm text-muted-foreground mb-4">
               Décrivez votre projet dans le formulaire ci-contre et recevez une réponse personnalisée avec une estimation gratuite.

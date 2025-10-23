@@ -6,7 +6,6 @@ import { Card } from "@/components/ui/card";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { motion } from "framer-motion";
@@ -62,7 +61,7 @@ export const TimelineItem = ({
             {current && (
               <Badge
                 variant="outline"
-                className="text-primary border-primary transition-all duration-300 hover:scale-105 hover:shadow-sm"
+                className="text-primary border-primary transition-all duration-300 hover:scale-105 hover:shadow-xs"
               >
                 Current
               </Badge>
@@ -70,15 +69,14 @@ export const TimelineItem = ({
             {type && (
               <Badge
                 variant="secondary"
-                className="text-xs transition-all duration-300 hover:scale-105 hover:shadow-sm"
+                className="text-xs transition-all duration-300 hover:scale-105 hover:shadow-xs"
               >
                 {type}
               </Badge>
             )}
           </div>
           {context && (
-            <TooltipProvider>
-              <Tooltip>
+            <Tooltip>
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => setShowContext(!showContext)}
@@ -91,7 +89,6 @@ export const TimelineItem = ({
                   {showContext ? "Hide context" : "Show context"}
                 </TooltipContent>
               </Tooltip>
-            </TooltipProvider>
           )}
         </div>
 
@@ -150,7 +147,7 @@ export const TimelineItem = ({
           <Button
             variant="ghost"
             size="sm"
-            className="flex items-center gap-2 transition-all duration-300 hover:scale-105 hover:shadow-sm"
+            className="flex items-center gap-2 transition-all duration-300 hover:scale-105 hover:shadow-xs"
             onClick={() => setIsExpanded(!isExpanded)}
           >
             {isExpanded ? (
@@ -191,7 +188,7 @@ export const TimelineItem = ({
               <Badge
                 key={tech}
                 variant="outline"
-                className="text-xs transition-all duration-300 hover:scale-110 hover:shadow-sm hover:bg-primary/5"
+                className="text-xs transition-all duration-300 hover:scale-110 hover:shadow-xs hover:bg-primary/5"
               >
                 {tech}
               </Badge>

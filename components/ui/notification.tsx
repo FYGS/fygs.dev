@@ -44,13 +44,13 @@ export function Notification({ id, type, title, message, onClose }: Notification
       exit={{ opacity: 0, y: -50, scale: 0.95 }}
       transition={{ duration: 0.3, ease: [0.25, 0.25, 0, 1] }}
       className={cn(
-        "relative p-4 rounded-lg border shadow-lg backdrop-blur-sm",
+        "relative p-4 rounded-lg border shadow-lg backdrop-blur-xs",
         "max-w-sm w-full pointer-events-auto",
         config.className
       )}
     >
       <div className="flex items-start gap-3">
-        <Icon className="h-5 w-5 mt-0.5 flex-shrink-0" />
+        <Icon className="h-5 w-5 mt-0.5 shrink-0" />
         <div className="flex-1 min-w-0">
           <h4 className="font-semibold text-sm">{title}</h4>
           {message && (

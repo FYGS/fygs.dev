@@ -1,9 +1,9 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest'
 import { db } from '@/lib/db'
-import { enrollCourse } from '@/app/(dashboard)/actions/enrollCourse'
-import { updateLessonProgress } from '@/app/(dashboard)/actions/updateLessonProgress'
-import { cancelSubscription } from '@/app/(dashboard)/actions/cancelSubscription'
-import { issueCertificate } from '@/app/(dashboard)/actions/issueCertificate'
+import { enrollCourse } from '@/app/(main)/dashboard/actions/enrollCourse'
+import { updateLessonProgress } from '@/app/(main)/dashboard/actions/updateLessonProgress'
+import { cancelSubscription } from '@/app/(main)/dashboard/actions/cancelSubscription'
+import { issueCertificate } from '@/app/(main)/dashboard/actions/issueCertificate'
 import { AccessService } from '@/lib/access-service'
 
 // Mock auth for testing

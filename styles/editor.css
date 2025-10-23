@@ -1,20 +1,12 @@
-@tailwind components;
-
-@layer components {
-  .resizable-editor {
-    position: relative !important;
-    resize: both;
-    overflow: auto;
-    max-width: 100%;
-  }
-
-  .monaco-editor {
-    position: absolute !important;
-  }
+@utility resizable-editor {
+  position: relative !important;
+  resize: both;
+  overflow: auto;
+  max-width: 100%;
 
   /* Add a resize handle indicator */
-  .resizable-editor::after {
-    content: "";
+  &::after {
+    content: '';
     position: absolute;
     bottom: 0;
     right: 0;
@@ -28,10 +20,14 @@
     cursor: nwse-resize;
     z-index: 10;
   }
+}
 
+@utility monaco-editor {
+  position: absolute !important;
+}
+
+@utility editor-monaco {
   /* Ensure the editor container has a minimum size */
-  .editor-monaco {
-    min-width: 300px;
-    min-height: 200px;
-  }
+  min-width: 300px;
+  min-height: 200px;
 }

@@ -105,7 +105,7 @@ export function CourseAccessControl({
   return (
     <div className="space-y-4">
       {/* Premium Option */}
-      <div className="border-2 border-purple-200 rounded-lg p-4 bg-gradient-to-r from-purple-50 to-blue-50">
+      <div className="border-2 border-purple-200 rounded-lg p-4 bg-linear-to-r from-purple-50 to-blue-50">
         <div className="flex items-center gap-2 mb-2">
           <Crown className="h-5 w-5 text-purple-600" />
           <span className="font-semibold text-purple-900">Recommandé</span>
@@ -113,7 +113,7 @@ export function CourseAccessControl({
         <div className="text-sm text-purple-700 mb-3">
           <strong>Inclus avec FYGS Premium</strong> + accès à toutes les autres formations
         </div>
-        <Button asChild className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+        <Button asChild className="w-full bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
           <Link href="/pricing">
             <Crown className="h-4 w-4 mr-2" />
             Devenir Premium

@@ -1,7 +1,7 @@
 "use client";
 
+import { getPostStats } from "@/app/(main)/blog/actions/stats";
 import { createContext, useContext, useState } from "react";
-import { getPostStats } from "../../app/blog/actions/stats";
 
 interface StatsContextType {
   getStats: (slug: string) => Promise<{

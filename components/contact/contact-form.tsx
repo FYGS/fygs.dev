@@ -133,9 +133,9 @@ export function ContactForm() {
   const TypeIcon = typeInfo.icon;
 
   return (
-    <Card className="p-6 shadow-lg border-0 bg-gradient-to-br from-card via-card to-muted/20 hover:shadow-xl transition-all duration-300">
+    <Card className="p-6 shadow-lg border-0 bg-linear-to-br from-card via-card to-muted/20 hover:shadow-xl transition-all duration-300">
       <div className="mb-6">
-        <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+        <h3 className="text-2xl font-bold mb-2 bg-linear-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
           Contactez-moi
         </h3>
         <p className="text-muted-foreground">

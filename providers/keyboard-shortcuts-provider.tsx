@@ -25,7 +25,7 @@ export function KeyboardShortcutsProvider({
     },
     {
       key: "r",
-      action: () => router.push("/resume"),
+      action: () => router.push("/me"),
       description: "Go to Resume",
     },
     {

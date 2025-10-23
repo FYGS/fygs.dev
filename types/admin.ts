@@ -1,10 +1,10 @@
 // Admin type definitions for better TypeScript support
-import { CourseCategory, CourseLevel, CourseAccessTier, User } from "@prisma/client";
+import { CourseCategory, CourseLevel, CourseAccessTier, Role } from "@prisma/client";
 
 // Session types
 export interface SessionUser {
   id: string;
-  role: 'ADMIN' | 'INSTRUCTOR' | 'STUDENT';
+  role: Role;
   email: string;
   name: string;
 }

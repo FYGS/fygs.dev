@@ -3,6 +3,7 @@
  * Assure la cohérence et la sécurité des données avant rendu
  */
 
+import { CourseCategory, CourseLevel, Role } from "@prisma/client";
 import { safeNumber } from "./serialization-utils";
 
 /**
@@ -84,8 +85,8 @@ export function validateCourseData(courses: any[]): Array<{
       title: String(course.title || 'Cours sans titre'),
       slug: String(course.slug || ''),
       price: safeNumber(course.price),
-      level: String(course.level || 'BEGINNER'),
-      category: String(course.category || 'GENERAL'),
+      level: String(course.level || CourseLevel.BEGINNER),
+      category: String(course.category || CourseCategory.PRODUCTIVITY),
       enrollmentCount: safeNumber(course.enrollmentCount),
       averageRating: Math.max(0, Math.min(5, safeNumber(course.averageRating))), // Entre 0 et 5
       totalRevenue: safeNumber(course.totalRevenue),
@@ -119,7 +120,7 @@ export function validateUserData(users: any[]): Array<{
       id: String(user.id),
       name: String(user.name || 'Utilisateur'),
       email: String(user.email),
-      role: String(user.role || 'STUDENT'),
+      role: String(user.role || Role.STUDENT),
       image: user.image ? String(user.image) : null,
       createdAt: user.createdAt instanceof Date 
         ? user.createdAt.toISOString() 

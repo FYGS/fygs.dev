@@ -2,7 +2,6 @@
 
 import { useContextualCommands } from "@/hooks/use-contextual-commands";
 import { useRouter } from "next/navigation";
-import { useTheme } from "./theme-provider";
 
 export function ContextualCommandsProvider({
   children,
@@ -10,7 +9,6 @@ export function ContextualCommandsProvider({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { setTheme } = useTheme();
 
   // Commandes globales et contextuelles
   useContextualCommands([
@@ -78,7 +76,7 @@ export function ContextualCommandsProvider({
       category: "Resume",
       shortcut: ["D", "R"],
       keywords: ["resume", "cv", "download", "pdf"],
-      context: "/resume",
+      context: "/me",
       action: () => {
         window.open("/Fernand_SOUALO_Resume.pdf", "_blank");
       },
@@ -89,7 +87,7 @@ export function ContextualCommandsProvider({
       category: "Resume",
       shortcut: ["C", "C"],
       keywords: ["resume", "contact", "copy"],
-      context: "/resume",
+      context: "/me",
       action: () => {
         navigator.clipboard.writeText("fygs.dev@gmail.com");
       },

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
-import { updateLessonProgress } from '@/app/(dashboard)/actions/updateLessonProgress';
+import { updateLessonProgress } from '@/app/(main)/dashboard/actions/updateLessonProgress';
 import { logger, createLogger } from '@/lib/structured-logger';
 import { Analytics } from '@/lib/analytics';
 

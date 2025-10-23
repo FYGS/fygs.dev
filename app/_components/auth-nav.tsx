@@ -15,6 +15,7 @@ import { User, Settings, LogOut, BookOpen, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "@/lib/auth-client";
 import { authService } from "@/lib/auth-service";
+import { useAdminAccess } from "@/lib/user-access";
 
 interface AppUser {
   id: string;
@@ -31,6 +32,7 @@ interface AuthNavProps {
 export function AuthNav({ isMobile = false, onItemClick }: AuthNavProps) {
   const { data: session, isPending } = useSession();
   const user: AppUser | null = useMemo(() => session?.user ?? null, [session]);
+  const { hasAdminAccess } = useAdminAccess();
 
   if (isPending) {
     return (
@@ -41,11 +43,11 @@ export function AuthNav({ isMobile = false, onItemClick }: AuthNavProps) {
   if (!user) {
     if (isMobile) {
       return (
-        <div className="space-y-2">
-          <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
+        <div className="space-y-3 w-full">
+          <Button variant="outline" size="lg" className="w-full justify-center" asChild>
             <Link href="/auth/login" onClick={onItemClick}>Connexion</Link>
           </Button>
-          <Button size="sm" className="w-full" asChild>
+          <Button size="lg" className="w-full" asChild>
             <Link href="/auth/register" onClick={onItemClick}>S&apos;inscrire</Link>
           </Button>
         </div>
@@ -67,10 +69,10 @@ export function AuthNav({ isMobile = false, onItemClick }: AuthNavProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+        <Button variant="ghost" className="relative h-8 w-8 rounded-full hover:bg-accent transition-all duration-20">
           <Avatar className="h-8 w-8">
             <AvatarImage src={user.image || ""} alt={user.name || ""} />
-            <AvatarFallback>
+            <AvatarFallback className="bg-primary/10 text-primary font-semibold transition-all duration-200 group-hover:bg-primary/20">
               {user.name?.charAt(0)?.toUpperCase() || <User className="h-4 w-4" />}
             </AvatarFallback>
           </Avatar>
@@ -110,6 +112,15 @@ export function AuthNav({ isMobile = false, onItemClick }: AuthNavProps) {
             <span>Facturation</span>
           </Link>
         </DropdownMenuItem>
+        {/* Show Admin link if user has admin access */}
+        {hasAdminAccess && (
+          <DropdownMenuItem asChild>
+            <Link href="/admin" className="cursor-pointer" onClick={onItemClick}>
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Admin</span>
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="cursor-pointer"

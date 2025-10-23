@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest'
 import { db } from '@/lib/db'
-import { updateLessonProgress, type UpdateLessonProgressResult } from '@/app/(dashboard)/actions/updateLessonProgress'
+import { updateLessonProgress, type UpdateLessonProgressResult } from '@/app/(main)/dashboard/actions/updateLessonProgress'
 
 // Mock auth for testing
 vi.mock('@/lib/auth', () => ({

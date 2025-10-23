@@ -15,10 +15,10 @@ export default function Error({
 }) {
   useEffect(() => {
     console.error(error);
-  }, [error]);
+ }, [error]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-b from-background to-muted flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -60,10 +60,10 @@ export default function Error({
             <RefreshCcw className="w-4 h-4" />
             Réessayer
           </Button>
-          <Link href="/tech-mastry">
+          <Link href="/">
             <Button variant="secondary" size="lg" className="gap-2">
               <Home className="w-4 h-4" />
-              Retour à l&apos;accueil
+              Accueil
             </Button>
           </Link>
         </div>

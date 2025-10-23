@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Copy, Facebook, Linkedin, Twitter } from "lucide-react";
@@ -37,8 +36,7 @@ export function ShareButtons({ url, title }: ShareButtonsProps) {
   };
 
   return (
-    <TooltipProvider>
-      <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2">
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -87,6 +85,5 @@ export function ShareButtons({ url, title }: ShareButtonsProps) {
           <TooltipContent>{copied ? "Copied!" : "Copy link"}</TooltipContent>
         </Tooltip>
       </div>
-    </TooltipProvider>
   );
 }

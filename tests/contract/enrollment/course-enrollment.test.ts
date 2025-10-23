@@ -31,7 +31,7 @@ vi.mock('@/lib/auth', () => ({
 }))
 
 // Import enrollment action after mocking
-const { enrollCourse } = await import('@/app/(dashboard)/actions/enrollCourse')
+const { enrollCourse } = await import('@/app/(main)/dashboard/actions/enrollCourse')
 
 describe('T103: Course Enrollment Contract Tests', () => {
   const testEnv = createTestEnvironment()

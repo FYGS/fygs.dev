@@ -3,6 +3,7 @@
  * Convertit les types Decimal, BigInt et Date en types sérialisables pour les Client Components
  */
 
+import { SubscriptionStatus } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
 
 /**
@@ -106,8 +107,8 @@ export function serializeUser(user: any) {
     enrollmentsCount: user.enrollments?.length || 0,
     totalSpent: user.payments?.reduce((sum: number, payment: any) => sum + safeNumber(payment.amount), 0) || 0,
     completedLessons: user.progress?.filter((p: any) => p.completed).length || 0,
-    hasActiveSubscription: user.subscriptions?.some((sub: any) => sub.status === "ACTIVE") || false,
-    lastEnrollment: user.enrollments?.length > 0 
+    hasActiveSubscription: user.subscriptions?.some((sub: any) => sub.status === SubscriptionStatus.ACTIVE && !sub.cancelAtPeriodEnd) || false,
+    lastEnrollment: user.enrollments?.length > 0
       ? user.enrollments.sort((a: any, b: any) => new Date(b.enrolledAt).getTime() - new Date(a.enrolledAt).getTime())[0].enrolledAt.toISOString()
       : null,
   };

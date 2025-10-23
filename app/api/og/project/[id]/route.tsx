@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { FEATURED_PROJECTS } from "../../../../projects/data";
+import { FEATURED_PROJECTS } from "../../../../(main)/projects/data";
 
 export async function GET(
   request: Request,

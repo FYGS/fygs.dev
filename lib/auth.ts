@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { db } from "./db";
 import { emailService } from "./email-service";
+import { Role } from "@prisma/client";
 
 export const auth = betterAuth({
   database: prismaAdapter(db, {
@@ -41,7 +42,7 @@ export const auth = betterAuth({
       role: {
         type: "string",
         required: false,
-        defaultValue: "STUDENT",
+        defaultValue: Role.STUDENT,
         input: false, // hide from sign up form
       },
     },

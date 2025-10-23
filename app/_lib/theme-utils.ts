@@ -27,9 +27,9 @@ export function createGlassStyle(
 export const glassCard = cn(
   "relative overflow-hidden transition-all",
   "before:absolute before:inset-0",
-  "before:bg-gradient-to-br before:from-white/10 before:to-white/5",
+  "before:bg-linear-to-br before:from-white/10 before:to-white/5",
   "before:rounded-[inherit] before:-z-10",
   "after:absolute after:inset-0",
-  "after:bg-gradient-to-br after:from-white/10 after:to-transparent",
+  "after:bg-linear-to-br after:from-white/10 after:to-transparent",
   "after:rounded-[inherit] after:-z-10"
 );

@@ -134,7 +134,7 @@ La plateforme FYGS Learning Platform a été entièrement finalisée et optimis�
 ```typescript
 // Routes publiques
 - /, /formations, /pricing, /blog, /projects
-- /tech-mastry, /contact, /resume, /terms, /privacy
+- /tech-mastry, /contact, /me, /terms, /privacy
 
 // Routes protégées (auth requise)
 - /dashboard, /profile, /billing, /certificates

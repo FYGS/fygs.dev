@@ -1,4 +1,3 @@
-// import { AutoLoader } from "@/components/auto-loader";
 import { NavigationProgress } from "@/components/ui/navigation-progress";
 import { PageTransition } from "@/components/ui/page-transition";
 import { cn } from "@/lib/utils";
@@ -12,13 +11,9 @@ import { GeistSans } from "geist/font/sans";
 import { Metadata } from "next";
 import { Anek_Telugu } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
-import { Footer } from "./_components/Footer";
-import { Header } from "./_components/Header";
 import { JsonLd } from "./_components/JsonLd";
-import { Spacing } from "./_components/Spacing";
 import { SITE_URL } from "./_lib/constants";
 import "./globals.css";
-import { MonacoInit } from "./tech-mastry/playground/_components/monaco-init";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { NotificationProvider } from "@/components/providers/notification-provider";
@@ -29,7 +24,7 @@ const AnekTelugu = Anek_Telugu({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
+ metadataBase: new URL(SITE_URL),
 };
 
 export default function RootLayout({
@@ -49,7 +44,7 @@ export default function RootLayout({
               const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
               const greenColor = isDarkMode ? '#00FF00' : '#008000';
               const purpleColor = isDarkMode ? '#FF00FF' : '#800080';
-              const blueColor = isDarkMode ? '#00FFFF' : '#000080';
+              const blueColor = isDarkMode ? '#00FFFF' : '#00080';
               const redColor = isDarkMode ? '#FF0000' : '#800000';
 
               console.log(\`%cHello, curious developer! 👋\`, \`font-size: 20px; font-weight: bold; color: \${greenColor};\`);
@@ -97,25 +92,36 @@ export default function RootLayout({
             <NavigationProgress />
             <TransitionProvider>
               <TooltipProvider>
-              <PageTransition>
-                <main>
-                  <Header />
-                  <Spacing size="md" />
-                  <NuqsAdapter>{children}</NuqsAdapter>
-                  <Toaster richColors closeButton />
-                  <Spacing size="md" />
-                  <Footer />
-                  <Analytics />
-                  <SpeedInsights />
-                  {/* <AutoLoader /> */}
-                  <MonacoInit />
-                </main>
-              </PageTransition>
-              <NotificationProvider />
+                <PageTransition>
+                  <main>
+                    <NuqsAdapter>{children}</NuqsAdapter>
+                    <Toaster richColors closeButton />
+                  </main>
+                </PageTransition>
+                <NotificationProvider />
               </TooltipProvider>
             </TransitionProvider>
           </PageMemoryProvider>
         </ThemeProvider>
+        <Analytics />
+        <SpeedInsights />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                      console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(function(error) {
+                      console.log('ServiceWorker registration failed: ', error);
+                    });
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );

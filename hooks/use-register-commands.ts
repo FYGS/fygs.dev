@@ -50,7 +50,7 @@ export function useRegisterCommands() {
         category: "Navigation",
         shortcut: ["G", "R"],
         keywords: ["resume", "cv", "experience"],
-        action: () => router.push("/resume"),
+        action: () => router.push("/me"),
       },
       {
         id: "navigation.blog",

@@ -197,14 +197,14 @@ export function SubscriptionPlans({ currentPlan = 'free', hasYearly = false, def
               <div className="space-y-3">
                 {plan.features.map((feature, index) => (
                   <div key={index} className="flex items-start gap-3">
-                    <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
                     <span className="text-sm">{feature}</span>
                   </div>
                 ))}
                 
                 {plan.limitations && plan.limitations.map((limitation, index) => (
                   <div key={index} className="flex items-start gap-3 opacity-60">
-                    <div className="h-5 w-5 flex-shrink-0 mt-0.5 flex items-center justify-center">
+                    <div className="h-5 w-5 shrink-0 mt-0.5 flex items-center justify-center">
                       <div className="h-2 w-2 bg-muted-foreground rounded-full" />
                     </div>
                     <span className="text-sm text-muted-foreground line-through">

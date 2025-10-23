@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest'
 import { db } from '@/lib/db'
-import { issueCertificate, type IssueCertificateResult } from '@/app/(dashboard)/actions/issueCertificate'
+import { issueCertificate, type IssueCertificateResult } from '@/app/(main)/dashboard/actions/issueCertificate'
 
 // Mock auth for testing
 vi.mock('@/lib/auth', () => ({

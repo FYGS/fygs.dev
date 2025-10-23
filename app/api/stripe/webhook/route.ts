@@ -2,17 +2,23 @@ import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { paymentService } from "@/lib/payment-service";
 import { db } from "@/lib/db";
-import { SubscriptionPlan } from "@prisma/client";
+import {
+  Prisma,
+  SubscriptionPlan,
+  PaymentStatus,
+  PaymentKind,
+  SubscriptionStatus,
+} from "@prisma/client";
 import { emailService } from "@/lib/email-service";
 import { Analytics } from "@/lib/analytics";
 import { classifyBillingCycle } from "@/lib/subscription-pricing";
 import { createLogger } from "@/lib/structured-logger";
 
 // Disable body parsing for webhooks
-export const runtime = 'nodejs';
+export const runtime = "nodejs";
 
 // Create logger for webhook processing
-const logger = createLogger({ operation: 'stripe-webhook' });
+const logger = createLogger({ operation: "stripe-webhook" });
 
 export async function POST(req: NextRequest) {
   let body: string;
@@ -25,24 +31,28 @@ export async function POST(req: NextRequest) {
 
     if (!signature) {
       logger.error("Missing Stripe signature in webhook request", {
-        eventType: 'webhook.signature_missing'
+        eventType: "webhook.signature_missing",
       });
       return NextResponse.json({ error: "Missing signature" }, { status: 400 });
     }
   } catch (error) {
-    logger.error("Error reading webhook request", {
-      eventType: 'webhook.request_read_error'
-    }, error instanceof Error ? error : new Error(String(error)));
+    logger.error(
+      "Error reading webhook request",
+      {
+        eventType: "webhook.request_read_error",
+      },
+      error instanceof Error ? error : new Error(String(error))
+    );
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
   try {
     const event = paymentService.verifyWebhookSignature(body, signature);
     logger.info("Processing Stripe webhook event", {
-      eventType: 'webhook.event_received',
-      resourceType: 'stripe_event',
+      eventType: "webhook.event_received",
+      resourceType: "stripe_event",
       resourceId: event.id,
-      metadata: { type: event.type }
+      metadata: { type: event.type },
     });
 
     // Handle the event with proper error handling for each case
@@ -51,25 +61,125 @@ export async function POST(req: NextRequest) {
       case "checkout.session.completed": {
         try {
           const session = event.data.object;
-          
+
+          // Add better diagnostics for checkout session
+          logger.info("Processing checkout.session.completed", {
+            resourceId: session.id,
+            resourceType: "checkout_session",
+            metadata: {
+              paymentStatus: session.payment_status,
+              hasMetadata: !!session.metadata,
+              sessionMetadata: session.metadata || {},
+              hasSubscription: !!session.subscription,
+              mode: session.mode,
+              invoice: session.invoice || null,
+              customer:
+                typeof session.customer === "string"
+                  ? session.customer
+                  : typeof session.customer === "object"
+                  ? session.customer?.id
+                  : null,
+              createdAt: new Date(session.created * 1000).toISOString(),
+              hasPaymentIntent: !!session.payment_intent,
+            },
+          });
+
+          // Double-check payment status before processing
           if (session.payment_status === "paid") {
-            await paymentService.handlePaymentSuccess(session);
-            
-            // Send email based on purchase type
+            // Webhook is the single source of truth for payment success
+            try {
+              // Handle payment success with proper error catching
+              await paymentService.handlePaymentSuccess(session);
+
+              // Log successful payment processing
+              logger.info("Successfully processed payment", {
+                resourceId: session.id,
+                resourceType: "checkout_session",
+                metadata: {
+                  subscription: session.subscription || null,
+                  customer: session.customer || null,
+                  paymentStatus: session.payment_status,
+                  mode: session.mode,
+                },
+              });
+            } catch (paymentError) {
+              logger.error("Failed in handlePaymentSuccess", {
+                resourceId: session.id,
+                resourceType: "checkout_session",
+                metadata: {
+                  error:
+                    paymentError instanceof Error
+                      ? paymentError.message
+                      : String(paymentError),
+                  errorStack:
+                    paymentError instanceof Error
+                      ? paymentError.stack
+                      : undefined,
+                  sessionData: {
+                    id: session.id,
+                    mode: session.mode,
+                    paymentStatus: session.payment_status,
+                    hasSubscription: !!session.subscription,
+                    hasPaymentIntent: !!session.payment_intent,
+                  },
+                },
+              });
+              throw paymentError; // Re-throw to retry
+            }
+
+            // Extract metadata once to avoid redeclaration
             const { userId, productId, type } = session.metadata || {};
+
+            // Explicitly ensure subscription status is updated to ACTIVE for subscription checkouts
+            if (userId && type === "subscription" && session.subscription) {
+              try {
+                // Double-check that subscription status is properly set to ACTIVE
+                await db.subscription.updateMany({
+                  where: {
+                    userId,
+                    status: SubscriptionStatus.INCOMPLETE, // Only update if still in INCOMPLETE status
+                  },
+                  data: {
+                    status: SubscriptionStatus.ACTIVE,
+                  },
+                });
+                logger.info(
+                  "Subscription status explicitly updated to ACTIVE",
+                  {
+                    userId,
+                    resourceType: "subscription",
+                    resourceId: session.subscription as string,
+                  }
+                );
+              } catch (subscriptionError) {
+                logger.error(
+                  "Failed to update subscription status",
+                  {
+                    eventType: "webhook.subscription_update_error",
+                    userId,
+                    resourceType: "subscription",
+                  },
+                  subscriptionError instanceof Error
+                    ? subscriptionError
+                    : new Error(String(subscriptionError))
+                );
+              }
+            }
+
+            // Send email based on purchase type
             if (userId) {
               try {
                 const user = await db.user.findUnique({
                   where: { id: userId },
                   select: { email: true, name: true },
                 });
-                
+
                 if (user) {
                   if (type === "course_purchase" && productId) {
                     // Individual course purchase email
                     const course = await db.course.findUnique({
                       where: { id: productId },
-                      select: { title: true, description: true },
+                      select: { title: true, description: true, slug: true },
                     });
 
                     if (course) {
@@ -77,15 +187,20 @@ export async function POST(req: NextRequest) {
                         user.name || "Étudiant",
                         user.email,
                         course.title,
-                        productId,
-                        session.amount_total ? session.amount_total / 100 : undefined
+                        course.slug,
+                        session.amount_total
+                          ? session.amount_total / 100
+                          : undefined
                       );
                       logger.info("Course purchase email sent", {
-                        eventType: 'email.course_purchase_sent',
+                        eventType: "email.course_purchase_sent",
                         userId,
-                        resourceType: 'course',
+                        resourceType: "course",
                         resourceId: productId,
-                        metadata: { courseTitle: course.title, userEmail: user.email }
+                        metadata: {
+                          courseTitle: course.title,
+                          userEmail: user.email,
+                        },
                       });
                     }
                   } else if (type === "premium_subscription") {
@@ -98,63 +213,111 @@ export async function POST(req: NextRequest) {
                       "monthly"
                     );
                     logger.info("Premium subscription email sent", {
-                      eventType: 'email.subscription_welcome_sent',
+                      eventType: "email.subscription_welcome_sent",
                       userId,
-                      resourceType: 'subscription',
-                      metadata: { userEmail: user.email }
+                      resourceType: "subscription",
+                      metadata: { userEmail: user.email },
                     });
                   }
                 }
               } catch (emailError) {
-                logger.error("Error sending purchase email", {
-                  eventType: 'email.send_error',
-                  userId,
-                  resourceType: 'email'
-                }, emailError instanceof Error ? emailError : new Error(String(emailError)));
+                logger.error(
+                  "Error sending purchase email",
+                  {
+                    eventType: "email.send_error",
+                    userId,
+                    resourceType: "email",
+                  },
+                  emailError instanceof Error
+                    ? emailError
+                    : new Error(String(emailError))
+                );
                 // Don't fail the webhook for email errors
               }
             }
           }
         } catch (error) {
-          logger.error("Error processing checkout.session.completed", {
-            eventType: 'webhook.checkout_session_error',
-            resourceType: 'checkout_session'
-          }, error instanceof Error ? error : new Error(String(error)));
+          logger.error(
+            "Error processing checkout.session.completed",
+            {
+              eventType: "webhook.checkout_session_error",
+              resourceType: "checkout_session",
+            },
+            error instanceof Error ? error : new Error(String(error))
+          );
           throw error; // Re-throw to trigger webhook retry
         }
         break;
       }
-      
+
       case "customer.subscription.created":
       case "customer.subscription.updated": {
         try {
           const subscription = event.data.object;
-          
-          // Update user subscription status in database
+
+          // Webhook is the single source of truth for subscription status updates
           const userId = subscription.metadata?.userId;
+          // Log better diagnostics for subscription events
+          logger.info("Processing subscription event details", {
+            eventType: event.type,
+            userId: userId || undefined,
+            resourceId: subscription.id,
+            resourceType: "subscription",
+            metadata: {
+              hasMetadata: !!subscription.metadata,
+              status: subscription.status,
+            },
+          });
+
           if (userId) {
             // Map Stripe status to our enum
-            const statusMap: Record<string, any> = {
-              'active': 'ACTIVE',
-              'canceled': 'CANCELED',
-              'past_due': 'PAST_DUE',
-              'incomplete': 'INCOMPLETE',
-              'trialing': 'TRIALING',
+            const statusMap: Record<string, SubscriptionStatus> = {
+              active: SubscriptionStatus.ACTIVE,
+              canceled: SubscriptionStatus.CANCELED,
+              past_due: SubscriptionStatus.PAST_DUE,
+              incomplete: SubscriptionStatus.INCOMPLETE,
+              trialing: SubscriptionStatus.TRIALING,
             };
 
             const priceItem = subscription.items?.data?.[0];
             const priceId: string | undefined = priceItem?.price?.id;
-            const interval = classifyBillingCycle(priceId) === 'yearly' ? 'yearly' : 'monthly';
+            // Use metadata.billingCycle as primary source if available
+            const billingCycle = subscription.metadata?.billingCycle as
+              | "yearly"
+              | "monthly"
+              | undefined;
+            const interval =
+              billingCycle ||
+              (classifyBillingCycle(priceId) === "yearly"
+                ? "yearly"
+                : "monthly");
+
+            const mappedStatus =
+              statusMap[subscription.status] || SubscriptionStatus.ACTIVE; // Default to ACTIVE for unknown statuses to ensure access
+
+            // Cast subscription to any to safely access properties that might not be in the type definition
+            const subData = subscription as any;
+
+            // Add safe access to period timestamps with fallbacks
+            const currentPeriodStart =
+              subData.current_period_start ||
+              subData.billing_cycle_anchor ||
+              Math.floor(Date.now() / 1000);
+
+            const currentPeriodEnd =
+              subData.current_period_end ||
+              Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60; // Default to 30 days later
+
             const subscriptionData = {
               userId,
               stripeCustomerId: subscription.customer as string,
               stripeSubscriptionId: subscription.id,
-              status: statusMap[subscription.status] || 'ACTIVE',
+              status: mappedStatus,
               priceId,
               plan: SubscriptionPlan.PREMIUM,
-              currentPeriodStart: new Date((subscription as any).current_period_start * 1000),
-              currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
-              cancelAtPeriodEnd: (subscription as any).cancel_at_period_end,
+              currentPeriodStart: new Date(currentPeriodStart * 1000),
+              currentPeriodEnd: new Date(currentPeriodEnd * 1000),
+              cancelAtPeriodEnd: !!subData.cancel_at_period_end,
             };
 
             await db.subscription.upsert({
@@ -164,7 +327,7 @@ export async function POST(req: NextRequest) {
             });
 
             // Send subscription update email for active subscriptions
-            if (subscription.status === 'active') {
+            if (subscription.status === "active") {
               try {
                 const user = await db.user.findUnique({
                   where: { id: userId },
@@ -177,66 +340,85 @@ export async function POST(req: NextRequest) {
                       user.name || "Étudiant",
                       user.email,
                       "Premium",
-                      (subscription as any).items.data[0]?.price?.unit_amount / 100 || 0,
+                      (subscription as any).items.data[0]?.price?.unit_amount /
+                        100 || 0,
                       interval
                     );
-                    Analytics.subscriptionStarted(userId, { priceId, billingCycle: interval });
+                    Analytics.subscriptionStarted(userId, {
+                      priceId,
+                      billingCycle: interval,
+                    });
                     logger.info("Premium subscription welcome email sent", {
-                      eventType: 'email.subscription_welcome_sent',
+                      eventType: "email.subscription_welcome_sent",
                       userId,
-                      resourceType: 'subscription',
+                      resourceType: "subscription",
                       resourceId: subscription.id,
-                      metadata: { userEmail: user.email, interval }
+                      metadata: { userEmail: user.email, interval },
                     });
                   } else {
                     // Record generic subscription update (status change, price, cycle)
-                    Analytics.subscriptionUpdated(userId, { priceId, billingCycle: interval, status: subscription.status });
+                    Analytics.subscriptionUpdated(userId, {
+                      priceId,
+                      billingCycle: interval,
+                      status: subscription.status,
+                    });
                   }
                 }
               } catch (emailError) {
-                logger.error("Error sending subscription email", {
-                  eventType: 'email.send_error',
-                  userId,
-                  resourceType: 'subscription',
-                  resourceId: subscription.id
-                }, emailError instanceof Error ? emailError : new Error(String(emailError)));
+                logger.error(
+                  "Error sending subscription email",
+                  {
+                    eventType: "email.send_error",
+                    userId,
+                    resourceType: "subscription",
+                    resourceId: subscription.id,
+                  },
+                  emailError instanceof Error
+                    ? emailError
+                    : new Error(String(emailError))
+                );
               }
             }
 
             logger.info("Subscription updated successfully", {
-              eventType: 'subscription.updated',
+              eventType: "subscription.updated",
               userId,
-              resourceType: 'subscription',
+              resourceType: "subscription",
               resourceId: subscription.id,
               fromState: undefined,
               toState: subscription.status,
-              metadata: { plan: 'PREMIUM', interval }
+              metadata: { plan: "PREMIUM", interval },
             });
           }
         } catch (error) {
-          logger.error("Error processing subscription update", {
-            eventType: 'webhook.subscription_update_error',
-            resourceType: 'subscription'
-          }, error instanceof Error ? error : new Error(String(error)));
+          logger.error(
+            "Error processing subscription update",
+            {
+              eventType: "webhook.subscription_update_error",
+              resourceType: "subscription",
+            },
+            error instanceof Error ? error : new Error(String(error))
+          );
           throw error;
         }
         break;
       }
-      
+
       case "customer.subscription.deleted": {
         try {
           const subscription = event.data.object;
-          
+
+          // Webhook is the single source of truth for subscription cancellations
           const userId = subscription.metadata?.userId;
           if (userId) {
             await db.subscription.update({
               where: { userId },
               data: {
-                status: 'CANCELED',
+                status: SubscriptionStatus.CANCELED,
                 currentPeriodEnd: new Date(),
               },
             });
-            
+
             // Send cancellation confirmation email
             try {
               const user = await db.user.findUnique({
@@ -250,50 +432,162 @@ export async function POST(req: NextRequest) {
                   user.email
                 );
                 // Record cancellation via soft cancel analytics (even if immediate delete event)
-                Analytics.subscriptionCanceledSoft(userId, { subscriptionId: subscription.id });
+                Analytics.subscriptionCanceledSoft(userId, {
+                  subscriptionId: subscription.id,
+                });
                 logger.info("Subscription cancellation email sent", {
-                  eventType: 'email.subscription_cancellation_sent',
+                  eventType: "email.subscription_cancellation_sent",
                   userId,
-                  resourceType: 'subscription',
+                  resourceType: "subscription",
                   resourceId: subscription.id,
-                  metadata: { userEmail: user.email }
+                  metadata: { userEmail: user.email },
                 });
               }
             } catch (emailError) {
-              logger.error("Error sending cancellation email", {
-                eventType: 'email.send_error',
-                userId,
-                resourceType: 'subscription',
-                resourceId: subscription.id
-              }, emailError instanceof Error ? emailError : new Error(String(emailError)));
+              logger.error(
+                "Error sending cancellation email",
+                {
+                  eventType: "email.send_error",
+                  userId,
+                  resourceType: "subscription",
+                  resourceId: subscription.id,
+                },
+                emailError instanceof Error
+                  ? emailError
+                  : new Error(String(emailError))
+              );
             }
 
             logger.info("Subscription canceled successfully", {
-              eventType: 'subscription.canceled',
+              eventType: "subscription.canceled",
               userId,
-              resourceType: 'subscription',
+              resourceType: "subscription",
               resourceId: subscription.id,
-              fromState: 'ACTIVE',
-              toState: 'CANCELED'
+              fromState: SubscriptionStatus.ACTIVE,
+              toState: SubscriptionStatus.CANCELED,
             });
           }
         } catch (error) {
-          logger.error("Error processing subscription deletion", {
-            eventType: 'webhook.subscription_deletion_error',
-            resourceType: 'subscription'
-          }, error instanceof Error ? error : new Error(String(error)));
+          logger.error(
+            "Error processing subscription deletion",
+            {
+              eventType: "webhook.subscription_deletion_error",
+              resourceType: "subscription",
+            },
+            error instanceof Error ? error : new Error(String(error))
+          );
           throw error;
         }
         break;
       }
-      
+
+      case "invoice.payment_succeeded": {
+        try {
+          const invoice = event.data.object as any;
+
+          // Webhook is the single source of truth for successful subscription payments
+          if (invoice.subscription) {
+            const subscription = await paymentService.getSubscription(
+              invoice.subscription as string
+            );
+            const userId = subscription.metadata?.userId;
+
+            if (userId) {
+              // Ensure subscription status is ACTIVE
+              await db.subscription.updateMany({
+                where: {
+                  userId,
+                  stripeSubscriptionId: invoice.subscription as string,
+                },
+                data: {
+                  status: SubscriptionStatus.ACTIVE,
+                },
+              });
+
+              // Update/Create payment record for this invoice
+              try {
+                const existingPayment = await db.payment.findFirst({
+                  where: {
+                    userId,
+                    stripePaymentIntentId: invoice.subscription,
+                    kind: PaymentKind.SUBSCRIPTION,
+                  },
+                });
+
+                const paymentData = {
+                  userId,
+                  stripePaymentIntentId: invoice.subscription,
+                  amount: new Prisma.Decimal(
+                    ((invoice.amount_paid || 0) / 100).toFixed(2)
+                  ),
+                  currency: invoice.currency || "eur",
+                  status: PaymentStatus.COMPLETED,
+                  description: "Renouvellement abonnement Premium",
+                  kind: PaymentKind.SUBSCRIPTION,
+                };
+
+                if (existingPayment) {
+                  await db.payment.update({
+                    where: { id: existingPayment.id },
+                    data: paymentData,
+                  });
+                } else {
+                  await db.payment.create({ data: paymentData });
+                }
+              } catch (paymentError) {
+                logger.error("Error recording subscription payment", {
+                  eventType: "webhook.payment_recording_error",
+                  userId,
+                  resourceType: "payment",
+                  metadata: {
+                    error:
+                      paymentError instanceof Error
+                        ? paymentError.message
+                        : String(paymentError),
+                  },
+                });
+                // Don't fail the webhook for payment recording errors
+              }
+
+              logger.info("Subscription payment succeeded", {
+                eventType: "payment.succeeded",
+                userId,
+                resourceType: "subscription",
+                resourceId: invoice.subscription,
+                metadata: { invoiceId: invoice.id },
+              });
+
+              // Track analytics for renewal
+              Analytics.subscriptionRenewed(userId, {
+                invoiceId: invoice.id,
+                subscriptionId: invoice.subscription,
+                amount: (invoice.amount_paid || 0) / 100,
+              });
+            }
+          }
+        } catch (error) {
+          logger.error(
+            "Error processing payment success",
+            {
+              eventType: "webhook.payment_success_error",
+              resourceType: "invoice",
+            },
+            error instanceof Error ? error : new Error(String(error))
+          );
+          throw error;
+        }
+        break;
+      }
+
       case "invoice.payment_failed": {
         try {
           const invoice = event.data.object as any;
 
-          // Handle failed payment
+          // Webhook is the single source of truth for payment failures
           if (invoice.subscription) {
-            const subscription = await paymentService.getSubscription(invoice.subscription as string);
+            const subscription = await paymentService.getSubscription(
+              invoice.subscription as string
+            );
             const userId = subscription.metadata?.userId;
 
             if (userId) {
@@ -301,10 +595,10 @@ export async function POST(req: NextRequest) {
               await db.subscription.updateMany({
                 where: {
                   userId,
-                  stripeSubscriptionId: invoice.subscription as string
+                  stripeSubscriptionId: invoice.subscription as string,
                 },
                 data: {
-                  status: 'PAST_DUE',
+                  status: SubscriptionStatus.PAST_DUE,
                 },
               });
 
@@ -320,51 +614,76 @@ export async function POST(req: NextRequest) {
                   user.email
                 );
                 logger.info("Payment failed email sent", {
-                  eventType: 'email.payment_failed_sent',
+                  eventType: "email.payment_failed_sent",
                   userId,
-                  resourceType: 'invoice',
+                  resourceType: "invoice",
                   resourceId: invoice.id,
-                  metadata: { userEmail: user.email, subscriptionId: invoice.subscription }
+                  metadata: {
+                    userEmail: user.email,
+                    subscriptionId: invoice.subscription,
+                  },
                 });
-                Analytics.subscriptionPaymentFailed(userId, { invoiceId: invoice.id, subscriptionId: invoice.subscription });
+                Analytics.subscriptionPaymentFailed(userId, {
+                  invoiceId: invoice.id,
+                  subscriptionId: invoice.subscription,
+                });
               }
 
               logger.warn("Subscription payment failed", {
-                eventType: 'payment.failed',
+                eventType: "payment.failed",
                 userId,
-                resourceType: 'subscription',
+                resourceType: "subscription",
                 resourceId: invoice.subscription,
-                fromState: 'ACTIVE',
-                toState: 'PAST_DUE',
-                metadata: { invoiceId: invoice.id }
+                fromState: SubscriptionStatus.ACTIVE,
+                toState: SubscriptionStatus.PAST_DUE,
+                metadata: { invoiceId: invoice.id },
               });
             }
           }
         } catch (error) {
-          logger.error("Error processing payment failure", {
-            eventType: 'webhook.payment_failure_error',
-            resourceType: 'invoice'
-          }, error instanceof Error ? error : new Error(String(error)));
+          logger.error(
+            "Error processing payment failure",
+            {
+              eventType: "webhook.payment_failure_error",
+              resourceType: "invoice",
+            },
+            error instanceof Error ? error : new Error(String(error))
+          );
           throw error;
         }
         break;
       }
-      
+
       default:
         logger.info("Unhandled Stripe webhook event type", {
-          eventType: 'webhook.unhandled_event',
-          resourceType: 'stripe_event',
+          eventType: "webhook.unhandled_event",
+          resourceType: "stripe_event",
           resourceId: event.id,
-          metadata: { type: event.type }
+          metadata: { type: event.type },
         });
     }
   } catch (error) {
+    // Log the full error details with stack trace
     logger.error("Webhook handler failed", {
-      eventType: 'webhook.handler_error',
-      resourceType: 'webhook'
-    }, error instanceof Error ? error : new Error(String(error)));
-    return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
+      eventType: "webhook.handler_error",
+      resourceType: "webhook",
+      metadata: {
+        error: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : undefined,
+      },
+    });
+
+    // Return an appropriate error response but don't expose details
+    return NextResponse.json(
+      { error: "Webhook handler failed" },
+      { status: 500 }
+    );
   }
 
+  // On success, return a 200 response that Stripe can acknowledge
+  logger.info("Webhook processed successfully", {
+    eventType: "webhook.processed",
+    resourceType: "webhook",
+  });
   return NextResponse.json({ received: true });
 }

@@ -106,7 +106,7 @@ export function CourseCardShared({ course, accessState, showPreviewCTA, size = "
           {course.thumbnail ? (
             <Image src={course.thumbnail} alt={course.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/15 to-primary/5">
+            <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-primary/15 to-primary/5">
               <Play className="h-10 w-10 text-primary/40" />
             </div>
           )}
