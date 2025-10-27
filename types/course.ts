@@ -7,6 +7,15 @@ export interface CourseTagDTO {
   color: string;
 }
 
+export interface CourseModuleDTO {
+  id: string;
+  title: string;
+  slug: string;
+  order: number;
+  courseId: string;
+  lessons: CourseLessonDTO[];
+}
+
 export interface CourseLessonDTO {
   id: string;
   title: string;
@@ -14,6 +23,7 @@ export interface CourseLessonDTO {
   description?: string | null;
   duration: number | null;
   order: number;
+  moduleId: string | null;
 }
 
 export interface CourseReviewDTO {
@@ -47,18 +57,49 @@ export interface CourseSummaryDTO {
   requiredTier?: string; // CourseAccessTier enum
   previewEnabled?: boolean;
   // Access flags (optional; enriched by access layer)
-  isUnlocked?: boolean;          // user can consume lessons fully
-  isInSubscription?: boolean;    // user has active subscription (Premium) covering this course
-  isEnrolled?: boolean;          // user explicitly enrolled (lifetime purchase or explicit enrollment action)
-  hasEntitlement?: boolean;      // user owns via subscription or purchase
+  isUnlocked?: boolean; // user can consume lessons fully
+  isInSubscription?: boolean; // user has active subscription (Premium) covering this course
+  isEnrolled?: boolean; // user explicitly enrolled (lifetime purchase or explicit enrollment action)
+  hasEntitlement?: boolean; // user owns via subscription or purchase
   firstLessonSlug?: string | null;
   unlockedLabel?: string;
 }
 
+export interface CourseQuizQuestionDTO {
+  id: string;
+  question: string;
+  options: string[];
+  correct: number;
+  explanation: string | null;
+  order: number;
+}
+
+export interface CourseQuizDTO {
+  id: string;
+  moduleId: number;
+  title: string;
+  questions: CourseQuizQuestionDTO[];
+}
+
+export interface CourseVisualSupportDTO {
+  id: string;
+  title: string;
+  moduleId: number;
+  order: number;
+  content: any; // JSON content
+}
+
 export interface CourseDetailDTO extends CourseSummaryDTO {
   lessons: CourseLessonDTO[];
+  modules: CourseModuleDTO[];
+  quizzes?: CourseQuizDTO[];
+  visualSupports?: CourseVisualSupportDTO[];
   reviews: CourseReviewDTO[];
   enrollments?: { id: string; userId?: string; enrolledAt?: string }[];
+  publicStructure?: string | null;
+  publicResources?: string | null;
+  publicEvaluation?: string | null;
+  publicPrerequisites?: string | null;
   createdAt: string;
   updatedAt: string;
 }

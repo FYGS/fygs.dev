@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -63,6 +63,10 @@ const courseSchema = z.object({
   previewEnabled: z.boolean().default(true),
   thumbnail: z.string().optional(),
   tags: z.array(z.string()).optional(),
+  publicStructure: z.string().optional(),
+  publicResources: z.string().optional(),
+  publicEvaluation: z.string().optional(),
+  publicPrerequisites: z.string().optional(),
 });
 
 type CourseFormData = z.infer<typeof courseSchema>;
@@ -80,9 +84,12 @@ interface CourseCreateFormProps {
 
 export function CourseCreateForm({ tags }: CourseCreateFormProps) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [isSavingDraft, startDraftTransition] = useTransition();
+  const [isPublishing, startPublishTransition] = useTransition();
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [thumbnailPreview, setThumbnailPreview] = useState<string>("");
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<CourseFormData>({
     resolver: zodResolver(courseSchema),
@@ -100,6 +107,10 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
       previewEnabled: true,
       thumbnail: "",
       tags: [],
+      publicStructure: "",
+      publicResources: "",
+      publicEvaluation: "",
+      publicPrerequisites: "",
     },
   });
 
@@ -123,18 +134,46 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
     form.setValue("tags", newSelectedTags);
   };
 
-  // Handle form submission
-  const onSubmit = async (data: CourseFormData) => {
-    startTransition(async () => {
+  // Handle file upload
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      // Create a preview URL for the selected file
+      const previewUrl = URL.createObjectURL(file);
+      
+      // Update the thumbnail field and preview
+      form.setValue("thumbnail", previewUrl);
+      setThumbnailPreview(previewUrl);
+      
+      // Reset the file input
+      e.target.value = '';
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      toast.error("Erreur lors de l'upload de l'image");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // The original onSubmit function is no longer needed since we have distinct handlers
+  // for draft and publish actions
+
+  // Handle publish and save as draft
+  const handlePublishAndSave = () => {
+    form.setValue("published", true);
+    startPublishTransition(async () => {
       try {
         const result = await createCourse({
-          ...data,
+          ...form.getValues(),
           tags: selectedTags,
           thumbnail: thumbnailPreview || undefined,
         });
 
         if (result.success) {
-          toast.success("Formation créée avec succès!");
+          toast.success("Formation créée et publiée avec succès!");
           router.push("/admin/courses");
         } else {
           toast.error(result.error || "Erreur lors de la création");
@@ -146,21 +185,33 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
     });
   };
 
-  // Handle publish and save as draft
-  const handlePublishAndSave = () => {
-    form.setValue("published", true);
-    form.handleSubmit(onSubmit)();
-  };
-
   const handleSaveAsDraft = () => {
     form.setValue("published", false);
-    form.handleSubmit(onSubmit)();
+    startDraftTransition(async () => {
+      try {
+        const result = await createCourse({
+          ...form.getValues(),
+          tags: selectedTags,
+          thumbnail: thumbnailPreview || undefined,
+        });
+
+        if (result.success) {
+          toast.success("Brouillon sauvegardé avec succès!");
+          router.push("/admin/courses");
+        } else {
+          toast.error(result.error || "Erreur lors de la sauvegarde du brouillon");
+        }
+      } catch (error) {
+        console.error("Draft saving error:", error);
+        toast.error("Une erreur inattendue s'est produite");
+      }
+    });
   };
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <form className="space-y-8">
           {/* Basic Information */}
           <Card>
             <CardHeader>
@@ -260,9 +311,26 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
                             setThumbnailPreview(e.target.value);
                           }}
                         />
-                        <Button type="button" variant="outline" size="icon">
-                          <Upload className="h-4 w-4" />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={isUploading}
+                        >
+                          {isUploading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Upload className="h-4 w-4" />
+                          )}
                         </Button>
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          className="hidden"
+                          accept="image/*"
+                          onChange={handleFileUpload}
+                        />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -413,6 +481,103 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
                     })}
                   </div>
                 )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Public Content Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Section publique marketing</CardTitle>
+              <CardDescription>
+                Contenu marketing affiché publiquement avant inscription. Utilisez MDX pour un formatage riche.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="publicStructure"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Structure du cours</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Décrivez la structure et l'organisation de votre cours..."
+                          rows={6}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Format MDX supporté - utilisez **gras**, *italique*, - listes, etc.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="publicResources"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Ressources incluses</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Listez les ressources, outils et supports fournis..."
+                          rows={6}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Exemples : PDFs, vidéos, templates, accès communauté...
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="publicEvaluation"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Évaluation et certification</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Expliquez le système d'évaluation et les certifications..."
+                          rows={6}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Quizzes, projets, certificat de réussite...
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="publicPrerequisites"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Prérequis et public cible</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Définissez les prérequis et le public visé..."
+                          rows={6}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Niveau requis, outils nécessaires, profil idéal...
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
             </CardContent>
           </Card>
@@ -572,9 +737,9 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
                 type="button"
                 variant="outline" 
                 onClick={handleSaveAsDraft}
-                disabled={isPending}
+                disabled={isSavingDraft}
               >
-                {isPending ? (
+                {isSavingDraft ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
                   <Eye className="h-4 w-4 mr-2" />
@@ -585,9 +750,9 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
               <Button 
                 type="button"
                 onClick={handlePublishAndSave}
-                disabled={isPending}
+                disabled={isPublishing}
               >
-                {isPending ? (
+                {isPublishing ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
                   <Save className="h-4 w-4 mr-2" />

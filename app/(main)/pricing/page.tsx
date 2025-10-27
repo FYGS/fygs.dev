@@ -31,9 +31,7 @@ export default async function PricingPage() {
         },
       });
 
-      const hasActiveSubscription = user?.subscriptions.some(
-        (sub) => sub.status === SubscriptionStatus.ACTIVE && !sub.cancelAtPeriodEnd
-      );
+      const hasActiveSubscription = user?.subscriptions?.status === SubscriptionStatus.ACTIVE && !user?.subscriptions?.cancelAtPeriodEnd;
 
       if (hasActiveSubscription) {
         currentPlan = "premium";

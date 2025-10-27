@@ -36,17 +36,17 @@ import { AuthNav } from "./auth-nav";
 
 // Primary navigation items (always visible)
 const PRIMARY_NAVIGATION = [
-  { 
-    href: "/me", 
-    label: "Resume"
+  {
+    href: "/me",
+    label: "CV"
   },
-  { 
-    href: "/formations", 
+  {
+    href: "/formations",
     label: "Formations"
   },
-  { 
-    href: "/projects", 
-    label: "Projets"
+  {
+    href: "/projects",
+    label: "Projects"
   }
 ] as const;
 
@@ -154,7 +154,7 @@ export const Header = () => {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   <TooltipContent>
-                    <p>Mes réseaux sociaux et profils</p>
+                    <p>Social Links and Profiles</p>
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -187,7 +187,7 @@ export const Header = () => {
                       {/* Main Navigation - Primary Items */}
                       <div className="px-6 space-y-1 mb-6">
                         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                          Navigation principale
+                          Main Navigation
                         </p>
                         <div className="space-y-1">
                           {PRIMARY_NAVIGATION.map((item) => (
@@ -205,7 +205,7 @@ export const Header = () => {
                       {/* Secondary Navigation */}
                       <div className="px-6 space-y-1 mb-6">
                         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                          Autres pages
+                          Other Pages
                         </p>
                         <div className="space-y-1">
                           {SECONDARY_NAVIGATION.map((item) => (
@@ -231,7 +231,7 @@ export const Header = () => {
                     
                     <div className="px-6 py-4 border-t border-border bg-muted/20 mt-auto">
                       <p className="text-sm text-muted-foreground mb-3">
-                        Suivez-moi
+                        Follow Me
                       </p>
                       <div className="flex flex-col space-y-2">
                         {SOCIAL_LINKS.map(({ href, icon: Icon, label }) => (

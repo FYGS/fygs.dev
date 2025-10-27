@@ -15,6 +15,8 @@ import { CourseReviews } from "./_components/course-reviews";
 import { CourseBreadcrumb } from "./_components/course-breadcrumb";
 import { PaymentStatus } from "./_components/payment-status";
 import { CourseResumeBanner } from "./_components/course-resume-banner";
+import { TrainingOverview } from "./_components/training-overview";
+import { CoursePublicContent } from "./_components/course-public-content";
 import { SerializedCourse } from "./types";
 
 interface CoursePageProps {
@@ -165,6 +167,7 @@ export default async function CoursePage({ params, searchParams }: CoursePagePro
     }
 
     const detail = serializeCourseDetail(course);
+    
     // Adapt to legacy SerializedCourse shape (components still expect nested tag.tag)
     const serializedCourse: SerializedCourse = {
         id: detail.id,
@@ -187,7 +190,44 @@ export default async function CoursePage({ params, searchParams }: CoursePagePro
             description: l.description ?? null,
             duration: l.duration,
             order: l.order,
+            moduleId: l.moduleId || null,
         })),
+        modules: detail.modules.map(m => ({
+            id: m.id,
+            title: m.title,
+            slug: m.slug,
+            order: m.order,
+            courseId: m.courseId,
+            lessons: m.lessons.map(l => ({
+                id: l.id,
+                title: l.title,
+                slug: l.slug,
+                description: l.description ?? null,
+                duration: l.duration,
+                order: l.order,
+                moduleId: l.moduleId || null,
+            })),
+        })),
+        quizzes: detail.quizzes?.map(q => ({
+            id: q.id,
+            moduleId: q.moduleId,
+            title: q.title,
+            questions: q.questions.map(question => ({
+                id: question.id,
+                question: question.question,
+                options: question.options,
+                correct: question.correct,
+                explanation: question.explanation || "",
+                order: question.order,
+            })),
+        })) || [],
+        visualSupports: detail.visualSupports?.map(vs => ({
+            id: vs.id,
+            title: vs.title,
+            moduleId: vs.moduleId,
+            order: vs.order,
+            content: vs.content as { slides: Array<{ title: string; content: any }> },
+        })) || [],
         reviews: detail.reviews.map(r => ({
             id: r.id,
             userId: r.userId,
@@ -232,15 +272,44 @@ export default async function CoursePage({ params, searchParams }: CoursePagePro
                     <div className="lg:col-span-2 space-y-8">
                         <CourseResumeBanner courseSlug={course.slug} lastPosition={lastPosition} nextLesson={nextUncompletedLesson} isEnrolled={isUnlocked} />
                         <CourseHeader course={serializedCourse} />
-                                                <CourseCurriculum 
-                                                    lessons={serializedCourse.lessons} 
-                                                    courseSlug={course.slug}
-                                                    isEnrolled={isUnlocked}
-                                                    userProgress={userProgress}
-                                                    isAuthenticated={isAuthenticated}
-                                                    canPreview={canPreview && !!serializedCourse.lessons.length}
-                                                />
+                        
+                        {/* Public Marketing Content - Always visible */}
+                        <CoursePublicContent 
+                          course={{
+                            id: course.id,
+                            title: course.title,
+                            slug: course.slug,
+                            publicStructure: detail.publicStructure,
+                            publicResources: detail.publicResources,
+                            publicEvaluation: detail.publicEvaluation,
+                            publicPrerequisites: detail.publicPrerequisites,
+                          }}
+                        />
+                        
+                        {/* Training Overview Section - Key points to be covered in the training */}
+                        {isUnlocked && serializedCourse.visualSupports && serializedCourse.visualSupports.length > 0 && (
+                          <TrainingOverview
+                            course={{
+                              id: serializedCourse.id,
+                              title: serializedCourse.title,
+                              slug: serializedCourse.slug,
+                            }}
+                            visualSupports={serializedCourse.visualSupports}
+                          />
+                        )}
+                        
+                        <CourseCurriculum
+                          modules={serializedCourse.modules}
+                          courseSlug={course.slug}
+                          isEnrolled={isUnlocked}
+                          userProgress={userProgress}
+                          isAuthenticated={isAuthenticated}
+                          canPreview={canPreview && !!serializedCourse.modules.length}
+                          quizzes={serializedCourse.quizzes}
+                        />
+
                         <CourseReviews reviews={serializedCourse.reviews} courseId={serializedCourse.id} />
+                        
                     </div>
                     <div className="lg:col-span-1">
                         <div className="sticky top-8">

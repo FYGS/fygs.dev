@@ -13,20 +13,20 @@ import { Section } from "./Section";
 
 const FOOTER_LINKS = {
   information: [
-    { href: "/me", label: "CV", description: "Mon parcours professionnel" },
-    { href: "/projects", label: "Projets", description: "Portfolio technique" },
-    { href: "/blog", label: "Blog", description: "Articles & tutoriels" },
-    { href: "/contact", label: "Contact", description: "Nous contacter" },
+    { href: "/me", label: "CV", description: "My professional background" },
+    { href: "/projects", label: "Projects", description: "Technical portfolio" },
+    { href: "/blog", label: "Blog", description: "Articles & tutorials" },
+    { href: "/contact", label: "Contact", description: "Get in touch" },
   ],
   apprentissage: [
-    { href: "/formations", label: "Formations", description: "Cours premium" },
-    { href: "/pricing", label: "Tarifs", description: "Plans & abonnements" },
-    { href: "/tech-mastry", label: "TechMastry", description: "Préparation entretiens" },
-    { href: "/dashboard", label: "Dashboard", description: "Espace apprenant" },
+    { href: "/formations", label: "Formations", description: "Premium courses" },
+    { href: "/pricing", label: "Plans", description: "Plans & subscriptions" },
+    { href: "/tech-mastry", label: "TechMastry", description: "Interview preparation" },
+    { href: "/dashboard", label: "Dashboard", description: "Learner space" },
   ],
   legal: [
-    { href: "/terms", label: "Conditions d'utilisation" },
-    { href: "/privacy", label: "Politique de confidentialité" },
+    { href: "/terms", label: "Terms of Service" },
+    { href: "/privacy", label: "Privacy Policy" },
   ],
   projects: [
     {
@@ -96,10 +96,10 @@ export function Footer() {
               >
                 fygs.dev \_°&lt;
               </Link>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Plateforme d&apos;apprentissage premium pour développeurs modernes. 
-                Formations JavaScript, TypeScript, React, Next.js, Node.js, IA et Cloud.
-              </p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                Premium learning platform for modern developers.
+                Courses in JavaScript, TypeScript, React, Next.js, Node.js, AI, and Cloud.
+                </p>
             </div>
             
             {/* Social Links */}
@@ -163,7 +163,7 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="text-sm font-semibold flex items-center gap-2 pb-2 border-b">
               <span className="w-2 h-2 rounded-full bg-linear-to-r from-primary to-primary/60" />
-              Apprentissage
+              Learning
             </h3>
             <div className="space-y-2">
               {FOOTER_LINKS.apprentissage.map(({ href, label, description }) => (
@@ -189,7 +189,7 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="text-sm font-semibold flex items-center gap-2 pb-2 border-b">
               <span className="w-2 h-2 rounded-full bg-linear-to-r from-primary to-primary/60" />
-              Projets Phares
+              Featured Projects
             </h3>
             <div className="space-y-3">
               {FOOTER_LINKS.projects.map(({ href, label, description, icon: Icon }) => (
@@ -227,22 +227,26 @@ export function Footer() {
                 © {new Date().getFullYear()} Fernand Soualo. All rights reserved.
               </p>
               <div className="hidden sm:block w-1 h-1 rounded-full bg-muted-foreground/50" />
-              <span className="text-xs text-muted-foreground">
-                Built with Next.js 15, Tailwind CSS & Shadcn UI
+              <span className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
+                <RocketIcon className="h-3 w-3 text-primary animate-bounce" />
+                <span>
+                  Crafted with <span className="text-primary font-semibold">Next.js 15</span>, <span className="text-primary font-semibold">Tailwind CSS</span> & <span className="text-primary font-semibold">Shadcn UI</span>
+                </span>
+                <span className="ml-1">❤️</span>
               </span>
             </div>
             <div className="flex flex-wrap justify-center gap-3 text-xs text-muted-foreground">
-              <Link href="/terms" className="hover:text-primary transition-colors">
-                CGU
-              </Link>
+                <Link href="/terms" className="hover:text-primary transition-colors">
+                Terms of Service
+                </Link>
               <span>•</span>
-              <Link href="/privacy" className="hover:text-primary transition-colors">
-                Confidentialité
-              </Link>
+                <Link href="/privacy" className="hover:text-primary transition-colors">
+                Privacy Policy
+                </Link>
               <span>•</span>
-              <Link href="/me" className="hover:text-primary transition-colors">
+                <Link href="/me" className="hover:text-primary transition-colors">
                 CV
-              </Link>
+                </Link>
             </div>
           </div>
         </div>

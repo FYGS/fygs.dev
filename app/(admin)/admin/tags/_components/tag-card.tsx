@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,14 +18,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { 
   MoreHorizontal, 
   Edit, 
   Trash2, 
-  BookOpen,
-  Palette
-} from "lucide-react";
+  BookOpen} from "lucide-react";
 import Link from "next/link";
+import { deleteTag, updateTag } from "../_actions/tag-actions";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 
 interface TagCardProps {
   tag: {
@@ -40,6 +51,70 @@ interface TagCardProps {
 }
 
 export function TagCard({ tag }: TagCardProps) {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [editName, setEditName] = useState(tag.name);
+  const [editColor, setEditColor] = useState(tag.color);
+  const router = useRouter();
+
+  const handleEdit = () => {
+    setEditName(tag.name);
+    setEditColor(tag.color);
+    setIsEditing(true);
+  };
+
+  const handleUpdate = async () => {
+    if (!editName.trim()) {
+      toast.error("Le nom du tag est requis");
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      const result = await updateTag(tag.id, {
+        name: editName.trim(),
+        color: editColor,
+      });
+
+      if (result.success) {
+        toast.success("Tag mis à jour avec succès");
+        setIsEditing(false);
+        router.refresh();
+      } else {
+        toast.error(result.error || "Erreur lors de la mise à jour");
+      }
+    } catch (error) {
+      console.error("Error updating tag:", error);
+      toast.error("Une erreur inattendue s'est produite");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (tag.courseCount > 0) {
+      toast.error(`Impossible de supprimer ce tag car il est utilisé par ${tag.courseCount} formation(s)`);
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const result = await deleteTag(tag.id);
+      
+      if (result.success) {
+        toast.success("Tag supprimé avec succès");
+        router.refresh();
+      } else {
+        toast.error(result.error || "Erreur lors de la suppression");
+      }
+    } catch (error) {
+      console.error("Error deleting tag:", error);
+      toast.error("Une erreur inattendue s'est produite");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
   return (
     <Card className="group hover:shadow-md transition-shadow">
       <CardHeader className="pb-3">
@@ -59,23 +134,33 @@ export function TagCard({ tag }: TagCardProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link href={`/admin/tags/${tag.id}`}>
-                  <Edit className="mr-2 h-4 w-4" />
-                  Modifier
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href={`/admin/tags/${tag.id}/color`}>
-                  <Palette className="mr-2 h-4 w-4" />
-                  Changer la couleur
-                </Link>
+              <DropdownMenuItem onClick={handleEdit}>
+                <Edit className="mr-2 h-4 w-4" />
+                Modifier
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Supprimer
-              </DropdownMenuItem>
+              <ConfirmationModal
+                trigger={
+                  <DropdownMenuItem 
+                    className="text-red-600"
+                    disabled={isDeleting || tag.courseCount > 0}
+                    onSelect={(e) => e.preventDefault()}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    {isDeleting ? "Suppression..." : "Supprimer"}
+                  </DropdownMenuItem>
+                }
+                title="Confirmer la suppression"
+                description={
+                  tag.courseCount > 0 
+                    ? `Impossible de supprimer ce tag car il est utilisé par ${tag.courseCount} formation(s).`
+                    : `Êtes-vous sûr de vouloir supprimer le tag "${tag.name}" ? Cette action est irréversible.`
+                }
+                confirmText="Supprimer définitivement"
+                onConfirm={handleDelete}
+                isDestructive={true}
+                disabled={isDeleting || tag.courseCount > 0}
+              />
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -143,6 +228,72 @@ export function TagCard({ tag }: TagCardProps) {
           </Badge>
         </div>
       </CardContent>
+      
+      {/* Edit Dialog */}
+      <Dialog open={isEditing} onOpenChange={setIsEditing}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Modifier le tag</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div>
+              <Label htmlFor="tag-name">Nom du tag</Label>
+              <Input
+                id="tag-name"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                placeholder="Nom du tag"
+              />
+            </div>
+            <div>
+              <Label htmlFor="tag-color">Couleur</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="tag-color"
+                  type="color"
+                  value={editColor}
+                  onChange={(e) => setEditColor(e.target.value)}
+                  className="w-16 h-10"
+                />
+                <Input
+                  value={editColor}
+                  onChange={(e) => setEditColor(e.target.value)}
+                  placeholder="#3B82F6"
+                  className="flex-1"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => setIsEditing(false)}>
+                Annuler
+              </Button>
+              <Button onClick={handleUpdate} disabled={isUpdating}>
+                {isUpdating ? "Mise à jour..." : "Sauvegarder"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Hidden color input for quick color change */}
+      <input
+        id={`color-${tag.id}`}
+        type="color"
+        value={editColor}
+        onChange={(e) => {
+          setEditColor(e.target.value);
+          // Auto-save color change
+          updateTag(tag.id, { color: e.target.value }).then((result) => {
+            if (result.success) {
+              toast.success("Couleur mise à jour");
+              router.refresh();
+            } else {
+              toast.error("Erreur lors de la mise à jour de la couleur");
+            }
+          });
+        }}
+        className="hidden"
+      />
     </Card>
   );
 }

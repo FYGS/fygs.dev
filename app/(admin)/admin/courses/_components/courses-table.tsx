@@ -33,6 +33,10 @@ import {
   Clock,
   Euro
 } from "lucide-react";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
+import { deleteCourse } from "../[id]/_actions/edit-course";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface Course {
   id: string;
@@ -72,6 +76,8 @@ interface CoursesTableProps {
 
 export function CoursesTable({ courses, pagination }: CoursesTableProps) {
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -86,6 +92,25 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
       setSelectedCourses(prev => [...prev, courseId]);
     } else {
       setSelectedCourses(prev => prev.filter(id => id !== courseId));
+    }
+  };
+
+  const handleDeleteCourse = async (courseId: string) => {
+    setIsDeleting(courseId);
+    try {
+      const result = await deleteCourse(courseId);
+      
+      if (result.success) {
+        toast.success("Formation supprimée avec succès");
+        router.refresh();
+      } else {
+        toast.error(result.error || "Erreur lors de la suppression");
+      }
+    } catch (error) {
+      console.error("Error deleting course:", error);
+      toast.error("Une erreur inattendue s'est produite");
+    } finally {
+      setIsDeleting(null);
     }
   };
 
@@ -329,10 +354,24 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
                           Dupliquer
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-red-600">
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Supprimer
-                        </DropdownMenuItem>
+                        <ConfirmationModal
+                          trigger={
+                            <DropdownMenuItem 
+                              className="text-red-600"
+                              disabled={isDeleting === course.id}
+                              onSelect={(e) => e.preventDefault()}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              {isDeleting === course.id ? "Suppression..." : "Supprimer"}
+                            </DropdownMenuItem>
+                          }
+                          title="Confirmer la suppression"
+                          description={`Êtes-vous sûr de vouloir supprimer la formation "${course.title}" ? Cette action est irréversible et supprimera toutes les données associées (leçons, inscriptions, progrès).`}
+                          confirmText="Supprimer définitivement"
+                          onConfirm={() => handleDeleteCourse(course.id)}
+                          isDestructive={true}
+                          disabled={isDeleting === course.id}
+                        />
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

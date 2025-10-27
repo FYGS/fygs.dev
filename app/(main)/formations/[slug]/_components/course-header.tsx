@@ -40,7 +40,7 @@ export function CourseHeader({ course }: CourseHeaderProps) {
   return (
     <div className="space-y-6">
       {/* Video/Thumbnail */}
-      <div className="aspect-video relative overflow-hidden rounded-lg">
+      <div className="aspect-video relative overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
         {course.thumbnail ? (
           <Image
             src={course.thumbnail}
@@ -49,10 +49,10 @@ export function CourseHeader({ course }: CourseHeaderProps) {
             className="object-cover"
           />
         ) : (
-          <div className="w-full h-full bg-linear-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+          <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
             <div className="text-center">
               <div className="text-6xl mb-4">🎓</div>
-              <p className="text-lg text-muted-foreground">Aperçu de la formation</p>
+              <p className="text-lg text-slate-600 dark:text-slate-400">Aperçu de la formation</p>
             </div>
           </div>
         )}
@@ -61,16 +61,17 @@ export function CourseHeader({ course }: CourseHeaderProps) {
       {/* Course Info */}
       <div className="space-y-4">
         <div className="flex flex-wrap gap-2">
-          <Badge variant="secondary">
+          <Badge variant="secondary" className="bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900 dark:text-emerald-200 dark:border-emerald-700">
             {CATEGORY_LABELS[course.category]}
           </Badge>
-          <Badge variant="outline">
+          <Badge variant="outline" className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300">
             {LEVEL_LABELS[course.level]}
           </Badge>
           {course.tags.map((courseTag) => (
             <Badge
               key={courseTag.tag.name}
               variant="outline"
+              className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300"
               style={{ borderColor: courseTag.tag.color }}
             >
               {courseTag.tag.name}
@@ -78,16 +79,16 @@ export function CourseHeader({ course }: CourseHeaderProps) {
           ))}
         </div>
 
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
           {course.title}
         </h1>
 
-        <p className="text-lg text-muted-foreground leading-relaxed">
+        <p className="text-lg text-slate-700 dark:text-slate-300 leading-relaxed">
           {course.description}
         </p>
 
         {/* Stats */}
-        <div className="flex flex-wrap gap-6 text-sm text-muted-foreground">
+        <div className="flex flex-wrap gap-6 text-sm text-slate-600 dark:text-slate-400">
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
             <span>{totalHours} heures de contenu</span>

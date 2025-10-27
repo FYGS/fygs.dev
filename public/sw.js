@@ -84,56 +84,6 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Handle fetch errors with a more robust offline strategy
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Return cached version if available
-        if (response) {
-          return response;
-        }
-        
-        // Clone the request for the network fetch
-        const fetchRequest = event.request.clone();
-        
-        return fetch(fetchRequest).then(
-          (response) => {
-            // Check if we received a valid response
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-
-            // Clone the response to store in cache
-            const responseToCache = response.clone();
-
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache);
-              });
-
-            return response;
-          }
-        ).catch(() => {
-          // Serve fallback for navigation requests when offline
-          if (event.request.destination === 'document') {
-            return caches.match('/offline');
-          }
-          
-          // For API requests, return a custom error response
-          if (event.request.destination === 'fetch') {
-            return new Response(
-              JSON.stringify({ error: 'Network request failed' }),
-              { status: 503, headers: { 'Content-Type': 'application/json' } }
-            );
-          }
-          
-          // For other requests, try to match from cache
-          return caches.match('/offline');
-        });
-      })
-  );
-});
 
 // Listen for push events
 self.addEventListener('push', (event) => {

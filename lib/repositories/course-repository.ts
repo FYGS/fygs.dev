@@ -49,6 +49,24 @@ export class CourseRepository {
       where: { slug },
       include: {
         ...this.baseIncludes(),
+        modules: {
+          orderBy: { order: "asc" },
+          include: {
+            lessons: {
+              where: { published: true },
+              orderBy: { order: "asc" },
+              select: {
+                id: true,
+                title: true,
+                slug: true,
+                description: true,
+                duration: true,
+                order: true,
+                moduleId: true,
+              },
+            },
+          },
+        },
         lessons: {
           where: { published: true },
           orderBy: { order: "asc" },
@@ -59,6 +77,33 @@ export class CourseRepository {
             description: true,
             duration: true,
             order: true,
+            moduleId: true,
+          },
+        },
+        quizzes: {
+          orderBy: { moduleId: "asc" },
+          include: {
+            questions: {
+              orderBy: { order: "asc" },
+              select: {
+                id: true,
+                question: true,
+                options: true,
+                correct: true,
+                explanation: true,
+                order: true,
+              },
+            },
+          },
+        },
+        visualSupports: {
+          orderBy: [{ moduleId: "asc" }, { order: "asc" }],
+          select: {
+            id: true,
+            title: true,
+            moduleId: true,
+            order: true,
+            content: true,
           },
         },
         reviews: {
@@ -80,7 +125,14 @@ export class CourseRepository {
   }
 
   static async list(filters: ListCoursesFilters) {
-    const { category, level, search, featuredOnly, publishedOnly = true, limit } = filters;
+    const {
+      category,
+      level,
+      search,
+      featuredOnly,
+      publishedOnly = true,
+      limit,
+    } = filters;
     return db.course.findMany({
       where: {
         ...(publishedOnly && { published: true }),

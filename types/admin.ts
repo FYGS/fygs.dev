@@ -1,5 +1,10 @@
 // Admin type definitions for better TypeScript support
-import { CourseCategory, CourseLevel, CourseAccessTier, Role } from "@prisma/client";
+import {
+  CourseCategory,
+  CourseLevel,
+  CourseAccessTier,
+  Role,
+} from "@prisma/client";
 
 // Session types
 export interface SessionUser {
@@ -28,6 +33,10 @@ export interface CourseData {
   duration?: number | null;
   thumbnail?: string | null;
   instructorId?: string | null;
+  publicStructure?: string | null;
+  publicResources?: string | null;
+  publicEvaluation?: string | null;
+  publicPrerequisites?: string | null;
 }
 
 // Query types for database operations

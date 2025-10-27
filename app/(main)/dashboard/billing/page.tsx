@@ -121,7 +121,7 @@ export default async function BillingPage() {
   }
 
   const hasActiveSubscription = await AccessService.hasActiveSubscription(session.user.id);
-  const subscription = user.subscriptions[0];
+  const subscription = user.subscriptions;
   const prices = getSubscriptionPrices();
   
   // Get billing cycle for display

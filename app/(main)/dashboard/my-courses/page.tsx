@@ -108,7 +108,6 @@ export default async function MyCoursesPage() {
           currentPeriodEnd: true,
           cancelAtPeriodEnd: true,
         },
-        take: 1,
       },
       payments: {
         where: {
@@ -152,7 +151,7 @@ export default async function MyCoursesPage() {
   const lifetimeCourses = enrolledCourses.filter(course => course.isLifetime);
   const subscriptionCourses = enrolledCourses.filter(course => !course.isLifetime);
 
-  const hasActiveSubscription = user.subscriptions?.[0]?.status === SubscriptionStatus.ACTIVE && !user.subscriptions?.[0]?.cancelAtPeriodEnd;
+  const hasActiveSubscription = user.subscriptions?.status === SubscriptionStatus.ACTIVE && !user.subscriptions?.cancelAtPeriodEnd;
   const completedLessonsCount = user.progress?.filter((p: any) => p.completed).length || 0;
 
   return (

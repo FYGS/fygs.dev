@@ -5,14 +5,26 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { headers } from "next/headers";
 import { z } from "zod";
-import { CourseCategory, CourseLevel, CourseAccessTier, Role } from "@prisma/client";
+import {
+  CourseCategory,
+  CourseLevel,
+  CourseAccessTier,
+  Role,
+} from "@prisma/client";
 import { CourseData } from "@/types/admin";
 
 const createCourseSchema = z.object({
   title: z.string().min(3, "Le titre doit contenir au moins 3 caractères"),
-  slug: z.string().min(3, "Le slug doit contenir au moins 3 caractères")
-    .regex(/^[a-z0-9-]+$/, "Le slug ne peut contenir que des lettres minuscules, chiffres et tirets"),
-  description: z.string().min(10, "La description doit contenir au moins 10 caractères"),
+  slug: z
+    .string()
+    .min(3, "Le slug doit contenir au moins 3 caractères")
+    .regex(
+      /^[a-z0-9-]+$/,
+      "Le slug ne peut contenir que des lettres minuscules, chiffres et tirets"
+    ),
+  description: z
+    .string()
+    .min(10, "La description doit contenir au moins 10 caractères"),
   category: z.nativeEnum(CourseCategory),
   level: z.nativeEnum(CourseLevel),
   accessTier: z.nativeEnum(CourseAccessTier),
@@ -23,6 +35,10 @@ const createCourseSchema = z.object({
   previewEnabled: z.boolean().default(true),
   thumbnail: z.string().optional(),
   tags: z.array(z.string()).optional(),
+  publicStructure: z.string().optional(),
+  publicResources: z.string().optional(),
+  publicEvaluation: z.string().optional(),
+  publicPrerequisites: z.string().optional(),
 });
 
 type CreateCourseData = z.infer<typeof createCourseSchema>;
@@ -37,7 +53,9 @@ interface CreateCourseResult {
   error?: string;
 }
 
-export async function createCourse(data: CreateCourseData): Promise<CreateCourseResult> {
+export async function createCourse(
+  data: CreateCourseData
+): Promise<CreateCourseResult> {
   try {
     // Vérifier l'authentification
     const session = await auth.api.getSession({
@@ -52,7 +70,10 @@ export async function createCourse(data: CreateCourseData): Promise<CreateCourse
     }
 
     // Vérifier les permissions
-    if (session.user.role !== Role.ADMIN && session.user.role !== Role.INSTRUCTOR) {
+    if (
+      session.user.role !== Role.ADMIN &&
+      session.user.role !== Role.INSTRUCTOR
+    ) {
       return {
         success: false,
         error: "Vous n'avez pas les permissions pour créer une formation",
@@ -86,7 +107,12 @@ export async function createCourse(data: CreateCourseData): Promise<CreateCourse
       featured: validatedData.featured,
       previewEnabled: validatedData.previewEnabled,
       // Set instructor ownership - INSTRUCTOR gets auto-assigned, ADMIN can create unassigned courses
-      instructorId: session.user.role === Role.INSTRUCTOR ? session.user.id : null,
+      instructorId:
+        session.user.role === Role.INSTRUCTOR ? session.user.id : null,
+      publicStructure: validatedData.publicStructure || null,
+      publicResources: validatedData.publicResources || null,
+      publicEvaluation: validatedData.publicEvaluation || null,
+      publicPrerequisites: validatedData.publicPrerequisites || null,
     };
 
     // Ajouter le prix si spécifié
@@ -109,23 +135,24 @@ export async function createCourse(data: CreateCourseData): Promise<CreateCourse
       data: {
         ...courseData,
         // Associer les tags si fournis
-        ...(validatedData.tags && validatedData.tags.length > 0 && {
-          tags: {
-            create: validatedData.tags.map(tagId => ({
-              tag: {
-                connect: { id: tagId }
-              }
-            }))
-          }
-        })
+        ...(validatedData.tags &&
+          validatedData.tags.length > 0 && {
+            tags: {
+              create: validatedData.tags.map((tagId) => ({
+                tag: {
+                  connect: { id: tagId },
+                },
+              })),
+            },
+          }),
       },
       include: {
         tags: {
           include: {
-            tag: true
-          }
-        }
-      }
+            tag: true,
+          },
+        },
+      },
     });
 
     // Créer un événement analytics pour le suivi
@@ -149,7 +176,7 @@ export async function createCourse(data: CreateCourseData): Promise<CreateCourse
     // Revalider les pages concernées
     revalidatePath("/admin/courses");
     revalidatePath("/courses");
-    
+
     if (validatedData.published) {
       revalidatePath("/");
     }
@@ -162,14 +189,14 @@ export async function createCourse(data: CreateCourseData): Promise<CreateCourse
         slug: course.slug,
       },
     };
-
   } catch (error) {
     console.error("Erreur lors de la création de la formation:", error);
 
     if (error instanceof z.ZodError) {
       return {
         success: false,
-        error: "Données invalides: " + error.errors.map(e => e.message).join(", "),
+        error:
+          "Données invalides: " + error.errors.map((e) => e.message).join(", "),
       };
     }
 
@@ -203,7 +230,10 @@ export async function checkSlugAvailability(slug: string): Promise<boolean> {
 }
 
 // Action pour créer un nouveau tag rapidement
-export async function createQuickTag(name: string, color: string = "#3B82F6"): Promise<{
+export async function createQuickTag(
+  name: string,
+  color: string = "#3B82F6"
+): Promise<{
   success: boolean;
   tag?: { id: string; name: string; color: string };
   error?: string;
@@ -220,7 +250,10 @@ export async function createQuickTag(name: string, color: string = "#3B82F6"): P
       };
     }
 
-    if (session.user.role !== Role.ADMIN && session.user.role !== Role.INSTRUCTOR) {
+    if (
+      session.user.role !== Role.ADMIN &&
+      session.user.role !== Role.INSTRUCTOR
+    ) {
       return {
         success: false,
         error: "Permissions insuffisantes",
@@ -258,7 +291,6 @@ export async function createQuickTag(name: string, color: string = "#3B82F6"): P
         color: tag.color,
       },
     };
-
   } catch (error) {
     console.error("Erreur lors de la création du tag:", error);
     return {

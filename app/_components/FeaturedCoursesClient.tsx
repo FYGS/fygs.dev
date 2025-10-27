@@ -6,6 +6,7 @@ import { ArrowRight, Trophy, BookOpen } from "lucide-react";
 import Link from "next/link";
 import { CourseCardShared } from "@/components/courses/course-card-shared";
 import { FeaturedCourseDTO } from "@/types/course";
+import { motion } from "framer-motion";
 
 // Types pour les cours sérialisés
 interface FeaturedCoursesClientProps { courses: FeaturedCourseDTO[] }
@@ -17,7 +18,7 @@ export function FeaturedCoursesClient({ courses }: FeaturedCoursesClientProps) {
       <section className="py-16 lg:py-24">
         <div className="container max-w-7xl mx-auto px-4">
           <div className="text-center">
-            <p className="text-muted-foreground">Aucun cours featured disponible pour le moment.</p>
+            <p className="text-muted-foreground">No featured courses available at the moment.</p>
           </div>
         </div>
       </section>
@@ -29,16 +30,31 @@ export function FeaturedCoursesClient({ courses }: FeaturedCoursesClientProps) {
       <div className="container max-w-7xl mx-auto px-4">
         <FadeInWhenVisible>
           <div className="text-center space-y-4 mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
+            <motion.div
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
               <Trophy className="h-4 w-4" />
-              Formations Premium
-            </div>
-            <h2 className="text-3xl lg:text-4xl font-bold bg-linear-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent">
-              Formations les plus populaires
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Rejoignez des milliers de développeurs qui transforment leur carrière avec nos formations premium
-            </p>
+              Premium Courses
+            </motion.div>
+            <motion.h2
+              className="text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.5 }}
+            >
+              Most Popular Courses
+            </motion.h2>
+            <motion.p
+              className="text-lg text-muted-foreground max-w-2xl mx-auto"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+            >
+              Join thousands of developers transforming their careers with our premium courses.
+            </motion.p>
           </div>
         </FadeInWhenVisible>
 
@@ -58,16 +74,16 @@ export function FeaturedCoursesClient({ courses }: FeaturedCoursesClientProps) {
         {/* CTA Section */}
         <FadeInWhenVisible delay={0.4}>
           <div className="text-center mt-12">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               asChild
               className="group hover:scale-105 transition-transform"
             >
-              <Link href="/formations">
+                <Link href="/courses">
                 <BookOpen className="h-5 w-5 mr-2" />
-                Voir toutes les formations
+                View all courses
                 <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Link>
+                </Link>
             </Button>
           </div>
         </FadeInWhenVisible>

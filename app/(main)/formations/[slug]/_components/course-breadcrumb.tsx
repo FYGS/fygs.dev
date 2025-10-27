@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 interface CourseBreadcrumbProps {
   courseTitle: string;
   courseSlug: string;
+  currentPage?: string;
 }
 
-export function CourseBreadcrumb({ courseTitle }: CourseBreadcrumbProps) {
+export function CourseBreadcrumb({ courseTitle, courseSlug, currentPage }: CourseBreadcrumbProps) {
   return (
     <nav className="flex items-center space-x-1 text-sm text-muted-foreground mb-6">
       <Button variant="ghost" size="sm" asChild className="h-auto p-1 hover:text-primary">
@@ -30,9 +31,22 @@ export function CourseBreadcrumb({ courseTitle }: CourseBreadcrumbProps) {
       
       <ChevronRight className="h-4 w-4" />
       
-      <span className="font-medium text-foreground truncate max-w-[200px] sm:max-w-none">
-        {courseTitle}
-      </span>
+      <Button variant="ghost" size="sm" asChild className="h-auto p-1 hover:text-primary">
+        <Link href={`/formations/${courseSlug}`} className="flex items-center gap-1">
+          <span className="font-medium text-foreground truncate max-w-[200px] sm:max-w-none">
+            {courseTitle}
+          </span>
+        </Link>
+      </Button>
+      
+      {currentPage && (
+        <>
+          <ChevronRight className="h-4 w-4" />
+          <span className="font-medium text-foreground truncate max-w-[200px] sm:max-w-none">
+            {currentPage}
+          </span>
+        </>
+      )}
     </nav>
   );
 }

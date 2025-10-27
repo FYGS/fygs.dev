@@ -45,7 +45,8 @@ export async function PATCH(req: NextRequest) {
         name: validatedData.name,
         email: validatedData.email,
         // Si l'email change, marquer comme non vérifié
-        emailVerified: validatedData.email === session.user.email ? undefined : false,
+        emailVerified:
+          validatedData.email === session.user.email ? undefined : false,
       },
       select: {
         id: true,
@@ -60,12 +61,20 @@ export async function PATCH(req: NextRequest) {
       message: "Profil mis à jour avec succès",
       user: updatedUser,
     });
-
   } catch (error) {
-    const apiLogger = createLogger({ operation: 'profile-update-api', resourceType: 'api' });
-    apiLogger.error("Profile update error", {
-      metadata: { error: error instanceof Error ? error.message : String(error) }
-    }, error instanceof Error ? error : new Error(String(error)));
+    const apiLogger = createLogger({
+      operation: "profile-update-api",
+      resourceType: "api",
+    });
+    apiLogger.error(
+      "Profile update error",
+      {
+        metadata: {
+          error: error instanceof Error ? error.message : String(error),
+        },
+      },
+      error instanceof Error ? error : new Error(String(error))
+    );
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -108,8 +117,6 @@ export async function GET() {
             currentPeriodEnd: true,
             cancelAtPeriodEnd: true,
           },
-          take: 1,
-          orderBy: { createdAt: 'desc' },
         },
         enrollments: {
           select: {
@@ -124,7 +131,7 @@ export async function GET() {
               },
             },
           },
-          orderBy: { enrolledAt: 'desc' },
+          orderBy: { enrolledAt: "desc" },
           take: 5,
         },
         progress: {
@@ -150,12 +157,17 @@ export async function GET() {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "Utilisateur non trouvé" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Utilisateur non trouvé" },
+        { status: 404 }
+      );
     }
 
     // Calculer les statistiques
     const totalEnrollments = user.enrollments.length;
-    const completedCourses = user.enrollments.filter(e => e.completedAt).length;
+    const completedCourses = user.enrollments.filter(
+      (e) => e.completedAt
+    ).length;
     const totalCertificates = user.certificates.length;
 
     // Calculer la progression moyenne
@@ -171,14 +183,17 @@ export async function GET() {
       return acc;
     }, {} as Record<string, { completed: number; total: number }>);
 
-    const averageProgress = Object.values(courseProgress).length > 0
-      ? Math.round(
-          Object.values(courseProgress).reduce(
-            (sum, course) => sum + (course.completed / course.total),
-            0
-          ) / Object.values(courseProgress).length * 100
-        )
-      : 0;
+    const averageProgress =
+      Object.values(courseProgress).length > 0
+        ? Math.round(
+            (Object.values(courseProgress).reduce(
+              (sum, course) => sum + course.completed / course.total,
+              0
+            ) /
+              Object.values(courseProgress).length) *
+              100
+          )
+        : 0;
 
     return NextResponse.json({
       user: {
@@ -196,16 +211,23 @@ export async function GET() {
       },
       recentEnrollments: user.enrollments,
       hasActiveSubscription:
-        user.subscriptions.length > 0 &&
-        user.subscriptions[0].status === SubscriptionStatus.ACTIVE &&
-        !user.subscriptions[0].cancelAtPeriodEnd,
+        user.subscriptions?.status === SubscriptionStatus.ACTIVE &&
+        !user.subscriptions?.cancelAtPeriodEnd,
     });
-
   } catch (error) {
-    const apiLogger = createLogger({ operation: 'profile-fetch-api', resourceType: 'api' });
-    apiLogger.error("Profile fetch error", {
-      metadata: { error: error instanceof Error ? error.message : String(error) }
-    }, error instanceof Error ? error : new Error(String(error)));
+    const apiLogger = createLogger({
+      operation: "profile-fetch-api",
+      resourceType: "api",
+    });
+    apiLogger.error(
+      "Profile fetch error",
+      {
+        metadata: {
+          error: error instanceof Error ? error.message : String(error),
+        },
+      },
+      error instanceof Error ? error : new Error(String(error))
+    );
     return NextResponse.json(
       { error: "Erreur interne du serveur" },
       { status: 500 }

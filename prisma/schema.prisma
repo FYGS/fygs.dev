@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,6 +5,344 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  userId                String
+  accountId             String
+  providerId            String
+  refreshToken          String?
+  accessToken           String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  password              String?
+  scope                 String?
+  idToken               String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("account")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String
+  userId    String
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model User {
+  id                String           @id @default(cuid())
+  name              String
+  email             String           @unique
+  emailVerified     Boolean          @default(false)
+  image             String?
+  role              Role             @default(STUDENT)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  AnalyticsEvent    AnalyticsEvent[]
+  certificates      Certificate[]
+  instructedCourses Course[]         @relation("CourseInstructor")
+  enrollments       Enrollment[]
+  InvoiceAudit      InvoiceAudit[]
+  payments          Payment[]
+  progress          Progress[]
+  quizResults       QuizResult[]
+  reviews           Review[]
+  subscriptions     Subscription?
+  accounts          Account[]
+  sessions          Session[]
+
+  @@map("user")
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String   @unique
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([identifier, value])
+  @@map("verification")
+}
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  userId               String             @unique
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  status               SubscriptionStatus @default(INCOMPLETE)
+  priceId              String?
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  plan                 SubscriptionPlan   @default(FREE)
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Course {
+  id                  String           @id @default(cuid())
+  title               String
+  slug                String           @unique
+  description         String
+  thumbnail           String?
+  price               Decimal?
+  category            CourseCategory
+  level               CourseLevel
+  published           Boolean          @default(false)
+  featured            Boolean          @default(false)
+  duration            Int?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @default(now())
+  accessTier          CourseAccessTier @default(FREE)
+  previewEnabled      Boolean          @default(true)
+  instructorId        String?
+  publicEvaluation    String?
+  publicPrerequisites String?
+  publicResources     String?
+  publicStructure     String?
+  Certificate         Certificate[]
+  instructor          User?            @relation("CourseInstructor", fields: [instructorId], references: [id])
+  tags                CourseTag[]
+  enrollments         Enrollment[]
+  lessons             Lesson[]
+  modules             Module[]
+  payments            Payment[]
+  quizzes             Quiz[]           @relation("CourseToQuiz")
+  reviews             Review[]
+  visualSupports      VisualSupport[]  @relation("CourseToVisualSupport")
+}
+
+model Lesson {
+  id          String     @id @default(cuid())
+  title       String
+  slug        String
+  description String?
+  content     String?
+  videoUrl    String?
+  duration    Int?
+  order       Int
+  published   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @default(now())
+  courseId    String
+  moduleId    String?
+  course      Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  module      Module?    @relation(fields: [moduleId], references: [id])
+  progress    Progress[]
+
+  @@unique([moduleId, order])
+  @@unique([courseId, slug])
+  @@index([courseId, order])
+}
+
+model Enrollment {
+  id          String    @id @default(cuid())
+  userId      String
+  courseId    String
+  enrolledAt  DateTime  @default(now())
+  completedAt DateTime?
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+}
+
+model Progress {
+  id          String    @id @default(cuid())
+  userId      String
+  lessonId    String
+  completed   Boolean   @default(false)
+  watchTime   Int       @default(0)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now())
+  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+}
+
+model Certificate {
+  id        String   @id @default(cuid())
+  userId    String
+  courseId  String
+  issuedAt  DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+}
+
+model Payment {
+  id                    String        @id @default(cuid())
+  userId                String
+  amount                Decimal
+  currency              String        @default("eur")
+  status                PaymentStatus @default(PENDING)
+  description           String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @default(now())
+  courseId              String?
+  kind                  PaymentKind   @default(COURSE)
+  stripePaymentIntentId String?
+  course                Course?       @relation(fields: [courseId], references: [id])
+  user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, kind, status])
+  @@index([courseId])
+}
+
+model InvoiceAudit {
+  id              String   @id @default(cuid())
+  userId          String
+  stripeInvoiceId String?
+  type            String
+  amount          Decimal?
+  createdAt       DateTime @default(now())
+  currency        String?  @default("eur")
+  metadata        Json?
+  paymentId       String?
+  subscriptionId  String?
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+  @@index([createdAt])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  userId    String
+  courseId  String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+}
+
+model Tag {
+  id      String      @id @default(cuid())
+  name    String      @unique
+  color   String      @default("#3B82F6")
+  courses CourseTag[]
+}
+
+model CourseTag {
+  courseId String
+  tagId    String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  tag      Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([courseId, tagId])
+}
+
+model AnalyticsEvent {
+  id         String   @id @default(cuid())
+  userId     String?
+  sessionId  String?
+  type       String
+  source     String?
+  createdAt  DateTime @default(now())
+  properties Json?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([type, createdAt])
+  @@index([userId, type])
+  @@index([createdAt])
+}
+
+model Module {
+  id        String   @id @default(cuid())
+  courseId  String
+  title     String
+  slug      String
+  order     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lessons   Lesson[]
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, slug])
+  @@unique([courseId, order])
+  @@index([courseId, order])
+}
+
+model VisualSupport {
+  id        String   @id @default(cuid())
+  courseId  String
+  moduleId  Int
+  title     String
+  content   Json
+  order     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  course    Course   @relation("CourseToVisualSupport", fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, moduleId, order])
+  @@index([courseId, moduleId])
+  @@map("visual_support")
+}
+
+model Quiz {
+  id        String         @id @default(cuid())
+  courseId  String
+  moduleId  Int
+  title     String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  course    Course         @relation("CourseToQuiz", fields: [courseId], references: [id], onDelete: Cascade)
+  results   QuizResult[]   @relation("QuizToQuizResult")
+  questions QuizQuestion[] @relation("QuizToQuizQuestion")
+}
+
+model QuizQuestion {
+  id          String   @id @default(cuid())
+  quizId      String
+  question    String
+  options     String[]
+  correct     Int
+  explanation String?
+  order       Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  quiz        Quiz     @relation("QuizToQuizQuestion", fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@unique([quizId, order])
+  @@map("quiz_question_result")
+}
+
+model QuizResult {
+  id          String   @id @default(cuid())
+  userId      String
+  quizId      String
+  score       Int
+  total       Int
+  percentage  Int
+  completedAt DateTime @default(now())
+  quiz        Quiz     @relation("QuizToQuizResult", fields: [quizId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, quizId])
+  @@index([userId, quizId, completedAt])
 }
 
 enum Role {
@@ -43,8 +378,6 @@ enum SubscriptionStatus {
   TRIALING
 }
 
-// Multi-tier subscription plan (FR-014)
-// Simplified to single PREMIUM plan (legacy BASIC/PRO removed)
 enum SubscriptionPlan {
   FREE
   PREMIUM
@@ -57,285 +390,13 @@ enum PaymentStatus {
   REFUNDED
 }
 
-// Type of payment (one-time course vs subscription vs refund record)
 enum PaymentKind {
   COURSE
   SUBSCRIPTION
   REFUND
 }
 
-// Required access tier for subscription-based viewing (FR-007..FR-012)
-// Binary access tier: FREE vs PREMIUM (legacy BASIC/PRO removed)
 enum CourseAccessTier {
   FREE
   PREMIUM
-}
-
-model Account {
-  id                    String    @id @default(cuid())
-  userId                String
-  accountId             String
-  providerId            String
-  refreshToken          String?   @db.Text
-  accessToken           String?   @db.Text
-  accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt DateTime?
-  password              String?
-  scope                 String?
-  idToken               String?   @db.Text
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("account")
-}
-
-model Session {
-  id        String   @id @default(cuid())
-  token     String
-  userId    String
-  expiresAt DateTime
-  ipAddress String?
-  userAgent String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("session")
-}
-
-model User {
-  id            String   @id @default(cuid())
-  name          String
-  email         String   @unique
-  emailVerified Boolean  @default(false)
-  image         String?
-  role          Role     @default(STUDENT)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  accounts       Account[]
-  sessions       Session[]
-  subscriptions  Subscription[]
-  enrollments    Enrollment[]
-  progress       Progress[]
-  certificates   Certificate[]
-  payments       Payment[]
-  reviews        Review[]
-  InvoiceAudit   InvoiceAudit[]
-  AnalyticsEvent AnalyticsEvent[]
-  instructedCourses Course[] @relation("CourseInstructor")
-
-  @@map("user")
-}
-
-model Verification {
-  id         String   @id @default(cuid())
-  identifier String
-  value      String   @unique
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  @@unique([identifier, value])
-  @@map("verification")
-}
-
-model Subscription {
-  id                   String             @id @default(cuid())
-  userId               String
-  stripeCustomerId     String?
-  stripeSubscriptionId String?
-  status               SubscriptionStatus @default(INCOMPLETE)
-  plan                 SubscriptionPlan   @default(FREE)
-  priceId              String?
-  currentPeriodStart   DateTime?
-  currentPeriodEnd     DateTime?
-  cancelAtPeriodEnd    Boolean            @default(false)
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId])
-}
-
-model Course {
-  id             String           @id @default(cuid())
-  title          String
-  slug           String           @unique
-  description    String
-  thumbnail      String?
-  price          Decimal?
-  category       CourseCategory
-  level          CourseLevel
-  published      Boolean          @default(false)
-  featured       Boolean          @default(false)
-  accessTier     CourseAccessTier @default(FREE)
-  previewEnabled Boolean          @default(true)
-  duration       Int? // Total duration in minutes
-  instructorId   String?          // Optional instructor ownership
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @default(now())
-
-  instructor  User?         @relation("CourseInstructor", fields: [instructorId], references: [id], onDelete: SetNull)
-  lessons     Lesson[]
-  enrollments Enrollment[]
-  reviews     Review[]
-  tags        CourseTag[]
-  payments    Payment[]
-  Certificate Certificate[]
-}
-
-model Lesson {
-  id          String   @id @default(cuid())
-  title       String
-  slug        String
-  description String?
-  content     String? // MDX content
-  videoUrl    String?
-  duration    Int? // Duration in seconds
-  order       Int
-  published   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now())
-
-  courseId String
-  course   Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  progress Progress[]
-
-  @@unique([courseId, slug])
-}
-
-model Enrollment {
-  id          String    @id @default(cuid())
-  userId      String
-  courseId    String
-  enrolledAt  DateTime  @default(now())
-  completedAt DateTime?
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, courseId])
-}
-
-model Progress {
-  id          String    @id @default(cuid())
-  userId      String
-  lessonId    String
-  completed   Boolean   @default(false)
-  watchTime   Int       @default(0) // Watch time in seconds
-  completedAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @default(now())
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, lessonId])
-}
-
-model Certificate {
-  id        String   @id @default(cuid())
-  userId    String
-  courseId  String
-  issuedAt  DateTime @default(now())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, courseId])
-}
-
-model Payment {
-  id                    String        @id @default(cuid())
-  userId                String
-  courseId              String? // For course purchases (helps refund logic)
-  stripePaymentIntentId String? // Renamed for clarity
-  amount                Decimal
-  currency              String        @default("eur")
-  status                PaymentStatus @default(PENDING)
-  description           String?
-  kind                  PaymentKind   @default(COURSE)
-  createdAt             DateTime      @default(now())
-  updatedAt             DateTime      @default(now())
-
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course Course? @relation(fields: [courseId], references: [id], onDelete: SetNull)
-
-  @@index([userId, kind, status])
-  @@index([courseId])
-}
-
-// Audit log for invoices (especially prorations when switching plans)
-model InvoiceAudit {
-  id              String   @id @default(cuid())
-  userId          String
-  subscriptionId String? // Related subscription
-  paymentId       String? // Related payment
-  stripeInvoiceId String? // Stripe reference (nullable for internal events)
-  type            String // e.g. PRORATION, REFUND_ELIGIBLE, REFUND_INELIGIBLE, PLAN_SWITCH
-  amount          Decimal?
-  currency        String?  @default("eur")
-  metadata        Json? // Additional context
-  createdAt       DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, type])
-  @@index([createdAt])
-}
-
-model Review {
-  id        String   @id @default(cuid())
-  userId    String
-  courseId  String
-  rating    Int // 1-5 stars
-  comment   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, courseId])
-}
-
-model Tag {
-  id    String @id @default(cuid())
-  name String @unique
-  color String @default("#3B82F6")
-
-  courses CourseTag[]
-}
-
-model CourseTag {
-  courseId String
-  tagId    String
-
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
-
-  @@id([courseId, tagId])
-}
-
-// Generic append-only analytics events for engagement & monetization signals
-model AnalyticsEvent {
-  id         String   @id @default(cuid())
-  userId     String?
-  sessionId  String?
-  type       String // Event classification (COURSE_ENROLLMENT_EXPLICIT, etc.)
-  source     String? // server | client | webhook
-  properties Json? // Event-specific data (NO PII)
-  createdAt  DateTime @default(now())
-
-  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([type, createdAt])
-  @@index([userId, type])
-  @@index([createdAt])
 }

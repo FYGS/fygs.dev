@@ -1,9 +1,12 @@
+// TODO: tous les commentaires devront être correctement
+// implementés plus tard de manière robuste et entièrement aligné avec stripe
+// Pour l'heure juste garder 'Gérer l\'abonnement' qui dirige vers stripe qui gère cela bien
 "use client";
 import { useState, useTransition, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { SubscriptionStatus } from '@prisma/client';
+// import { SubscriptionStatus } from '@prisma/client';
 
 interface BillingActionsProps {
   currentPriceId?: string | null; // raw Stripe price id (server provided)
@@ -13,9 +16,9 @@ interface BillingActionsProps {
   currentCycle?: 'monthly' | 'yearly' | 'unknown';
 }
 
-export function BillingActions({ currentPriceId, currentCycle, availablePrices, subscriptionStatus, cancelAtPeriodEnd }: BillingActionsProps) {
+export function BillingActions({ currentPriceId, currentCycle, /* availablePrices, subscriptionStatus, cancelAtPeriodEnd */ }: BillingActionsProps) {
   const [priceId, setPriceId] = useState<string | undefined>(undefined);
-  const [pending, startTransition] = useTransition();
+  const [/*pending*/, startTransition] = useTransition();
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
   // Map the raw current price id to semantic cycle for initial select
@@ -86,7 +89,7 @@ export function BillingActions({ currentPriceId, currentCycle, availablePrices, 
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col md:flex-row gap-3 items-start md:items-end">
+      {/* <div className="flex flex-col md:flex-row gap-3 items-start md:items-end">
         <div className="space-y-2">
           <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Changer de cycle</p>
           <Select value={priceId} onValueChange={(v) => setPriceId(v)}>
@@ -109,7 +112,7 @@ export function BillingActions({ currentPriceId, currentCycle, availablePrices, 
         >
           {loadingAction==='switch_plan' ? 'Changement...' : 'Appliquer'}
         </Button>
-      </div>
+      </div> */}
 
       <div className="flex flex-wrap gap-3">
         <Button 
@@ -120,7 +123,7 @@ export function BillingActions({ currentPriceId, currentCycle, availablePrices, 
         >
           {loadingAction==='manage_subscription' ? 'Redirection...' : 'Gérer l\'abonnement'}
         </Button>
-        {!cancelAtPeriodEnd && subscriptionStatus === SubscriptionStatus.ACTIVE && (
+        {/* {!cancelAtPeriodEnd && subscriptionStatus === SubscriptionStatus.ACTIVE && (
           <Button 
             variant="outline" 
             disabled={loadingAction==='cancel_at_period_end'} 
@@ -142,7 +145,7 @@ export function BillingActions({ currentPriceId, currentCycle, availablePrices, 
           >
             {loadingAction==='cancel_immediately' ? 'Résiliation...' : 'Résiliation immédiate'}
           </Button>
-        )}
+        )} */}
       </div>
     </div>
   );

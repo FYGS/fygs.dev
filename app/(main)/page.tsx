@@ -9,6 +9,7 @@ import { FeaturedCourses } from "../_components/FeaturedCourses";
 import { Testimonials } from "../_components/Testimonials";
 import { CallToAction } from "../_components/CallToAction";
 import { defaultMetadata } from "../_lib/metadata";
+import { BlogPreview } from "../_components/BlogPreview";
 
 export const metadata: Metadata = {
   ...defaultMetadata,
@@ -53,6 +54,10 @@ export default function Home() {
       
       {/* Testimonials - New Social Proof Section */}
       <Testimonials />
+      
+      {/* Blog Preview - New Engaging Section */}
+      <BlogPreview />
+      <Spacing size="md" />
       
       {/* Call to Action - New Conversion Section */}
       <CallToAction />

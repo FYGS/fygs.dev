@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useTransition, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,6 +35,7 @@ import {
   BookOpen
 } from "lucide-react";
 import { createLesson } from "../../_actions/create-lesson";
+import { getModulesByCourse } from "../../../courses/[id]/_actions/module-actions";
 
 // Validation schema
 const lessonSchema = z.object({
@@ -47,6 +48,7 @@ const lessonSchema = z.object({
   order: z.number().int().min(1, "L'ordre doit être supérieur à 0"),
   published: z.boolean().default(false),
   courseId: z.string().cuid("ID de formation invalide"),
+  moduleId: z.string().cuid("ID de module invalide").optional(),
 });
 
 type LessonFormData = z.infer<typeof lessonSchema>;
@@ -58,6 +60,13 @@ interface Course {
   slug: string;
 }
 
+interface Module {
+  id: string;
+  title: string;
+  order: number;
+  courseId: string;
+}
+
 interface LessonCreateFormProps {
   courses: Course[];
   selectedCourseId?: string;
@@ -66,6 +75,8 @@ interface LessonCreateFormProps {
 export function LessonCreateForm({ courses, selectedCourseId }: LessonCreateFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [modules, setModules] = useState<Module[]>([]);
+  const [loadingModules, setLoadingModules] = useState(false);
 
   const form = useForm<LessonFormData>({
     resolver: zodResolver(lessonSchema),
@@ -79,6 +90,7 @@ export function LessonCreateForm({ courses, selectedCourseId }: LessonCreateForm
       order: 1,
       published: false,
       courseId: selectedCourseId || "",
+      moduleId: undefined,
     },
   });
 
@@ -92,6 +104,40 @@ export function LessonCreateForm({ courses, selectedCourseId }: LessonCreateForm
       .trim();
     form.setValue("slug", slug);
   };
+
+  // Fetch modules when course changes
+  const fetchModules = async (courseId: string) => {
+    if (!courseId) {
+      setModules([]);
+      return;
+    }
+
+    setLoadingModules(true);
+    try {
+      const result = await getModulesByCourse(courseId);
+      if (result.success) {
+        setModules(result.modules || []);
+      } else {
+        console.error("Error fetching modules:", result.error);
+        setModules([]);
+      }
+    } catch (error) {
+      console.error("Error fetching modules:", error);
+      setModules([]);
+    } finally {
+      setLoadingModules(false);
+    }
+  };
+
+  // Watch for course changes
+  const selectedCourse = form.watch("courseId");
+  useEffect(() => {
+    if (selectedCourse) {
+      fetchModules(selectedCourse);
+      // Reset module selection when course changes
+      form.setValue("moduleId", undefined);
+    }
+  }, [selectedCourse, form]);
 
   const onSubmit = async (data: LessonFormData) => {
     startTransition(async () => {
@@ -107,6 +153,7 @@ export function LessonCreateForm({ courses, selectedCourseId }: LessonCreateForm
         formData.append("order", data.order.toString());
         formData.append("published", data.published.toString());
         formData.append("courseId", data.courseId);
+        if (data.moduleId) formData.append("moduleId", data.moduleId);
 
         const result = await createLesson(formData);
         
@@ -158,6 +205,48 @@ export function LessonCreateForm({ courses, selectedCourseId }: LessonCreateForm
               </Select>
               <FormDescription>
                 Choisissez la formation à laquelle cette leçon appartient
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Module Selection */}
+        <FormField
+          control={form.control}
+          name="moduleId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Module (optionnel)</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value || ""} disabled={!selectedCourse || loadingModules}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder={
+                      !selectedCourse 
+                        ? "Sélectionnez d'abord une formation" 
+                        : loadingModules 
+                        ? "Chargement des modules..." 
+                        : modules.length === 0 
+                        ? "Aucun module disponible"
+                        : "Sélectionnez un module"
+                    } />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {modules.map((module) => (
+                    <SelectItem key={module.id} value={module.id}>
+                      <div className="flex items-center gap-2">
+                        <span className="bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center text-xs">
+                          {module.order}
+                        </span>
+                        {module.title}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormDescription>
+                Associez cette leçon à un module spécifique pour une meilleure organisation
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -272,7 +361,7 @@ export function LessonCreateForm({ courses, selectedCourseId }: LessonCreateForm
                   />
                 </FormControl>
                 <FormDescription>
-                  Durée de la vidéo en secondes
+                  Durée de la vidéo en minutes
                   {field.value && ` (${formatDuration(field.value)})`}
                 </FormDescription>
                 <FormMessage />

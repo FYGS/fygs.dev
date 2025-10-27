@@ -296,7 +296,7 @@ export function LessonEditForm({ lesson, courses }: LessonEditFormProps) {
                     />
                   </FormControl>
                   <FormDescription>
-                    Durée de la vidéo en secondes
+                    Durée de la vidéo en minutes
                     {field.value && ` (${formatDuration(field.value)})`}
                   </FormDescription>
                   <FormMessage />

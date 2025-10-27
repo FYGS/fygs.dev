@@ -18,7 +18,7 @@ export const runtime = "nodejs";
  */
 const AUTH_ROUTE_PREFIXES = [
   "/auth/login",
-  "/auth/register", 
+  "/auth/register",
   "/auth/verify",
   "/auth/forgot-password",
   "/auth/reset-password",
@@ -26,7 +26,7 @@ const AUTH_ROUTE_PREFIXES = [
 
 const PROTECTED_PREFIXES = [
   "/dashboard",
-  "/profile", 
+  "/profile",
   "/settings",
   "/certificates",
   "/admin",
@@ -36,7 +36,7 @@ const PROTECTED_PREFIXES = [
 //   "/",
 //   "/formations",
 //   "/pricing",
-//   "/blog", 
+//   "/blog",
 //   "/projects",
 //   "/tech-mastry",
 //   "/contact",
@@ -46,25 +46,30 @@ const PROTECTED_PREFIXES = [
 // ];
 
 // Utility: safe internal redirect (prevents open redirect)
-function buildInternalRedirect(base: string, target: string | null | undefined): URL | null {
+function buildInternalRedirect(
+  base: string,
+  target: string | null | undefined
+): URL | null {
   if (!target) return null;
   try {
     const decoded = decodeURIComponent(target);
-    if (!decoded.startsWith('/')) return null; // only allow internal relative paths
+    if (!decoded.startsWith("/")) return null; // only allow internal relative paths
     return new URL(decoded, base);
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 // Match lesson paths: /formations/[course]/lessons/[lesson]
 const LESSON_PATH_REGEX = /^\/formations\/[^\/]+\/lessons\/[^\/]+$/;
 
 function isAuthRoute(path: string): boolean {
-  return AUTH_ROUTE_PREFIXES.some(p => path.startsWith(p));
+  return AUTH_ROUTE_PREFIXES.some((p) => path.startsWith(p));
 }
 
 function isProtectedRoute(path: string): boolean {
   if (LESSON_PATH_REGEX.test(path)) return true; // lesson pages always protected
-  return PROTECTED_PREFIXES.some(p => path === p || path.startsWith(p + '/'));
+  return PROTECTED_PREFIXES.some((p) => path === p || path.startsWith(p + "/"));
 }
 
 // function isPublicRoute(path: string): boolean {
@@ -74,11 +79,11 @@ function isProtectedRoute(path: string): boolean {
 // Determine if request should bypass middleware logic
 function shouldBypass(path: string): boolean {
   return (
-    path.startsWith('/api/') ||
-    path.startsWith('/_next/') ||
-    path.startsWith('/static/') ||
-    path.includes('.') || // files (favicon, images, etc.)
-    path === '/maintenance'
+    path.startsWith("/api/") ||
+    path.startsWith("/_next/") ||
+    path.startsWith("/static/") ||
+    path.includes(".") || // files (favicon, images, etc.)
+    path === "/maintenance"
   );
 }
 
@@ -86,15 +91,16 @@ function shouldBypass(path: string): boolean {
 function checkMaintenance(request: NextRequest): NextResponse | null {
   if (!maintenanceConfig.enabled) return null;
   const path = request.nextUrl.pathname;
-  if (path === '/maintenance') return null;
+  if (path === "/maintenance") return null;
   if (maintenanceConfig.allowedPaths?.includes(path)) return null;
-  const ip = request.headers.get('x-forwarded-for') || '';
+  const ip = request.headers.get("x-forwarded-for") || "";
   if (maintenanceConfig.allowedIPs?.includes(ip)) return null;
   const now = new Date();
   if (maintenanceConfig.startTime && maintenanceConfig.endTime) {
-    if (now < maintenanceConfig.startTime || now > maintenanceConfig.endTime) return null;
+    if (now < maintenanceConfig.startTime || now > maintenanceConfig.endTime)
+      return null;
   }
-  return NextResponse.rewrite(new URL('/maintenance', request.url));
+  return NextResponse.rewrite(new URL("/maintenance", request.url));
 }
 
 export async function middleware(request: NextRequest) {
@@ -102,12 +108,12 @@ export async function middleware(request: NextRequest) {
   const pathname = nextUrl.pathname;
 
   // Simple static redirect
-  if (pathname === '/interview-prep') {
+  if (pathname === "/interview-prep") {
     const url = nextUrl.clone();
-    url.pathname = '/tech-mastry';
+    url.pathname = "/tech-mastry";
     return NextResponse.redirect(url, {
       status: 301,
-      headers: { 'Cache-Control': 'public, max-age=31536000, immutable' }
+      headers: { "Cache-Control": "public, max-age=31536000, immutable" },
     });
   }
 
@@ -123,7 +129,7 @@ export async function middleware(request: NextRequest) {
 
   try {
     const session = await auth.api.getSession({
-      headers: request.headers
+      headers: request.headers,
     });
 
     if (session?.user) {
@@ -131,35 +137,43 @@ export async function middleware(request: NextRequest) {
     }
   } catch (error) {
     // Session resolution failed - treat as unauthenticated
-    console.warn('[middleware] Session resolution failed:', error);
+    console.warn("[middleware] Session resolution failed:", error);
   }
 
   const isAuthenticated = !!userId;
 
   // If already authenticated and hitting an auth page → redirect to callback or dashboard
   if (isAuthenticated && isAuthRoute(pathname)) {
-    const callbackUrl = buildInternalRedirect(request.url, nextUrl.searchParams.get('callbackUrl'));
-    return NextResponse.redirect(callbackUrl ?? new URL('/dashboard', request.url));
+    const callbackUrl = buildInternalRedirect(
+      request.url,
+      nextUrl.searchParams.get("callbackUrl")
+    );
+    return NextResponse.redirect(
+      callbackUrl ?? new URL("/dashboard", request.url)
+    );
   }
 
   // If protected route and not authenticated → redirect to login with callback
   if (!isAuthenticated && isProtectedRoute(pathname)) {
-    const loginUrl = new URL('/auth/login', request.url);
+    const loginUrl = new URL("/auth/login", request.url);
     // Preserve original path and query params for post-auth redirect
-    loginUrl.searchParams.set('callbackUrl', encodeURIComponent(pathname + nextUrl.search));
-    loginUrl.searchParams.set('reason', 'auth_required');
+    loginUrl.searchParams.set(
+      "callbackUrl",
+      encodeURIComponent(pathname + nextUrl.search)
+    );
+    loginUrl.searchParams.set("reason", "auth_required");
     return NextResponse.redirect(loginUrl);
   }
 
   // Enhanced lesson access control with course-specific logic
   if (LESSON_PATH_REGEX.test(pathname)) {
     try {
-      const pathSegments = pathname.split('/');
+      const pathSegments = pathname.split("/");
       const courseSlug = pathSegments[2];
       const lessonSlug = pathSegments[4];
 
       if (!courseSlug || !lessonSlug) {
-        return NextResponse.redirect(new URL('/formations', request.url));
+        return NextResponse.redirect(new URL("/formations", request.url));
       }
 
       // Get lesson and course information
@@ -167,7 +181,7 @@ export async function middleware(request: NextRequest) {
         where: {
           slug: lessonSlug,
           course: { slug: courseSlug },
-          published: true // Only published lessons accessible
+          published: true, // Only published lessons accessible
         },
         select: {
           id: true,
@@ -181,27 +195,30 @@ export async function middleware(request: NextRequest) {
               category: true,
               level: true,
               published: true,
-              tags: { include: { tag: true } }
-            }
-          }
-        }
+              tags: { include: { tag: true } },
+            },
+          },
+        },
       });
 
       if (!lesson || !lesson.course.published) {
         // Lesson or course not found/published → redirect to formations
-        return NextResponse.redirect(new URL('/formations', request.url));
+        return NextResponse.redirect(new URL("/formations", request.url));
       }
 
       // Only proceed with access evaluation if user is authenticated
       if (userId) {
-        const accessResult = await AccessService.checkCourseAccess(userId, lesson.courseId);
+        const accessResult = await AccessService.checkCourseAccess(
+          userId,
+          lesson.courseId
+        );
 
         if (!accessResult.canAccessLessons) {
           // Check if this is the first lesson and preview is enabled
           const firstLesson = await db.lesson.findFirst({
             where: { courseId: lesson.courseId, published: true },
-            orderBy: { order: 'asc' },
-            select: { slug: true, order: true }
+            orderBy: { order: "asc" },
+            select: { slug: true, order: true },
           });
 
           const isFirstLesson = firstLesson && firstLesson.slug === lessonSlug;
@@ -210,31 +227,31 @@ export async function middleware(request: NextRequest) {
             // Allow preview access and track analytics
             try {
               await AnalyticsHelper.recordRecommendationImpression(userId, {
-                recommendationType: 'similar_courses',
+                recommendationType: "similar_courses",
                 courseIds: [lesson.courseId],
                 position: 1,
-                context: 'course_page',
-                timestamp: new Date().toISOString()
+                context: "course_page",
+                timestamp: new Date().toISOString(),
               });
             } catch (analyticsError) {
               // Don't fail request for analytics errors
-              console.warn('[middleware] Analytics error:', analyticsError);
+              console.warn("[middleware] Analytics error:", analyticsError);
             }
           } else {
             // No access → redirect to course page with upgrade prompt
             const courseUrl = new URL(`/formations/${courseSlug}`, request.url);
-            courseUrl.searchParams.set('locked', '1');
+            courseUrl.searchParams.set("locked", "1");
             if (!isFirstLesson) {
-              courseUrl.searchParams.set('lesson', lessonSlug);
+              courseUrl.searchParams.set("lesson", lessonSlug);
             }
             return NextResponse.redirect(courseUrl);
           }
         }
       }
     } catch (error) {
-      console.error('[middleware] Lesson access evaluation failed:', error);
+      console.error("[middleware] Lesson access evaluation failed:", error);
       // On error, redirect to course catalog to prevent access issues
-      return NextResponse.redirect(new URL('/formations', request.url));
+      return NextResponse.redirect(new URL("/formations", request.url));
     }
   }
 
@@ -245,8 +262,8 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // Include all routes except API, Next.js internals, static files, and common assets
-    '/((?!api/|_next/|static/|.*\\..*$).*)',
+    "/((?!api/|_next/|static/|.*\\..*$).*)",
     // Specific redirects that need handling
-    '/interview-prep',
+    "/interview-prep",
   ],
 };

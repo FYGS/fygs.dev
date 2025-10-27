@@ -14,10 +14,10 @@ export async function POST() {
 
     const user = await db.user.findUnique({
       where: { id: session.user.id },
-      select: {
-        id: true,
-        email: true,
-        subscriptions: { select: { stripeCustomerId: true }, take: 1 },
+      include: {
+        subscriptions: {
+          select: { stripeCustomerId: true },
+        },
       },
     });
 
@@ -25,9 +25,12 @@ export async function POST() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const stripeCustomerId = user.subscriptions[0]?.stripeCustomerId;
+    const stripeCustomerId = user.subscriptions?.stripeCustomerId;
     if (!stripeCustomerId) {
-      return NextResponse.json({ error: "No Stripe customer found" }, { status: 400 });
+      return NextResponse.json(
+        { error: "No Stripe customer found" },
+        { status: 400 }
+      );
     }
 
     const portal = await stripe.billingPortal.sessions.create({
@@ -38,7 +41,10 @@ export async function POST() {
     return NextResponse.json({ url: portal.url });
   } catch (error) {
     console.error("Create portal session error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -51,20 +57,24 @@ export async function GET() {
 
     const user = await db.user.findUnique({
       where: { id: session.user.id },
-      select: {
-        id: true,
-        email: true,
-        subscriptions: { select: { stripeCustomerId: true }, take: 1 },
+      include: {
+        subscriptions: {
+          select: { stripeCustomerId: true },
+        },
       },
     });
 
     if (!user) {
-      return NextResponse.redirect(`${SITE_BASE_URL}/dashboard/billing?error=user-not-found`);
+      return NextResponse.redirect(
+        `${SITE_BASE_URL}/dashboard/billing?error=user-not-found`
+      );
     }
 
-    const stripeCustomerId = user.subscriptions[0]?.stripeCustomerId;
+    const stripeCustomerId = user.subscriptions?.stripeCustomerId;
     if (!stripeCustomerId) {
-      return NextResponse.redirect(`${SITE_BASE_URL}/dashboard/billing?error=no-subscription`);
+      return NextResponse.redirect(
+        `${SITE_BASE_URL}/dashboard/billing?error=no-subscription`
+      );
     }
 
     const portal = await stripe.billingPortal.sessions.create({
@@ -75,8 +85,8 @@ export async function GET() {
     return NextResponse.redirect(portal.url);
   } catch (error) {
     console.error("Create portal session error:", error);
-    return NextResponse.redirect(`${SITE_BASE_URL}/dashboard/billing?error=portal-error`);
+    return NextResponse.redirect(
+      `${SITE_BASE_URL}/dashboard/billing?error=portal-error`
+    );
   }
 }
-
-

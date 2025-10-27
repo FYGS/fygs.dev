@@ -1,3 +1,36 @@
+export interface SerializedQuizQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  correct: number;
+  explanation: string;
+  order: number;
+}
+
+export interface SerializedQuiz {
+  id: string;
+  moduleId: number;
+  title: string;
+  questions: SerializedQuizQuestion[];
+}
+
+export interface SerializedVisualSupport {
+  id: string;
+  title: string;
+  moduleId: number;
+  order: number;
+  content: { slides: Array<{ title: string; content: any }> };
+}
+
+export interface SerializedModule {
+  id: string;
+  title: string;
+  slug: string;
+  order: number;
+  courseId: string;
+  lessons: SerializedLesson[];
+}
+
 export interface SerializedCourse {
   id: string;
   title: string;
@@ -12,7 +45,10 @@ export interface SerializedCourse {
   duration: number | null;
   createdAt: string;
   updatedAt: string;
-  lessons: SerializedLesson[];
+  modules: SerializedModule[];
+  lessons: SerializedLesson[]; // Keep for backward compatibility
+  quizzes?: SerializedQuiz[];
+  visualSupports?: SerializedVisualSupport[];
   reviews: SerializedReview[];
   tags: SerializedCourseTag[];
   enrollments: SerializedEnrollment[];
@@ -30,6 +66,7 @@ export interface SerializedLesson {
   description: string | null;
   duration: number | null;
   order: number;
+  moduleId: string | null;
 }
 
 export interface SerializedReview {
