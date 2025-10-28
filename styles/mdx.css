@@ -1,39 +1,64 @@
-@utility mdx-content {
-  @apply prose prose-invert max-w-none
-    prose-headings:text-foreground
-    prose-p:text-muted-foreground
-    prose-a:text-primary prose-a:hover:text-primary/80
-    prose-strong:text-foreground
-    prose-code:text-primary prose-code:bg-primary/10 prose-code:p-1 prose-code:rounded
-    prose-pre:bg-muted prose-pre:border prose-pre:border-border
-    prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:text-muted-foreground
-    prose-li:text-muted-foreground;
+@layer utilities {
+  .mdx-content {
+    @apply prose prose-invert max-w-none
+      prose-headings:text-foreground
+      prose-p:text-muted-foreground
+      prose-a:text-primary prose-a:hover:text-primary/80
+      prose-strong:text-foreground
+      prose-code:text-primary prose-code:bg-primary/10 prose-code:p-1 prose-code:rounded
+      prose-pre:bg-muted prose-pre:border prose-pre:border-border
+      prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:text-muted-foreground
+      prose-li:text-muted-foreground
+      prose-table:border-collapse prose-table:border-0
+      prose-th:border prose-th:border-border prose-th:bg-muted/50 prose-th:p-3 prose-th:text-left prose-th:font-semibold
+      prose-td:border prose-td:border-border prose-td:p-3 prose-td:text-left;
+  }
 
-  & pre {
+  .mdx-content pre {
     @apply bg-background/50 border rounded-lg overflow-x-auto;
   }
 
-  & code {
+  .mdx-content code {
     @apply text-primary bg-primary/10 rounded px-1 py-0.5;
   }
 
-  & pre code {
+  .mdx-content pre code {
     @apply bg-transparent text-foreground p-0;
   }
 
-  & h2 {
+  .mdx-content h2 {
     @apply mt-12 scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0;
   }
 
-  & h3 {
+  .mdx-content h3 {
     @apply mt-8 scroll-m-20 text-2xl font-semibold tracking-tight;
   }
 
-  & ul {
+  .mdx-content ul {
     @apply my-6 ml-6 list-disc;
   }
 
-  & ol {
+  .mdx-content ol {
     @apply my-6 ml-6 list-decimal;
+  }
+
+  .mdx-content table {
+    @apply w-full border-collapse border border-border my-6;
+  }
+
+  .mdx-content th {
+    @apply border border-border bg-muted/50 px-4 py-3 text-left font-semibold text-foreground;
+  }
+
+  .mdx-content td {
+    @apply border border-border px-4 py-3 text-left text-muted-foreground;
+  }
+
+  .mdx-content tr {
+    @apply border-b border-border;
+  }
+
+  .mdx-content tbody tr:nth-child(even) {
+    @apply bg-muted/20;
   }
 }

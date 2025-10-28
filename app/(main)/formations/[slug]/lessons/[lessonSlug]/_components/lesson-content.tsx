@@ -2,6 +2,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { Clock, FileText } from "lucide-react";
+import { mdxComponents } from "@/app/_lib/mdx-components";
+import remarkGfm from "remark-gfm";
+import rehypeSlug from "rehype-slug";
 
 interface LessonContentProps {
   lesson: {
@@ -58,8 +61,17 @@ export function LessonContent({ lesson }: LessonContentProps) {
               Contenu de la leçon
             </CardTitle>
           </CardHeader>
-          <CardContent className="prose prose-invert max-w-none">
-            <MDXRemote source={lesson.content} />
+          <CardContent className="mdx-content">
+            <MDXRemote 
+              source={lesson.content} 
+              components={mdxComponents as any}
+              options={{
+                mdxOptions: {
+                  remarkPlugins: [remarkGfm],
+                  rehypePlugins: [rehypeSlug],
+                }
+              }}
+            />
           </CardContent>
         </Card>
       )}

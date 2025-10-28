@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { ImageUpload } from "@/components/ui/image-upload";
 import {
   Select,
   SelectContent,
@@ -291,6 +292,17 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
                 placeholder="Décrivez votre formation en détail..."
                 rows={4}
                 required
+              />
+            </div>
+
+            {/* Cover Image Upload */}
+            <div className="space-y-2">
+              <ImageUpload
+                onImageUploaded={(url) => handleFieldChange("thumbnail", url)}
+                currentImageUrl={formData.thumbnail}
+                folder="courses"
+                prefix="cover"
+                className="w-full"
               />
             </div>
           </CardContent>

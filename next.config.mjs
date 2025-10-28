@@ -6,6 +6,11 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
+        hostname:
+          "minio-b8kcs4owo80c4sgoos4ck8gw.154.12.226.201.sslip.io",
+      },
+      {
+        protocol: "https",
         hostname: "picsum.photos",
       },
       {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useRef } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -41,10 +41,9 @@ import {
   Save,
   Eye,
   X,
-  Loader2,
-  Upload
+  Loader2
 } from "lucide-react";
-import Image from "next/image";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { createCourse } from "../../_actions/create-course";
 import { CourseCategory, CourseLevel, CourseAccessTier } from "@prisma/client";
 
@@ -87,9 +86,7 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
   const [isSavingDraft, startDraftTransition] = useTransition();
   const [isPublishing, startPublishTransition] = useTransition();
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [thumbnailPreview, setThumbnailPreview] = useState<string>("");
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [thumbnailUrl, setThumbnailUrl] = useState<string>("");
 
   const form = useForm<CourseFormData>({
     resolver: zodResolver(courseSchema),
@@ -134,28 +131,10 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
     form.setValue("tags", newSelectedTags);
   };
 
-  // Handle file upload
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploading(true);
-    try {
-      // Create a preview URL for the selected file
-      const previewUrl = URL.createObjectURL(file);
-      
-      // Update the thumbnail field and preview
-      form.setValue("thumbnail", previewUrl);
-      setThumbnailPreview(previewUrl);
-      
-      // Reset the file input
-      e.target.value = '';
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      toast.error("Erreur lors de l'upload de l'image");
-    } finally {
-      setIsUploading(false);
-    }
+  // Handle image upload
+  const handleImageUpload = (url: string) => {
+    form.setValue("thumbnail", url);
+    setThumbnailUrl(url);
   };
 
   // The original onSubmit function is no longer needed since we have distinct handlers
@@ -169,7 +148,7 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
         const result = await createCourse({
           ...form.getValues(),
           tags: selectedTags,
-          thumbnail: thumbnailPreview || undefined,
+          thumbnail: thumbnailUrl || undefined,
         });
 
         if (result.success) {
@@ -192,7 +171,7 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
         const result = await createCourse({
           ...form.getValues(),
           tags: selectedTags,
-          thumbnail: thumbnailPreview || undefined,
+          thumbnail: thumbnailUrl || undefined,
         });
 
         if (result.success) {
@@ -294,62 +273,14 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
                 Ajoutez une image attractive pour votre formation
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <FormField
-                control={form.control}
-                name="thumbnail"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>URL de l&apos;image</FormLabel>
-                    <FormControl>
-                      <div className="flex gap-3">
-                        <Input
-                          placeholder="https://exemple.com/image.jpg"
-                          {...field}
-                          onChange={(e) => {
-                            field.onChange(e);
-                            setThumbnailPreview(e.target.value);
-                          }}
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => fileInputRef.current?.click()}
-                          disabled={isUploading}
-                        >
-                          {isUploading ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Upload className="h-4 w-4" />
-                          )}
-                        </Button>
-                        <input
-                          type="file"
-                          ref={fileInputRef}
-                          className="hidden"
-                          accept="image/*"
-                          onChange={handleFileUpload}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+            <CardContent>
+              <ImageUpload
+                onImageUploaded={handleImageUpload}
+                currentImageUrl={thumbnailUrl}
+                folder="courses"
+                prefix="cover"
+                className="w-full"
               />
-
-              {thumbnailPreview && (
-                <div className="relative w-full max-w-md">
-                  <Image
-                    src={thumbnailPreview}
-                    alt="Aperçu"
-                    className="w-full h-48 object-cover rounded-lg border"
-                    onError={() => setThumbnailPreview("")}
-                    width={400}
-                    height={200}
-                  />
-                </div>
-              )}
             </CardContent>
           </Card>
 
