@@ -45,6 +45,10 @@ const PRIMARY_NAVIGATION = [
     label: "Formations"
   },
   {
+    href: "/reviews",
+    label: "Avis"
+  },
+  {
     href: "/projects",
     label: "Projects"
   }

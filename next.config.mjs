@@ -6,8 +6,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname:
-          "minio-b8kcs4owo80c4sgoos4ck8gw.154.12.226.201.sslip.io",
+        hostname: "minio-b8kcs4owo80c4sgoos4ck8gw.154.12.226.201.sslip.io",
       },
       {
         protocol: "https",
@@ -44,6 +43,10 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "www.pexels.com",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
       },
     ],
   },

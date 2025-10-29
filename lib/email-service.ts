@@ -2,96 +2,96 @@ import { SITE_BASE_URL } from "@/app/_lib/constants";
 import nodemailer from "nodemailer";
 
 export interface EmailOptions {
-    to: string;
-    subject: string;
-    html: string;
-    text?: string;
+  to: string;
+  subject: string;
+  html: string;
+  text?: string;
 }
 
 export interface EmailTemplate {
-    subject: string;
-    html: string;
-    text?: string;
+  subject: string;
+  html: string;
+  text?: string;
 }
 
 export interface ContactFormData {
-    name: string;
-    email: string;
-    subject: string;
-    message: string;
-    type?: 'recruitment' | 'collaboration' | 'training' | 'general';
-    company?: string;
-    position?: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  type?: "recruitment" | "collaboration" | "training" | "general";
+  company?: string;
+  position?: string;
 }
 
 export interface CourseData {
-    title: string;
-    slug: string;
-    price?: number;
+  title: string;
+  slug: string;
+  price?: number;
 }
 
 export interface SubscriptionData {
-    planName: string;
-    price: number;
-    features: string[];
+  planName: string;
+  price: number;
+  features: string[];
 }
 
 // Import modern templates
-import { ModernEmailTemplates } from './email-templates';
+import { ModernEmailTemplates } from "./email-templates";
 
 class EmailService {
-    private static instance: EmailService;
-    private transporter: nodemailer.Transporter | null = null;
+  private static instance: EmailService;
+  private transporter: nodemailer.Transporter | null = null;
 
-    static getInstance(): EmailService {
-        if (!EmailService.instance) {
-            EmailService.instance = new EmailService();
-        }
-        return EmailService.instance;
+  static getInstance(): EmailService {
+    if (!EmailService.instance) {
+      EmailService.instance = new EmailService();
     }
+    return EmailService.instance;
+  }
 
-    private getTransporter() {
-        if (!this.transporter) {
-            this.transporter = nodemailer.createTransport({
-                host: process.env.EMAIL_SERVER_HOST,
-                port: parseInt(process.env.EMAIL_SERVER_PORT || "587"),
-                secure: process.env.EMAIL_SERVER_PORT === "465",
-                auth: {
-                    user: process.env.EMAIL_SERVER_USER,
-                    pass: process.env.EMAIL_SERVER_PASSWORD,
-                },
-            });
-        }
-        return this.transporter;
+  private getTransporter() {
+    if (!this.transporter) {
+      this.transporter = nodemailer.createTransport({
+        host: process.env.EMAIL_SERVER_HOST,
+        port: parseInt(process.env.EMAIL_SERVER_PORT || "587"),
+        secure: process.env.EMAIL_SERVER_PORT === "465",
+        auth: {
+          user: process.env.EMAIL_SERVER_USER,
+          pass: process.env.EMAIL_SERVER_PASSWORD,
+        },
+      });
     }
+    return this.transporter;
+  }
 
-    async sendEmail({ to, subject, html, text }: EmailOptions): Promise<boolean> {
-        try {
-            const transporter = this.getTransporter();
+  async sendEmail({ to, subject, html, text }: EmailOptions): Promise<boolean> {
+    try {
+      const transporter = this.getTransporter();
 
-            if (!transporter) {
-                throw new Error("Email transporter not configured");
-            }
+      if (!transporter) {
+        throw new Error("Email transporter not configured");
+      }
 
-            await transporter.sendMail({
-                from: `${process.env.EMAIL_FROM_NAME} <${process.env.EMAIL_FROM}>`,
-                to,
-                subject,
-                html,
-                text: text || html.replace(/<[^>]*>/g, ""), // Strip HTML for text version
-            });
+      await transporter.sendMail({
+        from: `${process.env.EMAIL_FROM_NAME} <${process.env.EMAIL_FROM}>`,
+        to,
+        subject,
+        html,
+        text: text || html.replace(/<[^>]*>/g, ""), // Strip HTML for text version
+      });
 
-            return true;
-        } catch (error) {
-            console.error("Email sending failed:", error);
-            return false;
-        }
+      return true;
+    } catch (error) {
+      console.error("Email sending failed:", error);
+      return false;
     }
+  }
 
-    // Email Templates
-    emailVerification(name: string, verificationUrl: string): EmailTemplate {
-        const subject = "Vérifiez votre email - FYGS Learning Platform";
-        const html = `
+  // Email Templates
+  emailVerification(name: string, verificationUrl: string): EmailTemplate {
+    const subject = "Vérifiez votre email - FYGS Learning Platform";
+    const html = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -134,12 +134,13 @@ class EmailService {
       </html>
     `;
 
-        return { subject, html };
-    }
+    return { subject, html };
+  }
 
-    passwordReset(name: string, resetUrl: string): EmailTemplate {
-        const subject = "Réinitialisation de votre mot de passe - FYGS Learning Platform";
-        const html = `
+  passwordReset(name: string, resetUrl: string): EmailTemplate {
+    const subject =
+      "Réinitialisation de votre mot de passe - FYGS Learning Platform";
+    const html = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -187,12 +188,12 @@ class EmailService {
       </html>
     `;
 
-        return { subject, html };
-    }
+    return { subject, html };
+  }
 
-    welcomeEmail(name: string): EmailTemplate {
-        const subject = "🎉 Bienvenue sur FYGS Learning Platform !";
-        const html = `
+  welcomeEmail(name: string): EmailTemplate {
+    const subject = "🎉 Bienvenue sur FYGS Learning Platform !";
+    const html = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -249,12 +250,16 @@ class EmailService {
       </html>
     `;
 
-        return { subject, html };
-    }
+    return { subject, html };
+  }
 
-    enrollmentConfirmationEmail(name: string, formationTitle: string, formationUrl: string): EmailTemplate {
-        const subject = `Inscription confirmée: ${formationTitle}`;
-        const html = `
+  enrollmentConfirmationEmail(
+    name: string,
+    formationTitle: string,
+    formationUrl: string
+  ): EmailTemplate {
+    const subject = `Inscription confirmée: ${formationTitle}`;
+    const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h1 style="color: #2563eb;">Inscription confirmée!</h1>
         <p>Bonjour ${name},</p>
@@ -269,12 +274,16 @@ class EmailService {
       </div>
     `;
 
-        return { subject, html };
-    }
+    return { subject, html };
+  }
 
-    certificateEarnedEmail(name: string, formationTitle: string, formationUrl: string): EmailTemplate {
-        const subject = `Félicitations! Certificat obtenu pour ${formationTitle}`;
-        const html = `
+  certificateEarnedEmail(
+    name: string,
+    formationTitle: string,
+    formationUrl: string
+  ): EmailTemplate {
+    const subject = `Félicitations! Certificat obtenu pour ${formationTitle}`;
+    const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h1 style="color: #16a34a;">🎉 Félicitations ${name}!</h1>
         <p>Vous avez terminé avec succès la formation <strong>${formationTitle}</strong>.</p>
@@ -288,43 +297,65 @@ class EmailService {
       </div>
     `;
 
-        return { subject, html };
-    }
+    return { subject, html };
+  }
 
-    // Contact Form Templates - Intelligent templates based on contact type
-    contactFormAdminEmail(data: ContactFormData): EmailTemplate {
-        const { name, email, subject, message, type = 'general', company, position } = data;
-        
-        const getTypeIcon = (type: string) => {
-            switch (type) {
-                case 'recruitment': return '💼';
-                case 'collaboration': return '🤝';
-                case 'training': return '📚';
-                default: return '📧';
-            }
-        };
+  // Contact Form Templates - Intelligent templates based on contact type
+  contactFormAdminEmail(data: ContactFormData): EmailTemplate {
+    const {
+      name,
+      email,
+      subject,
+      message,
+      type = "general",
+      company,
+      position,
+    } = data;
 
-        const getTypeLabel = (type: string) => {
-            switch (type) {
-                case 'recruitment': return 'Opportunité de Recrutement';
-                case 'collaboration': return 'Proposition de Collaboration';
-                case 'training': return 'Demande de Formation';
-                default: return 'Contact Général';
-            }
-        };
+    const getTypeIcon = (type: string) => {
+      switch (type) {
+        case "recruitment":
+          return "💼";
+        case "collaboration":
+          return "🤝";
+        case "training":
+          return "📚";
+        default:
+          return "📧";
+      }
+    };
 
-        const getTypeColor = (type: string) => {
-            switch (type) {
-                case 'recruitment': return '#10b981';
-                case 'collaboration': return '#3b82f6';
-                case 'training': return '#8b5cf6';
-                default: return '#6b7280';
-            }
-        };
+    const getTypeLabel = (type: string) => {
+      switch (type) {
+        case "recruitment":
+          return "Opportunité de Recrutement";
+        case "collaboration":
+          return "Proposition de Collaboration";
+        case "training":
+          return "Demande de Formation";
+        default:
+          return "Contact Général";
+      }
+    };
 
-        const adminSubject = `${getTypeIcon(type)} [FYGS.dev] ${getTypeLabel(type)} - ${subject}`;
-        
-        const html = `
+    const getTypeColor = (type: string) => {
+      switch (type) {
+        case "recruitment":
+          return "#10b981";
+        case "collaboration":
+          return "#3b82f6";
+        case "training":
+          return "#8b5cf6";
+        default:
+          return "#6b7280";
+      }
+    };
+
+    const adminSubject = `${getTypeIcon(type)} [FYGS.dev] ${getTypeLabel(
+      type
+    )} - ${subject}`;
+
+    const html = `
         <!DOCTYPE html>
         <html>
         <head>
@@ -334,14 +365,24 @@ class EmailService {
             <style>
                 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1f2937; margin: 0; padding: 0; background-color: #f9fafb; }
                 .container { max-width: 700px; margin: 0 auto; background: white; }
-                .header { background: linear-gradient(135deg, ${getTypeColor(type)} 0%, ${getTypeColor(type)}dd 100%); color: white; padding: 40px 30px; text-align: center; }
+                .header { background: linear-gradient(135deg, ${getTypeColor(
+                  type
+                )} 0%, ${getTypeColor(
+      type
+    )}dd 100%); color: white; padding: 40px 30px; text-align: center; }
                 .content { padding: 40px 30px; }
-                .contact-info { background: #f8fafc; border-left: 4px solid ${getTypeColor(type)}; padding: 20px; margin: 25px 0; border-radius: 0 8px 8px 0; }
+                .contact-info { background: #f8fafc; border-left: 4px solid ${getTypeColor(
+                  type
+                )}; padding: 20px; margin: 25px 0; border-radius: 0 8px 8px 0; }
                 .message-box { background: #ffffff; border: 1px solid #e5e7eb; padding: 25px; margin: 25px 0; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-                .priority-badge { display: inline-block; background: ${getTypeColor(type)}; color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+                .priority-badge { display: inline-block; background: ${getTypeColor(
+                  type
+                )}; color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
                 .footer { background: #f8fafc; padding: 30px; text-align: center; color: #6b7280; font-size: 14px; border-top: 1px solid #e5e7eb; }
                 .quick-actions { display: flex; gap: 15px; margin: 25px 0; flex-wrap: wrap; }
-                .action-btn { display: inline-block; padding: 12px 20px; background: ${getTypeColor(type)}; color: white; text-decoration: none; border-radius: 8px; font-weight: 500; font-size: 14px; }
+                .action-btn { display: inline-block; padding: 12px 20px; background: ${getTypeColor(
+                  type
+                )}; color: white; text-decoration: none; border-radius: 8px; font-weight: 500; font-size: 14px; }
                 .metadata { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
                 .metadata-item { background: white; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb; }
                 .metadata-label { font-size: 12px; color: #6b7280; text-transform: uppercase; font-weight: 600; margin-bottom: 5px; }
@@ -357,7 +398,9 @@ class EmailService {
                 
                 <div class="content">
                     <div style="margin-bottom: 25px;">
-                        <span class="priority-badge">${getTypeLabel(type)}</span>
+                        <span class="priority-badge">${getTypeLabel(
+                          type
+                        )}</span>
                     </div>
 
                     <div class="contact-info">
@@ -369,26 +412,38 @@ class EmailService {
                             </div>
                             <div class="metadata-item">
                                 <div class="metadata-label">Email</div>
-                                <div class="metadata-value"><a href="mailto:${email}" style="color: ${getTypeColor(type)};">${email}</a></div>
+                                <div class="metadata-value"><a href="mailto:${email}" style="color: ${getTypeColor(
+      type
+    )};">${email}</a></div>
                             </div>
-                            ${company ? `
+                            ${
+                              company
+                                ? `
                             <div class="metadata-item">
                                 <div class="metadata-label">Entreprise</div>
                                 <div class="metadata-value">${company}</div>
                             </div>
-                            ` : ''}
-                            ${position ? `
+                            `
+                                : ""
+                            }
+                            ${
+                              position
+                                ? `
                             <div class="metadata-item">
                                 <div class="metadata-label">Poste</div>
                                 <div class="metadata-value">${position}</div>
                             </div>
-                            ` : ''}
+                            `
+                                : ""
+                            }
                         </div>
                     </div>
 
                     <div class="message-box">
                         <h3 style="margin: 0 0 15px 0; color: #1f2937;">💬 Sujet: ${subject}</h3>
-                        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border-left: 4px solid ${getTypeColor(type)};">
+                        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border-left: 4px solid ${getTypeColor(
+                          type
+                        )};">
                             <p style="margin: 0; white-space: pre-wrap; line-height: 1.7;">${message}</p>
                         </div>
                     </div>
@@ -397,21 +452,33 @@ class EmailService {
                         <a href="mailto:${email}?subject=Re: ${subject}" class="action-btn">
                             📧 Répondre par email
                         </a>
-                        ${type === 'recruitment' ? `
+                        ${
+                          type === "recruitment"
+                            ? `
                         <a href="mailto:${email}?subject=Re: ${subject}&body=Bonjour ${name},%0D%0A%0D%0AMerci pour votre intérêt concernant mes services. Je serais ravi de discuter de cette opportunité avec vous.%0D%0A%0D%0APouvons-nous planifier un appel cette semaine ?%0D%0A%0D%0ACordialement,%0D%0AFernand" class="action-btn">
                             💼 Réponse recrutement
                         </a>
-                        ` : ''}
-                        ${type === 'collaboration' ? `
+                        `
+                            : ""
+                        }
+                        ${
+                          type === "collaboration"
+                            ? `
                         <a href="mailto:${email}?subject=Re: ${subject}&body=Bonjour ${name},%0D%0A%0D%0AMerci pour votre proposition de collaboration. Votre projet m'intéresse.%0D%0A%0D%0APouvons-nous organiser une visioconférence pour en discuter plus en détail ?%0D%0A%0D%0ACordialement,%0D%0AFernand" class="action-btn">
                             🤝 Réponse collaboration
                         </a>
-                        ` : ''}
-                        ${type === 'training' ? `
+                        `
+                            : ""
+                        }
+                        ${
+                          type === "training"
+                            ? `
                         <a href="mailto:${email}?subject=Re: ${subject}&body=Bonjour ${name},%0D%0A%0D%0AMerci pour votre intérêt pour nos formations. Je serais ravi de vous accompagner dans votre apprentissage.%0D%0A%0D%0AConsultez notre catalogue: ${SITE_BASE_URL}/formations%0D%0A%0D%0ACordialement,%0D%0AFernand" class="action-btn">
                             📚 Réponse formation
                         </a>
-                        ` : ''}
+                        `
+                            : ""
+                        }
                     </div>
                 </div>
 
@@ -420,14 +487,17 @@ class EmailService {
                         <strong>FYGS Learning Platform</strong> - Plateforme d'apprentissage premium
                     </p>
                     <p style="margin: 0; font-size: 12px;">
-                        Message reçu le ${new Date().toLocaleDateString('fr-FR', { 
-                            weekday: 'long', 
-                            year: 'numeric', 
-                            month: 'long', 
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                        })}
+                        Message reçu le ${new Date().toLocaleDateString(
+                          "fr-FR",
+                          {
+                            weekday: "long",
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          }
+                        )}
                     </p>
                 </div>
             </div>
@@ -435,69 +505,73 @@ class EmailService {
         </html>
         `;
 
-        return { subject: adminSubject, html };
-    }
+    return { subject: adminSubject, html };
+  }
 
-    contactFormUserConfirmation(data: ContactFormData): EmailTemplate {
-        const { name, type = 'general' } = data;
-        
-        const getTypeResponse = (type: string) => {
-            switch (type) {
-                case 'recruitment':
-                    return {
-                        title: '💼 Opportunité de Recrutement Reçue',
-                        message: 'Merci pour votre intérêt concernant mes services de développement. Je reviendrai vers vous rapidement pour discuter de cette opportunité.',
-                        nextSteps: [
-                            'Analyse de votre demande et du profil recherché',
-                            'Évaluation de la compatibilité avec mes disponibilités',
-                            'Retour sous 24-48h avec une proposition de rendez-vous'
-                        ],
-                        cta: 'Voir mon profil',
-                        ctaUrl: `${SITE_BASE_URL}/me`
-                    };
-                case 'collaboration':
-                    return {
-                        title: '🤝 Proposition de Collaboration Reçue',
-                        message: 'Votre projet m\'intéresse ! Je vais étudier votre proposition et vous contacter pour organiser une discussion approfondie.',
-                        nextSteps: [
-                            'Analyse détaillée de votre projet',
-                            'Évaluation de la faisabilité technique',
-                            'Proposition de collaboration personnalisée'
-                        ],
-                        cta: 'Découvrir mes projets',
-                        ctaUrl: `${SITE_BASE_URL}/projects`
-                    };
-                case 'training':
-                    return {
-                        title: '📚 Demande de Formation Reçue',
-                        message: 'Merci pour votre intérêt pour nos formations ! Je vais vous contacter pour comprendre vos besoins spécifiques et vous proposer un parcours adapté.',
-                        nextSteps: [
-                            'Analyse de vos objectifs d\'apprentissage',
-                            'Recommandation de formations personnalisées',
-                            'Proposition de suivi et d\'accompagnement'
-                        ],
-                        cta: 'Explorer les formations',
-                        ctaUrl: `${SITE_BASE_URL}/formations`
-                    };
-                default:
-                    return {
-                        title: '📧 Message Reçu avec Succès',
-                        message: 'Merci de m\'avoir contacté ! Je reviendrai vers vous dans les plus brefs délais.',
-                        nextSteps: [
-                            'Analyse de votre demande',
-                            'Préparation d\'une réponse personnalisée',
-                            'Retour sous 24-48h maximum'
-                        ],
-                        cta: 'Découvrir FYGS.dev',
-                        ctaUrl: SITE_BASE_URL
-                    };
-            }
-        };
+  contactFormUserConfirmation(data: ContactFormData): EmailTemplate {
+    const { name, type = "general" } = data;
 
-        const response = getTypeResponse(type);
-        const subject = `✅ ${response.title} - Confirmation de réception`;
+    const getTypeResponse = (type: string) => {
+      switch (type) {
+        case "recruitment":
+          return {
+            title: "💼 Opportunité de Recrutement Reçue",
+            message:
+              "Merci pour votre intérêt concernant mes services de développement. Je reviendrai vers vous rapidement pour discuter de cette opportunité.",
+            nextSteps: [
+              "Analyse de votre demande et du profil recherché",
+              "Évaluation de la compatibilité avec mes disponibilités",
+              "Retour sous 24-48h avec une proposition de rendez-vous",
+            ],
+            cta: "Voir mon profil",
+            ctaUrl: `${SITE_BASE_URL}/me`,
+          };
+        case "collaboration":
+          return {
+            title: "🤝 Proposition de Collaboration Reçue",
+            message:
+              "Votre projet m'intéresse ! Je vais étudier votre proposition et vous contacter pour organiser une discussion approfondie.",
+            nextSteps: [
+              "Analyse détaillée de votre projet",
+              "Évaluation de la faisabilité technique",
+              "Proposition de collaboration personnalisée",
+            ],
+            cta: "Découvrir mes projets",
+            ctaUrl: `${SITE_BASE_URL}/projects`,
+          };
+        case "training":
+          return {
+            title: "📚 Demande de Formation Reçue",
+            message:
+              "Merci pour votre intérêt pour nos formations ! Je vais vous contacter pour comprendre vos besoins spécifiques et vous proposer un parcours adapté.",
+            nextSteps: [
+              "Analyse de vos objectifs d'apprentissage",
+              "Recommandation de formations personnalisées",
+              "Proposition de suivi et d'accompagnement",
+            ],
+            cta: "Explorer les formations",
+            ctaUrl: `${SITE_BASE_URL}/formations`,
+          };
+        default:
+          return {
+            title: "📧 Message Reçu avec Succès",
+            message:
+              "Merci de m'avoir contacté ! Je reviendrai vers vous dans les plus brefs délais.",
+            nextSteps: [
+              "Analyse de votre demande",
+              "Préparation d'une réponse personnalisée",
+              "Retour sous 24-48h maximum",
+            ],
+            cta: "Découvrir FYGS.dev",
+            ctaUrl: SITE_BASE_URL,
+          };
+      }
+    };
 
-        const html = `
+    const response = getTypeResponse(type);
+    const subject = `✅ ${response.title} - Confirmation de réception`;
+
+    const html = `
         <!DOCTYPE html>
         <html>
         <head>
@@ -542,12 +616,16 @@ class EmailService {
 
                     <div class="next-steps">
                         <h3 style="margin: 0 0 20px 0; color: #0ea5e9;">🚀 Prochaines étapes</h3>
-                        ${response.nextSteps.map((step, index) => `
+                        ${response.nextSteps
+                          .map(
+                            (step, index) => `
                             <div class="step">
                                 <div class="step-number">${index + 1}</div>
                                 <div>${step}</div>
                             </div>
-                        `).join('')}
+                        `
+                          )
+                          .join("")}
                     </div>
 
                     <div style="text-align: center; margin: 35px 0;">
@@ -605,146 +683,348 @@ class EmailService {
         </html>
         `;
 
-        return { subject, html };
+    return { subject, html };
+  }
+
+  // Modern email templates methods
+  async sendWelcomeEmail(
+    userName: string,
+    userEmail: string
+  ): Promise<boolean> {
+    const template = ModernEmailTemplates.welcomeRegistration({ userName });
+    return this.sendEmail({
+      to: userEmail,
+      subject: template.subject,
+      html: template.html,
+    });
+  }
+
+  async sendCoursePurchaseEmail(
+    userName: string,
+    userEmail: string,
+    courseTitle: string,
+    courseSlug: string,
+    coursePrice?: number
+  ): Promise<boolean> {
+    const template = ModernEmailTemplates.coursePurchase({
+      userName,
+      courseTitle,
+      courseSlug,
+      coursePrice,
+    });
+    return this.sendEmail({
+      to: userEmail,
+      subject: template.subject,
+      html: template.html,
+    });
+  }
+
+  async sendPremiumSubscriptionEmail(
+    userName: string,
+    userEmail: string,
+    planName: string,
+    price: number,
+    billingPeriod: "monthly" | "yearly"
+  ): Promise<boolean> {
+    const template = ModernEmailTemplates.premiumSubscription({
+      userName,
+      planName,
+      price,
+      billingPeriod,
+    });
+    return this.sendEmail({
+      to: userEmail,
+      subject: template.subject,
+      html: template.html,
+    });
+  }
+
+  async sendSubscriptionUpdatedEmail(
+    userName: string,
+    userEmail: string,
+    planName: string,
+    price: number,
+    billingPeriod: "monthly" | "yearly",
+    nextBillingDate: string
+  ): Promise<boolean> {
+    const template = ModernEmailTemplates.subscriptionUpdated({
+      userName,
+      planName,
+      price,
+      billingPeriod,
+      nextBillingDate,
+    });
+    return this.sendEmail({
+      to: userEmail,
+      subject: template.subject,
+      html: template.html,
+    });
+  }
+
+  async sendPasswordChangedEmail(
+    userName: string,
+    userEmail: string,
+    changeDate: string,
+    ipAddress?: string
+  ): Promise<boolean> {
+    const template = ModernEmailTemplates.passwordChanged({
+      userName,
+      changeDate,
+      ipAddress,
+    });
+    return this.sendEmail({
+      to: userEmail,
+      subject: template.subject,
+      html: template.html,
+    });
+  }
+
+  async sendPaymentFailedEmail(
+    userName: string,
+    userEmail: string
+  ): Promise<boolean> {
+    const template = ModernEmailTemplates.paymentFailed({ userName });
+    return this.sendEmail({
+      to: userEmail,
+      subject: template.subject,
+      html: template.html,
+    });
+  }
+
+  async sendSubscriptionCanceledEmail(
+    userName: string,
+    userEmail: string
+  ): Promise<boolean> {
+    const template = ModernEmailTemplates.subscriptionCanceled({ userName });
+    return this.sendEmail({
+      to: userEmail,
+      subject: template.subject,
+      html: template.html,
+    });
+  }
+
+  async sendSubscriptionCanceledImmediateEmail(
+    userName: string,
+    userEmail: string
+  ): Promise<boolean> {
+    const template = ModernEmailTemplates.subscriptionCanceledImmediate({
+      userName,
+    });
+    return this.sendEmail({
+      to: userEmail,
+      subject: template.subject,
+      html: template.html,
+    });
+  }
+
+  async sendSubscriptionPlanSwitchedEmail(
+    userName: string,
+    userEmail: string,
+    planName: string,
+    price: number,
+    billingPeriod: "monthly" | "yearly",
+    nextBillingDate?: string
+  ): Promise<boolean> {
+    const template = ModernEmailTemplates.subscriptionPlanSwitched({
+      userName,
+      planName,
+      price,
+      billingPeriod,
+      nextBillingDate,
+    });
+    return this.sendEmail({
+      to: userEmail,
+      subject: template.subject,
+      html: template.html,
+    });
+  }
+
+  async sendRefundIssuedEmail(
+    userName: string,
+    userEmail: string,
+    courseTitle?: string,
+    amount?: number
+  ): Promise<boolean> {
+    const template = ModernEmailTemplates.refundIssued({
+      userName,
+      courseTitle,
+      amount,
+    });
+    return this.sendEmail({
+      to: userEmail,
+      subject: template.subject,
+      html: template.html,
+    });
+  }
+
+  // Convenience method to send contact form emails
+  async sendContactFormEmails(
+    data: ContactFormData
+  ): Promise<{ adminSent: boolean; userSent: boolean }> {
+    const adminTemplate = this.contactFormAdminEmail(data);
+    const userTemplate = this.contactFormUserConfirmation(data);
+
+    const [adminSent, userSent] = await Promise.all([
+      this.sendEmail({
+        to:
+          process.env.CONTACT_EMAIL ||
+          process.env.EMAIL_SERVER_USER ||
+          "contact@fygs.dev",
+        subject: adminTemplate.subject,
+        html: adminTemplate.html,
+      }),
+      this.sendEmail({
+        to: data.email,
+        subject: userTemplate.subject,
+        html: userTemplate.html,
+      }),
+    ]);
+
+    return { adminSent, userSent };
+  }
+
+  // ============ REVIEW NOTIFICATION METHODS ============
+
+  /**
+   * Send notification to instructor when a new review is posted
+   */
+  async sendNewReviewNotification(
+    instructorEmail: string,
+    instructorName: string,
+    reviewData: {
+      reviewerName: string;
+      courseTitle: string;
+      rating: number;
+      comment?: string;
+      courseSlug: string;
+      reviewId: string;
+    }
+  ): Promise<boolean> {
+    const template = ModernEmailTemplates.newReviewForInstructor({
+      instructorName,
+      ...reviewData,
+    });
+
+    return this.sendEmail({
+      to: instructorEmail,
+      subject: template.subject,
+      html: template.html,
+    });
+  }
+
+  /**
+   * Send notification to student when instructor replies to their review
+   */
+  async sendInstructorReplyNotification(
+    studentEmail: string,
+    replyData: {
+      studentName: string;
+      instructorName: string;
+      courseTitle: string;
+      replyContent: string;
+      originalRating: number;
+      courseSlug: string;
+      reviewId: string;
+    }
+  ): Promise<boolean> {
+    const template = ModernEmailTemplates.instructorReplyToReview(replyData);
+
+    return this.sendEmail({
+      to: studentEmail,
+      subject: template.subject,
+      html: template.html,
+    });
+  }
+
+  /**
+   * Send notification to moderators when a review is reported
+   */
+  async sendReviewReportedNotification(
+    moderatorEmail: string,
+    reportData: {
+      moderatorName: string;
+      reporterName: string;
+      reviewerName: string;
+      courseTitle: string;
+      rating: number;
+      comment?: string;
+      reportReason: string;
+      reportDetails?: string;
+      reviewId: string;
+    }
+  ): Promise<boolean> {
+    const template = ModernEmailTemplates.reviewReported(reportData);
+
+    return this.sendEmail({
+      to: moderatorEmail,
+      subject: template.subject,
+      html: template.html,
+    });
+  }
+
+  /**
+   * Send notification when a review receives helpful votes
+   */
+  async sendReviewHelpfulVoteNotification(
+    reviewerEmail: string,
+    voteData: {
+      reviewerName: string;
+      courseTitle: string;
+      rating: number;
+      totalHelpfulVotes: number;
+      courseSlug: string;
+      reviewId: string;
+    }
+  ): Promise<boolean> {
+    // Only send notifications for milestone votes (1st, 5th, 10th, etc.)
+    const milestones = [1, 5, 10, 25, 50, 100];
+    if (!milestones.includes(voteData.totalHelpfulVotes)) {
+      return true; // Skip notification but return success
     }
 
-    // Modern email templates methods
-    async sendWelcomeEmail(userName: string, userEmail: string): Promise<boolean> {
-        const template = ModernEmailTemplates.welcomeRegistration({ userName });
-        return this.sendEmail({
-            to: userEmail,
-            subject: template.subject,
-            html: template.html
-        });
+    const template = ModernEmailTemplates.reviewHelpfulVote(voteData);
+
+    return this.sendEmail({
+      to: reviewerEmail,
+      subject: template.subject,
+      html: template.html,
+    });
+  }
+
+  /**
+   * Send weekly review summary to instructors
+   */
+  async sendWeeklyReviewSummary(
+    instructorEmail: string,
+    summaryData: {
+      instructorName: string;
+      weeklyStats: {
+        totalReviews: number;
+        averageRating: number;
+        positiveReviews: number;
+        responseRate: number;
+      };
+      topCourses: Array<{
+        title: string;
+        slug: string;
+        newReviews: number;
+        averageRating: number;
+      }>;
+    }
+  ): Promise<boolean> {
+    // Only send if there's meaningful activity
+    if (summaryData.weeklyStats.totalReviews === 0) {
+      return true; // Skip but return success
     }
 
-    async sendCoursePurchaseEmail(userName: string, userEmail: string, courseTitle: string, courseSlug: string, coursePrice?: number): Promise<boolean> {
-        const template = ModernEmailTemplates.coursePurchase({
-            userName,
-            courseTitle,
-            courseSlug,
-            coursePrice
-        });
-        return this.sendEmail({
-            to: userEmail,
-            subject: template.subject,
-            html: template.html
-        });
-    }
+    const template = ModernEmailTemplates.weeklyReviewSummary(summaryData);
 
-    async sendPremiumSubscriptionEmail(userName: string, userEmail: string, planName: string, price: number, billingPeriod: 'monthly' | 'yearly'): Promise<boolean> {
-        const template = ModernEmailTemplates.premiumSubscription({
-            userName,
-            planName,
-            price,
-            billingPeriod
-        });
-        return this.sendEmail({
-            to: userEmail,
-            subject: template.subject,
-            html: template.html
-        });
-    }
-
-    async sendSubscriptionUpdatedEmail(userName: string, userEmail: string, planName: string, price: number, billingPeriod: 'monthly' | 'yearly', nextBillingDate: string): Promise<boolean> {
-        const template = ModernEmailTemplates.subscriptionUpdated({
-            userName,
-            planName,
-            price,
-            billingPeriod,
-            nextBillingDate
-        });
-        return this.sendEmail({
-            to: userEmail,
-            subject: template.subject,
-            html: template.html
-        });
-    }
-
-    async sendPasswordChangedEmail(userName: string, userEmail: string, changeDate: string, ipAddress?: string): Promise<boolean> {
-        const template = ModernEmailTemplates.passwordChanged({
-            userName,
-            changeDate,
-            ipAddress
-        });
-        return this.sendEmail({
-            to: userEmail,
-            subject: template.subject,
-            html: template.html
-        });
-    }
-
-    async sendPaymentFailedEmail(userName: string, userEmail: string): Promise<boolean> {
-        const template = ModernEmailTemplates.paymentFailed({ userName });
-        return this.sendEmail({
-            to: userEmail,
-            subject: template.subject,
-            html: template.html
-        });
-    }
-
-    async sendSubscriptionCanceledEmail(userName: string, userEmail: string): Promise<boolean> {
-        const template = ModernEmailTemplates.subscriptionCanceled({ userName });
-        return this.sendEmail({
-            to: userEmail,
-            subject: template.subject,
-            html: template.html
-        });
-    }
-
-    async sendSubscriptionCanceledImmediateEmail(userName: string, userEmail: string): Promise<boolean> {
-        const template = ModernEmailTemplates.subscriptionCanceledImmediate({ userName });
-        return this.sendEmail({
-            to: userEmail,
-            subject: template.subject,
-            html: template.html
-        });
-    }
-
-    async sendSubscriptionPlanSwitchedEmail(userName: string, userEmail: string, planName: string, price: number, billingPeriod: 'monthly' | 'yearly', nextBillingDate?: string): Promise<boolean> {
-        const template = ModernEmailTemplates.subscriptionPlanSwitched({
-            userName,
-            planName,
-            price,
-            billingPeriod,
-            nextBillingDate
-        });
-        return this.sendEmail({
-            to: userEmail,
-            subject: template.subject,
-            html: template.html
-        });
-    }
-
-    async sendRefundIssuedEmail(userName: string, userEmail: string, courseTitle?: string, amount?: number): Promise<boolean> {
-        const template = ModernEmailTemplates.refundIssued({ userName, courseTitle, amount });
-        return this.sendEmail({
-            to: userEmail,
-            subject: template.subject,
-            html: template.html
-        });
-    }
-
-    // Convenience method to send contact form emails
-    async sendContactFormEmails(data: ContactFormData): Promise<{ adminSent: boolean; userSent: boolean }> {
-        const adminTemplate = this.contactFormAdminEmail(data);
-        const userTemplate = this.contactFormUserConfirmation(data);
-
-        const [adminSent, userSent] = await Promise.all([
-            this.sendEmail({
-                to: process.env.CONTACT_EMAIL || process.env.EMAIL_SERVER_USER || 'contact@fygs.dev',
-                subject: adminTemplate.subject,
-                html: adminTemplate.html
-            }),
-            this.sendEmail({
-                to: data.email,
-                subject: userTemplate.subject,
-                html: userTemplate.html
-            })
-        ]);
-
-        return { adminSent, userSent };
-    }
+    return this.sendEmail({
+      to: instructorEmail,
+      subject: template.subject,
+      html: template.html,
+    });
+  }
 }
 
 export const emailService = EmailService.getInstance();

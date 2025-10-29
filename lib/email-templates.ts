@@ -14,7 +14,7 @@ interface CourseTemplateProps extends EmailTemplateProps {
 interface SubscriptionTemplateProps extends EmailTemplateProps {
   planName: string;
   price: number;
-  billingPeriod: 'monthly' | 'yearly';
+  billingPeriod: "monthly" | "yearly";
   nextBillingDate?: string;
 }
 
@@ -163,7 +163,10 @@ const createBaseTemplate = (content: string, title: string) => `
 
 export class ModernEmailTemplates {
   // Email de bienvenue à l'inscription
-  static welcomeRegistration({ userName, siteUrl = SITE_URL }: EmailTemplateProps) {
+  static welcomeRegistration({
+    userName,
+    siteUrl = SITE_URL,
+  }: EmailTemplateProps) {
     const content = `
       <div class="header">
         <h1>🎉 Bienvenue sur FYGS !</h1>
@@ -206,7 +209,13 @@ export class ModernEmailTemplates {
   }
 
   // Email d'achat de cours individuel
-  static coursePurchase({ userName, courseTitle, courseSlug, coursePrice, siteUrl = SITE_URL }: CourseTemplateProps) {
+  static coursePurchase({
+    userName,
+    courseTitle,
+    courseSlug,
+    coursePrice,
+    siteUrl = SITE_URL,
+  }: CourseTemplateProps) {
     const content = `
       <div class="header">
         <h1>✅ Achat confirmé !</h1>
@@ -234,7 +243,11 @@ export class ModernEmailTemplates {
           </ul>
         </div>
 
-        ${coursePrice ? `<p><strong>Prix payé :</strong> ${coursePrice}€</p>` : ''}
+        ${
+          coursePrice
+            ? `<p><strong>Prix payé :</strong> ${coursePrice}€</p>`
+            : ""
+        }
         
         <p>Besoin d'aide ? Notre équipe est là pour vous accompagner à <a href="mailto:support@fygs.dev">support@fygs.dev</a></p>
       </div>
@@ -251,7 +264,13 @@ export class ModernEmailTemplates {
   }
 
   // Email de souscription premium
-  static premiumSubscription({ userName, planName, price, billingPeriod, siteUrl = SITE_URL }: SubscriptionTemplateProps) {
+  static premiumSubscription({
+    userName,
+    planName,
+    price,
+    billingPeriod,
+    siteUrl = SITE_URL,
+  }: SubscriptionTemplateProps) {
     const content = `
       <div class="header">
         <h1>🌟 Bienvenue Premium !</h1>
@@ -280,7 +299,9 @@ export class ModernEmailTemplates {
           </ul>
         </div>
 
-        <p><strong>Votre abonnement :</strong> ${price}€/${billingPeriod === 'monthly' ? 'mois' : 'an'}</p>
+        <p><strong>Votre abonnement :</strong> ${price}€/${
+      billingPeriod === "monthly" ? "mois" : "an"
+    }</p>
         
         <p>Gérez votre abonnement depuis votre <a href="${siteUrl}/dashboard/billing">espace facturation</a></p>
       </div>
@@ -297,7 +318,14 @@ export class ModernEmailTemplates {
   }
 
   // Email de mise à jour d'abonnement
-  static subscriptionUpdated({ userName, planName, price, billingPeriod, nextBillingDate, siteUrl = SITE_URL }: SubscriptionTemplateProps) {
+  static subscriptionUpdated({
+    userName,
+    planName,
+    price,
+    billingPeriod,
+    nextBillingDate,
+    siteUrl = SITE_URL,
+  }: SubscriptionTemplateProps) {
     const content = `
       <div class="header">
         <h1>📋 Abonnement mis à jour</h1>
@@ -308,8 +336,14 @@ export class ModernEmailTemplates {
         <p>Votre abonnement <strong>${planName}</strong> a été mis à jour avec succès.</p>
         
         <div class="highlight">
-          <p><strong>Nouvel abonnement :</strong> ${price}€/${billingPeriod === 'monthly' ? 'mois' : 'an'}</p>
-          ${nextBillingDate ? `<p><strong>Prochaine facturation :</strong> ${nextBillingDate}</p>` : ''}
+          <p><strong>Nouvel abonnement :</strong> ${price}€/${
+      billingPeriod === "monthly" ? "mois" : "an"
+    }</p>
+          ${
+            nextBillingDate
+              ? `<p><strong>Prochaine facturation :</strong> ${nextBillingDate}</p>`
+              : ""
+          }
         </div>
 
         <a href="${siteUrl}/dashboard/billing" class="cta-button">Gérer mon abonnement</a>
@@ -331,7 +365,12 @@ export class ModernEmailTemplates {
   }
 
   // Email de changement de mot de passe
-  static passwordChanged({ userName, changeDate, ipAddress, siteUrl = SITE_URL }: PasswordChangeTemplateProps) {
+  static passwordChanged({
+    userName,
+    changeDate,
+    ipAddress,
+    siteUrl = SITE_URL,
+  }: PasswordChangeTemplateProps) {
     const content = `
       <div class="header">
         <h1>🔐 Mot de passe modifié</h1>
@@ -344,7 +383,9 @@ export class ModernEmailTemplates {
         <div class="highlight">
           <p><strong>🛡️ Détails de la modification :</strong></p>
           <p><strong>Date :</strong> ${changeDate}</p>
-          ${ipAddress ? `<p><strong>Adresse IP :</strong> ${ipAddress}</p>` : ''}
+          ${
+            ipAddress ? `<p><strong>Adresse IP :</strong> ${ipAddress}</p>` : ""
+          }
         </div>
 
         <p><strong>Si vous n'êtes pas à l'origine de cette modification :</strong></p>
@@ -410,7 +451,10 @@ export class ModernEmailTemplates {
   }
 
   // Email de suppression d'abonnement
-  static subscriptionCanceled({ userName, siteUrl = SITE_URL }: EmailTemplateProps) {
+  static subscriptionCanceled({
+    userName,
+    siteUrl = SITE_URL,
+  }: EmailTemplateProps) {
     const content = `
       <div class="header" style="background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);">
         <h1>📋 Abonnement annulé</h1>
@@ -446,7 +490,10 @@ export class ModernEmailTemplates {
   }
 
   // Email d'annulation immédiate
-  static subscriptionCanceledImmediate({ userName, siteUrl = SITE_URL }: EmailTemplateProps) {
+  static subscriptionCanceledImmediate({
+    userName,
+    siteUrl = SITE_URL,
+  }: EmailTemplateProps) {
     const content = `
       <div class="header" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
         <h1>❌ Abonnement résilié immédiatement</h1>
@@ -467,11 +514,21 @@ export class ModernEmailTemplates {
         <p><a href="${siteUrl}/pricing">Revenir en Premium</a></p>
       </div>
     `;
-    return { subject: "❌ Résiliation immédiate de votre abonnement", html: createBaseTemplate(content, "Abonnement résilié") };
+    return {
+      subject: "❌ Résiliation immédiate de votre abonnement",
+      html: createBaseTemplate(content, "Abonnement résilié"),
+    };
   }
 
   // Email de changement de formule (switch monthly/yearly)
-  static subscriptionPlanSwitched({ userName, planName, price, billingPeriod, nextBillingDate, siteUrl = SITE_URL }: SubscriptionTemplateProps) {
+  static subscriptionPlanSwitched({
+    userName,
+    planName,
+    price,
+    billingPeriod,
+    nextBillingDate,
+    siteUrl = SITE_URL,
+  }: SubscriptionTemplateProps) {
     const content = `
       <div class="header" style="background: linear-gradient(135deg,#6366f1 0%,#7c3aed 100%);">
         <h1>🔄 Changement d'abonnement</h1>
@@ -479,10 +536,16 @@ export class ModernEmailTemplates {
       </div>
       <div class="content">
         <h2>Bonjour ${userName},</h2>
-        <p>Votre abonnement a été basculé vers la formule <strong>${planName}</strong> (${price}€ / ${billingPeriod === 'monthly' ? 'mois' : 'an'}).</p>
+        <p>Votre abonnement a été basculé vers la formule <strong>${planName}</strong> (${price}€ / ${
+      billingPeriod === "monthly" ? "mois" : "an"
+    }).</p>
         <div class="highlight">
           <p><strong>Détails :</strong></p>
-          ${nextBillingDate ? `<p>Nouvelle prochaine facturation : <strong>${nextBillingDate}</strong></p>` : ''}
+          ${
+            nextBillingDate
+              ? `<p>Nouvelle prochaine facturation : <strong>${nextBillingDate}</strong></p>`
+              : ""
+          }
           <p>Une facture de régularisation (proration) peut apparaître selon votre précédent cycle.</p>
         </div>
         <p>Vous pouvez consulter l'historique dans votre espace facturation.</p>
@@ -493,11 +556,24 @@ export class ModernEmailTemplates {
         <p><a href="${siteUrl}/dashboard/billing">Facturation</a></p>
       </div>
     `;
-    return { subject: "🔄 Votre abonnement a été modifié", html: createBaseTemplate(content, "Abonnement modifié") };
+    return {
+      subject: "🔄 Votre abonnement a été modifié",
+      html: createBaseTemplate(content, "Abonnement modifié"),
+    };
   }
 
   // Email de remboursement
-  static refundIssued({ userName, courseTitle, amount, siteUrl = SITE_URL }: { userName: string; courseTitle?: string; amount?: number; siteUrl?: string }) {
+  static refundIssued({
+    userName,
+    courseTitle,
+    amount,
+    siteUrl = SITE_URL,
+  }: {
+    userName: string;
+    courseTitle?: string;
+    amount?: number;
+    siteUrl?: string;
+  }) {
     const content = `
       <div class="header" style="background: linear-gradient(135deg,#0ea5e9 0%,#0369a1 100%);">
         <h1>💸 Remboursement effectué</h1>
@@ -505,7 +581,11 @@ export class ModernEmailTemplates {
       </div>
       <div class="content">
         <h2>Bonjour ${userName},</h2>
-        <p>Votre remboursement ${amount ? `de <strong>${amount}€</strong>` : ''} a été traité avec succès${courseTitle ? ` pour la formation <strong>${courseTitle}</strong>` : ''}.</p>
+        <p>Votre remboursement ${
+          amount ? `de <strong>${amount}€</strong>` : ""
+        } a été traité avec succès${
+      courseTitle ? ` pour la formation <strong>${courseTitle}</strong>` : ""
+    }.</p>
         <div class="highlight">
           <p>Le crédit apparaîtra sur votre moyen de paiement dans 5 à 10 jours ouvrés.</p>
         </div>
@@ -517,6 +597,397 @@ export class ModernEmailTemplates {
         <p><a href="${siteUrl}/contact">Support</a></p>
       </div>
     `;
-    return { subject: "💸 Confirmation de remboursement", html: createBaseTemplate(content, "Remboursement effectué") };
+    return {
+      subject: "💸 Confirmation de remboursement",
+      html: createBaseTemplate(content, "Remboursement effectué"),
+    };
+  }
+
+  // ============ REVIEW NOTIFICATION TEMPLATES ============
+
+  // Notification d'un nouvel avis (pour l'instructeur)
+  static newReviewForInstructor({
+    instructorName,
+    reviewerName,
+    courseTitle,
+    rating,
+    comment,
+    courseSlug,
+    reviewId,
+    siteUrl = SITE_URL,
+  }: {
+    instructorName: string;
+    reviewerName: string;
+    courseTitle: string;
+    rating: number;
+    comment?: string;
+    courseSlug: string;
+    reviewId: string;
+    siteUrl?: string;
+  }) {
+    const stars = "★".repeat(rating) + "☆".repeat(5 - rating);
+    const content = `
+      <div class="header">
+        <h1>⭐ Nouvel avis sur votre formation</h1>
+        <p>Un étudiant vient d'évaluer votre cours</p>
+      </div>
+      <div class="content">
+        <h2>Bonjour ${instructorName} !</h2>
+        <p><strong>${reviewerName}</strong> vient de laisser un avis sur votre formation :</p>
+        
+        <div class="highlight">
+          <h3>📚 ${courseTitle}</h3>
+          <p class="rating" style="font-size: 24px; color: #fbbf24; margin: 10px 0;">${stars} (${rating}/5)</p>
+          ${
+            comment
+              ? `<p style="font-style: italic; color: #6b7280; background: #f9fafb; padding: 15px; border-radius: 8px; margin: 15px 0;">"${comment}"</p>`
+              : ""
+          }
+        </div>
+
+        <a href="${siteUrl}/courses/${courseSlug}/reviews/${reviewId}" class="cta-button">Voir l'avis complet</a>
+
+        <p style="margin-top: 25px;">
+          ${
+            rating >= 4
+              ? "Félicitations pour cet excellent retour ! 🎉"
+              : rating >= 3
+              ? "Continuez votre excellent travail ! 💪"
+              : "N'hésitez pas à répondre à cet avis pour engager la conversation. 💬"
+          }
+        </p>
+
+        <div class="features-list">
+          <h4>Actions recommandées :</h4>
+          <ul>
+            <li>Répondre à l'avis pour remercier l'étudiant</li>
+            <li>Analyser les retours pour améliorer votre contenu</li>
+            <li>Encourager d'autres étudiants à laisser des avis</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer">
+        <p>FYGS Learning Platform</p>
+        <p><a href="${siteUrl}">fygs.dev</a> | <a href="${siteUrl}/dashboard/instructor">Tableau de bord instructeur</a></p>
+      </div>
+    `;
+
+    return {
+      subject: `⭐ Nouvel avis ${rating}/5 sur "${courseTitle}"`,
+      html: createBaseTemplate(content, "Nouvel avis"),
+    };
+  }
+
+  // Notification de réponse de l'instructeur (pour l'étudiant)
+  static instructorReplyToReview({
+    studentName,
+    instructorName,
+    courseTitle,
+    replyContent,
+    originalRating,
+    courseSlug,
+    reviewId,
+    siteUrl = SITE_URL,
+  }: {
+    studentName: string;
+    instructorName: string;
+    courseTitle: string;
+    replyContent: string;
+    originalRating: number;
+    courseSlug: string;
+    reviewId: string;
+    siteUrl?: string;
+  }) {
+    const stars = "★".repeat(originalRating) + "☆".repeat(5 - originalRating);
+    const content = `
+      <div class="header">
+        <h1>💬 Réponse à votre avis</h1>
+        <p>L'instructeur a répondu à votre évaluation</p>
+      </div>
+      <div class="content">
+        <h2>Bonjour ${studentName} !</h2>
+        <p><strong>${instructorName}</strong> a répondu à votre avis sur :</p>
+        
+        <div class="highlight">
+          <h3>📚 ${courseTitle}</h3>
+          <p class="rating" style="font-size: 20px; color: #fbbf24; margin: 10px 0;">Votre note : ${stars} (${originalRating}/5)</p>
+        </div>
+
+        <div style="background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 20px; margin: 20px 0;">
+          <h4 style="color: #0ea5e9; margin-bottom: 10px;">💬 Réponse de ${instructorName} :</h4>
+          <p style="font-style: italic; line-height: 1.6;">"${replyContent}"</p>
+        </div>
+
+        <a href="${siteUrl}/courses/${courseSlug}/reviews/${reviewId}" class="cta-button">Voir la conversation</a>
+
+        <p style="margin-top: 25px;">
+          Merci d'avoir partagé votre expérience ! Vos retours nous aident à améliorer constamment la qualité de nos formations.
+        </p>
+      </div>
+      <div class="footer">
+        <p>FYGS Learning Platform</p>
+        <p><a href="${siteUrl}">fygs.dev</a> | <a href="${siteUrl}/courses/${courseSlug}">Retour à la formation</a></p>
+      </div>
+    `;
+
+    return {
+      subject: `💬 ${instructorName} a répondu à votre avis sur "${courseTitle}"`,
+      html: createBaseTemplate(content, "Réponse instructeur"),
+    };
+  }
+
+  // Notification de signalement d'avis (pour les modérateurs)
+  static reviewReported({
+    moderatorName,
+    reporterName,
+    reviewerName,
+    courseTitle,
+    rating,
+    comment,
+    reportReason,
+    reportDetails,
+    reviewId,
+    siteUrl = SITE_URL,
+  }: {
+    moderatorName: string;
+    reporterName: string;
+    reviewerName: string;
+    courseTitle: string;
+    rating: number;
+    comment?: string;
+    reportReason: string;
+    reportDetails?: string;
+    reviewId: string;
+    siteUrl?: string;
+  }) {
+    const stars = "★".repeat(rating) + "☆".repeat(5 - rating);
+    const content = `
+      <div class="header">
+        <h1>🚨 Avis signalé</h1>
+        <p>Intervention requise pour modération</p>
+      </div>
+      <div class="content">
+        <h2>Bonjour ${moderatorName},</h2>
+        <p>Un avis a été signalé et nécessite votre attention :</p>
+        
+        <div class="highlight">
+          <h3>📚 Formation : ${courseTitle}</h3>
+          <p><strong>Auteur de l'avis :</strong> ${reviewerName}</p>
+          <p><strong>Note :</strong> ${stars} (${rating}/5)</p>
+          ${
+            comment
+              ? `<p style="background: #f9fafb; padding: 15px; border-radius: 8px; margin: 15px 0;"><strong>Commentaire :</strong><br>"${comment}"</p>`
+              : ""
+          }
+        </div>
+
+        <div style="background: #fef2f2; border: 1px solid #f87171; border-radius: 8px; padding: 20px; margin: 20px 0;">
+          <h4 style="color: #dc2626; margin-bottom: 10px;">🚨 Détails du signalement :</h4>
+          <p><strong>Signalé par :</strong> ${reporterName}</p>
+          <p><strong>Raison :</strong> ${reportReason}</p>
+          ${
+            reportDetails
+              ? `<p><strong>Détails :</strong> ${reportDetails}</p>`
+              : ""
+          }
+        </div>
+
+        <a href="${siteUrl}/admin/reviews/${reviewId}" class="cta-button" style="background: #dc2626;">Modérer cet avis</a>
+
+        <div class="features-list">
+          <h4>Actions disponibles :</h4>
+          <ul>
+            <li>Approuver l'avis si conforme</li>
+            <li>Rejeter l'avis si inapproprié</li>
+            <li>Contacter l'auteur pour clarification</li>
+            <li>Marquer comme faux signalement</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer">
+        <p>FYGS Learning Platform - Administration</p>
+        <p><a href="${siteUrl}/admin/reviews">Centre de modération</a></p>
+      </div>
+    `;
+
+    return {
+      subject: `🚨 [MODÉRATION] Avis signalé sur "${courseTitle}"`,
+      html: createBaseTemplate(content, "Avis signalé"),
+    };
+  }
+
+  // Notification de vote utile sur un avis (pour l'auteur)
+  static reviewHelpfulVote({
+    reviewerName,
+    courseTitle,
+    rating,
+    totalHelpfulVotes,
+    courseSlug,
+    reviewId,
+    siteUrl = SITE_URL,
+  }: {
+    reviewerName: string;
+    courseTitle: string;
+    rating: number;
+    totalHelpfulVotes: number;
+    courseSlug: string;
+    reviewId: string;
+    siteUrl?: string;
+  }) {
+    const stars = "★".repeat(rating) + "☆".repeat(5 - rating);
+    const content = `
+      <div class="header">
+        <h1>👍 Votre avis a été trouvé utile</h1>
+        <p>D'autres étudiants apprécient votre contribution</p>
+      </div>
+      <div class="content">
+        <h2>Félicitations ${reviewerName} !</h2>
+        <p>Votre avis sur <strong>${courseTitle}</strong> vient de recevoir un nouveau vote "utile" !</p>
+        
+        <div class="highlight">
+          <h3>📚 ${courseTitle}</h3>
+          <p class="rating" style="font-size: 20px; color: #fbbf24; margin: 10px 0;">Votre note : ${stars} (${rating}/5)</p>
+          <p style="font-size: 18px; color: #059669; font-weight: 600;">
+            👍 ${totalHelpfulVotes} personne${
+      totalHelpfulVotes > 1 ? "s ont" : " a"
+    } trouvé votre avis utile
+          </p>
+        </div>
+
+        <a href="${siteUrl}/courses/${courseSlug}/reviews/${reviewId}" class="cta-button">Voir votre avis</a>
+
+        <p style="margin-top: 25px;">
+          Merci pour votre contribution à la communauté ! Vos retours authentiques aident d'autres étudiants à faire les bons choix.
+        </p>
+
+        ${
+          totalHelpfulVotes >= 10
+            ? `
+          <div style="background: #f0fdf4; border: 1px solid #10b981; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h4 style="color: #059669;">🏆 Avis populaire !</h4>
+            <p>Votre avis a atteint ${totalHelpfulVotes} votes utiles ! Il sera mis en avant pour aider d'autres étudiants.</p>
+          </div>
+        `
+            : ""
+        }
+      </div>
+      <div class="footer">
+        <p>FYGS Learning Platform</p>
+        <p><a href="${siteUrl}">fygs.dev</a> | <a href="${siteUrl}/profile/reviews">Mes avis</a></p>
+      </div>
+    `;
+
+    return {
+      subject: `👍 Votre avis sur "${courseTitle}" a été trouvé utile !`,
+      html: createBaseTemplate(content, "Avis utile"),
+    };
+  }
+
+  // Résumé hebdomadaire des avis (pour les instructeurs)
+  static weeklyReviewSummary({
+    instructorName,
+    weeklyStats,
+    topCourses,
+    siteUrl = SITE_URL,
+  }: {
+    instructorName: string;
+    weeklyStats: {
+      totalReviews: number;
+      averageRating: number;
+      positiveReviews: number;
+      responseRate: number;
+    };
+    topCourses: Array<{
+      title: string;
+      slug: string;
+      newReviews: number;
+      averageRating: number;
+    }>;
+    siteUrl?: string;
+  }) {
+    const { totalReviews, averageRating, positiveReviews, responseRate } =
+      weeklyStats;
+    const content = `
+      <div class="header">
+        <h1>📊 Résumé hebdomadaire des avis</h1>
+        <p>Vos performances de la semaine</p>
+      </div>
+      <div class="content">
+        <h2>Bonjour ${instructorName} !</h2>
+        <p>Voici un résumé de l'activité des avis sur vos formations cette semaine :</p>
+        
+        <div class="highlight">
+          <h3>📈 Statistiques de la semaine</h3>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0;">
+            <div style="text-align: center; padding: 15px; background: #f0f9ff; border-radius: 8px;">
+              <p style="font-size: 24px; font-weight: bold; color: #0ea5e9; margin: 0;">${totalReviews}</p>
+              <p style="margin: 5px 0 0 0; color: #6b7280;">Nouveaux avis</p>
+            </div>
+            <div style="text-align: center; padding: 15px; background: #f0fdf4; border-radius: 8px;">
+              <p style="font-size: 24px; font-weight: bold; color: #10b981; margin: 0;">${averageRating.toFixed(
+                1
+              )}/5</p>
+              <p style="margin: 5px 0 0 0; color: #6b7280;">Note moyenne</p>
+            </div>
+            <div style="text-align: center; padding: 15px; background: #fef3c7; border-radius: 8px;">
+              <p style="font-size: 24px; font-weight: bold; color: #d97706; margin: 0;">${Math.round(
+                (positiveReviews / totalReviews) * 100
+              )}%</p>
+              <p style="margin: 5px 0 0 0; color: #6b7280;">Avis positifs</p>
+            </div>
+            <div style="text-align: center; padding: 15px; background: #f3e8ff; border-radius: 8px;">
+              <p style="font-size: 24px; font-weight: bold; color: #8b5cf6; margin: 0;">${Math.round(
+                responseRate
+              )}%</p>
+              <p style="margin: 5px 0 0 0; color: #6b7280;">Taux de réponse</p>
+            </div>
+          </div>
+        </div>
+
+        ${
+          topCourses.length > 0
+            ? `
+          <div class="features-list">
+            <h4>🏆 Formations les plus commentées :</h4>
+            <ul>
+              ${topCourses
+                .map(
+                  (course) => `
+                <li><strong>${course.title}</strong> - ${
+                    course.newReviews
+                  } nouv. avis (${course.averageRating.toFixed(1)}/5)</li>
+              `
+                )
+                .join("")}
+            </ul>
+          </div>
+        `
+            : ""
+        }
+
+        <a href="${siteUrl}/dashboard/instructor/reviews" class="cta-button">Voir tous mes avis</a>
+
+        <p style="margin-top: 25px;">
+          ${
+            averageRating >= 4.5
+              ? "Excellent travail ! Vos étudiants sont très satisfaits. 🌟"
+              : averageRating >= 4.0
+              ? "Très bonne performance ! Continuez comme ça. 👏"
+              : "N'oubliez pas de répondre aux avis pour améliorer l'engagement. 💬"
+          }
+        </p>
+      </div>
+      <div class="footer">
+        <p>FYGS Learning Platform</p>
+        <p><a href="${siteUrl}/dashboard/instructor">Tableau de bord instructeur</a></p>
+      </div>
+    `;
+
+    return {
+      subject: `📊 Résumé hebdomadaire : ${totalReviews} nouveaux avis (${averageRating.toFixed(
+        1
+      )}/5)`,
+      html: createBaseTemplate(content, "Résumé des avis"),
+    };
   }
 }

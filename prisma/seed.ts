@@ -1,2229 +1,1276 @@
-import { PrismaClient, CourseCategory, CourseLevel, Role, CourseAccessTier, SubscriptionPlan, SubscriptionStatus, PaymentKind, PaymentStatus } from '@prisma/client';
+#!/usr/bin/env node
+
+/**
+ * FYGS Academy - Comprehensive Database Seed
+ *
+ * This script creates realistic, production-ready seed data for testing and development.
+ * Includes all models with authentic content, proper relationships, and varied scenarios.
+ *
+ * Features:
+ * - Real-world user profiles with Unsplash avatars
+ * - Complete course catalog with detailed content
+ * - Comprehensive review system with interactions
+ * - Payment and subscription scenarios
+ * - Rich progress tracking data
+ * - Visual supports and quiz content
+ * - Analytics-ready data patterns
+ */
+
+import { PrismaClient } from "@prisma/client";
+import {
+  Role,
+  CourseCategory,
+  CourseLevel,
+  CourseAccessTier,
+  SubscriptionStatus,
+  SubscriptionPlan,
+  PaymentStatus,
+  PaymentKind,
+  ReviewStatus,
+  ReportReason,
+  ReportStatus,
+} from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+// Utility functions for realistic data generation
+function randomDate(start: Date, end: Date): Date {
+  return new Date(
+    start.getTime() + Math.random() * (end.getTime() - start.getTime())
+  );
+}
+
+function randomBetween(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function randomChoice<T>(array: T[]): T {
+  return array[Math.floor(Math.random() * array.length)];
+}
+
+// Realistic seed data
+const realisticUsers = [
+  {
+    name: "Fernand Soualo",
+    email: "fernand@fygs.dev",
+    role: Role.INSTRUCTOR,
+    image:
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+    bio: "Développeur Full-Stack avec 8 ans d'expérience, passionné par l'enseignement et les technologies modernes.",
+  },
+  {
+    name: "Admin FYGS",
+    email: "fygs.dev@gmail.com",
+    role: Role.ADMIN,
+    image:
+      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+    bio: "Équipe d'administration de FYGS Academy",
+  },
+  // Premium students
+  {
+    name: "Alice Martin",
+    email: "alice.martin@example.com",
+    role: Role.STUDENT,
+    image:
+      "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
+    bio: "Designer UX/UI en reconversion vers le développement Full-Stack",
+  },
+  {
+    name: "Pierre Dubois",
+    email: "pierre.dubois@example.com",
+    role: Role.STUDENT,
+    image:
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
+    bio: "Ingénieur en informatique, spécialisé en développement web moderne",
+  },
+  {
+    name: "Sophie Leroy",
+    email: "sophie.leroy@example.com",
+    role: Role.STUDENT,
+    image:
+      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face",
+    bio: "Développeuse junior passionnée par React et l'écosystème JavaScript",
+  },
+  // Regular students
+  {
+    name: "Thomas Bernard",
+    email: "thomas.bernard@example.com",
+    role: Role.STUDENT,
+    image:
+      "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&h=150&fit=crop&crop=face",
+    bio: "Étudiant en informatique, futur développeur web",
+  },
+  {
+    name: "Marie Petit",
+    email: "marie.petit@example.com",
+    role: Role.STUDENT,
+    image:
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
+    bio: "Freelance en marketing digital, apprend le développement pour créer ses propres outils",
+  },
+  {
+    name: "Lucas Moreau",
+    email: "lucas.moreau@example.com",
+    role: Role.STUDENT,
+    image:
+      "https://images.unsplash.com/photo-1507591064344-4c6ce005b128?w=150&h=150&fit=crop&crop=face",
+    bio: "Développeur backend Python en transition vers JavaScript/TypeScript",
+  },
+  {
+    name: "Emma Rousseau",
+    email: "emma.rousseau@example.com",
+    role: Role.STUDENT,
+    image:
+      "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=150&h=150&fit=crop&crop=face",
+    bio: "Ancienne chef de projet, se forme au développement web pour créer sa startup",
+  },
+  {
+    name: "Hugo Garcia",
+    email: "hugo.garcia@example.com",
+    role: Role.STUDENT,
+    image:
+      "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&h=150&fit=crop&crop=face",
+    bio: "Développeur mobile React Native, élargit ses compétences au web",
+  },
+  {
+    name: "Léa Martinez",
+    email: "lea.martinez@example.com",
+    role: Role.STUDENT,
+    image:
+      "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&h=150&fit=crop&crop=face",
+    bio: "Data scientist qui s'intéresse au développement d'applications web",
+  },
+  {
+    name: "Nathan Wilson",
+    email: "nathan.wilson@example.com",
+    role: Role.STUDENT,
+    image:
+      "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face",
+    bio: "Développeur Java Enterprise cherchant à moderniser ses compétences",
+  },
+  {
+    name: "Chloé Johnson",
+    email: "chloe.johnson@example.com",
+    role: Role.STUDENT,
+    image:
+      "https://images.unsplash.com/photo-1526346698789-22fd84314424?w=150&h=150&fit=crop&crop=face",
+    bio: "Designer graphique qui apprend le code pour créer des expériences interactives",
+  },
+];
+
+const comprehensiveCourses = [
+  {
+    title: "JavaScript Fundamentals : De zéro à héros",
+    slug: "javascript-fundamentals-zero-hero",
+    description:
+      "Maîtrisez JavaScript de A à Z avec cette formation complète. Apprenez les concepts fondamentaux, la programmation orientée objet, les fonctions avancées, et les dernières fonctionnalités ES6+. Parfait pour débuter en programmation web ou consolider vos bases.",
+    thumbnail:
+      "https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=800&h=600&fit=crop",
+    price: 0,
+    category: CourseCategory.JAVASCRIPT,
+    level: CourseLevel.BEGINNER,
+    duration: 480,
+    accessTier: CourseAccessTier.FREE,
+    featured: true,
+    publicEvaluation:
+      "Cette formation vous permettra de maîtriser JavaScript et de créer vos premières applications web interactives.",
+    publicPrerequisites:
+      "Aucun prérequis. Cette formation s'adresse aux débutants complets.",
+    publicResources:
+      "Exercices pratiques, projets réels, documentation complète, communauté d'entraide",
+    publicStructure:
+      "4 modules progressifs : Bases du langage, Manipulation du DOM, Programmation asynchrone, Projets pratiques",
+  },
+  {
+    title: "React Advanced Patterns & Performance",
+    slug: "react-advanced-patterns-performance",
+    description:
+      "Devenez un expert React avec les patterns avancés et les techniques d'optimisation. Explorez les hooks personnalisés, la gestion d'état complexe, les patterns de composants, le code splitting, et les meilleures pratiques pour des applications performantes et maintenables.",
+    thumbnail:
+      "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&h=600&fit=crop",
+    price: 199.99,
+    category: CourseCategory.FRONTEND,
+    level: CourseLevel.ADVANCED,
+    duration: 720,
+    accessTier: CourseAccessTier.PREMIUM,
+    featured: true,
+    publicEvaluation:
+      "Formation avancée pour développeurs React souhaitant maîtriser les patterns professionnels et l'optimisation.",
+    publicPrerequisites:
+      "Solides bases en React, JavaScript ES6+, hooks de base. 6 mois d'expérience minimum.",
+    publicResources:
+      "Projets complexes, code reviews, benchmarks de performance, patterns library",
+    publicStructure:
+      "6 modules spécialisés : Hooks avancés, State management, Performance, Patterns, Testing, Production",
+  },
+  {
+    title: "Next.js 15 Full-Stack Development Masterclass",
+    slug: "nextjs-15-fullstack-masterclass",
+    description:
+      "Construisez des applications web complètes avec Next.js 15, l'App Router, et les dernières innovations. Maîtrisez SSR, SSG, ISR, les Server Components, l'authentification, les bases de données, et le déploiement. De l'idée à la production.",
+    thumbnail:
+      "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&h=600&fit=crop",
+    price: 299.99,
+    category: CourseCategory.FULLSTACK,
+    level: CourseLevel.INTERMEDIATE,
+    duration: 1200,
+    accessTier: CourseAccessTier.PREMIUM,
+    featured: true,
+    publicEvaluation:
+      "Formation complète pour créer des applications Next.js modernes et performantes.",
+    publicPrerequisites:
+      "Bonnes bases en React, JavaScript/TypeScript, notions de backend. 3 mois d'expérience React.",
+    publicResources:
+      "3 projets full-stack, déploiement automatisé, monitoring, documentation détaillée",
+    publicStructure:
+      "8 modules : App Router, Server Components, Authentication, Database, API, Deployment, Monitoring, Projects",
+  },
+  {
+    title: "TypeScript pour développeurs JavaScript",
+    slug: "typescript-javascript-developers",
+    description:
+      "Transformez votre code JavaScript en TypeScript robuste et maintenable. Apprenez le typage statique, les interfaces, les génériques, la configuration avancée, et l'intégration dans vos projets existants. Gagnez en productivité et réduisez les bugs.",
+    thumbnail:
+      "https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=800&h=600&fit=crop",
+    price: 0,
+    category: CourseCategory.TYPESCRIPT,
+    level: CourseLevel.BEGINNER,
+    duration: 360,
+    accessTier: CourseAccessTier.FREE,
+    featured: false,
+    publicEvaluation:
+      "Transition en douceur de JavaScript vers TypeScript avec des exemples concrets.",
+    publicPrerequisites:
+      "Bonnes bases en JavaScript ES6+. Expérience avec les modules et les outils de build.",
+    publicResources:
+      "Migration guides, templates TypeScript, exercices de refactoring, best practices",
+    publicStructure:
+      "5 modules : Types de base, Interfaces, Génériques, Configuration, Migration",
+  },
+  {
+    title: "Intelligence Artificielle et Applications Web",
+    slug: "ai-web-applications-development",
+    description:
+      "Intégrez l'IA dans vos applications web avec OpenAI, LangChain, et les LLMs. Créez des chatbots intelligents, des systèmes de recommandation, des générateurs de contenu, et explorez RAG, fine-tuning, et déploiement d'applications IA.",
+    thumbnail:
+      "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=600&fit=crop",
+    price: 399.99,
+    category: CourseCategory.AI,
+    level: CourseLevel.ADVANCED,
+    duration: 960,
+    accessTier: CourseAccessTier.PREMIUM,
+    featured: true,
+    publicEvaluation:
+      "Formation cutting-edge pour intégrer l'IA dans le développement web moderne.",
+    publicPrerequisites:
+      "Expérience en développement web, APIs REST, bases de données. Connaissances en Python un plus.",
+    publicResources:
+      "Projets IA, accès aux APIs, notebooks Jupyter, veille technologique",
+    publicStructure:
+      "7 modules : Fondamentaux IA, OpenAI APIs, LangChain, RAG, Chatbots, Déploiement, Éthique",
+  },
+  {
+    title: "DevOps Moderne : Docker, Kubernetes, AWS",
+    slug: "devops-docker-kubernetes-aws",
+    description:
+      "Maîtrisez la chaîne DevOps complète pour le développement web moderne. Containerisation avec Docker, orchestration Kubernetes, déploiement cloud AWS, CI/CD, monitoring, et infrastructure as code. Automatisez et sécurisez vos déploiements.",
+    thumbnail:
+      "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop",
+    price: 249.99,
+    category: CourseCategory.DEVOPS,
+    level: CourseLevel.INTERMEDIATE,
+    duration: 840,
+    accessTier: CourseAccessTier.PREMIUM,
+    featured: true,
+    publicEvaluation:
+      "Formation pratique pour automatiser vos déploiements et gérer l'infrastructure cloud.",
+    publicPrerequisites:
+      "Expérience en développement web, ligne de commande Linux/Unix, bases des réseaux.",
+    publicResources:
+      "Environnements cloud, scripts d'automatisation, templates IaC, monitoring dashboards",
+    publicStructure:
+      "6 modules : Docker, Kubernetes, AWS, CI/CD, Monitoring, Infrastructure as Code",
+  },
+  {
+    title: "Développement Frontend Moderne",
+    slug: "frontend-development-moderne",
+    description:
+      "Créez des interfaces utilisateur exceptionnelles avec HTML5, CSS3, JavaScript moderne, et les outils de build actuels. Responsive design, animations, performance, accessibilité, et workflow moderne avec Vite, PostCSS, et les dernières techniques.",
+    thumbnail:
+      "https://images.unsplash.com/photo-1507721999472-8ed4421c4af2?w=800&h=600&fit=crop",
+    price: 0,
+    category: CourseCategory.FRONTEND,
+    level: CourseLevel.BEGINNER,
+    duration: 400,
+    accessTier: CourseAccessTier.FREE,
+    featured: false,
+    publicEvaluation:
+      "Bases solides du développement frontend avec les technologies et outils modernes.",
+    publicPrerequisites:
+      "Aucun prérequis. Formation accessible aux débutants complets.",
+    publicResources:
+      "Projets responsive, code playground, design system, outils de debug",
+    publicStructure:
+      "5 modules : HTML5 sémantique, CSS moderne, JavaScript ES6+, Outils de build, Projets",
+  },
+  {
+    title: "Architecture Backend Scalable avec Node.js",
+    slug: "backend-architecture-nodejs-scalable",
+    description:
+      "Concevez et développez des APIs robustes et scalables avec Node.js, Express, microservices, et patterns d'architecture enterprise. Gestion des données, sécurité, performance, tests, documentation, et déploiement à grande échelle.",
+    thumbnail:
+      "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&h=600&fit=crop",
+    price: 199.99,
+    category: CourseCategory.BACKEND,
+    level: CourseLevel.ADVANCED,
+    duration: 720,
+    accessTier: CourseAccessTier.PREMIUM,
+    featured: false,
+    publicEvaluation:
+      "Formation avancée pour architectes et développeurs backend expérimentés.",
+    publicPrerequisites:
+      "Expérience solide en JavaScript/Node.js, APIs REST, bases de données relationnelles et NoSQL.",
+    publicResources:
+      "Architectures de référence, patterns library, outils de monitoring, code reviews",
+    publicStructure:
+      "7 modules : Architecture, Microservices, Sécurité, Performance, Testing, Documentation, Production",
+  },
+];
+
+// Reviews with realistic content
+const authenticReviews = [
+  {
+    rating: 5,
+    comment:
+      "Formation excellente ! Les explications sont claires et les projets pratiques permettent vraiment de maîtriser les concepts. Fernand est un excellent pédagogue qui sait rendre accessible des sujets complexes. Je recommande vivement !",
+    verified: true,
+  },
+  {
+    rating: 5,
+    comment:
+      "Enfin une formation qui va à l'essentiel ! J'ai appris plus en quelques semaines qu'en plusieurs mois d'auto-formation. Les exercices sont progressifs et bien pensés. Support technique très réactif.",
+    verified: true,
+  },
+  {
+    rating: 4,
+    comment:
+      "Très bonne formation, contenu de qualité et bien structuré. Parfois un peu dense mais c'est normal vu la richesse du programme. Les projets finaux sont particulièrement enrichissants.",
+    verified: true,
+  },
+  {
+    rating: 5,
+    comment:
+      "Formation complète qui m'a permis de passer d'un niveau débutant à un niveau confirmé. Les concepts avancés sont très bien expliqués avec de nombreux exemples pratiques. Excellent investissement !",
+    verified: true,
+  },
+  {
+    rating: 4,
+    comment:
+      "Contenu très riche et à jour avec les dernières pratiques. J'aurais aimé plus d'exercices intermédiaires mais dans l'ensemble c'est une excellente formation. Le format vidéo + exercices fonctionne bien.",
+    verified: false,
+  },
+  {
+    rating: 5,
+    comment:
+      "Perfect course for developers wanting to level up! Clear explanations, great projects, and excellent community support. The practical approach really helps understanding complex concepts.",
+    verified: true,
+  },
+  {
+    rating: 3,
+    comment:
+      "Formation correcte mais j'ai trouvé certaines parties un peu trop rapides. Il faut déjà avoir quelques bases contrairement à ce qui est annoncé. Néanmoins, le contenu est de qualité.",
+    verified: false,
+  },
+  {
+    rating: 5,
+    comment:
+      "Extraordinaire ! Cette formation a changé ma carrière. J'ai pu décrocher un poste de développeur senior grâce aux compétences acquises. Merci FYGS Academy !",
+    verified: true,
+  },
+  {
+    rating: 4,
+    comment:
+      "Très bonne formation avec un contenu moderne et pertinent. Les projets sont proches de la réalité professionnelle. Seul bémol : j'aurais aimé plus de feedback personnalisé sur les exercices.",
+    verified: true,
+  },
+  {
+    rating: 5,
+    comment:
+      "Formation de haut niveau ! L'approche pédagogique est excellente, les ressources nombreuses et la communauté très active. Je recommande à tous les développeurs qui veulent progresser.",
+    verified: true,
+  },
+];
+
+// Visual supports content
+const visualSupportsData = {
+  nextjsEvolution: {
+    type: "presentation",
+    slides: [
+      {
+        title: "L'Évolution du Rendu Web",
+        content: {
+          sections: [
+            {
+              title: "Client-Side Rendering (CSR)",
+              description: "Applications entièrement rendues côté client",
+              pros: ["Interactivité riche", "UX fluide après chargement"],
+              cons: ["SEO difficile", "Performance initiale lente"],
+            },
+            {
+              title: "Server-Side Rendering (SSR)",
+              description: "Rendu côté serveur à chaque requête",
+              pros: ["SEO optimal", "Performance initiale rapide"],
+              cons: ["Charge serveur élevée", "Hydratation complexe"],
+            },
+            {
+              title: "Static Site Generation (SSG)",
+              description: "Pré-génération de pages statiques",
+              pros: ["Performance maximale", "Évolutivité excellente"],
+              cons: ["Données statiques", "Rebuild pour mise à jour"],
+            },
+          ],
+        },
+      },
+    ],
+  },
+  reactPatterns: {
+    type: "code-demonstration",
+    examples: [
+      {
+        title: "Custom Hooks Pattern",
+        description: "Réutilisation de logique avec des hooks personnalisés",
+        code: `
+function useCounter(initialValue = 0) {
+  const [count, setCount] = useState(initialValue);
+  
+  const increment = useCallback(() => setCount(c => c + 1), []);
+  const decrement = useCallback(() => setCount(c => c - 1), []);
+  const reset = useCallback(() => setCount(initialValue), [initialValue]);
+  
+  return { count, increment, decrement, reset };
+}
+        `,
+      },
+    ],
+  },
+};
+
 async function main() {
-  console.log('🌱 Starting comprehensive database seeding...');
+  console.log("🌱 Starting comprehensive FYGS Academy database seed...");
 
   const startTime = Date.now();
-  const isTestEnv = process.env.NODE_ENV === 'test';
 
-  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🗃️ Database: ${isTestEnv ? 'TEST' : 'DEVELOPMENT'}`);
+  try {
+    // 1. Create users with realistic profiles
+    console.log("👥 Creating realistic user profiles...");
+    const users = [];
 
-  // ===== 1. USERS (Comprehensive Role Coverage) =====
-  console.log('👥 Creating users...');
+    for (const userData of realisticUsers) {
+      const user = await prisma.user.upsert({
+        where: { email: userData.email },
+        update: {},
+        create: {
+          name: userData.name,
+          email: userData.email,
+          role: userData.role,
+          emailVerified: true,
+          image: userData.image,
+        },
+      });
+      users.push(user);
+    }
 
-  // Main instructor (FYGS)
-  const instructor = await prisma.user.upsert({
-    where: { email: 'fernand@fygs.dev' },
-    update: {},
-    create: {
-      email: 'fernand@fygs.dev',
-      name: 'Fernand Soualo',
-      role: Role.INSTRUCTOR,
-      emailVerified: true,
-      image: '/images/fernand-avatar.jpg',
-    },
-  });
+    const [instructor, , ...students] = users;
+    console.log(
+      `✅ Created ${users.length} users (1 instructor, 1 admin, ${students.length} students)`
+    );
 
-  // Admin user
-  const admin = await prisma.user.upsert({
-    where: { email: 'admin@fygs.dev' },
-    update: {},
-    create: {
-      email: 'admin@fygs.dev',
-      name: 'Admin FYGS',
-      role: Role.ADMIN,
-      emailVerified: true,
-      image: '/images/admin-avatar.jpg',
-    },
-  });
+    // 2. Create subscriptions with various statuses
+    console.log("💳 Setting up subscription scenarios...");
+    const subscriptionScenarios = [
+      {
+        userId: students[0].id,
+        status: SubscriptionStatus.ACTIVE,
+        plan: SubscriptionPlan.PREMIUM,
+        stripeId: "sub_premium_alice",
+      },
+      {
+        userId: students[1].id,
+        status: SubscriptionStatus.ACTIVE,
+        plan: SubscriptionPlan.PREMIUM,
+        stripeId: "sub_premium_pierre",
+      },
+      {
+        userId: students[2].id,
+        status: SubscriptionStatus.CANCELED,
+        plan: SubscriptionPlan.PREMIUM,
+        stripeId: "sub_canceled_sophie",
+      },
+      {
+        userId: students[3].id,
+        status: SubscriptionStatus.ACTIVE,
+        plan: SubscriptionPlan.FREE,
+      },
+      {
+        userId: students[4].id,
+        status: SubscriptionStatus.PAST_DUE,
+        plan: SubscriptionPlan.PREMIUM,
+        stripeId: "sub_pastdue_marie",
+      },
+      {
+        userId: students[5].id,
+        status: SubscriptionStatus.ACTIVE,
+        plan: SubscriptionPlan.FREE,
+      },
+      {
+        userId: students[6].id,
+        status: SubscriptionStatus.ACTIVE,
+        plan: SubscriptionPlan.FREE,
+      },
+      {
+        userId: students[7].id,
+        status: SubscriptionStatus.ACTIVE,
+        plan: SubscriptionPlan.PREMIUM,
+        stripeId: "sub_premium_emma",
+      },
+      {
+        userId: students[8].id,
+        status: SubscriptionStatus.ACTIVE,
+        plan: SubscriptionPlan.FREE,
+      },
+      {
+        userId: students[9].id,
+        status: SubscriptionStatus.ACTIVE,
+        plan: SubscriptionPlan.FREE,
+      },
+    ];
 
-  // Premium subscriber (active)
-  const alice = await prisma.user.upsert({
-    where: { email: 'alice.martin@example.com' },
-    update: {},
-    create: {
-      email: 'alice.martin@example.com',
-      name: 'Alice Martin',
-      role: Role.STUDENT,
-      emailVerified: true,
-      image: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
-    },
-  });
+    for (const sub of subscriptionScenarios) {
+      await prisma.subscription.upsert({
+        where: { userId: sub.userId },
+        update: {},
+        create: {
+          userId: sub.userId,
+          status: sub.status,
+          plan: sub.plan,
+          stripeCustomerId: sub.stripeId ? `cus_${sub.stripeId}` : undefined,
+          stripeSubscriptionId: sub.stripeId,
+          priceId:
+            sub.plan === SubscriptionPlan.PREMIUM
+              ? "price_premium_monthly"
+              : undefined,
+          currentPeriodStart:
+            sub.plan === SubscriptionPlan.PREMIUM
+              ? new Date(Date.now() - 15 * 24 * 60 * 60 * 1000)
+              : undefined,
+          currentPeriodEnd:
+            sub.plan === SubscriptionPlan.PREMIUM
+              ? new Date(Date.now() + 15 * 24 * 60 * 60 * 1000)
+              : undefined,
+        },
+      });
+    }
+    console.log(
+      `✅ Created ${subscriptionScenarios.length} subscription records`
+    );
 
-  // Free user (no subscription)
-  const thomas = await prisma.user.upsert({
-    where: { email: 'thomas.dubois@example.com' },
-    update: {},
-    create: {
-      email: 'thomas.dubois@example.com',
-      name: 'Thomas Dubois',
-      role: Role.STUDENT,
-      emailVerified: true,
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-    },
-  });
+    // 3. Create comprehensive tag system
+    console.log("🏷️ Building tag ecosystem...");
+    const tagCategories = [
+      // Technologies
+      { name: "JavaScript", color: "#F7DF1E" },
+      { name: "TypeScript", color: "#3178C6" },
+      { name: "React", color: "#61DAFB" },
+      { name: "Next.js", color: "#000000" },
+      { name: "Node.js", color: "#339933" },
+      { name: "Express", color: "#000000" },
+      { name: "Prisma", color: "#2D3748" },
+      { name: "PostgreSQL", color: "#4169E1" },
+      { name: "Docker", color: "#2496ED" },
+      { name: "Kubernetes", color: "#326CE5" },
+      { name: "AWS", color: "#FF9900" },
+      { name: "Tailwind CSS", color: "#06B6D4" },
+      // Levels
+      { name: "Beginner", color: "#22C55E" },
+      { name: "Intermediate", color: "#F59E0B" },
+      { name: "Advanced", color: "#EF4444" },
+      { name: "Expert", color: "#8B5A2B" },
+      // Types
+      { name: "Full-Stack", color: "#F97316" },
+      { name: "Frontend", color: "#EC4899" },
+      { name: "Backend", color: "#8B5CF6" },
+      { name: "DevOps", color: "#6366F1" },
+      { name: "AI/ML", color: "#FF6B6B" },
+      // Approaches
+      { name: "Hands-On", color: "#10B981" },
+      { name: "Project-Based", color: "#84CC16" },
+      { name: "Interview Prep", color: "#A855F7" },
+      { name: "Best Practices", color: "#06B6D4" },
+    ];
 
-  // User with canceled subscription
-  const marie = await prisma.user.upsert({
-    where: { email: 'marie.bernard@example.com' },
-    update: {},
-    create: {
-      email: 'marie.bernard@example.com',
-      name: 'Marie Bernard',
-      role: Role.STUDENT,
-      emailVerified: true,
-      image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
-    },
-  });
-
-  // New user (recently registered)
-  const lucas = await prisma.user.upsert({
-    where: { email: 'lucas.moreau@example.com' },
-    update: {},
-    create: {
-      email: 'lucas.moreau@example.com',
-      name: 'Lucas Moreau',
-      role: Role.STUDENT,
-      emailVerified: true,
-      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-    },
-  });
-
-  // User with expired subscription
-  const sophie = await prisma.user.upsert({
-    where: { email: 'sophie.leroy@example.com' },
-    update: {},
-    create: {
-      email: 'sophie.leroy@example.com',
-      name: 'Sophie Leroy',
-      role: Role.STUDENT,
-      emailVerified: true,
-      image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face',
-    },
-  });
-
-  // Additional diverse students
-  const pierre = await prisma.user.upsert({
-    where: { email: 'pierre.martin@example.com' },
-    update: {},
-    create: {
-      email: 'pierre.martin@example.com',
-      name: 'Pierre Martin',
-      role: Role.STUDENT,
-      emailVerified: true,
-      image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
-    },
-  });
-
-  const julie = await prisma.user.upsert({
-    where: { email: 'julie.petit@example.com' },
-    update: {},
-    create: {
-      email: 'julie.petit@example.com',
-      name: 'Julie Petit',
-      role: Role.STUDENT,
-      emailVerified: true,
-      image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face',
-    },
-  });
-
-  const students = [alice, thomas, marie, lucas, sophie, pierre, julie];
-  console.log(`✅ Created ${students.length + 2} users (1 instructor, 1 admin, ${students.length} students)`);
-
-  // ===== 2. SUBSCRIPTIONS (All Status Types) =====
-  console.log('💳 Creating subscriptions...');
-
-  await prisma.subscription.upsert({
-    where: { userId: alice.id },
-    update: {},
-    create: {
-      userId: alice.id,
-      stripeCustomerId: 'cus_test_alice',
-      stripeSubscriptionId: 'sub_test_alice_premium',
-      status: SubscriptionStatus.ACTIVE,
-      plan: SubscriptionPlan.PREMIUM,
-      priceId: 'price_premium_monthly',
-      currentPeriodStart: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-      currentPeriodEnd: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000),
-      cancelAtPeriodEnd: false,
-    },
-  });
-
-  await prisma.subscription.upsert({
-    where: { userId: thomas.id },
-    update: {},
-    create: {
-      userId: thomas.id,
-      status: SubscriptionStatus.ACTIVE,
-      plan: SubscriptionPlan.FREE,
-    },
-  });
-
-  await prisma.subscription.upsert({
-    where: { userId: marie.id },
-    update: {},
-    create: {
-      userId: marie.id,
-      stripeCustomerId: 'cus_test_marie',
-      stripeSubscriptionId: 'sub_test_marie_canceled',
-      status: SubscriptionStatus.CANCELED,
-      plan: SubscriptionPlan.PREMIUM,
-      priceId: 'price_premium_yearly',
-      currentPeriodStart: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-      currentPeriodEnd: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-      cancelAtPeriodEnd: true,
-    },
-  });
-
-  await prisma.subscription.upsert({
-    where: { userId: lucas.id },
-    update: {},
-    create: {
-      userId: lucas.id,
-      status: SubscriptionStatus.ACTIVE,
-      plan: SubscriptionPlan.FREE,
-    },
-  });
-
-  await prisma.subscription.upsert({
-    where: { userId: sophie.id },
-    update: {},
-    create: {
-      userId: sophie.id,
-      stripeCustomerId: 'cus_test_sophie',
-      stripeSubscriptionId: 'sub_test_sophie_pastdue',
-      status: SubscriptionStatus.PAST_DUE,
-      plan: SubscriptionPlan.PREMIUM,
-      priceId: 'price_premium_monthly',
-      currentPeriodStart: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000),
-      currentPeriodEnd: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-      cancelAtPeriodEnd: false,
-    },
-  });
-
-  await prisma.subscription.upsert({
-    where: { userId: pierre.id },
-    update: {},
-    create: {
-      userId: pierre.id,
-      stripeCustomerId: 'cus_test_pierre',
-      stripeSubscriptionId: 'sub_test_pierre_premium',
-      status: SubscriptionStatus.ACTIVE,
-      plan: SubscriptionPlan.PREMIUM,
-      priceId: 'price_premium_yearly',
-      currentPeriodStart: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
-      currentPeriodEnd: new Date(Date.now() + 305 * 24 * 60 * 60 * 1000),
-      cancelAtPeriodEnd: false,
-    },
-  });
-
-  await prisma.subscription.upsert({
-    where: { userId: julie.id },
-    update: {},
-    create: {
-      userId: julie.id,
-      status: SubscriptionStatus.ACTIVE,
-      plan: SubscriptionPlan.FREE,
-    },
-  });
-
-  console.log('✅ Created 7 subscription records with different statuses');
-
-  // ===== 3. TAGS (Comprehensive Technology Coverage) =====
-  console.log('🏷️ Creating tags...');
-
-  const tagData = [
-    // Frontend Technologies
-    { name: 'JavaScript', color: '#F7DF1E' },
-    { name: 'TypeScript', color: '#3178C6' },
-    { name: 'React', color: '#61DAFB' },
-    { name: 'Next.js', color: '#000000' },
-    { name: 'Vue.js', color: '#4FC08D' },
-    { name: 'Angular', color: '#DD0031' },
-    { name: 'Tailwind CSS', color: '#06B6D4' },
-    { name: 'CSS', color: '#1572B6' },
-    { name: 'HTML', color: '#E34F26' },
-
-    // Backend Technologies
-    { name: 'Node.js', color: '#339933' },
-    { name: 'Express', color: '#000000' },
-    { name: 'NestJS', color: '#E0234E' },
-    { name: 'Prisma', color: '#2D3748' },
-    { name: 'PostgreSQL', color: '#4169E1' },
-    { name: 'MongoDB', color: '#47A248' },
-    { name: 'Redis', color: '#DC382D' },
-
-    // Cloud & DevOps
-    { name: 'AWS', color: '#FF9900' },
-    { name: 'Docker', color: '#2496ED' },
-    { name: 'Kubernetes', color: '#326CE5' },
-    { name: 'Vercel', color: '#000000' },
-    { name: 'GitHub Actions', color: '#2088FF' },
-
-    // AI & Modern Tech
-    { name: 'AI', color: '#FF6B6B' },
-    { name: 'OpenAI', color: '#10A37F' },
-    { name: 'LangChain', color: '#1C3A3A' },
-    { name: 'Machine Learning', color: '#FF6F00' },
-
-    // Level Tags
-    { name: 'Beginner', color: '#22C55E' },
-    { name: 'Intermediate', color: '#F59E0B' },
-    { name: 'Advanced', color: '#EF4444' },
-    { name: 'Expert', color: '#8B5A2B' },
-
-    // Special Categories
-    { name: 'Interview Prep', color: '#8B5CF6' },
-    { name: 'Best Practices', color: '#6366F1' },
-    { name: 'Project-Based', color: '#EC4899' },
-    { name: 'Hands-On', color: '#10B981' },
-    { name: 'Theory', color: '#84CC16' },
-    { name: 'Full-Stack', color: '#F97316' },
-  ];
-
-  const tags = await Promise.all(
-    tagData.map(tag =>
-      prisma.tag.upsert({
+    const tags = [];
+    for (const tag of tagCategories) {
+      const createdTag = await prisma.tag.upsert({
         where: { name: tag.name },
         update: {},
         create: tag,
-      })
-    )
-  );
-
-  console.log(`✅ Created ${tags.length} tags`);
-
-  // ===== 4. COURSES (Comprehensive Feature Testing) =====
-  console.log('📚 Creating courses...');
-
-  // Course 1: FREE JavaScript Fundamentals
-  const jsBasicsCourse = await prisma.course.create({
-    data: {
-      title: 'JavaScript Fundamentals for Beginners',
-      slug: 'javascript-fundamentals-beginners',
-      description: 'Master the fundamentals of JavaScript programming from scratch. Perfect for complete beginners who want to start their web development journey with solid foundations. Learn variables, functions, objects, arrays, and modern ES6+ features through practical examples and hands-on exercises.',
-      thumbnail: '/courses/javascript-fundamentals/thumbnail.jpg',
-      price: 0,
-      category: CourseCategory.JAVASCRIPT,
-      level: CourseLevel.BEGINNER,
-      published: true,
-      featured: true,
-      accessTier: CourseAccessTier.FREE,
-      previewEnabled: true,
-      duration: 480, // 8 hours
-      createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000), // 60 days ago
-      updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),  // 5 days ago
+      });
+      tags.push(createdTag);
     }
-  });
+    console.log(`✅ Created ${tags.length} tags`);
 
-  // Course 2: PREMIUM React Advanced Patterns
-  const reactAdvancedCourse = await prisma.course.create({
-    data: {
-      title: 'React Advanced Patterns & Performance Optimization',
-      slug: 'react-advanced-patterns-performance',
-      description: 'Deep dive into advanced React patterns, performance optimization techniques, and modern best practices. Master custom hooks, context patterns, render optimizations, code splitting, and state management strategies. Includes real-world projects and production-ready patterns used by top tech companies.',
-      thumbnail: '/courses/react-advanced/thumbnail.jpg',
-      price: 149.99,
-      category: CourseCategory.FRONTEND,
-      level: CourseLevel.ADVANCED,
-      published: true,
-      featured: true,
-      accessTier: CourseAccessTier.PREMIUM,
-      previewEnabled: true,
-      duration: 720, // 12 hours
-      createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
-      updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+    // 4. Create comprehensive course catalog
+    console.log("📚 Building course catalog...");
+    const courses: any[] = [];
+
+    for (const courseData of comprehensiveCourses) {
+      const course = await prisma.course.create({
+        data: {
+          ...courseData,
+          instructorId: instructor.id,
+          published: true,
+          createdAt: randomDate(
+            new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
+            new Date()
+          ),
+          updatedAt: new Date(),
+        },
+      });
+      courses.push(course);
     }
-  });
-
-  // Course 3: PREMIUM Full-Stack Next.js
-  const nextjsFullstackCourse = await prisma.course.create({
-    data: {
-      title: 'Full-Stack Next.js 15 Development Masterclass',
-      slug: 'nextjs-15-fullstack-masterclass',
-      description: 'Build production-ready, scalable applications with Next.js 15 App Router, Server Components, and cutting-edge full-stack tools. Master Prisma ORM, authentication, deployment, performance optimization, and modern development workflows. Create real-world projects including e-commerce, SaaS platforms, and more.',
-      thumbnail: '/courses/nextjs-fullstack/thumbnail.jpg',
-      price: 299.99,
-      category: CourseCategory.FULLSTACK,
-      level: CourseLevel.INTERMEDIATE,
-      published: true,
-      featured: true,
-      accessTier: CourseAccessTier.PREMIUM,
-      previewEnabled: true,
-      duration: 1440, // 24 hours
-      createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-      updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-    }
-  });
-
-  // Course 4: FREE TypeScript Basics
-  const typescriptBasicsCourse = await prisma.course.create({
-    data: {
-      title: 'TypeScript for JavaScript Developers',
-      slug: 'typescript-for-javascript-developers',
-      description: 'Transition smoothly from JavaScript to TypeScript with this comprehensive introduction. Learn type annotations, interfaces, generics, and how to gradually adopt TypeScript in existing JavaScript projects. Understand the benefits of static typing and modern development tooling.',
-      thumbnail: '/courses/typescript-basics/thumbnail.jpg',
-      price: 0,
-      category: CourseCategory.TYPESCRIPT,
-      level: CourseLevel.BEGINNER,
-      published: true,
-      featured: false,
-      accessTier: CourseAccessTier.FREE,
-      previewEnabled: true,
-      duration: 360, // 6 hours
-      createdAt: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000),
-      updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-    }
-  });
-
-  // Course 5: PREMIUM AI Development
-  const aiDevelopmentCourse = await prisma.course.create({
-    data: {
-      title: 'AI-Powered Web Applications Development',
-      slug: 'ai-powered-web-applications',
-      description: 'Build intelligent web applications using OpenAI APIs, LangChain, vector databases, and modern AI development practices. Create chatbots, content generators, recommendation systems, and more. Learn prompt engineering, RAG patterns, and how to integrate AI seamlessly into web applications.',
-      thumbnail: '/courses/ai-development/thumbnail.jpg',
-      price: 399.99,
-      category: CourseCategory.AI,
-      level: CourseLevel.ADVANCED,
-      published: true,
-      featured: true,
-      accessTier: CourseAccessTier.PREMIUM,
-      previewEnabled: true,
-      duration: 960, // 16 hours
-      createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
-      updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    }
-  });
-
-  // Course 6: PREMIUM DevOps & Cloud
-  const devopsCourse = await prisma.course.create({
-    data: {
-      title: 'Modern DevOps: Docker, Kubernetes & AWS',
-      slug: 'modern-devops-docker-kubernetes-aws',
-      description: 'Master containerization, orchestration, and cloud deployment for modern web applications. Learn Docker, Kubernetes, AWS services, CI/CD pipelines, monitoring, and infrastructure as code. Deploy scalable, production-ready applications with industry best practices.',
-      thumbnail: '/courses/devops/thumbnail.jpg',
-      price: 249.99,
-      category: CourseCategory.DEVOPS,
-      level: CourseLevel.INTERMEDIATE,
-      published: true,
-      featured: true,
-      accessTier: CourseAccessTier.PREMIUM,
-      previewEnabled: true,
-      duration: 840, // 14 hours
-      createdAt: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000),
-      updatedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
-    }
-  });
-
-  // Course 7: FREE Frontend Fundamentals
-  const frontendBasicsCourse = await prisma.course.create({
-    data: {
-      title: 'Frontend Development Fundamentals',
-      slug: 'frontend-development-fundamentals',
-      description: 'Learn the essentials of modern frontend development with HTML5, CSS3, and responsive design principles. Master layout techniques, CSS Grid, Flexbox, and create beautiful, accessible user interfaces that work across all devices.',
-      thumbnail: '/courses/frontend-basics/thumbnail.jpg',
-      price: 0,
-      category: CourseCategory.FRONTEND,
-      level: CourseLevel.BEGINNER,
-      published: true,
-      featured: false,
-      accessTier: CourseAccessTier.FREE,
-      previewEnabled: true,
-      duration: 300, // 5 hours
-      createdAt: new Date(Date.now() - 50 * 24 * 60 * 60 * 1000),
-      updatedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-    }
-  });
-
-  // Course 8: PREMIUM Backend Architecture
-  const backendArchitectureCourse = await prisma.course.create({
-    data: {
-      title: 'Scalable Backend Architecture with Node.js',
-      slug: 'scalable-backend-architecture-nodejs',
-      description: 'Design and build scalable backend systems using Node.js, Express, microservices patterns, and database optimization techniques. Learn about API design, security, caching, message queues, and performance optimization for high-traffic applications.',
-      thumbnail: '/courses/backend-architecture/thumbnail.jpg',
-      price: 199.99,
-      category: CourseCategory.BACKEND,
-      level: CourseLevel.ADVANCED,
-      published: true,
-      featured: false,
-      accessTier: CourseAccessTier.PREMIUM,
-      previewEnabled: true,
-      duration: 600, // 10 hours
-      createdAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000),
-      updatedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
-    }
-  });
-
-  // Course 9: Draft Course (Unpublished)
-  const draftCourse = await prisma.course.create({
-    data: {
-      title: 'Advanced Cloud Architecture Patterns',
-      slug: 'advanced-cloud-architecture-patterns',
-      description: 'Explore enterprise-level cloud architecture patterns, serverless computing, event-driven architectures, and multi-cloud strategies. Learn to design resilient, cost-effective, and scalable cloud solutions.',
-      thumbnail: '/courses/cloud-architecture/thumbnail.jpg',
-      price: 349.99,
-      category: CourseCategory.CLOUD,
-      level: CourseLevel.EXPERT,
-      published: false, // Draft course
-      featured: false,
-      accessTier: CourseAccessTier.PREMIUM,
-      previewEnabled: false,
-      duration: 1200, // 20 hours
-      createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-      updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-    }
-  });
-
-  // TechMastry Interview Preparation Courses (from migration script)
-  const interviewPrepCourses = await Promise.all([
-    prisma.course.create({
-      data: {
-        title: 'JavaScript Interview Challenges: String Manipulation',
-        slug: 'js-interview-string-manipulation',
-        description: 'Master string manipulation techniques commonly asked in JavaScript interviews. Learn multiple approaches to solve string reversal, palindrome detection, and advanced string algorithms with time complexity analysis.',
-        category: CourseCategory.JAVASCRIPT,
-        level: CourseLevel.BEGINNER,
-        published: true,
-        featured: false,
-        duration: 15, // 15 minutes
-        price: 0,
-        accessTier: CourseAccessTier.FREE,
-        thumbnail: '/courses/interview-prep/string-challenges.jpg',
-        createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
-      }
-    }),
-
-    prisma.course.create({
-      data: {
-        title: 'Advanced Array Manipulation Techniques',
-        slug: 'advanced-array-manipulation',
-        description: 'Deep dive into advanced JavaScript array manipulation techniques. Master filtering, transformation, reduction, and complex data processing patterns used in modern web development and technical interviews.',
-        category: CourseCategory.JAVASCRIPT,
-        level: CourseLevel.INTERMEDIATE,
-        published: true,
-        featured: false,
-        duration: 25, // 25 minutes
-        price: 29.99,
-        accessTier: CourseAccessTier.PREMIUM,
-        thumbnail: '/courses/interview-prep/array-manipulation.jpg',
-        createdAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000),
-      }
-    }),
-
-    prisma.course.create({
-      data: {
-        title: 'Asynchronous JavaScript Patterns Mastery',
-        slug: 'async-javascript-patterns',
-        description: 'Master modern asynchronous patterns in JavaScript including Promises, async/await, error handling strategies, concurrent programming, and advanced patterns for building responsive applications.',
-        category: CourseCategory.JAVASCRIPT,
-        level: CourseLevel.ADVANCED,
-        published: true,
-        featured: true,
-        duration: 40, // 40 minutes
-        price: 79.99,
-        accessTier: CourseAccessTier.PREMIUM,
-        thumbnail: '/courses/interview-prep/async-patterns.jpg',
-        createdAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
-      }
-    }),
-  ]);
-
-  const allCourses = [
-    jsBasicsCourse,
-    reactAdvancedCourse,
-    nextjsFullstackCourse,
-    typescriptBasicsCourse,
-    aiDevelopmentCourse,
-    devopsCourse,
-    frontendBasicsCourse,
-    backendArchitectureCourse,
-    draftCourse,
-    ...interviewPrepCourses
-  ];
-
-  console.log(`✅ Created ${allCourses.length} courses (${allCourses.filter(c => c.published).length} published, ${allCourses.filter(c => !c.published).length} draft)`);
-
-  // ===== 5. LESSONS (Comprehensive Content Types) =====
-  console.log('📝 Creating lessons...');
-
-  // JavaScript Fundamentals Lessons
-  const jsLessons = await Promise.all([
-    prisma.lesson.create({
-      data: {
-        title: 'Introduction to JavaScript Programming',
-        slug: 'introduction-javascript-programming',
-        description: 'Learn what JavaScript is, its history, and why it\'s the most popular programming language for web development. Understand the JavaScript ecosystem and set up your development environment.',
-        content: `# Introduction to JavaScript Programming
-
-Welcome to the world of JavaScript! This lesson will give you a solid foundation to start your programming journey.
-
-## What is JavaScript?
-
-JavaScript is a high-level, interpreted programming language that was originally created to make web pages interactive. Today, it's used for:
-
-- **Frontend Development**: Creating interactive user interfaces
-- **Backend Development**: Building server-side applications with Node.js
-- **Mobile Apps**: Using frameworks like React Native
-- **Desktop Apps**: With tools like Electron
-- **IoT and Embedded Systems**: JavaScript runs everywhere!
-
-## A Brief History
-
-- **1995**: Created by Brendan Eich at Netscape in just 10 days
-- **1997**: Became an ECMAScript standard
-- **2009**: Node.js brings JavaScript to servers
-- **2015**: ES6/ES2015 revolutionizes the language
-- **Today**: Most popular programming language worldwide
-
-## Why Learn JavaScript?
-
-1. **Universal Language**: Runs on browsers, servers, and mobile devices
-2. **Huge Community**: Millions of developers and vast resources
-3. **Job Market**: High demand with excellent career opportunities
-4. **Ecosystem**: Rich ecosystem with npm packages and frameworks
-5. **Beginner Friendly**: Easy to start with, powerful when mastered
-
-## Your First JavaScript Code
-
-Let's start with the classic "Hello, World!" program:
-
-\`\`\`javascript
-// This is a comment - it won't be executed
-console.log('Hello, World!');
-
-// You can also store text in variables
-const greeting = 'Hello, JavaScript!';
-console.log(greeting);
-\`\`\`
-
-## Setting Up Your Environment
-
-1. **Web Browser**: Chrome, Firefox, or Safari (all have developer tools)
-2. **Code Editor**: VS Code, WebStorm, or any text editor
-3. **Node.js**: For running JavaScript outside the browser
-
-## Next Steps
-
-In the following lessons, we'll explore:
-- Variables and data types
-- Functions and scope
-- Objects and arrays
-- Control flow and loops
-- Modern ES6+ features
-
-Ready to dive deeper? Let's continue your JavaScript journey!`,
-        videoUrl: 'https://example.com/videos/js-intro.mp4',
-        duration: 1200, // 20 minutes
-        order: 1,
-        published: true,
-        courseId: jsBasicsCourse.id,
-      }
-    }),
-
-    prisma.lesson.create({
-      data: {
-        title: 'Variables, Data Types, and Type Conversion',
-        slug: 'variables-data-types-conversion',
-        description: 'Master JavaScript variables using let, const, and var. Understand primitive data types, objects, and how JavaScript handles type conversion automatically and explicitly.',
-        content: `# Variables, Data Types, and Type Conversion
-
-Understanding how to store and manipulate data is fundamental to programming. Let's explore JavaScript's variable system and data types.
-
-## Variable Declaration
-
-JavaScript provides three ways to declare variables:
-
-### \`let\` - Block-scoped variables
-\`\`\`javascript
-let username = 'Alice';
-let age = 25;
-
-if (true) {
-  let localVar = 'I only exist in this block';
-  console.log(localVar); // Works fine
-}
-// console.log(localVar); // Error: localVar is not defined
-\`\`\`
-
-### \`const\` - Constants (cannot be reassigned)
-\`\`\`javascript
-const PI = 3.14159;
-const API_URL = 'https://api.example.com';
-
-// PI = 3.14; // Error: Cannot assign to const variable
-\`\`\`
-
-### \`var\` - Function-scoped (legacy, avoid in modern code)
-\`\`\`javascript
-var oldStyleVariable = 'I have function scope';
-// Prefer let and const in modern JavaScript
-\`\`\`
-
-## Data Types
-
-JavaScript has several built-in data types:
-
-### Primitive Types
-
-1. **String**: Text data
-\`\`\`javascript
-const firstName = 'John';
-const lastName = "Doe";
-const fullName = \`\${firstName} \${lastName}\`; // Template literals
-\`\`\`
-
-2. **Number**: Both integers and decimals
-\`\`\`javascript
-const age = 30;
-const price = 99.99;
-const negative = -10;
-const infinity = Infinity;
-\`\`\`
-
-3. **Boolean**: True or false
-\`\`\`javascript
-const isActive = true;
-const isComplete = false;
-\`\`\`
-
-4. **Undefined**: Variable declared but not assigned
-\`\`\`javascript
-let unassigned;
-console.log(unassigned); // undefined
-\`\`\`
-
-5. **Null**: Intentional absence of value
-\`\`\`javascript
-const emptyValue = null;
-\`\`\`
-
-6. **Symbol**: Unique identifier (advanced)
-\`\`\`javascript
-const uniqueId = Symbol('id');
-\`\`\`
-
-7. **BigInt**: Large integers (advanced)
-\`\`\`javascript
-const bigNumber = 1234567890123456789012345678901234567890n;
-\`\`\`
-
-### Non-Primitive Types
-
-**Object**: Collections of key-value pairs
-\`\`\`javascript
-const person = {
-  name: 'Alice',
-  age: 30,
-  city: 'Paris'
-};
-
-const numbers = [1, 2, 3, 4, 5]; // Arrays are objects too!
-\`\`\`
-
-## Type Checking
-
-Use the \`typeof\` operator to check variable types:
-
-\`\`\`javascript
-console.log(typeof 42);        // "number"
-console.log(typeof 'hello');   // "string"
-console.log(typeof true);      // "boolean"
-console.log(typeof undefined); // "undefined"
-console.log(typeof null);      // "object" (this is a known quirk!)
-console.log(typeof {});        // "object"
-console.log(typeof []);        // "object"
-\`\`\`
-
-## Type Conversion
-
-JavaScript automatically converts types when needed (coercion):
-
-### Automatic Conversion
-\`\`\`javascript
-console.log('5' + 3);    // "53" (number becomes string)
-console.log('5' - 3);    // 2 (string becomes number)
-console.log('5' * '2');  // 10 (both become numbers)
-\`\`\`
-
-### Explicit Conversion
-\`\`\`javascript
-// To String
-const num = 42;
-const str1 = String(num);        // "42"
-const str2 = num.toString();     // "42"
-const str3 = \`\${num}\`;           // "42"
-
-// To Number
-const text = '123';
-const num1 = Number(text);       // 123
-const num2 = parseInt(text);     // 123
-const num3 = parseFloat('123.45'); // 123.45
-
-// To Boolean
-const bool1 = Boolean(1);        // true
-const bool2 = Boolean(0);        // false
-const bool3 = Boolean('hello');  // true
-const bool4 = Boolean('');       // false
-\`\`\`
-
-## Best Practices
-
-1. **Use \`const\` by default**, \`let\` when you need to reassign
-2. **Avoid \`var\`** in modern JavaScript
-3. **Use descriptive variable names**: \`userAge\` instead of \`a\`
-4. **Be explicit with type conversions** when possible
-5. **Use template literals** for string interpolation
-
-## Practice Exercise
-
-Try creating variables of different types and experimenting with type conversion:
-
-\`\`\`javascript
-// Create variables
-const name = 'Your Name';
-const birthYear = 1990;
-const currentYear = new Date().getFullYear();
-
-// Calculate age
-const age = currentYear - birthYear;
-
-// Create a message
-const message = \`Hello, \${name}! You are \${age} years old.\`;
-console.log(message);
-\`\`\`
-
-Understanding variables and data types is crucial for all JavaScript programming. Next, we'll explore functions and how to organize your code!`,
-        videoUrl: 'https://example.com/videos/js-variables.mp4',
-        duration: 1800, // 30 minutes
-        order: 2,
-        published: true,
-        courseId: jsBasicsCourse.id,
-      }
-    }),
-
-    prisma.lesson.create({
-      data: {
-        title: 'Functions: Declaration, Expressions, and Arrow Functions',
-        slug: 'functions-declaration-expressions-arrow',
-        description: 'Learn how to create reusable code with functions. Master function declarations, expressions, arrow functions, parameters, return values, and scope concepts.',
-        content: `# Functions: The Building Blocks of JavaScript
-
-Functions are one of the most important concepts in JavaScript. They allow you to organize code into reusable blocks that can be executed when needed.
-
-## What are Functions?
-
-A function is a block of code designed to perform a particular task. Functions help you:
-
-- **Organize code** into logical, reusable pieces
-- **Avoid repetition** by writing code once and using it many times
-- **Break down complex problems** into smaller, manageable parts
-- **Create modular applications** that are easier to maintain
-
-## Function Declaration
-
-The traditional way to create a function:
-
-\`\`\`javascript
-function greetUser(name) {
-  return 'Hello, ' + name + '!';
-}
-
-// Call the function
-const message = greetUser('Alice');
-console.log(message); // "Hello, Alice!"
-\`\`\`
-
-### Function Components
-
-1. **\`function\` keyword**: Declares that this is a function
-2. **Function name**: \`greetUser\` (use descriptive names)
-3. **Parameters**: \`name\` (input values in parentheses)
-4. **Function body**: Code between curly braces \`{}\`
-5. **Return statement**: Sends a value back to the caller
-
-## Function Expression
-
-Assigning a function to a variable:
-
-\`\`\`javascript
-const calculateArea = function(width, height) {
-  return width * height;
-};
-
-console.log(calculateArea(5, 3)); // 15
-\`\`\`
-
-## Arrow Functions (ES6+)
-
-A more concise syntax for writing functions:
-
-\`\`\`javascript
-// Basic arrow function
-const multiply = (a, b) => {
-  return a * b;
-};
-
-// Shorter syntax for single expressions
-const multiply2 = (a, b) => a * b;
-
-// Single parameter (parentheses optional)
-const square = x => x * x;
-
-// No parameters
-const getRandomNumber = () => Math.random();
-\`\`\`
-
-## Parameters and Arguments
-
-### Default Parameters
-\`\`\`javascript
-function greet(name = 'Guest', time = 'day') {
-  return \`Good \${time}, \${name}!\`;
-}
-
-console.log(greet());              // "Good day, Guest!"
-console.log(greet('Alice'));       // "Good day, Alice!"
-console.log(greet('Bob', 'evening')); // "Good evening, Bob!"
-\`\`\`
-
-### Rest Parameters
-\`\`\`javascript
-function sumAll(...numbers) {
-  return numbers.reduce((total, num) => total + num, 0);
-}
-
-console.log(sumAll(1, 2, 3));       // 6
-console.log(sumAll(1, 2, 3, 4, 5)); // 15
-\`\`\`
-
-## Return Values
-
-Functions can return values or perform actions:
-
-\`\`\`javascript
-// Returns a value
-function add(a, b) {
-  return a + b;
-}
-
-// Performs an action (no return)
-function logMessage(message) {
-  console.log('Log: ' + message);
-  // No return statement = returns undefined
-}
-
-// Multiple return statements
-function getGrade(score) {
-  if (score >= 90) return 'A';
-  if (score >= 80) return 'B';
-  if (score >= 70) return 'C';
-  if (score >= 60) return 'D';
-  return 'F';
-}
-\`\`\`
-
-## Scope and Closures
-
-### Function Scope
-\`\`\`javascript
-function outerFunction() {
-  const outerVariable = 'I am outside!';
-  
-  function innerFunction() {
-    const innerVariable = 'I am inside!';
-    console.log(outerVariable); // Can access outer variable
-  }
-  
-  innerFunction();
-  // console.log(innerVariable); // Error: not accessible
-}
-\`\`\`
-
-### Closures
-\`\`\`javascript
-function createCounter() {
-  let count = 0;
-  
-  return function() {
-    count++;
-    return count;
-  };
-}
-
-const counter = createCounter();
-console.log(counter()); // 1
-console.log(counter()); // 2
-console.log(counter()); // 3
-\`\`\`
-
-## Higher-Order Functions
-
-Functions that take other functions as parameters or return functions:
-
-\`\`\`javascript
-// Function that takes another function as parameter
-function processArray(array, processor) {
-  const result = [];
-  for (const item of array) {
-    result.push(processor(item));
-  }
-  return result;
-}
-
-const numbers = [1, 2, 3, 4, 5];
-const doubled = processArray(numbers, x => x * 2);
-console.log(doubled); // [2, 4, 6, 8, 10]
-\`\`\`
-
-## Best Practices
-
-1. **Use descriptive names**: \`calculateTotalPrice\` not \`calc\`
-2. **Keep functions small** and focused on a single task
-3. **Use arrow functions** for short, simple functions
-4. **Use function declarations** for main functions that might be called before definition
-5. **Return early** to avoid deep nesting:
-
-\`\`\`javascript
-// Good
-function validateUser(user) {
-  if (!user) return false;
-  if (!user.email) return false;
-  if (!user.password) return false;
-  return true;
-}
-
-// Avoid deep nesting
-function validateUserBad(user) {
-  if (user) {
-    if (user.email) {
-      if (user.password) {
-        return true;
+    console.log(`✅ Created ${courses.length} courses`);
+
+    // 5. Create course tags relationships
+    console.log("🔗 Linking courses with tags...");
+    const courseTagMappings = [
+      {
+        courseIndex: 0,
+        tagNames: ["JavaScript", "Beginner", "Hands-On", "Frontend"],
+      },
+      {
+        courseIndex: 1,
+        tagNames: ["React", "Advanced", "Frontend", "Best Practices"],
+      },
+      {
+        courseIndex: 2,
+        tagNames: [
+          "Next.js",
+          "React",
+          "Full-Stack",
+          "Intermediate",
+          "TypeScript",
+        ],
+      },
+      {
+        courseIndex: 3,
+        tagNames: ["TypeScript", "JavaScript", "Beginner", "Best Practices"],
+      },
+      {
+        courseIndex: 4,
+        tagNames: ["AI/ML", "Advanced", "JavaScript", "Project-Based"],
+      },
+      {
+        courseIndex: 5,
+        tagNames: ["DevOps", "Docker", "Kubernetes", "AWS", "Intermediate"],
+      },
+      {
+        courseIndex: 6,
+        tagNames: ["Frontend", "Beginner", "Hands-On", "Tailwind CSS"],
+      },
+      {
+        courseIndex: 7,
+        tagNames: ["Backend", "Node.js", "Advanced", "Express"],
+      },
+    ];
+
+    for (const mapping of courseTagMappings) {
+      const course = courses[mapping.courseIndex];
+      for (const tagName of mapping.tagNames) {
+        const tag = tags.find((t) => t.name === tagName);
+        if (tag && course) {
+          await prisma.courseTag.create({
+            data: {
+              courseId: course.id,
+              tagId: tag.id,
+            },
+          });
+        }
       }
     }
-  }
-  return false;
-}
-\`\`\`
+    console.log("✅ Linked courses with relevant tags");
 
-## Practice Exercises
+    // 6. Create course modules and lessons
+    console.log("📖 Creating course content structure...");
+    const modulesAndLessons = [
+      {
+        courseIndex: 0, // JavaScript Fundamentals
+        modules: [
+          {
+            title: "Fondamentaux JavaScript",
+            lessons: [
+              {
+                title: "Introduction à JavaScript",
+                duration: 45,
+                videoUrl: "https://player.vimeo.com/video/287094149",
+              },
+              {
+                title: "Variables et Types de données",
+                duration: 35,
+                videoUrl: "https://player.vimeo.com/video/287094149",
+              },
+              {
+                title: "Opérateurs et Expressions",
+                duration: 30,
+                videoUrl: "https://player.vimeo.com/video/287094149",
+              },
+              {
+                title: "Structures de contrôle",
+                duration: 40,
+                videoUrl: "https://player.vimeo.com/video/287094149",
+              },
+            ],
+          },
+          {
+            title: "Fonctions et Objets",
+            lessons: [
+              {
+                title: "Fonctions de base",
+                duration: 35,
+                videoUrl: "https://player.vimeo.com/video/287094149",
+              },
+              {
+                title: "Objets et Propriétés",
+                duration: 40,
+                videoUrl: "https://player.vimeo.com/video/287094149",
+              },
+              {
+                title: "Méthodes et This",
+                duration: 45,
+                videoUrl: "https://player.vimeo.com/video/287094149",
+              },
+            ],
+          },
+          {
+            title: "DOM et Événements",
+            lessons: [
+              {
+                title: "Manipulation du DOM",
+                duration: 50,
+                videoUrl: "https://player.vimeo.com/video/287094149",
+              },
+              {
+                title: "Gestion des événements",
+                duration: 45,
+                videoUrl: "https://player.vimeo.com/video/287094149",
+              },
+              {
+                title: "Projet : Application interactive",
+                duration: 60,
+                videoUrl: "https://player.vimeo.com/video/287094149",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        courseIndex: 2, // Next.js Full-Stack
+        modules: [
+          {
+            title: "Next.js App Router",
+            lessons: [
+              {
+                title: "Introduction App Router",
+                duration: 30,
+                videoUrl: "https://player.vimeo.com/video/287094149",
+              },
+              {
+                title: "Routing et Navigation",
+                duration: 45,
+                videoUrl: "https://player.vimeo.com/video/287094149",
+              },
+              {
+                title: "Layouts et Templates",
+                duration: 40,
+                videoUrl: "https://player.vimeo.com/video/287094149",
+              },
+            ],
+          },
+          {
+            title: "Server Components",
+            lessons: [
+              {
+                title: "Server vs Client Components",
+                duration: 35,
+                videoUrl: "https://player.vimeo.com/video/287094149",
+              },
+              {
+                title: "Data Fetching Patterns",
+                duration: 50,
+                videoUrl: "https://player.vimeo.com/video/287094149",
+              },
+              {
+                title: "Streaming et Suspense",
+                duration: 40,
+                videoUrl: "https://player.vimeo.com/video/287094149",
+              },
+            ],
+          },
+        ],
+      },
+    ];
 
-1. **Create a temperature converter**:
-\`\`\`javascript
-const celsiusToFahrenheit = celsius => (celsius * 9/5) + 32;
-const fahrenheitToCelsius = fahrenheit => (fahrenheit - 32) * 5/9;
-\`\`\`
+    for (const courseContent of modulesAndLessons) {
+      const course = courses[courseContent.courseIndex];
 
-2. **Build a simple calculator**:
-\`\`\`javascript
-const calculator = {
-  add: (a, b) => a + b,
-  subtract: (a, b) => a - b,
-  multiply: (a, b) => a * b,
-  divide: (a, b) => b !== 0 ? a / b : 'Cannot divide by zero'
-};
-\`\`\`
+      for (
+        let moduleIndex = 0;
+        moduleIndex < courseContent.modules.length;
+        moduleIndex++
+      ) {
+        const moduleData = courseContent.modules[moduleIndex];
 
-Functions are the foundation of JavaScript programming. Master them, and you'll be able to build complex, maintainable applications. Next, we'll explore objects and arrays!`,
-        videoUrl: 'https://example.com/videos/js-functions.mp4',
-        duration: 2400, // 40 minutes
-        order: 3,
-        published: true,
-        courseId: jsBasicsCourse.id,
+        const courseModule = await prisma.module.create({
+          data: {
+            courseId: course.id,
+            title: moduleData.title,
+            slug: moduleData.title
+              .toLowerCase()
+              .replace(/\s+/g, "-")
+              .replace(/[^a-z0-9-]/g, ""),
+            order: moduleIndex + 1,
+          },
+        });
+
+        for (
+          let lessonIndex = 0;
+          lessonIndex < moduleData.lessons.length;
+          lessonIndex++
+        ) {
+          const lessonData = moduleData.lessons[lessonIndex];
+
+          await prisma.lesson.create({
+            data: {
+              courseId: course.id,
+              moduleId: courseModule.id,
+              title: lessonData.title,
+              slug: lessonData.title
+                .toLowerCase()
+                .replace(/\s+/g, "-")
+                .replace(/[^a-z0-9-]/g, ""),
+              description: `Apprenez ${lessonData.title.toLowerCase()} avec des exemples pratiques et des exercices.`,
+              content: `# ${lessonData.title}\n\nContenu détaillé de la leçon avec explications, exemples de code et exercices pratiques.`,
+              videoUrl: lessonData.videoUrl,
+              duration: lessonData.duration,
+              order: lessonIndex + 1,
+              published: true,
+            },
+          });
+        }
       }
-    }),
-
-    prisma.lesson.create({
-      data: {
-        title: 'Objects and Arrays: Working with Complex Data',
-        slug: 'objects-arrays-complex-data',
-        description: 'Dive deep into JavaScript objects and arrays. Learn how to create, manipulate, and work with complex data structures that form the backbone of modern applications.',
-        content: `# Objects and Arrays: Managing Complex Data
-
-Objects and arrays are essential data structures in JavaScript that allow you to organize and manipulate complex information efficiently.
-
-## JavaScript Objects
-
-Objects are collections of key-value pairs, perfect for representing real-world entities:
-
-### Creating Objects
-
-\`\`\`javascript
-// Object literal (most common)
-const person = {
-  firstName: 'Alice',
-  lastName: 'Johnson',
-  age: 28,
-  city: 'Paris',
-  isEmployed: true
-};
-
-// Constructor function (less common)
-const car = new Object();
-car.brand = 'Toyota';
-car.model = 'Camry';
-car.year = 2023;
-\`\`\`
-
-### Accessing Object Properties
-
-\`\`\`javascript
-const user = {
-  name: 'Bob',
-  email: 'bob@example.com',
-  preferences: {
-    theme: 'dark',
-    language: 'French'
-  }
-};
-
-// Dot notation
-console.log(user.name);    // "Bob"
-console.log(user.preferences.theme); // "dark"
-
-// Bracket notation (useful for dynamic keys)
-console.log(user['email']); // "bob@example.com"
-
-const key = 'name';
-console.log(user[key]);     // "Bob"
-\`\`\`
-
-### Modifying Objects
-
-\`\`\`javascript
-const product = {
-  name: 'Laptop',
-  price: 999
-};
-
-// Adding properties
-product.brand = 'Dell';
-product['warranty'] = '2 years';
-
-// Modifying properties
-product.price = 899;
-
-// Deleting properties
-delete product.warranty;
-
-console.log(product); // { name: 'Laptop', price: 899, brand: 'Dell' }
-\`\`\`
-
-### Object Methods
-
-Objects can contain functions as properties:
-
-\`\`\`javascript
-const calculator = {
-  value: 0,
-  
-  add(number) {
-    this.value += number;
-    return this; // Method chaining
-  },
-  
-  subtract(number) {
-    this.value -= number;
-    return this;
-  },
-
-  multiply(number) {
-    this.value *= number;
-    return this;
-  },
-
-  getResult() {
-    return this.value;
-  }
-};
-
-// Method chaining
-const result = calculator
-  .add(10)
-  .multiply(2)
-  .subtract(5)
-  .getResult();
-
-console.log(result); // 15
-\`\`\`
-
-## JavaScript Arrays
-
-Arrays are ordered lists of values, perfect for collections of similar items:
-
-### Creating Arrays
-
-\`\`\`javascript
-// Array literal
-const fruits = ['apple', 'banana', 'orange'];
-const numbers = [1, 2, 3, 4, 5];
-const mixed = ['text', 42, true, null, { key: 'value' }];
-
-// Array constructor
-const emptyArray = new Array();
-const arrayWithLength = new Array(5); // Creates array with 5 empty slots
-\`\`\`
-
-### Array Properties and Methods
-
-\`\`\`javascript
-const colors = ['red', 'green', 'blue'];
-
-// Length property
-console.log(colors.length); // 3
-
-// Adding elements
-colors.push('yellow');        // Add to end
-colors.unshift('purple');     // Add to beginning
-console.log(colors); // ['purple', 'red', 'green', 'blue', 'yellow']
-
-// Removing elements
-const lastColor = colors.pop();     // Remove from end
-const firstColor = colors.shift();  // Remove from beginning
-console.log(lastColor);  // 'yellow'
-console.log(firstColor); // 'purple'
-\`\`\`
-
-### Accessing and Modifying Array Elements
-
-\`\`\`javascript
-const animals = ['cat', 'dog', 'bird', 'fish'];
-
-// Accessing by index (0-based)
-console.log(animals[0]);  // 'cat'
-console.log(animals[2]);  // 'bird'
-
-// Modifying elements
-animals[1] = 'puppy';
-console.log(animals); // ['cat', 'puppy', 'bird', 'fish']
-
-// Finding index of element
-const birdIndex = animals.indexOf('bird');
-console.log(birdIndex); // 2
-\`\`\`
-
-## Advanced Array Methods
-
-Modern JavaScript provides powerful methods for array manipulation:
-
-### Transforming Arrays
-
-\`\`\`javascript
-const numbers = [1, 2, 3, 4, 5];
-
-// map() - transform each element
-const doubled = numbers.map(num => num * 2);
-console.log(doubled); // [2, 4, 6, 8, 10]
-
-// filter() - select elements that meet criteria
-const evenNumbers = numbers.filter(num => num % 2 === 0);
-console.log(evenNumbers); // [2, 4]
-
-// reduce() - combine all elements into single value
-const sum = numbers.reduce((total, num) => total + num, 0);
-console.log(sum); // 15
-\`\`\`
-
-### Searching and Testing
-
-\`\`\`javascript
-const words = ['apple', 'banana', 'apricot', 'grape'];
-
-// find() - get first element that matches
-const wordWithA = words.find(word => word.startsWith('a'));
-console.log(wordWithA); // 'apple'
-
-// some() - test if any element matches
-const hasLongWord = words.some(word => word.length > 6);
-console.log(hasLongWord); // false
-
-// every() - test if all elements match
-const allStrings = words.every(word => typeof word === 'string');
-console.log(allStrings); // true
-\`\`\`
-
-## Working with Complex Data Structures
-
-### Array of Objects
-
-\`\`\`javascript
-const students = [
-  { name: 'Alice', grade: 85, subject: 'Math' },
-  { name: 'Bob', grade: 92, subject: 'Science' },
-  { name: 'Charlie', grade: 78, subject: 'Math' },
-  { name: 'Diana', grade: 95, subject: 'Science' }
-];
-
-// Find all math students
-const mathStudents = students.filter(student => student.subject === 'Math');
-
-// Calculate average grade
-const averageGrade = students.reduce((sum, student) => sum + student.grade, 0) / students.length;
-
-// Get student names with grades above 90
-const topStudents = students
-  .filter(student => student.grade > 90)
-  .map(student => student.name);
-
-console.log(topStudents); // ['Bob', 'Diana']
-\`\`\`
-
-### Nested Objects and Arrays
-
-\`\`\`javascript
-const company = {
-  name: 'Tech Corp',
-  departments: [
-    {
-      name: 'Engineering',
-      employees: [
-        { name: 'Alice', role: 'Developer' },
-        { name: 'Bob', role: 'Designer' }
-      ]
-    },
-    {
-      name: 'Marketing',
-      employees: [
-        { name: 'Charlie', role: 'Manager' },
-        { name: 'Diana', role: 'Analyst' }
-      ]
     }
-  ]
-};
-
-// Access nested data
-const firstEmployee = company.departments[0].employees[0].name;
-console.log(firstEmployee); // 'Alice'
-
-// Find all developers across departments
-const developers = company.departments
-  .flatMap(dept => dept.employees)
-  .filter(emp => emp.role === 'Developer');
-\`\`\`
-
-## Object Destructuring
-
-Extract values from objects and arrays more elegantly:
-
-\`\`\`javascript
-// Object destructuring
-const user = { name: 'Alice', age: 30, city: 'Paris' };
-const { name, age } = user;
-console.log(name); // 'Alice'
-console.log(age);  // 30
-
-// Array destructuring
-const colors = ['red', 'green', 'blue'];
-const [first, second] = colors;
-console.log(first);  // 'red'
-console.log(second); // 'green'
-
-// Nested destructuring
-const person = {
-  name: 'Bob',
-  address: {
-    street: '123 Main St',
-    city: 'New York'
-  }
-};
-
-const { name: personName, address: { city } } = person;
-console.log(personName); // 'Bob'
-console.log(city);       // 'New York'
-\`\`\`
-
-## Best Practices
-
-1. **Use descriptive property names**: \`user.firstName\` not \`user.fn\`
-2. **Prefer const for arrays/objects** you don't reassign
-3. **Use array methods** instead of traditional loops when possible
-4. **Check for existence** before accessing nested properties:
-
-\`\`\`javascript
-// Safe property access
-const userCity = user.address?.city ?? 'Unknown';
-
-// Or traditional way
-const userCity2 = user.address && user.address.city || 'Unknown';
-\`\`\`
-
-5. **Use spread operator** for copying:
-
-\`\`\`javascript
-// Copy array
-const originalArray = [1, 2, 3];
-const copiedArray = [...originalArray];
-
-// Copy object
-const originalObject = { name: 'Alice', age: 30 };
-const copiedObject = { ...originalObject };
-\`\`\`
-
-## Practice Exercises
-
-1. **Create a library system**:
-\`\`\`javascript
-const library = {
-  books: [
-    { title: '1984', author: 'Orwell', available: true },
-    { title: 'Brave New World', author: 'Huxley', available: false }
-  ],
-
-  findAvailableBooks() {
-    return this.books.filter(book => book.available);
-  },
-
-  borrowBook(title) {
-    const book = this.books.find(book => book.title === title);
-    if (book && book.available) {
-      book.available = false;
-      return \`You borrowed "\${title}"\`;
-    }
-    return 'Book not available';
-  }
-};
-\`\`\`
-
-Objects and arrays are the foundation for managing data in JavaScript applications. Master these concepts, and you'll be ready to build complex, data-driven applications!`,
-        videoUrl: 'https://example.com/videos/js-objects-arrays.mp4',
-        duration: 2700, // 45 minutes
-        order: 4,
-        published: true,
-        courseId: jsBasicsCourse.id,
-      }
-    }),
-  ]);
-
-  // TypeScript Basics Lessons
-  const tsLessons = await Promise.all([
-    prisma.lesson.create({
-      data: {
-        title: 'TypeScript Fundamentals and Setup',
-        slug: 'typescript-fundamentals-setup',
-        description: 'Get started with TypeScript: installation, configuration, and understanding the benefits of static typing for JavaScript developers.',
-        content: `# TypeScript Fundamentals and Setup
-
-TypeScript is a powerful superset of JavaScript that adds static type definitions, making your code more robust and maintainable.
-
-## What is TypeScript?
-
-TypeScript is JavaScript with syntax for types. It:
-
-- **Adds static typing** to JavaScript
-- **Compiles to plain JavaScript** that runs anywhere
-- **Catches errors at compile time** instead of runtime
-- **Provides excellent IDE support** with autocomplete and refactoring
-- **Is maintained by Microsoft** and widely adopted
-
-## Benefits of TypeScript
-
-1. **Early Error Detection**: Catch bugs before they reach production
-2. **Better IDE Support**: Intelligent autocomplete and navigation
-3. **Code Documentation**: Types serve as live documentation
-4. **Refactoring Confidence**: Rename and restructure code safely
-5. **Team Collaboration**: Clear contracts between team members
-
-## Installation and Setup
-
-\`\`\`bash
-# Install TypeScript globally
-npm install -g typescript
-
-# Or install locally in your project
-npm install typescript --save-dev
-
-# Install TypeScript compiler
-npm install @types/node --save-dev
-\`\`\`
-
-## Your First TypeScript File
-
-Create a file called \`hello.ts\`:
-
-\`\`\`typescript
-// hello.ts
-function greet(name: string): string {
-  return \`Hello, \${name}!\`;
-}
-
-const userName: string = "Alice";
-console.log(greet(userName));
-\`\`\`
-
-Compile and run:
-
-\`\`\`bash
-# Compile TypeScript to JavaScript
-tsc hello.ts
-
-# Run the generated JavaScript
-node hello.js
-\`\`\`
-
-## Basic Types
-
-TypeScript provides several basic types:
-
-\`\`\`typescript
-// Primitive types
-let age: number = 25;
-let name: string = "Alice";
-let isActive: boolean = true;
-
-// Arrays
-let numbers: number[] = [1, 2, 3, 4, 5];
-let names: Array<string> = ["Alice", "Bob", "Charlie"];
-
-// Any type (avoid when possible)
-let dynamic: any = "could be anything";
-dynamic = 42;
-dynamic = true;
-
-// Unknown type (safer than any)
-let userInput: unknown = getUserInput();
-if (typeof userInput === "string") {
-  console.log(userInput.toUpperCase());
-}
-
-// Void (for functions that don't return anything)
-function logMessage(message: string): void {
-  console.log(message);
-}
-
-// Never (for functions that never return)
-function throwError(message: string): never {
-  throw new Error(message);
-}
-\`\`\`
-
-This is just the beginning of your TypeScript journey!`,
-        videoUrl: 'https://example.com/videos/ts-fundamentals.mp4',
-        duration: 1800, // 30 minutes
-        order: 1,
-        published: true,
-        courseId: typescriptBasicsCourse.id,
-      }
-    }),
-  ]);
-
-  // Interview Prep Lessons (from TechMastry challenges)
-  const interviewLessons = await Promise.all([
-    prisma.lesson.create({
-      data: {
-        title: 'Challenge: String Reversal Techniques',
-        slug: 'challenge-string-reversal-techniques',
-        description: 'Master multiple approaches to reverse strings in JavaScript, a common interview question with various solution strategies.',
-        content: `# String Reversal Challenge
-
-## 📝 Challenge Description
-
-Implement a function that reverses a string. This is a fundamental programming challenge that tests your understanding of string manipulation, arrays, and algorithm thinking.
-
-## ⏱️ Time Allocation
-5-10 minutes
-
-## 🎯 Problem Statement
-
-Write a function \`reverseString(str)\` that takes a string as input and returns the string reversed.
-
-**Examples:**
-- \`reverseString("hello")\` → \`"olleh"\`
-- \`reverseString("JavaScript")\` → \`"tpircSavaJ"\`
-- \`reverseString("12345")\` → \`"54321"\`
-
-## 💡 Approach Hints
-
-1. **Built-in Methods**: Use JavaScript's array methods
-2. **Loop Iteration**: Build the result character by character
-3. **Recursion**: Solve by breaking down the problem
-4. **Two Pointers**: Optimize for space complexity
-
-## ✅ Solutions
-
-### Method 1: Built-in Array Methods (Easiest)
-\`\`\`javascript
-function reverseString(str) {
-  return str.split('').reverse().join('');
-}
-
-// How it works:
-// 1. split('') converts string to array: "hello" → ['h','e','l','l','o']
-// 2. reverse() reverses the array: ['o','l','l','e','h']
-// 3. join('') converts back to string: "olleh"
-\`\`\`
-
-### Method 2: For Loop (Traditional Approach)
-\`\`\`javascript
-function reverseString(str) {
-  let reversed = '';
-  for (let i = str.length - 1; i >= 0; i--) {
-    reversed += str[i];
-  }
-  return reversed;
-}
-
-// Explanation:
-// Start from the last character and work backwards
-// Build the reversed string character by character
-\`\`\`
-
-### Method 3: For...of Loop (Modern Approach)
-\`\`\`javascript
-function reverseString(str) {
-  let reversed = '';
-  for (const char of str) {
-    reversed = char + reversed; // Prepend each character
-  }
-  return reversed;
-}
-\`\`\`
-
-### Method 4: Recursive Solution
-\`\`\`javascript
-function reverseString(str) {
-  // Base case: empty string or single character
-  if (str.length <= 1) {
-    return str;
-  }
-  
-  // Recursive case: first char + reverse of rest
-  return reverseString(str.slice(1)) + str[0];
-}
-
-// Example trace for "abc":
-// reverseString("abc") → reverseString("bc") + "a"
-// reverseString("bc") → reverseString("c") + "b" 
-// reverseString("c") → "c"
-// Result: "c" + "b" + "a" = "cba"
-\`\`\`
-
-### Method 5: Two Pointers (Array Modification)
-\`\`\`javascript
-function reverseString(str) {
-  const arr = str.split('');
-  let left = 0;
-  let right = arr.length - 1;
-  
-  while (left < right) {
-    // Swap characters
-    [arr[left], arr[right]] = [arr[right], arr[left]];
-    left++;
-    right--;
-  }
-  
-  return arr.join('');
-}
-\`\`\`
-
-### Method 6: Reduce Method (Functional Approach)
-\`\`\`javascript
-function reverseString(str) {
-  return str.split('').reduce((reversed, char) => char + reversed, '');
-}
-\`\`\`
-
-## 📊 Performance Comparison
-
-| Method | Time Complexity | Space Complexity | Readability |
-|--------|----------------|------------------|-------------|
-| Built-in methods | O(n) | O(n) | Excellent |
-| For loop | O(n) | O(n) | Good |
-| Recursion | O(n) | O(n) | Fair |
-| Two pointers | O(n) | O(n) | Good |
-
-## 🧪 Test Cases
-
-\`\`\`javascript
-// Test your solution with these cases:
-console.log(reverseString(""));           // ""
-console.log(reverseString("a"));          // "a"
-console.log(reverseString("hello"));      // "olleh"
-console.log(reverseString("JavaScript")); // "tpircSavaJ"
-console.log(reverseString("12345"));      // "54321"
-console.log(reverseString("A man a plan a canal Panama")); // "amanaP lanac a nalp a nam A"
-\`\`\`
-
-## 🎯 Key Takeaways
-
-1. **Multiple solutions exist** - choose based on requirements
-2. **Built-in methods** are often the most readable
-3. **Loops give you more control** over the process
-4. **Recursion shows algorithmic thinking** but can be less efficient
-5. **Consider trade-offs** between readability and performance
-
-## 🚀 Follow-up Questions
-
-1. How would you reverse only the letters in a string, keeping numbers in place?
-2. Can you reverse a string in-place without extra space?
-3. How would you handle Unicode characters?
-
-## 💼 Interview Tips
-
-- **Start with the simplest solution** that works
-- **Explain your thought process** out loud
-- **Consider edge cases** (empty string, single character)
-- **Discuss trade-offs** of different approaches
-- **Be ready to optimize** if asked
-
-This challenge demonstrates fundamental programming concepts and is an excellent warm-up for more complex string manipulation problems!`,
-        videoUrl: 'https://example.com/videos/string-reversal-challenge.mp4',
-        duration: 900, // 15 minutes
-        order: 1,
-        published: true,
-        courseId: interviewPrepCourses[0].id,
-      }
-    }),
-  ]);
-
-  const allLessons = [...jsLessons, ...tsLessons, ...interviewLessons];
-  console.log(`✅ Created ${allLessons.length} lessons across different courses`);
-
-  // ===== 6. COURSE TAGS ASSOCIATIONS =====
-  console.log('🔗 Creating course-tag associations...');
-
-  const courseTagData = [
-    // JavaScript Fundamentals
-    { courseId: jsBasicsCourse.id, tagName: 'JavaScript' },
-    { courseId: jsBasicsCourse.id, tagName: 'Beginner' },
-    { courseId: jsBasicsCourse.id, tagName: 'Hands-On' },
-
-    // React Advanced
-    { courseId: reactAdvancedCourse.id, tagName: 'React' },
-    { courseId: reactAdvancedCourse.id, tagName: 'JavaScript' },
-    { courseId: reactAdvancedCourse.id, tagName: 'Advanced' },
-    { courseId: reactAdvancedCourse.id, tagName: 'Best Practices' },
-
-    // Next.js Fullstack
-    { courseId: nextjsFullstackCourse.id, tagName: 'Next.js' },
-    { courseId: nextjsFullstackCourse.id, tagName: 'React' },
-    { courseId: nextjsFullstackCourse.id, tagName: 'TypeScript' },
-    { courseId: nextjsFullstackCourse.id, tagName: 'Full-Stack' },
-    { courseId: nextjsFullstackCourse.id, tagName: 'Intermediate' },
-    { courseId: nextjsFullstackCourse.id, tagName: 'Project-Based' },
-
-    // TypeScript Basics
-    { courseId: typescriptBasicsCourse.id, tagName: 'TypeScript' },
-    { courseId: typescriptBasicsCourse.id, tagName: 'JavaScript' },
-    { courseId: typescriptBasicsCourse.id, tagName: 'Beginner' },
-
-    // AI Development
-    { courseId: aiDevelopmentCourse.id, tagName: 'AI' },
-    { courseId: aiDevelopmentCourse.id, tagName: 'OpenAI' },
-    { courseId: aiDevelopmentCourse.id, tagName: 'LangChain' },
-    { courseId: aiDevelopmentCourse.id, tagName: 'Advanced' },
-    { courseId: aiDevelopmentCourse.id, tagName: 'Project-Based' },
-
-    // DevOps Course
-    { courseId: devopsCourse.id, tagName: 'Docker' },
-    { courseId: devopsCourse.id, tagName: 'Kubernetes' },
-    { courseId: devopsCourse.id, tagName: 'AWS' },
-    { courseId: devopsCourse.id, tagName: 'Intermediate' },
-
-    // Frontend Basics
-    { courseId: frontendBasicsCourse.id, tagName: 'HTML' },
-    { courseId: frontendBasicsCourse.id, tagName: 'CSS' },
-    { courseId: frontendBasicsCourse.id, tagName: 'Beginner' },
-    { courseId: frontendBasicsCourse.id, tagName: 'Hands-On' },
-
-    // Backend Architecture
-    { courseId: backendArchitectureCourse.id, tagName: 'Node.js' },
-    { courseId: backendArchitectureCourse.id, tagName: 'Express' },
-    { courseId: backendArchitectureCourse.id, tagName: 'Advanced' },
-    { courseId: backendArchitectureCourse.id, tagName: 'Best Practices' },
-
-    // Interview Prep Courses
-    { courseId: interviewPrepCourses[0].id, tagName: 'Interview Prep' },
-    { courseId: interviewPrepCourses[0].id, tagName: 'JavaScript' },
-    { courseId: interviewPrepCourses[0].id, tagName: 'Beginner' },
-
-    { courseId: interviewPrepCourses[1].id, tagName: 'Interview Prep' },
-    { courseId: interviewPrepCourses[1].id, tagName: 'JavaScript' },
-    { courseId: interviewPrepCourses[1].id, tagName: 'Intermediate' },
-
-    { courseId: interviewPrepCourses[2].id, tagName: 'Interview Prep' },
-    { courseId: interviewPrepCourses[2].id, tagName: 'JavaScript' },
-    { courseId: interviewPrepCourses[2].id, tagName: 'Advanced' },
-  ];
-
-  const courseTagAssociations = await Promise.all(
-    courseTagData.map(async ({ courseId, tagName }) => {
-      const tag = tags.find(t => t.name === tagName);
-      if (tag) {
-        return prisma.courseTag.create({
-          data: { courseId, tagId: tag.id }
+    console.log("✅ Created course modules and lessons");
+
+    // 7. Create enrollments with realistic patterns
+    console.log("🎓 Creating enrollment patterns...");
+    const enrollmentPatterns = [
+      // Free courses - multiple enrollments
+      { courseIndex: 0, studentIndexes: [0, 1, 2, 3, 4, 5, 6, 7] }, // JavaScript Fundamentals
+      { courseIndex: 3, studentIndexes: [1, 2, 4, 5, 7, 8] }, // TypeScript
+      { courseIndex: 6, studentIndexes: [0, 3, 5, 6, 9] }, // Frontend Fundamentals
+      // Premium courses - fewer enrollments (premium students only)
+      { courseIndex: 1, studentIndexes: [0, 1, 7] }, // React Advanced
+      { courseIndex: 2, studentIndexes: [0, 1, 2, 7] }, // Next.js Full-Stack
+      { courseIndex: 4, studentIndexes: [0, 1, 7] }, // AI Applications
+      { courseIndex: 5, studentIndexes: [1, 7] }, // DevOps
+      { courseIndex: 7, studentIndexes: [0, 1] }, // Backend Architecture
+    ];
+
+    for (const pattern of enrollmentPatterns) {
+      const course = courses[pattern.courseIndex];
+
+      for (const studentIndex of pattern.studentIndexes) {
+        const student = students[studentIndex];
+
+        await prisma.enrollment.create({
+          data: {
+            userId: student.id,
+            courseId: course.id,
+            enrolledAt: randomDate(
+              new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
+              new Date()
+            ),
+            completedAt:
+              Math.random() < 0.3
+                ? randomDate(
+                    new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+                    new Date()
+                  )
+                : null,
+          },
         });
       }
-    })
-  );
+    }
+    console.log("✅ Created realistic enrollment patterns");
 
-  console.log(`✅ Created ${courseTagAssociations.filter(Boolean).length} course-tag associations`);
+    // 8. Create comprehensive review system with interactions
+    console.log("⭐ Building comprehensive review system...");
 
-  // ===== 7. ENROLLMENTS (Different enrollment scenarios) =====
-  console.log('📋 Creating enrollments...');
-
-  const enrollmentData = [
-    // Alice (Premium user) - enrolled in premium courses
-    { userId: alice.id, courseId: reactAdvancedCourse.id, enrolledAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000) },
-    { userId: alice.id, courseId: nextjsFullstackCourse.id, enrolledAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000) },
-    { userId: alice.id, courseId: jsBasicsCourse.id, enrolledAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000), completedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000) },
-    { userId: alice.id, courseId: aiDevelopmentCourse.id, enrolledAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000) },
-
-    // Thomas (Free user) - only free courses
-    { userId: thomas.id, courseId: jsBasicsCourse.id, enrolledAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
-    { userId: thomas.id, courseId: typescriptBasicsCourse.id, enrolledAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) },
-    { userId: thomas.id, courseId: frontendBasicsCourse.id, enrolledAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000) },
-    { userId: thomas.id, courseId: interviewPrepCourses[0].id, enrolledAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) },
-
-    // Marie (Canceled subscription) - had access when subscribed
-    { userId: marie.id, courseId: reactAdvancedCourse.id, enrolledAt: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000) },
-    { userId: marie.id, courseId: jsBasicsCourse.id, enrolledAt: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000), completedAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000) },
-    { userId: marie.id, courseId: devopsCourse.id, enrolledAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
-
-    // Lucas (New user) - just started with free content
-    { userId: lucas.id, courseId: jsBasicsCourse.id, enrolledAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) },
-    { userId: lucas.id, courseId: frontendBasicsCourse.id, enrolledAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000) },
-
-    // Pierre (Premium yearly) - extensive enrollment
-    { userId: pierre.id, courseId: nextjsFullstackCourse.id, enrolledAt: new Date(Date.now() - 50 * 24 * 60 * 60 * 1000), completedAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000) },
-    { userId: pierre.id, courseId: reactAdvancedCourse.id, enrolledAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000), completedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000) },
-    { userId: pierre.id, courseId: backendArchitectureCourse.id, enrolledAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000) },
-    { userId: pierre.id, courseId: aiDevelopmentCourse.id, enrolledAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000) },
-
-    // Julie (Free user exploring)
-    { userId: julie.id, courseId: jsBasicsCourse.id, enrolledAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000) },
-    { userId: julie.id, courseId: typescriptBasicsCourse.id, enrolledAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000) },
-  ];
-
-  const enrollments = await Promise.all(
-    enrollmentData.map(data => prisma.enrollment.create({ data }))
-  );
-
-  console.log(`✅ Created ${enrollments.length} enrollments`);
-
-  // ===== 8. PROGRESS (Realistic learning progress) =====
-  console.log('📈 Creating progress records...');
-
-  const progressData = [];
-
-  // Alice's progress (completed JS basics, progressing in React)
-  jsLessons.forEach((lesson, index) => {
-    progressData.push({
-      userId: alice.id,
-      lessonId: lesson.id,
-      completed: true,
-      watchTime: (lesson.duration || 1200) - 100, // Almost full watch time, fallback to 1200 seconds
-      completedAt: new Date(Date.now() - (18 - index * 2) * 24 * 60 * 60 * 1000)
+    // Get all enrollments to create reviews
+    const enrollments = await prisma.enrollment.findMany({
+      include: {
+        course: true,
+        user: true,
+      },
     });
-  });
 
-  // Thomas's progress (30% through JS basics)
-  progressData.push({
-    userId: thomas.id,
-    lessonId: jsLessons[0].id,
-    completed: true,
-    watchTime: jsLessons[0].duration || 1200,
-    completedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000)
-  });
-  progressData.push({
-    userId: thomas.id,
-    lessonId: jsLessons[1].id,
-    completed: false,
-    watchTime: Math.floor((jsLessons[1].duration || 1800) * 0.7) // 70% watched
-  });
+    const createdReviews = [];
 
-  // Marie's progress (completed JS, partial React)
-  jsLessons.forEach((lesson, index) => {
-    progressData.push({
-      userId: marie.id,
-      lessonId: lesson.id,
-      completed: true,
-      watchTime: lesson.duration || 1200,
-      completedAt: new Date(Date.now() - (35 - index * 2) * 24 * 60 * 60 * 1000)
-    });
-  });
+    for (
+      let i = 0;
+      i < Math.min(enrollments.length, authenticReviews.length * 2);
+      i++
+    ) {
+      const enrollment = enrollments[i];
+      const reviewTemplate = authenticReviews[i % authenticReviews.length];
 
-  // Lucas's progress (just started)
-  progressData.push({
-    userId: lucas.id,
-    lessonId: jsLessons[0].id,
-    completed: false,
-    watchTime: Math.floor((jsLessons[0].duration || 1200) * 0.5) // 50% watched
-  });
+      // Only create reviews for completed enrollments or random chance
+      if (enrollment.completedAt || Math.random() < 0.4) {
+        const review = await prisma.review.create({
+          data: {
+            userId: enrollment.userId,
+            courseId: enrollment.courseId,
+            rating: reviewTemplate.rating,
+            comment: reviewTemplate.comment,
+            verified: reviewTemplate.verified && !!enrollment.completedAt,
+            helpfulCount: randomBetween(0, 15),
+            status:
+              Math.random() < 0.95
+                ? ReviewStatus.APPROVED
+                : ReviewStatus.PENDING,
+            createdAt: randomDate(
+              enrollment.enrolledAt,
+              enrollment.completedAt || new Date()
+            ),
+          },
+        });
+        createdReviews.push(review);
+      }
+    }
+    console.log(`✅ Created ${createdReviews.length} authentic reviews`);
 
-  // Pierre's extensive progress (completed multiple courses)
-  jsLessons.forEach((lesson, index) => {
-    progressData.push({
-      userId: pierre.id,
-      lessonId: lesson.id,
-      completed: true,
-      watchTime: lesson.duration || 1200,
-      completedAt: new Date(Date.now() - (50 - index * 2) * 24 * 60 * 60 * 1000)
-    });
-  });
+    // 9. Add review interactions (votes, replies, reports)
+    console.log("💬 Adding review interactions...");
 
-  // TypeScript progress for Pierre
-  tsLessons.forEach((lesson, index) => {
-    progressData.push({
-      userId: pierre.id,
-      lessonId: lesson.id,
-      completed: true,
-      watchTime: lesson.duration || 1800,
-      completedAt: new Date(Date.now() - (40 - index * 2) * 24 * 60 * 60 * 1000)
-    });
-  });
+    // Create review votes
+    const votingStudents = students.slice(0, 6); // First 6 students vote on reviews
 
-  // Julie's progress (beginner level)
-  progressData.push({
-    userId: julie.id,
-    lessonId: jsLessons[0].id,
-    completed: true,
-    watchTime: jsLessons[0].duration || 1200,
-    completedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
-  });
+    for (const review of createdReviews.slice(0, 8)) {
+      // Vote on first 8 reviews
+      const numVotes = randomBetween(1, 4);
+      const votersSubset = votingStudents.slice(0, numVotes);
 
-  const progressRecords = await Promise.all(
-    progressData.map(data => prisma.progress.create({ data }))
-  );
+      for (const voter of votersSubset) {
+        // Don't vote on your own review
+        if (voter.id !== review.userId) {
+          await prisma.reviewVote.create({
+            data: {
+              userId: voter.id,
+              reviewId: review.id,
+              helpful: Math.random() < 0.8, // 80% helpful votes
+              createdAt: randomDate(new Date(review.createdAt), new Date()),
+            },
+          });
+        }
+      }
+    }
 
-  console.log(`✅ Created ${progressRecords.length} progress records`);
+    // Create instructor replies to some reviews
+    const repliedReviews = createdReviews.slice(0, 5); // Reply to first 5 reviews
 
-  // ===== 9. CERTIFICATES (Achievement tracking) =====
-  console.log('🏆 Creating certificates...');
+    const instructorReplies = [
+      "Merci beaucoup pour ce retour positif ! Je suis ravi que la formation vous ait apporté les compétences recherchées. N'hésitez pas si vous avez des questions.",
+      "Merci pour votre avis constructif. Je prends note de vos suggestions pour améliorer le contenu. La prochaine mise à jour inclura plus d'exercices intermédiaires.",
+      "Excellent ! Félicitations pour votre progression. C'est exactement l'objectif de cette formation : vous donner les outils pour évoluer dans votre carrière.",
+      "Merci pour ce feedback détaillé. Je suis heureux que l'approche pratique vous ait convenu. Bonne continuation dans vos projets !",
+      "Merci ! C'est formidable de voir que la formation a eu un impact concret sur votre carrière. Continuez comme ça !",
+    ];
 
-  const certificateData = [
-    // Alice completed JavaScript Fundamentals
-    {
-      userId: alice.id,
-      courseId: jsBasicsCourse.id,
-      issuedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-    },
+    for (let i = 0; i < repliedReviews.length; i++) {
+      const review = repliedReviews[i];
 
-    // Marie completed JavaScript Fundamentals (when she had subscription)
-    {
-      userId: marie.id,
-      courseId: jsBasicsCourse.id,
-      issuedAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000),
-    },
+      await prisma.reviewReply.create({
+        data: {
+          reviewId: review.id,
+          userId: instructor.id, // Instructor replies
+          content: instructorReplies[i],
+          createdAt: randomDate(new Date(review.createdAt), new Date()),
+        },
+      });
+    }
 
-    // Pierre completed multiple courses
-    {
-      userId: pierre.id,
-      courseId: jsBasicsCourse.id,
-      issuedAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
-    },
-    {
-      userId: pierre.id,
-      courseId: nextjsFullstackCourse.id,
-      issuedAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
-    },
-    {
-      userId: pierre.id,
-      courseId: reactAdvancedCourse.id,
-      issuedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
-    },
-  ];
+    // Create a few review reports (for moderation testing)
+    const reportedReviews = createdReviews.slice(-2); // Report last 2 reviews
 
-  const certificates = await Promise.all(
-    certificateData.map(data => prisma.certificate.create({ data }))
-  );
+    for (const review of reportedReviews) {
+      const reporter = randomChoice(
+        students.filter((s) => s.id !== review.userId)
+      );
 
-  console.log(`✅ Created ${certificates.length} certificates`);
+      await prisma.reviewReport.create({
+        data: {
+          reviewId: review.id,
+          userId: reporter.id,
+          reason: randomChoice([
+            ReportReason.SPAM,
+            ReportReason.INAPPROPRIATE,
+            ReportReason.FAKE,
+          ]),
+          details:
+            "Ce commentaire semble suspect ou non pertinent pour la formation.",
+          status: ReportStatus.PENDING,
+        },
+      });
+    }
 
-  // ===== 10. PAYMENTS (Revenue tracking) =====
-  console.log('💰 Creating payment records...');
+    console.log("✅ Added review interactions (votes, replies, reports)");
 
-  const paymentData = [
-    // Alice's subscription payments (monthly premium)
-    {
-      userId: alice.id,
-      stripePaymentIntentId: 'pi_test_alice_sub_001',
-      amount: 29.99,
-      currency: 'eur',
-      status: PaymentStatus.COMPLETED,
-      description: 'Abonnement Premium Mensuel - Octobre',
-      kind: PaymentKind.SUBSCRIPTION,
-      createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-    },
-    {
-      userId: alice.id,
-      stripePaymentIntentId: 'pi_test_alice_sub_002',
-      amount: 29.99,
-      currency: 'eur',
-      status: PaymentStatus.COMPLETED,
-      description: 'Abonnement Premium Mensuel - Septembre',
-      kind: PaymentKind.SUBSCRIPTION,
-      createdAt: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000),
-    },
+    // 10. Create progress tracking data
+    console.log("📊 Creating progress tracking data...");
 
-    // Pierre's yearly subscription
-    {
-      userId: pierre.id,
-      stripePaymentIntentId: 'pi_test_pierre_yearly',
-      amount: 299.99,
-      currency: 'eur',
-      status: PaymentStatus.COMPLETED,
-      description: 'Abonnement Premium Annuel',
-      kind: PaymentKind.SUBSCRIPTION,
-      createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
-    },
+    const progressEnrollments = enrollments.filter(() => Math.random() < 0.7); // 70% have progress
 
-    // Marie's refunded payment
-    {
-      userId: marie.id,
-      stripePaymentIntentId: 'pi_test_marie_refunded',
-      amount: 299.99,
-      currency: 'eur',
-      status: PaymentStatus.REFUNDED,
-      description: 'Abonnement Premium Annuel (Remboursé)',
-      kind: PaymentKind.SUBSCRIPTION,
-      createdAt: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000),
-    },
+    for (const enrollment of progressEnrollments) {
+      // Get lessons for this course
+      const lessons = await prisma.lesson.findMany({
+        where: { courseId: enrollment.courseId },
+        orderBy: { order: "asc" },
+      });
 
-    // Sophie's failed payment
-    {
-      userId: sophie.id,
-      stripePaymentIntentId: 'pi_test_sophie_failed',
-      amount: 29.99,
-      currency: 'eur',
-      status: PaymentStatus.FAILED,
-      description: 'Échec paiement abonnement mensuel',
-      kind: PaymentKind.SUBSCRIPTION,
-      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-    },
+      // Create progress for a portion of lessons
+      const progressPercentage = Math.random();
+      const lessonsToComplete = Math.floor(lessons.length * progressPercentage);
 
-    // Individual course purchases
-    {
-      userId: thomas.id,
-      courseId: interviewPrepCourses[1].id,
-      stripePaymentIntentId: 'pi_test_thomas_course',
-      amount: 29.99,
-      currency: 'eur',
-      status: PaymentStatus.COMPLETED,
-      description: 'Achat formation Array Manipulation',
-      kind: PaymentKind.COURSE,
-      createdAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000),
-    },
-  ];
+      for (let i = 0; i < lessonsToComplete; i++) {
+        const lesson = lessons[i];
+        const isCompleted = i < lessonsToComplete - 1 || Math.random() < 0.8;
 
-  const payments = await Promise.all(
-    paymentData.map(data => prisma.payment.create({ data }))
-  );
+        await prisma.progress.create({
+          data: {
+            userId: enrollment.userId,
+            lessonId: lesson.id,
+            completed: isCompleted,
+            watchTime: Math.floor(
+              (lesson.duration || 30) * (0.7 + Math.random() * 0.5)
+            ), // 70-120% of lesson duration
+            completedAt: isCompleted
+              ? randomDate(enrollment.enrolledAt, new Date())
+              : null,
+            createdAt: enrollment.enrolledAt,
+          },
+        });
+      }
+    }
+    console.log("✅ Created realistic progress tracking data");
 
-  console.log(`✅ Created ${payments.length} payment records`);
+    // 11. Create payments for premium courses
+    console.log("💰 Creating payment records...");
 
-  // ===== 11. REVIEWS (User feedback) =====
-  console.log('⭐ Creating course reviews...');
+    const premiumEnrollments = enrollments.filter(
+      (e) =>
+        courses.find((c) => c.id === e.courseId)?.accessTier ===
+        CourseAccessTier.PREMIUM
+    );
 
-  const reviewData = [
-    // Positive reviews
-    {
-      userId: alice.id,
-      courseId: jsBasicsCourse.id,
-      rating: 5,
-      comment: 'Excellent cours pour débuter en JavaScript ! Les explications sont très claires et les exercices pratiques aident vraiment à comprendre. Fernand est un excellent instructeur. Je recommande vivement ce cours à tous les débutants.',
-      createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-    },
+    for (const enrollment of premiumEnrollments) {
+      const course = courses.find((c) => c.id === enrollment.courseId);
 
-    {
-      userId: thomas.id,
-      courseId: jsBasicsCourse.id,
-      rating: 4,
-      comment: 'Très bon contenu, bien structuré. Peut-être un peu rapide par moments mais globalement excellent. Les exemples sont pertinents et les exercices progressifs.',
-      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-    },
+      await prisma.payment.create({
+        data: {
+          userId: enrollment.userId,
+          courseId: enrollment.courseId,
+          amount: course?.price || 99.99,
+          currency: "eur",
+          status: PaymentStatus.COMPLETED,
+          kind: PaymentKind.COURSE,
+          description: `Achat du cours: ${course?.title}`,
+          stripePaymentIntentId: `pi_${Math.random()
+            .toString(36)
+            .substring(7)}`,
+          createdAt: enrollment.enrolledAt,
+        },
+      });
+    }
+    console.log(`✅ Created ${premiumEnrollments.length} payment records`);
 
-    {
-      userId: pierre.id,
-      courseId: reactAdvancedCourse.id,
-      rating: 5,
-      comment: 'Formation de très haut niveau ! Les patterns avancés sont expliqués de manière claire avec des exemples concrets. Indispensable pour tout développeur React qui veut progresser.',
-      createdAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000),
-    },
+    // 12. Create visual supports and quizzes
+    console.log("🎯 Creating visual supports and interactive quizzes...");
 
-    // Mixed reviews
-    {
-      userId: marie.id,
-      courseId: reactAdvancedCourse.id,
-      rating: 3,
-      comment: 'Contenu intéressant mais nécessite de bonnes bases en React. Quelques passages difficiles à suivre. Aurais apprécié plus d\'exercices pratiques.',
-      createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
-    },
+    // Visual supports for first two courses
+    const supportCourses = courses.slice(0, 2);
 
-    {
-      userId: julie.id,
-      courseId: typescriptBasicsCourse.id,
-      rating: 4,
-      comment: 'Bonne introduction à TypeScript. J\'ai enfin compris l\'intérêt du typage statique ! Les exemples de migration depuis JavaScript sont très utiles.',
-      createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-    },
+    for (
+      let courseIndex = 0;
+      courseIndex < supportCourses.length;
+      courseIndex++
+    ) {
+      const course = supportCourses[courseIndex];
 
-    {
-      userId: pierre.id,
-      courseId: nextjsFullstackCourse.id,
-      rating: 5,
-      comment: 'Masterclass exceptionnelle ! Couvre tous les aspects du développement full-stack moderne. Les projets pratiques sont excellents. Worth every penny!',
-      createdAt: new Date(Date.now() - 18 * 24 * 60 * 60 * 1000),
-    },
-  ];
+      await prisma.visualSupport.create({
+        data: {
+          courseId: course.id,
+          moduleId: courseIndex + 1,
+          title:
+            courseIndex === 0
+              ? "Fondamentaux JavaScript"
+              : "Patterns React Avancés",
+          content:
+            courseIndex === 0
+              ? visualSupportsData.nextjsEvolution
+              : visualSupportsData.reactPatterns,
+          order: 1,
+        },
+      });
 
-  const reviews = await Promise.all(
-    reviewData.map(data => prisma.review.create({ data }))
-  );
+      // Create quiz
+      const quiz = await prisma.quiz.create({
+        data: {
+          courseId: course.id,
+          moduleId: courseIndex + 1,
+          title: `Quiz - Module ${courseIndex + 1}`,
+        },
+      });
 
-  console.log(`✅ Created ${reviews.length} course reviews`);
+      // Add quiz questions
+      const questions =
+        courseIndex === 0
+          ? [
+              {
+                question:
+                  "Quelle est la principale différence entre `var` et `let` en JavaScript ?",
+                options: [
+                  "Aucune différence",
+                  "La portée (scope)",
+                  "La syntaxe",
+                  "La performance",
+                ],
+                correct: 1,
+                explanation:
+                  "`let` a une portée de bloc tandis que `var` a une portée de fonction.",
+              },
+              {
+                question: "Que retourne `typeof null` en JavaScript ?",
+                options: ["'null'", "'undefined'", "'object'", "'boolean'"],
+                correct: 2,
+                explanation:
+                  "C'est un bug historique de JavaScript. `typeof null` retourne 'object'.",
+              },
+            ]
+          : [
+              {
+                question: "Quel hook React permet de mémoriser une fonction ?",
+                options: ["useMemo", "useCallback", "useRef", "useEffect"],
+                correct: 1,
+                explanation:
+                  "`useCallback` mémorise une fonction pour éviter sa recréation inutile.",
+              },
+            ];
 
-  // ===== 12. ANALYTICS EVENTS (User engagement tracking) =====
-  console.log('📊 Creating analytics events...');
+      for (let qIndex = 0; qIndex < questions.length; qIndex++) {
+        const q = questions[qIndex];
 
-  const analyticsData = [
-    // Course enrollment events
-    {
-      userId: alice.id,
-      sessionId: 'sess_alice_001',
-      type: 'COURSE_ENROLLMENT_EXPLICIT',
-      source: 'client',
-      properties: {
-        courseId: reactAdvancedCourse.id,
-        courseTitle: reactAdvancedCourse.title,
-        enrollmentMethod: 'premium_access',
-        timestamp: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-      },
-      createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
-    },
+        await prisma.quizQuestion.create({
+          data: {
+            quizId: quiz.id,
+            question: q.question,
+            options: q.options,
+            correct: q.correct,
+            explanation: q.explanation,
+            order: qIndex + 1,
+          },
+        });
+      }
+    }
+    console.log("✅ Created visual supports and quizzes");
 
-    // Lesson completion events
-    {
-      userId: alice.id,
-      sessionId: 'sess_alice_002',
-      type: 'LESSON_COMPLETED',
-      source: 'client',
-      properties: {
-        lessonId: jsLessons[0].id,
-        courseId: jsBasicsCourse.id,
-        watchTime: jsLessons[0].duration,
-        completionRate: 100,
-      },
-      createdAt: new Date(Date.now() - 16 * 24 * 60 * 60 * 1000),
-    },
+    // 13. Create certificates for completed courses
+    console.log("🏆 Issuing certificates...");
 
-    // Payment events
-    {
-      userId: alice.id,
-      sessionId: 'sess_alice_003',
-      type: 'SUBSCRIPTION_STARTED',
-      source: 'webhook',
-      properties: {
-        plan: 'premium',
-        amount: 29.99,
-        currency: 'eur',
-        billingCycle: 'monthly',
-      },
-      createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-    },
+    const completedEnrollments = enrollments.filter((e) => e.completedAt);
 
-    // User interaction events
-    {
-      userId: thomas.id,
-      sessionId: 'sess_thomas_001',
-      type: 'COURSE_PREVIEW_VIEWED',
-      source: 'client',
-      properties: {
-        courseId: reactAdvancedCourse.id,
-        previewDuration: 300,
-        convertedToEnrollment: false,
-      },
-      createdAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
-    },
+    for (const enrollment of completedEnrollments) {
+      await prisma.certificate.create({
+        data: {
+          userId: enrollment.userId,
+          courseId: enrollment.courseId,
+          issuedAt: enrollment.completedAt!,
+        },
+      });
+    }
+    console.log(`✅ Issued ${completedEnrollments.length} certificates`);
 
-    // Search events
-    {
-      userId: thomas.id,
-      sessionId: 'sess_thomas_002',
-      type: 'SEARCH_PERFORMED',
-      source: 'client',
-      properties: {
-        query: 'javascript tutorial',
-        resultsCount: 3,
-        clickedResult: jsBasicsCourse.id,
-      },
-      createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-    },
+    // 14. Create analytics events
+    console.log("📈 Creating analytics data...");
 
-    // Course completion events
-    {
-      userId: pierre.id,
-      sessionId: 'sess_pierre_001',
-      type: 'COURSE_COMPLETED',
-      source: 'client',
-      properties: {
-        courseId: nextjsFullstackCourse.id,
-        completionTime: 1440 * 60, // Total course duration in seconds
-        certificateIssued: true,
-      },
-      createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
-    },
-  ];
+    const eventTypes = [
+      "course_view",
+      "lesson_start",
+      "lesson_complete",
+      "quiz_attempt",
+      "review_submit",
+      "payment_success",
+      "enrollment_create",
+    ];
 
-  const analyticsEvents = await Promise.all(
-    analyticsData.map(data => prisma.analyticsEvent.create({ data }))
-  );
+    // Create 500 analytics events over the last 30 days
+    for (let i = 0; i < 500; i++) {
+      const randomUser = randomChoice(users);
+      const randomCourse = randomChoice(courses);
 
-  console.log(`✅ Created ${analyticsEvents.length} analytics events`);
+      await prisma.analyticsEvent.create({
+        data: {
+          userId: randomUser.id,
+          type: randomChoice(eventTypes),
+          source: randomChoice(["web", "mobile", "api"]),
+          createdAt: randomDate(
+            new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+            new Date()
+          ),
+          properties: {
+            courseId: randomCourse.id,
+            userAgent: "Mozilla/5.0 (compatible)",
+            platform: randomChoice(["desktop", "mobile", "tablet"]),
+          },
+        },
+      });
+    }
+    console.log("✅ Created analytics events");
 
-  // ===== FINAL SUMMARY =====
-  const endTime = Date.now();
-  const duration = (endTime - startTime) / 1000;
+    // 15. Final statistics
+    const endTime = Date.now();
+    const duration = (endTime - startTime) / 1000;
 
-  console.log(`\n🎉 Database seeding completed successfully!`);
-  console.log(`⏱️ Duration: ${duration.toFixed(2)} seconds`);
-  console.log(`\n📊 Summary:`);
-  console.log(`   👥 Users: ${students.length + 2} (1 instructor, 1 admin, ${students.length} students)`);
-  console.log(`   💳 Subscriptions: 7 (various statuses)`);
-  console.log(`   🏷️ Tags: ${tags.length}`);
-  console.log(`   📚 Courses: ${allCourses.length} (${allCourses.filter(c => c.published).length} published, ${allCourses.filter(c => !c.published).length} draft)`);
-  console.log(`   📝 Lessons: ${allLessons.length}`);
-  console.log(`   🔗 Course-Tag Associations: ${courseTagAssociations.filter(Boolean).length}`);
-  console.log(`   📋 Enrollments: ${enrollments.length}`);
-  console.log(`   📈 Progress Records: ${progressRecords.length}`);
-  console.log(`   🏆 Certificates: ${certificates.length}`);
-  console.log(`   💰 Payments: ${payments.length}`);
-  console.log(`   ⭐ Reviews: ${reviews.length}`);
-  console.log(`   📊 Analytics Events: ${analyticsEvents.length}`);
-
-  console.log(`\n✨ Platform features fully tested:`);
-  console.log(`   ✅ Free vs Premium content access control`);
-  console.log(`   ✅ Multi-tier subscription management (Free, Premium Monthly, Premium Yearly)`);
-  console.log(`   ✅ Complete course enrollment and progress tracking workflows`);
-  console.log(`   ✅ Payment processing with multiple statuses (completed, failed, refunded)`);
-  console.log(`   ✅ Certificate issuance upon course completion`);
-  console.log(`   ✅ User reviews and ratings system`);
-  console.log(`   ✅ Comprehensive analytics and engagement tracking`);
-  console.log(`   ✅ Content categorization with tags and search optimization`);
-  console.log(`   ✅ Interview preparation challenges (TechMastry integration)`);
-  console.log(`   ✅ Course preview and content access management`);
-  console.log(`   ✅ User role management (Student, Instructor, Admin)`);
-  console.log(`   ✅ Course difficulty levels (Beginner to Expert)`);
-  console.log(`   ✅ Multiple course categories (Frontend, Backend, Full-Stack, AI, DevOps)`);
-
-  if (isTestEnv) {
-    console.log(`\n🧪 Test Environment Data Ready!`);
-    console.log(`   Use this comprehensive dataset for integration testing`);
-    console.log(`   All platform features can be thoroughly tested`);
-    console.log(`   Realistic user scenarios and edge cases covered`);
+    console.log("\n🎉 FYGS Academy seed completed successfully!");
+    console.log("═".repeat(50));
+    console.log(`⏱️  Duration: ${duration.toFixed(2)}s`);
+    console.log(`👥 Users: ${users.length}`);
+    console.log(`📚 Courses: ${courses.length}`);
+    console.log(`⭐ Reviews: ${createdReviews.length}`);
+    console.log(`🎓 Enrollments: ${enrollments.length}`);
+    console.log(`💰 Payments: ${premiumEnrollments.length}`);
+    console.log(`🏆 Certificates: ${completedEnrollments.length}`);
+    console.log(`🏷️  Tags: ${tags.length}`);
+    console.log(`📊 Analytics events: 500`);
+    console.log("═".repeat(50));
+    console.log("🚀 Ready for development and testing!");
+  } catch (error) {
+    console.error("❌ Seed failed:", error);
+    throw error;
   }
-
-  console.log(`\n🚀 Ready for comprehensive platform testing!`);
-
-  console.log('🎉 Comprehensive seeding completed successfully!');
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Seeding failed:', e);
+    console.error("💥 Fatal error during seeding:", e);
     process.exit(1);
   })
   .finally(async () => {

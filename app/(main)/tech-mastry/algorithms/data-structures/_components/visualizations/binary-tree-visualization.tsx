@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -273,7 +274,7 @@ export function BinaryTreeVisualization() {
     positions: Record<string, { x: number; y: number }>,
     offsetX = 0,
     offsetY = 0
-  ): JSX.Element[] | null => {
+  ): React.JSX.Element[] | null => {
     if (!node) return null;
 
     const edges = [];
@@ -335,7 +336,7 @@ export function BinaryTreeVisualization() {
     positions: Record<string, { x: number; y: number }>,
     offsetX = 0,
     offsetY = 0
-  ): JSX.Element[] | null => {
+  ): React.JSX.Element[] | null => {
     if (!node) return null;
 
     const nodes = [];

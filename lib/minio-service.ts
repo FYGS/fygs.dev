@@ -324,9 +324,9 @@ const minioConfig: MinIOConfig = {
 
 export const minioService = new MinIOService(minioConfig);
 
-// Initialize the service on startup
-minioService.initialize().catch((error) => {
-  logger.error("Failed to initialize MinIO service at startup", {
-    metadata: { error: error instanceof Error ? error.message : String(error) },
-  });
-});
+// // Initialize the service on startup
+// minioService.initialize().catch((error) => {
+//   logger.error("Failed to initialize MinIO service at startup", {
+//     metadata: { error: error instanceof Error ? error.message : String(error) },
+//   });
+// });

@@ -1,5 +1,6 @@
 import type { StaticImageData } from "next/image";
 import type { ComponentPropsWithoutRef } from "react";
+import type { JSX } from "react";
 
 type WithChildren<T = unknown> = T & { children?: React.ReactNode };
 

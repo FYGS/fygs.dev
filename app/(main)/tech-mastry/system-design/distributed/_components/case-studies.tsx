@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -1657,7 +1658,7 @@ interface CaseStudy {
   technologies: string[];
   results: string;
   lessons: string[];
-  icon: JSX.Element;
+  icon: React.JSX.Element;
 }
 
 export function DistributedCaseStudies() {

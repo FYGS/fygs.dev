@@ -58,6 +58,9 @@ model User {
   progress          Progress[]
   quizResults       QuizResult[]
   reviews           Review[]
+  reviewVotes       ReviewVote[]
+  reviewReplies     ReviewReply[]
+  reviewReports     ReviewReport[]
   subscriptions     Subscription?
   accounts          Account[]
   sessions          Session[]
@@ -226,17 +229,61 @@ model InvoiceAudit {
 }
 
 model Review {
-  id        String   @id @default(cuid())
-  userId    String
-  courseId  String
-  rating    Int
-  comment   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
-  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id            String       @id @default(cuid())
+  userId        String
+  courseId      String
+  rating        Int
+  comment       String?
+  verified      Boolean      @default(false) // Whether user completed the course
+  helpfulCount  Int          @default(0)     // Number of helpful votes
+  reportCount   Int          @default(0)     // Number of reports
+  status        ReviewStatus @default(APPROVED) // Moderation status
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @default(now())
+  course        Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  votes         ReviewVote[] // Helpful/unhelpful votes
+  replies       ReviewReply[] // Instructor replies
+  reports       ReviewReport[] // User reports
 
   @@unique([userId, courseId])
+}
+
+model ReviewVote {
+  id       String   @id @default(cuid())
+  userId   String
+  reviewId String
+  helpful  Boolean  // true for helpful, false for unhelpful
+  createdAt DateTime @default(now())
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review   Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, reviewId])
+}
+
+model ReviewReply {
+  id        String   @id @default(cuid())
+  reviewId  String
+  userId    String   // Usually the instructor
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ReviewReport {
+  id        String     @id @default(cuid())
+  reviewId  String
+  userId    String     // User who reported
+  reason    ReportReason
+  details   String?
+  status    ReportStatus @default(PENDING)
+  createdAt DateTime   @default(now())
+  review    Review     @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, reviewId])
 }
 
 model Tag {
@@ -399,4 +446,27 @@ enum PaymentKind {
 enum CourseAccessTier {
   FREE
   PREMIUM
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  FLAGGED
+}
+
+enum ReportReason {
+  SPAM
+  INAPPROPRIATE
+  FAKE
+  OFFENSIVE
+  COPYRIGHT
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+  DISMISSED
 }
