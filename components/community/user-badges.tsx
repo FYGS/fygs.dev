@@ -1,0 +1,244 @@
+"use client";
+
+import { Award, Crown, Shield, Star, Zap } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import { CommunityUser } from "@/types/community";
+
+interface UserBadgeProps {
+  user: CommunityUser;
+  showLevel?: boolean;
+  showPoints?: boolean;
+  showBadges?: boolean;
+  maxBadges?: number;
+  size?: "sm" | "md" | "lg";
+  className?: string;
+}
+
+const levelConfig = {
+  1: { name: "Newcomer", icon: Star, color: "text-gray-600" },
+  2: { name: "Member", icon: Star, color: "text-blue-600" },
+  3: { name: "Active", icon: Award, color: "text-green-600" },
+  4: { name: "Expert", icon: Shield, color: "text-purple-600" },
+  5: { name: "Master", icon: Crown, color: "text-yellow-600" },
+};
+
+const getBadgeIcon = (type: string) => {
+  switch (type) {
+    case "FIRST_POST":
+      return Star;
+    case "HELPFUL":
+      return Award;
+    case "EXPERT":
+      return Shield;
+    case "MENTOR":
+      return Crown;
+    case "TOP_CONTRIBUTOR":
+      return Zap;
+    default:
+      return Award;
+  }
+};
+
+const getBadgeColor = (type: string) => {
+  switch (type) {
+    case "FIRST_POST":
+      return "bg-blue-100 text-blue-800 border-blue-200";
+    case "HELPFUL":
+      return "bg-green-100 text-green-800 border-green-200";
+    case "EXPERT":
+      return "bg-purple-100 text-purple-800 border-purple-200";
+    case "MENTOR":
+      return "bg-yellow-100 text-yellow-800 border-yellow-200";
+    case "TOP_CONTRIBUTOR":
+      return "bg-red-100 text-red-800 border-red-200";
+    default:
+      return "bg-gray-100 text-gray-800 border-gray-200";
+  }
+};
+
+export function UserBadges({
+  user,
+  showLevel = true,
+  showPoints = false,
+  showBadges = true,
+  maxBadges = 3,
+  size = "md",
+  className,
+}: UserBadgeProps) {
+  const level = user.communityLevel || 1;
+  const points = user.communityPoints || 0;
+  const badges = user.userBadges || [];
+  
+  const levelInfo = levelConfig[level as keyof typeof levelConfig] || levelConfig[1];
+  const LevelIcon = levelInfo.icon;
+  
+  const visibleBadges = badges.slice(0, maxBadges);
+  const hiddenBadgesCount = Math.max(0, badges.length - maxBadges);
+
+  const sizeClasses = {
+    sm: "text-xs",
+    md: "text-sm", 
+    lg: "text-base",
+  };
+
+  const iconSizes = {
+    sm: "h-3 w-3",
+    md: "h-4 w-4",
+    lg: "h-5 w-5",
+  };
+
+  return (
+    <TooltipProvider>
+      <div className={cn("flex items-center gap-1 flex-wrap", className)}>
+        {/* User Level Badge */}
+        {showLevel && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge
+                variant="outline"
+                className={cn(
+                  "border-dashed",
+                  levelInfo.color,
+                  sizeClasses[size]
+                )}
+              >
+                <LevelIcon className={cn("mr-1", iconSizes[size])} />
+                L{level}
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent>
+              <div className="text-center">
+                <div className="font-medium">{levelInfo.name}</div>
+                <div className="text-xs text-muted-foreground">Level {level}</div>
+                {showPoints && (
+                  <div className="text-xs text-muted-foreground">{points} points</div>
+                )}
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        )}
+
+        {/* Community Points */}
+        {showPoints && !showLevel && (
+          <Badge variant="secondary" className={sizeClasses[size]}>
+            <Zap className={cn("mr-1", iconSizes[size])} />
+            {points}
+          </Badge>
+        )}
+
+        {/* Achievement Badges */}
+        {showBadges && visibleBadges.map((userBadge) => {
+          const BadgeIcon = getBadgeIcon(userBadge.badge.type);
+          const badgeColorClass = getBadgeColor(userBadge.badge.type);
+          
+          return (
+            <Tooltip key={userBadge.id}>
+              <TooltipTrigger asChild>
+                <Badge
+                  className={cn(
+                    "border",
+                    badgeColorClass,
+                    sizeClasses[size]
+                  )}
+                >
+                  <BadgeIcon className={cn("mr-1", iconSizes[size])} />
+                  {userBadge.badge.name}
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <div className="text-center">
+                  <div className="font-medium">{userBadge.badge.name}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {userBadge.badge.description}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Earned: {new Date(userBadge.earnedAt).toLocaleDateString()}
+                  </div>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          );
+        })}
+
+        {/* Hidden badges indicator */}
+        {hiddenBadgesCount > 0 && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge variant="outline" className={cn("text-muted-foreground", sizeClasses[size])}>
+                +{hiddenBadgesCount}
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent>
+              <div className="text-xs">
+                {hiddenBadgesCount} more badge{hiddenBadgesCount !== 1 ? 's' : ''}
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+    </TooltipProvider>
+  );
+}
+
+// Individual Badge Component
+interface BadgeDisplayProps {
+  badge: {
+    name: string;
+    description: string;
+    type: string;
+  };
+  earnedAt?: Date;
+  size?: "sm" | "md" | "lg";
+}
+
+export function BadgeDisplay({ badge, earnedAt, size = "md" }: BadgeDisplayProps) {
+  const BadgeIcon = getBadgeIcon(badge.type);
+  const badgeColorClass = getBadgeColor(badge.type);
+
+  const sizeClasses = {
+    sm: "text-xs",
+    md: "text-sm",
+    lg: "text-base",
+  };
+
+  const iconSizes = {
+    sm: "h-3 w-3",
+    md: "h-4 w-4", 
+    lg: "h-5 w-5",
+  };
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Badge
+            className={cn(
+              "border cursor-help",
+              badgeColorClass,
+              sizeClasses[size]
+            )}
+          >
+            <BadgeIcon className={cn("mr-1", iconSizes[size])} />
+            {badge.name}
+          </Badge>
+        </TooltipTrigger>
+        <TooltipContent>
+          <div className="text-center">
+            <div className="font-medium">{badge.name}</div>
+            <div className="text-xs text-muted-foreground">
+              {badge.description}
+            </div>
+            {earnedAt && (
+              <div className="text-xs text-muted-foreground mt-1">
+                Earned: {earnedAt.toLocaleDateString()}
+              </div>
+            )}
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}

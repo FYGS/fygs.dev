@@ -29,6 +29,10 @@ import {
   ReviewStatus,
   ReportReason,
   ReportStatus,
+  BadgeType,
+  NotificationType,
+  MentorRequestStatus,
+  VoteType,
 } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -912,7 +916,772 @@ async function main() {
     }
     console.log("✅ Created realistic enrollment patterns");
 
-    // 8. Create comprehensive review system with interactions
+    // 8. Create comprehensive community system
+    console.log("🏛️ Building community forum system...");
+
+    // Create community topics
+    const communityTopics = [
+      {
+        name: "Général",
+        slug: "general",
+        description: "Discussions générales sur le développement web",
+        color: "#3B82F6",
+        icon: "MessageSquare",
+        order: 1,
+        isDefault: true,
+      },
+      {
+        name: "JavaScript",
+        slug: "javascript",
+        description: "Questions et discussions autour de JavaScript",
+        color: "#F7DF1E",
+        icon: "Code",
+        order: 2,
+        courseId: courses[0].id,
+      },
+      {
+        name: "React",
+        slug: "react",
+        description: "Tout sur React et son écosystème",
+        color: "#61DAFB",
+        icon: "Atom",
+        order: 3,
+        courseId: courses[1].id,
+      },
+      {
+        name: "Next.js",
+        slug: "nextjs",
+        description: "Framework Next.js et développement full-stack",
+        color: "#000000",
+        icon: "Zap",
+        order: 4,
+        courseId: courses[2].id,
+      },
+      {
+        name: "Aide & Support",
+        slug: "help-support",
+        description: "Demandez de l'aide à la communauté",
+        color: "#10B981",
+        icon: "HelpCircle",
+        order: 5,
+        isDefault: true,
+      },
+      {
+        name: "Projets & Showcases",
+        slug: "projects-showcases",
+        description: "Partagez vos projets et réalisations",
+        color: "#F59E0B",
+        icon: "Star",
+        order: 6,
+        isDefault: true,
+      },
+      {
+        name: "Career & Jobs",
+        slug: "career-jobs",
+        description: "Conseils carrière et opportunités d'emploi",
+        color: "#8B5CF6",
+        icon: "Briefcase",
+        order: 7,
+        isDefault: true,
+      },
+    ];
+
+    const topics = [];
+    for (const topicData of communityTopics) {
+      const topic = await prisma.topic.create({
+        data: topicData,
+      });
+      topics.push(topic);
+    }
+    console.log(`✅ Created ${topics.length} community topics`);
+
+    // Create community badges
+    const communityBadges = [
+      {
+        name: "Premier Pas",
+        description: "Première connexion à la communauté",
+        icon: "User",
+        color: "#22C55E",
+        points: 0,
+        type: "PARTICIPATION" as const,
+        condition: JSON.stringify({ type: "first_login" }),
+      },
+      {
+        name: "Conversationnel",
+        description: "Première discussion créée",
+        icon: "MessageSquare",
+        color: "#3B82F6",
+        points: 10,
+        type: "PARTICIPATION" as const,
+        condition: JSON.stringify({ type: "first_discussion" }),
+      },
+      {
+        name: "Serviable",
+        description: "Première réponse utile",
+        icon: "Heart",
+        color: "#EF4444",
+        points: 25,
+        type: "PARTICIPATION" as const,
+        condition: JSON.stringify({ type: "first_helpful_reply" }),
+      },
+      {
+        name: "Expert",
+        description: "100 réponses acceptées",
+        icon: "Award",
+        color: "#F59E0B",
+        points: 500,
+        type: "ACHIEVEMENT" as const,
+        condition: JSON.stringify({ type: "accepted_replies", count: 100 }),
+      },
+      {
+        name: "Mentor",
+        description: "Guide et aide les nouveaux membres",
+        icon: "Users",
+        color: "#8B5CF6",
+        points: 1000,
+        type: "SPECIAL" as const,
+        condition: JSON.stringify({ type: "mentor_activity" }),
+      },
+      {
+        name: "Modérateur",
+        description: "Équipe de modération",
+        icon: "Shield",
+        color: "#6366F1",
+        points: 0,
+        type: "MODERATOR" as const,
+        condition: JSON.stringify({ type: "staff_role" }),
+      },
+    ];
+
+    const badges = [];
+    for (const badgeData of communityBadges) {
+      const badge = await prisma.badge.create({
+        data: badgeData,
+      });
+      badges.push(badge);
+    }
+    console.log(`✅ Created ${badges.length} community badges`);
+
+    // Create community discussions
+    const discussionTemplates = [
+      {
+        title: "Bienvenue dans la communauté FYGS Academy !",
+        content: `# Bienvenue ! 👋
+
+Nous sommes ravis de vous accueillir dans la communauté FYGS Academy !
+
+## Comment utiliser ce forum ?
+
+- **Posez vos questions** dans la section appropriée
+- **Partagez vos projets** pour recevoir des retours
+- **Aidez les autres** en répondant aux questions
+- **Suivez les bonnes pratiques** de communication
+
+## Règles de la communauté
+
+1. Soyez respectueux et bienveillant
+2. Utilisez un titre descriptif pour vos posts
+3. Incluez le code et les détails pertinents
+4. Recherchez avant de poster une nouvelle question
+
+Bonne découverte ! 🚀`,
+        topicIndex: 0,
+        authorIndex: 0,
+        isPinned: true,
+        tags: ["bienvenue", "règles", "guide"],
+      },
+      {
+        title: "Comment optimiser les performances de mes composants React ?",
+        content: `Bonjour la communauté !
+
+J'ai une application React qui commence à avoir des problèmes de performance. Mes composants se re-rendent trop souvent et l'interface devient lente.
+
+## Mon problème
+
+\`\`\`jsx
+function MyComponent({ items, onSelect }) {
+  return (
+    <div>
+      {items.map(item => (
+        <ItemCard 
+          key={item.id} 
+          item={item} 
+          onClick={() => onSelect(item)}
+        />
+      ))}
+    </div>
+  );
+}
+\`\`\`
+
+Avez-vous des conseils pour optimiser cela ? J'ai entendu parler de \`useMemo\` et \`useCallback\` mais je ne sais pas comment les utiliser efficacement.
+
+Merci d'avance ! 🙏`,
+        topicIndex: 2,
+        authorIndex: 3,
+        tags: ["react", "performance", "optimisation"],
+      },
+      {
+        title: "Projet Portfolio - Demande de feedback",
+        content: `Salut tout le monde !
+
+Je viens de terminer mon portfolio en Next.js et j'aimerais avoir vos retours ! 
+
+🔗 **Lien** : https://mon-portfolio.vercel.app
+💻 **Code** : https://github.com/user/portfolio
+
+## Technologies utilisées
+
+- Next.js 15 avec App Router
+- TypeScript
+- Tailwind CSS
+- Framer Motion pour les animations
+- Prisma + PostgreSQL
+
+## Points sur lesquels j'aimerais des retours
+
+1. Design général et UX
+2. Performance et optimisations
+3. Code quality
+4. Accessibilité
+
+Merci pour votre temps ! 🚀`,
+        topicIndex: 5,
+        authorIndex: 4,
+        tags: ["portfolio", "nextjs", "feedback"],
+      },
+      {
+        title: "Erreur TypeScript avec Next.js 15 - Params Promise",
+        content: `Bonjour !
+
+Depuis la migration vers Next.js 15, j'ai des erreurs TypeScript avec les params des pages dynamiques.
+
+## Erreur
+
+\`\`\`
+Type '{ id: string }' is missing the following properties from type 'Promise<any>': then, catch, finally
+\`\`\`
+
+## Code actuel
+
+\`\`\`tsx
+export default function Page({ params }: { params: { id: string } }) {
+  return <div>Post ID: {params.id}</div>
+}
+\`\`\`
+
+Comment je dois adapter mon code pour Next.js 15 ? J'ai lu quelque chose sur les params qui deviennent des Promises mais je ne comprends pas bien.
+
+Merci ! 🤔`,
+        topicIndex: 3,
+        authorIndex: 5,
+        tags: ["nextjs", "typescript", "migration"],
+      },
+      {
+        title: "Conseils pour décrocher un premier job de développeur React ?",
+        content: `Salut la communauté !
+
+Je suis en reconversion et je termine bientôt la formation React Advanced Patterns. J'aimerais avoir vos conseils pour décrocher mon premier poste de développeur React.
+
+## Mon profil
+
+- 6 mois de formation intensive
+- Plusieurs projets personnels (portfolio, e-commerce, blog)
+- Ancien background en marketing
+- Très motivé ! 💪
+
+## Mes questions
+
+1. Quel type de poste viser en premier ? (junior, stage, freelance ?)
+2. Comment valoriser mon profil atypique ?
+3. Quelles sont les compétences les plus demandées actuellement ?
+4. Des conseils pour les entretiens techniques ?
+
+Merci pour vos témoignages et conseils ! 🙏`,
+        topicIndex: 6,
+        authorIndex: 6,
+        tags: ["career", "junior", "reconversion"],
+      },
+      {
+        title: "Comprendre les closures en JavaScript",
+        content: `Bonjour !
+
+Je galère un peu avec le concept des closures en JavaScript. J'ai lu plusieurs articles mais j'ai du mal à saisir l'utilité pratique.
+
+## Ce que je comprends
+
+\`\`\`javascript
+function outer() {
+  let count = 0;
+  return function inner() {
+    count++;
+    return count;
+  }
+}
+
+const counter = outer();
+console.log(counter()); // 1
+console.log(counter()); // 2
+\`\`\`
+
+## Mes questions
+
+1. Dans quels cas concrets utilise-t-on les closures ?
+2. Y a-t-il des pièges à éviter ?
+3. Lien avec les modules et l'encapsulation ?
+
+Merci pour vos explications ! 🤓`,
+        topicIndex: 1,
+        authorIndex: 7,
+        tags: ["javascript", "closures", "concepts"],
+      },
+    ];
+
+    const discussions = [];
+    for (let i = 0; i < discussionTemplates.length; i++) {
+      const template = discussionTemplates[i];
+      const discussion = await prisma.discussion.create({
+        data: {
+          title: template.title,
+          slug: template.title
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-|-$/g, ""),
+          content: template.content,
+          authorId: users[template.authorIndex].id,
+          topicId: topics[template.topicIndex].id,
+          courseId:
+            template.topicIndex > 0 && template.topicIndex < 4
+              ? courses[template.topicIndex - 1]?.id
+              : null,
+          isPinned: template.isPinned || false,
+          tags: template.tags,
+          viewCount: randomBetween(50, 500),
+          lastActivityAt: randomDate(
+            new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+            new Date()
+          ),
+        },
+      });
+      discussions.push(discussion);
+    }
+    console.log(`✅ Created ${discussions.length} community discussions`);
+
+    // Create discussion replies
+    const replyTemplates = [
+      {
+        discussionIndex: 1, // React performance question
+        authorIndex: 1, // Expert user
+        content: `Excellente question ! Voici plusieurs techniques pour optimiser tes composants React :
+
+## 1. React.memo pour éviter les re-renders inutiles
+
+\`\`\`jsx
+const ItemCard = React.memo(({ item, onClick }) => {
+  return <div onClick={onClick}>{item.name}</div>;
+});
+\`\`\`
+
+## 2. useCallback pour stabiliser les fonctions
+
+\`\`\`jsx
+function MyComponent({ items, onSelect }) {
+  const handleSelect = useCallback((item) => {
+    onSelect(item);
+  }, [onSelect]);
+
+  return (
+    <div>
+      {items.map(item => (
+        <ItemCard 
+          key={item.id} 
+          item={item} 
+          onClick={() => handleSelect(item)}
+        />
+      ))}
+    </div>
+  );
+}
+\`\`\`
+
+## 3. useMemo pour les calculs coûteux
+
+Si tu as des transformations de données coûteuses, utilise \`useMemo\` !
+
+Tu peux aussi regarder les React DevTools Profiler pour identifier les composants problématiques. 🔍`,
+        isAccepted: true,
+      },
+      {
+        discussionIndex: 1,
+        authorIndex: 8,
+        content: `+1 pour les conseils de @${users[1].name} ! 
+
+J'ajouterais aussi de faire attention aux props qui changent à chaque render. Par exemple :
+
+❌ **À éviter :**
+\`\`\`jsx
+<Component style={{ margin: 10 }} />
+\`\`\`
+
+✅ **Mieux :**
+\`\`\`jsx
+const styles = { margin: 10 };
+<Component style={styles} />
+\`\`\`
+
+La règle d'or : toujours penser à la référence des objets ! 👍`,
+      },
+      {
+        discussionIndex: 2, // Portfolio feedback
+        authorIndex: 2,
+        content: `Super portfolio ! 🎉 Voici mes retours :
+
+## ✅ Points forts
+- Design moderne et épuré
+- Animations fluides avec Framer Motion
+- Code bien structuré sur GitHub
+- Performance excellente (99/100 sur Lighthouse)
+
+## 💡 Suggestions d'amélioration
+1. **Accessibilité** : Ajouter plus de labels ARIA
+2. **SEO** : Optimiser les meta descriptions
+3. **Contact** : Ajouter un formulaire de contact
+4. **Blog** : Section blog pour montrer tes connaissances
+
+## 🚀 Recommandations pour décrocher un job
+Avec ce niveau, tu peux viser des postes junior/mid-level ! N'hésite pas à postuler. 
+
+Bravo pour le travail ! 👏`,
+      },
+      {
+        discussionIndex: 3, // Next.js 15 TypeScript
+        authorIndex: 0, // Instructor
+        content: `Salut ! C'est effectivement un changement important dans Next.js 15. 
+
+## Solution
+
+Depuis Next.js 15, les \`params\` et \`searchParams\` sont des Promises. Voici comment adapter ton code :
+
+\`\`\`tsx
+export default async function Page({ 
+  params 
+}: { 
+  params: Promise<{ id: string }> 
+}) {
+  const { id } = await params;
+  return <div>Post ID: {id}</div>
+}
+\`\`\`
+
+## Pourquoi ce changement ?
+
+Cela permet une meilleure optimisation des performances et prépare Next.js pour les futures fonctionnalités de streaming.
+
+## Pour generateMetadata aussi
+
+\`\`\`tsx
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return { title: \`Post \${id}\` };
+}
+\`\`\`
+
+J'ai prévu de faire une vidéo sur ce sujet dans la formation Next.js ! 📹`,
+        isModerator: true,
+      },
+      {
+        discussionIndex: 4, // Career advice
+        authorIndex: 9,
+        content: `Salut ! Moi aussi je suis en reconversion (ancien comptable) et j'ai décroché mon premier poste il y a 6 mois. Voici mes conseils :
+
+## 🎯 Type de poste à viser
+- **Stage de fin d'études** (même en reconversion)
+- **Poste junior avec formation** 
+- **Missions courtes en freelance** pour se faire la main
+
+## 💪 Valoriser ton profil atypique
+- Met en avant tes **soft skills** du marketing
+- Montre ta **capacité d'apprentissage**
+- Parle de tes **projets concrets**
+
+## 📚 Compétences demandées actuellement
+1. React/Next.js (tu es bon là-dessus !)
+2. TypeScript
+3. Tests (Jest/Testing Library)
+4. Git en équipe
+5. Méthodes agiles
+
+## 🎤 Entretiens techniques
+- **Prépare des exercices** sur CodeWars/LeetCode
+- **Explique ton code** à voix haute
+- **Pose des questions** sur leur stack technique
+
+Tu as déjà un bon profil, continue ! 🚀`,
+      },
+      {
+        discussionIndex: 5, // JavaScript closures
+        authorIndex: 1,
+        content: `Les closures sont super utiles ! Voici des cas concrets :
+
+## 🏭 Factory pattern
+\`\`\`javascript
+function createValidator(rules) {
+  return function(data) {
+    return rules.every(rule => rule(data));
+  };
+}
+
+const emailValidator = createValidator([
+  data => data.includes('@'),
+  data => data.length > 5
+]);
+\`\`\`
+
+## 🔒 Variables privées (avant les classes)
+\`\`\`javascript
+function createBankAccount(initialBalance) {
+  let balance = initialBalance;
+  
+  return {
+    deposit: (amount) => balance += amount,
+    withdraw: (amount) => balance -= amount,
+    getBalance: () => balance
+  };
+}
+\`\`\`
+
+## ⚡ Throttle/Debounce
+\`\`\`javascript
+function debounce(func, delay) {
+  let timeoutId;
+  return function(...args) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func.apply(this, args), delay);
+  };
+}
+\`\`\`
+
+Les closures permettent de créer des "environnements persistants" ! 🧠`,
+      },
+    ];
+
+    const replies = [];
+    for (const template of replyTemplates) {
+      const reply = await prisma.discussionReply.create({
+        data: {
+          content: template.content,
+          authorId: users[template.authorIndex].id,
+          discussionId: discussions[template.discussionIndex].id,
+          isAccepted: template.isAccepted || false,
+          isModerator: template.isModerator || false,
+          upvoteCount: randomBetween(0, 25),
+          downvoteCount: randomBetween(0, 3),
+        },
+      });
+      replies.push(reply);
+    }
+    console.log(`✅ Created ${replies.length} discussion replies`);
+
+    // Create discussion votes
+    const votingUsers = students.slice(0, 8);
+    for (const discussion of discussions) {
+      const voteCount = randomBetween(2, 10);
+      const votingSubset = votingUsers.slice(0, voteCount);
+
+      for (const voter of votingSubset) {
+        if (voter.id !== discussion.authorId) {
+          await prisma.discussionVote.create({
+            data: {
+              userId: voter.id,
+              discussionId: discussion.id,
+              voteType: Math.random() > 0.8 ? "DOWNVOTE" : "UPVOTE",
+            },
+          });
+        }
+      }
+    }
+
+    // Create reply votes
+    for (const reply of replies) {
+      const voteCount = randomBetween(1, 8);
+      const votingSubset = votingUsers.slice(0, voteCount);
+
+      for (const voter of votingSubset) {
+        if (voter.id !== reply.authorId) {
+          await prisma.discussionVote.create({
+            data: {
+              userId: voter.id,
+              replyId: reply.id,
+              voteType: Math.random() > 0.9 ? "DOWNVOTE" : "UPVOTE",
+            },
+          });
+        }
+      }
+    }
+    console.log("✅ Created discussion and reply votes");
+
+    // Create topic follows
+    for (const student of students.slice(0, 6)) {
+      const followCount = randomBetween(2, 4);
+      const topicsToFollow = topics.slice(0, followCount);
+
+      for (const topic of topicsToFollow) {
+        await prisma.topicFollow.create({
+          data: {
+            userId: student.id,
+            topicId: topic.id,
+          },
+        });
+      }
+    }
+    console.log("✅ Created topic follows");
+
+    // Create discussion bookmarks
+    for (const student of students.slice(0, 5)) {
+      const bookmarkCount = randomBetween(1, 3);
+      const discussionsToBookmark = discussions.slice(0, bookmarkCount);
+
+      for (const discussion of discussionsToBookmark) {
+        await prisma.discussionBookmark.create({
+          data: {
+            userId: student.id,
+            discussionId: discussion.id,
+          },
+        });
+      }
+    }
+    console.log("✅ Created discussion bookmarks");
+
+    // Award community badges to active users
+    const activeUsers = [instructor, ...students.slice(0, 5)];
+    for (const user of activeUsers) {
+      // Everyone gets "Premier Pas"
+      await prisma.userBadge.create({
+        data: {
+          userId: user.id,
+          badgeId: badges[0].id, // Premier Pas
+        },
+      });
+
+      // Some get more badges based on activity
+      if (user.role === Role.INSTRUCTOR) {
+        await prisma.userBadge.create({
+          data: {
+            userId: user.id,
+            badgeId: badges[5].id, // Modérateur
+          },
+        });
+        await prisma.userBadge.create({
+          data: {
+            userId: user.id,
+            badgeId: badges[4].id, // Mentor
+          },
+        });
+      } else if (students.indexOf(user) < 3) {
+        await prisma.userBadge.create({
+          data: {
+            userId: user.id,
+            badgeId: badges[1].id, // Conversationnel
+          },
+        });
+        await prisma.userBadge.create({
+          data: {
+            userId: user.id,
+            badgeId: badges[2].id, // Serviable
+          },
+        });
+      }
+    }
+    console.log("✅ Awarded community badges");
+
+    // Create community notifications
+    const notificationTypes = [
+      {
+        recipientId: students[2].id,
+        senderId: users[1].id,
+        type: "DISCUSSION_REPLY" as const,
+        title: "Nouvelle réponse à votre discussion",
+        message: "Votre question sur React a reçu une nouvelle réponse",
+        data: { discussionId: discussions[1].id },
+      },
+      {
+        recipientId: students[3].id,
+        type: "BADGE_EARNED" as const,
+        title: "Nouveau badge débloqué !",
+        message: "Vous avez gagné le badge 'Conversationnel'",
+        data: { badgeId: badges[1].id },
+      },
+      {
+        recipientId: students[4].id,
+        senderId: instructor.id,
+        type: "DISCUSSION_MENTION" as const,
+        title: "Vous avez été mentionné",
+        message: "Fernand vous a mentionné dans une discussion",
+        data: { discussionId: discussions[0].id },
+      },
+    ];
+
+    for (const notification of notificationTypes) {
+      await prisma.notification.create({
+        data: notification,
+      });
+    }
+    console.log("✅ Created community notifications");
+
+    // Create mentor requests
+    const mentorRequests = [
+      {
+        studentId: students[5].id,
+        mentorId: instructor.id,
+        courseId: courses[2].id, // Next.js course
+        message:
+          "Bonjour ! J'aimerais avoir des conseils personnalisés pour progresser en Next.js et améliorer mon code. Serait-il possible d'avoir un mentorat ?",
+        status: "PENDING" as const,
+      },
+      {
+        studentId: students[7].id,
+        mentorId: instructor.id,
+        courseId: courses[1].id, // React course
+        message:
+          "Salut Fernand ! Je galère un peu avec les patterns avancés React. Peux-tu m'aider à structurer mon apprentissage ?",
+        status: "ACCEPTED" as const,
+      },
+    ];
+
+    for (const request of mentorRequests) {
+      await prisma.mentorRequest.create({
+        data: request,
+      });
+    }
+    console.log("✅ Created mentor requests");
+
+    // Update user community data
+    await prisma.user.update({
+      where: { id: instructor.id },
+      data: {
+        communityPoints: 1500,
+        communityLevel: 5,
+        lastActiveAt: new Date(),
+      },
+    });
+
+    for (let i = 0; i < students.length; i++) {
+      const student = students[i];
+      await prisma.user.update({
+        where: { id: student.id },
+        data: {
+          communityPoints: randomBetween(50, 500),
+          communityLevel: randomBetween(1, 3),
+          lastActiveAt: randomDate(
+            new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+            new Date()
+          ),
+        },
+      });
+    }
+    console.log("✅ Updated user community data");
+
+    // 9. Create comprehensive review system with interactions
     console.log("⭐ Building comprehensive review system...");
 
     // Get all enrollments to create reviews
@@ -1259,9 +2028,15 @@ async function main() {
     console.log(`💰 Payments: ${premiumEnrollments.length}`);
     console.log(`🏆 Certificates: ${completedEnrollments.length}`);
     console.log(`🏷️  Tags: ${tags.length}`);
+    console.log(`🏛️  Topics: ${topics.length}`);
+    console.log(`💬 Discussions: ${discussions.length}`);
+    console.log(`↩️  Replies: ${replies.length}`);
+    console.log(`🎖️  Badges: ${badges.length}`);
     console.log(`📊 Analytics events: 500`);
     console.log("═".repeat(50));
-    console.log("🚀 Ready for development and testing!");
+    console.log(
+      "🚀 Ready for development and testing with full community system!"
+    );
   } catch (error) {
     console.error("❌ Seed failed:", error);
     throw error;
