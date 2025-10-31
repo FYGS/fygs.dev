@@ -23,6 +23,7 @@ const FOOTER_LINKS = {
     { href: "/pricing", label: "Plans", description: "Plans & subscriptions" },
     { href: "/tech-mastry", label: "TechMastry", description: "Interview preparation" },
     { href: "/dashboard", label: "Dashboard", description: "Learner space" },
+    { href: "/community", label: "Community", description: "Join the community" }
   ],
   legal: [
     { href: "/terms", label: "Terms of Service" },

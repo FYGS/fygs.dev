@@ -27,7 +27,8 @@ import {
   Database,
   Palette,
   Globe,
-  Activity
+  Activity,
+  MessageCircle
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -134,6 +135,12 @@ const navigation: NavItem[] = [
     href: "/admin/reviews",
     icon: MessageSquare,
     description: "Modération des avis utilisateurs"
+  },
+  {
+    title: "Communauté",
+    href: "/admin/community",
+    icon: MessageCircle,
+    description: "Gestion du forum et discussions"
   },
   {
     title: "Blog",

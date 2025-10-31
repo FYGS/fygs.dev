@@ -3,13 +3,12 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Send, X } from "lucide-react";
+import { Send, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -25,6 +24,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { ReplyEditor } from "@/components/community/reply-editor";
 import { CommunityTopic, createDiscussionSchema } from "@/types/community";
 import { createDiscussion } from "@/app/actions/community-actions";
 
@@ -181,11 +181,18 @@ export function DiscussionComposer({
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea
-                      {...field}
-                      placeholder="Provide more details about your discussion..."
-                      className="min-h-[120px] resize-none"
-                      disabled={isSubmitting}
+                    <ReplyEditor
+                      initialContent={field.value}
+                      onChange={(content) => {
+                        field.onChange(content);
+                      }}
+                      placeholder="Provide more details about your discussion... (Supports Markdown)"
+                      onCancel={handleCancel}
+                      submitLabel="Create Discussion"
+                      onSubmit={async (content) => {
+                        field.onChange(content);
+                        await form.handleSubmit(handleSubmit)();
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -193,41 +200,6 @@ export function DiscussionComposer({
               )}
             />
 
-            {/* Actions */}
-            <div className="flex items-center justify-between pt-4">
-              <div className="text-sm text-muted-foreground">
-                {courseId && (
-                  <span>This discussion will be linked to the current course.</span>
-                )}
-              </div>
-
-              <div className="flex items-center gap-2">
-                {onCancel && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleCancel}
-                    disabled={isSubmitting}
-                  >
-                    Cancel
-                  </Button>
-                )}
-                
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Creating...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="h-4 w-4 mr-2" />
-                      Create Discussion
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
           </form>
         </Form>
       </CardContent>

@@ -23,6 +23,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { NotificationsDropdown } from "./notifications-dropdown";
+import { FollowTopicButton } from "./follow-topic-button";
 import { cn } from "@/lib/utils";
 import { CommunityTopic } from "@/types/community";
 
@@ -30,6 +32,7 @@ interface CommunitySidebarProps {
   topics: CommunityTopic[];
   followedTopics?: string[];
   unreadNotifications?: number;
+  userId?: string;
   className?: string;
 }
 
@@ -66,6 +69,7 @@ export function CommunitySidebar({
   topics,
   followedTopics = [],
   unreadNotifications = 0,
+  userId,
   className,
 }: CommunitySidebarProps) {
   const pathname = usePathname();
@@ -104,6 +108,17 @@ export function CommunitySidebar({
 
         {/* Navigation */}
         <Card>
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">Navigation</CardTitle>
+              {userId && (
+                <NotificationsDropdown 
+                  initialCount={unreadNotifications}
+                  userId={userId}
+                />
+              )}
+            </div>
+          </CardHeader>
           <CardContent className="p-0">
             <nav className="space-y-1 p-2">
               {navigationItems.map((item) => {
@@ -238,30 +253,29 @@ export function CommunitySidebar({
                   <div className="text-xs font-medium text-muted-foreground mb-2">
                     All Topics ({filteredTopics.length})
                   </div>
-                  <ScrollArea className="max-h-48">
-                    <div className="space-y-1">
+                  <ScrollArea className="max-h-64">
+                    <div className="space-y-1 pr-2">
                       {filteredTopics.map((topic) => {
                         const isFollowing = followedTopics.includes(topic.id);
                         
                         return (
-                          <Link key={topic.id} href={`/community/topics/${topic.slug}`}>
-                            <div className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-accent text-sm">
+                          <div key={topic.id} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-accent text-sm">
+                            <Link href={`/community/topics/${topic.slug}`} className="flex-1 flex items-center gap-2 min-w-0">
                               {topic.icon && (
                                 <span className="text-base">{topic.icon}</span>
                               )}
                               <span className="flex-1 truncate">{topic.name}</span>
-                              <div className="flex items-center gap-1">
-                                {isFollowing && (
-                                  <Badge variant="secondary" className="h-4 text-xs">
-                                    ✓
-                                  </Badge>
-                                )}
-                                <span className="text-xs text-muted-foreground">
-                                  {topic._count?.discussions || 0}
-                                </span>
-                              </div>
-                            </div>
-                          </Link>
+                              <span className="text-xs text-muted-foreground">
+                                {topic._count?.discussions || 0}
+                              </span>
+                            </Link>
+                            <FollowTopicButton
+                              topicId={topic.id}
+                              topicName={topic.name}
+                              isFollowing={isFollowing}
+                              variant="icon"
+                            />
+                          </div>
                         );
                       })}
                       

@@ -7,6 +7,13 @@ import { TopicFilter } from "./topic-filter";
 import { CompactDiscussionComposer } from "./discussion-composer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { CommunityTopic } from "@/types/community";
 
 interface CommunityFiltersProps {
@@ -55,20 +62,6 @@ export function CommunityFilters({
     [updateSearchParams]
   );
 
-  const handleSortChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      updateSearchParams("sort", e.target.value);
-    },
-    [updateSearchParams]
-  );
-
-  const handleFilterChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      updateSearchParams("filter", e.target.value);
-    },
-    [updateSearchParams]
-  );
-
   const handleDiscussionSuccess = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     (_discussionId: string) => {
@@ -108,31 +101,33 @@ export function CommunityFilters({
             <Separator />
 
             {/* Sort and Filter Options */}
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">Sort by:</span>
-                <select
-                  value={sortBy}
-                  onChange={handleSortChange}
-                  className="text-sm border rounded px-2 py-1"
-                >
-                  <option value="recent">Most Recent</option>
-                  <option value="trending">Trending</option>
-                  <option value="top">Top Rated</option>
-                </select>
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Sort by</label>
+                <Select value={sortBy} onValueChange={(value) => updateSearchParams("sort", value)}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select sort order" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="recent">Most Recent</SelectItem>
+                    <SelectItem value="trending">Trending</SelectItem>
+                    <SelectItem value="top">Top Rated</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">Filter:</span>
-                <select
-                  value={filterBy}
-                  onChange={handleFilterChange}
-                  className="text-sm border rounded px-2 py-1"
-                >
-                  <option value="all">All</option>
-                  <option value="unanswered">Unanswered</option>
-                  <option value="solved">Solved</option>
-                </select>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Filter</label>
+                <Select value={filterBy} onValueChange={(value) => updateSearchParams("filter", value)}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select filter" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="unanswered">Unanswered</SelectItem>
+                    <SelectItem value="solved">Solved</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>

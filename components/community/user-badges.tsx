@@ -111,10 +111,10 @@ export function UserBadges({
             </TooltipTrigger>
             <TooltipContent>
               <div className="text-center">
-                <div className="font-medium">{levelInfo.name}</div>
-                <div className="text-xs text-muted-foreground">Level {level}</div>
+                <div className="font-medium text-black">{levelInfo.name}</div>
+                <div className="text-xs text-gray-500">Level {level}</div>
                 {showPoints && (
-                  <div className="text-xs text-muted-foreground">{points} points</div>
+                  <div className="text-xs text-gray-500">{points} points</div>
                 )}
               </div>
             </TooltipContent>
@@ -150,11 +150,11 @@ export function UserBadges({
               </TooltipTrigger>
               <TooltipContent>
                 <div className="text-center">
-                  <div className="font-medium">{userBadge.badge.name}</div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="font-medium text-black">{userBadge.badge.name}</div>
+                  <div className="text-xs text-gray-500">
                     {userBadge.badge.description}
                   </div>
-                  <div className="text-xs text-muted-foreground mt-1">
+                  <div className="text-xs text-gray-500 mt-1">
                     Earned: {new Date(userBadge.earnedAt).toLocaleDateString()}
                   </div>
                 </div>
@@ -172,7 +172,7 @@ export function UserBadges({
               </Badge>
             </TooltipTrigger>
             <TooltipContent>
-              <div className="text-xs">
+              <div className="text-xs text-black">
                 {hiddenBadgesCount} more badge{hiddenBadgesCount !== 1 ? 's' : ''}
               </div>
             </TooltipContent>
@@ -227,12 +227,12 @@ export function BadgeDisplay({ badge, earnedAt, size = "md" }: BadgeDisplayProps
         </TooltipTrigger>
         <TooltipContent>
           <div className="text-center">
-            <div className="font-medium">{badge.name}</div>
-            <div className="text-xs text-muted-foreground">
+            <div className="font-medium text-black">{badge.name}</div>
+            <div className="text-xs text-gray-500">
               {badge.description}
             </div>
             {earnedAt && (
-              <div className="text-xs text-muted-foreground mt-1">
+              <div className="text-xs text-gray-500 mt-1">
                 Earned: {earnedAt.toLocaleDateString()}
               </div>
             )}

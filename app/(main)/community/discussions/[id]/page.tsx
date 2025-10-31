@@ -9,10 +9,13 @@ import { CommunityService } from "@/lib/services/community-service";
 import { ReplyComposer } from "@/components/community/reply-composer";
 import { InteractiveReplies } from "@/components/community/interactive-replies";
 import { UserBadges } from "@/components/community/user-badges";
+import { MDXContent } from "@/components/community/mdx-content";
+import { DiscussionActions } from "@/components/community/discussion-actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface DiscussionPageProps {
   params: Promise<{
@@ -70,7 +73,7 @@ async function DiscussionContent({ params, searchParams }: DiscussionPageProps) 
             <Card>
               <CardHeader>
                 <div className="flex items-start justify-between gap-4">
-                  <div className="space-y-2">
+                  <div className="flex-1 space-y-2">
                     <div className="flex items-center gap-2">
                       {discussion.topic && (
                         <Badge variant="outline">
@@ -97,7 +100,19 @@ async function DiscussionContent({ params, searchParams }: DiscussionPageProps) 
                       {discussion.title}
                     </CardTitle>
 
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
+                      <Link 
+                        href={`/community/users/${discussion.author.id}`}
+                        className="flex items-center gap-2 hover:text-primary transition-colors"
+                      >
+                        <Avatar className="h-6 w-6">
+                          <AvatarImage src={discussion.author.image || ""} />
+                          <AvatarFallback className="text-xs">
+                            {discussion.author.name?.[0]?.toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="font-medium">{discussion.author.name}</span>
+                      </Link>
                       <UserBadges 
                         user={discussion.author as any}
                         showLevel={true}
@@ -114,21 +129,38 @@ async function DiscussionContent({ params, searchParams }: DiscussionPageProps) 
                       )}
                     </div>
                   </div>
+
+                  {/* Discussion Actions */}
+                  {session?.user && (
+                    <DiscussionActions
+                      discussionId={discussion.id}
+                      content={discussion.content || ""}
+                      isPinned={discussion.isPinned}
+                      isLocked={discussion.isLocked}
+                      isSolved={discussion.isSolved}
+                      isAuthor={session.user.id === discussion.authorId}
+                      isModerator={
+                        session.user.role === "ADMIN" ||
+                        session.user.role === "INSTRUCTOR"
+                      }
+                    />
+                  )}
                 </div>
               </CardHeader>
 
               <CardContent>
                 {discussion.content && (
                   <div className="prose prose-sm max-w-none mb-6">
-                    <p className="whitespace-pre-wrap leading-relaxed">
-                      {discussion.content}
-                    </p>
+                    <MDXContent 
+                      content={discussion.content}
+                      className="leading-relaxed"
+                    />
                   </div>
                 )}
 
                 {/* Discussion stats and actions */}
                 <div className="flex items-center justify-between pt-4 border-t">
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
                     <span>{discussion._count?.replies || 0} replies</span>
                     <span>{discussion._count?.votes || 0} votes</span>
                     <span>{discussion.viewCount || 0} views</span>
@@ -146,10 +178,6 @@ async function DiscussionContent({ params, searchParams }: DiscussionPageProps) 
                   name: session.user.name,
                   image: session.user.image || null,
                 }}
-                onSuccess={() => {
-                  // Refresh the page to show the new reply
-                  window.location.reload();
-                }}
                 placeholder="Share your thoughts..."
               />
             )}
@@ -164,20 +192,30 @@ async function DiscussionContent({ params, searchParams }: DiscussionPageProps) 
 
                   {sortedReplies.length > 0 && (
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">Sort by:</span>
-                      <select
-                        value={sortBy}
-                        onChange={(e) => {
-                          const url = new URL(window.location.href);
-                          url.searchParams.set("sort", e.target.value);
-                          window.location.href = url.toString();
-                        }}
-                        className="text-sm border rounded px-2 py-1"
-                      >
-                        <option value="oldest">Oldest first</option>
-                        <option value="newest">Newest first</option>
-                        <option value="best">Best rated</option>
-                      </select>
+                      <span className="text-sm text-slate-600 dark:text-slate-400">Sort by:</span>
+                      <div className="flex gap-1">
+                        <Button
+                          variant={sortBy === "oldest" ? "default" : "ghost"}
+                          size="sm"
+                          asChild
+                        >
+                          <Link href={`?sort=oldest`}>Oldest</Link>
+                        </Button>
+                        <Button
+                          variant={sortBy === "newest" ? "default" : "ghost"}
+                          size="sm"
+                          asChild
+                        >
+                          <Link href={`?sort=newest`}>Newest</Link>
+                        </Button>
+                        <Button
+                          variant={sortBy === "best" ? "default" : "ghost"}
+                          size="sm"
+                          asChild
+                        >
+                          <Link href={`?sort=best`}>Best</Link>
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -187,13 +225,14 @@ async function DiscussionContent({ params, searchParams }: DiscussionPageProps) 
                 {sortedReplies.length > 0 ? (
                   <InteractiveReplies
                     replies={sortedReplies}
+                    discussionId={discussion.id}
                     currentUserId={session?.user?.id}
                   />
                 ) : (
                   <div className="text-center py-8">
                     <div className="text-4xl mb-4">💬</div>
                     <h3 className="text-lg font-semibold mb-2">No replies yet</h3>
-                    <p className="text-muted-foreground">
+                    <p className="text-slate-600 dark:text-slate-400">
                       Be the first to share your thoughts on this discussion!
                     </p>
                   </div>

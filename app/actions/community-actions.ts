@@ -366,6 +366,7 @@ export async function createReply(
     // Create notification for discussion author
     const discussion = await db.discussion.findUnique({
       where: { id: validatedData.discussionId },
+      include: { author: true },
     });
 
     if (discussion && discussion.authorId !== session.user.id) {
@@ -382,6 +383,22 @@ export async function createReply(
           },
         },
       });
+
+      // Send email notification
+      const { CommunityNotificationService } = await import(
+        "@/lib/services/community-notification"
+      );
+      const replyWithRelations = {
+        ...reply,
+        author: session.user,
+        discussion: {
+          ...discussion,
+          author: discussion.author,
+        },
+      };
+      await CommunityNotificationService.notifyDiscussionReply(
+        replyWithRelations as any
+      );
     }
 
     revalidatePath(`/community/discussions/${discussion?.id}`);
@@ -531,6 +548,11 @@ export async function toggleBookmark(
       await db.discussionBookmark.delete({
         where: { id: existingBookmark.id },
       });
+
+      // Revalidate community pages
+      revalidatePath("/community");
+      revalidatePath("/community/bookmarks");
+
       return { success: true, message: "Bookmark removed" };
     } else {
       await db.discussionBookmark.create({
@@ -539,6 +561,11 @@ export async function toggleBookmark(
           discussionId,
         },
       });
+
+      // Revalidate community pages
+      revalidatePath("/community");
+      revalidatePath("/community/bookmarks");
+
       return { success: true, message: "Discussion bookmarked" };
     }
   } catch (error) {
@@ -646,6 +673,29 @@ export async function createMentorRequest(
       },
     });
 
+    // Send email notification to mentor
+    const mentorRequest = await db.mentorRequest.findFirst({
+      where: {
+        studentId: session.user.id,
+        mentorId: validatedData.mentorId,
+        courseId: validatedData.courseId,
+      },
+      orderBy: { createdAt: "desc" },
+      include: {
+        student: true,
+        mentor: true,
+      },
+    });
+
+    if (mentorRequest) {
+      const { CommunityNotificationService } = await import(
+        "@/lib/services/community-notification"
+      );
+      await CommunityNotificationService.notifyMentorRequest(
+        mentorRequest as any
+      );
+    }
+
     return { success: true, message: "Mentor request sent successfully!" };
   } catch (error) {
     console.error("Error creating mentor request:", error);
@@ -747,6 +797,12 @@ async function checkAndAwardBadges(userId: string, action: string) {
             data: { badgeId: badge.id },
           },
         });
+
+        // Send email notification for badge
+        const { CommunityNotificationService } = await import(
+          "@/lib/services/community-notification"
+        );
+        await CommunityNotificationService.notifyBadgeEarned(userId, badge);
 
         // Award bonus points
         await db.user.update({
@@ -876,5 +932,726 @@ export async function updateReply(
   } catch (error) {
     console.error("Error updating reply:", error);
     return { success: false, error: "Failed to update reply" };
+  }
+}
+
+/**
+ * Get available mentors
+ */
+export async function getAvailableMentors(): Promise<ActionResult> {
+  try {
+    const mentors = await db.user.findMany({
+      where: {
+        role: "INSTRUCTOR",
+        lastActiveAt: {
+          gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Active in last 30 days
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        image: true,
+        role: true,
+        bio: true,
+        communityLevel: true,
+        githubUrl: true,
+        linkedinUrl: true,
+        websiteUrl: true,
+        userBadges: {
+          include: {
+            badge: true,
+          },
+        },
+        _count: {
+          select: {
+            discussions: true,
+            discussionReplies: true,
+          },
+        },
+      },
+      orderBy: {
+        communityLevel: "desc",
+      },
+    });
+
+    return {
+      success: true,
+      data: mentors,
+    };
+  } catch (error) {
+    console.error("Error fetching mentors:", error);
+    return { success: false, error: "Failed to fetch mentors" };
+  }
+}
+
+/**
+ * Get mentor requests for a user (both sent and received)
+ */
+export async function getMentorRequests(userId: string): Promise<ActionResult> {
+  try {
+    const session = await auth.api.getSession({ headers: await headers() });
+
+    if (!session?.user || session.user.id !== userId) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const [sentRequests, receivedRequests] = await Promise.all([
+      db.mentorRequest.findMany({
+        where: { studentId: userId },
+        include: {
+          mentor: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              role: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+      db.mentorRequest.findMany({
+        where: { mentorId: userId },
+        include: {
+          student: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              role: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+    ]);
+
+    return {
+      success: true,
+      data: {
+        sent: sentRequests,
+        received: receivedRequests,
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching mentor requests:", error);
+    return { success: false, error: "Failed to fetch mentor requests" };
+  }
+}
+
+/**
+ * Respond to a mentor request (accept/decline)
+ */
+export async function respondToMentorRequest(
+  requestId: string,
+  action: "accept" | "decline"
+): Promise<ActionResult> {
+  try {
+    const session = await auth.api.getSession({ headers: await headers() });
+
+    if (!session?.user) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    const request = await db.mentorRequest.findUnique({
+      where: { id: requestId },
+      include: {
+        student: true,
+        mentor: true,
+      },
+    });
+
+    if (!request) {
+      return { success: false, error: "Request not found" };
+    }
+
+    if (request.mentorId !== session.user.id) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const status = action === "accept" ? "ACCEPTED" : "DECLINED";
+
+    await db.mentorRequest.update({
+      where: { id: requestId },
+      data: {
+        status,
+        updatedAt: new Date(),
+      },
+    });
+
+    // Create notification for student
+    await db.notification.create({
+      data: {
+        recipientId: request.studentId,
+        senderId: session.user.id,
+        type: "MENTOR_REQUEST",
+        title: `Mentorship request ${action}ed`,
+        message: `${session.user.name} has ${action}ed your mentorship request`,
+        data: {
+          requestId: requestId,
+          action: action,
+        },
+      },
+    });
+
+    // Send email notification to student
+    const { CommunityNotificationService } = await import(
+      "@/lib/services/community-notification"
+    );
+    await CommunityNotificationService.notifyMentorResponse(request, action);
+
+    return {
+      success: true,
+      message: `Request ${action}ed successfully`,
+    };
+  } catch (error) {
+    console.error("Error responding to mentor request:", error);
+    return { success: false, error: "Failed to respond to request" };
+  }
+}
+
+/**
+ * Get user notifications
+ */
+export async function getNotifications(
+  userId: string,
+  options: {
+    filter: "all" | "unread" | "read";
+    page?: number;
+    limit?: number;
+  } = { filter: "all" }
+) {
+  try {
+    const { filter, page = 1, limit = 20 } = options;
+    const skip = (page - 1) * limit;
+
+    const whereClause: any = {
+      recipientId: userId,
+      ...(filter === "unread" && { isRead: false }),
+      ...(filter === "read" && { isRead: true }),
+    };
+
+    const notifications = await db.notification.findMany({
+      where: whereClause,
+      include: {
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
+    });
+
+    return {
+      success: true,
+      data: notifications,
+    };
+  } catch (error) {
+    console.error("Error fetching notifications:", error);
+    return {
+      success: false,
+      error: "Failed to fetch notifications",
+    };
+  }
+}
+
+/**
+ * Mark notifications as read
+ */
+export async function markNotificationsAsRead(notificationIds: string[]) {
+  try {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session?.user) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    await db.notification.updateMany({
+      where: {
+        id: {
+          in: notificationIds,
+        },
+        recipientId: session.user.id, // Ensure user can only mark their own notifications
+      },
+      data: {
+        isRead: true,
+      },
+    });
+
+    revalidatePath("/community/notifications");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error marking notifications as read:", error);
+    return {
+      success: false,
+      error: "Failed to mark notifications as read",
+    };
+  }
+}
+
+/**
+ * Mark single notification as read
+ */
+export async function markNotificationAsRead(formData: FormData) {
+  const notificationId = formData.get("notificationId") as string;
+
+  if (!notificationId) {
+    return { success: false, error: "Notification ID is required" };
+  }
+
+  return markNotificationsAsRead([notificationId]);
+}
+
+/**
+ * Mark all notifications as read for current user
+ */
+export async function markAllNotificationsAsRead() {
+  try {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session?.user) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    await db.notification.updateMany({
+      where: {
+        recipientId: session.user.id,
+        isRead: false,
+      },
+      data: {
+        isRead: true,
+      },
+    });
+
+    revalidatePath("/community/notifications");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error marking all notifications as read:", error);
+    return {
+      success: false,
+      error: "Failed to mark all notifications as read",
+    };
+  }
+}
+
+/**
+ * Delete notification
+ */
+export async function deleteNotification(formData: FormData) {
+  const notificationId = formData.get("notificationId") as string;
+
+  if (!notificationId) {
+    return { success: false, error: "Notification ID is required" };
+  }
+
+  try {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session?.user) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    await db.notification.delete({
+      where: {
+        id: notificationId,
+        recipientId: session.user.id, // Ensure user can only delete their own notifications
+      },
+    });
+
+    revalidatePath("/community/notifications");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting notification:", error);
+    return {
+      success: false,
+      error: "Failed to delete notification",
+    };
+  }
+}
+
+/**
+ * Moderate content (discussions and replies)
+ */
+export async function moderateContent(formData: FormData) {
+  try {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (
+      !session?.user ||
+      !session.user.role ||
+      !["ADMIN", "MODERATOR"].includes(session.user.role)
+    ) {
+      return { success: false, error: "Insufficient permissions" };
+    }
+
+    const discussionId = formData.get("discussionId") as string;
+    const replyId = formData.get("replyId") as string;
+    const action = formData.get("action") as string; // "moderate" or "flag"
+
+    if (discussionId) {
+      // Use status field to mark as CLOSED for moderated discussions
+      const newStatus = action === "moderate" ? "CLOSED" : "ACTIVE";
+      await db.discussion.update({
+        where: { id: discussionId },
+        data: {
+          status: newStatus,
+          isLocked: action === "moderate", // Lock moderated discussions
+        },
+      });
+      revalidatePath("/community/discussions");
+      revalidatePath("/admin/community/moderation");
+    } else if (replyId) {
+      // For replies, we can delete inappropriate ones
+      if (action === "delete") {
+        await db.discussionReply.delete({
+          where: { id: replyId },
+        });
+      }
+      revalidatePath("/community/discussions");
+      revalidatePath("/admin/community/moderation");
+    } else {
+      return { success: false, error: "Content ID is required" };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error moderating content:", error);
+    return {
+      success: false,
+      error: "Failed to moderate content",
+    };
+  }
+}
+
+/**
+ * Update user role
+ */
+export async function updateUserRole(formData: FormData) {
+  try {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session?.user || !session.user.role || session.user.role !== "ADMIN") {
+      return { success: false, error: "Insufficient permissions" };
+    }
+
+    const userId = formData.get("userId") as string;
+    const role = formData.get("role") as string;
+
+    if (!userId || !role) {
+      return { success: false, error: "User ID and role are required" };
+    }
+
+    if (!["USER", "MENTOR", "MODERATOR", "ADMIN"].includes(role)) {
+      return { success: false, error: "Invalid role" };
+    }
+
+    await db.user.update({
+      where: { id: userId },
+      data: { role: role as any },
+    });
+
+    revalidatePath("/admin/users");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating user role:", error);
+    return {
+      success: false,
+      error: "Failed to update user role",
+    };
+  }
+}
+
+/**
+ * Ban user
+ */
+export async function banUser(formData: FormData) {
+  try {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (
+      !session?.user ||
+      !session.user.role ||
+      !["ADMIN", "MODERATOR"].includes(session.user.role)
+    ) {
+      return { success: false, error: "Insufficient permissions" };
+    }
+
+    const userId = formData.get("userId") as string;
+
+    if (!userId) {
+      return { success: false, error: "User ID is required" };
+    }
+
+    await db.user.update({
+      where: { id: userId },
+      data: { isBanned: true },
+    });
+
+    revalidatePath("/admin/users");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error banning user:", error);
+    return {
+      success: false,
+      error: "Failed to ban user",
+    };
+  }
+}
+
+/**
+ * Unban user
+ */
+export async function unbanUser(formData: FormData) {
+  try {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (
+      !session?.user ||
+      !session.user.role ||
+      !["ADMIN", "MODERATOR"].includes(session.user.role)
+    ) {
+      return { success: false, error: "Insufficient permissions" };
+    }
+
+    const userId = formData.get("userId") as string;
+
+    if (!userId) {
+      return { success: false, error: "User ID is required" };
+    }
+
+    await db.user.update({
+      where: { id: userId },
+      data: { isBanned: false },
+    });
+
+    revalidatePath("/admin/users");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error unbanning user:", error);
+    return {
+      success: false,
+      error: "Failed to unban user",
+    };
+  }
+}
+
+/**
+ * Follow/unfollow a user
+ */
+export async function toggleUserFollow(
+  targetUserId: string
+): Promise<ActionResult> {
+  try {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session?.user) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    if (session.user.id === targetUserId) {
+      return { success: false, error: "You cannot follow yourself" };
+    }
+
+    const existingFollow = await db.userFollow.findUnique({
+      where: {
+        followerId_followingId: {
+          followerId: session.user.id,
+          followingId: targetUserId,
+        },
+      },
+    });
+
+    if (existingFollow) {
+      // Unfollow
+      await db.userFollow.delete({
+        where: { id: existingFollow.id },
+      });
+
+      return {
+        success: true,
+        message: "User unfollowed successfully",
+        data: { isFollowing: false },
+      };
+    } else {
+      // Follow
+      await db.userFollow.create({
+        data: {
+          followerId: session.user.id,
+          followingId: targetUserId,
+        },
+      });
+
+      // Create notification for followed user
+      await db.notification.create({
+        data: {
+          recipientId: targetUserId,
+          senderId: session.user.id,
+          type: "FOLLOW",
+          title: "New follower",
+          message: `${session.user.name} started following you`,
+          data: {
+            followerId: session.user.id,
+          },
+        },
+      });
+
+      // Send email notification
+      const { CommunityNotificationService } = await import(
+        "@/lib/services/community-notification"
+      );
+      await CommunityNotificationService.notifyNewFollower(
+        session.user.id,
+        targetUserId
+      );
+
+      return {
+        success: true,
+        message: "User followed successfully",
+        data: { isFollowing: true },
+      };
+    }
+  } catch (error) {
+    console.error("Error toggling user follow:", error);
+    return { success: false, error: "Failed to follow/unfollow user" };
+  }
+}
+
+/**
+ * Get user followers
+ */
+export async function getUserFollowers(
+  userId: string,
+  page = 1,
+  limit = 20
+): Promise<ActionResult> {
+  try {
+    const skip = (page - 1) * limit;
+
+    const [followers, total] = await Promise.all([
+      db.userFollow.findMany({
+        where: { followingId: userId },
+        include: {
+          follower: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              role: true,
+              communityLevel: true,
+              communityPoints: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      }),
+      db.userFollow.count({
+        where: { followingId: userId },
+      }),
+    ]);
+
+    return {
+      success: true,
+      data: {
+        followers: followers.map((f) => f.follower),
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching followers:", error);
+    return { success: false, error: "Failed to fetch followers" };
+  }
+}
+
+/**
+ * Get users being followed
+ */
+export async function getUserFollowing(
+  userId: string,
+  page = 1,
+  limit = 20
+): Promise<ActionResult> {
+  try {
+    const skip = (page - 1) * limit;
+
+    const [following, total] = await Promise.all([
+      db.userFollow.findMany({
+        where: { followerId: userId },
+        include: {
+          following: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              role: true,
+              communityLevel: true,
+              communityPoints: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      }),
+      db.userFollow.count({
+        where: { followerId: userId },
+      }),
+    ]);
+
+    return {
+      success: true,
+      data: {
+        following: following.map((f) => f.following),
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching following:", error);
+    return { success: false, error: "Failed to fetch following" };
+  }
+}
+
+/**
+ * Check if current user follows another user
+ */
+export async function checkUserFollow(
+  targetUserId: string
+): Promise<ActionResult> {
+  try {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session?.user) {
+      return { success: true, data: { isFollowing: false } };
+    }
+
+    const follow = await db.userFollow.findUnique({
+      where: {
+        followerId_followingId: {
+          followerId: session.user.id,
+          followingId: targetUserId,
+        },
+      },
+    });
+
+    return {
+      success: true,
+      data: { isFollowing: !!follow },
+    };
+  } catch (error) {
+    console.error("Error checking user follow:", error);
+    return { success: false, error: "Failed to check follow status" };
   }
 }

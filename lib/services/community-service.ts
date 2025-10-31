@@ -14,7 +14,7 @@ import type {
   CommunityStats,
   RecommendationEngine,
   DiscussionSortType,
-  CommunityNotification,
+  UserProfileResponse,
 } from "@/types/community";
 import { Prisma } from "@prisma/client";
 
@@ -54,8 +54,17 @@ export class CommunityService {
     filters: DiscussionFilters,
     userId?: string
   ): Promise<DiscussionsResponse> {
-    const { page, limit, sort, topicId, courseId, tags, authorId, status } =
-      filters;
+    const {
+      page,
+      limit,
+      sort,
+      topicId,
+      courseId,
+      tags,
+      authorId,
+      status,
+      search,
+    } = filters;
     const skip = (page - 1) * limit;
 
     // Build where clause
@@ -72,6 +81,27 @@ export class CommunityService {
       ...(status === "solved" && { isSolved: true }),
       ...(status === "unsolved" && { isSolved: false }),
       ...(status === "pinned" && { isPinned: true }),
+      ...(search && {
+        OR: [
+          {
+            title: {
+              contains: search,
+              mode: "insensitive",
+            },
+          },
+          {
+            content: {
+              contains: search,
+              mode: "insensitive",
+            },
+          },
+          {
+            tags: {
+              hasSome: [search],
+            },
+          },
+        ],
+      }),
     };
 
     // Build order by clause
@@ -400,6 +430,23 @@ export class CommunityService {
             image: true,
             role: true,
             communityLevel: true,
+            communityPoints: true,
+            userBadges: {
+              include: {
+                badge: true,
+              },
+              take: 5,
+              orderBy: {
+                earnedAt: "desc",
+              },
+            },
+            _count: {
+              select: {
+                discussions: true,
+                discussionReplies: true,
+                discussionVotes: true,
+              },
+            },
           },
         },
         children: {
@@ -411,6 +458,23 @@ export class CommunityService {
                 image: true,
                 role: true,
                 communityLevel: true,
+                communityPoints: true,
+                userBadges: {
+                  include: {
+                    badge: true,
+                  },
+                  take: 5,
+                  orderBy: {
+                    earnedAt: "desc",
+                  },
+                },
+                _count: {
+                  select: {
+                    discussions: true,
+                    discussionReplies: true,
+                    discussionVotes: true,
+                  },
+                },
               },
             },
             _count: {
@@ -682,32 +746,6 @@ export class CommunityService {
   }
 
   /**
-   * Get user profile with community stats
-   */
-  static async getUserProfile(userId: string): Promise<CommunityUser | null> {
-    const user = await db.user.findUnique({
-      where: { id: userId },
-      include: {
-        userBadges: {
-          include: {
-            badge: true,
-          },
-          orderBy: { earnedAt: "desc" },
-        },
-        _count: {
-          select: {
-            discussions: true,
-            discussionReplies: true,
-            discussionVotes: true,
-          },
-        },
-      },
-    });
-
-    return user as CommunityUser | null;
-  }
-
-  /**
    * Get personalized recommendations for a user
    */
   static async getRecommendations(
@@ -963,6 +1001,30 @@ export class CommunityService {
   }
 
   /**
+   * Check if a user is following a specific topic
+   */
+  static async isFollowingTopic(
+    userId: string,
+    topicId: string
+  ): Promise<boolean> {
+    try {
+      const follow = await db.topicFollow.findUnique({
+        where: {
+          userId_topicId: {
+            userId,
+            topicId,
+          },
+        },
+      });
+
+      return !!follow;
+    } catch (error) {
+      console.error("Error checking topic follow status:", error);
+      return false;
+    }
+  }
+
+  /**
    * Get unread notifications count for a user
    */
   static async getUnreadNotificationsCount(userId: string): Promise<number> {
@@ -982,91 +1044,285 @@ export class CommunityService {
   }
 
   /**
-   * Get notifications for a user
+   * Get user bookmarks
    */
-  static async getNotifications(
+  static async getUserBookmarks(
     userId: string,
-    options: { page?: number; limit?: number; unreadOnly?: boolean } = {}
-  ): Promise<{
-    notifications: CommunityNotification[];
-    pagination: {
-      page: number;
-      limit: number;
-      total: number;
-      totalPages: number;
-    };
-  }> {
-    const { page = 1, limit = 20, unreadOnly = false } = options;
-    const skip = (page - 1) * limit;
-
+    page: number = 1,
+    limit: number = 20
+  ): Promise<any[]> {
     try {
-      const [notifications, total] = await Promise.all([
-        db.notification.findMany({
-          where: {
-            recipientId: userId,
-            ...(unreadOnly && { isRead: false }),
+      const skip = (page - 1) * limit;
+
+      const bookmarks = await db.discussionBookmark.findMany({
+        where: { userId },
+        skip,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+        include: {
+          discussion: {
+            include: {
+              author: {
+                select: {
+                  id: true,
+                  name: true,
+                  image: true,
+                  role: true,
+                  communityLevel: true,
+                },
+              },
+              topic: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                  color: true,
+                  icon: true,
+                },
+              },
+              course: {
+                select: {
+                  id: true,
+                  title: true,
+                  slug: true,
+                },
+              },
+              _count: {
+                select: {
+                  replies: true,
+                  votes: true,
+                  bookmarks: true,
+                },
+              },
+            },
           },
+        },
+      });
+
+      return bookmarks;
+    } catch (error) {
+      console.error("Error fetching user bookmarks:", error);
+      return [];
+    }
+  }
+
+  /**
+   * Get user replies with discussion context
+   */
+  static async getUserReplies(
+    userId: string,
+    page: number = 1,
+    limit: number = 20
+  ): Promise<any[]> {
+    try {
+      const skip = (page - 1) * limit;
+
+      const replies = await db.discussionReply.findMany({
+        where: { authorId: userId },
+        skip,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+        include: {
+          discussion: {
+            select: {
+              id: true,
+              title: true,
+              topic: {
+                select: {
+                  name: true,
+                  icon: true,
+                },
+              },
+            },
+          },
+          author: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              role: true,
+            },
+          },
+          _count: {
+            select: {
+              votes: true,
+              children: true,
+            },
+          },
+        },
+      });
+
+      return replies;
+    } catch (error) {
+      console.error("Error fetching user replies:", error);
+      return [];
+    }
+  }
+
+  /**
+   * Get user profile with statistics and recent activity
+   */
+  static async getUserProfile(
+    userId: string
+  ): Promise<UserProfileResponse | null> {
+    try {
+      const [user, discussions, replies, upvotes] = await Promise.all([
+        db.user.findUnique({
+          where: { id: userId },
           include: {
-            sender: {
+            userBadges: {
+              include: {
+                badge: true,
+              },
+            },
+          },
+        }),
+        db.discussion.findMany({
+          where: { authorId: userId, status: "ACTIVE" },
+          orderBy: { createdAt: "desc" },
+          take: 5,
+          include: {
+            author: {
               select: {
                 id: true,
                 name: true,
                 image: true,
+                role: true,
+                communityLevel: true,
+              },
+            },
+            topic: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                color: true,
+                icon: true,
+              },
+            },
+            _count: {
+              select: {
+                replies: true,
+                votes: true,
+                bookmarks: true,
               },
             },
           },
-          orderBy: { createdAt: "desc" },
-          skip,
-          take: limit,
         }),
-        db.notification.count({
+        db.discussionReply.count({
+          where: { authorId: userId },
+        }),
+        db.discussionVote.count({
           where: {
-            recipientId: userId,
-            ...(unreadOnly && { isRead: false }),
+            discussion: { authorId: userId },
+            voteType: "UPVOTE",
+          },
+        }),
+      ]);
+
+      if (!user) {
+        return null;
+      }
+
+      return {
+        user: {
+          ...user,
+          userBadges: user.userBadges || [],
+          _count: {
+            discussions: discussions.length,
+            discussionReplies: replies,
+            discussionVotes: upvotes,
+          },
+        } as CommunityUser,
+        stats: {
+          totalDiscussions: discussions.length,
+          totalReplies: replies,
+          totalUpvotes: upvotes,
+          joinedDate: user.createdAt,
+          lastActive: user.lastActiveAt || user.updatedAt,
+        },
+        recentActivity: discussions,
+      };
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Get available mentors
+   */
+  static async getAvailableMentors(): Promise<CommunityUser[]> {
+    try {
+      const mentors = await db.user.findMany({
+        where: {
+          role: "INSTRUCTOR",
+          lastActiveAt: {
+            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Active in last 30 days
+          },
+        },
+        include: {
+          userBadges: {
+            include: {
+              badge: true,
+            },
+          },
+          _count: {
+            select: {
+              discussions: true,
+              discussionReplies: true,
+              discussionVotes: true,
+            },
+          },
+        },
+        orderBy: [{ communityLevel: "desc" }, { communityPoints: "desc" }],
+      });
+
+      return mentors as CommunityUser[];
+    } catch (error) {
+      console.error("Error fetching available mentors:", error);
+      return [];
+    }
+  }
+
+  /**
+   * Get mentorship statistics
+   */
+  static async getMentorshipStats(): Promise<{
+    totalMentors: number;
+    totalRequests: number;
+    activeMatches: number;
+  }> {
+    try {
+      const [totalMentors, totalRequests, activeMatches] = await Promise.all([
+        db.user.count({
+          where: {
+            role: "INSTRUCTOR",
+            lastActiveAt: {
+              gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Active in last 30 days
+            },
+          },
+        }),
+        db.mentorRequest.count(),
+        db.mentorRequest.count({
+          where: {
+            status: "ACCEPTED",
           },
         }),
       ]);
 
       return {
-        notifications: notifications as CommunityNotification[],
-        pagination: {
-          page,
-          limit,
-          total,
-          totalPages: Math.ceil(total / limit),
-        },
+        totalMentors,
+        totalRequests,
+        activeMatches,
       };
     } catch (error) {
-      console.error("Error fetching notifications:", error);
+      console.error("Error fetching mentorship stats:", error);
       return {
-        notifications: [],
-        pagination: { page, limit, total: 0, totalPages: 0 },
+        totalMentors: 0,
+        totalRequests: 0,
+        activeMatches: 0,
       };
-    }
-  }
-
-  /**
-   * Mark notifications as read
-   */
-  static async markNotificationsAsRead(
-    userId: string,
-    notificationIds?: string[]
-  ): Promise<boolean> {
-    try {
-      await db.notification.updateMany({
-        where: {
-          recipientId: userId,
-          ...(notificationIds && { id: { in: notificationIds } }),
-        },
-        data: {
-          isRead: true,
-        },
-      });
-
-      return true;
-    } catch (error) {
-      console.error("Error marking notifications as read:", error);
-      return false;
     }
   }
 }

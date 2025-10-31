@@ -242,6 +242,7 @@ export interface DiscussionFilters {
   authorId?: string;
   userId?: string;
   status?: "all" | "solved" | "unsolved" | "pinned";
+  search?: string;
   sort: DiscussionSortType;
   page: number;
   limit: number;

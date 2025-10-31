@@ -56,6 +56,7 @@ model User {
   communityPoints   Int              @default(0) // Gamification points
   communityLevel    Int              @default(1) // User level based on activity
   lastActiveAt      DateTime?        // Last community activity
+  isBanned          Boolean          @default(false) // User ban status for moderation
   AnalyticsEvent    AnalyticsEvent[]
   certificates      Certificate[]
   instructedCourses Course[]         @relation("CourseInstructor")
@@ -82,6 +83,9 @@ model User {
   bookmarks         DiscussionBookmark[]
   mentorRequests    MentorRequest[]  @relation("MentorRequestStudent")
   mentorOffers      MentorRequest[]  @relation("MentorRequestMentor")
+  // User following relations
+  following         UserFollow[]     @relation("UserFollowing")
+  followers         UserFollow[]     @relation("UserFollowers")
 
   @@map("user")
 }
@@ -570,6 +574,19 @@ model TopicFollow {
   @@unique([userId, topicId])
 }
 
+model UserFollow {
+  id          String   @id @default(cuid())
+  followerId  String   // User who is following
+  followingId String   // User being followed
+  createdAt   DateTime @default(now())
+  follower    User     @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
 model Badge {
   id          String      @id @default(cuid())
   name        String      @unique
@@ -693,6 +710,7 @@ enum NotificationType {
   DISCUSSION_UPVOTE
   BADGE_EARNED
   MENTOR_REQUEST
+  FOLLOW
   SYSTEM_ANNOUNCEMENT
 }
 

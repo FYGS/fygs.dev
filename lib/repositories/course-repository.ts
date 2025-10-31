@@ -37,7 +37,41 @@ export class CourseRepository {
   static async findFeatured(limit = 6) {
     const courses = await db.course.findMany({
       where: { published: true, featured: true },
-      include: this.baseIncludes(),
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        description: true,
+        thumbnail: true,
+        price: true,
+        level: true,
+        category: true,
+        duration: true,
+        featured: true,
+        published: true,
+        accessTier: true,
+        previewEnabled: true,
+        createdAt: true,
+        updatedAt: true,
+        tags: {
+          include: { tag: true },
+        },
+        enrollments: { select: { id: true } },
+        reviews: { select: { rating: true } },
+        lessons: {
+          where: { published: true },
+          orderBy: { order: "asc" },
+          select: { slug: true },
+          take: 1,
+        },
+        instructor: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+      },
       orderBy: [{ createdAt: "desc" }],
       take: limit,
     });

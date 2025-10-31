@@ -7,6 +7,7 @@ import { CommunityService } from "@/lib/services/community-service";
 import { CommunitySidebar } from "@/components/community/community-sidebar";
 import { DiscussionsList } from "@/components/community/discussions-list";
 import { CommunityFilters } from "@/components/community/community-filters";
+import { SearchBar } from "@/components/community/search-bar";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 interface CommunityPageProps {
@@ -14,6 +15,7 @@ interface CommunityPageProps {
     topic?: string;
     sort?: "recent" | "trending" | "top";
     filter?: "all" | "unanswered" | "solved";
+    search?: string;
     page?: string;
   }>;
 }
@@ -26,6 +28,7 @@ async function CommunityContent({ searchParams }: CommunityPageProps) {
   const topicIds = resolvedSearchParams.topic ? [resolvedSearchParams.topic] : [];
   const sortBy = resolvedSearchParams.sort || "recent";
   const filterBy = resolvedSearchParams.filter || "all";
+  const searchTerm = resolvedSearchParams.search || "";
   const page = parseInt(resolvedSearchParams.page || "1");
   const pageSize = 20;
 
@@ -35,6 +38,7 @@ async function CommunityContent({ searchParams }: CommunityPageProps) {
       CommunityService.getDiscussions({
         topicId: topicIds[0],
         sort: sortBy,
+        search: searchTerm,
         page,
         limit: pageSize,
         userId: session?.user?.id,
@@ -61,6 +65,7 @@ async function CommunityContent({ searchParams }: CommunityPageProps) {
               topics={topics}
               followedTopics={followedTopics.map((t: any) => t.id)}
               unreadNotifications={unreadNotificationsCount}
+              userId={session?.user?.id}
             />
 
             {/* Main Content */}
@@ -75,6 +80,9 @@ async function CommunityContent({ searchParams }: CommunityPageProps) {
                     </p>
                   </div>
                 </div>
+                
+                {/* Search Bar */}
+                <SearchBar placeholder="Search discussions, topics, or content..." />
               </div>
 
               {/* Filters and Interactive Elements */}
