@@ -1,15 +1,18 @@
 import { Metadata } from "next";
 import { Contact } from "../_components/Contact";
 import { ContactSection } from "../_components/ContactSection";
-import { Hero } from "../_components/Hero";
 import { Skills } from "../_components/Skills";
-import { Spacing } from "../_components/Spacing";
-import { Status } from "../_components/Status";
 import { FeaturedCourses } from "../_components/FeaturedCourses";
 import { Testimonials } from "../_components/Testimonials";
 import { CallToAction } from "../_components/CallToAction";
-import { defaultMetadata } from "../_lib/metadata";
 import { BlogPreview } from "../_components/BlogPreview";
+import { defaultMetadata } from "@/app/_lib/metadata";
+import { Hero } from "@/app/_components/Hero";
+import { Spacing } from "@/app/_components/Spacing";
+import { Status } from "@/app/_components/Status";
+
+import { type NextPageIntlayer } from "next-intlayer";
+import { IntlayerServerProvider } from "next-intlayer/server";
 
 export const metadata: Metadata = {
   ...defaultMetadata,
@@ -34,9 +37,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Home() {
+const Home: NextPageIntlayer = async ({ params }) => {
+  const { locale } = await params;
+
   return (
-    <>
+    <IntlayerServerProvider locale={locale}>
       {/* Hero Section */}
       <Hero />
       <Spacing size="sm" />
@@ -46,29 +51,31 @@ export default function Home() {
       <Spacing size="md" />
       
       {/* Featured Courses - New Modern Section */}
-      <FeaturedCourses />
+      {/* <FeaturedCourses /> */}
       
       {/* Skills - Enhanced */}
-      <Skills />
-      <Spacing size="md" />
+      {/* <Skills />
+      <Spacing size="md" /> */}
       
       {/* Testimonials - New Social Proof Section */}
-      <Testimonials />
+      {/* <Testimonials /> */}
       
       {/* Blog Preview - New Engaging Section */}
-      <BlogPreview />
-      <Spacing size="md" />
+      {/* <BlogPreview />
+      <Spacing size="md" /> */}
       
       {/* Call to Action - New Conversion Section */}
-      <CallToAction />
-      <Spacing size="md" />
+      {/* <CallToAction />
+      <Spacing size="md" /> */}
       
       {/* Contact - Simplified */}
-      <Contact />
-      <Spacing size="sm" />
+      {/* <Contact />
+      <Spacing size="sm" /> */}
       
       {/* Contact Section - Final CTA */}
-      <ContactSection />
-    </>
+      {/* <ContactSection /> */}
+    </IntlayerServerProvider>
   );
 }
+
+export default Home;

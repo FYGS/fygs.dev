@@ -33,8 +33,10 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".intlayer/**/*.ts"
-, "app/[locale]/(main)/page.tsxx"  ],
+    ".intlayer/**/*.ts",
+    "app/[locale]/(main)/page.tsx",
+    "app/[locale]/page.tsxxx"
+  ],
   "exclude": [
     "node_modules",
     "scripts/migrate-techmastry.ts"

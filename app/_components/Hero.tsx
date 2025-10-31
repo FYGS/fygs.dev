@@ -7,15 +7,17 @@ import { LinkedInIcon } from "./icons/LinkedInIcon";
 import { GithubIcon } from "./icons/GithubIcon";
 import { Mail, MapPin, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useIntlayer } from "next-intlayer";
 
 export const Hero = () => {
+  const content = useIntlayer("hero");
   return (
     <Section className="relative overflow-hidden py-16 lg:py-24">
       {/* Background decorative elements */}
       <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-background to-secondary/5" />
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl opacity-30 animate-pulse" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl opacity-30 animate-pulse delay-1000" />
-      
+
       <div className="relative container max-w-7xl mx-auto px-4 z-10">
         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
           {/* Text Content */}
@@ -31,7 +33,7 @@ export const Hero = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.6 }}
             >
-              Fernand Soualo
+              {content.title}
             </motion.h2>
             <motion.h3
               className="font-caption font-bold text-3xl lg:text-4xl mb-6 text-foreground/90"
@@ -39,7 +41,7 @@ export const Hero = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.6 }}
             >
-              Software Engineer & Tech Educator
+              {content.subtitle}
             </motion.h3>
             <motion.p
               className="text-lg lg:text-xl leading-relaxed text-muted-foreground mb-8 max-w-2xl mx-auto lg:mx-0"
@@ -47,10 +49,9 @@ export const Hero = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.6 }}
             >
-              I am passionate about creating impactful software and empowering developers through education.
-              With expertise in modern fullstack development, I build solutions that are both functional and aesthetically pleasing.
+              {content.description}
             </motion.p>
-            
+
             {/* Tech Stack Badges */}
             <motion.div
               className="flex flex-wrap justify-center lg:justify-start gap-3 mb-8"
@@ -58,17 +59,17 @@ export const Hero = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.6 }}
             >
-              {['React', 'Next.js', 'TypeScript', 'Node.js', 'NestJS', 'AWS', 'AI'].map((tech, index) => (
-                <span 
-                  key={tech}
+              {content.techStack.map((tech, index) => (
+                <span
+                  key={tech.value}
                   className="px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm hover:bg-primary/20 transition-colors"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  {tech}
+                  {tech.value}
                 </span>
               ))}
             </motion.div>
-            
+
             {/* Contact Links */}
             <motion.div
               className="flex flex-wrap justify-center lg:justify-start gap-4 mb-8"
@@ -76,29 +77,52 @@ export const Hero = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6, duration: 0.6 }}
             >
-              <Link href="https://www.linkedin.com/in/fernandsoualo" target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" className="flex items-center gap-2 group">
-                  <LinkedInIcon size={16} className="group-hover:scale-110 transition-transform" />
+              <Link
+                href="https://www.linkedin.com/in/fernandsoualo"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2 group"
+                >
+                  <LinkedInIcon
+                    size={16}
+                    className="group-hover:scale-110 transition-transform"
+                  />
                   LinkedIn
                   <ExternalLink className="h-4 w-4 ml-1 opacity-50 group-hover:opacity-100 transition-opacity" />
                 </Button>
               </Link>
-              <Link href="https://github.com/fygs" target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" className="flex items-center gap-2 group">
-                  <GithubIcon size={16} className="group-hover:scale-110 transition-transform" />
+              <Link
+                href="https://github.com/fygs"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2 group"
+                >
+                  <GithubIcon
+                    size={16}
+                    className="group-hover:scale-110 transition-transform"
+                  />
                   GitHub
                   <ExternalLink className="h-4 w-4 ml-1 opacity-50 group-hover:opacity-100 transition-opacity" />
                 </Button>
               </Link>
               <Link href="mailto:fygs.dev@gmail.com" rel="noopener noreferrer">
-                <Button variant="outline" className="flex items-center gap-2 group">
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2 group"
+                >
                   <Mail className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                  Contact
+                  {content.contact}
                   <ExternalLink className="h-4 w-4 ml-1 opacity-50 group-hover:opacity-100 transition-opacity" />
                 </Button>
               </Link>
             </motion.div>
-            
+
             {/* Location */}
             <motion.div
               className="flex items-center justify-center lg:justify-start gap-2 text-muted-foreground text-sm"
@@ -107,10 +131,10 @@ export const Hero = () => {
               transition={{ delay: 0.7, duration: 0.6 }}
             >
               <MapPin className="h-4 w-4" />
-              Paris, France
+              {content.location}
             </motion.div>
           </motion.div>
-          
+
           {/* Profile Image */}
           <motion.div
             className="flex-1 flex justify-center"
@@ -135,5 +159,5 @@ export const Hero = () => {
         </div>
       </div>
     </Section>
- );
+  );
 };

@@ -11,9 +11,9 @@ const config: IntlayerConfig = {
     requiredLocales: [Locales.FRENCH],
     defaultLocale: Locales.FRENCH,
   },
-  content: {
-    contentDir: ["./content/locale"]
-  },
+  // content: {
+  //   contentDir: ["./content/locale"]
+  // },
 };
 
 export default config;
