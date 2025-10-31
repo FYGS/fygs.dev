@@ -12,7 +12,7 @@ const config: IntlayerConfig = {
     defaultLocale: Locales.FRENCH,
   },
   content: {
-    contentDir: ["./locale-content"]
+    contentDir: ["./content/locale"]
   },
 };
 

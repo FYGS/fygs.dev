@@ -4,8 +4,6 @@ import { cn } from "@/lib/utils";
 import { PageMemoryProvider } from "@/providers/page-memory-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { TransitionProvider } from "@/providers/transition-provider";
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 // import { Metadata } from "next";
@@ -106,8 +104,6 @@ const LocaleLayout: NextLayoutIntlayer = async ({ children, params }) => {
             </TransitionProvider>
           </PageMemoryProvider>
         </ThemeProvider>
-        <Analytics />
-        <SpeedInsights />
         <script
           dangerouslySetInnerHTML={{
             __html: `
