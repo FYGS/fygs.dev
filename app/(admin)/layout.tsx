@@ -8,7 +8,6 @@ import { AdminBreadcrumb } from "./admin/_components/admin-breadcrumb";
 import { Toaster } from "@/components/ui/sonner";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import "../globals.css";
 import { defaultMetadata } from "../_lib/metadata";
 import { Role } from "@prisma/client";
 

@@ -1,5 +1,7 @@
 import MonacoWebpackPlugin from "monaco-editor-webpack-plugin";
 
+import { withIntlayer } from "next-intlayer/server";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -68,4 +70,4 @@ const nextConfig = {
   reactStrictMode: true,
 };
 
-export default nextConfig;
+export default withIntlayer(nextConfig);
