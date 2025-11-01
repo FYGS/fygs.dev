@@ -1,7 +1,7 @@
 import { BlogPost } from "@/lib/types";
 import { TrendingUp } from "lucide-react";
 import { BlogPostCard } from "./blog-post-card";
-import { getPopularBlogPosts } from "@/app/(main)/blog/actions/popular-posts";
+import { getPopularBlogPosts } from "@/app/[locale]/(main)/blog/actions/popular-posts";
 
 interface PopularArticlesProps {
   currentPost: BlogPost;

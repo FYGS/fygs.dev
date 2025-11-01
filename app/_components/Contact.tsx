@@ -2,15 +2,18 @@
 import { ContactCard } from "./ContactCard";
 import { Section } from "./Section";
 import { motion } from "framer-motion";
+import { useIntlayer } from "next-intlayer";
 
 export const Contact = () => {
+  const content = useIntlayer("contact");
+
   return (
     <Section className="py-16 lg:py-24 relative overflow-hidden">
       {/* Background effects */}
       <div className="absolute inset-0 bg-linear-to-br from-muted/30 via-background to-muted/20" />
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/5 rounded-full blur-3xl animate-pulse delay-1000" />
-      
+
       <div className="container max-w-7xl mx-auto px-4 relative z-10">
         {/* Header */}
         <motion.div
@@ -28,7 +31,7 @@ export const Contact = () => {
             viewport={{ once: true }}
           >
             <span className="h-2 w-2 rounded-full bg-current" />
-            Let&apos;s Connect
+            {content.badge.value}
           </motion.div>
           <motion.h2
             className="text-4xl lg:text-5xl font-bold bg-linear-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent mb-4"
@@ -37,7 +40,7 @@ export const Contact = () => {
             transition={{ delay: 0.2, duration: 0.6 }}
             viewport={{ once: true }}
           >
-            Get in Touch
+            {content.title.value}
           </motion.h2>
           <motion.p
             className="text-lg text-muted-foreground max-w-2xl mx-auto"
@@ -46,9 +49,7 @@ export const Contact = () => {
             transition={{ delay: 0.3, duration: 0.6 }}
             viewport={{ once: true }}
           >
-            Feel free to reach out to me through any of the following platforms.
-            I&apos;m always open to discussing new projects, creative ideas, or
-            opportunities to be part of your vision.
+            {content.description.value}
           </motion.p>
         </motion.div>
 
@@ -112,4 +113,4 @@ export const Contact = () => {
       </div>
     </Section>
   );
-}
+};

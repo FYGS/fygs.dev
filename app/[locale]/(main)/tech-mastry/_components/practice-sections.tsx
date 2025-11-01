@@ -1,6 +1,5 @@
 "use client";
 
-import { Pagination } from "@/app/(main)/tech-mastry/_components/pagination";
 import { Card } from "@/components/ui/card";
 import { usePagination } from "@/hooks/tech-mastry/use-pagination";
 import {
@@ -21,6 +20,7 @@ import {
   Timer,
 } from "lucide-react";
 import Link from "next/link";
+import { Pagination } from "./pagination";
 
 interface Subsection {
   title: string;

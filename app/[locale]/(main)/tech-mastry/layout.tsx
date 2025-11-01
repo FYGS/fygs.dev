@@ -4,11 +4,11 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ArrowUpRight, Menu } from "lucide-react";
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { SITE_URL } from "../../_lib/constants";
-import { generateMetadata } from "../../_lib/seo-utils";
 import { Breadcrumbs } from "./_components/breadcrumbs";
 import { SearchBar } from "./_components/search-bar";
 import { TopicsNav } from "./_components/topics-nav";
+import { SITE_URL } from "@/app/_lib/constants";
+import { generateMetadata } from "@/app/_lib/seo-utils";
 
 export const metadata: Metadata = generateMetadata({
   title: "Préparation aux Entretiens Techniques | Guide Complet FYGS",

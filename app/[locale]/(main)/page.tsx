@@ -14,28 +14,30 @@ import { Status } from "@/app/_components/Status";
 import { type NextPageIntlayer } from "next-intlayer";
 import { IntlayerServerProvider } from "next-intlayer/server";
 
-// export const metadata: Metadata = {
-//   ...defaultMetadata,
-//   title: "FYGS Learning Platform | Formations Premium pour Développeurs",
-//   description: "Transformez votre carrière avec nos formations premium en JavaScript, TypeScript, React, Next.js, Node.js, IA et Cloud. Rejoignez 15,000+ développeurs qui ont boosté leur carrière.",
-//   keywords: [
-//     "formation développeur",
-//     "cours JavaScript",
-//     "formation React",
-//     "Next.js",
-//     "TypeScript",
-//     "Node.js",
-//     "formation IA",
-//     "développement web",
-//     "carrière développeur",
-//     "formation premium"
-//   ],
-//   openGraph: {
-//     ...defaultMetadata.openGraph,
-//     title: "FYGS Learning Platform | Formations Premium pour Développeurs",
-//     description: "Transformez votre carrière avec nos formations premium. 15,000+ développeurs nous font confiance.",
-//   },
-// };
+export const metadata: Metadata = {
+  ...defaultMetadata,
+  title: "FYGS Learning Platform | Formations Premium pour Développeurs",
+  description:
+    "Transformez votre carrière avec nos formations premium en JavaScript, TypeScript, React, Next.js, Node.js, IA et Cloud. Rejoignez 15,000+ développeurs qui ont boosté leur carrière.",
+  keywords: [
+    "formation développeur",
+    "cours JavaScript",
+    "formation React",
+    "Next.js",
+    "TypeScript",
+    "Node.js",
+    "formation IA",
+    "développement web",
+    "carrière développeur",
+    "formation premium",
+  ],
+  openGraph: {
+    ...defaultMetadata.openGraph,
+    title: "FYGS Learning Platform | Formations Premium pour Développeurs",
+    description:
+      "Transformez votre carrière avec nos formations premium. 15,000+ développeurs nous font confiance.",
+  },
+};
 
 const Home: NextPageIntlayer = async ({ params }) => {
   const { locale } = await params;
@@ -45,37 +47,37 @@ const Home: NextPageIntlayer = async ({ params }) => {
       {/* Hero Section */}
       <Hero />
       <Spacing size="sm" />
-      
+
       {/* Status - Compact */}
       <Status />
       <Spacing size="md" />
-      
+
       {/* Featured Courses - New Modern Section */}
-      {/* <FeaturedCourses /> */}
-      
+      <FeaturedCourses />
+
       {/* Skills - Enhanced */}
-      {/* <Skills />
-      <Spacing size="md" /> */}
-      
+      <Skills />
+      <Spacing size="md" />
+
       {/* Testimonials - New Social Proof Section */}
-      {/* <Testimonials /> */}
-      
+      <Testimonials />
+
       {/* Blog Preview - New Engaging Section */}
-      {/* <BlogPreview />
-      <Spacing size="md" /> */}
-      
+      <BlogPreview />
+      <Spacing size="md" />
+
       {/* Call to Action - New Conversion Section */}
-      {/* <CallToAction />
-      <Spacing size="md" /> */}
-      
+      <CallToAction />
+      <Spacing size="md" />
+
       {/* Contact - Simplified */}
-      {/* <Contact />
-      <Spacing size="sm" /> */}
-      
+      <Contact />
+      <Spacing size="sm" />
+
       {/* Contact Section - Final CTA */}
-      {/* <ContactSection /> */}
+      <ContactSection />
     </IntlayerServerProvider>
   );
-}
+};
 
 export default Home;

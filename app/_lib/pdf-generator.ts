@@ -1,11 +1,3 @@
-import {
-  CERTIFICATIONS,
-  DESCRIPTION,
-  EDUCATION_ITEMS,
-  EXPERIENCE_ITEMS,
-  PREFERENCES,
-  SKILLS,
-} from "@/app/(main)/me/data";
 import type {
   Certification,
   Education,
@@ -14,6 +6,7 @@ import type {
   Skill,
 } from "@/types/cv";
 import { jsPDF } from "jspdf";
+import { CERTIFICATIONS, DESCRIPTION, EDUCATION_ITEMS, EXPERIENCE_ITEMS, PREFERENCES, SKILLS } from "../[locale]/(main)/me/data";
 
 // Types
 interface TextOptions {

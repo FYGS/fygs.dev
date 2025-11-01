@@ -2,17 +2,20 @@
 import { ContactForm } from "@/components/contact/contact-form";
 import { ContactCard } from "./ContactCard";
 import { Section } from "./Section";
+import { Badge } from "@/components/ui/badge";
 import { Mail, MessageCircle, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
+import { useIntlayer } from "next-intlayer";
 
 export const ContactSection = () => {
+  const content = useIntlayer("contact-section");
   return (
     <Section className="py-16 lg:py-24 relative overflow-hidden">
       {/* Background effects */}
       <div className="absolute inset-0 bg-linear-to-br from-muted/30 via-background to-muted/20" />
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/5 rounded-full blur-3xl animate-pulse delay-1000" />
-      
+
       <div className="container max-w-7xl mx-auto px-4 relative z-10">
         {/* Header */}
         <motion.div
@@ -30,7 +33,7 @@ export const ContactSection = () => {
             viewport={{ once: true }}
           >
             <Mail className="w-4 h-4" />
-            Contact Me
+            {content.badge.value}
           </motion.div>
           <motion.h2
             className="text-4xl lg:text-5xl font-bold bg-linear-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent mb-4"
@@ -39,9 +42,9 @@ export const ContactSection = () => {
             transition={{ delay: 0.2, duration: 0.6 }}
             viewport={{ once: true }}
           >
-            Let&apos;s Work Together on Your{" "}
+            {content.title.part1.value}{" "}
             <span className="bg-linear-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-              Next Project
+              {content.title.highlight.value}
             </span>
           </motion.h2>
           <motion.p
@@ -51,8 +54,7 @@ export const ContactSection = () => {
             transition={{ delay: 0.3, duration: 0.6 }}
             viewport={{ once: true }}
           >
-            Whether it&apos;s for a custom course, web development, or technical consultation,
-            I&apos;m here to help you bring your most ambitious projects to life.
+            {content.description.value}
           </motion.p>
         </motion.div>
 
@@ -72,9 +74,9 @@ export const ContactSection = () => {
                 transition={{ delay: 0.4, duration: 0.5 }}
                 viewport={{ once: true }}
               >
-                Other ways to reach me
+                {content.otherWays.value}
               </motion.h3>
-              
+
               {/* Quick Contact Options */}
               <motion.div
                 className="grid gap-4"
@@ -88,28 +90,34 @@ export const ContactSection = () => {
                     <Mail className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <h4 className="font-medium">Direct Email</h4>
-                    <p className="text-sm text-muted-foreground">fygs.dev@gmail.com</p>
+                    <h4 className="font-medium">{content.directEmail.value}</h4>
+                    <p className="text-sm text-muted-foreground">
+                      fygs.dev@gmail.com
+                    </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
                   <div className="p-2 rounded-lg bg-green-500/10">
                     <MessageCircle className="w-5 h-5 text-green-600" />
                   </div>
                   <div>
-                    <h4 className="font-medium">Quick Response</h4>
-                    <p className="text-sm text-muted-foreground">Usually within 24 hours</p>
+                    <h4 className="font-medium">{content.quickResponse.value}</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {content.quickResponse.description.value}
+                    </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
                   <div className="p-2 rounded-lg bg-blue-500/10">
                     <Calendar className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
-                    <h4 className="font-medium">Free Consultation</h4>
-                    <p className="text-sm text-muted-foreground">30 min to discuss your project</p>
+                    <h4 className="font-medium">{content.scheduledCall.value}</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {content.scheduledCall.description.value}
+                    </p>
                   </div>
                 </div>
               </motion.div>
@@ -123,19 +131,19 @@ export const ContactSection = () => {
               transition={{ delay: 0.6, duration: 0.5 }}
               viewport={{ once: true }}
             >
-              <h4 className="text-lg font-medium">Find me also on</h4>
+              <h4 className="text-lg font-medium">{content.findMeOn.value}</h4>
               <div className="grid gap-4">
                 <ContactCard
                   url="https://www.linkedin.com/in/fernandsoualo/"
-                  name="@fernandsoualo"
-                  description="Follow me on LinkedIn"
+                  name={content.linkedIn.name.value}
+                  description={content.linkedIn.description.value}
                   image="/linkedin_profile_photo.jpeg"
                   mediumImage="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRokEYt0yyh6uNDKL8uksVLlhZ35laKNQgZ9g&s"
                 />
                 <ContactCard
                   url="https://github.com/fygs"
-                  name="@fygsdev"
-                  description="Discover my projects on GitHub"
+                  name={content.github.name.value}
+                  description={content.github.description.value}
                   image="https://avatars.githubusercontent.com/u/24303747?v=4"
                   mediumImage="https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png"
                 />
@@ -150,14 +158,18 @@ export const ContactSection = () => {
               transition={{ delay: 0.7, duration: 0.5 }}
               viewport={{ once: true }}
             >
-              <h4 className="font-semibold text-primary mb-2">Ready to start?</h4>
+              <h4 className="font-semibold text-primary mb-2">
+                {content.cta.title.value}
+              </h4>
               <p className="text-sm text-muted-foreground mb-4">
-                Describe your project in the form and receive a personalized response with a free estimate.
+                {content.cta.description.value}
               </p>
               <div className="flex flex-wrap gap-2 text-xs">
-                <span className="px-2 py-1 bg-primary/10 text-primary rounded-full">Web Development</span>
-                <span className="px-2 py-1 bg-primary/10 text-primary rounded-full">Training</span>
-                <span className="px-2 py-1 bg-primary/10 text-primary rounded-full">Consulting</span>
+                {content.cta.features.map((feature, index) => (
+                  <Badge key={index} variant="secondary">
+                    {feature.value}
+                  </Badge>
+                ))}
               </div>
             </motion.div>
           </div>
@@ -165,4 +177,4 @@ export const ContactSection = () => {
       </div>
     </Section>
   );
-}
+};

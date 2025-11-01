@@ -14,8 +14,8 @@ import { FadeIn, FadeInWhenVisible } from "@/components/ui/fade-in";
 import Link from "next/link";
 import { BillingActions } from "@/components/billing/billing-actions";
 import { RefundButton } from "@/components/billing/refund-button";
-import { getSubscriptionPrices, classifyBillingCycle } from "../../../../lib/subscription-pricing";
 import { SubscriptionStatus } from "@prisma/client";
+import { classifyBillingCycle, getSubscriptionPrices } from "@/lib";
 
 export const metadata: Metadata = {
   title: "Facturation & Abonnement | FYGS Learning Platform",

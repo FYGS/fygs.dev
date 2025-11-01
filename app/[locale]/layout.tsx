@@ -1,16 +1,15 @@
 import { NavigationProgress } from "@/components/ui/navigation-progress";
 import { PageTransition } from "@/components/ui/page-transition";
+import { LocaleSelectorModal } from "@/components/ui/locale-selector-modal";
 import { cn } from "@/lib/utils";
 import { PageMemoryProvider } from "@/providers/page-memory-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { TransitionProvider } from "@/providers/transition-provider";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
-// import { Metadata } from "next";
 import { Anek_Telugu } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { JsonLd } from "../_components/JsonLd";
-// import { SITE_URL } from "../_lib/constants";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { NotificationProvider } from "@/components/providers/notification-provider";
@@ -32,7 +31,10 @@ const LocaleLayout: NextLayoutIntlayer = async ({ children, params }) => {
   const { locale } = await params;
 
   return (
-    <html lang={locale} dir={getHTMLTextDir(locale)} /*suppressHydrationWarning*/>
+    <html
+      lang={locale}
+      dir={getHTMLTextDir(locale)} /*suppressHydrationWarning*/
+    >
       <head>
         <JsonLd />
         <script
@@ -91,15 +93,16 @@ const LocaleLayout: NextLayoutIntlayer = async ({ children, params }) => {
             <NavigationProgress />
             <TransitionProvider>
               <TooltipProvider>
-                <PageTransition>
-                  <main>
-                    <IntlayerClientProvider locale={locale}>
+                <IntlayerClientProvider locale={locale}>
+                  <LocaleSelectorModal />
+                  <PageTransition>
+                    <main>
                       <NuqsAdapter>{children}</NuqsAdapter>
                       <Toaster richColors closeButton />
-                    </IntlayerClientProvider>
-                  </main>
-                </PageTransition>
-                <NotificationProvider />
+                    </main>
+                  </PageTransition>
+                  <NotificationProvider />
+                </IntlayerClientProvider>
               </TooltipProvider>
             </TransitionProvider>
           </PageMemoryProvider>

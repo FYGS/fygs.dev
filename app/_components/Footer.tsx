@@ -1,3 +1,4 @@
+"use client";
 import {
   BrainCircuitIcon,
   Code2Icon,
@@ -8,78 +9,21 @@ import {
   RocketIcon,
   Leaf,
 } from "lucide-react";
-import Link from "next/link";
+import { LocaleAwareLink } from "@/components/ui/locale-aware-nav";
 import { Section } from "./Section";
+import { useIntlayer } from "next-intlayer";
 
-const FOOTER_LINKS = {
-  information: [
-    { href: "/me", label: "CV", description: "My professional background" },
-    { href: "/projects", label: "Projects", description: "Technical portfolio" },
-    { href: "/blog", label: "Blog", description: "Articles & tutorials" },
-    { href: "/contact", label: "Contact", description: "Get in touch" },
-  ],
-  apprentissage: [
-    { href: "/formations", label: "Formations", description: "Premium courses" },
-    { href: "/pricing", label: "Plans", description: "Plans & subscriptions" },
-    { href: "/tech-mastry", label: "TechMastry", description: "Interview preparation" },
-    { href: "/dashboard", label: "Dashboard", description: "Learner space" },
-    { href: "/community", label: "Community", description: "Join the community" }
-  ],
-  legal: [
-    { href: "/terms", label: "Terms of Service" },
-    { href: "/privacy", label: "Privacy Policy" },
-  ],
-  projects: [
-    {
-      href: "https://evopur.ca",
-      label: "Evopur",
-      description: "Ecological Household Cleaning Services in Montreal",
-      icon: Leaf,
-    },
-    {
-      href: "https://ncr.ouestech.com",
-      label: "NCR",
-      description: "Administrative processes Platform",
-      icon: Code2Icon,
-    },
-    {
-      href: "https://quizzen.fr",
-      label: "Quizzen",
-      description: "AI-Powered Quiz Platform",
-      icon: BrainCircuitIcon,
-    },
-    {
-      href: "https://anumerique.com",
-      label: "A'Numerique",
-      description: "An innovative service bridging the digital divide",
-      icon: RocketIcon,
-    },
-  ],
-  contact: [
-    {
-      href: "mailto:fygs.dev@gmail.com",
-      label: "fygs.dev@gmail.com",
-      icon: MailIcon,
-    },
-    {
-      href: "tel:+33644808530",
-      label: "+33 6 44 80 85 30",
-      icon: PhoneIcon,
-    },
-    {
-      href: "https://github.com/fygs",
-      label: "GitHub",
-      icon: GithubIcon,
-    },
-    {
-      href: "https://linkedin.com/in/fernandsoualo",
-      label: "LinkedIn",
-      icon: LinkedinIcon,
-    },
-  ],
+const PROJECT_ICONS = {
+  Evopur: Leaf,
+  NCR: Code2Icon,
+  Quizzen: BrainCircuitIcon,
+  "A'Numerique": RocketIcon,
 } as const;
 
+const CONTACT_ICONS = [MailIcon, PhoneIcon, GithubIcon, LinkedinIcon] as const;
+
 export function Footer() {
+  const content = useIntlayer("footer");
   return (
     <footer className="relative bg-card border-t">
       <div className="absolute inset-0 bg-linear-to-b from-background/0 to-background/5 pointer-events-none" />
@@ -87,50 +31,54 @@ export function Footer() {
       <Section className="relative pt-16 pb-8">
         {/* Main Footer Content - 4 Colonnes égales */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          
           {/* Colonne 1: fygs.dev */}
           <div className="space-y-6">
             <div className="space-y-4">
-              <Link
+              <LocaleAwareLink
                 href="/"
                 className="text-2xl font-bold tracking-tight hover:text-primary transition-colors block"
               >
                 fygs.dev \_°&lt;
-              </Link>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                Premium learning platform for modern developers.
-                Courses in JavaScript, TypeScript, React, Next.js, Node.js, AI, and Cloud.
-                </p>
+              </LocaleAwareLink>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {content.description.value}
+              </p>
             </div>
-            
+
             {/* Social Links */}
             <div className="flex flex-wrap gap-2">
-              {FOOTER_LINKS.contact.slice(2).map(({ href, label, icon: Icon }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2.5 rounded-lg bg-muted/50 hover:bg-primary/10 hover:scale-105 transition-all duration-200"
-                  aria-label={label}
-                >
-                  <Icon className="h-4 w-4" />
-                </Link>
-              ))}
+              {content.contact.items.slice(2).map((item, index) => {
+                const Icon = CONTACT_ICONS[index + 2];
+                return (
+                  <a
+                    key={item.href.value}
+                    href={item.href.value}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2.5 rounded-lg bg-muted/50 hover:bg-primary/10 hover:scale-105 transition-all duration-200"
+                    aria-label={item.label.value}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </a>
+                );
+              })}
             </div>
 
             {/* Contact Info */}
             <div className="space-y-2">
-              {FOOTER_LINKS.contact.slice(0, 2).map(({ href, label, icon: Icon }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className="flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors"
-                >
-                  <Icon className="h-3 w-3 shrink-0" />
-                  <span className="truncate">{label}</span>
-                </Link>
-              ))}
+              {content.contact.items.slice(0, 2).map((item, index) => {
+                const Icon = CONTACT_ICONS[index];
+                return (
+                  <a
+                    key={item.href.value}
+                    href={item.href.value}
+                    className="flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <Icon className="h-3 w-3 shrink-0" />
+                    <span className="truncate">{item.label.value}</span>
+                  </a>
+                );
+              })}
             </div>
           </div>
 
@@ -138,84 +86,90 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="text-sm font-semibold flex items-center gap-2 pb-2 border-b">
               <span className="w-2 h-2 rounded-full bg-linear-to-r from-primary to-primary/60" />
-              Information
+              {content.information.label.value}
             </h3>
             <div className="space-y-2">
-              {FOOTER_LINKS.information.map(({ href, label, description }) => (
-                <Link
-                  key={href}
-                  href={href}
+              {content.information.links.map((link) => (
+                <LocaleAwareLink
+                  key={link.href.value}
+                  href={link.href.value}
                   className="group block p-2 rounded-lg hover:bg-muted/50 transition-all duration-200"
                 >
                   <div className="flex flex-col">
                     <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
-                      {label}
+                      {link.label.value}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {description}
+                      {link.description.value}
                     </span>
                   </div>
-                </Link>
+                </LocaleAwareLink>
               ))}
             </div>
           </div>
 
-          {/* Colonne 3: Apprentissage */}
+          {/* Colonne 3: Learning */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold flex items-center gap-2 pb-2 border-b">
               <span className="w-2 h-2 rounded-full bg-linear-to-r from-primary to-primary/60" />
-              Learning
+              {content.learning.label.value}
             </h3>
             <div className="space-y-2">
-              {FOOTER_LINKS.apprentissage.map(({ href, label, description }) => (
-                <Link
-                  key={href}
-                  href={href}
+              {content.learning.links.map((link) => (
+                <LocaleAwareLink
+                  key={link.href.value}
+                  href={link.href.value}
                   className="group block p-2 rounded-lg hover:bg-muted/50 transition-all duration-200"
                 >
                   <div className="flex flex-col">
                     <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
-                      {label}
+                      {link.label.value}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {description}
+                      {link.description.value}
                     </span>
                   </div>
-                </Link>
+                </LocaleAwareLink>
               ))}
             </div>
           </div>
 
-          {/* Colonne 4: Projets Phares */}
+          {/* Colonne 4: Featured Projects */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold flex items-center gap-2 pb-2 border-b">
               <span className="w-2 h-2 rounded-full bg-linear-to-r from-primary to-primary/60" />
-              Featured Projects
+              {content.projects.label.value}
             </h3>
             <div className="space-y-3">
-              {FOOTER_LINKS.projects.map(({ href, label, description, icon: Icon }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group block p-3 rounded-xl bg-linear-to-br from-muted/30 to-muted/10 border hover:border-primary/30 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="p-1.5 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors shrink-0">
-                      <Icon className="h-4 w-4 text-primary" />
+              {content.projects.items.map((project) => {
+                const Icon =
+                  PROJECT_ICONS[
+                    project.label.value as keyof typeof PROJECT_ICONS
+                  ];
+                return (
+                  <a
+                    key={project.href.value}
+                    href={project.href.value}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group block p-3 rounded-xl bg-linear-to-br from-muted/30 to-muted/10 border hover:border-primary/30 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="p-1.5 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors shrink-0">
+                        <Icon className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">
+                          {project.label.value}
+                        </h4>
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
+                          {project.description.value}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">
-                        {label}
-                      </h4>
-                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
-                        {description}
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+                  </a>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -225,29 +179,41 @@ export function Footer() {
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
             <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
               <p className="text-sm text-muted-foreground">
-                © {new Date().getFullYear()} Fernand Soualo. All rights reserved.
+                © {new Date().getFullYear()} Fernand Soualo.{" "}
+                {content.copyright.text.value}
               </p>
               <div className="hidden sm:block w-1 h-1 rounded-full bg-muted-foreground/50" />
               <span className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
                 <RocketIcon className="h-3 w-3 text-primary animate-bounce" />
                 <span>
-                  Crafted with <span className="text-primary font-semibold">Next.js 15</span>, <span className="text-primary font-semibold">Tailwind CSS</span> & <span className="text-primary font-semibold">Shadcn UI</span>
+                  {content.copyright.builtWith.text.value}{" "}
+                  <span className="text-primary font-semibold">
+                    {content.copyright.builtWith.nextjs.value}
+                  </span>
+                  ,{" "}
+                  <span className="text-primary font-semibold">
+                    {content.copyright.builtWith.tailwind.value}
+                  </span>{" "}
+                  &{" "}
+                  <span className="text-primary font-semibold">
+                    {content.copyright.builtWith.shadcn.value}
+                  </span>
                 </span>
                 <span className="ml-1">❤️</span>
               </span>
             </div>
             <div className="flex flex-wrap justify-center gap-3 text-xs text-muted-foreground">
-                <Link href="/terms" className="hover:text-primary transition-colors">
-                Terms of Service
-                </Link>
-              <span>•</span>
-                <Link href="/privacy" className="hover:text-primary transition-colors">
-                Privacy Policy
-                </Link>
-              <span>•</span>
-                <Link href="/me" className="hover:text-primary transition-colors">
-                CV
-                </Link>
+              {content.legal.links.map((link, index) => (
+                <span key={link.href.value} className="flex items-center gap-3">
+                  <LocaleAwareLink
+                    href={link.href.value}
+                    className="hover:text-primary transition-colors"
+                  >
+                    {link.label.value}
+                  </LocaleAwareLink>
+                  {index < content.legal.links.length - 1 && <span>•</span>}
+                </span>
+              ))}
             </div>
           </div>
         </div>

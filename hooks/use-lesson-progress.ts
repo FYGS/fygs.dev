@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
-import { updateLessonProgress } from '@/app/(main)/dashboard/actions/updateLessonProgress';
 import { logger, createLogger } from '@/lib/structured-logger';
 import { Analytics } from '@/lib/analytics';
+import { updateLessonProgress } from '@/app/[locale]/(main)/dashboard/actions/updateLessonProgress';
 
 interface UseLessonProgressOptions {
   lessonId: string;

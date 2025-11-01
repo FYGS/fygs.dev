@@ -1,8 +1,8 @@
 import { executeCode, type ExecuteCodeParams } from "@/app/_lib/code-execution";
-import { languageDefaults } from "@/app/(main)/tech-mastry/playground/_config/languages";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { EditorFile, EditorStore } from "../_types";
+import { languageDefaults } from "../_config";
 
 type LanguageDefaults = typeof languageDefaults;
 type LanguageKey = keyof Omit<LanguageDefaults, "defaultLanguage">;

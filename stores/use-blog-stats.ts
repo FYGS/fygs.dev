@@ -1,4 +1,4 @@
-import { getPostStats } from "@/app/(main)/blog/actions/stats";
+import { getPostStats } from "@/app/[locale]/(main)/blog/actions/stats";
 import { create } from "zustand";
 
 interface BlogStatsState {

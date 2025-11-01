@@ -59,14 +59,14 @@ export function BillingActions({ currentPriceId, currentCycle, /* availablePrice
       let action;
       switch (payload.action) {
         case 'switch_plan':
-          action = (await import('@/app/(main)/dashboard/actions/switchSubscriptionPlan')).switchSubscriptionPlan;
+          action = (await import('@/app/[locale]/(main)/dashboard/actions/switchSubscriptionPlan')).switchSubscriptionPlan;
           break;
         case 'cancel_at_period_end':
-          action = (await import('@/app/(main)/dashboard/actions/cancelSubscription')).cancelSubscription;
+          action = (await import('@/app/[locale]/(main)/dashboard/actions/cancelSubscription')).cancelSubscription;
           payload = { ...payload, immediate: false };
           break;
         case 'cancel_immediately':
-          action = (await import('@/app/(main)/dashboard/actions/cancelSubscription')).cancelSubscription;
+          action = (await import('@/app/[locale]/(main)/dashboard/actions/cancelSubscription')).cancelSubscription;
           payload = { ...payload, immediate: true };
           break;
         default:

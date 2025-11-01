@@ -1,4 +1,3 @@
-import { EditorLoading } from "@/app/(main)/tech-mastry/playground/_components/editor-loading";
 import { Metadata } from "next";
 import { Suspense } from "react";
 import { EnhancedAIAssistantWrapper } from "./_components/enhanced-ai-assistant-wrapper";
@@ -6,6 +5,7 @@ import { FormatAnimation } from "./_components/format-animation";
 import { ModernEditorLayout } from "./_components/modern-editor-layout";
 import { MonacoInit } from "./_components/monaco-init";
 import { ToolbarActions } from "./_components/toolbar-actions";
+import { EditorLoading } from "./_components";
 
 export const metadata: Metadata = {
   title: "Advanced Code Playground | FYGS",

@@ -17,11 +17,11 @@ import {
   PlayCircle
 } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
-import { enrollCourse } from "@/app/(main)/dashboard/actions/enrollCourse";
 import { formatPrice as formatPriceCentral } from "@/lib/price-format";
 import { logger, createLogger } from "@/lib/structured-logger";
 import { Analytics } from "@/lib/analytics";
 import { toast } from "sonner";
+import { enrollCourse } from "@/app/[locale]/(main)/dashboard/actions/enrollCourse";
 
 interface CoursePaymentFormProps {
   course: {

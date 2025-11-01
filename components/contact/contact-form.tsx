@@ -13,6 +13,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Briefcase, Handshake, GraduationCap, MessageCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useIntlayer } from "next-intlayer";
 
 const contactSchema = z.object({
   name: z.string().min(2, "Name must contain at least 2 characters"),
@@ -27,6 +28,7 @@ const contactSchema = z.object({
 type ContactFormData = z.infer<typeof contactSchema>;
 
 export function ContactForm() {
+  const content = useIntlayer("contact-form");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     register,
@@ -69,16 +71,16 @@ export function ContactForm() {
       }
       if (response.ok) {
         notify.success(
-          "Message sent successfully!",
-          "I will respond to you as soon as possible.",
-          400
+          content.notifications.success.title.value,
+          content.notifications.success.description.value,
+          40
         );
         // toast.success("Message envoyé !");
         reset();
       } else {
         notify.error(
-          "Error sending message",
-          "Please try again later.",
+          content.notifications.error.title.value,
+          content.notifications.error.description.value,
           6000
         );
         // toast.error("Erreur lors de l'envoi");
@@ -86,8 +88,8 @@ export function ContactForm() {
     } catch (error) {
       console.error("Contact form error:", error);
       notify.error(
-        "Erreur lors de l'envoi",
-        "Veuillez réessayer plus tard.",
+        content.notifications.error.title.value,
+        content.notifications.error.description.value,
         6000
       );
       // toast.error("Erreur lors de l'envoi");
@@ -101,30 +103,30 @@ export function ContactForm() {
       case 'recruitment':
         return {
           icon: Briefcase,
-          title: 'Recruitment Opportunity',
-          description: 'Are you looking for an experienced Full-Stack developer?',
-          placeholder: 'Describe the position, required technologies, mission context...'
+          title: content.contactTypes.recruitment.title.value,
+          description: content.contactTypes.recruitment.description.value,
+          placeholder: content.contactTypes.recruitment.placeholder.value
         };
       case 'collaboration':
         return {
           icon: Handshake,
-          title: 'Collaboration Proposal',
-          description: 'Do you have a project and are looking for a technical partner?',
-          placeholder: 'Present your project, objectives, type of collaboration...'
+          title: content.contactTypes.collaboration.title.value,
+          description: content.contactTypes.collaboration.description.value,
+          placeholder: content.contactTypes.collaboration.placeholder.value
         };
       case 'training':
         return {
           icon: GraduationCap,
-          title: 'Training Request',
-          description: 'Would you like to train yourself or your team?',
-          placeholder: 'Describe your training needs, current level, objectives...'
+          title: content.contactTypes.training.title.value,
+          description: content.contactTypes.training.description.value,
+          placeholder: content.contactTypes.training.placeholder.value
         };
       default:
         return {
           icon: MessageCircle,
-          title: 'General Contact',
-          description: 'A question? A request for information?',
-          placeholder: 'Describe your request, ask your question...'
+          title: content.contactTypes.general.title.value,
+          description: content.contactTypes.general.description.value,
+          placeholder: content.contactTypes.general.placeholder.value
         };
     }
   };
@@ -136,49 +138,49 @@ export function ContactForm() {
     <Card className="p-6 shadow-lg border-0 bg-linear-to-br from-card via-card to-muted/20 hover:shadow-xl transition-all duration-300">
       <div className="mb-6">
         <h3 className="text-2xl font-bold mb-2 bg-linear-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
-          Contact Me
+          {content.title.value}
         </h3>
         <p className="text-muted-foreground">
-          Choose the contact type for a personalized response
+          {content.description.value}
         </p>
       </div>
       
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Contact Type Selection */}
         <div className="space-y-2">
-          <Label htmlFor="type">Contact type</Label>
-          <Select 
-            value={watchedType || 'general'} 
+          <Label htmlFor="type">{content.contactType.label.value}</Label>
+          <Select
+            value={watchedType || 'general'}
             onValueChange={(value) => {
               setValue('type', value as any);
             }}
           >
             <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-primary/20">
-              <SelectValue placeholder="Select contact type" />
+              <SelectValue placeholder={content.contactType.placeholder.value} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="general">
                 <div className="flex items-center gap-2">
                   <MessageCircle className="h-4 w-4" />
-                  General Contact
+                  {content.contactTypes.general.label.value}
                 </div>
               </SelectItem>
               <SelectItem value="recruitment">
                 <div className="flex items-center gap-2">
                   <Briefcase className="h-4 w-4" />
-                  Recruitment Opportunity
+                  {content.contactTypes.recruitment.label.value}
                 </div>
               </SelectItem>
               <SelectItem value="collaboration">
                 <div className="flex items-center gap-2">
                   <Handshake className="h-4 w-4" />
-                  Collaboration Proposal
+                  {content.contactTypes.collaboration.label.value}
                 </div>
               </SelectItem>
               <SelectItem value="training">
                 <div className="flex items-center gap-2">
                   <GraduationCap className="h-4 w-4" />
-                  Training Request
+                  {content.contactTypes.training.label.value}
                 </div>
               </SelectItem>
             </SelectContent>
@@ -196,29 +198,29 @@ export function ContactForm() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Full name</Label>
+            <Label htmlFor="name">{content.formFields.name.label.value}</Label>
             <Input
               id="name"
-              placeholder="Your name"
+              placeholder={content.formFields.name.placeholder.value}
               {...register("name")}
               className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
             />
             {errors.name && (
-              <span className="text-sm text-destructive">{errors.name.message}</span>
+              <span className="text-sm text-destructive">{content.formFields.name.error.value}</span>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{content.formFields.email.label.value}</Label>
             <Input
               id="email"
               type="email"
-              placeholder="votre@email.com"
+              placeholder={content.formFields.email.placeholder.value}
               {...register("email")}
               className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
             />
             {errors.email && (
-              <span className="text-sm text-destructive">{errors.email.message}</span>
+              <span className="text-sm text-destructive">{content.formFields.email.error.value}</span>
             )}
           </div>
         </div>
@@ -227,19 +229,19 @@ export function ContactForm() {
         {(watchedType === 'recruitment' || watchedType === 'collaboration') && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="company">Company</Label>
+              <Label htmlFor="company">{content.formFields.company.label.value}</Label>
               <Input
                 id="company"
-                placeholder="Your company name"
+                placeholder={content.formFields.company.placeholder.value}
                 {...register("company")}
                 className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="position">Your position</Label>
+              <Label htmlFor="position">{content.formFields.position.label.value}</Label>
               <Input
                 id="position"
-                placeholder="Your role"
+                placeholder={content.formFields.position.placeholder.value}
                 {...register("position")}
                 className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
               />
@@ -248,25 +250,25 @@ export function ContactForm() {
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="subject">Subject</Label>
+          <Label htmlFor="subject">{content.formFields.subject.label.value}</Label>
           <Input
             id="subject"
             placeholder={
-              watchedType === 'recruitment' ? "Ex: Full-Stack Developer - 6 month mission" :
-              watchedType === 'collaboration' ? "Ex: Technical partnership for startup" :
-              watchedType === 'training' ? "Ex: React/Next.js training for team" :
-              "What would you like to discuss?"
+              watchedType === 'recruitment' ? content.formFields.subject.placeholder.recruitment.value :
+              watchedType === 'collaboration' ? content.formFields.subject.placeholder.collaboration.value :
+              watchedType === 'training' ? content.formFields.subject.placeholder.training.value :
+              content.formFields.subject.placeholder.general.value
             }
             {...register("subject")}
             className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
           />
           {errors.subject && (
-            <span className="text-sm text-destructive">{errors.subject.message}</span>
+            <span className="text-sm text-destructive">{content.formFields.subject.error.value}</span>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="message">Message</Label>
+          <Label htmlFor="message">{content.formFields.message.label.value}</Label>
           <Textarea
             id="message"
             placeholder={typeInfo.placeholder}
@@ -274,24 +276,24 @@ export function ContactForm() {
             {...register("message")}
           />
           {errors.message && (
-            <span className="text-sm text-destructive">{errors.message.message}</span>
+            <span className="text-sm text-destructive">{content.formFields.message.error.value}</span>
           )}
         </div>
 
-        <Button 
-          type="submit" 
-          className="w-full h-12 text-lg font-medium" 
+        <Button
+          type="submit"
+          className="w-full h-12 text-lg font-medium"
           disabled={isSubmitting}
         >
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              Sending...
+              {content.submitButton.sending.value}
             </>
           ) : (
             <>
               <TypeIcon className="mr-2 h-5 w-5" />
-              Send message
+              {content.submitButton.send.value}
             </>
           )}
         </Button>

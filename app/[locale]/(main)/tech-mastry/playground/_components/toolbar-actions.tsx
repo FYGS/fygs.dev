@@ -1,6 +1,5 @@
 "use client";
 
-import { useLanguage } from "@/app/(main)/tech-mastry/playground/_hooks/use-language";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -31,6 +30,7 @@ import { CollaborationPanel } from "./collaboration-panel";
 import { InterviewMode } from "./interview-mode";
 import { SettingsPanel } from "./settings-panel";
 import { TemplateSelector } from "./template-selector";
+import { useLanguage } from "../_hooks/use-language";
 
 export function ToolbarActions() {
   const {

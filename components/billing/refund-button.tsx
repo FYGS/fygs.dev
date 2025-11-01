@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
-import { requestRefund } from '@/app/(main)/dashboard/actions/requestRefund'
+import { requestRefund } from '@/app/[locale]/(main)/dashboard/actions/requestRefund'
 
 interface RefundButtonProps {
   subscriptionId: string

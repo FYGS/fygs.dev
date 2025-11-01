@@ -7,18 +7,20 @@ import Link from "next/link";
 import { CourseCardShared } from "@/components/courses/course-card-shared";
 import { FeaturedCourseDTO } from "@/types/course";
 import { motion } from "framer-motion";
+import { useIntlayer } from "next-intlayer";
 
 // Types pour les cours sérialisés
 interface FeaturedCoursesClientProps { courses: FeaturedCourseDTO[] }
 
 export function FeaturedCoursesClient({ courses }: FeaturedCoursesClientProps) {
+  const content = useIntlayer("featured-courses-client");
 
   if (courses.length === 0) {
     return (
       <section className="py-16 lg:py-24">
         <div className="container max-w-7xl mx-auto px-4">
           <div className="text-center">
-            <p className="text-muted-foreground">No featured courses available at the moment.</p>
+            <p className="text-muted-foreground">{content.noFeaturedCourses}</p>
           </div>
         </div>
       </section>
@@ -37,7 +39,7 @@ export function FeaturedCoursesClient({ courses }: FeaturedCoursesClientProps) {
               transition={{ duration: 0.5 }}
             >
               <Trophy className="h-4 w-4" />
-              Premium Courses
+              {content.premiumCoursesLabel}
             </motion.div>
             <motion.h2
               className="text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent"
@@ -45,7 +47,7 @@ export function FeaturedCoursesClient({ courses }: FeaturedCoursesClientProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1, duration: 0.5 }}
             >
-              Most Popular Courses
+              {content.mostPopularCoursesTitle}
             </motion.h2>
             <motion.p
               className="text-lg text-muted-foreground max-w-2xl mx-auto"
@@ -53,7 +55,7 @@ export function FeaturedCoursesClient({ courses }: FeaturedCoursesClientProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.5 }}
             >
-              Join thousands of developers transforming their careers with our premium courses.
+              {content.mostPopularCoursesDescription}
             </motion.p>
           </div>
         </FadeInWhenVisible>
@@ -81,7 +83,7 @@ export function FeaturedCoursesClient({ courses }: FeaturedCoursesClientProps) {
             >
                 <Link href="/courses">
                 <BookOpen className="h-5 w-5 mr-2" />
-                View all courses
+                {content.viewAllCoursesButton}
                 <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Link>
             </Button>

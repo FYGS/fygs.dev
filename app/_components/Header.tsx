@@ -1,7 +1,7 @@
 "use client";
 
-// import { ThemeToggle } from "@/components/theme-toggle";
-import { NavItem } from "@/app/_components/ui/nav-item";
+import { LocaleAwareLink } from "@/components/ui/locale-aware-nav";
+import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 import { buttonVariants } from "@/components/ui/button";
 import { NavigationIndicator } from "@/components/ui/navigation-indicator";
 import {
@@ -9,11 +9,10 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
- SheetTrigger,
+  SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { Menu, ExternalLink } from "lucide-react";
-import Link from "next/link";
 import { useState } from "react";
 import {
   DropdownMenu,
@@ -33,38 +32,7 @@ import { GitLabIcon } from "./icons/GitlabIcon";
 import { HashnodeIcon } from "./icons/HashnodeIcon";
 import { LinkedInIcon } from "./icons/LinkedInIcon";
 import { AuthNav } from "./auth-nav";
-
-// Primary navigation items (always visible)
-const PRIMARY_NAVIGATION = [
-  {
-    href: "/me",
-    label: "CV"
-  },
-  {
-    href: "/formations",
-    label: "Formations"
-  },
-  {
-    href: "/projects",
-    label: "Projects"
-  }
-] as const;
-
-// Secondary navigation items (in dropdown)
-const SECONDARY_NAVIGATION = [
-  { 
-    href: "/blog", 
-    label: "Blog"
-  },
-  { 
-    href: "/tech-mastry", 
-    label: "TechMastry"
-  },
-  { 
-    href: "/contact", 
-    label: "Contact"
-  }
-] as const;
+import { useIntlayer } from "next-intlayer";
 
 const SOCIAL_LINKS = [
   {
@@ -90,71 +58,115 @@ const SOCIAL_LINKS = [
 ] as const;
 
 export const Header = () => {
+  const content = useIntlayer("header");
   const [isOpen, setIsOpen] = useState(false);
 
-  // Include admin in navigation if user has admin access
-  const ALL_NAVIGATION = [...PRIMARY_NAVIGATION, ...SECONDARY_NAVIGATION];
+  // Transform navigation items for NavigationIndicator (expects plain strings)
+  const ALL_NAVIGATION = [
+    ...content.navigation.primary.map((item) => ({
+      href: item.href.value,
+      label: item.label.value,
+    })),
+    ...content.navigation.secondary.map((item) => ({
+      href: item.href.value,
+      label: item.label.value,
+    })),
+  ];
 
   return (
     <>
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60">
         <div className="container flex h-16 items-center justify-between px-4 md:px-6">
-          <nav className="flex items-center justify-between w-full" role="navigation" aria-label="Main navigation">
-            <Link
+          <nav
+            className="flex items-center justify-between w-full"
+            role="navigation"
+            aria-label="Main navigation"
+          >
+            <LocaleAwareLink
               href="/"
               className="text-lg md:text-2xl font-extrabold text-foreground tracking-wide hover:text-primary transition-colors whitespace-nowrap shrink-0"
-              aria-label="Go to homepage"
             >
               <span className="sr-only">FYGS.dev - Homepage</span>
               fygs.dev \_°&lt;
-            </Link>
+            </LocaleAwareLink>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-4">
               {/* All Navigation Items - Displayed directly instead of in dropdown */}
-              {PRIMARY_NAVIGATION.map((item) => (
-                <NavItem key={item.href} href={item.href} label={item.label} />
+              {content.navigation.primary.map((item) => (
+                <LocaleAwareLink
+                  key={item.href.value}
+                  href={item.href.value}
+                  className={cn(
+                    buttonVariants({ variant: "ghost", size: "sm" }),
+                    "text-base font-medium transition-all duration-300 relative group",
+                    "after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-center after:scale-x-0 after:bg-linear-to-r after:from-primary after:to-primary/60 after:transition-transform after:duration-300",
+                    "hover:scale-105 hover:shadow-xs"
+                  )}
+                  activeClassName="text-primary after:scale-x-100 shadow-xs"
+                  showActiveIndicator
+                >
+                  {item.label.value}
+                </LocaleAwareLink>
               ))}
-              {SECONDARY_NAVIGATION.map((item) => (
-                <NavItem key={item.href} href={item.href} label={item.label} />
+              {content.navigation.secondary.map((item) => (
+                <LocaleAwareLink
+                  key={item.href.value}
+                  href={item.href.value}
+                  className={cn(
+                    buttonVariants({ variant: "ghost", size: "sm" }),
+                    "text-base font-medium transition-all duration-300 relative group",
+                    "after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-center after:scale-x-0 after:bg-linear-to-r after:from-primary after:to-primary/60 after:transition-transform after:duration-300",
+                    "hover:scale-105 hover:shadow-xs"
+                  )}
+                  activeClassName="text-primary after:scale-x-100 shadow-xs"
+                  showActiveIndicator
+                >
+                  {item.label.value}
+                </LocaleAwareLink>
               ))}
 
               <div className="flex items-center gap-2 ml-2 border-l pl-4 border-border">
+                <LocaleSwitcher />
                 <AuthNav />
-                
+
                 {/* Social Links Dropdown */}
                 <Tooltip>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <TooltipTrigger asChild>
-                          <button className={cn(
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <TooltipTrigger asChild>
+                        <button
+                          className={cn(
                             buttonVariants({ variant: "ghost", size: "icon" }),
                             "size-8"
-                          )}>
-                            <ExternalLink className="h-4 w-4" />
-                          </button>
-                        </TooltipTrigger>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-40">
-                        <DropdownMenuLabel>Réseaux sociaux</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {SOCIAL_LINKS.map(({ href, icon: Icon, label }) => (
-                          <DropdownMenuItem key={href} asChild>
-                            <Link 
-                              href={href}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="cursor-pointer flex items-center gap-2"
-                            >
-                              <Icon className="h-4 w-4" />
-                              {label}
-                            </Link>
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                          )}
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </button>
+                      </TooltipTrigger>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-40">
+                      <DropdownMenuLabel>
+                        {content.social.dropdownLabel.value}
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      {SOCIAL_LINKS.map(({ href, icon: Icon, label }) => (
+                        <DropdownMenuItem key={href} asChild>
+                          <a
+                            href={href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="cursor-pointer flex items-center gap-2"
+                          >
+                            <Icon className="h-4 w-4" />
+                            {label}
+                          </a>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <TooltipContent>
-                    <p>Social Links and Profiles</p>
+                    <p>{content.social.dropdownLabel.value}</p>
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -187,55 +199,61 @@ export const Header = () => {
                       {/* Main Navigation - Primary Items */}
                       <div className="px-6 space-y-1 mb-6">
                         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                          Main Navigation
+                          {content.mobile.mainNavigation.value}
                         </p>
                         <div className="space-y-1">
-                          {PRIMARY_NAVIGATION.map((item) => (
-                            <NavItem
-                              key={item.href}
-                              href={item.href}
-                              label={item.label}
+                          {content.navigation.primary.map((item) => (
+                            <LocaleAwareLink
+                              key={item.href.value}
+                              href={item.href.value}
                               onClick={() => setIsOpen(false)}
-                              isMobile
-                            />
+                              className="block px-6 py-4 text-base transition-all relative border-b border-border/20 last:border-b-0 text-foreground/80 hover:bg-accent/30 hover:text-foreground"
+                              activeClassName="bg-linear-to-r from-primary/5 to-secondary/5 text-primary font-semibold"
+                            >
+                              {item.label.value}
+                            </LocaleAwareLink>
                           ))}
                         </div>
                       </div>
-                      
+
                       {/* Secondary Navigation */}
                       <div className="px-6 space-y-1 mb-6">
                         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                          Other Pages
+                          {content.mobile.otherPages.value}
                         </p>
                         <div className="space-y-1">
-                          {SECONDARY_NAVIGATION.map((item) => (
-                            <NavItem
-                              key={item.href}
-                              href={item.href}
-                              label={item.label}
+                          {content.navigation.secondary.map((item) => (
+                            <LocaleAwareLink
+                              key={item.href.value}
+                              href={item.href.value}
                               onClick={() => setIsOpen(false)}
-                              isMobile
-                            />
+                              className="block px-6 py-4 text-base transition-all relative border-b border-border/20 last:border-b-0 text-foreground/80 hover:bg-accent/30 hover:text-foreground"
+                              activeClassName="bg-linear-to-r from-primary/5 to-secondary/5 text-primary font-semibold"
+                            >
+                              {item.label.value}
+                            </LocaleAwareLink>
                           ))}
                         </div>
                       </div>
-                      
+
                       {/* Authentication Section for Mobile */}
                       <div className="px-6 mb-6">
                         <div className="p-5 bg-linear-to-br from-primary/5 to-secondary/5 rounded-xl border border-border/30 shadow-xs">
-                          <AuthNav isMobile onItemClick={() => setIsOpen(false)} />
+                          <AuthNav
+                            isMobile
+                            onItemClick={() => setIsOpen(false)}
+                          />
                         </div>
                       </div>
-                      
                     </div>
-                    
+
                     <div className="px-6 py-4 border-t border-border bg-muted/20 mt-auto">
                       <p className="text-sm text-muted-foreground mb-3">
-                        Follow Me
+                        {content.mobile.followMe.value}
                       </p>
                       <div className="flex flex-col space-y-2">
                         {SOCIAL_LINKS.map(({ href, icon: Icon, label }) => (
-                          <Link
+                          <a
                             key={href}
                             href={href}
                             target="_blank"
@@ -250,7 +268,7 @@ export const Header = () => {
                           >
                             <Icon className="size-4 mr-2" />
                             {label}
-                          </Link>
+                          </a>
                         ))}
                       </div>
                     </div>

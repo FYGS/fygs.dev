@@ -68,14 +68,6 @@ const nextConfig = {
   // Performance optimizations
   poweredByHeader: false,
   reactStrictMode: true,
-
-  // Optimize file watching to prevent Map maximum size exceeded
-  experimental: {
-    // Turbopack-specific optimizations
-    turbopack: {
-      resolveExtensions: [".tsx", ".ts", ".jsx", ".js", ".json"],
-    },
-  },
 };
 
 export default withIntlayer(nextConfig);

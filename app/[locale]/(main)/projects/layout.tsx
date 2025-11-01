@@ -1,4 +1,4 @@
-import { generateMetadata } from "../../_lib/seo-utils";
+import { generateMetadata } from "@/app/_lib/seo-utils";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = generateMetadata({

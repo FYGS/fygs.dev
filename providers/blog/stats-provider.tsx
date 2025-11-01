@@ -1,6 +1,6 @@
 "use client";
 
-import { getPostStats } from "@/app/(main)/blog/actions/stats";
+import { getPostStats } from "@/app/[locale]/(main)/blog/actions/stats";
 import { createContext, useContext, useState } from "react";
 
 interface StatsContextType {
