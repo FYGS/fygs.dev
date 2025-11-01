@@ -32,7 +32,7 @@ const LocaleLayout: NextLayoutIntlayer = async ({ children, params }) => {
   const { locale } = await params;
 
   return (
-    <html lang={locale} dir={getHTMLTextDir(locale)} suppressHydrationWarning>
+    <html lang={locale} dir={getHTMLTextDir(locale)} /*suppressHydrationWarning*/>
       <head>
         <JsonLd />
         <script

@@ -1,17 +1,5 @@
 import { t } from 'intlayer';
 import { type Dictionary } from 'intlayer';
-import {
-  LeafyGreenIcon,
-  Building2,
-  BrainCircuit,
-  Network,
-  Utensils,
-  GraduationCap,
-  LayoutPanelLeft,
-  Fingerprint,
-  Loader,
-  Gift,
-} from 'lucide-react';
 
 const statusContent = {
     key: "status",
@@ -107,7 +95,7 @@ const statusContent = {
         sideProjects: [
             {
                 id: "evopur",
-                Logo: LeafyGreenIcon,
+                logoId: "LeafyGreenIcon",
                 title: "Evopur",
                 description: t({
                     en: "Professional ecological household cleaning services platform offering comprehensive home cleaning solutions with eco-friendly products and sustainable practices for a healthier living environment.",
@@ -118,7 +106,7 @@ const statusContent = {
             },
             {
                 id: "ncr",
-                Logo: Building2,
+                logoId: "Building2",
                 title: "NCR - Certificats de Résidence",
                 description: t({
                     en: "A next-generation platform modernizing residence certificate management, streamlining administrative processes for local authorities and citizens alike.",
@@ -129,7 +117,7 @@ const statusContent = {
             },
             {
                 id: "quizzen",
-                Logo: BrainCircuit,
+                logoId: "BrainCircuit",
                 title: "QuizZen",
                 description: t({
                     en: "A specialized interactive platform for French naturalization interview preparation, covering history, values, and institutions of the French Republic.",
@@ -140,7 +128,7 @@ const statusContent = {
             },
             {
                 id: "anumerique",
-                Logo: Network,
+                logoId: "Network",
                 title: "A'Numérique",
                 description: t({
                     en: "An innovative service bridging the digital divide through personalized, at-home digital literacy training, fostering an inclusive digital society.",
@@ -151,7 +139,7 @@ const statusContent = {
             },
             {
                 id: "delices-rachetee",
-                Logo: Utensils,
+                logoId: "Utensils",
                 title: "Les Délices de la Rachetée",
                 description: t({
                     en: "An artisanal French pastry showcase combining traditional craftsmanship with innovative techniques to deliver unique culinary experiences.",
@@ -162,7 +150,7 @@ const statusContent = {
             },
             {
                 id: "school-management",
-                Logo: GraduationCap,
+                logoId: "GraduationCap",
                 title: "School Management System",
                 description: t({
                     en: "A comprehensive School Management System designed to streamline administrative tasks, enhance communication, and improve overall efficiency in educational institutions.",
@@ -173,7 +161,7 @@ const statusContent = {
             },
             {
                 id: "plura-saas",
-                Logo: LayoutPanelLeft,
+                logoId: "LayoutPanelLeft",
                 title: "Plura SaaS App",
                 description: t({
                     en: "A SaaS application built with Next.js, TypeScript, Prisma, MySQL, NextAuth, and Stripe, featuring a subscription system, organization and sub-organization creation, sales funnel creation, subdomains, project management module, and much more.",
@@ -184,7 +172,7 @@ const statusContent = {
             },
             {
                 id: "nextauth-v5",
-                Logo: Fingerprint,
+                logoId: "Fingerprint",
                 title: "Next Auth v5 App",
                 description: t({
                     en: "A Next.js application that implements authentication using NextAuth v5, featuring user registration, login, logout functionalities, and Multi-Factor Authentication (MFA) with email code verification.",
@@ -195,7 +183,7 @@ const statusContent = {
             },
             {
                 id: "js-universe",
-                Logo: Loader,
+                logoId: "Loader",
                 title: "JS Universe Blog App",
                 description: t({
                     en: "A blog application built with Gatsby and TypeScript, featuring static site generation and smooth progressive image loading, offering a delightful frontend experience with advanced rendering optimization techniques.",
@@ -206,7 +194,7 @@ const statusContent = {
             },
             {
                 id: "idees-kdo",
-                Logo: Gift,
+                logoId: "Gift",
                 title: "Idées KDO",
                 description: t({
                     en: "An innovative AI-powered application that generates fantastic gift ideas tailored to age and specific keywords.",

@@ -35,7 +35,7 @@
     ".next/types/**/*.ts",
     ".intlayer/**/*.ts",
     "app/[locale]/(main)/page.tsx",
-    "app/[locale]/page.tsxxx"
+    "app/[locale]/test_page.tsx"
   ],
   "exclude": [
     "node_modules",
