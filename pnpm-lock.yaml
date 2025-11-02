@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@hookform/resolvers':
         specifier: ^3.10.0
-        version: 3.10.0(react-hook-form@7.65.0(react@19.2.0))
+        version: 3.10.0(react-hook-form@7.66.0(react@19.2.0))
       '@monaco-editor/react':
         specifier: ^4.7.0
         version: 4.7.0(monaco-editor@0.52.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -145,7 +145,7 @@ importers:
         version: 4.0.3
       intlayer:
         specifier: ^7.0.3
-        version: 7.0.3(@intlayer/cli@7.0.3)(@intlayer/config@7.0.3)(@intlayer/core@7.0.3)(@intlayer/types@7.0.3)
+        version: 7.0.5(@intlayer/cli@7.0.5)(@intlayer/config@7.0.5)(@intlayer/core@7.0.5)(@intlayer/types@7.0.5)
       ioredis:
         specifier: ^5.8.1
         version: 5.8.2
@@ -178,7 +178,7 @@ importers:
         version: 1.3.1
       next-intlayer:
         specifier: ^7.0.3
-        version: 7.0.3(@intlayer/api@7.0.3)(@intlayer/config@7.0.3)(@intlayer/core@7.0.3)(@intlayer/dictionaries-entry@7.0.3)(@intlayer/remote-dictionaries-entry@7.0.3)(@intlayer/types@7.0.3)(@intlayer/unmerged-dictionaries-entry@7.0.3)(@intlayer/webpack@7.0.3(@intlayer/api@7.0.3)(@intlayer/chokidar@7.0.3)(@intlayer/config@7.0.3)(@intlayer/types@7.0.3)(webpack@5.102.1))(next@15.5.3(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react-intlayer@7.0.3(@intlayer/api@7.0.3)(@intlayer/cli@7.0.3)(@intlayer/config@7.0.3)(@intlayer/core@7.0.3)(@intlayer/editor-react@7.0.3(@intlayer/config@7.0.3)(@intlayer/core@7.0.3)(@intlayer/types@7.0.3)(@intlayer/unmerged-dictionaries-entry@7.0.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@intlayer/types@7.0.3)(@intlayer/unmerged-dictionaries-entry@7.0.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)(webpack@5.102.1)
+        version: 7.0.5(@intlayer/api@7.0.5)(@intlayer/config@7.0.5)(@intlayer/core@7.0.5)(@intlayer/dictionaries-entry@7.0.5)(@intlayer/remote-dictionaries-entry@7.0.5)(@intlayer/types@7.0.5)(@intlayer/unmerged-dictionaries-entry@7.0.5)(@intlayer/webpack@7.0.5(@intlayer/api@7.0.5)(@intlayer/chokidar@7.0.5)(@intlayer/config@7.0.5)(@intlayer/types@7.0.5)(webpack@5.102.1))(next@15.5.3(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react-intlayer@7.0.5(@intlayer/api@7.0.5)(@intlayer/cli@7.0.5)(@intlayer/config@7.0.5)(@intlayer/core@7.0.5)(@intlayer/editor-react@7.0.5(@intlayer/config@7.0.5)(@intlayer/core@7.0.5)(@intlayer/types@7.0.5)(@intlayer/unmerged-dictionaries-entry@7.0.5)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@intlayer/types@7.0.5)(@intlayer/unmerged-dictionaries-entry@7.0.5)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)(webpack@5.102.1)
       next-mdx-remote:
         specifier: ^5.0.0
         version: 5.0.0(@types/react@19.2.2)(react@19.2.0)
@@ -202,7 +202,7 @@ importers:
         version: 19.2.0(react@19.2.0)
       react-hook-form:
         specifier: ^7.55.0
-        version: 7.65.0(react@19.2.0)
+        version: 7.66.0(react@19.2.0)
       react-markdown:
         specifier: ^10.1.0
         version: 10.1.0(@types/react@19.2.2)(react@19.2.0)
@@ -1231,49 +1231,49 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@intlayer/api@7.0.3':
-    resolution: {integrity: sha512-+DOdkJb0pQYsdv8AYVe0chCKAVmgZiuiGl/h9KMTisE0wuiLk23lhb/u/f3HgVnnE+dMbY5AfEs7B30uJtLRPA==}
+  '@intlayer/api@7.0.5':
+    resolution: {integrity: sha512-9JhcMwaJ+nnL5e8RBoKG6e55d8ZvMDl9In6HplsQfjaY2HZjtLRg4Cfua+O7iO86dNUX6u5b6x1VSQuAGH+FXQ==}
     engines: {node: '>=14.18'}
     peerDependencies:
-      '@intlayer/backend': 7.0.3
-      '@intlayer/config': 7.0.3
-      '@intlayer/types': 7.0.3
-      intlayer-editor: 7.0.3
+      '@intlayer/backend': 7.0.5
+      '@intlayer/config': 7.0.5
+      '@intlayer/types': 7.0.5
+      intlayer-editor: 7.0.5
     peerDependenciesMeta:
       '@intlayer/backend':
         optional: true
       intlayer-editor:
         optional: true
 
-  '@intlayer/chokidar@7.0.3':
-    resolution: {integrity: sha512-TmgffZfq+O+QdCJ9jPJv+/ogDrOfzTDPLx8A2+gwEayLt52PNV3VDwrC4noWbLwqUdRzeL2lRuHCg3YMsjG5jw==}
+  '@intlayer/chokidar@7.0.5':
+    resolution: {integrity: sha512-hUw+lMZt41tm2KWn0pIPrm65Yb0M2t6qwRAjluViZUX4LTsIwg4GBGUVpUP0/Prn36IUz2VzD15OmTESRFzQow==}
     engines: {node: '>=14.18'}
     peerDependencies:
-      '@intlayer/api': 7.0.3
-      '@intlayer/config': 7.0.3
-      '@intlayer/core': 7.0.3
-      '@intlayer/dictionaries-entry': 7.0.3
-      '@intlayer/remote-dictionaries-entry': 7.0.3
-      '@intlayer/types': 7.0.3
-      '@intlayer/unmerged-dictionaries-entry': 7.0.3
+      '@intlayer/api': 7.0.5
+      '@intlayer/config': 7.0.5
+      '@intlayer/core': 7.0.5
+      '@intlayer/dictionaries-entry': 7.0.5
+      '@intlayer/remote-dictionaries-entry': 7.0.5
+      '@intlayer/types': 7.0.5
+      '@intlayer/unmerged-dictionaries-entry': 7.0.5
       fast-glob: 3.3.3
 
-  '@intlayer/cli@7.0.3':
-    resolution: {integrity: sha512-QlIcLkkEJZGPeKxmOZjheCsnENSXF3z/GBsRuYycbjvYJ/+pcjtln2bgwCLPGT/FtnwNnFY73fNOaxT1JAJDXg==}
+  '@intlayer/cli@7.0.5':
+    resolution: {integrity: sha512-qLcq4OXagJjzwAMx3lJKndQoTYQN8838byJUQuhKa+S2odhJd+VVp3x3bFXgHrl3JBJ76x7FewR5o1ZsVj1rmA==}
     peerDependencies:
-      '@intlayer/api': 7.0.3
-      '@intlayer/chokidar': 7.0.3
-      '@intlayer/config': 7.0.3
-      '@intlayer/dictionaries-entry': 7.0.3
-      '@intlayer/remote-dictionaries-entry': 7.0.3
-      '@intlayer/types': 7.0.3
-      '@intlayer/unmerged-dictionaries-entry': 7.0.3
+      '@intlayer/api': 7.0.5
+      '@intlayer/chokidar': 7.0.5
+      '@intlayer/config': 7.0.5
+      '@intlayer/dictionaries-entry': 7.0.5
+      '@intlayer/remote-dictionaries-entry': 7.0.5
+      '@intlayer/types': 7.0.5
+      '@intlayer/unmerged-dictionaries-entry': 7.0.5
 
-  '@intlayer/config@7.0.3':
-    resolution: {integrity: sha512-Z9CBC5kRqhZCl1ZEbdIOG1qOJPYXfeYDz9tx21scU4+eb4UU2Qnkc6iWZxXkHVdHNgFxpZMlU7GwNNCaSYlGCg==}
+  '@intlayer/config@7.0.5':
+    resolution: {integrity: sha512-6J8NNDTMan9xE1ji8ii+5qQvuvkZNFz/bRdp1XIT7jIjpvAqR1wcMN3nXj3pZUoQe52Nf/MKB1nRu5r+Ko0fPQ==}
     engines: {node: '>=14.18'}
     peerDependencies:
-      intlayer: 7.0.3
+      intlayer: 7.0.5
       react: '>=16.0.0'
     peerDependenciesMeta:
       intlayer:
@@ -1281,65 +1281,65 @@ packages:
       react:
         optional: true
 
-  '@intlayer/core@7.0.3':
-    resolution: {integrity: sha512-mwK2tT05Vs7XrBezmwIHx1Jdko9p6k0jHc7Gl4Huay8CvehH0pUdzaeH4ThleivZlY8zCxrMjGjPnd4NfETmlw==}
+  '@intlayer/core@7.0.5':
+    resolution: {integrity: sha512-1faE9yfkTDq/DcjOHwZyuxV22p+Pbjrbl9OY3V+7H1b4tBuzUwAH8V6AU8EOsAe+cT+Or86d5No2/Xtb9bjnMg==}
     engines: {node: '>=14.18'}
     peerDependencies:
-      '@intlayer/api': 7.0.3
-      '@intlayer/config': 7.0.3
-      '@intlayer/dictionaries-entry': 7.0.3
-      '@intlayer/types': 7.0.3
-      '@intlayer/unmerged-dictionaries-entry': 7.0.3
+      '@intlayer/api': 7.0.5
+      '@intlayer/config': 7.0.5
+      '@intlayer/dictionaries-entry': 7.0.5
+      '@intlayer/types': 7.0.5
+      '@intlayer/unmerged-dictionaries-entry': 7.0.5
 
-  '@intlayer/dictionaries-entry@7.0.3':
-    resolution: {integrity: sha512-J7SEvlU0/gak2d/yG7w0XYRX3afUTu+yAqq9BFov1s8clLlscYSHtr5TN6MLqzQOPXFc0seg7U1iYp3/9VT2eQ==}
+  '@intlayer/dictionaries-entry@7.0.5':
+    resolution: {integrity: sha512-a6F6uyt91+tDneHCdmngfPV6P55e/N90iNJz7QoFe/l2m3s8pm47LAUYY5049IXN4daij8vKzjhW35MI2dTOJA==}
     engines: {node: '>=14.18'}
     peerDependencies:
-      '@intlayer/config': 7.0.3
-      '@intlayer/types': 7.0.3
+      '@intlayer/config': 7.0.5
+      '@intlayer/types': 7.0.5
 
-  '@intlayer/editor-react@7.0.3':
-    resolution: {integrity: sha512-hQyKovX2iG+O+Thj1U4o/Hj3kwg/UEA4h+krRVz7qjqypG+3IsZQh1oM57CcSLBrMcEtVCCO4Dmmkt/05xI4IQ==}
+  '@intlayer/editor-react@7.0.5':
+    resolution: {integrity: sha512-Z2oeneWkyPJUKw0mP8SFXZAY0kLRSWa8zOP6qDr8aKQKeWSReiwQhxNpv8Lcm9lZP5S1fokp6NKnhyBO9nHTnQ==}
     engines: {node: '>=14.18'}
     peerDependencies:
-      '@intlayer/config': 7.0.3
-      '@intlayer/core': 7.0.3
-      '@intlayer/types': 7.0.3
-      '@intlayer/unmerged-dictionaries-entry': 7.0.3
+      '@intlayer/config': 7.0.5
+      '@intlayer/core': 7.0.5
+      '@intlayer/types': 7.0.5
+      '@intlayer/unmerged-dictionaries-entry': 7.0.5
       react: '>=16.0.0'
       react-dom: '>=16.0.0'
 
-  '@intlayer/editor@7.0.3':
-    resolution: {integrity: sha512-8hELVWu4Kl4qRH6Ha5gzfrgC6OWco+QZ0I9+pC/Ok69fKBf3oL4SZppFMO/2SwKjIdmwJ8F3ibYKhmI7Wz3o9Q==}
+  '@intlayer/editor@7.0.5':
+    resolution: {integrity: sha512-4tE6y1E3VkaBnBggMXcx5cWHkSMutlIaATyP2hd/mDe5J083ntkai4nI2GapwC2158PrpnDijLXsLZB++OpsTg==}
     engines: {node: '>=14.18'}
 
-  '@intlayer/remote-dictionaries-entry@7.0.3':
-    resolution: {integrity: sha512-Zi+EgY572zbuVX7+e6EloD79lNEIKuUtd+DrjTSvxi0oX/2X6d0TO4oyuT/jKjWWIywJdqlREiw0Jc3jRl2ubg==}
+  '@intlayer/remote-dictionaries-entry@7.0.5':
+    resolution: {integrity: sha512-DEg8cqvhYmF3/4NX9ZaQSfXSV9YAr8utIijKXe0yXoGhgKoVj/zgHvcj6ur2+M/lxW50YVPf+A0kTSveuQ4mMw==}
     engines: {node: '>=14.18'}
     peerDependencies:
-      '@intlayer/config': 7.0.3
-      '@intlayer/core': 7.0.3
-      '@intlayer/types': 7.0.3
+      '@intlayer/config': 7.0.5
+      '@intlayer/core': 7.0.5
+      '@intlayer/types': 7.0.5
 
-  '@intlayer/types@7.0.3':
-    resolution: {integrity: sha512-H245Mvh17NuqzBI8mowba+uG4w8weSsDr6pRlWX+uOM1MUwi3KjI5PYHuvXRzPbe2bsMDcsKZkugbPMe7SZn6Q==}
+  '@intlayer/types@7.0.5':
+    resolution: {integrity: sha512-aS3z38976eHgiTzS6Aa0BZztIidbj+z15ED/a+EPADrO5Ws05T39YaPd9kPya1ARUDpuKxrLSKL/K50nPRWNXg==}
     engines: {node: '>=14.18'}
 
-  '@intlayer/unmerged-dictionaries-entry@7.0.3':
-    resolution: {integrity: sha512-xu5q014AgFhEqiLQnBgxPnwqA2F8TUgzqGALGqy8yjQmh7Du9elKMB33N0kjynfpJqSer90vIK+FFZ+VgQhBZw==}
-    engines: {node: '>=14.18'}
-    peerDependencies:
-      '@intlayer/config': 7.0.3
-      '@intlayer/types': 7.0.3
-
-  '@intlayer/webpack@7.0.3':
-    resolution: {integrity: sha512-OVV0k9DkJqj6oqpOH3RzJ+Q8nxDXeJFWLcGpJ3/95zjilg/TETONcAs/txfDXTXxCYtHXTlLRW0B94cMFZVDBQ==}
+  '@intlayer/unmerged-dictionaries-entry@7.0.5':
+    resolution: {integrity: sha512-3UVpV9eHh1q2QNf3JT1YWiGe96S/wSdtaAFRdH4ojvspC54rLNE5j1uXGuJ/1bcKGCFb3iCavm/g4wU+NKmLsw==}
     engines: {node: '>=14.18'}
     peerDependencies:
-      '@intlayer/api': 7.0.3
-      '@intlayer/chokidar': 7.0.3
-      '@intlayer/config': 7.0.3
-      '@intlayer/types': 7.0.3
+      '@intlayer/config': 7.0.5
+      '@intlayer/types': 7.0.5
+
+  '@intlayer/webpack@7.0.5':
+    resolution: {integrity: sha512-1VVihkraPBdtHw7baivuiq3iyiIZ1TfZKnR25I4OQoSZN/kIdxfUylR6HnYKTy8ufhNg7VmsynPQZ1goiJCXbw==}
+    engines: {node: '>=14.18'}
+    peerDependencies:
+      '@intlayer/api': 7.0.5
+      '@intlayer/chokidar': 7.0.5
+      '@intlayer/config': 7.0.5
+      '@intlayer/types': 7.0.5
       webpack: 5.99.9
 
   '@ioredis/commands@1.4.0':
@@ -3517,8 +3517,8 @@ packages:
   base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
 
-  baseline-browser-mapping@2.8.22:
-    resolution: {integrity: sha512-/tk9kky/d8T8CTXIQYASLyhAxR5VwL3zct1oAoVTaOUHwrmsGnfbRwNdEq+vOl2BN8i3PcDdP0o4Q+jjKQoFbQ==}
+  baseline-browser-mapping@2.8.23:
+    resolution: {integrity: sha512-616V5YX4bepJFzNyOfce5Fa8fDJMfoxzOIzDCZwaGL8MKVpFrXqfNUoIpRn9YMI5pXf/VKgzjB4htFMsFKKdiQ==}
     hasBin: true
 
   basic-auth@2.0.1:
@@ -5021,15 +5021,15 @@ packages:
     resolution: {integrity: sha512-5Hh7Y1wQbvY5ooGgPbDaL5iYLAPzMTUrjMulskHLH6wnv/A+1q5rgEaiuqEjB+oxGXIVZs1FF+R/KPN3ZSQYYg==}
     engines: {node: '>=12'}
 
-  intlayer@7.0.3:
-    resolution: {integrity: sha512-cQMQH5ZYWh7ArX5Qk9HOpAaH8KFj2RJfeSRztLr2dXxPaOUYxoVJ3pIcJSxlibmHRDrvS9PK4jpZOtbZuw/bUA==}
+  intlayer@7.0.5:
+    resolution: {integrity: sha512-QYurxKQ+cWbaewfNHQrDw4A0qiRnOoTbNo75iqBBUrJfGqaT3020eqmnFmq1AW76ItO+hT9RBMkX10ZhvqBUEw==}
     engines: {node: '>=14.18'}
     hasBin: true
     peerDependencies:
-      '@intlayer/cli': 7.0.3
-      '@intlayer/config': 7.0.3
-      '@intlayer/core': 7.0.3
-      '@intlayer/types': 7.0.3
+      '@intlayer/cli': 7.0.5
+      '@intlayer/config': 7.0.5
+      '@intlayer/core': 7.0.5
+      '@intlayer/types': 7.0.5
 
   ioredis@5.8.2:
     resolution: {integrity: sha512-C6uC+kleiIMmjViJINWk80sOQw5lEzse1ZmvD+S/s8p8CWapftSaC+kocGTx6xrbrJ4WmYQGC08ffHLr6ToR6Q==}
@@ -5843,19 +5843,19 @@ packages:
   next-international@1.3.1:
     resolution: {integrity: sha512-ydU9jQe+4MohMWltbZae/yuWeKhmp0QKQqJNNi8WCCMwrly03qfMAHw/tWbT2qgAlG++CxF5jMXmGQZgOHeVOw==}
 
-  next-intlayer@7.0.3:
-    resolution: {integrity: sha512-r1QyeYYEd08b4XS+oeR++V2u77DxzN+GRcB4uzG+2cpnWSNPswpuUKFOXdY3NnFJMI7V3xEwgBiJh+8H+iUP0g==}
+  next-intlayer@7.0.5:
+    resolution: {integrity: sha512-BeQ5RUyEOEHSuFdJJqvZjCfmUvbdaqEvHDnJ3O//E+zPfBNBg0lkipVspE5dGZK2PkLKpDvpnHFxsA3vaPD/ng==}
     engines: {node: '>=14.18'}
     peerDependencies:
-      '@intlayer/config': 7.0.3
-      '@intlayer/core': 7.0.3
-      '@intlayer/dictionaries-entry': 7.0.3
-      '@intlayer/types': 7.0.3
-      '@intlayer/webpack': 7.0.3
+      '@intlayer/config': 7.0.5
+      '@intlayer/core': 7.0.5
+      '@intlayer/dictionaries-entry': 7.0.5
+      '@intlayer/types': 7.0.5
+      '@intlayer/webpack': 7.0.5
       next: '>=14.0.0'
       react: '>=16.0.0'
       react-dom: '>=16.0.0'
-      react-intlayer: 7.0.3
+      react-intlayer: 7.0.5
 
   next-mdx-remote@5.0.0:
     resolution: {integrity: sha512-RNNbqRpK9/dcIFZs/esQhuLA8jANqlH694yqoDBK8hkVdJUndzzGmnPHa2nyi90N4Z9VmzuSWNRpr5ItT3M7xQ==}
@@ -6341,22 +6341,22 @@ packages:
     peerDependencies:
       react: ^19.2.0
 
-  react-hook-form@7.65.0:
-    resolution: {integrity: sha512-xtOzDz063WcXvGWaHgLNrNzlsdFgtUWcb32E6WFaGTd7kPZG3EeDusjdZfUsPwKCKVXy1ZlntifaHZ4l8pAsmw==}
+  react-hook-form@7.66.0:
+    resolution: {integrity: sha512-xXBqsWGKrY46ZqaHDo+ZUYiMUgi8suYu5kdrS20EG8KiL7VRQitEbNjm+UcrDYrNi1YLyfpmAeGjCZYXLT9YBw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
 
-  react-intlayer@7.0.3:
-    resolution: {integrity: sha512-5+VbjfOgXa8a4nAxImAaiWWTBBsjhhfZW2KjcHM5kdk/6DUtjZ7m9MwqmtcUKMhO8SleSMRbbQZQ15V3XIq+2Q==}
+  react-intlayer@7.0.5:
+    resolution: {integrity: sha512-67UkYQTj14V5acnZaHfG101ERfVnf2yOEzi8YbFWLSb6P70sV/NcDI+Q5AREErYIAUJW6jCsAobhtYjXj4KlAg==}
     engines: {node: '>=14.18'}
     peerDependencies:
-      '@intlayer/api': 7.0.3
-      '@intlayer/config': 7.0.3
-      '@intlayer/core': 7.0.3
-      '@intlayer/editor-react': 7.0.3
-      '@intlayer/types': 7.0.3
-      '@intlayer/unmerged-dictionaries-entry': 7.0.3
+      '@intlayer/api': 7.0.5
+      '@intlayer/config': 7.0.5
+      '@intlayer/core': 7.0.5
+      '@intlayer/editor-react': 7.0.5
+      '@intlayer/types': 7.0.5
+      '@intlayer/unmerged-dictionaries-entry': 7.0.5
       react: '>=16.0.0'
       react-dom: '>=16.0.0'
 
@@ -8347,9 +8347,9 @@ snapshots:
 
   '@hexagon/base64@1.1.28': {}
 
-  '@hookform/resolvers@3.10.0(react-hook-form@7.65.0(react@19.2.0))':
+  '@hookform/resolvers@3.10.0(react-hook-form@7.66.0(react@19.2.0))':
     dependencies:
-      react-hook-form: 7.65.0(react@19.2.0)
+      react-hook-form: 7.66.0(react@19.2.0)
 
   '@humanwhocodes/config-array@0.13.0':
     dependencies:
@@ -8527,20 +8527,20 @@ snapshots:
   '@img/sharp-win32-x64@0.34.4':
     optional: true
 
-  '@intlayer/api@7.0.3(@intlayer/config@7.0.3)(@intlayer/types@7.0.3)':
+  '@intlayer/api@7.0.5(@intlayer/config@7.0.5)(@intlayer/types@7.0.5)':
     dependencies:
-      '@intlayer/config': 7.0.3(intlayer@7.0.3)(react@19.2.0)
-      '@intlayer/types': 7.0.3
+      '@intlayer/config': 7.0.5(intlayer@7.0.5)(react@19.2.0)
+      '@intlayer/types': 7.0.5
 
-  '@intlayer/chokidar@7.0.3(@intlayer/api@7.0.3)(@intlayer/config@7.0.3)(@intlayer/core@7.0.3)(@intlayer/dictionaries-entry@7.0.3)(@intlayer/remote-dictionaries-entry@7.0.3)(@intlayer/types@7.0.3)(@intlayer/unmerged-dictionaries-entry@7.0.3)(fast-glob@3.3.3)':
+  '@intlayer/chokidar@7.0.5(@intlayer/api@7.0.5)(@intlayer/config@7.0.5)(@intlayer/core@7.0.5)(@intlayer/dictionaries-entry@7.0.5)(@intlayer/remote-dictionaries-entry@7.0.5)(@intlayer/types@7.0.5)(@intlayer/unmerged-dictionaries-entry@7.0.5)(fast-glob@3.3.3)':
     dependencies:
-      '@intlayer/api': 7.0.3(@intlayer/config@7.0.3)(@intlayer/types@7.0.3)
-      '@intlayer/config': 7.0.3(intlayer@7.0.3)(react@19.2.0)
-      '@intlayer/core': 7.0.3(@intlayer/api@7.0.3)(@intlayer/config@7.0.3)(@intlayer/dictionaries-entry@7.0.3)(@intlayer/types@7.0.3)(@intlayer/unmerged-dictionaries-entry@7.0.3)
-      '@intlayer/dictionaries-entry': 7.0.3(@intlayer/config@7.0.3)(@intlayer/types@7.0.3)
-      '@intlayer/remote-dictionaries-entry': 7.0.3(@intlayer/config@7.0.3)(@intlayer/core@7.0.3)(@intlayer/types@7.0.3)
-      '@intlayer/types': 7.0.3
-      '@intlayer/unmerged-dictionaries-entry': 7.0.3(@intlayer/config@7.0.3)(@intlayer/types@7.0.3)
+      '@intlayer/api': 7.0.5(@intlayer/config@7.0.5)(@intlayer/types@7.0.5)
+      '@intlayer/config': 7.0.5(intlayer@7.0.5)(react@19.2.0)
+      '@intlayer/core': 7.0.5(@intlayer/api@7.0.5)(@intlayer/config@7.0.5)(@intlayer/dictionaries-entry@7.0.5)(@intlayer/types@7.0.5)(@intlayer/unmerged-dictionaries-entry@7.0.5)
+      '@intlayer/dictionaries-entry': 7.0.5(@intlayer/config@7.0.5)(@intlayer/types@7.0.5)
+      '@intlayer/remote-dictionaries-entry': 7.0.5(@intlayer/config@7.0.5)(@intlayer/core@7.0.5)(@intlayer/types@7.0.5)
+      '@intlayer/types': 7.0.5
+      '@intlayer/unmerged-dictionaries-entry': 7.0.5(@intlayer/config@7.0.5)(@intlayer/types@7.0.5)
       chokidar: 3.6.0
       crypto-js: 4.2.0
       deep-equal: 2.2.3
@@ -8551,75 +8551,75 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@intlayer/cli@7.0.3(@intlayer/api@7.0.3)(@intlayer/chokidar@7.0.3)(@intlayer/config@7.0.3)(@intlayer/dictionaries-entry@7.0.3)(@intlayer/remote-dictionaries-entry@7.0.3)(@intlayer/types@7.0.3)(@intlayer/unmerged-dictionaries-entry@7.0.3)':
+  '@intlayer/cli@7.0.5(@intlayer/api@7.0.5)(@intlayer/chokidar@7.0.5)(@intlayer/config@7.0.5)(@intlayer/dictionaries-entry@7.0.5)(@intlayer/remote-dictionaries-entry@7.0.5)(@intlayer/types@7.0.5)(@intlayer/unmerged-dictionaries-entry@7.0.5)':
     dependencies:
-      '@intlayer/api': 7.0.3(@intlayer/config@7.0.3)(@intlayer/types@7.0.3)
-      '@intlayer/chokidar': 7.0.3(@intlayer/api@7.0.3)(@intlayer/config@7.0.3)(@intlayer/core@7.0.3)(@intlayer/dictionaries-entry@7.0.3)(@intlayer/remote-dictionaries-entry@7.0.3)(@intlayer/types@7.0.3)(@intlayer/unmerged-dictionaries-entry@7.0.3)(fast-glob@3.3.3)
-      '@intlayer/config': 7.0.3(intlayer@7.0.3)(react@19.2.0)
-      '@intlayer/dictionaries-entry': 7.0.3(@intlayer/config@7.0.3)(@intlayer/types@7.0.3)
-      '@intlayer/remote-dictionaries-entry': 7.0.3(@intlayer/config@7.0.3)(@intlayer/core@7.0.3)(@intlayer/types@7.0.3)
-      '@intlayer/types': 7.0.3
-      '@intlayer/unmerged-dictionaries-entry': 7.0.3(@intlayer/config@7.0.3)(@intlayer/types@7.0.3)
+      '@intlayer/api': 7.0.5(@intlayer/config@7.0.5)(@intlayer/types@7.0.5)
+      '@intlayer/chokidar': 7.0.5(@intlayer/api@7.0.5)(@intlayer/config@7.0.5)(@intlayer/core@7.0.5)(@intlayer/dictionaries-entry@7.0.5)(@intlayer/remote-dictionaries-entry@7.0.5)(@intlayer/types@7.0.5)(@intlayer/unmerged-dictionaries-entry@7.0.5)(fast-glob@3.3.3)
+      '@intlayer/config': 7.0.5(intlayer@7.0.5)(react@19.2.0)
+      '@intlayer/dictionaries-entry': 7.0.5(@intlayer/config@7.0.5)(@intlayer/types@7.0.5)
+      '@intlayer/remote-dictionaries-entry': 7.0.5(@intlayer/config@7.0.5)(@intlayer/core@7.0.5)(@intlayer/types@7.0.5)
+      '@intlayer/types': 7.0.5
+      '@intlayer/unmerged-dictionaries-entry': 7.0.5(@intlayer/config@7.0.5)(@intlayer/types@7.0.5)
       commander: 14.0.1
       eventsource: 3.0.7
       fast-glob: 3.3.3
 
-  '@intlayer/config@7.0.3(intlayer@7.0.3)(react@19.2.0)':
+  '@intlayer/config@7.0.5(intlayer@7.0.5)(react@19.2.0)':
     dependencies:
-      '@intlayer/types': 7.0.3
+      '@intlayer/types': 7.0.5
       deepmerge: 4.3.1
       dotenv: 16.6.1
       esbuild: 0.25.2
     optionalDependencies:
-      intlayer: 7.0.3(@intlayer/cli@7.0.3)(@intlayer/config@7.0.3)(@intlayer/core@7.0.3)(@intlayer/types@7.0.3)
+      intlayer: 7.0.5(@intlayer/cli@7.0.5)(@intlayer/config@7.0.5)(@intlayer/core@7.0.5)(@intlayer/types@7.0.5)
       react: 19.2.0
 
-  '@intlayer/core@7.0.3(@intlayer/api@7.0.3)(@intlayer/config@7.0.3)(@intlayer/dictionaries-entry@7.0.3)(@intlayer/types@7.0.3)(@intlayer/unmerged-dictionaries-entry@7.0.3)':
+  '@intlayer/core@7.0.5(@intlayer/api@7.0.5)(@intlayer/config@7.0.5)(@intlayer/dictionaries-entry@7.0.5)(@intlayer/types@7.0.5)(@intlayer/unmerged-dictionaries-entry@7.0.5)':
     dependencies:
-      '@intlayer/api': 7.0.3(@intlayer/config@7.0.3)(@intlayer/types@7.0.3)
-      '@intlayer/config': 7.0.3(intlayer@7.0.3)(react@19.2.0)
-      '@intlayer/dictionaries-entry': 7.0.3(@intlayer/config@7.0.3)(@intlayer/types@7.0.3)
-      '@intlayer/types': 7.0.3
-      '@intlayer/unmerged-dictionaries-entry': 7.0.3(@intlayer/config@7.0.3)(@intlayer/types@7.0.3)
+      '@intlayer/api': 7.0.5(@intlayer/config@7.0.5)(@intlayer/types@7.0.5)
+      '@intlayer/config': 7.0.5(intlayer@7.0.5)(react@19.2.0)
+      '@intlayer/dictionaries-entry': 7.0.5(@intlayer/config@7.0.5)(@intlayer/types@7.0.5)
+      '@intlayer/types': 7.0.5
+      '@intlayer/unmerged-dictionaries-entry': 7.0.5(@intlayer/config@7.0.5)(@intlayer/types@7.0.5)
       deepmerge: 4.3.1
 
-  '@intlayer/dictionaries-entry@7.0.3(@intlayer/config@7.0.3)(@intlayer/types@7.0.3)':
+  '@intlayer/dictionaries-entry@7.0.5(@intlayer/config@7.0.5)(@intlayer/types@7.0.5)':
     dependencies:
-      '@intlayer/config': 7.0.3(intlayer@7.0.3)(react@19.2.0)
-      '@intlayer/types': 7.0.3
+      '@intlayer/config': 7.0.5(intlayer@7.0.5)(react@19.2.0)
+      '@intlayer/types': 7.0.5
 
-  '@intlayer/editor-react@7.0.3(@intlayer/config@7.0.3)(@intlayer/core@7.0.3)(@intlayer/types@7.0.3)(@intlayer/unmerged-dictionaries-entry@7.0.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+  '@intlayer/editor-react@7.0.5(@intlayer/config@7.0.5)(@intlayer/core@7.0.5)(@intlayer/types@7.0.5)(@intlayer/unmerged-dictionaries-entry@7.0.5)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
-      '@intlayer/config': 7.0.3(intlayer@7.0.3)(react@19.2.0)
-      '@intlayer/core': 7.0.3(@intlayer/api@7.0.3)(@intlayer/config@7.0.3)(@intlayer/dictionaries-entry@7.0.3)(@intlayer/types@7.0.3)(@intlayer/unmerged-dictionaries-entry@7.0.3)
-      '@intlayer/editor': 7.0.3
-      '@intlayer/types': 7.0.3
-      '@intlayer/unmerged-dictionaries-entry': 7.0.3(@intlayer/config@7.0.3)(@intlayer/types@7.0.3)
+      '@intlayer/config': 7.0.5(intlayer@7.0.5)(react@19.2.0)
+      '@intlayer/core': 7.0.5(@intlayer/api@7.0.5)(@intlayer/config@7.0.5)(@intlayer/dictionaries-entry@7.0.5)(@intlayer/types@7.0.5)(@intlayer/unmerged-dictionaries-entry@7.0.5)
+      '@intlayer/editor': 7.0.5
+      '@intlayer/types': 7.0.5
+      '@intlayer/unmerged-dictionaries-entry': 7.0.5(@intlayer/config@7.0.5)(@intlayer/types@7.0.5)
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
       uuid: 13.0.0
 
-  '@intlayer/editor@7.0.3': {}
+  '@intlayer/editor@7.0.5': {}
 
-  '@intlayer/remote-dictionaries-entry@7.0.3(@intlayer/config@7.0.3)(@intlayer/core@7.0.3)(@intlayer/types@7.0.3)':
+  '@intlayer/remote-dictionaries-entry@7.0.5(@intlayer/config@7.0.5)(@intlayer/core@7.0.5)(@intlayer/types@7.0.5)':
     dependencies:
-      '@intlayer/config': 7.0.3(intlayer@7.0.3)(react@19.2.0)
-      '@intlayer/core': 7.0.3(@intlayer/api@7.0.3)(@intlayer/config@7.0.3)(@intlayer/dictionaries-entry@7.0.3)(@intlayer/types@7.0.3)(@intlayer/unmerged-dictionaries-entry@7.0.3)
-      '@intlayer/types': 7.0.3
+      '@intlayer/config': 7.0.5(intlayer@7.0.5)(react@19.2.0)
+      '@intlayer/core': 7.0.5(@intlayer/api@7.0.5)(@intlayer/config@7.0.5)(@intlayer/dictionaries-entry@7.0.5)(@intlayer/types@7.0.5)(@intlayer/unmerged-dictionaries-entry@7.0.5)
+      '@intlayer/types': 7.0.5
 
-  '@intlayer/types@7.0.3': {}
+  '@intlayer/types@7.0.5': {}
 
-  '@intlayer/unmerged-dictionaries-entry@7.0.3(@intlayer/config@7.0.3)(@intlayer/types@7.0.3)':
+  '@intlayer/unmerged-dictionaries-entry@7.0.5(@intlayer/config@7.0.5)(@intlayer/types@7.0.5)':
     dependencies:
-      '@intlayer/config': 7.0.3(intlayer@7.0.3)(react@19.2.0)
-      '@intlayer/types': 7.0.3
+      '@intlayer/config': 7.0.5(intlayer@7.0.5)(react@19.2.0)
+      '@intlayer/types': 7.0.5
 
-  '@intlayer/webpack@7.0.3(@intlayer/api@7.0.3)(@intlayer/chokidar@7.0.3)(@intlayer/config@7.0.3)(@intlayer/types@7.0.3)(webpack@5.102.1)':
+  '@intlayer/webpack@7.0.5(@intlayer/api@7.0.5)(@intlayer/chokidar@7.0.5)(@intlayer/config@7.0.5)(@intlayer/types@7.0.5)(webpack@5.102.1)':
     dependencies:
-      '@intlayer/api': 7.0.3(@intlayer/config@7.0.3)(@intlayer/types@7.0.3)
-      '@intlayer/chokidar': 7.0.3(@intlayer/api@7.0.3)(@intlayer/config@7.0.3)(@intlayer/core@7.0.3)(@intlayer/dictionaries-entry@7.0.3)(@intlayer/remote-dictionaries-entry@7.0.3)(@intlayer/types@7.0.3)(@intlayer/unmerged-dictionaries-entry@7.0.3)(fast-glob@3.3.3)
-      '@intlayer/config': 7.0.3(intlayer@7.0.3)(react@19.2.0)
-      '@intlayer/types': 7.0.3
+      '@intlayer/api': 7.0.5(@intlayer/config@7.0.5)(@intlayer/types@7.0.5)
+      '@intlayer/chokidar': 7.0.5(@intlayer/api@7.0.5)(@intlayer/config@7.0.5)(@intlayer/core@7.0.5)(@intlayer/dictionaries-entry@7.0.5)(@intlayer/remote-dictionaries-entry@7.0.5)(@intlayer/types@7.0.5)(@intlayer/unmerged-dictionaries-entry@7.0.5)(fast-glob@3.3.3)
+      '@intlayer/config': 7.0.5(intlayer@7.0.5)(react@19.2.0)
+      '@intlayer/types': 7.0.5
       crypto-js: 4.2.0
       fast-glob: 3.3.3
       webpack: 5.102.1
@@ -11059,7 +11059,7 @@ snapshots:
 
   base64-js@1.5.1: {}
 
-  baseline-browser-mapping@2.8.22: {}
+  baseline-browser-mapping@2.8.23: {}
 
   basic-auth@2.0.1:
     dependencies:
@@ -11154,7 +11154,7 @@ snapshots:
 
   browserslist@4.27.0:
     dependencies:
-      baseline-browser-mapping: 2.8.22
+      baseline-browser-mapping: 2.8.23
       caniuse-lite: 1.0.30001752
       electron-to-chromium: 1.5.244
       node-releases: 2.0.27
@@ -12939,12 +12939,12 @@ snapshots:
 
   internmap@2.0.3: {}
 
-  intlayer@7.0.3(@intlayer/cli@7.0.3)(@intlayer/config@7.0.3)(@intlayer/core@7.0.3)(@intlayer/types@7.0.3):
+  intlayer@7.0.5(@intlayer/cli@7.0.5)(@intlayer/config@7.0.5)(@intlayer/core@7.0.5)(@intlayer/types@7.0.5):
     dependencies:
-      '@intlayer/cli': 7.0.3(@intlayer/api@7.0.3)(@intlayer/chokidar@7.0.3)(@intlayer/config@7.0.3)(@intlayer/dictionaries-entry@7.0.3)(@intlayer/remote-dictionaries-entry@7.0.3)(@intlayer/types@7.0.3)(@intlayer/unmerged-dictionaries-entry@7.0.3)
-      '@intlayer/config': 7.0.3(intlayer@7.0.3)(react@19.2.0)
-      '@intlayer/core': 7.0.3(@intlayer/api@7.0.3)(@intlayer/config@7.0.3)(@intlayer/dictionaries-entry@7.0.3)(@intlayer/types@7.0.3)(@intlayer/unmerged-dictionaries-entry@7.0.3)
-      '@intlayer/types': 7.0.3
+      '@intlayer/cli': 7.0.5(@intlayer/api@7.0.5)(@intlayer/chokidar@7.0.5)(@intlayer/config@7.0.5)(@intlayer/dictionaries-entry@7.0.5)(@intlayer/remote-dictionaries-entry@7.0.5)(@intlayer/types@7.0.5)(@intlayer/unmerged-dictionaries-entry@7.0.5)
+      '@intlayer/config': 7.0.5(intlayer@7.0.5)(react@19.2.0)
+      '@intlayer/core': 7.0.5(@intlayer/api@7.0.5)(@intlayer/config@7.0.5)(@intlayer/dictionaries-entry@7.0.5)(@intlayer/types@7.0.5)(@intlayer/unmerged-dictionaries-entry@7.0.5)
+      '@intlayer/types': 7.0.5
 
   ioredis@5.8.2:
     dependencies:
@@ -13996,21 +13996,21 @@ snapshots:
       international-types: 0.8.1
       server-only: 0.0.1
 
-  next-intlayer@7.0.3(@intlayer/api@7.0.3)(@intlayer/config@7.0.3)(@intlayer/core@7.0.3)(@intlayer/dictionaries-entry@7.0.3)(@intlayer/remote-dictionaries-entry@7.0.3)(@intlayer/types@7.0.3)(@intlayer/unmerged-dictionaries-entry@7.0.3)(@intlayer/webpack@7.0.3(@intlayer/api@7.0.3)(@intlayer/chokidar@7.0.3)(@intlayer/config@7.0.3)(@intlayer/types@7.0.3)(webpack@5.102.1))(next@15.5.3(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react-intlayer@7.0.3(@intlayer/api@7.0.3)(@intlayer/cli@7.0.3)(@intlayer/config@7.0.3)(@intlayer/core@7.0.3)(@intlayer/editor-react@7.0.3(@intlayer/config@7.0.3)(@intlayer/core@7.0.3)(@intlayer/types@7.0.3)(@intlayer/unmerged-dictionaries-entry@7.0.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@intlayer/types@7.0.3)(@intlayer/unmerged-dictionaries-entry@7.0.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)(webpack@5.102.1):
+  next-intlayer@7.0.5(@intlayer/api@7.0.5)(@intlayer/config@7.0.5)(@intlayer/core@7.0.5)(@intlayer/dictionaries-entry@7.0.5)(@intlayer/remote-dictionaries-entry@7.0.5)(@intlayer/types@7.0.5)(@intlayer/unmerged-dictionaries-entry@7.0.5)(@intlayer/webpack@7.0.5(@intlayer/api@7.0.5)(@intlayer/chokidar@7.0.5)(@intlayer/config@7.0.5)(@intlayer/types@7.0.5)(webpack@5.102.1))(next@15.5.3(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react-intlayer@7.0.5(@intlayer/api@7.0.5)(@intlayer/cli@7.0.5)(@intlayer/config@7.0.5)(@intlayer/core@7.0.5)(@intlayer/editor-react@7.0.5(@intlayer/config@7.0.5)(@intlayer/core@7.0.5)(@intlayer/types@7.0.5)(@intlayer/unmerged-dictionaries-entry@7.0.5)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@intlayer/types@7.0.5)(@intlayer/unmerged-dictionaries-entry@7.0.5)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)(webpack@5.102.1):
     dependencies:
-      '@intlayer/chokidar': 7.0.3(@intlayer/api@7.0.3)(@intlayer/config@7.0.3)(@intlayer/core@7.0.3)(@intlayer/dictionaries-entry@7.0.3)(@intlayer/remote-dictionaries-entry@7.0.3)(@intlayer/types@7.0.3)(@intlayer/unmerged-dictionaries-entry@7.0.3)(fast-glob@3.3.3)
-      '@intlayer/config': 7.0.3(intlayer@7.0.3)(react@19.2.0)
-      '@intlayer/core': 7.0.3(@intlayer/api@7.0.3)(@intlayer/config@7.0.3)(@intlayer/dictionaries-entry@7.0.3)(@intlayer/types@7.0.3)(@intlayer/unmerged-dictionaries-entry@7.0.3)
-      '@intlayer/dictionaries-entry': 7.0.3(@intlayer/config@7.0.3)(@intlayer/types@7.0.3)
-      '@intlayer/types': 7.0.3
-      '@intlayer/webpack': 7.0.3(@intlayer/api@7.0.3)(@intlayer/chokidar@7.0.3)(@intlayer/config@7.0.3)(@intlayer/types@7.0.3)(webpack@5.102.1)
+      '@intlayer/chokidar': 7.0.5(@intlayer/api@7.0.5)(@intlayer/config@7.0.5)(@intlayer/core@7.0.5)(@intlayer/dictionaries-entry@7.0.5)(@intlayer/remote-dictionaries-entry@7.0.5)(@intlayer/types@7.0.5)(@intlayer/unmerged-dictionaries-entry@7.0.5)(fast-glob@3.3.3)
+      '@intlayer/config': 7.0.5(intlayer@7.0.5)(react@19.2.0)
+      '@intlayer/core': 7.0.5(@intlayer/api@7.0.5)(@intlayer/config@7.0.5)(@intlayer/dictionaries-entry@7.0.5)(@intlayer/types@7.0.5)(@intlayer/unmerged-dictionaries-entry@7.0.5)
+      '@intlayer/dictionaries-entry': 7.0.5(@intlayer/config@7.0.5)(@intlayer/types@7.0.5)
+      '@intlayer/types': 7.0.5
+      '@intlayer/webpack': 7.0.5(@intlayer/api@7.0.5)(@intlayer/chokidar@7.0.5)(@intlayer/config@7.0.5)(@intlayer/types@7.0.5)(webpack@5.102.1)
       deepmerge: 4.3.1
       fast-glob: 3.3.3
       next: 15.5.3(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       node-loader: 2.1.0(webpack@5.102.1)
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
-      react-intlayer: 7.0.3(@intlayer/api@7.0.3)(@intlayer/cli@7.0.3)(@intlayer/config@7.0.3)(@intlayer/core@7.0.3)(@intlayer/editor-react@7.0.3(@intlayer/config@7.0.3)(@intlayer/core@7.0.3)(@intlayer/types@7.0.3)(@intlayer/unmerged-dictionaries-entry@7.0.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@intlayer/types@7.0.3)(@intlayer/unmerged-dictionaries-entry@7.0.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      react-intlayer: 7.0.5(@intlayer/api@7.0.5)(@intlayer/cli@7.0.5)(@intlayer/config@7.0.5)(@intlayer/core@7.0.5)(@intlayer/editor-react@7.0.5(@intlayer/config@7.0.5)(@intlayer/core@7.0.5)(@intlayer/types@7.0.5)(@intlayer/unmerged-dictionaries-entry@7.0.5)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@intlayer/types@7.0.5)(@intlayer/unmerged-dictionaries-entry@7.0.5)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
     transitivePeerDependencies:
       - '@intlayer/api'
       - '@intlayer/remote-dictionaries-entry'
@@ -14564,20 +14564,20 @@ snapshots:
       react: 19.2.0
       scheduler: 0.27.0
 
-  react-hook-form@7.65.0(react@19.2.0):
+  react-hook-form@7.66.0(react@19.2.0):
     dependencies:
       react: 19.2.0
 
-  react-intlayer@7.0.3(@intlayer/api@7.0.3)(@intlayer/cli@7.0.3)(@intlayer/config@7.0.3)(@intlayer/core@7.0.3)(@intlayer/editor-react@7.0.3(@intlayer/config@7.0.3)(@intlayer/core@7.0.3)(@intlayer/types@7.0.3)(@intlayer/unmerged-dictionaries-entry@7.0.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@intlayer/types@7.0.3)(@intlayer/unmerged-dictionaries-entry@7.0.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
+  react-intlayer@7.0.5(@intlayer/api@7.0.5)(@intlayer/cli@7.0.5)(@intlayer/config@7.0.5)(@intlayer/core@7.0.5)(@intlayer/editor-react@7.0.5(@intlayer/config@7.0.5)(@intlayer/core@7.0.5)(@intlayer/types@7.0.5)(@intlayer/unmerged-dictionaries-entry@7.0.5)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@intlayer/types@7.0.5)(@intlayer/unmerged-dictionaries-entry@7.0.5)(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
     dependencies:
-      '@intlayer/api': 7.0.3(@intlayer/config@7.0.3)(@intlayer/types@7.0.3)
-      '@intlayer/config': 7.0.3(intlayer@7.0.3)(react@19.2.0)
-      '@intlayer/core': 7.0.3(@intlayer/api@7.0.3)(@intlayer/config@7.0.3)(@intlayer/dictionaries-entry@7.0.3)(@intlayer/types@7.0.3)(@intlayer/unmerged-dictionaries-entry@7.0.3)
-      '@intlayer/dictionaries-entry': 7.0.3(@intlayer/config@7.0.3)(@intlayer/types@7.0.3)
-      '@intlayer/editor-react': 7.0.3(@intlayer/config@7.0.3)(@intlayer/core@7.0.3)(@intlayer/types@7.0.3)(@intlayer/unmerged-dictionaries-entry@7.0.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      '@intlayer/types': 7.0.3
-      '@intlayer/unmerged-dictionaries-entry': 7.0.3(@intlayer/config@7.0.3)(@intlayer/types@7.0.3)
-      intlayer: 7.0.3(@intlayer/cli@7.0.3)(@intlayer/config@7.0.3)(@intlayer/core@7.0.3)(@intlayer/types@7.0.3)
+      '@intlayer/api': 7.0.5(@intlayer/config@7.0.5)(@intlayer/types@7.0.5)
+      '@intlayer/config': 7.0.5(intlayer@7.0.5)(react@19.2.0)
+      '@intlayer/core': 7.0.5(@intlayer/api@7.0.5)(@intlayer/config@7.0.5)(@intlayer/dictionaries-entry@7.0.5)(@intlayer/types@7.0.5)(@intlayer/unmerged-dictionaries-entry@7.0.5)
+      '@intlayer/dictionaries-entry': 7.0.5(@intlayer/config@7.0.5)(@intlayer/types@7.0.5)
+      '@intlayer/editor-react': 7.0.5(@intlayer/config@7.0.5)(@intlayer/core@7.0.5)(@intlayer/types@7.0.5)(@intlayer/unmerged-dictionaries-entry@7.0.5)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@intlayer/types': 7.0.5
+      '@intlayer/unmerged-dictionaries-entry': 7.0.5(@intlayer/config@7.0.5)(@intlayer/types@7.0.5)
+      intlayer: 7.0.5(@intlayer/cli@7.0.5)(@intlayer/config@7.0.5)(@intlayer/core@7.0.5)(@intlayer/types@7.0.5)
       js-cookie: 3.0.5
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)

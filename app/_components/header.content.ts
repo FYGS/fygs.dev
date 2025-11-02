@@ -89,6 +89,11 @@ const headerContent = {
         fr: "Autres Pages",
         es: "Otras Páginas",
       }),
+      language: t({
+        en: "Language",
+        fr: "Langue",
+        es: "Idioma",
+      }),
       followMe: t({
         en: "Follow Me",
         fr: "Suivez-moi",

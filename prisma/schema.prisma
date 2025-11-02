@@ -65,6 +65,7 @@ model User {
   payments          Payment[]
   progress          Progress[]
   quizResults       QuizResult[]
+  examResults       ExamResult[]
   reviews           Review[]
   reviewVotes       ReviewVote[]
   reviewReplies     ReviewReply[]
@@ -381,6 +382,41 @@ model QuizResult {
   @@index([userId, quizId, completedAt])
 }
 
+model FinalExam {
+  id           String       @id @default(cuid())
+  courseId     String
+  title        String
+  description  String?
+  passingScore Int          @default(70) // Percentage needed to pass
+  timeLimit    Int?         // Time limit in minutes (optional)
+  questions    Json         // Array of question objects
+  published    Boolean      @default(false)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  course       Course       @relation("CourseToFinalExam", fields: [courseId], references: [id], onDelete: Cascade)
+  results      ExamResult[] @relation("FinalExamToExamResult")
+
+  @@unique([courseId]) // One final exam per course
+  @@index([courseId, published])
+}
+
+model ExamResult {
+  id          String    @id @default(cuid())
+  userId      String
+  examId      String
+  score       Int
+  total       Int
+  percentage  Int
+  passed      Boolean
+  answers     Json      // User's answers for review
+  completedAt DateTime  @default(now())
+  exam        FinalExam @relation("FinalExamToExamResult", fields: [examId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, examId])
+  @@index([userId, examId, passed, completedAt])
+}
+
 enum Role {
   STUDENT
   INSTRUCTOR
@@ -676,6 +712,7 @@ model Course {
   modules             Module[]
   payments            Payment[]
   quizzes             Quiz[]           @relation("CourseToQuiz")
+  finalExam           FinalExam?       @relation("CourseToFinalExam")
   reviews             Review[]
   visualSupports      VisualSupport[]  @relation("CourseToVisualSupport")
   // Community Relations

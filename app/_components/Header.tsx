@@ -245,8 +245,17 @@ export const Header = () => {
                           />
                         </div>
                       </div>
+
+                      {/* Locale Switcher Section */}
+                      <div className="px-6 mb-6">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                          {content.mobile.language.value}
+                        </p>
+                        <LocaleSwitcher />
+                      </div>
                     </div>
 
+                    {/* Social Links Footer */}
                     <div className="px-6 py-4 border-t border-border bg-muted/20 mt-auto">
                       <p className="text-sm text-muted-foreground mb-3">
                         {content.mobile.followMe.value}

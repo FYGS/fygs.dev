@@ -13,14 +13,10 @@ import { Badge } from "@/components/ui/badge";
 import { Mail, CheckCircle, Clock, RefreshCw } from "lucide-react";
 import { authService } from "@/lib/auth-service";
 import { toast } from "sonner";
-
-const schema = z.object({
-  email: z.string().email("Email invalide"),
-});
-
-type FormData = z.infer<typeof schema>;
+import { useIntlayer } from "next-intlayer";
 
 function VerifyEmailContent() {
+  const content = useIntlayer("auth");
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
@@ -29,12 +25,24 @@ function VerifyEmailContent() {
 
   // Get email from URL params if available
   const emailFromParams = searchParams.get("email");
+  const callbackUrl = searchParams.get("callbackUrl");
 
-  const { register, handleSubmit, formState: { errors }, setError } = useForm<FormData>({ 
+  const schema = z.object({
+    email: z.string().email(String(content.verify.title)),
+  });
+
+  type FormData = z.infer<typeof schema>;
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+  } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       email: emailFromParams || "",
-    }
+    },
   });
 
   // Countdown timer for resend button
@@ -49,21 +57,18 @@ function VerifyEmailContent() {
     setIsLoading(true);
     try {
       const result = await authService.sendVerificationEmail(data.email);
-      
+
       if (!result.success) {
-        setError("email", { message: result.error || "Impossible d'envoyer l'email" });
+        setError("email", {
+          message: result.error || content.verify.title.value,
+        });
       } else {
         setSent(true);
-        setCountdown(60); // 60 second cooldown
-        toast.success("Email de vérification envoyé !",{
-          description: "Si un compte existe pour cet email, un lien a été envoyé.",
-        });
+        setCountdown(60);
+        toast.success(content.verify.title.value);
       }
     } catch {
-      setError("email", { message: "Une erreur s'est produite" });
-      toast.error("Erreur lors de l'envoi de l'email",{
-        description: "Une erreur est survenue lors de l'envoi de l'email",
-      });
+      setError("email", { message: content.verify.title.value });
     } finally {
       setIsLoading(false);
     }
@@ -71,26 +76,20 @@ function VerifyEmailContent() {
 
   const handleQuickResend = async () => {
     if (!emailFromParams || countdown > 0) return;
-    
+
     setIsLoading(true);
     try {
       const result = await authService.sendVerificationEmail(emailFromParams);
-      
+
       if (result.success) {
         setSent(true);
         setCountdown(60);
-        toast.success("Email de vérification renvoyé !",{
-          description: "Si un compte existe pour cet email, un lien a été envoyé.",
-        });
+        toast.success(content.verify.title.value);
       } else {
-        toast.error("Erreur lors de l'envoi",{
-          description: result.error || "Erreur lors de l'envoi",
-        });
+        toast.error(content.verify.title.value);
       }
     } catch {
-      toast.error("Une erreur s'est produite",{
-        description: "Une erreur est survenue lors de l'envoi de l'email",
-      });
+      toast.error(content.verify.title.value);
     } finally {
       setIsLoading(false);
     }
@@ -103,12 +102,13 @@ function VerifyEmailContent() {
           <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
             <Mail className="h-8 w-8 text-primary" />
           </div>
-          <CardTitle className="text-2xl font-bold">Vérifiez votre email</CardTitle>
+          <CardTitle className="text-2xl font-bold">
+            {content.verify.title}
+          </CardTitle>
           <p className="text-muted-foreground">
-            {emailFromParams 
-              ? `Nous avons envoyé un lien de vérification à ${emailFromParams}`
-              : "Entrez votre email pour recevoir un lien de vérification"
-            }
+            {emailFromParams
+              ? `${content.verify.description} ${emailFromParams}`
+              : content.verify.checkInbox}
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -116,9 +116,9 @@ function VerifyEmailContent() {
             <div className="text-center space-y-4">
               <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                 <Clock className="h-4 w-4" />
-                Vérifiez votre boîte mail et vos spams
+                {content.verify.checkInbox}
               </div>
-              
+
               <Button
                 onClick={handleQuickResend}
                 disabled={isLoading || countdown > 0}
@@ -128,20 +128,23 @@ function VerifyEmailContent() {
                 {isLoading ? (
                   <>
                     <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                    Envoi...
+                    {content.common.loading}
                   </>
                 ) : countdown > 0 ? (
-                  `Renvoyer dans ${countdown}s`
+                  `${content.verify.resend} ${countdown}s`
                 ) : (
                   <>
                     <RefreshCw className="h-4 w-4 mr-2" />
-                    Renvoyer le lien
+                    {content.verify.resend}
                   </>
                 )}
               </Button>
 
               {sent && (
-                <Badge variant="secondary" className="flex items-center gap-1 w-fit mx-auto">
+                <Badge
+                  variant="secondary"
+                  className="flex items-center gap-1 w-fit mx-auto"
+                >
                   <CheckCircle className="h-3 w-3" />
                   Email envoyé
                 </Badge>
@@ -152,31 +155,40 @@ function VerifyEmailContent() {
           {!emailFromParams && (
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
-                  placeholder="vous@email.com" 
-                  {...register("email")} 
-                  disabled={isLoading} 
+                <Label htmlFor="email">
+                  {content.forgotPassword.emailLabel}
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@email.com"
+                  {...register("email")}
+                  disabled={isLoading}
                 />
                 {errors.email && (
-                  <p className="text-sm text-destructive">{errors.email.message}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.email.message}
+                  </p>
                 )}
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Envoi..." : "Envoyer le lien"}
+                {isLoading ? content.common.loading : content.verify.resend}
               </Button>
             </form>
           )}
 
           <div className="text-center">
-            <Button 
-              variant="link" 
-              onClick={() => router.push("/auth/login")}
+            <Button
+              variant="link"
+              onClick={() => {
+                const url = callbackUrl
+                  ? `/auth/login?callbackUrl=${encodeURIComponent(callbackUrl)}`
+                  : "/auth/login";
+                router.push(url);
+              }}
               className="text-sm"
             >
-              Retour à la connexion
+              {content.verify.backToLogin}
             </Button>
           </div>
         </CardContent>
@@ -186,19 +198,25 @@ function VerifyEmailContent() {
 }
 
 export default function VerifyEmailPage() {
+  const content = useIntlayer("auth");
+
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-background via-background to-muted/20">
-        <Card className="w-full max-w-md mx-4">
-          <CardHeader className="space-y-2">
-            <CardTitle className="text-2xl font-bold text-center">Vérification de l&apos;email</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center">Chargement...</div>
-          </CardContent>
-        </Card>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-background via-background to-muted/20">
+          <Card className="w-full max-w-md mx-4">
+            <CardHeader className="space-y-2">
+              <CardTitle className="text-2xl font-bold text-center">
+                {content.verify.title}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center">{content.common.loading}</div>
+            </CardContent>
+          </Card>
+        </div>
+      }
+    >
       <VerifyEmailContent />
     </Suspense>
   );

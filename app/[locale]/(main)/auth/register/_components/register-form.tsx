@@ -13,24 +13,35 @@ import { Github, Mail, Eye, EyeOff } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useIntlayer } from "next-intlayer";
 
-const registerSchema = z.object({
-  name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  email: z.string().email("Email invalide"),
-  password: z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères"),
-  confirmPassword: z.string(),
-  acceptTerms: z.union([z.boolean(), z.string()]).transform(val => val === true || val === "true"),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Les mots de passe ne correspondent pas",
-  path: ["confirmPassword"],
-}).refine((data) => data.acceptTerms === true, {
-  message: "Vous devez accepter les conditions",
-  path: ["acceptTerms"],
-});
+interface RegisterFormProps {
+  callbackUrl?: string | null;
+}
 
-type RegisterFormData = z.infer<typeof registerSchema>;
+export function RegisterForm({ callbackUrl }: RegisterFormProps) {
+  const content = useIntlayer("register-form");
 
-export function RegisterForm() {
+  const registerSchema = z
+    .object({
+      name: z.string().min(2, content.form.name.error.minLength.value),
+      email: z.string().email(content.form.email.error.invalid.value),
+      password: z.string().min(8, content.form.password.error.minLength.value),
+      confirmPassword: z.string(),
+      acceptTerms: z
+        .union([z.boolean(), z.string()])
+        .transform((val) => val === true || val === "true"),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: content.form.confirmPassword.error.mismatch.value,
+      path: ["confirmPassword"],
+    })
+    .refine((data) => data.acceptTerms === true, {
+      message: content.form.acceptTerms.error.value,
+      path: ["acceptTerms"],
+    });
+
+  type RegisterFormData = z.infer<typeof registerSchema>;
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -62,15 +73,22 @@ export function RegisterForm() {
       });
 
       if (!result.success) {
-        setError("root", { message: result.error || "Une erreur s'est produite lors de l'inscription" });
-      } else {
-        toast.success("Inscription réussie !",{
-          description: "Vérifiez votre email.",
+        setError("root", {
+          message: result.error || content.messages.error.generic.value,
         });
-        router.push(`/auth/verify?email=${encodeURIComponent(data.email)}`);
+      } else {
+        toast.success(content.messages.success.title.value, {
+          description: content.messages.success.description.value,
+        });
+        const verifyUrl = `/auth/verify?email=${encodeURIComponent(
+          data.email
+        )}${
+          callbackUrl ? `&callbackUrl=${encodeURIComponent(callbackUrl)}` : ""
+        }`;
+        router.push(verifyUrl);
       }
     } catch {
-      setError("root", { message: "Une erreur s'est produite" });
+      setError("root", { message: content.messages.error.generic.value });
     } finally {
       setIsLoading(false);
     }
@@ -79,11 +97,15 @@ export function RegisterForm() {
   const handleSocialLogin = async (provider: "github" | "google") => {
     setIsLoading(true);
     try {
+      // Store callbackUrl in sessionStorage for post-auth redirect
+      if (callbackUrl) {
+        sessionStorage.setItem("authCallbackUrl", callbackUrl);
+      }
       await authService.signInWithProvider(provider);
     } catch (error) {
       console.error("Social login error:", error);
-      toast.error("Erreur lors de la connexion avec " + provider,{
-        description: "Une erreur est survenue lors de la connexion avec " + provider,
+      toast.error(`${content.messages.error.socialLogin} ${provider}`, {
+        description: `${content.messages.error.socialLogin} ${provider}`,
       });
     } finally {
       setIsLoading(false);
@@ -101,7 +123,7 @@ export function RegisterForm() {
           disabled={isLoading}
         >
           <Github className="h-4 w-4 mr-2 shrink-0" />
-          <span className="truncate">Continuer avec GitHub</span>
+          <span className="truncate">{content.social.github}</span>
         </Button>
         <Button
           variant="outline"
@@ -110,7 +132,7 @@ export function RegisterForm() {
           disabled={isLoading}
         >
           <Mail className="h-4 w-4 mr-2 shrink-0" />
-          <span className="truncate">Continuer avec Google</span>
+          <span className="truncate">{content.social.google}</span>
         </Button>
       </div>
 
@@ -120,7 +142,7 @@ export function RegisterForm() {
         </div>
         <div className="relative flex justify-center text-xs uppercase">
           <span className="bg-background px-2 text-muted-foreground">
-            Ou s&apos;inscrire avec
+            {content.social.separator}
           </span>
         </div>
       </div>
@@ -128,11 +150,11 @@ export function RegisterForm() {
       {/* Registration Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="name">Nom complet</Label>
+          <Label htmlFor="name">{content.form.name.label}</Label>
           <Input
             id="name"
             type="text"
-            placeholder="Votre nom"
+            placeholder={content.form.name.placeholder.value}
             {...register("name")}
             disabled={isLoading}
           />
@@ -142,11 +164,11 @@ export function RegisterForm() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{content.form.email.label}</Label>
           <Input
             id="email"
             type="email"
-            placeholder="votre@email.com"
+            placeholder={content.form.email.placeholder.value}
             {...register("email")}
             disabled={isLoading}
           />
@@ -156,12 +178,12 @@ export function RegisterForm() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">Mot de passe</Label>
+          <Label htmlFor="password">{content.form.password.label}</Label>
           <div className="relative">
             <Input
               id="password"
               type={showPassword ? "text" : "password"}
-              placeholder="••••••••"
+              placeholder={content.form.password.placeholder.value}
               {...register("password")}
               disabled={isLoading}
             />
@@ -181,17 +203,21 @@ export function RegisterForm() {
             </Button>
           </div>
           {errors.password && (
-            <p className="text-sm text-destructive">{errors.password.message}</p>
+            <p className="text-sm text-destructive">
+              {errors.password.message}
+            </p>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
+          <Label htmlFor="confirmPassword">
+            {content.form.confirmPassword.label}
+          </Label>
           <div className="relative">
             <Input
               id="confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
-              placeholder="••••••••"
+              placeholder={content.form.confirmPassword.placeholder.value}
               {...register("confirmPassword")}
               disabled={isLoading}
             />
@@ -211,7 +237,9 @@ export function RegisterForm() {
             </Button>
           </div>
           {errors.confirmPassword && (
-            <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
+            <p className="text-sm text-destructive">
+              {errors.confirmPassword.message}
+            </p>
           )}
         </div>
 
@@ -232,26 +260,32 @@ export function RegisterForm() {
             htmlFor="acceptTerms"
             className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
           >
-            J&apos;accepte les{" "}
+            {content.form.acceptTerms.text}{" "}
             <a href="/terms" className="text-primary hover:underline">
-              conditions d&apos;utilisation
+              {content.form.acceptTerms.terms}
             </a>{" "}
-            et la{" "}
+            {content.form.acceptTerms.and}{" "}
             <a href="/privacy" className="text-primary hover:underline">
-              politique de confidentialité
+              {content.form.acceptTerms.privacy}
             </a>
           </Label>
         </div>
         {errors.acceptTerms && (
-          <p className="text-sm text-destructive">{errors.acceptTerms.message}</p>
+          <p className="text-sm text-destructive">
+            {errors.acceptTerms.message}
+          </p>
         )}
 
         {errors.root && (
           <p className="text-sm text-destructive">{errors.root.message}</p>
         )}
 
-        <Button type="submit" className="w-full" disabled={isLoading || !acceptTerms}>
-          {isLoading ? "Inscription..." : "Créer mon compte"}
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={isLoading || !acceptTerms}
+        >
+          {isLoading ? content.form.submit.loading : content.form.submit.idle}
         </Button>
       </form>
     </div>

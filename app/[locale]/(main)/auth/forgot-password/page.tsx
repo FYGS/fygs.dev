@@ -11,17 +11,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authService } from "@/lib/auth-service";
 import { toast } from "sonner";
-
-const schema = z.object({
-  email: z.string().email("Email invalide"),
-});
-
-type FormData = z.infer<typeof schema>;
+import { useIntlayer } from "next-intlayer";
 
 export default function ForgotPasswordPage() {
+  const content = useIntlayer("auth");
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [sent, setSent] = useState(false);
+
+  const schema = z.object({
+    email: z.string().email(String(content.forgotPassword.emailLabel)),
+  });
+
+  type FormData = z.infer<typeof schema>;
 
   const {
     register,
@@ -35,18 +37,15 @@ export default function ForgotPasswordPage() {
     try {
       const result = await authService.requestPasswordReset(data.email);
       if (!result.success) {
-        setError("email", { message: result.error || "Impossible d'envoyer l'email" });
+        setError("email", {
+          message: result.error || String(content.forgotPassword.success),
+        });
       } else {
         setSent(true);
-        toast.success("Email de réinitialisation envoyé !",{
-          description: "Si un compte existe pour cet email, un lien a été envoyé.",
-        });
+        toast.success(String(content.forgotPassword.success));
       }
     } catch {
-      setError("email", { message: "Une erreur s'est produite" });
-      toast.error("Erreur lors de l'envoi de l'email",{
-        description: "Une erreur est survenue lors de l'envoi de l'email",
-      });
+      setError("email", { message: String(content.forgotPassword.success) });
     } finally {
       setIsLoading(false);
     }
@@ -56,29 +55,54 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-background via-background to-muted/20 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-2">
-          <CardTitle className="text-2xl font-bold">Mot de passe oublié</CardTitle>
+          <CardTitle className="text-2xl font-bold">
+            {content.forgotPassword.title}
+          </CardTitle>
           <p className="text-muted-foreground">
-            Entrez votre email pour recevoir un lien de réinitialisation
+            {content.forgotPassword.description}
           </p>
         </CardHeader>
         <CardContent>
           {sent ? (
             <div className="text-center space-y-4">
-              <p className="text-sm">Si un compte existe pour cet email, un lien a été envoyé.</p>
-              <Button onClick={() => router.push("/auth/login")}>Retour à la connexion</Button>
+              <p className="text-sm">{content.forgotPassword.success}</p>
+              <Button onClick={() => router.push("/auth/login")}>
+                {content.forgotPassword.backToLogin}
+              </Button>
             </div>
           ) : (
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="vous@email.com" {...register("email")} disabled={isLoading} />
+                <Label htmlFor="email">
+                  {content.forgotPassword.emailLabel}
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@email.com"
+                  {...register("email")}
+                  disabled={isLoading}
+                />
                 {errors.email && (
-                  <p className="text-sm text-destructive">{errors.email.message}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.email.message}
+                  </p>
                 )}
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Envoi..." : "Envoyer le lien"}
+                {isLoading
+                  ? content.common.loading
+                  : content.forgotPassword.sendLink}
               </Button>
+              <div className="text-center">
+                <Button
+                  variant="link"
+                  onClick={() => router.push("/auth/login")}
+                  type="button"
+                >
+                  {content.forgotPassword.backToLogin}
+                </Button>
+              </div>
             </form>
           )}
         </CardContent>

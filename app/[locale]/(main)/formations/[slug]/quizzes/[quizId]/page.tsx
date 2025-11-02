@@ -12,15 +12,17 @@ interface QuizPageProps {
   params: Promise<{ slug: string; quizId: string }>;
 }
 
-export async function generateMetadata({ params }: QuizPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: QuizPageProps): Promise<Metadata> {
   const { slug, quizId } = await params;
-  
+
   const [course, quiz] = await Promise.all([
     CourseRepository.findBySlug(slug),
     db.quiz.findUnique({
       where: { id: quizId },
-      select: { title: true }
-    })
+      select: { title: true },
+    }),
   ]);
 
   if (!course || !quiz) {
@@ -37,7 +39,7 @@ export async function generateMetadata({ params }: QuizPageProps): Promise<Metad
 
 export default async function QuizPage({ params }: QuizPageProps) {
   const { slug, quizId } = await params;
-  
+
   // Check authentication
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -54,8 +56,11 @@ export default async function QuizPage({ params }: QuizPageProps) {
   }
 
   // Check user access
-  const userAccess = await AccessService.checkCourseAccess(session.user.id, course.id);
-  
+  const userAccess = await AccessService.checkCourseAccess(
+    session.user.id,
+    course.id
+  );
+
   if (!userAccess.canAccessCourse) {
     redirect(`/formations/${slug}`);
   }
@@ -63,15 +68,15 @@ export default async function QuizPage({ params }: QuizPageProps) {
   // Fetch quiz with questions
   const [quiz, allQuizzes] = await Promise.all([
     db.quiz.findUnique({
-      where: { 
+      where: {
         id: quizId,
-        courseId: course.id 
+        courseId: course.id,
       },
       include: {
         questions: {
-          orderBy: { order: "asc" }
-        }
-      }
+          orderBy: { order: "asc" },
+        },
+      },
     }),
     // Fetch all quizzes for navigation
     db.quiz.findMany({
@@ -81,14 +86,11 @@ export default async function QuizPage({ params }: QuizPageProps) {
         title: true,
         moduleId: true,
         _count: {
-          select: { questions: true }
-        }
+          select: { questions: true },
+        },
       },
-      orderBy: [
-        { moduleId: "asc" },
-        { createdAt: "asc" }
-      ]
-    })
+      orderBy: [{ moduleId: "asc" }, { createdAt: "asc" }],
+    }),
   ]);
 
   if (!quiz) {
@@ -98,37 +100,38 @@ export default async function QuizPage({ params }: QuizPageProps) {
   const serializedQuiz = {
     id: quiz.id,
     title: quiz.title,
-    questions: quiz.questions.map(q => ({
+    questions: quiz.questions.map((q) => ({
       id: q.id,
       question: q.question,
       options: q.options,
       correct: q.correct,
       explanation: q.explanation || "",
-      order: q.order
-    }))
+      order: q.order,
+    })),
   };
 
-  const serializedAllQuizzes = allQuizzes.map(q => ({
+  const serializedAllQuizzes = allQuizzes.map((q) => ({
     id: q.id,
     title: q.title,
     moduleId: q.moduleId,
-    questionCount: q._count.questions
+    questionCount: q._count.questions,
   }));
 
   return (
     <div className="min-h-screen bg-linear-to-br from-background via-background to-muted/20">
       <div className="container py-8 max-w-7xl mx-auto">
-        <CourseBreadcrumb 
-          courseTitle={course.title} 
+        <CourseBreadcrumb
+          courseTitle={course.title}
           courseSlug={course.slug}
           currentPage={`Quiz: ${quiz.title}`}
         />
-        
+
         <div className="mt-8 max-w-4xl mx-auto">
-          <QuizStudent 
-            quiz={serializedQuiz} 
+          <QuizStudent
+            quiz={serializedQuiz}
             allQuizzes={serializedAllQuizzes}
             courseSlug={course.slug}
+            courseId={course.id}
             currentQuizId={quizId}
           />
         </div>

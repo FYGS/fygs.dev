@@ -16,6 +16,7 @@ import { LocaleAwareLink } from "@/components/ui/locale-aware-nav";
 import { useSession } from "@/lib/auth-client";
 import { authService } from "@/lib/auth-service";
 import { useAdminAccess } from "@/lib/user-access";
+import { useIntlayer } from "next-intlayer";
 
 interface AppUser {
   id: string;
@@ -33,6 +34,8 @@ export function AuthNav({ isMobile = false, onItemClick }: AuthNavProps) {
   const { data: session, isPending } = useSession();
   const user: AppUser | null = useMemo(() => session?.user ?? null, [session]);
   const { hasAdminAccess } = useAdminAccess();
+
+  const content = useIntlayer('auth-nav')
 
   if (isPending) {
     return <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />;
@@ -64,11 +67,11 @@ export function AuthNav({ isMobile = false, onItemClick }: AuthNavProps) {
     return (
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="sm" asChild>
-          <LocaleAwareLink href="/auth/login">Connexion</LocaleAwareLink>
+          <LocaleAwareLink href="/auth/login">{content.connexion}</LocaleAwareLink>
         </Button>
         <Button size="sm" asChild>
           <LocaleAwareLink href="/auth/register">
-            S&apos;inscrire
+            {content.inscription}
           </LocaleAwareLink>
         </Button>
       </div>

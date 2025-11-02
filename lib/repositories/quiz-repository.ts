@@ -8,8 +8,8 @@ export class QuizRepository {
         where: { courseId },
         include: {
           questions: {
-            orderBy: { order: "asc" }
-          }
+            orderBy: { order: "asc" },
+          },
         },
         orderBy: { moduleId: "asc" },
       });
@@ -18,7 +18,7 @@ export class QuizRepository {
         metadata: {
           courseId,
           error: error instanceof Error ? error.message : String(error),
-        }
+        },
       });
       throw error;
     }
@@ -30,9 +30,9 @@ export class QuizRepository {
         where: { courseId, moduleId },
         include: {
           questions: {
-            orderBy: { order: "asc" }
-          }
-        }
+            orderBy: { order: "asc" },
+          },
+        },
       });
     } catch (error) {
       logger.error("Error fetching quiz for course module", {
@@ -40,7 +40,7 @@ export class QuizRepository {
           courseId,
           moduleId,
           error: error instanceof Error ? error.message : String(error),
-        }
+        },
       });
       throw error;
     }
@@ -65,7 +65,7 @@ export class QuizRepository {
           courseId: data.courseId,
           moduleId: data.moduleId,
           error: error instanceof Error ? error.message : String(error),
-        }
+        },
       });
       throw error;
     }
@@ -95,36 +95,7 @@ export class QuizRepository {
         metadata: {
           quizId: data.quizId,
           error: error instanceof Error ? error.message : String(error),
-        }
-      });
-      throw error;
-    }
-  }
-
-  static async submitQuizResult(data: {
-    userId: string;
-    quizId: string;
-    score: number;
-    total: number;
-    percentage: number;
-  }) {
-    try {
-      return await db.quizResult.create({
-        data: {
-          userId: data.userId,
-          quizId: data.quizId,
-          score: data.score,
-          total: data.total,
-          percentage: data.percentage,
         },
-      });
-    } catch (error) {
-      logger.error("Error submitting quiz result", {
-        metadata: {
-          userId: data.userId,
-          quizId: data.quizId,
-          error: error instanceof Error ? error.message : String(error),
-        }
       });
       throw error;
     }

@@ -2010,7 +2010,147 @@ Les closures permettent de créer des "environnements persistants" ! 🧠`,
     }
     console.log("✅ Created visual supports and quizzes");
 
-    // 13. Create certificates for completed courses
+    // 13. Create final exams for premium courses
+    console.log("📝 Creating final exams...");
+
+    const premiumCourses = courses.filter((c) => c.accessTier === "PREMIUM");
+
+    const finalExams: any[] = [];
+    for (const course of premiumCourses) {
+      const exam = await prisma.finalExam.create({
+        data: {
+          courseId: course.id,
+          title: `Examen final - ${course.title}`,
+          description: `Évaluez vos connaissances acquises dans ce cours avec cet examen complet.`,
+          passingScore: 70,
+          timeLimit: 60, // 60 minutes
+          published: true,
+          questions: [
+            {
+              id: 1,
+              question:
+                "Quelle est la meilleure pratique pour gérer l'état dans une application React complexe ?",
+              options: [
+                "Utiliser uniquement useState",
+                "Combiner Context API et useReducer pour l'état global",
+                "Tout mettre dans le composant racine",
+                "Éviter complètement la gestion d'état",
+              ],
+              correct: 1,
+              explanation:
+                "Combiner Context API et useReducer offre une solution scalable pour l'état global.",
+            },
+            {
+              id: 2,
+              question:
+                "Qu'est-ce que le code splitting et pourquoi est-il important ?",
+              options: [
+                "Une technique pour diviser le code en plusieurs fichiers",
+                "Un pattern pour séparer la logique métier",
+                "Une méthode pour charger le code uniquement quand nécessaire, améliorant les performances",
+                "Une convention de nommage pour les modules",
+              ],
+              correct: 2,
+              explanation:
+                "Le code splitting permet de charger le code à la demande, réduisant le bundle initial.",
+            },
+            {
+              id: 3,
+              question:
+                "Quelle est la différence principale entre SSR et SSG ?",
+              options: [
+                "SSR génère le HTML à chaque requête, SSG le génère au build",
+                "Il n'y a aucune différence",
+                "SSR est pour les blogs, SSG pour les apps",
+                "SSG nécessite un serveur, pas SSR",
+              ],
+              correct: 0,
+              explanation:
+                "SSR (Server-Side Rendering) génère le HTML à la demande, SSG (Static Site Generation) le pré-génère.",
+            },
+            {
+              id: 4,
+              question: "Qu'est-ce qu'une race condition ?",
+              options: [
+                "Un bug de performance",
+                "Une situation où le résultat dépend de l'ordre d'exécution de processus asynchrones",
+                "Un type de boucle infinie",
+                "Une erreur de syntaxe",
+              ],
+              correct: 1,
+              explanation:
+                "Une race condition survient quand plusieurs opérations asynchrones se terminent dans un ordre imprévisible.",
+            },
+            {
+              id: 5,
+              question:
+                "Quelle est la meilleure façon de sécuriser une API REST ?",
+              options: [
+                "Ne pas la sécuriser",
+                "Utiliser uniquement HTTPS",
+                "Combiner authentification JWT, HTTPS, rate limiting et validation des entrées",
+                "Masquer l'URL de l'API",
+              ],
+              correct: 2,
+              explanation:
+                "Une sécurité en profondeur combine plusieurs couches de protection.",
+            },
+          ],
+        },
+      });
+      finalExams.push(exam);
+    }
+    console.log(`✅ Created ${finalExams.length} final exams`);
+
+    // 14. Create exam results for some students
+    console.log("📊 Creating exam results...");
+
+    const examResults: any[] = [];
+    for (const exam of finalExams) {
+      // Get students enrolled in this course
+      const courseEnrollments = enrollments.filter(
+        (e) => e.courseId === exam.courseId && e.completedAt
+      );
+
+      // Create exam results for 60% of enrolled students
+      const studentsToTest = courseEnrollments.slice(
+        0,
+        Math.floor(courseEnrollments.length * 0.6)
+      );
+
+      for (const enrollment of studentsToTest) {
+        const score = randomBetween(3, 5); // Score between 3-5 out of 5
+        const total = 5;
+        const percentage = Math.round((score / total) * 100);
+        const passed = percentage >= exam.passingScore;
+
+        const result = await prisma.examResult.create({
+          data: {
+            userId: enrollment.userId,
+            examId: exam.id,
+            score,
+            total,
+            percentage,
+            passed,
+            answers: [
+              { questionId: 1, answer: passed ? 1 : 0 },
+              { questionId: 2, answer: passed ? 2 : 1 },
+              { questionId: 3, answer: passed ? 0 : 1 },
+              { questionId: 4, answer: passed ? 1 : 0 },
+              { questionId: 5, answer: passed ? 2 : 1 },
+            ],
+            completedAt: randomDate(
+              enrollment.enrolledAt,
+              enrollment.completedAt!
+            ),
+          },
+        });
+        examResults.push(result);
+      }
+    }
+    console.log(`✅ Created ${examResults.length} exam results`);
+
+    // 15. Create certificates for completed courses
     console.log("🏆 Issuing certificates...");
 
     const completedEnrollments = enrollments.filter((e) => e.completedAt);
@@ -2026,7 +2166,7 @@ Les closures permettent de créer des "environnements persistants" ! 🧠`,
     }
     console.log(`✅ Issued ${completedEnrollments.length} certificates`);
 
-    // 14. Create analytics events
+    // 16. Create analytics events
     console.log("📈 Creating analytics data...");
 
     const eventTypes = [
@@ -2063,7 +2203,7 @@ Les closures permettent de créer des "environnements persistants" ! 🧠`,
     }
     console.log("✅ Created analytics events");
 
-    // 15. Final statistics
+    // 17. Final statistics
     const endTime = Date.now();
     const duration = (endTime - startTime) / 1000;
 
@@ -2075,6 +2215,8 @@ Les closures permettent de créer des "environnements persistants" ! 🧠`,
     console.log(`⭐ Reviews: ${createdReviews.length}`);
     console.log(`🎓 Enrollments: ${enrollments.length}`);
     console.log(`💰 Payments: ${premiumEnrollments.length}`);
+    console.log(`📝 Final exams: ${finalExams.length}`);
+    console.log(`📊 Exam results: ${examResults.length}`);
     console.log(`🏆 Certificates: ${completedEnrollments.length}`);
     console.log(`🏷️  Tags: ${tags.length}`);
     console.log(`🏛️  Topics: ${topics.length}`);
