@@ -1,4 +1,3 @@
-import { Metadata } from "next";
 import { CourseGrid } from "./_components/course-grid";
 import { CourseFilters } from "./_components/course-filters";
 import { CourseHero } from "./_components/course-hero";
@@ -53,12 +52,6 @@ async function transformCoursesWithAccess(courses: CourseSummaryDTO[], userId: s
     })
   );
 }
-
-export const metadata: Metadata = {
-  title: "Formations | Plateforme d'apprentissage moderne",
-  description:
-    "Découvrez nos formations complètes en développement web moderne : JavaScript, TypeScript, React, Next.js, Node.js, Cloud et IA. Apprenez avec un expert reconnu.",
-};
 
 export default async function FormationsPage({
   searchParams,

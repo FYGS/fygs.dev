@@ -1,14 +1,8 @@
-import { Metadata } from "next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Shield, FileText, Users, CreditCard, Lock, Eye, Clock, CheckCircle, Mail, MapPin } from "lucide-react";
 import { Section } from "@/app/_components/Section";
-
-export const metadata: Metadata = {
-  title: "Terms of Service | FYGS Learning Platform",
-  description: "Terms of service for the FYGS Learning Platform",
-};
 
 export default function TermsPage() {
   return (

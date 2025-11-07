@@ -1,4 +1,3 @@
-import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -10,11 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { User, Shield, Settings } from "lucide-react";
-
-export const metadata: Metadata = {
-  title: "Mon Profil | FYGS Learning Platform",
-  description: "Gérez votre profil et vos paramètres de compte.",
-};
 
 export default async function ProfilePage() {
   const session = await auth.api.getSession({

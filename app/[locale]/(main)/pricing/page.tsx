@@ -1,14 +1,8 @@
-import { Metadata } from "next";
 import { SubscriptionPlansWrapper } from "@/app/_components/payment/subscription-plans-wrapper";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { SubscriptionStatus } from "@prisma/client";
-
-export const metadata: Metadata = {
-  title: "Tarifs | FYGS Learning Platform",
-  description: "Choisissez le plan qui vous convient pour accéder à nos formations premium.",
-};
 
 // Force dynamic rendering since we need user-specific data
 export const dynamic = 'force-dynamic';

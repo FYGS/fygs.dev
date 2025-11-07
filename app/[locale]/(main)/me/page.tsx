@@ -26,7 +26,6 @@ import {
   Rocket,
   Target,
 } from "lucide-react";
-import { Metadata } from "next";
 import Link from "next/link";
 import {
   CERTIFICATIONS,
@@ -36,23 +35,6 @@ import {
   PREFERENCES,
   SKILLS,
 } from "./data";
-
-export const metadata: Metadata = {
-  title: "Fernand SOUALO - Professional Resume | Senior Software Engineer",
-  description:
-    "View my professional experience, skills, and achievements. Download my resume to learn more about my expertise in NodeJS, TypeScript, React, and AWS.",
-  openGraph: {
-    title: "Resume | Senior Software Engineer with 5+ Years Experience",
-    description:
-      "Experienced Software Engineer with expertise in TypeScript, Node.js, React, and AWS. View my professional experience, skills, and achievements.",
-    images: [{ url: "/api/og/me", width: 1200, height: 630 }],
-    type: "profile",
-  },
-  twitter: {
-    card: "summary_large_image",
-    images: ["/api/og/me"],
-  },
-};
 
 export default function ResumePage() {
   return (

@@ -1,4 +1,3 @@
-import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -20,14 +19,7 @@ import { SubscriptionStatus } from "./_components/subscription-status";
 import { PremiumUpgradeCard } from "@/components/premium-upgrade-card";
 import { db } from "@/lib/db";
 import { CourseProgressGridServer } from './_components/course-progress-grid-server';
-import { defaultMetadata } from "@/app/_lib/metadata";
 import { SubscriptionStatus as PrismaSubscriptionStatus } from '@prisma/client';
-
-export const metadata: Metadata = {
-  ...defaultMetadata,
-  title: "Tableau de bord | FYGS Learning Platform",
-  description: "Suivez votre progression et gérez vos formations.",
-};
 
 
 interface DashboardPageProps {

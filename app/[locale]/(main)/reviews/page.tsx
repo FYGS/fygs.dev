@@ -1,9 +1,8 @@
-import { Metadata } from "next";
 import { Suspense } from "react";
 import { ReviewSearchPage } from "@/components/reviews/review-search-page";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
+import {
   Star,
   MessageSquare,
   TrendingUp,
@@ -11,16 +10,6 @@ import {
   Award,
   Sparkles
 } from "lucide-react";
-
-export const metadata: Metadata = {
-  title: "Avis des étudiants | FYGS Academy",
-  description: "Découvrez les avis authentiques de nos étudiants sur nos formations en développement web, programmation et technologies.",
-  openGraph: {
-    title: "Avis des étudiants | FYGS Academy",
-    description: "Découvrez les avis authentiques de nos étudiants sur nos formations",
-    type: "website",
-  },
-};
 
 export default function ReviewsPage() {
   return (

@@ -16,6 +16,8 @@ import { NotificationProvider } from "@/components/providers/notification-provid
 
 import { type NextLayoutIntlayer, IntlayerClientProvider } from "next-intlayer";
 import { getHTMLTextDir } from "intlayer";
+import { generateI18nMetadata } from "@/app/_lib/i18n-metadata";
+import { Metadata } from "next";
 export { generateStaticParams } from "next-intlayer";
 
 const AnekTelugu = Anek_Telugu({
@@ -23,9 +25,49 @@ const AnekTelugu = Anek_Telugu({
   variable: "--font-caption",
 });
 
-// export const metadata: Metadata = {
-//  metadataBase: new URL(SITE_URL),
-// };
+/**
+ * Generate metadata for each locale with proper canonical and hreflang
+ */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+
+  return generateI18nMetadata({
+    locale: locale as any,
+    title: {
+      fr: "FYGS Learning Platform - Formations Premium pour Développeurs",
+      en: "FYGS Learning Platform - Premium Developer Courses",
+      es: "FYGS Learning Platform - Cursos Premium para Desarrolladores",
+    },
+    description: {
+      fr: "Maîtrisez les technologies web modernes : JavaScript, TypeScript, React, Next.js, Node.js, IA et Cloud. Formations premium avec projets pratiques, certifications et communauté active.",
+      en: "Master modern web technologies: JavaScript, TypeScript, React, Next.js, Node.js, AI and Cloud. Premium courses with hands-on projects, certifications and active community.",
+      es: "Domina las tecnologías web modernas: JavaScript, TypeScript, React, Next.js, Node.js, IA y Cloud. Cursos premium con proyectos prácticos, certificaciones y comunidad activa.",
+    },
+    keywords: [
+      {
+        fr: "formations développeur",
+        en: "developer courses",
+        es: "cursos desarrollador",
+      },
+      "JavaScript",
+      "TypeScript",
+      "React",
+      "Next.js",
+      "Node.js",
+      { fr: "formations premium", en: "premium courses", es: "cursos premium" },
+      {
+        fr: "apprentissage en ligne",
+        en: "online learning",
+        es: "aprendizaje en línea",
+      },
+    ],
+    path: "/",
+  });
+}
 
 const LocaleLayout: NextLayoutIntlayer = async ({ children, params }) => {
   const { locale } = await params;
@@ -37,44 +79,6 @@ const LocaleLayout: NextLayoutIntlayer = async ({ children, params }) => {
     >
       <head>
         <JsonLd />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-            const devToolsDetector = () => {
-              console.clear();
-              const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-              const greenColor = isDarkMode ? '#00FF00' : '#008000';
-              const purpleColor = isDarkMode ? '#FF00FF' : '#800080';
-              const blueColor = isDarkMode ? '#00FFFF' : '#00080';
-              const redColor = isDarkMode ? '#FF0000' : '#800000';
-
-              console.log(\`%cHello, curious developer! 👋\`, \`font-size: 20px; font-weight: bold; color: \${greenColor};\`);
-              console.log(\`%cWelcome to my professional portfolio site. Feel free to explore the code and learn more about my work!\`, \`font-size: 16px; color: \${purpleColor};\`);
-              console.log(\`%cIf you're interested in collaborating or have any questions, don't hesitate to reach out.\`, \`font-size: 14px; color: \${blueColor};\`);
-              console.log(\`%cHappy coding! 🚀\`, \`font-size: 18px; font-weight: bold; color: \${redColor};\`);
-              console.log(\`%cContact Information:\`, \`font-size: 16px; font-weight: bold; color: \${greenColor};\`);
-              console.log(\`%cLinkedIn: https://www.linkedin.com/in/fernandsoualo/\`, \`font-size: 14px; color: \${purpleColor};\`);
-              console.log(\`%cGitHub: https://github.com/fygs\`, \`font-size: 14px; color: \${blueColor};\`);
-              console.log(\`%cHashnode: https://hashnode.com/@FYGS\`, \`font-size: 14px; color: \${greenColor};\`);
-              console.log(\`%cEmail: fygs.dev@gmail.com\`, \`font-size: 14px; color: \${redColor};\`);
-            };
-
-            let devToolsOpen = false;
-
-            setInterval(() => {
-              const widthThreshold = window.outerWidth - window.innerWidth > 160;
-              const heightThreshold = window.outerHeight - window.innerHeight > 160;
-
-              if (!devToolsOpen && (widthThreshold || heightThreshold)) {
-                devToolsOpen = true;
-                devToolsDetector();
-              } else if (devToolsOpen && !widthThreshold && !heightThreshold) {
-                devToolsOpen = false;
-              }
-            }, 1000);
-          `,
-          }}
-        />
       </head>
       <body
         className={cn(
@@ -111,14 +115,18 @@ const LocaleLayout: NextLayoutIntlayer = async ({ children, params }) => {
           dangerouslySetInnerHTML={{
             __html: `
               if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js')
-                    .then(function(registration) {
-                      console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                    })
-                    .catch(function(error) {
-                      console.log('ServiceWorker registration failed: ', error);
+                // Register service worker after page load to avoid blocking
+                window.addEventListener('load', () => {
+                  // Use requestIdleCallback for better performance
+                  if ('requestIdleCallback' in window) {
+                    requestIdleCallback(() => {
+                      navigator.serviceWorker.register('/sw.js').catch(() => {});
                     });
+                  } else {
+                    setTimeout(() => {
+                      navigator.serviceWorker.register('/sw.js').catch(() => {});
+                    }, 2000);
+                  }
                 });
               }
             `,

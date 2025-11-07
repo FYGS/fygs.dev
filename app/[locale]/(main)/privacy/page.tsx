@@ -1,14 +1,8 @@
-import { Metadata } from "next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Shield, Lock, Eye, Database, Mail, Cookie, User, Key, Globe, BarChart } from "lucide-react";
 import { Section } from "@/app/_components/Section";
-
-export const metadata: Metadata = {
-  title: "Privacy Policy | FYGS Learning Platform",
-  description: "Privacy policy for the FYGS Learning Platform",
-};
 
 export default function PrivacyPage() {
   return (

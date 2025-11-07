@@ -28,7 +28,8 @@
     "db:seed:prod": "dotenv -e .env.production -- tsx prisma/seed.ts",
     "db:reset": "prisma migrate reset --force && pnpm db:seed",
     "db:reset:test": "dotenv -e .env.test -- prisma migrate reset --force && pnpm db:seed:test",
-    "db:reset:prod": "dotenv -e .env.production -- prisma migrate reset --force && pnpm db:seed:prod"
+    "db:reset:prod": "dotenv -e .env.production -- prisma migrate reset --force && pnpm db:seed:prod",
+    "resize-screenshots": "node scripts/resize-screenshots.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

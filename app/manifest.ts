@@ -1,36 +1,18 @@
 import { MetadataRoute } from "next";
-import { getTranslation, type LocalesValues } from "intlayer";
 
 /**
- * Modern PWA Manifest with comprehensive i18n support
+ * Modern PWA Manifest with comprehensive support
  * Implements latest PWA standards and best practices
+ *
+ * Note: Manifests are static in Next.js. For per-locale manifests,
+ * use middleware or dynamic routes: /[locale]/manifest.webmanifest
  */
 export default function manifest(): MetadataRoute.Manifest {
-  // Default to French as primary language
-  const locale: LocalesValues = "fr";
-
-  const t = <T>(
-    content: Required<Record<"fr", T>> & Partial<Record<LocalesValues, T>>
-  ) => getTranslation(content, locale);
-
-  // Localized strings
-  const name = t({
-    fr: "FYGS Learning Platform - Formations Premium pour Développeurs",
-    en: "FYGS Learning Platform - Premium Developer Courses",
-    es: "FYGS Learning Platform - Cursos Premium para Desarrolladores",
-  });
-
-  const shortName = t({
-    fr: "FYGS Academy",
-    en: "FYGS Academy",
-    es: "FYGS Academy",
-  });
-
-  const description = t({
-    fr: "Maîtrisez les technologies web modernes : JavaScript, TypeScript, React, Next.js, Node.js, IA et Cloud. Formations premium avec projets pratiques, certifications et communauté active.",
-    en: "Master modern web technologies: JavaScript, TypeScript, React, Next.js, Node.js, AI and Cloud. Premium courses with hands-on projects, certifications and active community.",
-    es: "Domina las tecnologías web modernas: JavaScript, TypeScript, React, Next.js, Node.js, IA y Cloud. Cursos premium con proyectos prácticos, certificaciones y comunidad activa.",
-  });
+  // Default to multilingual support with French as primary
+  const name = "FYGS Learning Platform - Formations Premium";
+  const shortName = "FYGS Academy";
+  const description =
+    "Master modern web technologies: JavaScript, TypeScript, React, Next.js, Node.js, AI and Cloud. Premium courses with hands-on projects.";
 
   return {
     // Basic information
@@ -54,8 +36,8 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#d9dce0", // --primary: 220 13% 86%
     background_color: "#29333d", // --background: 220 13% 18%
 
-    // Locale and direction
-    lang: locale,
+    // Locale and direction (default, will be overridden by HTML lang)
+    lang: "fr",
     dir: "ltr",
 
     // Categories for app stores
@@ -126,52 +108,32 @@ export default function manifest(): MetadataRoute.Manifest {
     screenshots: [
       // Wide format for desktop/tablet
       {
-        src: "/images/og-image.png",
+        src: "/screenshots/home-desktop-1200x630.png",
         sizes: "1200x630",
         type: "image/png",
         form_factor: "wide",
-        label: t({
-          fr: "Écran principal de la plateforme FYGS",
-          en: "FYGS Platform main screen",
-          es: "Pantalla principal de la plataforma FYGS",
-        }),
+        label: "FYGS Platform main screen",
       },
       // Narrow format for mobile (required for rich install UI on mobile)
       {
-        src: "/images/screenshot-mobile.png",
+        src: "/screenshots/home-mobile-1080x1920.png",
         sizes: "1080x1920",
         type: "image/png",
         form_factor: "narrow",
-        label: t({
-          fr: "Interface mobile de la plateforme FYGS",
-          en: "FYGS Platform mobile interface",
-          es: "Interfaz móvil de la plataforma FYGS",
-        }),
+        label: "FYGS Platform mobile interface",
       },
     ],
 
     // Shortcuts for quick actions (max 4 for best cross-platform support)
     shortcuts: [
       {
-        name: t({
-          fr: "Formations",
-          en: "Courses",
-          es: "Cursos",
-        }),
-        short_name: t({
-          fr: "Cours",
-          en: "Courses",
-          es: "Cursos",
-        }),
+        name: "Courses",
+        short_name: "Courses",
         url: "/formations?utm_source=pwa_shortcut",
-        description: t({
-          fr: "Explorer et découvrir les formations disponibles",
-          en: "Explore and discover available courses",
-          es: "Explorar y descubrir cursos disponibles",
-        }),
+        description: "Explore and discover available courses",
         icons: [
           {
-            src: "/images/icon-96x96.png",
+            src: "/screenshots/formations-96x96.png",
             sizes: "96x96",
             type: "image/png",
           },
@@ -181,64 +143,36 @@ export default function manifest(): MetadataRoute.Manifest {
         name: "Blog",
         short_name: "Blog",
         url: "/blog?utm_source=pwa_shortcut",
-        description: t({
-          fr: "Lire les derniers articles et tutoriels",
-          en: "Read latest articles and tutorials",
-          es: "Leer últimos artículos y tutoriales",
-        }),
+        description: "Read latest articles and tutorials",
         icons: [
           {
-            src: "/images/icon-96x96.png",
+            src: "/screenshots/blog-96x96.png",
             sizes: "96x96",
             type: "image/png",
           },
         ],
       },
       {
-        name: t({
-          fr: "Communauté",
-          en: "Community",
-          es: "Comunidad",
-        }),
-        short_name: t({
-          fr: "Forum",
-          en: "Forum",
-          es: "Foro",
-        }),
+        name: "Community",
+        short_name: "Forum",
         url: "/community?utm_source=pwa_shortcut",
-        description: t({
-          fr: "Rejoindre et participer à la communauté",
-          en: "Join and participate in the community",
-          es: "Unirse y participar en la comunidad",
-        }),
+        description: "Join and participate in the community",
         icons: [
           {
-            src: "/images/icon-96x96.png",
+            src: "/screenshots/community-96x96.png",
             sizes: "96x96",
             type: "image/png",
           },
         ],
       },
       {
-        name: t({
-          fr: "Mon Espace",
-          en: "My Space",
-          es: "Mi Espacio",
-        }),
-        short_name: t({
-          fr: "Dashboard",
-          en: "Dashboard",
-          es: "Panel",
-        }),
+        name: "Dashboard",
+        short_name: "Dashboard",
         url: "/dashboard?utm_source=pwa_shortcut",
-        description: t({
-          fr: "Accéder à votre tableau de bord personnel",
-          en: "Access your personal dashboard",
-          es: "Acceder a tu panel personal",
-        }),
+        description: "Access your personal dashboard",
         icons: [
           {
-            src: "/images/icon-96x96.png",
+            src: "/screenshots/dashboard-96x96.png",
             sizes: "96x96",
             type: "image/png",
           },
