@@ -28,7 +28,7 @@ function VerifyEmailContent() {
   const callbackUrl = searchParams.get("callbackUrl");
 
   const schema = z.object({
-    email: z.string().email(String(content.verify.title)),
+    email: z.string().email(content.verify.title.value),
   });
 
   type FormData = z.infer<typeof schema>;

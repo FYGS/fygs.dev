@@ -20,7 +20,7 @@ export default function ForgotPasswordPage() {
   const [sent, setSent] = useState(false);
 
   const schema = z.object({
-    email: z.string().email(String(content.forgotPassword.emailLabel)),
+    email: z.string().email(content.forgotPassword.emailLabel.value),
   });
 
   type FormData = z.infer<typeof schema>;
@@ -38,14 +38,14 @@ export default function ForgotPasswordPage() {
       const result = await authService.requestPasswordReset(data.email);
       if (!result.success) {
         setError("email", {
-          message: result.error || String(content.forgotPassword.success),
+          message: result.error || content.forgotPassword.success.value,
         });
       } else {
         setSent(true);
-        toast.success(String(content.forgotPassword.success));
+        toast.success(content.forgotPassword.success.value);
       }
     } catch {
-      setError("email", { message: String(content.forgotPassword.success) });
+      setError("email", { message: content.forgotPassword.success.value });
     } finally {
       setIsLoading(false);
     }

@@ -68,13 +68,13 @@ const content = useIntlayer("auth" or "login-page");
 // Form level with Zod
 const content = useIntlayer("login-form" or "register-form");
 const schema = z.object({
-  email: z.string().email(String(content.form.email.error.invalid)),
-  password: z.string().min(8, String(content.form.password.error.minLength))
+  email: z.string().email(content.form.email.error.invalid.value),
+  password: z.string().min(8, content.form.password.error.minLength.value)
 });
 
 // Toast notifications
-toast.success(String(content.messages.success.title), {
-  description: String(content.messages.success.description)
+toast.success(content.messages.success.title.value, {
+  description: content.messages.success.description.value
 });
 ```
 

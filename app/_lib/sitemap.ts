@@ -1,73 +1,63 @@
 import { getAllBlogPosts } from "@/lib/mdx";
+import { getMultilingualUrls } from "intlayer";
+import type { MetadataRoute } from "next";
 
-type Route = {
-  url: string;
-  lastModified: string;
-  changeFrequency:
-    | "always"
-    | "hourly"
-    | "daily"
-    | "weekly"
-    | "monthly"
-    | "yearly"
-    | "never";
-  priority: number;
-};
+const SITE_URL = "https://fygs.dev";
 
-export async function generateSitemap(): Promise<Route[]> {
+/**
+ * Generate sitemap with i18n support
+ */
+export async function generateSitemap(): Promise<MetadataRoute.Sitemap> {
   const blogPosts = await getAllBlogPosts();
 
-  // Base routes
-  const routes: Route[] = [
+  // Base routes with multilingual URLs
+  const baseRoutes = [
+    { path: "/", priority: 1, changeFrequency: "weekly" as const },
+    { path: "/me", priority: 0.8, changeFrequency: "monthly" as const },
+    { path: "/blog", priority: 0.9, changeFrequency: "daily" as const },
+    { path: "/projects", priority: 0.8, changeFrequency: "weekly" as const },
     {
-      url: "https://fygs.dev",
-      lastModified: new Date().toISOString(),
-      changeFrequency: "weekly",
-      priority: 1,
-    },
-    {
-      url: "https://fygs.dev/me",
-      lastModified: new Date().toISOString(),
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: "https://fygs.dev/blog",
-      lastModified: new Date().toISOString(),
-      changeFrequency: "daily",
+      path: "/formations",
       priority: 0.9,
+      changeFrequency: "daily" as const,
     },
+    { path: "/pricing", priority: 0.7, changeFrequency: "monthly" as const },
+    { path: "/contact", priority: 0.6, changeFrequency: "monthly" as const },
+    { path: "/community", priority: 0.8, changeFrequency: "daily" as const },
+    { path: "/reviews", priority: 0.7, changeFrequency: "weekly" as const },
     {
-      url: "https://fygs.dev/projects",
-      lastModified: new Date().toISOString(),
-      changeFrequency: "weekly",
+      path: "/tech-mastry",
       priority: 0.8,
-    },
-    {
-      url: "https://www.fygs.dev",
-      lastModified: new Date().toISOString(),
-      changeFrequency: "monthly",
-      priority: 0.7,
+      changeFrequency: "weekly" as const,
     },
   ];
 
-  // Add blog posts
-  const blogRoutes = blogPosts.map((post) => ({
-    url: `https://fygs.dev/blog/${post.slug}`,
+  const sitemapRoutes: MetadataRoute.Sitemap = baseRoutes.map((route) => ({
+    url: `${SITE_URL}${route.path}`,
+    lastModified: new Date().toISOString(),
+    changeFrequency: route.changeFrequency,
+    priority: route.priority,
+    alternates: {
+      languages: {
+        ...getMultilingualUrls(route.path),
+        "x-default": route.path,
+      },
+    },
+  }));
+
+  // Add blog posts with multilingual support
+  const blogRoutes: MetadataRoute.Sitemap = blogPosts.map((post) => ({
+    url: `${SITE_URL}/blog/${post.slug}`,
     lastModified: post.date,
     changeFrequency: "monthly" as const,
     priority: 0.7,
+    alternates: {
+      languages: {
+        ...getMultilingualUrls(`/blog/${post.slug}`),
+        "x-default": `/blog/${post.slug}`,
+      },
+    },
   }));
 
-  // Add tag pages if they exist
-  const tagRoutes = [
-    {
-      url: "https://fygs.dev/blog/tags",
-      lastModified: new Date().toISOString(),
-      changeFrequency: "weekly" as const,
-      priority: 0.6,
-    },
-  ];
-
-  return [...routes, ...blogRoutes, ...tagRoutes];
+  return [...sitemapRoutes, ...blogRoutes];
 }

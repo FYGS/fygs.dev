@@ -139,7 +139,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
           <Input
             id="email"
             type="email"
-            placeholder={String(content.form.email.placeholder)}
+            placeholder={content.form.email.placeholder.value}
             {...register("email")}
             disabled={isLoading}
           />
@@ -154,7 +154,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
             <Input
               id="password"
               type={showPassword ? "text" : "password"}
-              placeholder={String(content.form.password.placeholder)}
+              placeholder={content.form.password.placeholder.value}
               {...register("password")}
               disabled={isLoading}
             />

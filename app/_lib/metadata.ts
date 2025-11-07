@@ -76,11 +76,12 @@ export const defaultMetadata: Metadata = {
   alternates: {
     canonical: SITE_URL,
     languages: {
-      "en-US": SITE_URL,
+      "en-US": `${SITE_URL}/en`,
       "fr-FR": `${SITE_URL}/fr`,
+      "es-ES": `${SITE_URL}/es`,
     },
   },
-  manifest: "/site.webmanifest",
+  manifest: "/manifest.webmanifest",
   icons: {
     icon: [
       { url: "/images/favicon.svg", type: "image/svg+xml" },
