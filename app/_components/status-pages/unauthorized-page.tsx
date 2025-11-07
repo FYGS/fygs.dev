@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -26,9 +26,9 @@ export function UnauthorizedPage({
           initial={{ scale: 0.5, rotate: -15 }}
           animate={{ scale: 1, rotate: 0 }}
           transition={{ type: "spring", stiffness: 100 }}
-          className="w-24 h-24 mx-auto bg-yellow-100 dark:bg-yellow-900/20 rounded-full flex items-center justify-center"
+          className="w-24 h-24 mx-auto bg-yellow-900/20 rounded-full flex items-center justify-center"
         >
-          <Lock className="w-12 h-12 text-yellow-600 dark:text-yellow-400" />
+          <Lock className="w-12 h-12 text-yellow-400" />
         </motion.div>
 
         <div className="space-y-4">

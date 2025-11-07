@@ -1,4 +1,4 @@
-@utility glass-effect {
+﻿@utility glass-effect {
   /* Glass panel effect */
   @apply backdrop-blur-md bg-linear-to-br from-background/70 to-background/30 border border-border/20 shadow-lg rounded-md;
 
@@ -51,14 +51,14 @@
 
 @utility preview-container {
   /* Preview container */
-  @apply h-[calc(100%-40px)] overflow-hidden flex flex-col flex-1 relative bg-white dark:bg-gray-800;
+  @apply h-[calc(100%-40px)] overflow-hidden flex flex-col flex-1 relative bg-gray-800;
 
   /* Format animation effects - removed visual elements, using only confetti */
 }
 
 @utility preview-iframe {
   /* Preview iframe */
-  @apply w-full h-full border-0 block flex-1 absolute inset-0 bg-white dark:bg-gray-800;
+  @apply w-full h-full border-0 block flex-1 absolute inset-0 bg-gray-800;
 
   /* Format animation effects - removed visual elements, using only confetti */
 }

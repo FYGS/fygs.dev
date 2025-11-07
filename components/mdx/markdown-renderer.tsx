@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -17,7 +17,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
   if (!content) return null;
 
   return (
-    <div className={cn("prose prose-sm max-w-none dark:prose-invert", className)}>
+    <div className={cn("prose prose-sm max-w-none prose-invert", className)}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw]}
@@ -33,7 +33,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
           ),
           h2: ({ children, ...props }) => (
             <h2 
-              className="text-xl font-bold text-slate-900 dark:text-white mt-10 mb-5 pb-3 border-b-2 border-gradient-to-r from-blue-500 to-purple-500 scroll-mt-4"
+              className="text-xl font-bold text-white mt-10 mb-5 pb-3 border-b-2 border-gradient-to-r from-blue-500 to-purple-500 scroll-mt-4"
               {...props}
             >
               <div className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -43,18 +43,18 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
           ),
           h3: ({ children, ...props }) => (
             <h3 
-              className="text-lg font-bold text-slate-900 dark:text-white mt-8 mb-4 flex items-center gap-3 scroll-mt-4"
+              className="text-lg font-bold text-white mt-8 mb-4 flex items-center gap-3 scroll-mt-4"
               {...props}
             >
               <div className="w-1.5 h-6 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full flex-shrink-0"></div>
-              <span className="bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
                 {children}
               </span>
             </h3>
           ),
           h4: ({ children, ...props }) => (
             <h4 
-              className="text-base font-semibold text-slate-900 dark:text-white mt-6 mb-3"
+              className="text-base font-semibold text-white mt-6 mb-3"
               {...props}
             >
               {children}
@@ -62,7 +62,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
           ),
           h5: ({ children, ...props }) => (
             <h5 
-              className="text-sm font-medium text-slate-800 dark:text-slate-200 mt-4 mb-2"
+              className="text-sm font-medium text-slate-200 mt-4 mb-2"
               {...props}
             >
               {children}
@@ -70,7 +70,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
           ),
           h6: ({ children, ...props }) => (
             <h6 
-              className="text-sm font-medium text-slate-700 dark:text-slate-300 mt-3 mb-2"
+              className="text-sm font-medium text-slate-300 mt-3 mb-2"
               {...props}
             >
               {children}
@@ -79,7 +79,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
           // Paragraphs
           p: ({ children, ...props }) => (
             <p 
-              className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed my-3 max-w-none"
+              className="text-sm text-slate-300 leading-relaxed my-3 max-w-none"
               {...props}
             >
               {children}
@@ -99,19 +99,19 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
           li: ({ children, ...props }) => (
             <li className="flex items-start gap-3 my-2" {...props}>
               <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 mt-2.5 flex-shrink-0"></div>
-              <span className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed flex-1">
+              <span className="text-sm text-slate-300 leading-relaxed flex-1">
                 {children}
               </span>
             </li>
           ),
           // Emphasis
           strong: ({ children, ...props }) => (
-            <strong className="font-semibold text-slate-900 dark:text-white" {...props}>
+            <strong className="font-semibold text-white" {...props}>
               {children}
             </strong>
           ),
           em: ({ children, ...props }) => (
-            <em className="italic text-slate-600 dark:text-slate-400" {...props}>
+            <em className="italic text-slate-400" {...props}>
               {children}
             </em>
           ),
@@ -121,7 +121,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             if (isInline) {
               return (
                 <code 
-                  className="px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-sm font-mono text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700"
+                  className="px-2 py-1 rounded-md bg-slate-800 text-sm font-mono text-slate-200 border border-slate-700"
                   {...props}
                 >
                   {children}
@@ -129,9 +129,9 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
               );
             }
             return (
-              <Card className="my-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <Card className="my-4 bg-slate-900 border border-slate-800">
                 <CardContent className="p-4">
-                  <pre className="text-sm font-mono text-slate-800 dark:text-slate-200 whitespace-pre-wrap overflow-x-auto">
+                  <pre className="text-sm font-mono text-slate-200 whitespace-pre-wrap overflow-x-auto">
                     <code {...props}>{children}</code>
                   </pre>
                 </CardContent>
@@ -147,7 +147,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
           a: ({ children, href, ...props }) => (
             <a 
               href={href}
-              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline decoration-2 underline-offset-2 transition-colors"
+              className="text-blue-400 hover:text-blue-300 underline decoration-2 underline-offset-2 transition-colors"
               target={href?.startsWith('http') ? '_blank' : undefined}
               rel={href?.startsWith('http') ? 'noopener noreferrer' : undefined}
               {...props}
@@ -157,10 +157,10 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
           ),
           // Block quotes
           blockquote: ({ children, ...props }) => (
-            <Card className="my-4 border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-950/30">
+            <Card className="my-4 border-l-4 border-blue-500 bg-blue-950/30">
               <CardContent className="p-4">
                 <blockquote 
-                  className="text-slate-700 dark:text-slate-300 italic"
+                  className="text-slate-300 italic"
                   {...props}
                 >
                   {children}
@@ -170,7 +170,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
           ),
           // Horizontal rule
           hr: ({ ...props }) => (
-            <Separator className="my-8 bg-gradient-to-r from-transparent via-slate-300 to-transparent dark:via-slate-600" {...props} />
+            <Separator className="my-8 bg-gradient-to-r from-transparent via-slate-600 to-transparent" {...props} />
           ),
           // Tables
           table: ({ children, ...props }) => (
@@ -185,23 +185,23 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             </Card>
           ),
           thead: ({ children, ...props }) => (
-            <thead className="bg-slate-50 dark:bg-slate-800" {...props}>
+            <thead className="bg-slate-800" {...props}>
               {children}
             </thead>
           ),
           tbody: ({ children, ...props }) => (
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-700" {...props}>
+            <tbody className="divide-y divide-slate-700" {...props}>
               {children}
             </tbody>
           ),
           tr: ({ children, ...props }) => (
-            <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50" {...props}>
+            <tr className="hover:bg-slate-800/50" {...props}>
               {children}
             </tr>
           ),
           th: ({ children, ...props }) => (
             <th 
-              className="px-4 py-3 text-left font-semibold text-slate-900 dark:text-white"
+              className="px-4 py-3 text-left font-semibold text-white"
               {...props}
             >
               {children}
@@ -209,7 +209,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
           ),
           td: ({ children, ...props }) => (
             <td 
-              className="px-4 py-3 text-slate-700 dark:text-slate-300"
+              className="px-4 py-3 text-slate-300"
               {...props}
             >
               {children}

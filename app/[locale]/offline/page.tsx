@@ -19,16 +19,16 @@ export default function OfflinePage() {
         transition={{ duration: 0.5 }}
       >
         <motion.div
-          className="w-24 h-24 mx-auto bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center"
+          className="w-24 h-24 mx-auto bg-blue-900/20 rounded-full flex items-center justify-center"
           initial={{ scale: 0.5, rotate: -15 }}
           animate={{ scale: 1, rotate: 0 }}
           transition={{ type: "spring", stiffness: 100 }}
         >
-          <WifiOff className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+          <WifiOff className="w-12 h-12 text-blue-400" />
         </motion.div>
 
         <div className="space-y-4">
-          <motion.h1 
+          <motion.h1
             className="text-4xl font-bold tracking-tight"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -36,13 +36,14 @@ export default function OfflinePage() {
           >
             Hors ligne
           </motion.h1>
-          <motion.p 
+          <motion.p
             className="text-muted-foreground text-lg"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            Vous êtes actuellement hors ligne. Vérifiez votre connexion Internet.
+            Vous êtes actuellement hors ligne. Vérifiez votre connexion
+            Internet.
           </motion.p>
         </div>
 
@@ -93,5 +94,5 @@ export default function OfflinePage() {
         </motion.div>
       </motion.div>
     </div>
- );
+  );
 }

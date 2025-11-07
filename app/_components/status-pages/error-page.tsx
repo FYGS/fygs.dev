@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -31,9 +31,9 @@ export function ErrorPage({ error, reset, homeUrl = "/" }: ErrorPageProps) {
           initial={{ scale: 0.5 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 100 }}
-          className="w-24 h-24 mx-auto bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center"
+          className="w-24 h-24 mx-auto bg-red-900/20 rounded-full flex items-center justify-center"
         >
-          <AlertCircle className="w-12 h-12 text-red-600 dark:text-red-400" />
+          <AlertCircle className="w-12 h-12 text-red-400" />
         </motion.div>
 
         <div className="space-y-4">

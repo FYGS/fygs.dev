@@ -150,7 +150,7 @@ async function ModerationContent() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Content Moderation</h1>
-          <p className="text-slate-600 dark:text-slate-400">
+          <p className="text-slate-400">
             Review and moderate community content
           </p>
         </div>

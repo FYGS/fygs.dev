@@ -144,7 +144,7 @@ async function CommunityDashboardContent() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Community Administration</h1>
-          <p className="text-slate-600 dark:text-slate-400">
+          <p className="text-slate-400">
             Manage discussions, users, and community content
           </p>
         </div>
@@ -214,7 +214,7 @@ async function CommunityDashboardContent() {
                         </Badge>
                       </div>
                       <h4 className="font-medium text-sm truncate">{discussion.title}</h4>
-                      <div className="flex items-center gap-2 mt-1 text-xs text-slate-600 dark:text-slate-400">
+                      <div className="flex items-center gap-2 mt-1 text-xs text-slate-400">
                         <span>by {discussion.author?.name}</span>
                         <span>•</span>
                         <span>{discussion._count?.replies || 0} replies</span>
@@ -230,7 +230,7 @@ async function CommunityDashboardContent() {
                   </div>
                 ))
               ) : (
-                <p className="text-center py-4 text-slate-600 dark:text-slate-400">
+                <p className="text-center py-4 text-slate-400">
                   No recent discussions
                 </p>
               )}
@@ -254,7 +254,7 @@ async function CommunityDashboardContent() {
                       )}
                       <div>
                         <div className="font-medium">{topic.name}</div>
-                        <div className="text-sm text-slate-600 dark:text-slate-400">
+                        <div className="text-sm text-slate-400">
                           {topic._count?.discussions || 0} discussions • {topic._count?.followers || 0} followers
                         </div>
                       </div>
@@ -267,7 +267,7 @@ async function CommunityDashboardContent() {
                   </div>
                 ))
               ) : (
-                <p className="text-center py-4 text-slate-600 dark:text-slate-400">
+                <p className="text-center py-4 text-slate-400">
                   No topics found
                 </p>
               )}
@@ -313,10 +313,10 @@ interface StatsCardProps {
 
 function StatsCard({ title, value, icon: Icon, color }: StatsCardProps) {
   const colorClasses = {
-    blue: "bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400",
-    green: "bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-400",
-    purple: "bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400",
-    orange: "bg-orange-50 text-orange-600 dark:bg-orange-950 dark:text-orange-400"
+    blue: "bg-blue-950 text-blue-400",
+    green: "bg-green-950 text-green-400",
+    purple: "bg-purple-950 text-purple-400",
+    orange: "bg-orange-950 text-orange-400"
   };
 
   return (
@@ -328,7 +328,7 @@ function StatsCard({ title, value, icon: Icon, color }: StatsCardProps) {
           </div>
           <div>
             <div className="text-2xl font-bold">{value.toLocaleString()}</div>
-            <div className="text-sm text-slate-600 dark:text-slate-400">{title}</div>
+            <div className="text-sm text-slate-400">{title}</div>
           </div>
         </div>
       </CardContent>
@@ -346,9 +346,9 @@ interface ActionCardProps {
 
 function ActionCard({ title, description, href, icon: Icon, color }: ActionCardProps) {
   const colorClasses = {
-    blue: "bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400",
-    green: "bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-400",
-    red: "bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400"
+    blue: "bg-blue-950 text-blue-400",
+    green: "bg-green-950 text-green-400",
+    red: "bg-red-950 text-red-400"
   };
 
   return (
@@ -361,7 +361,7 @@ function ActionCard({ title, description, href, icon: Icon, color }: ActionCardP
             </div>
             <div>
               <h3 className="font-semibold mb-1">{title}</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400">{description}</p>
+              <p className="text-sm text-slate-400">{description}</p>
             </div>
           </div>
         </CardContent>

@@ -173,20 +173,20 @@ export function QuizStudent({
     <div className="space-y-6">
       {/* Quiz Navigation Header */}
       {allQuizzes.length > 1 && (
-        <Card className="border border-slate-200 dark:border-slate-700 shadow-sm">
+        <Card className="border border-slate-700 shadow-sm">
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
                   <List className="h-4 w-4 text-white" />
                 </div>
-                <span className="text-slate-900 dark:text-slate-100">
+                <span className="text-slate-100">
                   Navigation des Quiz
                 </span>
               </div>
               <Badge
                 variant="secondary"
-                className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                className="bg-slate-800 text-slate-300"
               >
                 {currentQuizIndex + 1} / {allQuizzes.length}
               </Badge>
@@ -212,10 +212,10 @@ export function QuizStudent({
               )}
 
               <div className="text-center">
-                <p className="text-sm text-slate-600 dark:text-slate-400">
+                <p className="text-sm text-slate-400">
                   Quiz Actuel
                 </p>
-                <p className="font-semibold text-slate-900 dark:text-slate-100">
+                <p className="font-semibold text-slate-100">
                   {quiz.title}
                 </p>
               </div>
@@ -240,9 +240,9 @@ export function QuizStudent({
       )}
 
       {/* Main Quiz Card */}
-      <Card className="border border-slate-200 dark:border-slate-700 shadow-sm">
-        <CardHeader className="border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900">
-          <CardTitle className="flex items-center justify-between text-slate-900 dark:text-slate-100">
+      <Card className="border border-slate-700 shadow-sm">
+        <CardHeader className="border-b border-slate-700 bg-gradient-to-r from-slate-800 to-slate-900">
+          <CardTitle className="flex items-center justify-between text-slate-100">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
                 <Target className="h-5 w-5 text-white" />
@@ -251,7 +251,7 @@ export function QuizStudent({
             </div>
             <Badge
               variant="secondary"
-              className="bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-700"
+              className="bg-emerald-900 text-emerald-200 border-emerald-700"
             >
               {quiz.questions.length} question
               {quiz.questions.length > 1 ? "s" : ""}
@@ -423,7 +423,7 @@ export function QuizStudent({
           ) : (
             <div className="space-y-8">
               {/* Results Summary */}
-              <div className="text-center space-y-6 p-8 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950 dark:to-teal-950 rounded-xl border border-emerald-200 dark:border-emerald-800">
+              <div className="text-center space-y-6 p-8 bg-gradient-to-br from-emerald-950 to-teal-950 rounded-xl border border-emerald-800">
                 <div className="space-y-3">
                   <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
                     <Target className="h-8 w-8 text-white" />
@@ -434,7 +434,7 @@ export function QuizStudent({
                   <div className={`text-3xl font-semibold ${getScoreColor()}`}>
                     {getScorePercentage()}%
                   </div>
-                  <p className="text-lg text-slate-700 dark:text-slate-300 max-w-md mx-auto">
+                  <p className="text-lg text-slate-300 max-w-md mx-auto">
                     {getScoreMessage()}
                   </p>
                 </div>
@@ -462,11 +462,11 @@ export function QuizStudent({
               </div>
 
               {/* Detailed Results */}
-              <Card className="border border-slate-200 dark:border-slate-700">
+              <Card className="border border-slate-700">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-3 text-slate-900 dark:text-slate-100">
-                    <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
-                      <List className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                  <CardTitle className="flex items-center gap-3 text-slate-100">
+                    <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
+                      <List className="h-4 w-4 text-slate-400" />
                     </div>
                     Correction détaillée
                   </CardTitle>
@@ -479,12 +479,12 @@ export function QuizStudent({
                     return (
                       <div
                         key={question.id}
-                        className="border border-slate-200 dark:border-slate-600 rounded-lg p-4 bg-slate-50/50 dark:bg-slate-800/50"
+                        className="border border-slate-600 rounded-lg p-4 bg-slate-800/50"
                       >
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-3">
-                              <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                              <span className="text-sm font-semibold text-slate-100">
                                 Question {index + 1}
                               </span>
                               {userAnswer?.isCorrect ? (
@@ -493,12 +493,12 @@ export function QuizStudent({
                                 <XCircle className="h-5 w-5 text-red-500" />
                               )}
                             </div>
-                            <p className="text-slate-800 dark:text-slate-200 mb-3 font-medium">
+                            <p className="text-slate-200 mb-3 font-medium">
                               {question.question}
                             </p>
                             <div className="space-y-2">
                               <div className="text-sm">
-                                <span className="text-slate-600 dark:text-slate-400">
+                                <span className="text-slate-400">
                                   Votre réponse:{" "}
                                 </span>
                                 <span
@@ -517,7 +517,7 @@ export function QuizStudent({
                               </div>
                               {!userAnswer?.isCorrect && (
                                 <div className="text-sm">
-                                  <span className="text-slate-600 dark:text-slate-400">
+                                  <span className="text-slate-400">
                                     Réponse correcte:{" "}
                                   </span>
                                   <span className="text-emerald-600 font-medium">
@@ -526,8 +526,8 @@ export function QuizStudent({
                                 </div>
                               )}
                               {question.explanation && (
-                                <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
-                                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                                <div className="mt-3 p-3 bg-blue-950 border border-blue-800 rounded-lg">
+                                  <p className="text-sm text-blue-200">
                                     <span className="font-semibold">
                                       Explication:{" "}
                                     </span>

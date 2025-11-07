@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useTransition } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -108,8 +108,8 @@ export function ReviewForm({
       
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30">
-            <MessageSquare className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+          <div className="p-2 rounded-lg bg-gradient-to-br from-blue-900/30 to-purple-900/30">
+            <MessageSquare className="h-5 w-5 text-blue-400" />
           </div>
           <span>
             {existingReview ? 'Modifier votre avis' : 'Laisser un avis'}
@@ -138,7 +138,7 @@ export function ReviewForm({
                 onRatingChange={setRating}
               />
               <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                <span className="text-2xl font-bold text-blue-400">
                   {rating}/5
                 </span>
                 <span className="text-sm text-muted-foreground">
@@ -181,11 +181,11 @@ export function ReviewForm({
           </div>
 
           {/* Guidelines */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
-            <h4 className="text-sm font-medium text-blue-900 dark:text-blue-200 mb-2">
+          <div className="bg-blue-900/20 rounded-lg p-4 border border-blue-800">
+            <h4 className="text-sm font-medium text-blue-200 mb-2">
               Conseils pour un avis utile
             </h4>
-            <ul className="text-xs text-blue-800 dark:text-blue-300 space-y-1">
+            <ul className="text-xs text-blue-300 space-y-1">
               <li>• Soyez précis sur ce que vous avez apprécié ou non</li>
               <li>• Mentionnez votre niveau avant de commencer la formation</li>
               <li>• Partagez ce que vous avez appris concrètement</li>

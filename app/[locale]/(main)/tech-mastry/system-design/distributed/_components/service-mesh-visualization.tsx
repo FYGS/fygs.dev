@@ -1547,7 +1547,7 @@ export function ServiceMeshVisualization() {
                       style={{ pointerEvents: "none", opacity: 0 }}
                       className="group-hover:opacity-100 transition-opacity duration-200"
                     >
-                      <div className="bg-white dark:bg-gray-800 p-2 rounded shadow-lg border text-xs overflow-hidden">
+                      <div className="bg-gray-800 p-2 rounded shadow-lg border text-xs overflow-hidden">
                         <div className="font-semibold mb-1 flex justify-between">
                           <span>
                             {request.method} {request.target}
@@ -1608,7 +1608,7 @@ export function ServiceMeshVisualization() {
 
               {/* Feature-specific overlays */}
               {activeFeature === "observability" && (
-                <div className="absolute bottom-4 right-4 bg-white/80 dark:bg-gray-800/80 p-3 rounded-lg shadow-xs border text-xs space-y-1">
+                <div className="absolute bottom-4 right-4 bg-gray-800/80 p-3 rounded-lg shadow-xs border text-xs space-y-1">
                   <div className="flex justify-between gap-4">
                     <span>Requêtes totales:</span>
                     <span className="font-medium">{stats.totalRequests}</span>
@@ -1635,7 +1635,7 @@ export function ServiceMeshVisualization() {
               )}
 
               {activeFeature === "security" && (
-                <div className="absolute top-4 right-4 bg-white/80 dark:bg-gray-800/80 p-3 rounded-lg shadow-xs border text-xs space-y-1">
+                <div className="absolute top-4 right-4 bg-gray-800/80 p-3 rounded-lg shadow-xs border text-xs space-y-1">
                   <div className="flex items-center gap-2">
                     <Lock className="w-4 h-4 text-green-500" />
                     <span>Communication sécurisée par mTLS</span>
@@ -1648,7 +1648,7 @@ export function ServiceMeshVisualization() {
               )}
 
               {activeFeature === "traffic" && (
-                <div className="absolute top-4 right-4 bg-white/80 dark:bg-gray-800/80 p-3 rounded-lg shadow-xs border text-xs space-y-1">
+                <div className="absolute top-4 right-4 bg-gray-800/80 p-3 rounded-lg shadow-xs border text-xs space-y-1">
                   <div className="flex items-center gap-2">
                     <RefreshCw className="w-4 h-4 text-blue-500" />
                     <span>Équilibrage de charge actif</span>
@@ -1705,7 +1705,7 @@ export function ServiceMeshVisualization() {
               )}
 
               {activeFeature === "control-plane" && (
-                <div className="absolute top-4 right-4 bg-white/80 dark:bg-gray-800/80 p-3 rounded-lg shadow-xs border text-xs space-y-1">
+                <div className="absolute top-4 right-4 bg-gray-800/80 p-3 rounded-lg shadow-xs border text-xs space-y-1">
                   <div className="flex items-center gap-2">
                     <Settings className="w-4 h-4 text-purple-500" />
                     <span>Plan de contrôle actif</span>
@@ -1900,8 +1900,8 @@ export function ServiceMeshVisualization() {
                 <div
                   className={`p-4 rounded-lg border ${
                     serviceMeshType === "istio"
-                      ? "bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-800"
-                      : "bg-gray-50 border-gray-200 dark:bg-gray-800/30 dark:border-gray-700"
+                      ? "bg-blue-950/30 border-blue-800"
+                      : "bg-gray-800/30 border-gray-700"
                   }`}
                 >
                   <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
@@ -1917,8 +1917,8 @@ export function ServiceMeshVisualization() {
                 <div
                   className={`p-4 rounded-lg border ${
                     serviceMeshType === "linkerd"
-                      ? "bg-green-50 border-green-200 dark:bg-green-950/30 dark:border-green-800"
-                      : "bg-gray-50 border-gray-200 dark:bg-gray-800/30 dark:border-gray-700"
+                      ? "bg-green-950/30 border-green-800"
+                      : "bg-gray-800/30 border-gray-700"
                   }`}
                 >
                   <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
@@ -1934,8 +1934,8 @@ export function ServiceMeshVisualization() {
                 <div
                   className={`p-4 rounded-lg border ${
                     serviceMeshType === "consul"
-                      ? "bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800"
-                      : "bg-gray-50 border-gray-200 dark:bg-gray-800/30 dark:border-gray-700"
+                      ? "bg-amber-950/30 border-amber-800"
+                      : "bg-gray-800/30 border-gray-700"
                   }`}
                 >
                   <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
@@ -1951,8 +1951,8 @@ export function ServiceMeshVisualization() {
                 <div
                   className={`p-4 rounded-lg border ${
                     serviceMeshType === "app-mesh"
-                      ? "bg-pink-50 border-pink-200 dark:bg-pink-950/30 dark:border-pink-800"
-                      : "bg-gray-50 border-gray-200 dark:bg-gray-800/30 dark:border-gray-700"
+                      ? "bg-pink-950/30 border-pink-800"
+                      : "bg-gray-800/30 border-gray-700"
                   }`}
                 >
                   <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
@@ -2016,11 +2016,11 @@ export function ServiceMeshVisualization() {
                 <div
                   className={`p-4 rounded-lg border ${
                     serviceMeshType === "istio"
-                      ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
+                      ? "bg-blue-900/20 border-blue-800"
                       : "bg-card border-border"
                   }`}
                 >
-                  <h4 className="font-medium text-blue-600 dark:text-blue-400 mb-2 flex items-center gap-2">
+                  <h4 className="font-medium text-blue-400 mb-2 flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-blue-500"></div>
                     Istio
                   </h4>
@@ -2038,7 +2038,7 @@ export function ServiceMeshVisualization() {
                       personnalisées
                     </li>
                   </ul>
-                  <div className="text-xs bg-blue-50 dark:bg-blue-900/20 p-2 rounded border border-blue-100 dark:border-blue-800">
+                  <div className="text-xs bg-blue-900/20 p-2 rounded border border-blue-800">
                     <span className="font-medium">Architecture:</span> Istiod
                     (plan de contrôle) + Envoy (proxies sidecar)
                     <br />
@@ -2053,11 +2053,11 @@ export function ServiceMeshVisualization() {
                 <div
                   className={`p-4 rounded-lg border ${
                     serviceMeshType === "linkerd"
-                      ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800"
+                      ? "bg-green-900/20 border-green-800"
                       : "bg-card border-border"
                   }`}
                 >
-                  <h4 className="font-medium text-green-600 dark:text-green-400 mb-2 flex items-center gap-2">
+                  <h4 className="font-medium text-green-400 mb-2 flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-green-500"></div>
                     Linkerd
                   </h4>
@@ -2081,7 +2081,7 @@ export function ServiceMeshVisualization() {
                       résolution
                     </li>
                   </ul>
-                  <div className="text-xs bg-green-50 dark:bg-green-900/20 p-2 rounded border border-green-100 dark:border-green-800">
+                  <div className="text-xs bg-green-900/20 p-2 rounded border border-green-800">
                     <span className="font-medium">Architecture:</span> Control
                     plane multi-composants + linkerd-proxy (sidecar)
                     <br />
@@ -2097,11 +2097,11 @@ export function ServiceMeshVisualization() {
                 <div
                   className={`p-4 rounded-lg border ${
                     serviceMeshType === "consul"
-                      ? "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800"
+                      ? "bg-amber-900/20 border-amber-800"
                       : "bg-card border-border"
                   }`}
                 >
-                  <h4 className="font-medium text-amber-600 dark:text-amber-400 mb-2 flex items-center gap-2">
+                  <h4 className="font-medium text-amber-400 mb-2 flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-amber-500"></div>
                     Consul Connect
                   </h4>
@@ -2126,7 +2126,7 @@ export function ServiceMeshVisualization() {
                     </li>
                     <li>Support pour les applications non-conteneurisées</li>
                   </ul>
-                  <div className="text-xs bg-amber-50 dark:bg-amber-900/20 p-2 rounded border border-amber-100 dark:border-amber-800">
+                  <div className="text-xs bg-amber-900/20 p-2 rounded border border-amber-800">
                     <span className="font-medium">Architecture:</span> Consul
                     servers (control plane) + Envoy (data plane)
                     <br />
@@ -2141,11 +2141,11 @@ export function ServiceMeshVisualization() {
                 <div
                   className={`p-4 rounded-lg border ${
                     serviceMeshType === "app-mesh"
-                      ? "bg-pink-50 dark:bg-pink-900/20 border-pink-200 dark:border-pink-800"
+                      ? "bg-pink-900/20 border-pink-800"
                       : "bg-card border-border"
                   }`}
                 >
-                  <h4 className="font-medium text-pink-600 dark:text-pink-400 mb-2 flex items-center gap-2">
+                  <h4 className="font-medium text-pink-400 mb-2 flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-pink-500"></div>
                     AWS App Mesh
                   </h4>
@@ -2166,7 +2166,7 @@ export function ServiceMeshVisualization() {
                     <li>Configuration via AWS Cloud Formation ou CDK</li>
                     <li>Facturation basée sur les ressources utilisées</li>
                   </ul>
-                  <div className="text-xs bg-pink-50 dark:bg-pink-900/20 p-2 rounded border border-pink-100 dark:border-pink-800">
+                  <div className="text-xs bg-pink-900/20 p-2 rounded border border-pink-800">
                     <span className="font-medium">Architecture:</span> Service
                     AWS géré (control plane) + Envoy (sidecar)
                     <br />
@@ -2185,27 +2185,27 @@ export function ServiceMeshVisualization() {
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full text-xs border-collapse">
                   <thead>
-                    <tr className="bg-slate-100 dark:bg-slate-800">
+                    <tr className="bg-slate-800">
                       <th className="p-2 text-left border">Critère</th>
-                      <th className="p-2 text-left border text-blue-600 dark:text-blue-400">
+                      <th className="p-2 text-left border text-blue-400">
                         <div className="flex items-center gap-1">
                           <div className="w-2 h-2 rounded-full bg-blue-500"></div>
                           Istio
                         </div>
                       </th>
-                      <th className="p-2 text-left border text-green-600 dark:text-green-400">
+                      <th className="p-2 text-left border text-green-400">
                         <div className="flex items-center gap-1">
                           <div className="w-2 h-2 rounded-full bg-green-500"></div>
                           Linkerd
                         </div>
                       </th>
-                      <th className="p-2 text-left border text-amber-600 dark:text-amber-400">
+                      <th className="p-2 text-left border text-amber-400">
                         <div className="flex items-center gap-1">
                           <div className="w-2 h-2 rounded-full bg-amber-500"></div>
                           Consul Connect
                         </div>
                       </th>
-                      <th className="p-2 text-left border text-pink-600 dark:text-pink-400">
+                      <th className="p-2 text-left border text-pink-400">
                         <div className="flex items-center gap-1">
                           <div className="w-2 h-2 rounded-full bg-pink-500"></div>
                           AWS App Mesh
@@ -2221,7 +2221,7 @@ export function ServiceMeshVisualization() {
                       <td className="p-2 border">Envoy</td>
                       <td className="p-2 border">Envoy</td>
                     </tr>
-                    <tr className="bg-slate-50 dark:bg-slate-800/30">
+                    <tr className="bg-slate-800/30">
                       <td className="p-2 border font-medium">
                         Empreinte mémoire
                       </td>
@@ -2239,7 +2239,7 @@ export function ServiceMeshVisualization() {
                       <td className="p-2 border">Moyenne</td>
                       <td className="p-2 border">Simple (sur AWS)</td>
                     </tr>
-                    <tr className="bg-slate-50 dark:bg-slate-800/30">
+                    <tr className="bg-slate-800/30">
                       <td className="p-2 border font-medium">
                         Fonctionnalités
                       </td>
@@ -2255,7 +2255,7 @@ export function ServiceMeshVisualization() {
                       <td className="p-2 border">K8s, VMs, bare metal</td>
                       <td className="p-2 border">ECS, EKS, EC2</td>
                     </tr>
-                    <tr className="bg-slate-50 dark:bg-slate-800/30">
+                    <tr className="bg-slate-800/30">
                       <td className="p-2 border font-medium">Extensibilité</td>
                       <td className="p-2 border">Excellente (WebAssembly)</td>
                       <td className="p-2 border">Limitée</td>
@@ -2277,7 +2277,7 @@ export function ServiceMeshVisualization() {
                 Leçons Apprises et Bonnes Pratiques
               </h3>
               <div className="space-y-4 mt-4">
-                <div className="p-4 rounded-lg border bg-slate-50 dark:bg-slate-900/30">
+                <div className="p-4 rounded-lg border bg-slate-900/30">
                   <h4 className="font-medium text-base mb-2 flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
                     Déploiement et Adoption
@@ -2286,7 +2286,7 @@ export function ServiceMeshVisualization() {
                     L&apos;adoption d&apos;un service mesh doit être progressive
                     et planifiée avec soin.
                   </p>
-                  <div className="bg-white dark:bg-slate-800 rounded-md p-3 border text-xs font-mono overflow-x-auto">
+                  <div className="bg-slate-800 rounded-md p-3 border text-xs font-mono overflow-x-auto">
                     <pre className="text-xs">{`# Exemple d'installation d'Istio avec un profil de base
 $ istioctl install --set profile=default
 
@@ -2298,7 +2298,7 @@ $ istioctl analyze`}</pre>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-lg border bg-slate-50 dark:bg-slate-900/30">
+                <div className="p-4 rounded-lg border bg-slate-900/30">
                   <h4 className="font-medium text-base mb-2 flex items-center gap-2">
                     <Shield className="h-4 w-4 text-blue-500" />
                     Sécurisation du Trafic
@@ -2307,7 +2307,7 @@ $ istioctl analyze`}</pre>
                     La mise en place du mTLS est essentielle mais nécessite une
                     configuration appropriée.
                   </p>
-                  <div className="bg-white dark:bg-slate-800 rounded-md p-3 border text-xs font-mono overflow-x-auto">
+                  <div className="bg-slate-800 rounded-md p-3 border text-xs font-mono overflow-x-auto">
                     <pre className="text-xs">{`# Configuration mTLS pour Istio (PeerAuthentication)
 apiVersion: security.istio.io/v1beta1
 kind: PeerAuthentication
@@ -2320,7 +2320,7 @@ spec:
                   </div>
                 </div>
 
-                <div className="p-4 rounded-lg border bg-slate-50 dark:bg-slate-900/30">
+                <div className="p-4 rounded-lg border bg-slate-900/30">
                   <h4 className="font-medium text-base mb-2 flex items-center gap-2">
                     <RefreshCw className="h-4 w-4 text-amber-500" />
                     Gestion du Trafic Avancée
@@ -2329,7 +2329,7 @@ spec:
                     Les déploiements canary et le traffic splitting permettent
                     des mises à jour sans risque.
                   </p>
-                  <div className="bg-white dark:bg-slate-800 rounded-md p-3 border text-xs font-mono overflow-x-auto">
+                  <div className="bg-slate-800 rounded-md p-3 border text-xs font-mono overflow-x-auto">
                     <pre className="text-xs">{`# VirtualService Istio pour un déploiement canary
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -2351,7 +2351,7 @@ spec:
                   </div>
                 </div>
 
-                <div className="p-4 rounded-lg border bg-slate-50 dark:bg-slate-900/30">
+                <div className="p-4 rounded-lg border bg-slate-900/30">
                   <h4 className="font-medium text-base mb-2 flex items-center gap-2">
                     <Eye className="h-4 w-4 text-purple-500" />
                     Observabilité et Monitoring
@@ -2360,7 +2360,7 @@ spec:
                     L&apos;intégration avec des outils de monitoring est
                     cruciale pour tirer pleinement parti du service mesh.
                   </p>
-                  <div className="bg-white dark:bg-slate-800 rounded-md p-3 border text-xs font-mono overflow-x-auto">
+                  <div className="bg-slate-800 rounded-md p-3 border text-xs font-mono overflow-x-auto">
                     <pre className="text-xs">{`# Exemple de requête Prometheus pour les métriques Istio
 rate(istio_requests_total{destination_service="mon-service.mon-namespace.svc.cluster.local"}[5m])
 
@@ -2369,7 +2369,7 @@ sum(rate(istio_requests_total{destination_service="mon-service.mon-namespace.svc
                   </div>
                 </div>
 
-                <div className="p-4 rounded-lg border bg-slate-50 dark:bg-slate-900/30">
+                <div className="p-4 rounded-lg border bg-slate-900/30">
                   <h4 className="font-medium text-base mb-2 flex items-center gap-2">
                     <AlertCircle className="h-4 w-4 text-red-500" />
                     Pièges Courants à Éviter
@@ -2402,14 +2402,14 @@ sum(rate(istio_requests_total{destination_service="mon-service.mon-namespace.svc
                   </ul>
                 </div>
 
-                <div className="p-4 rounded-lg border bg-slate-50 dark:bg-slate-900/30">
+                <div className="p-4 rounded-lg border bg-slate-900/30">
                   <h4 className="font-medium text-base mb-2 flex items-center gap-2">
                     <Server className="h-4 w-4 text-indigo-500" />
                     Études de Cas Réelles
                   </h4>
                   <div className="space-y-4">
                     <div className="rounded-md border p-3">
-                      <h5 className="text-sm font-medium mb-1 text-indigo-600 dark:text-indigo-400">
+                      <h5 className="text-sm font-medium mb-1 text-indigo-400">
                         Airbnb avec Istio
                       </h5>
                       <p className="text-xs text-muted-foreground mb-2">
@@ -2433,7 +2433,7 @@ sum(rate(istio_requests_total{destination_service="mon-service.mon-namespace.svc
                     </div>
 
                     <div className="rounded-md border p-3">
-                      <h5 className="text-sm font-medium mb-1 text-green-600 dark:text-green-400">
+                      <h5 className="text-sm font-medium mb-1 text-green-400">
                         Nordstrom avec Linkerd
                       </h5>
                       <p className="text-xs text-muted-foreground mb-2">
@@ -2459,7 +2459,7 @@ sum(rate(istio_requests_total{destination_service="mon-service.mon-namespace.svc
                     </div>
 
                     <div className="rounded-md border p-3">
-                      <h5 className="text-sm font-medium mb-1 text-amber-600 dark:text-amber-400">
+                      <h5 className="text-sm font-medium mb-1 text-amber-400">
                         HashiCorp avec Consul Connect
                       </h5>
                       <p className="text-xs text-muted-foreground mb-2">
@@ -2579,25 +2579,25 @@ sum(rate(istio_requests_total{destination_service="mon-service.mon-namespace.svc
                   <thead>
                     <tr className="bg-muted/50">
                       <th className="p-2 text-left border">Critère</th>
-                      <th className="p-2 text-left border text-blue-600 dark:text-blue-400">
+                      <th className="p-2 text-left border text-blue-400">
                         <div className="flex items-center gap-1">
                           <div className="w-2 h-2 rounded-full bg-blue-500"></div>
                           Istio
                         </div>
                       </th>
-                      <th className="p-2 text-left border text-green-600 dark:text-green-400">
+                      <th className="p-2 text-left border text-green-400">
                         <div className="flex items-center gap-1">
                           <div className="w-2 h-2 rounded-full bg-green-500"></div>
                           Linkerd
                         </div>
                       </th>
-                      <th className="p-2 text-left border text-amber-600 dark:text-amber-400">
+                      <th className="p-2 text-left border text-amber-400">
                         <div className="flex items-center gap-1">
                           <div className="w-2 h-2 rounded-full bg-amber-500"></div>
                           Consul Connect
                         </div>
                       </th>
-                      <th className="p-2 text-left border text-pink-600 dark:text-pink-400">
+                      <th className="p-2 text-left border text-pink-400">
                         <div className="flex items-center gap-1">
                           <div className="w-2 h-2 rounded-full bg-pink-500"></div>
                           AWS App Mesh
@@ -2674,8 +2674,8 @@ sum(rate(istio_requests_total{destination_service="mon-service.mon-namespace.svc
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="p-4 rounded-lg border bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-                    <h4 className="font-medium text-blue-600 dark:text-blue-400 mb-2">
+                  <div className="p-4 rounded-lg border bg-blue-900/20 border-blue-800">
+                    <h4 className="font-medium text-blue-400 mb-2">
                       Latence
                     </h4>
                     <div className="space-y-2">
@@ -2702,8 +2702,8 @@ sum(rate(istio_requests_total{destination_service="mon-service.mon-namespace.svc
                     </div>
                   </div>
 
-                  <div className="p-4 rounded-lg border bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
-                    <h4 className="font-medium text-green-600 dark:text-green-400 mb-2">
+                  <div className="p-4 rounded-lg border bg-green-900/20 border-green-800">
+                    <h4 className="font-medium text-green-400 mb-2">
                       Utilisation CPU
                     </h4>
                     <div className="space-y-2">
@@ -2730,8 +2730,8 @@ sum(rate(istio_requests_total{destination_service="mon-service.mon-namespace.svc
                     </div>
                   </div>
 
-                  <div className="p-4 rounded-lg border bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
-                    <h4 className="font-medium text-amber-600 dark:text-amber-400 mb-2">
+                  <div className="p-4 rounded-lg border bg-amber-900/20 border-amber-800">
+                    <h4 className="font-medium text-amber-400 mb-2">
                       Mémoire
                     </h4>
                     <div className="space-y-2">
@@ -2765,7 +2765,7 @@ sum(rate(istio_requests_total{destination_service="mon-service.mon-namespace.svc
                   </div>
                 </div>
 
-                <div className="mt-4 p-4 rounded-lg border bg-slate-50 dark:bg-slate-900/20">
+                <div className="mt-4 p-4 rounded-lg border bg-slate-900/20">
                   <h4 className="font-medium mb-2">Conclusions</h4>
                   <ul className="list-disc pl-5 space-y-1 text-sm">
                     <li>

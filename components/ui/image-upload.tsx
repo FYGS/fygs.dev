@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -244,7 +244,7 @@ export function ImageUpload({
       <Card
         className={cn(
           'relative overflow-hidden transition-all duration-200',
-          dragActive && 'border-blue-500 bg-blue-50 dark:bg-blue-950/20',
+          dragActive && 'border-blue-500 bg-blue-950/20',
           uploadState.error && 'border-red-500',
           uploadState.success && 'border-green-500',
           disabled && 'opacity-50 cursor-not-allowed'
@@ -307,8 +307,8 @@ export function ImageUpload({
             <div
               className={cn(
                 'aspect-video flex flex-col items-center justify-center p-8 border-2 border-dashed transition-colors',
-                dragActive ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/20' : 'border-slate-300 dark:border-slate-600',
-                !disabled && !uploadState.isUploading && 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                dragActive ? 'border-blue-500 bg-blue-950/20' : 'border-slate-600',
+                !disabled && !uploadState.isUploading && 'cursor-pointer hover:bg-slate-800/50'
               )}
               onDrop={handleDrop}
               onDragOver={handleDragOver}
@@ -326,7 +326,7 @@ export function ImageUpload({
                 <div className="text-center">
                   <ImageIcon className="h-12 w-12 text-slate-400 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">Upload Course Cover</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                  <p className="text-sm text-slate-400 mb-4">
                     Drag and drop an image here, or click to select
                   </p>
                   <Button 
@@ -348,8 +348,8 @@ export function ImageUpload({
 
           {/* Status Messages */}
           {uploadState.error && (
-            <div className="p-3 bg-red-50 dark:bg-red-950/20 border-t border-red-200 dark:border-red-800">
-              <div className="flex items-center gap-2 text-red-700 dark:text-red-400">
+            <div className="p-3 bg-red-950/20 border-t border-red-800">
+              <div className="flex items-center gap-2 text-red-400">
                 <AlertCircle className="h-4 w-4" />
                 <span className="text-sm">{uploadState.error}</span>
               </div>
@@ -357,8 +357,8 @@ export function ImageUpload({
           )}
 
           {uploadState.success && (
-            <div className="p-3 bg-green-50 dark:bg-green-950/20 border-t border-green-200 dark:border-green-800">
-              <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
+            <div className="p-3 bg-green-950/20 border-t border-green-800">
+              <div className="flex items-center gap-2 text-green-400">
                 <CheckCircle2 className="h-4 w-4" />
                 <span className="text-sm">Image uploaded successfully!</span>
               </div>

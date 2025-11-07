@@ -370,11 +370,11 @@ export function SortingQuizzes() {
   const getDifficultyClass = (difficulty: string) => {
     switch (difficulty) {
       case "easy":
-        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
+        return "bg-green-900/30 text-green-400";
       case "medium":
-        return "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400";
+        return "bg-amber-900/30 text-amber-400";
       case "hard":
-        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
+        return "bg-red-900/30 text-red-400";
       default:
         return "";
     }
@@ -467,7 +467,7 @@ export function SortingQuizzes() {
               </p>
 
               {score === quiz.questions.length ? (
-                <div className="flex items-center justify-center gap-2 text-green-600 dark:text-green-400">
+                <div className="flex items-center justify-center gap-2 text-green-400">
                   <CheckCircle className="w-5 h-5" />
                   <span>
                     Parfait ! Vous avez répondu correctement à toutes les
@@ -475,12 +475,12 @@ export function SortingQuizzes() {
                   </span>
                 </div>
               ) : score >= quiz.questions.length / 2 ? (
-                <div className="flex items-center justify-center gap-2 text-amber-600 dark:text-amber-400">
+                <div className="flex items-center justify-center gap-2 text-amber-400">
                   <LightbulbIcon className="w-5 h-5" />
                   <span>Bon travail ! Vous pouvez encore vous améliorer.</span>
                 </div>
               ) : (
-                <div className="flex items-center justify-center gap-2 text-red-600 dark:text-red-400">
+                <div className="flex items-center justify-center gap-2 text-red-400">
                   <XCircle className="w-5 h-5" />
                   <span>
                     Continuez à pratiquer pour améliorer vos connaissances.
@@ -540,9 +540,9 @@ export function SortingQuizzes() {
                         className={`flex items-center space-x-2 p-3 rounded-lg border ${
                           isAnswered
                             ? index === currentQuestion.correctAnswer
-                              ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+                              ? "border-green-500 bg-green-900/20"
                               : index === selectedAnswer
-                              ? "border-red-500 bg-red-50 dark:bg-red-900/20"
+                              ? "border-red-500 bg-red-900/20"
                               : "border-transparent"
                             : "border-muted hover:border-muted-foreground/50 cursor-pointer"
                         }`}

@@ -1264,7 +1264,7 @@ export function EventDrivenVisualization() {
                       style={{ pointerEvents: "none", opacity: 0 }}
                       className="group-hover:opacity-100 transition-opacity duration-200"
                     >
-                      <div className="bg-white dark:bg-gray-800 p-2 rounded shadow-lg border text-xs overflow-hidden">
+                      <div className="bg-gray-800 p-2 rounded shadow-lg border text-xs overflow-hidden">
                         <div className="font-semibold mb-1">{event.type}</div>
                         <div className="flex justify-between">
                           <span>ID:</span>
@@ -1313,7 +1313,7 @@ export function EventDrivenVisualization() {
               </svg>
 
               {/* Stats Overlay */}
-              <div className="absolute bottom-4 right-4 bg-white/80 dark:bg-gray-800/80 p-3 rounded-lg shadow-xs border text-xs space-y-1">
+              <div className="absolute bottom-4 right-4 bg-gray-800/80 p-3 rounded-lg shadow-xs border text-xs space-y-1">
                 <div className="flex justify-between gap-4">
                   <span>Événements totaux:</span>
                   <span className="font-medium">{stats.totalEvents}</span>

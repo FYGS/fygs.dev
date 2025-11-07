@@ -53,8 +53,8 @@ export default async function AdminReviewsModerationPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/30">
-                <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+              <div className="p-2 rounded-lg bg-yellow-900/30">
+                <Clock className="h-5 w-5 text-yellow-400" />
               </div>
               <div>
                 <div className="text-2xl font-bold">{pagination.totalCount}</div>
@@ -67,8 +67,8 @@ export default async function AdminReviewsModerationPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
-                <Flag className="h-5 w-5 text-red-600 dark:text-red-400" />
+              <div className="p-2 rounded-lg bg-red-900/30">
+                <Flag className="h-5 w-5 text-red-400" />
               </div>
               <div>
                 <div className="text-2xl font-bold">0</div>
@@ -81,8 +81,8 @@ export default async function AdminReviewsModerationPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
-                <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+              <div className="p-2 rounded-lg bg-green-900/30">
+                <CheckCircle className="h-5 w-5 text-green-400" />
               </div>
               <div>
                 <div className="text-2xl font-bold">0</div>
@@ -95,8 +95,8 @@ export default async function AdminReviewsModerationPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-900/30">
-                <XCircle className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+              <div className="p-2 rounded-lg bg-gray-900/30">
+                <XCircle className="h-5 w-5 text-gray-400" />
               </div>
               <div>
                 <div className="text-2xl font-bold">0</div>
@@ -175,8 +175,8 @@ export default async function AdminReviewsModerationPage() {
           ) : (
             <div className="text-center py-12">
               <div className="flex flex-col items-center gap-4">
-                <div className="p-4 rounded-full bg-green-100 dark:bg-green-900/30">
-                  <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+                <div className="p-4 rounded-full bg-green-900/30">
+                  <CheckCircle className="h-8 w-8 text-green-400" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold">Aucun avis en attente</h3>

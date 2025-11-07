@@ -529,7 +529,7 @@ export function PracticeExercises() {
                         <Code2 className="h-4 w-4 text-primary" />
                         Description du problème
                       </h4>
-                      <div className="prose prose-sm max-w-none dark:prose-invert">
+                      <div className="prose prose-sm max-w-none prose-invert">
                         <pre className="whitespace-pre-wrap">
                           {exercise.description}
                         </pre>
@@ -574,7 +574,7 @@ export function PracticeExercises() {
                         <Lightbulb className="h-4 w-4 text-primary" />
                         Explication
                       </h4>
-                      <div className="prose prose-sm max-w-none dark:prose-invert">
+                      <div className="prose prose-sm max-w-none prose-invert">
                         <pre className="whitespace-pre-wrap">
                           {exercise.explanation}
                         </pre>

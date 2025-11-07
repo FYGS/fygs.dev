@@ -741,22 +741,22 @@ export function SearchingVisualization() {
                   }
                   ${
                     item.state === "current"
-                      ? "bg-amber-100 dark:bg-amber-900/30 border-amber-500 text-amber-700 dark:text-amber-300"
+                      ? "bg-amber-900/30 border-amber-500 text-amber-300"
                       : ""
                   }
                   ${
                     item.state === "searching"
-                      ? "bg-blue-100 dark:bg-blue-900/30 border-blue-500 text-blue-700 dark:text-blue-300"
+                      ? "bg-blue-900/30 border-blue-500 text-blue-300"
                       : ""
                   }
                   ${
                     item.state === "found"
-                      ? "bg-green-100 dark:bg-green-900/30 border-green-500 text-green-700 dark:text-green-300"
+                      ? "bg-green-900/30 border-green-500 text-green-300"
                       : ""
                   }
                   ${
                     item.state === "not-found"
-                      ? "bg-red-100 dark:bg-red-900/30 border-red-500 text-red-700 dark:text-red-300"
+                      ? "bg-red-900/30 border-red-500 text-red-300"
                       : ""
                   }
                 `}
@@ -771,8 +771,8 @@ export function SearchingVisualization() {
             <div
               className={`text-center p-4 rounded-md mt-4 ${
                 result.includes("trouvé")
-                  ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
-                  : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300"
+                  ? "bg-green-900/30 text-green-300"
+                  : "bg-red-900/30 text-red-300"
               }`}
             >
               {result}
@@ -786,25 +786,25 @@ export function SearchingVisualization() {
               <span className="text-sm text-muted-foreground">Non visité</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-blue-100 dark:bg-blue-900/30 border border-blue-500 rounded"></div>
+              <div className="w-4 h-4 bg-blue-900/30 border border-blue-500 rounded"></div>
               <span className="text-sm text-muted-foreground">
                 En cours d&apos;examen
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-amber-100 dark:bg-amber-900/30 border border-amber-500 rounded"></div>
+              <div className="w-4 h-4 bg-amber-900/30 border border-amber-500 rounded"></div>
               <span className="text-sm text-muted-foreground">
                 Position actuelle
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-green-100 dark:bg-green-900/30 border border-green-500 rounded"></div>
+              <div className="w-4 h-4 bg-green-900/30 border border-green-500 rounded"></div>
               <span className="text-sm text-muted-foreground">
                 Élément trouvé
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-red-100 dark:bg-red-900/30 border border-red-500 rounded"></div>
+              <div className="w-4 h-4 bg-red-900/30 border border-red-500 rounded"></div>
               <span className="text-sm text-muted-foreground">
                 Élément non trouvé
               </span>

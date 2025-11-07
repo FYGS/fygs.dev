@@ -217,14 +217,14 @@ export function MemoryChart() {
         </div>
 
         {/* Informations sur la complexité spatiale */}
-        <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+        <div className="bg-blue-950/30 p-4 rounded-lg border border-blue-800">
           <div className="flex items-start gap-3">
-            <HardDrive className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+            <HardDrive className="w-5 h-5 text-blue-400 mt-0.5" />
             <div className="space-y-2">
-              <h3 className="text-sm font-medium text-blue-800 dark:text-blue-300">
+              <h3 className="text-sm font-medium text-blue-300">
                 Comprendre la complexité spatiale
               </h3>
-              <p className="text-sm text-blue-700 dark:text-blue-400">
+              <p className="text-sm text-blue-400">
                 La complexité spatiale mesure la quantité de mémoire
                 supplémentaire utilisée par un algorithme. Un algorithme est dit
                 &quot;in-place&quot; s&apos;il utilise O(1) mémoire

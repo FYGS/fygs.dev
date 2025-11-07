@@ -30,13 +30,13 @@ export function InterviewQuestions({ title, questions }: InterviewQuestionsProps
   const getDifficultyColor = (difficulty?: string) => {
     switch (difficulty) {
       case "easy":
-        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
+        return "bg-green-900/30 text-green-400";
       case "medium":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400";
+        return "bg-yellow-900/30 text-yellow-400";
       case "hard":
-        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
+        return "bg-red-900/30 text-red-400";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
+        return "bg-gray-800 text-gray-300";
     }
   };
 
@@ -50,7 +50,7 @@ export function InterviewQuestions({ title, questions }: InterviewQuestionsProps
           <div key={index} className="border rounded-md overflow-hidden">
             <button
               onClick={() => toggleQuestion(index)}
-              className="w-full flex justify-between items-start p-4 text-left bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="w-full flex justify-between items-start p-4 text-left bg-gray-800 hover:bg-gray-700"
             >
               <div className="flex flex-col items-start gap-2">
                 <div className="font-medium">{q.question}</div>
@@ -75,7 +75,7 @@ export function InterviewQuestions({ title, questions }: InterviewQuestionsProps
             </button>
             
             {openQuestions[index] && (
-              <div className="p-4 border-t bg-gray-50 dark:bg-gray-900">
+              <div className="p-4 border-t bg-gray-900">
                 <div className="text-sm">
                   {q.answer.split(/\d+\)/).map((part, partIndex) => {
                     if (partIndex === 0 && !part.trim().startsWith("1)")) {

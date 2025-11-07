@@ -17,12 +17,12 @@ function LifecycleDemo() {
   const [count, setCount] = useState(0);
 
   return (
-    <div className="p-4 border rounded-lg bg-white dark:bg-gray-800">
+    <div className="p-4 border rounded-lg bg-gray-800">
       <h3 className="font-medium mb-2 text-center">Counter: {count}</h3>
       <div className="flex justify-center gap-2">
         <button
           onClick={() => setCount(count + 1)}
-          className="px-3 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50"
+          className="px-3 py-1 rounded-md bg-green-900/30 text-green-400 hover:bg-green-900/50"
         >
           Increment
         </button>
@@ -268,7 +268,7 @@ function HooksComponent() {
             </p>
             <table className="w-full mt-2 text-sm border-collapse">
               <thead>
-                <tr className="bg-gray-100 dark:bg-gray-800">
+                <tr className="bg-gray-800">
                   <th className="p-2 text-left border">Class Method</th>
                   <th className="p-2 text-left border">Hooks Equivalent</th>
                 </tr>

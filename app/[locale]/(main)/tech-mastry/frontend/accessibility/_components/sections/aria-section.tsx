@@ -41,7 +41,7 @@ function AriaRolesDemo() {
               if (e.target === e.currentTarget) setIsOpen(false);
             }}
           >
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full">
+            <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full">
               <h2 id="dialog-title" className="text-xl font-bold mb-2">
                 Accessible Dialog
               </h2>

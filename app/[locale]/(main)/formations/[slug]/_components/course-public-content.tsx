@@ -89,14 +89,14 @@ export function CoursePublicContent({ course }: CoursePublicContentProps) {
       {/* Section Header */}
       <div className="relative">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-cyan-500/10 rounded-2xl blur-xl"></div>
-        <Card className="relative border-0 bg-gradient-to-br from-white/95 to-slate-50/95 dark:from-slate-900/95 dark:to-slate-800/95 backdrop-blur-sm shadow-lg">
+        <Card className="relative border-0 bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-sm shadow-lg">
           <CardHeader className="pb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
                 <Sparkles className="h-5 w-5 text-white" />
               </div>
               <div className="flex-1">
-                <CardTitle className="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+                <CardTitle className="text-xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
                   Informations de la Formation
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">
@@ -114,7 +114,7 @@ export function CoursePublicContent({ course }: CoursePublicContentProps) {
                 return (
                   <Card 
                     key={section.id} 
-                    className="group hover:shadow-md transition-all duration-300 border-slate-200/60 dark:border-slate-700/60 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm hover:scale-[1.02] transform"
+                    className="group hover:shadow-md transition-all duration-300 border-slate-700/60 bg-slate-900/80 backdrop-blur-sm hover:scale-[1.02] transform"
                   >
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3 mb-3">
@@ -122,7 +122,7 @@ export function CoursePublicContent({ course }: CoursePublicContentProps) {
                           <Icon className="h-4 w-4 text-white" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-sm group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-1">
+                          <h3 className="font-semibold text-sm group-hover:text-blue-400 transition-colors mb-1">
                             {section.title}
                           </h3>
                           <p className="text-xs text-muted-foreground mb-2">
@@ -130,7 +130,7 @@ export function CoursePublicContent({ course }: CoursePublicContentProps) {
                           </p>
                         </div>
                       </div>
-                      <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-3">
+                      <p className="text-xs text-slate-400 leading-relaxed mb-3">
                         {section.shortPreview}
                       </p>
                       <div className="flex items-center justify-between">
@@ -146,14 +146,14 @@ export function CoursePublicContent({ course }: CoursePublicContentProps) {
             </div>
             
             {/* Call to Action */}
-            <div className="text-center p-6 rounded-xl bg-gradient-to-r from-blue-50 via-purple-50 to-indigo-50 dark:from-blue-950/30 dark:via-purple-950/30 dark:to-indigo-950/30 border border-blue-200/30 dark:border-blue-800/30">
+            <div className="text-center p-6 rounded-xl bg-gradient-to-r from-blue-950/30 via-purple-950/30 to-indigo-950/30 border border-blue-800/30">
               <div className="flex items-center justify-center gap-2 mb-3">
-                <ExternalLink className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                <h4 className="font-semibold text-blue-900 dark:text-blue-100">
+                <ExternalLink className="h-5 w-5 text-blue-400" />
+                <h4 className="font-semibold text-blue-100">
                   Explorez Tous les Détails
                 </h4>
               </div>
-              <p className="text-sm text-blue-700 dark:text-blue-300 mb-4 max-w-lg mx-auto">
+              <p className="text-sm text-blue-300 mb-4 max-w-lg mx-auto">
                 Accédez à une vue complète et détaillée de tous les aspects de cette formation : 
                 contenu approfondi, ressources exhaustives, et informations pratiques.
               </p>
@@ -170,7 +170,7 @@ export function CoursePublicContent({ course }: CoursePublicContentProps) {
             </div>
 
             {/* Additional Info */}
-            <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+            <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-400">
               <CheckCircle2 className="h-3 w-3" />
               <span>Informations complètes et transparentes</span>
               <span>•</span>

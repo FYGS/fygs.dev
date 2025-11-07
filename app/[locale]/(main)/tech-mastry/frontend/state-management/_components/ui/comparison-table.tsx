@@ -74,13 +74,13 @@ export function ComparisonTable({
   const getRatingColor = (rating: Rating) => {
     switch (rating) {
       case "excellent":
-        return "bg-green-50 dark:bg-green-900/20";
+        return "bg-green-900/20";
       case "good":
-        return "bg-blue-50 dark:bg-blue-900/20";
+        return "bg-blue-900/20";
       case "average":
-        return "bg-yellow-50 dark:bg-yellow-900/20";
+        return "bg-yellow-900/20";
       case "poor":
-        return "bg-red-50 dark:bg-red-900/20";
+        return "bg-red-900/20";
       case "na":
         return "";
       default:

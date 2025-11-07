@@ -104,7 +104,7 @@ export function SearchingRealWorldCases() {
                   <h3 className="text-lg font-medium">Algorithmes Utilisés</h3>
                   <ul className="space-y-3">
                     <li className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 text-sm font-medium">
+                      <div className="w-6 h-6 rounded-full bg-blue-900/30 flex items-center justify-center text-blue-400 text-sm font-medium">
                         1
                       </div>
                       <div>
@@ -117,7 +117,7 @@ export function SearchingRealWorldCases() {
                       </div>
                     </li>
                     <li className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 text-sm font-medium">
+                      <div className="w-6 h-6 rounded-full bg-blue-900/30 flex items-center justify-center text-blue-400 text-sm font-medium">
                         2
                       </div>
                       <div>
@@ -131,7 +131,7 @@ export function SearchingRealWorldCases() {
                       </div>
                     </li>
                     <li className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 text-sm font-medium">
+                      <div className="w-6 h-6 rounded-full bg-blue-900/30 flex items-center justify-center text-blue-400 text-sm font-medium">
                         3
                       </div>
                       <div>
@@ -147,15 +147,15 @@ export function SearchingRealWorldCases() {
                 </div>
               </div>
 
-              <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                <h3 className="text-md font-medium text-blue-800 dark:text-blue-300 mb-2">
+              <div className="bg-blue-950/30 p-4 rounded-lg border border-blue-800">
+                <h3 className="text-md font-medium text-blue-300 mb-2">
                   Étude de cas: PostgreSQL
                 </h3>
-                <p className="text-sm text-blue-700 dark:text-blue-400">
+                <p className="text-sm text-blue-400">
                   PostgreSQL utilise plusieurs types d&apos;index, chacun
                   optimisé pour différents types de recherche :
                 </p>
-                <ul className="mt-2 space-y-1 text-sm text-blue-700 dark:text-blue-400">
+                <ul className="mt-2 space-y-1 text-sm text-blue-400">
                   <li>
                     • <strong>B-Tree</strong> : Implémente la recherche binaire
                     pour les opérations =, &lt;, &gt;, BETWEEN
@@ -173,7 +173,7 @@ export function SearchingRealWorldCases() {
                     les tableaux), utilise des structures d&apos;index inversé
                   </li>
                 </ul>
-                <p className="text-sm text-blue-700 dark:text-blue-400 mt-2">
+                <p className="text-sm text-blue-400 mt-2">
                   Le planificateur de requêtes choisit automatiquement
                   l&apos;algorithme de recherche le plus efficace en fonction de
                   la structure d&apos;index disponible et du type de requête.
@@ -223,7 +223,7 @@ export function SearchingRealWorldCases() {
                   <h3 className="text-lg font-medium">Algorithmes Utilisés</h3>
                   <ul className="space-y-3">
                     <li className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400 text-sm font-medium">
+                      <div className="w-6 h-6 rounded-full bg-green-900/30 flex items-center justify-center text-green-400 text-sm font-medium">
                         1
                       </div>
                       <div>
@@ -237,7 +237,7 @@ export function SearchingRealWorldCases() {
                       </div>
                     </li>
                     <li className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400 text-sm font-medium">
+                      <div className="w-6 h-6 rounded-full bg-green-900/30 flex items-center justify-center text-green-400 text-sm font-medium">
                         2
                       </div>
                       <div>
@@ -251,7 +251,7 @@ export function SearchingRealWorldCases() {
                       </div>
                     </li>
                     <li className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400 text-sm font-medium">
+                      <div className="w-6 h-6 rounded-full bg-green-900/30 flex items-center justify-center text-green-400 text-sm font-medium">
                         3
                       </div>
                       <div>
@@ -269,16 +269,16 @@ export function SearchingRealWorldCases() {
                 </div>
               </div>
 
-              <div className="bg-green-50 dark:bg-green-950/30 p-4 rounded-lg border border-green-200 dark:border-green-800">
-                <h3 className="text-md font-medium text-green-800 dark:text-green-300 mb-2">
+              <div className="bg-green-950/30 p-4 rounded-lg border border-green-800">
+                <h3 className="text-md font-medium text-green-300 mb-2">
                   Étude de cas: Elasticsearch
                 </h3>
-                <p className="text-sm text-green-700 dark:text-green-400">
+                <p className="text-sm text-green-400">
                   Elasticsearch est un moteur de recherche distribué utilisé par
                   de nombreuses applications web pour des recherches rapides et
                   précises :
                 </p>
-                <ul className="mt-2 space-y-1 text-sm text-green-700 dark:text-green-400">
+                <ul className="mt-2 space-y-1 text-sm text-green-400">
                   <li>
                     • <strong>Index inversé</strong> : Structure de données
                     principale pour une recherche rapide de termes
@@ -298,7 +298,7 @@ export function SearchingRealWorldCases() {
                     localisation
                   </li>
                 </ul>
-                <p className="text-sm text-green-700 dark:text-green-400 mt-2">
+                <p className="text-sm text-green-400 mt-2">
                   Des sites comme Wikipedia, GitHub, et Stack Overflow utilisent
                   Elasticsearch pour fournir des résultats de recherche rapides
                   et pertinents à leurs utilisateurs.
@@ -350,7 +350,7 @@ export function SearchingRealWorldCases() {
                   <h3 className="text-lg font-medium">Algorithmes Utilisés</h3>
                   <ul className="space-y-3">
                     <li className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400 text-sm font-medium">
+                      <div className="w-6 h-6 rounded-full bg-purple-900/30 flex items-center justify-center text-purple-400 text-sm font-medium">
                         1
                       </div>
                       <div>
@@ -364,7 +364,7 @@ export function SearchingRealWorldCases() {
                       </div>
                     </li>
                     <li className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400 text-sm font-medium">
+                      <div className="w-6 h-6 rounded-full bg-purple-900/30 flex items-center justify-center text-purple-400 text-sm font-medium">
                         2
                       </div>
                       <div>
@@ -378,7 +378,7 @@ export function SearchingRealWorldCases() {
                       </div>
                     </li>
                     <li className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400 text-sm font-medium">
+                      <div className="w-6 h-6 rounded-full bg-purple-900/30 flex items-center justify-center text-purple-400 text-sm font-medium">
                         3
                       </div>
                       <div>
@@ -395,16 +395,16 @@ export function SearchingRealWorldCases() {
                 </div>
               </div>
 
-              <div className="bg-purple-50 dark:bg-purple-950/30 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
-                <h3 className="text-md font-medium text-purple-800 dark:text-purple-300 mb-2">
+              <div className="bg-purple-950/30 p-4 rounded-lg border border-purple-800">
+                <h3 className="text-md font-medium text-purple-300 mb-2">
                   Étude de cas: AlphaGo
                 </h3>
-                <p className="text-sm text-purple-700 dark:text-purple-400">
+                <p className="text-sm text-purple-400">
                   AlphaGo, développé par DeepMind, a utilisé plusieurs
                   algorithmes de recherche pour battre les champions du monde de
                   Go :
                 </p>
-                <ul className="mt-2 space-y-1 text-sm text-purple-700 dark:text-purple-400">
+                <ul className="mt-2 space-y-1 text-sm text-purple-400">
                   <li>
                     • <strong>Monte Carlo Tree Search (MCTS)</strong> : Explore
                     efficacement l&apos;arbre de jeu massif du Go
@@ -422,7 +422,7 @@ export function SearchingRealWorldCases() {
                     continuellement les stratégies de recherche
                   </li>
                 </ul>
-                <p className="text-sm text-purple-700 dark:text-purple-400 mt-2">
+                <p className="text-sm text-purple-400 mt-2">
                   Cette combinaison d&apos;algorithmes de recherche et
                   d&apos;apprentissage profond a permis à AlphaGo de naviguer
                   efficacement dans un espace de recherche de 10<sup>170</sup>{" "}
@@ -475,7 +475,7 @@ export function SearchingRealWorldCases() {
                   <h3 className="text-lg font-medium">Algorithmes Utilisés</h3>
                   <ul className="space-y-3">
                     <li className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 text-sm font-medium">
+                      <div className="w-6 h-6 rounded-full bg-amber-900/30 flex items-center justify-center text-amber-400 text-sm font-medium">
                         1
                       </div>
                       <div>
@@ -489,7 +489,7 @@ export function SearchingRealWorldCases() {
                       </div>
                     </li>
                     <li className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 text-sm font-medium">
+                      <div className="w-6 h-6 rounded-full bg-amber-900/30 flex items-center justify-center text-amber-400 text-sm font-medium">
                         2
                       </div>
                       <div>
@@ -503,7 +503,7 @@ export function SearchingRealWorldCases() {
                       </div>
                     </li>
                     <li className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 text-sm font-medium">
+                      <div className="w-6 h-6 rounded-full bg-amber-900/30 flex items-center justify-center text-amber-400 text-sm font-medium">
                         3
                       </div>
                       <div>
@@ -520,16 +520,16 @@ export function SearchingRealWorldCases() {
                 </div>
               </div>
 
-              <div className="bg-amber-50 dark:bg-amber-950/30 p-4 rounded-lg border border-amber-200 dark:border-amber-800">
-                <h3 className="text-md font-medium text-amber-800 dark:text-amber-300 mb-2">
+              <div className="bg-amber-950/30 p-4 rounded-lg border border-amber-800">
+                <h3 className="text-md font-medium text-amber-300 mb-2">
                   Étude de cas: Linux locate et mlocate
                 </h3>
-                <p className="text-sm text-amber-700 dark:text-amber-400">
+                <p className="text-sm text-amber-400">
                   Les commandes <code>locate</code> et <code>mlocate</code> sous
                   Linux utilisent des bases de données indexées pour accélérer
                   la recherche de fichiers :
                 </p>
-                <ul className="mt-2 space-y-1 text-sm text-amber-700 dark:text-amber-400">
+                <ul className="mt-2 space-y-1 text-sm text-amber-400">
                   <li>
                     • <strong>Indexation périodique</strong> : Crée une base de
                     données de tous les fichiers du système
@@ -547,7 +547,7 @@ export function SearchingRealWorldCases() {
                     processeurs multi-cœurs pour accélérer les recherches
                   </li>
                 </ul>
-                <p className="text-sm text-amber-700 dark:text-amber-400 mt-2">
+                <p className="text-sm text-amber-400 mt-2">
                   Ces outils permettent de trouver des fichiers en quelques
                   millisecondes, contre plusieurs minutes avec une recherche
                   linéaire traditionnelle comme <code>find</code>, démontrant

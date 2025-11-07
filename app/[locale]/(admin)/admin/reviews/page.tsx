@@ -58,7 +58,7 @@ export default async function AdminReviewsPage() {
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-cyan-500" />
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-3 text-base">
-              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+              <div className="p-2 rounded-lg bg-blue-900/30">
                 <MessageSquare className="h-4 w-4 text-blue-600" />
               </div>
               Total des avis
@@ -78,7 +78,7 @@ export default async function AdminReviewsPage() {
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-500 to-orange-500" />
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-3 text-base">
-              <div className="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/30">
+              <div className="p-2 rounded-lg bg-yellow-900/30">
                 <Star className="h-4 w-4 text-yellow-600" />
               </div>
               Note moyenne
@@ -105,7 +105,7 @@ export default async function AdminReviewsPage() {
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-green-500 to-emerald-500" />
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-3 text-base">
-              <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
+              <div className="p-2 rounded-lg bg-green-900/30">
                 <TrendingUp className="h-4 w-4 text-green-600" />
               </div>
               Ce mois-ci
@@ -128,7 +128,7 @@ export default async function AdminReviewsPage() {
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-pink-500" />
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-3 text-base">
-              <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
+              <div className="p-2 rounded-lg bg-red-900/30">
                 <AlertTriangle className="h-4 w-4 text-red-600" />
               </div>
               En attente
@@ -290,7 +290,7 @@ export default async function AdminReviewsPage() {
             <CardContent className="space-y-3">
               <button className="w-full p-3 text-left rounded-lg border hover:bg-muted/50 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
+                  <div className="p-2 rounded-lg bg-green-900/30">
                     <CheckCircle className="h-4 w-4 text-green-600" />
                   </div>
                   <div>
@@ -304,7 +304,7 @@ export default async function AdminReviewsPage() {
               
               <button className="w-full p-3 text-left rounded-lg border hover:bg-muted/50 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
+                  <div className="p-2 rounded-lg bg-red-900/30">
                     <XCircle className="h-4 w-4 text-red-600" />
                   </div>
                   <div>
@@ -318,7 +318,7 @@ export default async function AdminReviewsPage() {
               
               <button className="w-full p-3 text-left rounded-lg border hover:bg-muted/50 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                  <div className="p-2 rounded-lg bg-blue-900/30">
                     <TrendingUp className="h-4 w-4 text-blue-600" />
                   </div>
                   <div>

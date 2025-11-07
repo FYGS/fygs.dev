@@ -152,14 +152,14 @@ ORDER BY first_name;`}
                 </div>
               </div>
 
-              <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
+              <div className="bg-blue-950/30 p-4 rounded-lg border border-blue-800">
+                <h4 className="text-sm font-medium text-blue-300 mb-2">
                   Implémentation dans PostgreSQL
                 </h4>
-                <p className="text-sm text-blue-700 dark:text-blue-400">
+                <p className="text-sm text-blue-400">
                   PostgreSQL utilise une variante du tri fusion pour créer des
                   index B-tree. Le code source dans
-                  <code className="mx-1 px-1 py-0.5 bg-blue-100 dark:bg-blue-900/50 rounded">
+                  <code className="mx-1 px-1 py-0.5 bg-blue-900/50 rounded">
                     src/backend/access/nbtree/nbtree.c
                   </code>
                   implémente un algorithme de tri qui peut fonctionner
@@ -171,7 +171,7 @@ ORDER BY first_name;`}
                     href="https://github.com/postgres/postgres/blob/master/src/backend/access/nbtree/nbtree.c"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                    className="flex items-center gap-2 text-xs text-blue-400 hover:underline"
                   >
                     <ExternalLink className="w-3 h-3" />
                     Voir le code source sur GitHub
@@ -292,18 +292,18 @@ ORDER BY price DESC;`}
                 </div>
               </div>
 
-              <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
+              <div className="bg-blue-950/30 p-4 rounded-lg border border-blue-800">
+                <h4 className="text-sm font-medium text-blue-300 mb-2">
                   Optimisation des requêtes ORDER BY
                 </h4>
-                <p className="text-sm text-blue-700 dark:text-blue-400">
+                <p className="text-sm text-blue-400">
                   MySQL utilise une implémentation de QuickSort pour les tris en
                   mémoire et une variante du tri fusion pour les tris externes.
                   Voici un extrait simplifié de l&apos;implémentation du tri
                   dans MySQL :
                 </p>
                 <div className="relative mt-2">
-                  <pre className="bg-blue-100 dark:bg-blue-900/50 p-3 rounded-lg text-xs overflow-x-auto">
+                  <pre className="bg-blue-900/50 p-3 rounded-lg text-xs overflow-x-auto">
                     <code>
                       {`// Extrait simplifié du code de MySQL pour le tri
 bool filesort(THD *thd, QEP_TAB *qep_tab) {
@@ -370,8 +370,8 @@ bool filesort(THD *thd, QEP_TAB *qep_tab) {
                     </li>
                   </ol>
 
-                  <div className="bg-amber-50 dark:bg-amber-950/30 p-3 rounded-lg border border-amber-200 dark:border-amber-800">
-                    <p className="text-xs text-amber-700 dark:text-amber-400">
+                  <div className="bg-amber-950/30 p-3 rounded-lg border border-amber-800">
+                    <p className="text-xs text-amber-400">
                       <strong>Note :</strong> Le tri externe est également
                       utilisé pour les opérations GROUP BY, les jointures et la
                       création d&apos;index sur de grandes tables.
@@ -508,20 +508,20 @@ async function mergeChunks(chunkFiles, outputFile) {
                 </div>
               </div>
 
-              <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
+              <div className="bg-blue-950/30 p-4 rounded-lg border border-blue-800">
+                <h4 className="text-sm font-medium text-blue-300 mb-2">
                   Application dans les SGBD
                 </h4>
-                <p className="text-sm text-blue-700 dark:text-blue-400">
+                <p className="text-sm text-blue-400">
                   Oracle Database utilise un algorithme de tri externe appelé
                   &quot;Sort-Merge&quot; pour les grandes opérations de tri. La
                   base de données ajuste automatiquement les paramètres comme{" "}
-                  <code className="mx-1 px-1 py-0.5 bg-blue-100 dark:bg-blue-900/50 rounded">
+                  <code className="mx-1 px-1 py-0.5 bg-blue-900/50 rounded">
                     SORT_AREA_SIZE
                   </code>{" "}
                   pour optimiser les performances.
                 </p>
-                <p className="text-sm text-blue-700 dark:text-blue-400 mt-2">
+                <p className="text-sm text-blue-400 mt-2">
                   SQL Server utilise également le tri externe pour les grandes
                   opérations, avec des optimisations comme le tri parallèle et
                   l&apos;utilisation intelligente du cache de mémoire tampon.

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Crown, Sparkles } from "lucide-react";
 import { Badge } from "./badge";
@@ -15,12 +15,11 @@ export function PremiumBadge({ className, variant = "default" }: PremiumBadgePro
       <Badge
         variant="secondary"
         className={cn(
-          "bg-linear-to-r from-purple-100 to-indigo-100",
-          "dark:from-purple-950/50 dark:to-indigo-950/50",
-          "text-purple-700 dark:text-purple-300",
-          "border-purple-200 dark:border-purple-800",
-          "hover:from-purple-200 hover:to-indigo-200",
-          "dark:hover:from-purple-950/60 dark:hover:to-indigo-950/60",
+          "bg-linear-to-r",
+          "from-purple-950/50 to-indigo-950/50",
+          "text-purple-300",
+          "border-purple-800",
+          "hover:from-purple-950/60 hover:to-indigo-950/60",
           className
         )}
       >

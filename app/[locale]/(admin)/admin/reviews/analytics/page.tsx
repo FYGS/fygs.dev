@@ -70,7 +70,7 @@ export default async function AdminReviewsAnalyticsPage() {
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-cyan-500" />
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-3 text-base">
-              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+              <div className="p-2 rounded-lg bg-blue-900/30">
                 <BarChart3 className="h-4 w-4 text-blue-600" />
               </div>
               Taux d&apos;engagement
@@ -90,7 +90,7 @@ export default async function AdminReviewsAnalyticsPage() {
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-green-500 to-emerald-500" />
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-3 text-base">
-              <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
+              <div className="p-2 rounded-lg bg-green-900/30">
                 <TrendingUp className="h-4 w-4 text-green-600" />
               </div>
               Croissance mensuelle
@@ -110,7 +110,7 @@ export default async function AdminReviewsAnalyticsPage() {
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-pink-500" />
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-3 text-base">
-              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+              <div className="p-2 rounded-lg bg-purple-900/30">
                 <Target className="h-4 w-4 text-purple-600" />
               </div>
               Sentiment positif
@@ -130,7 +130,7 @@ export default async function AdminReviewsAnalyticsPage() {
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-500 to-orange-500" />
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-3 text-base">
-              <div className="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/30">
+              <div className="p-2 rounded-lg bg-yellow-900/30">
                 <Award className="h-4 w-4 text-yellow-600" />
               </div>
               Excellence (4.5+)

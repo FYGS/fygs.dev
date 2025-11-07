@@ -233,17 +233,17 @@ export function ModernSortingGuide() {
       </Tabs>
 
       {/* Carte d'information flottante */}
-      <Card className="bg-linear-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border-blue-200 dark:border-blue-800 shadow-md">
+      <Card className="bg-linear-to-br from-blue-950/30 to-indigo-950/30 border-blue-800 shadow-md">
         <CardContent className="p-6">
           <div className="flex items-start gap-4">
-            <div className="bg-blue-100 dark:bg-blue-900/50 p-2 rounded-full">
-              <Lightbulb className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <div className="bg-blue-900/50 p-2 rounded-full">
+              <Lightbulb className="w-6 h-6 text-blue-400" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-300 mb-2">
+              <h3 className="text-lg font-semibold text-blue-300 mb-2">
                 Le saviez-vous ?
               </h3>
-              <p className="text-sm text-blue-700 dark:text-blue-400">
+              <p className="text-sm text-blue-400">
                 Les navigateurs web modernes utilisent des algorithmes de tri
                 hybrides comme <strong>Timsort</strong> (combinaison de Merge
                 Sort et Insertion Sort) pour leur méthode{" "}

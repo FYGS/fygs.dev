@@ -323,7 +323,7 @@ export function ColorContrastSection() {
               the lightest and darkest colors:
             </p>
 
-            <pre className="bg-gray-100 dark:bg-gray-800 p-2 rounded-md mt-2 text-sm">
+            <pre className="bg-gray-800 p-2 rounded-md mt-2 text-sm">
               (L1 + 0.05) / (L2 + 0.05)
             </pre>
 

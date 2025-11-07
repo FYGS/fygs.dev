@@ -243,9 +243,9 @@ export function SearchingQuizzes() {
                     className={`flex items-center space-x-2 p-3 rounded-md border ${
                       isAnswered
                         ? index === currentQuestion.correctAnswer
-                          ? "border-green-500 bg-green-50 dark:bg-green-950/30"
+                          ? "border-green-500 bg-green-950/30"
                           : index === selectedOption
-                          ? "border-red-500 bg-red-50 dark:bg-red-950/30"
+                          ? "border-red-500 bg-red-950/30"
                           : "border-muted"
                         : "border-muted hover:border-primary"
                     }`}

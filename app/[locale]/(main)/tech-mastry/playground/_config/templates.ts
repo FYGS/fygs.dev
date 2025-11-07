@@ -524,7 +524,7 @@ export default function Home() {
           Edit <code className="font-mono font-bold">page.tsx</code> and save to reload.
         </p>
         
-        <div className="bg-white/5 p-8 rounded-lg border border-gray-300 dark:border-neutral-700 text-center">
+        <div className="bg-white/5 p-8 rounded-lg border border-neutral-700 text-center">
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             onClick={() => setCount((count) => count + 1)}

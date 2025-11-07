@@ -497,7 +497,7 @@ export function DatabaseReplicationVisualization() {
                     const controlY = midY + normalY;
 
                     // Determine link color based on status
-                    let strokeColor = "stroke-slate-300 dark:stroke-slate-600";
+                    let strokeColor = "stroke-slate-600";
                     let strokeWidth = "stroke-[2px]";
 
                     if (link.status === "syncing") {
@@ -558,7 +558,7 @@ export function DatabaseReplicationVisualization() {
                       >
                         <polygon
                           points="0 0, 10 3.5, 0 7"
-                          className="fill-slate-400 dark:fill-slate-500"
+                          className="fill-slate-500"
                         />
                       </marker>
                     </defs>
@@ -567,20 +567,20 @@ export function DatabaseReplicationVisualization() {
                   {/* Render nodes */}
                   {nodes.map((node) => {
                     // Determine node color based on type and status
-                    let bgColor = "bg-blue-100 dark:bg-blue-900/30";
-                    let borderColor = "border-blue-200 dark:border-blue-800";
-                    let textColor = "text-blue-700 dark:text-blue-300";
+                    let bgColor = "bg-blue-900/30";
+                    let borderColor = "border-blue-800";
+                    let textColor = "text-blue-300";
 
                     if (node.type === "master") {
-                      bgColor = "bg-indigo-100 dark:bg-indigo-900/30";
-                      borderColor = "border-indigo-200 dark:border-indigo-800";
-                      textColor = "text-indigo-700 dark:text-indigo-300";
+                      bgColor = "bg-indigo-900/30";
+                      borderColor = "border-indigo-800";
+                      textColor = "text-indigo-300";
                     }
 
                     if (node.status === "down") {
-                      bgColor = "bg-red-100 dark:bg-red-900/30";
-                      borderColor = "border-red-200 dark:border-red-800";
-                      textColor = "text-red-700 dark:text-red-300";
+                      bgColor = "bg-red-900/30";
+                      borderColor = "border-red-800";
+                      textColor = "text-red-300";
                     }
 
                     return (
@@ -634,22 +634,22 @@ export function DatabaseReplicationVisualization() {
                         {/* Status indicator */}
                         <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
                           {node.status === "active" && (
-                            <div className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-full">
-                              <span className="text-[10px] text-green-700 dark:text-green-300 font-medium">
+                            <div className="px-2 py-0.5 bg-green-900/30 border border-green-800 rounded-full">
+                              <span className="text-[10px] text-green-300 font-medium">
                                 Active
                               </span>
                             </div>
                           )}
                           {node.status === "syncing" && (
-                            <div className="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-full">
-                              <span className="text-[10px] text-amber-700 dark:text-amber-300 font-medium">
+                            <div className="px-2 py-0.5 bg-amber-900/30 border border-amber-800 rounded-full">
+                              <span className="text-[10px] text-amber-300 font-medium">
                                 Syncing
                               </span>
                             </div>
                           )}
                           {node.status === "down" && (
-                            <div className="px-2 py-0.5 bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-full">
-                              <span className="text-[10px] text-red-700 dark:text-red-300 font-medium">
+                            <div className="px-2 py-0.5 bg-red-900/30 border border-red-800 rounded-full">
+                              <span className="text-[10px] text-red-300 font-medium">
                                 Down
                               </span>
                             </div>
@@ -660,7 +660,7 @@ export function DatabaseReplicationVisualization() {
                   })}
 
                   {/* Legend */}
-                  <div className="absolute bottom-2 right-2 bg-white/80 dark:bg-slate-900/80 p-2 rounded-md border text-xs">
+                  <div className="absolute bottom-2 right-2 bg-slate-900/80 p-2 rounded-md border text-xs">
                     <div className="font-medium mb-1">
                       Cliquez sur un nœud pour simuler une panne
                     </div>
@@ -848,7 +848,7 @@ export function DatabaseReplicationVisualization() {
                       <h5 className="text-sm font-medium mb-2">
                         MySQL (Master-Slave)
                       </h5>
-                      <pre className="text-xs p-3 bg-slate-100 dark:bg-slate-800 rounded border overflow-auto">
+                      <pre className="text-xs p-3 bg-slate-800 rounded border overflow-auto">
                         {`# Configuration sur le master (my.cnf)
 server-id=1
 log_bin=mysql-bin
@@ -874,7 +874,7 @@ START SLAVE;`}
                       <h5 className="text-sm font-medium mb-2">
                         PostgreSQL (Streaming Replication)
                       </h5>
-                      <pre className="text-xs p-3 bg-slate-100 dark:bg-slate-800 rounded border overflow-auto">
+                      <pre className="text-xs p-3 bg-slate-800 rounded border overflow-auto">
                         {`# Configuration sur le primary (postgresql.conf)
 wal_level = replica
 max_wal_senders = 10

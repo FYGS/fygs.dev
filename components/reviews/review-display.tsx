@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -420,7 +420,7 @@ export function ReviewList({
     return (
       <Card className={className}>
         <CardContent className="p-12 text-center">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 flex items-center justify-center mx-auto mb-4">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-900/30 to-purple-900/30 flex items-center justify-center mx-auto mb-4">
             <User className="h-8 w-8 text-blue-500" />
           </div>
           <h3 className="text-lg font-semibold mb-2">Aucun avis</h3>

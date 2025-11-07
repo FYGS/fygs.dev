@@ -82,7 +82,7 @@ function Header() {
       </h2>
       <button
         onClick={toggleTheme}
-        className="px-3 py-1 text-xs rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
+        className="px-3 py-1 text-xs rounded-md bg-blue-900/30 text-blue-400 hover:bg-blue-900/50"
       >
         {theme === "light" ? "Mode Sombre" : "Mode Clair"}
       </button>

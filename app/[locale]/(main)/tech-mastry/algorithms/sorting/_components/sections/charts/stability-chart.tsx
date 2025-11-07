@@ -257,8 +257,8 @@ export function StabilityChart() {
                         variant="outline"
                         className={
                           algorithm.stable
-                            ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                            : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                            ? "bg-green-900/30 text-green-400"
+                            : "bg-red-900/30 text-red-400"
                         }
                       >
                         {item.id}
@@ -324,14 +324,14 @@ export function StabilityChart() {
         </div>
 
         {/* Informations sur la stabilité */}
-        <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+        <div className="bg-blue-950/30 p-4 rounded-lg border border-blue-800">
           <div className="flex items-start gap-3">
-            <Zap className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+            <Zap className="w-5 h-5 text-blue-400 mt-0.5" />
             <div className="space-y-2">
-              <h3 className="text-sm font-medium text-blue-800 dark:text-blue-300">
+              <h3 className="text-sm font-medium text-blue-300">
                 Importance de la stabilité
               </h3>
-              <p className="text-sm text-blue-700 dark:text-blue-400">
+              <p className="text-sm text-blue-400">
                 La stabilité est cruciale lorsqu&apos;on trie des données sur
                 plusieurs critères. Par exemple, si vous triez une liste de
                 personnes d&apos;abord par âge, puis par nom, vous voulez que

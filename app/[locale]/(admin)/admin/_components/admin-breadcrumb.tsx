@@ -46,7 +46,7 @@ export function AdminBreadcrumb() {
   }
 
   return (
-    <div className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700 px-6 py-3">
+    <div className="bg-slate-800/50 border-b border-slate-700 px-6 py-3">
       <nav className="flex items-center space-x-2 text-sm">
         <Link 
           href="/admin"

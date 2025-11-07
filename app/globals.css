@@ -1,20 +1,21 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 /* Import specialized CSS files */
-@import '../styles/editor.css';
-@import '../styles/monaco.css';
-@import '../styles/mdx.css';
-@import '../styles/syntax-highlighting.css';
-@import '../styles/layout.css';
-@import '../styles/animations.css';
-@import '../styles/playground-components.css';
+@import "../styles/editor.css";
+@import "../styles/monaco.css";
+@import "../styles/mdx.css";
+@import "../styles/syntax-highlighting.css";
+@import "../styles/layout.css";
+@import "../styles/animations.css";
+@import "../styles/playground-components.css";
 
 @plugin 'tailwindcss-animate';
 @plugin '@tailwindcss/typography';
 @plugin 'tailwind-scrollbar';
 @plugin '../lib/tailwind-plugins/playground-animations-v4';
 
-/* @custom-variant dark (&:is(.dark *)); */
+/* Disable dark mode variants to prevent browser prefers-color-scheme interference */
+/* We use only static dark theme colors, no light/dark switching */
 
 @theme {
   --font-sans: var(--font-geist-sans), sans-serif;
@@ -160,8 +161,7 @@
   /* Search dropdown styles */
   @apply z-99999; /* Ensure it's always on top */
   pointer-events: auto !important;
-  box-shadow:
-    0 10px 25px -5px rgba(0, 0, 0, 0.1),
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
     0 8px 10px -6px rgba(0, 0, 0, 0.1);
   animation: fadeInSearch 0.2s ease-out forwards;
 }
@@ -231,7 +231,6 @@
 }
 
 @layer components {
-
   @keyframes fadeInSearch {
     from {
       opacity: 0;

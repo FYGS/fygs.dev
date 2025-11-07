@@ -68,7 +68,7 @@ export function InteractiveDemo({
           <div 
             className={cn(
               "p-4",
-              error ? "bg-red-50 dark:bg-red-900/10" : "bg-white dark:bg-background"
+              error ? "bg-red-900/10" : "bg-background"
             )}
             style={{ height, overflow: "auto" }}
           >

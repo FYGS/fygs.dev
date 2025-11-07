@@ -352,8 +352,8 @@ export default async function AdminReviewsSettingsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
-                  <p className="text-sm text-green-800 dark:text-green-200">
+                <div className="bg-green-900/20 p-4 rounded-lg">
+                  <p className="text-sm text-green-200">
                     <strong>Règles d&apos;auto-approbation :</strong> Les avis qui respectent tous les critères sont automatiquement approuvés.
                   </p>
                 </div>
@@ -387,8 +387,8 @@ export default async function AdminReviewsSettingsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
-                  <p className="text-sm text-red-800 dark:text-red-200">
+                <div className="bg-red-900/20 p-4 rounded-lg">
+                  <p className="text-sm text-red-200">
                     <strong>Règles d&apos;auto-rejet :</strong> Les avis qui déclenchent ces règles sont automatiquement rejetés.
                   </p>
                 </div>
@@ -422,8 +422,8 @@ export default async function AdminReviewsSettingsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
-                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                <div className="bg-yellow-900/20 p-4 rounded-lg">
+                  <p className="text-sm text-yellow-200">
                     <strong>Modération manuelle :</strong> Ces avis nécessitent une vérification humaine.
                   </p>
                 </div>

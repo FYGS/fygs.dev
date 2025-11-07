@@ -355,14 +355,14 @@ export function TernarySearch() {
                   item.state === "default"
                     ? "bg-background border-border"
                     : item.state === "mid1"
-                    ? "bg-blue-100 border-blue-500 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
+                    ? "border-blue-500 bg-blue-900/50 text-blue-300"
                     : item.state === "mid2"
-                    ? "bg-purple-100 border-purple-500 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300"
+                    ? "border-purple-500 bg-purple-900/50 text-purple-300"
                     : item.state === "found"
-                    ? "bg-green-100 border-green-500 text-green-700 dark:bg-green-900/50 dark:text-green-300"
+                    ? "border-green-500 bg-green-900/50 text-green-300"
                     : item.state === "not-found"
-                    ? "bg-red-100 border-red-500 text-red-700 dark:bg-red-900/50 dark:text-red-300"
-                    : "bg-amber-100 border-amber-500 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300"
+                    ? "border-red-500 bg-red-900/50 text-red-300"
+                    : "border-amber-500 bg-amber-900/50 text-amber-300"
                 }`}
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -380,23 +380,23 @@ export function TernarySearch() {
               <span>Non visité</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded-sm bg-amber-100 border border-amber-500 dark:bg-amber-900/50"></div>
+              <div className="w-3 h-3 rounded-sm border border-amber-500 bg-amber-900/50"></div>
               <span>Plage de recherche</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded-sm bg-blue-100 border border-blue-500 dark:bg-blue-900/50"></div>
+              <div className="w-3 h-3 rounded-sm border border-blue-500 bg-blue-900/50"></div>
               <span>Premier point (mid1)</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded-sm bg-purple-100 border border-purple-500 dark:bg-purple-900/50"></div>
+              <div className="w-3 h-3 rounded-sm border border-purple-500 bg-purple-900/50"></div>
               <span>Second point (mid2)</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded-sm bg-green-100 border border-green-500 dark:bg-green-900/50"></div>
+              <div className="w-3 h-3 rounded-sm border border-green-500 bg-green-900/50"></div>
               <span>Trouvé</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded-sm bg-red-100 border border-red-500 dark:bg-red-900/50"></div>
+              <div className="w-3 h-3 rounded-sm border border-red-500 bg-red-900/50"></div>
               <span>Non trouvé</span>
             </div>
           </div>

@@ -84,13 +84,13 @@ export function UsersTable({ users, pagination }: UsersTableProps) {
   const getRoleColor = (role: string) => {
     switch (role) {
       case Role.ADMIN:
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
+        return "bg-red-900 text-red-300";
       case Role.INSTRUCTOR:
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+        return "bg-blue-900 text-blue-300";
       case Role.STUDENT:
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+        return "bg-green-900 text-green-300";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+        return "bg-gray-900 text-gray-300";
     }
   };
 

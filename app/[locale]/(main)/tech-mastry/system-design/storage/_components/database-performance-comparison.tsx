@@ -154,7 +154,7 @@ export function DatabasePerformanceComparison() {
                   </div>
                 </div>
 
-                <div className="mt-6 p-3 bg-slate-100 dark:bg-slate-800 rounded-md text-xs">
+                <div className="mt-6 p-3 bg-slate-800 rounded-md text-xs">
                   <div className="font-medium mb-1">Notes:</div>
                   <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
                     <li>

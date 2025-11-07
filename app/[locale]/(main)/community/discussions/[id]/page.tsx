@@ -100,7 +100,7 @@ async function DiscussionContent({ params, searchParams }: DiscussionPageProps) 
                       {discussion.title}
                     </CardTitle>
 
-                    <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
+                    <div className="flex items-center gap-3 text-sm text-slate-400">
                       <Link 
                         href={`/community/users/${discussion.author.id}`}
                         className="flex items-center gap-2 hover:text-primary transition-colors"
@@ -160,7 +160,7 @@ async function DiscussionContent({ params, searchParams }: DiscussionPageProps) 
 
                 {/* Discussion stats and actions */}
                 <div className="flex items-center justify-between pt-4 border-t">
-                  <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
+                  <div className="flex items-center gap-4 text-sm text-slate-400">
                     <span>{discussion._count?.replies || 0} replies</span>
                     <span>{discussion._count?.votes || 0} votes</span>
                     <span>{discussion.viewCount || 0} views</span>
@@ -192,7 +192,7 @@ async function DiscussionContent({ params, searchParams }: DiscussionPageProps) 
 
                   {sortedReplies.length > 0 && (
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-slate-600 dark:text-slate-400">Sort by:</span>
+                      <span className="text-sm text-slate-400">Sort by:</span>
                       <div className="flex gap-1">
                         <Button
                           variant={sortBy === "oldest" ? "default" : "ghost"}
@@ -232,7 +232,7 @@ async function DiscussionContent({ params, searchParams }: DiscussionPageProps) 
                   <div className="text-center py-8">
                     <div className="text-4xl mb-4">💬</div>
                     <h3 className="text-lg font-semibold mb-2">No replies yet</h3>
-                    <p className="text-slate-600 dark:text-slate-400">
+                    <p className="text-slate-400">
                       Be the first to share your thoughts on this discussion!
                     </p>
                   </div>

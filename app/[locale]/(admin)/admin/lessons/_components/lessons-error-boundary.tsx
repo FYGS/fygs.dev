@@ -21,8 +21,8 @@ export function LessonsErrorBoundary({
   return (
     <Card className="max-w-2xl mx-auto">
       <CardHeader className="text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
-          <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-900/20">
+          <AlertCircle className="h-6 w-6 text-red-400" />
         </div>
         <CardTitle className="text-xl">
           Erreur lors du chargement des leçons
@@ -37,7 +37,7 @@ export function LessonsErrorBoundary({
           <summary className="cursor-pointer font-medium mb-2">
             Détails de l&apos;erreur
           </summary>
-          <code className="text-sm text-red-600 dark:text-red-400 break-all">
+          <code className="text-sm text-red-400 break-all">
             {error.message}
           </code>
         </details>

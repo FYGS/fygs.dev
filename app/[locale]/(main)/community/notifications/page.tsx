@@ -74,7 +74,7 @@ async function NotificationsContent({ searchParams }: NotificationsPageProps) {
                     </Badge>
                   )}
                 </div>
-                <p className="text-slate-600 dark:text-slate-400">
+                <p className="text-slate-400">
                   Stay updated with community activities
                 </p>
               </div>
@@ -123,7 +123,7 @@ async function NotificationsContent({ searchParams }: NotificationsPageProps) {
                   <div className="text-center py-12">
                     <Bell className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                     <h3 className="text-lg font-semibold mb-2">No notifications</h3>
-                    <p className="text-slate-600 dark:text-slate-400">
+                    <p className="text-slate-400">
                       {filter === "unread" 
                         ? "All caught up! No unread notifications."
                         : "You'll see notifications here when there's activity."}
@@ -135,7 +135,7 @@ async function NotificationsContent({ searchParams }: NotificationsPageProps) {
                       <div
                         key={notification.id}
                         className={`p-4 hover:bg-accent/50 transition-colors ${
-                          !notification.isRead ? "bg-blue-50/50 dark:bg-blue-950/20" : ""
+                          !notification.isRead ? "bg-blue-950/20" : ""
                         }`}
                       >
                         <div className="flex items-start gap-3">
@@ -198,7 +198,7 @@ async function NotificationsContent({ searchParams }: NotificationsPageProps) {
         <div className="container mx-auto px-4 py-6">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-2">Error Loading Notifications</h1>
-            <p className="text-slate-600 dark:text-slate-400">Please try again later.</p>
+            <p className="text-slate-400">Please try again later.</p>
           </div>
         </div>
       </div>

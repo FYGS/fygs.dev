@@ -45,7 +45,7 @@ function WindowSizeDemo() {
   const size = useWindowSize();
   
   return (
-    <div className="p-4 border rounded-md bg-gray-50 dark:bg-gray-900 text-center">
+    <div className="p-4 border rounded-md bg-gray-900 text-center">
       <p className="text-sm text-muted-foreground mb-2">
         Redimensionnez votre fenêtre pour voir les valeurs changer:
       </p>

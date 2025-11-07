@@ -221,7 +221,7 @@ export function SortingGuide() {
   return (
     <div className="space-y-12">
       {/* Introduction */}
-      <div className="prose prose-slate dark:prose-invert max-w-none">
+      <div className="prose prose-invert max-w-none">
         <h1 className="text-4xl font-bold mb-4 flex items-center gap-3 text-foreground">
           <ArrowUpDown className="w-10 h-10 text-primary" />
           Algorithmes de Tri

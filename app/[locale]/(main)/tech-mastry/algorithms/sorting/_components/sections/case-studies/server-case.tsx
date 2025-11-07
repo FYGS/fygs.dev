@@ -231,17 +231,17 @@ app.get('/api/products', (req, res) => {
                 </div>
               </div>
 
-              <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
+              <div className="bg-blue-950/30 p-4 rounded-lg border border-blue-800">
+                <h4 className="text-sm font-medium text-blue-300 mb-2">
                   Bonnes pratiques pour le tri dans les API
                 </h4>
-                <p className="text-sm text-blue-700 dark:text-blue-400">
+                <p className="text-sm text-blue-400">
                   Pour les grandes collections de données, il est recommandé
                   d&apos;utiliser des index de base de données pour optimiser
                   les opérations de tri. Par exemple, avec MongoDB :
                 </p>
                 <div className="relative mt-2">
-                  <pre className="bg-blue-100 dark:bg-blue-900/50 p-3 rounded-lg text-xs overflow-x-auto">
+                  <pre className="bg-blue-900/50 p-3 rounded-lg text-xs overflow-x-auto">
                     <code>
                       {`// Créer un index pour optimiser le tri
 db.products.createIndex({ price: 1 }); // Index ascendant sur le prix
@@ -438,11 +438,11 @@ function analyzeServerLogs(logs) {
                 </div>
               </div>
 
-              <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
+              <div className="bg-blue-950/30 p-4 rounded-lg border border-blue-800">
+                <h4 className="text-sm font-medium text-blue-300 mb-2">
                   Outils d&apos;analyse de logs
                 </h4>
-                <p className="text-sm text-blue-700 dark:text-blue-400">
+                <p className="text-sm text-blue-400">
                   Des outils comme <strong>Elasticsearch</strong> et{" "}
                   <strong>Logstash</strong> utilisent des algorithmes de tri
                   optimisés pour traiter des volumes massifs de logs.
@@ -451,7 +451,7 @@ function analyzeServerLogs(logs) {
                   permettre des tris et des recherches rapides sur des
                   téraoctets de données de logs.
                 </p>
-                <p className="text-sm text-blue-700 dark:text-blue-400 mt-2">
+                <p className="text-sm text-blue-400 mt-2">
                   Pour les analyses en temps réel, ces outils utilisent souvent
                   des algorithmes de tri parallèles et distribués pour répartir
                   la charge de travail sur plusieurs nœuds.
@@ -637,11 +637,11 @@ cache.put('route4', { data: 'Page de blog' });`}
                 </div>
               </div>
 
-              <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
+              <div className="bg-blue-950/30 p-4 rounded-lg border border-blue-800">
+                <h4 className="text-sm font-medium text-blue-300 mb-2">
                   Applications dans les CDN et serveurs de cache
                 </h4>
-                <p className="text-sm text-blue-700 dark:text-blue-400">
+                <p className="text-sm text-blue-400">
                   Les CDN (Content Delivery Networks) comme{" "}
                   <strong>Cloudflare</strong> et <strong>Akamai</strong>{" "}
                   utilisent des algorithmes de tri sophistiqués pour gérer leur
@@ -650,7 +650,7 @@ cache.put('route4', { data: 'Page de blog' });`}
                   comme la taille des fichiers, le coût de génération et la
                   localisation géographique.
                 </p>
-                <p className="text-sm text-blue-700 dark:text-blue-400 mt-2">
+                <p className="text-sm text-blue-400 mt-2">
                   <strong>Redis</strong>, un serveur de cache populaire,
                   implémente plusieurs politiques de remplacement basées sur des
                   algorithmes de tri, notamment LRU (Least Recently Used) et LFU

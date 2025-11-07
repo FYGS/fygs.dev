@@ -142,7 +142,7 @@ export function CodeExample({
 
           {explanation && (
             <TabsContent value="explanation" className="m-0">
-              <div className="p-4 border-t prose prose-sm max-w-none dark:prose-invert">
+              <div className="p-4 border-t prose prose-sm max-w-none prose-invert">
                 {explanation}
 
                 {tips && tips.length > 0 && (
@@ -181,10 +181,10 @@ export function CodeExample({
                               <span
                                 className={`text-xs px-2 py-0.5 rounded-full ${
                                   qa.difficulty === "easy"
-                                    ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                                    ? "bg-green-900/30 text-green-400"
                                     : qa.difficulty === "medium"
-                                    ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
-                                    : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                                    ? "bg-yellow-900/30 text-yellow-400"
+                                    : "bg-red-900/30 text-red-400"
                                 }`}
                               >
                                 {qa.difficulty === "easy"
@@ -197,7 +197,7 @@ export function CodeExample({
                             {qa.tags?.map((tag, tagIndex) => (
                               <span
                                 key={tagIndex}
-                                className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
+                                className="text-xs px-2 py-0.5 rounded-full bg-gray-800 text-gray-300"
                               >
                                 {tag}
                               </span>

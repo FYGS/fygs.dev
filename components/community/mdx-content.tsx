@@ -43,11 +43,7 @@ function CodeBlock({ code, language }: { code: string; language: string }) {
           <Copy className="h-4 w-4 text-slate-300" />
         )}
       </Button>
-      <SyntaxHighlighter
-        style={tomorrow}
-        language={language}
-        PreTag="div"
-      >
+      <SyntaxHighlighter style={tomorrow} language={language} PreTag="div">
         {code}
       </SyntaxHighlighter>
     </div>
@@ -58,19 +54,21 @@ export function MDXContent({ content, className = "" }: MDXContentProps) {
   if (!content) return null;
 
   return (
-    <div className={`mdx-content prose prose-sm dark:prose-invert max-w-none ${className}`}>
+    <div
+      className={`mdx-content prose prose-sm prose-invert max-w-none ${className}`}
+    >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
           code({ inline, className, children, ...props }: any) {
-            const match = /language-(\w+)/.exec(className || '');
-            const language = match ? match[1] : '';
-            const codeString = String(children).replace(/\n$/, '');
-            
+            const match = /language-(\w+)/.exec(className || "");
+            const language = match ? match[1] : "";
+            const codeString = String(children).replace(/\n$/, "");
+
             if (!inline && language) {
               return <CodeBlock code={codeString} language={language} />;
             }
-            
+
             return (
               <code className={className} {...props}>
                 {children}
@@ -79,22 +77,34 @@ export function MDXContent({ content, className = "" }: MDXContentProps) {
           },
           // Add other custom components if needed
           h1: ({ children, ...props }) => (
-            <h1 className="scroll-m-20 text-2xl font-bold tracking-tight" {...props}>
+            <h1
+              className="scroll-m-20 text-2xl font-bold tracking-tight"
+              {...props}
+            >
               {children}
             </h1>
           ),
           h2: ({ children, ...props }) => (
-            <h2 className="scroll-m-20 text-xl font-semibold tracking-tight" {...props}>
+            <h2
+              className="scroll-m-20 text-xl font-semibold tracking-tight"
+              {...props}
+            >
               {children}
             </h2>
           ),
           h3: ({ children, ...props }) => (
-            <h3 className="scroll-m-20 text-lg font-semibold tracking-tight" {...props}>
+            <h3
+              className="scroll-m-20 text-lg font-semibold tracking-tight"
+              {...props}
+            >
               {children}
             </h3>
           ),
           blockquote: ({ children, ...props }) => (
-            <blockquote className="border-l-4 border-muted-foreground/40 pl-4 italic" {...props}>
+            <blockquote
+              className="border-l-4 border-muted-foreground/40 pl-4 italic"
+              {...props}
+            >
               {children}
             </blockquote>
           ),
@@ -110,13 +120,19 @@ export function MDXContent({ content, className = "" }: MDXContentProps) {
           ),
           table: ({ children, ...props }) => (
             <div className="overflow-x-auto">
-              <table className="min-w-full border-collapse border border-border" {...props}>
+              <table
+                className="min-w-full border-collapse border border-border"
+                {...props}
+              >
                 {children}
               </table>
             </div>
           ),
           th: ({ children, ...props }) => (
-            <th className="border border-border bg-muted/50 px-4 py-2 text-left font-semibold" {...props}>
+            <th
+              className="border border-border bg-muted/50 px-4 py-2 text-left font-semibold"
+              {...props}
+            >
               {children}
             </th>
           ),

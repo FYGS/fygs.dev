@@ -138,16 +138,16 @@ export function SqlVsNoSqlVisualization() {
                       <div className="text-sm font-medium mb-2 text-center">
                         Tables
                       </div>
-                      <div className="flex-1 border rounded-md p-2 overflow-auto bg-white dark:bg-slate-900">
+                      <div className="flex-1 border rounded-md p-2 overflow-auto bg-slate-900">
                         {/* Users Table */}
                         <div className="mb-4">
-                          <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-t-md border border-blue-200 dark:border-blue-800">
+                          <div className="bg-blue-900/30 p-2 rounded-t-md border border-blue-800">
                             <div className="font-medium text-sm">users</div>
                           </div>
-                          <div className="border border-t-0 border-slate-200 dark:border-slate-700 rounded-b-md overflow-hidden">
+                          <div className="border border-t-0 border-slate-700 rounded-b-md overflow-hidden">
                             <table className="w-full text-xs">
                               <thead>
-                                <tr className="bg-slate-100 dark:bg-slate-800">
+                                <tr className="bg-slate-800">
                                   <th className="p-1 text-left border-b">
                                     Column
                                   </th>
@@ -187,13 +187,13 @@ export function SqlVsNoSqlVisualization() {
 
                         {/* Orders Table */}
                         <div className="mb-4">
-                          <div className="bg-green-100 dark:bg-green-900/30 p-2 rounded-t-md border border-green-200 dark:border-green-800">
+                          <div className="bg-green-900/30 p-2 rounded-t-md border border-green-800">
                             <div className="font-medium text-sm">orders</div>
                           </div>
-                          <div className="border border-t-0 border-slate-200 dark:border-slate-700 rounded-b-md overflow-hidden">
+                          <div className="border border-t-0 border-slate-700 rounded-b-md overflow-hidden">
                             <table className="w-full text-xs">
                               <thead>
-                                <tr className="bg-slate-100 dark:bg-slate-800">
+                                <tr className="bg-slate-800">
                                   <th className="p-1 text-left border-b">
                                     Column
                                   </th>
@@ -233,13 +233,13 @@ export function SqlVsNoSqlVisualization() {
 
                         {/* Products Table */}
                         <div>
-                          <div className="bg-amber-100 dark:bg-amber-900/30 p-2 rounded-t-md border border-amber-200 dark:border-amber-800">
+                          <div className="bg-amber-900/30 p-2 rounded-t-md border border-amber-800">
                             <div className="font-medium text-sm">products</div>
                           </div>
-                          <div className="border border-t-0 border-slate-200 dark:border-slate-700 rounded-b-md overflow-hidden">
+                          <div className="border border-t-0 border-slate-700 rounded-b-md overflow-hidden">
                             <table className="w-full text-xs">
                               <thead>
-                                <tr className="bg-slate-100 dark:bg-slate-800">
+                                <tr className="bg-slate-800">
                                   <th className="p-1 text-left border-b">
                                     Column
                                   </th>
@@ -284,7 +284,7 @@ export function SqlVsNoSqlVisualization() {
                       <div className="text-sm font-medium mb-2 text-center">
                         Schéma Relationnel
                       </div>
-                      <div className="flex-1 border rounded-md p-2 overflow-auto bg-white dark:bg-slate-900">
+                      <div className="flex-1 border rounded-md p-2 overflow-auto bg-slate-900">
                         <div className="min-h-[500px]">
                           <svg
                             width="100%"
@@ -445,7 +445,7 @@ export function SqlVsNoSqlVisualization() {
                         Requête SQL
                       </div>
                       <div className="flex-1 border rounded-md overflow-auto flex flex-col">
-                        <div className="bg-slate-100 dark:bg-slate-800 p-2 border-b">
+                        <div className="bg-slate-800 p-2 border-b">
                           <pre className="text-xs overflow-auto whitespace-pre-wrap">
                             {queryType === "simple" &&
                               `SELECT * FROM users
@@ -478,14 +478,14 @@ WHERE id = 10;
 COMMIT;`}
                           </pre>
                         </div>
-                        <div className="flex-1 p-2 bg-white dark:bg-slate-900 overflow-auto">
+                        <div className="flex-1 p-2 bg-slate-900 overflow-auto">
                           <div className="text-xs font-medium mb-2">
                             Résultats:
                           </div>
                           {queryType === "simple" && (
                             <table className="w-full text-xs border-collapse">
                               <thead>
-                                <tr className="bg-slate-100 dark:bg-slate-800">
+                                <tr className="bg-slate-800">
                                   <th className="p-1 text-left border">id</th>
                                   <th className="p-1 text-left border">
                                     username
@@ -515,7 +515,7 @@ COMMIT;`}
                           {queryType === "complex" && (
                             <table className="w-full text-xs border-collapse">
                               <thead>
-                                <tr className="bg-slate-100 dark:bg-slate-800">
+                                <tr className="bg-slate-800">
                                   <th className="p-1 text-left border">
                                     username
                                   </th>
@@ -555,7 +555,7 @@ COMMIT;`}
                           {queryType === "aggregation" && (
                             <table className="w-full text-xs border-collapse">
                               <thead>
-                                <tr className="bg-slate-100 dark:bg-slate-800">
+                                <tr className="bg-slate-800">
                                   <th className="p-1 text-left border">
                                     username
                                   </th>
@@ -582,8 +582,8 @@ COMMIT;`}
                             </table>
                           )}
                           {queryType === "update" && (
-                            <div className="p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded">
-                              <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                            <div className="p-2 bg-green-900/20 border border-green-800 rounded">
+                              <div className="flex items-center gap-1 text-green-400">
                                 <CheckCircle className="h-4 w-4" />
                                 <span>Transaction complétée avec succès</span>
                               </div>
@@ -609,16 +609,16 @@ COMMIT;`}
                           <div className="text-sm font-medium mb-2 text-center">
                             Collection
                           </div>
-                          <div className="flex-1 border rounded-md p-2 overflow-auto bg-white dark:bg-slate-900">
+                          <div className="flex-1 border rounded-md p-2 overflow-auto bg-slate-900">
                             {/* Users Collection */}
                             <div className="mb-4">
-                              <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-t-md border border-blue-200 dark:border-blue-800">
+                              <div className="bg-blue-900/30 p-2 rounded-t-md border border-blue-800">
                                 <div className="font-medium text-sm">
                                   users (collection)
                                 </div>
                               </div>
-                              <div className="border border-t-0 border-slate-200 dark:border-slate-700 rounded-b-md overflow-hidden">
-                                <div className="p-2 bg-white dark:bg-slate-900">
+                              <div className="border border-t-0 border-slate-700 rounded-b-md overflow-hidden">
+                                <div className="p-2 bg-slate-900">
                                   <pre className="text-xs overflow-auto whitespace-pre-wrap">
                                     {`// Document 1
 {
@@ -645,13 +645,13 @@ COMMIT;`}
 
                             {/* Orders Collection */}
                             <div>
-                              <div className="bg-green-100 dark:bg-green-900/30 p-2 rounded-t-md border border-green-200 dark:border-green-800">
+                              <div className="bg-green-900/30 p-2 rounded-t-md border border-green-800">
                                 <div className="font-medium text-sm">
                                   orders (collection)
                                 </div>
                               </div>
-                              <div className="border border-t-0 border-slate-200 dark:border-slate-700 rounded-b-md overflow-hidden">
-                                <div className="p-2 bg-white dark:bg-slate-900">
+                              <div className="border border-t-0 border-slate-700 rounded-b-md overflow-hidden">
+                                <div className="p-2 bg-slate-900">
                                   <pre className="text-xs overflow-auto whitespace-pre-wrap">
                                     {`// Document 1
 {
@@ -696,10 +696,10 @@ COMMIT;`}
                           <div className="text-sm font-medium mb-2 text-center">
                             Schéma Flexible
                           </div>
-                          <div className="flex-1 border rounded-md p-2 overflow-auto bg-white dark:bg-slate-900">
+                          <div className="flex-1 border rounded-md p-2 overflow-auto bg-slate-900">
                             <div className="space-y-4">
-                              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
-                                <h4 className="text-sm font-medium mb-2 text-blue-700 dark:text-blue-300">
+                              <div className="p-3 bg-blue-900/20 border border-blue-800 rounded-md">
+                                <h4 className="text-sm font-medium mb-2 text-blue-300">
                                   Flexibilité du Schéma
                                 </h4>
                                 <ul className="text-xs space-y-1 list-disc pl-4 text-muted-foreground">
@@ -718,10 +718,10 @@ COMMIT;`}
                               </div>
 
                               <div className="border rounded-md overflow-hidden">
-                                <div className="bg-slate-100 dark:bg-slate-800 p-2 text-xs font-medium">
+                                <div className="bg-slate-800 p-2 text-xs font-medium">
                                   Exemple: Documents avec structures différentes
                                 </div>
-                                <div className="p-2 bg-white dark:bg-slate-900">
+                                <div className="p-2 bg-slate-900">
                                   <pre className="text-xs overflow-auto whitespace-pre-wrap">
                                     {`// Document 1 dans la collection "users"
 {
@@ -746,15 +746,15 @@ COMMIT;`}
                                 </div>
                               </div>
 
-                              <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md">
-                                <h4 className="text-sm font-medium mb-2 text-amber-700 dark:text-amber-300">
+                              <div className="p-3 bg-amber-900/20 border border-amber-800 rounded-md">
+                                <h4 className="text-sm font-medium mb-2 text-amber-300">
                                   Validation Optionnelle
                                 </h4>
                                 <p className="text-xs text-muted-foreground mb-2">
                                   Bien que flexible, il est possible
                                   d&apos;ajouter des règles de validation:
                                 </p>
-                                <pre className="text-xs overflow-auto whitespace-pre-wrap bg-white dark:bg-slate-900 p-2 rounded border">
+                                <pre className="text-xs overflow-auto whitespace-pre-wrap bg-slate-900 p-2 rounded border">
                                   {`db.createCollection("users", {
   validator: {
     $jsonSchema: {
@@ -778,7 +778,7 @@ COMMIT;`}
                             Requête NoSQL
                           </div>
                           <div className="flex-1 border rounded-md overflow-auto flex flex-col">
-                            <div className="bg-slate-100 dark:bg-slate-800 p-2 border-b">
+                            <div className="bg-slate-800 p-2 border-b">
                               <pre className="text-xs overflow-auto whitespace-pre-wrap">
                                 {queryType === "simple" &&
                                   `// Recherche simple
@@ -834,12 +834,12 @@ db.orders.updateOne(
 )`}
                               </pre>
                             </div>
-                            <div className="flex-1 p-2 bg-white dark:bg-slate-900 overflow-auto">
+                            <div className="flex-1 p-2 bg-slate-900 overflow-auto">
                               <div className="text-xs font-medium mb-2">
                                 Résultats:
                               </div>
                               {queryType === "simple" && (
-                                <pre className="text-xs p-2 bg-slate-50 dark:bg-slate-800 rounded border">
+                                <pre className="text-xs p-2 bg-slate-800 rounded border">
                                   {`[
   {
     "_id": "507f1f77bcf86cd799439011",
@@ -862,7 +862,7 @@ db.orders.updateOne(
                                 </pre>
                               )}
                               {queryType === "complex" && (
-                                <pre className="text-xs p-2 bg-slate-50 dark:bg-slate-800 rounded border">
+                                <pre className="text-xs p-2 bg-slate-800 rounded border">
                                   {`[
   {
     "_id": "60a6f35d9f15f32d2c256236",
@@ -899,7 +899,7 @@ db.orders.updateOne(
                                 </pre>
                               )}
                               {queryType === "aggregation" && (
-                                <pre className="text-xs p-2 bg-slate-50 dark:bg-slate-800 rounded border">
+                                <pre className="text-xs p-2 bg-slate-800 rounded border">
                                   {`[
   {
     "username": "john_doe",
@@ -915,13 +915,13 @@ db.orders.updateOne(
                                 </pre>
                               )}
                               {queryType === "update" && (
-                                <div className="p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded">
-                                  <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                                <div className="p-2 bg-green-900/20 border border-green-800 rounded">
+                                  <div className="flex items-center gap-1 text-green-400">
                                     <CheckCircle className="h-4 w-4" />
                                     <span>Opération réussie</span>
                                   </div>
                                   <div className="mt-2 text-xs text-muted-foreground">
-                                    <pre className="bg-white dark:bg-slate-900 p-2 rounded border">
+                                    <pre className="bg-slate-900 p-2 rounded border">
                                       {`{
   "acknowledged": true,
   "matchedCount": 1,
@@ -944,18 +944,18 @@ db.orders.updateOne(
                           <div className="text-sm font-medium mb-2 text-center">
                             Store Clé-Valeur
                           </div>
-                          <div className="flex-1 border rounded-md p-2 overflow-auto bg-white dark:bg-slate-900">
+                          <div className="flex-1 border rounded-md p-2 overflow-auto bg-slate-900">
                             {/* Cache Store */}
                             <div className="mb-4">
-                              <div className="bg-red-100 dark:bg-red-900/30 p-2 rounded-t-md border border-red-200 dark:border-red-800">
+                              <div className="bg-red-900/30 p-2 rounded-t-md border border-red-800">
                                 <div className="font-medium text-sm">
                                   cache (store)
                                 </div>
                               </div>
-                              <div className="border border-t-0 border-slate-200 dark:border-slate-700 rounded-b-md overflow-hidden">
+                              <div className="border border-t-0 border-slate-700 rounded-b-md overflow-hidden">
                                 <table className="w-full text-xs">
                                   <thead>
-                                    <tr className="bg-slate-100 dark:bg-slate-800">
+                                    <tr className="bg-slate-800">
                                       <th className="p-1 text-left border-b">
                                         Clé
                                       </th>
@@ -1012,15 +1012,15 @@ db.orders.updateOne(
 
                             {/* Configuration Store */}
                             <div>
-                              <div className="bg-amber-100 dark:bg-amber-900/30 p-2 rounded-t-md border border-amber-200 dark:border-amber-800">
+                              <div className="bg-amber-900/30 p-2 rounded-t-md border border-amber-800">
                                 <div className="font-medium text-sm">
                                   config (store)
                                 </div>
                               </div>
-                              <div className="border border-t-0 border-slate-200 dark:border-slate-700 rounded-b-md overflow-hidden">
+                              <div className="border border-t-0 border-slate-700 rounded-b-md overflow-hidden">
                                 <table className="w-full text-xs">
                                   <thead>
-                                    <tr className="bg-slate-100 dark:bg-slate-800">
+                                    <tr className="bg-slate-800">
                                       <th className="p-1 text-left border-b">
                                         Clé
                                       </th>
@@ -1081,10 +1081,10 @@ db.orders.updateOne(
                           <div className="text-sm font-medium mb-2 text-center">
                             Structure de Données
                           </div>
-                          <div className="flex-1 border rounded-md p-2 overflow-auto bg-white dark:bg-slate-900">
+                          <div className="flex-1 border rounded-md p-2 overflow-auto bg-slate-900">
                             <div className="space-y-4">
-                              <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-                                <h4 className="text-sm font-medium mb-2 text-red-700 dark:text-red-300">
+                              <div className="p-3 bg-red-900/30 border border-red-800 rounded-md">
+                                <h4 className="text-sm font-medium mb-2 text-red-300">
                                   Structures Internes
                                 </h4>
                                 <div className="text-xs mb-2">
@@ -1204,8 +1204,8 @@ db.orders.updateOne(
                                 </svg>
                               </div>
 
-                              <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md">
-                                <h4 className="text-sm font-medium mb-2 text-amber-700 dark:text-amber-300">
+                              <div className="p-3 bg-amber-900/20 border border-amber-800 rounded-md">
+                                <h4 className="text-sm font-medium mb-2 text-amber-300">
                                   Types de Données Supportés
                                 </h4>
                                 <ul className="text-xs space-y-1 list-disc pl-4 text-muted-foreground">
@@ -1218,8 +1218,8 @@ db.orders.updateOne(
                                 </ul>
                               </div>
 
-                              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
-                                <h4 className="text-sm font-medium mb-2 text-blue-700 dark:text-blue-300">
+                              <div className="p-3 bg-blue-900/20 border border-blue-800 rounded-md">
+                                <h4 className="text-sm font-medium mb-2 text-blue-300">
                                   Caractéristiques
                                 </h4>
                                 <ul className="text-xs space-y-1 list-disc pl-4 text-muted-foreground">
@@ -1248,7 +1248,7 @@ db.orders.updateOne(
                             Opérations Clé-Valeur
                           </div>
                           <div className="flex-1 border rounded-md overflow-auto flex flex-col">
-                            <div className="bg-slate-100 dark:bg-slate-800 p-2 border-b">
+                            <div className="bg-slate-800 p-2 border-b">
                               <pre className="text-xs overflow-auto whitespace-pre-wrap">
                                 {queryType === "simple" &&
                                   `// Récupération simple
@@ -1277,17 +1277,17 @@ SETNX product:5001:lock 1
 DEL product:5001:lock`}
                               </pre>
                             </div>
-                            <div className="flex-1 p-2 bg-white dark:bg-slate-900 overflow-auto">
+                            <div className="flex-1 p-2 bg-slate-900 overflow-auto">
                               <div className="text-xs font-medium mb-2">
                                 Résultats:
                               </div>
                               {queryType === "simple" && (
-                                <pre className="text-xs p-2 bg-slate-50 dark:bg-slate-800 rounded border">
+                                <pre className="text-xs p-2 bg-slate-800 rounded border">
                                   &quot;John Doe&quot;
                                 </pre>
                               )}
                               {queryType === "complex" && (
-                                <pre className="text-xs p-2 bg-slate-50 dark:bg-slate-800 rounded border">
+                                <pre className="text-xs p-2 bg-slate-800 rounded border">
                                   {`1) "John Doe"
 2) "Alice Smith"
 3) (nil)
@@ -1300,7 +1300,7 @@ DEL product:5001:lock`}
                                 </pre>
                               )}
                               {queryType === "aggregation" && (
-                                <pre className="text-xs p-2 bg-slate-50 dark:bg-slate-800 rounded border">
+                                <pre className="text-xs p-2 bg-slate-800 rounded border">
                                   {`// Résultat de INCR
 42579
 
@@ -1312,13 +1312,13 @@ DEL product:5001:lock`}
                                 </pre>
                               )}
                               {queryType === "update" && (
-                                <div className="p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded">
-                                  <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                                <div className="p-2 bg-green-900/20 border border-green-800 rounded">
+                                  <div className="flex items-center gap-1 text-green-400">
                                     <CheckCircle className="h-4 w-4" />
                                     <span>Opérations réussies</span>
                                   </div>
                                   <div className="mt-2 text-xs text-muted-foreground">
-                                    <pre className="bg-white dark:bg-slate-900 p-2 rounded border">
+                                    <pre className="bg-slate-900 p-2 rounded border">
                                       {`// Résultat de SET
 OK
 
@@ -1347,19 +1347,19 @@ OK
                           <div className="text-sm font-medium mb-2 text-center">
                             Familles de Colonnes
                           </div>
-                          <div className="flex-1 border rounded-md p-2 overflow-auto bg-white dark:bg-slate-900">
+                          <div className="flex-1 border rounded-md p-2 overflow-auto bg-slate-900">
                             {/* Users Column Family */}
                             <div className="mb-4">
-                              <div className="bg-purple-100 dark:bg-purple-900/30 p-2 rounded-t-md border border-purple-200 dark:border-purple-800">
+                              <div className="bg-purple-900/30 p-2 rounded-t-md border border-purple-800">
                                 <div className="font-medium text-sm">
                                   users (famille de colonnes)
                                 </div>
                               </div>
-                              <div className="border border-t-0 border-slate-200 dark:border-slate-700 rounded-b-md overflow-hidden">
-                                <div className="p-2 bg-white dark:bg-slate-900 overflow-auto">
+                              <div className="border border-t-0 border-slate-700 rounded-b-md overflow-hidden">
+                                <div className="p-2 bg-slate-900 overflow-auto">
                                   <table className="w-full text-xs border-collapse">
                                     <thead>
-                                      <tr className="bg-slate-100 dark:bg-slate-800">
+                                      <tr className="bg-slate-800">
                                         <th className="p-1 text-left border">
                                           Row Key
                                         </th>
@@ -1435,16 +1435,16 @@ OK
 
                             {/* Events Column Family */}
                             <div>
-                              <div className="bg-teal-100 dark:bg-teal-900/30 p-2 rounded-t-md border border-teal-200 dark:border-teal-800">
+                              <div className="bg-teal-900/30 p-2 rounded-t-md border border-teal-800">
                                 <div className="font-medium text-sm">
                                   events (famille de colonnes)
                                 </div>
                               </div>
-                              <div className="border border-t-0 border-slate-200 dark:border-slate-700 rounded-b-md overflow-hidden">
-                                <div className="p-2 bg-white dark:bg-slate-900 overflow-auto">
+                              <div className="border border-t-0 border-slate-700 rounded-b-md overflow-hidden">
+                                <div className="p-2 bg-slate-900 overflow-auto">
                                   <table className="w-full text-xs border-collapse">
                                     <thead>
-                                      <tr className="bg-slate-100 dark:bg-slate-800">
+                                      <tr className="bg-slate-800">
                                         <th className="p-1 text-left border">
                                           Row Key
                                         </th>
@@ -1530,10 +1530,10 @@ OK
                           <div className="text-sm font-medium mb-2 text-center">
                             Structure de Données
                           </div>
-                          <div className="flex-1 border rounded-md p-2 overflow-auto bg-white dark:bg-slate-900">
+                          <div className="flex-1 border rounded-md p-2 overflow-auto bg-slate-900">
                             <div className="space-y-4">
-                              <div className="p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-md">
-                                <h4 className="text-sm font-medium mb-2 text-purple-700 dark:text-purple-300">
+                              <div className="p-3 bg-purple-900/20 border border-purple-800 rounded-md">
+                                <h4 className="text-sm font-medium mb-2 text-purple-300">
                                   Organisation des Données
                                 </h4>
                                 <div className="text-xs mb-3">
@@ -1867,8 +1867,8 @@ OK
                                 </svg>
                               </div>
 
-                              <div className="p-3 bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-md">
-                                <h4 className="text-sm font-medium mb-2 text-teal-700 dark:text-teal-300">
+                              <div className="p-3 bg-teal-900/20 border border-teal-800 rounded-md">
+                                <h4 className="text-sm font-medium mb-2 text-teal-300">
                                   Avantages Clés
                                 </h4>
                                 <ul className="text-xs space-y-1 list-disc pl-4 text-muted-foreground">
@@ -1889,8 +1889,8 @@ OK
                                 </ul>
                               </div>
 
-                              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
-                                <h4 className="text-sm font-medium mb-2 text-blue-700 dark:text-blue-300">
+                              <div className="p-3 bg-blue-900/20 border border-blue-800 rounded-md">
+                                <h4 className="text-sm font-medium mb-2 text-blue-300">
                                   Modèle de Données
                                 </h4>
                                 <div className="text-xs space-y-2">
@@ -1931,7 +1931,7 @@ OK
                             Requêtes Orientées Colonne
                           </div>
                           <div className="flex-1 border rounded-md overflow-auto flex flex-col">
-                            <div className="bg-slate-100 dark:bg-slate-800 p-2 border-b">
+                            <div className="bg-slate-800 p-2 border-b">
                               <pre className="text-xs overflow-auto whitespace-pre-wrap">
                                 {queryType === "simple" &&
                                   `// Récupération par clé de ligne
@@ -1965,14 +1965,14 @@ INSERT INTO events (row_key, meta:type, meta:timestamp, data:user_id)
 VALUES ('event:5004', 'logout', CURRENT_TIMESTAMP, 'user:1001');`}
                               </pre>
                             </div>
-                            <div className="flex-1 p-2 bg-white dark:bg-slate-900 overflow-auto">
+                            <div className="flex-1 p-2 bg-slate-900 overflow-auto">
                               <div className="text-xs font-medium mb-2">
                                 Résultats:
                               </div>
                               {queryType === "simple" && (
                                 <table className="w-full text-xs border-collapse">
                                   <thead>
-                                    <tr className="bg-slate-100 dark:bg-slate-800">
+                                    <tr className="bg-slate-800">
                                       <th className="p-1 text-left border">
                                         row_key
                                       </th>
@@ -2012,7 +2012,7 @@ VALUES ('event:5004', 'logout', CURRENT_TIMESTAMP, 'user:1001');`}
                               {queryType === "complex" && (
                                 <table className="w-full text-xs border-collapse">
                                   <thead>
-                                    <tr className="bg-slate-100 dark:bg-slate-800">
+                                    <tr className="bg-slate-800">
                                       <th className="p-1 text-left border">
                                         profile:name
                                       </th>
@@ -2048,7 +2048,7 @@ VALUES ('event:5004', 'logout', CURRENT_TIMESTAMP, 'user:1001');`}
                                 <div className="space-y-4">
                                   <table className="w-full text-xs border-collapse">
                                     <thead>
-                                      <tr className="bg-slate-100 dark:bg-slate-800">
+                                      <tr className="bg-slate-800">
                                         <th className="p-1 text-left border">
                                           count
                                         </th>
@@ -2070,7 +2070,7 @@ VALUES ('event:5004', 'logout', CURRENT_TIMESTAMP, 'user:1001');`}
                                   </div>
                                   <table className="w-full text-xs border-collapse">
                                     <thead>
-                                      <tr className="bg-slate-100 dark:bg-slate-800">
+                                      <tr className="bg-slate-800">
                                         <th className="p-1 text-left border">
                                           day
                                         </th>
@@ -2097,8 +2097,8 @@ VALUES ('event:5004', 'logout', CURRENT_TIMESTAMP, 'user:1001');`}
                                 </div>
                               )}
                               {queryType === "update" && (
-                                <div className="p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded">
-                                  <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                                <div className="p-2 bg-green-900/20 border border-green-800 rounded">
+                                  <div className="flex items-center gap-1 text-green-400">
                                     <CheckCircle className="h-4 w-4" />
                                     <span>Opérations réussies</span>
                                   </div>
@@ -2125,18 +2125,18 @@ VALUES ('event:5004', 'logout', CURRENT_TIMESTAMP, 'user:1001');`}
                           <div className="text-sm font-medium mb-2 text-center">
                             Données Graphe
                           </div>
-                          <div className="flex-1 border rounded-md p-2 overflow-auto bg-white dark:bg-slate-900">
+                          <div className="flex-1 border rounded-md p-2 overflow-auto bg-slate-900">
                             {/* Nodes */}
                             <div className="mb-4">
-                              <div className="bg-indigo-100 dark:bg-indigo-900/30 p-2 rounded-t-md border border-indigo-200 dark:border-indigo-800">
+                              <div className="bg-indigo-900/30 p-2 rounded-t-md border border-indigo-800">
                                 <div className="font-medium text-sm">
                                   nodes (nœuds)
                                 </div>
                               </div>
-                              <div className="border border-t-0 border-slate-200 dark:border-slate-700 rounded-b-md overflow-hidden">
+                              <div className="border border-t-0 border-slate-700 rounded-b-md overflow-hidden">
                                 <table className="w-full text-xs">
                                   <thead>
-                                    <tr className="bg-slate-100 dark:bg-slate-800">
+                                    <tr className="bg-slate-800">
                                       <th className="p-1 text-left border-b">
                                         ID
                                       </th>
@@ -2214,15 +2214,15 @@ VALUES ('event:5004', 'logout', CURRENT_TIMESTAMP, 'user:1001');`}
 
                             {/* Relationships */}
                             <div>
-                              <div className="bg-cyan-100 dark:bg-cyan-900/30 p-2 rounded-t-md border border-cyan-200 dark:border-cyan-800">
+                              <div className="bg-cyan-900/30 p-2 rounded-t-md border border-cyan-800">
                                 <div className="font-medium text-sm">
                                   relationships (relations)
                                 </div>
                               </div>
-                              <div className="border border-t-0 border-slate-200 dark:border-slate-700 rounded-b-md overflow-hidden">
+                              <div className="border border-t-0 border-slate-700 rounded-b-md overflow-hidden">
                                 <table className="w-full text-xs">
                                   <thead>
-                                    <tr className="bg-slate-100 dark:bg-slate-800">
+                                    <tr className="bg-slate-800">
                                       <th className="p-1 text-left border-b">
                                         Source
                                       </th>
@@ -2315,7 +2315,7 @@ VALUES ('event:5004', 'logout', CURRENT_TIMESTAMP, 'user:1001');`}
                           <div className="text-sm font-medium mb-2 text-center">
                             Visualisation du Graphe
                           </div>
-                          <div className="flex-1 border rounded-md p-2 overflow-auto bg-white dark:bg-slate-900">
+                          <div className="flex-1 border rounded-md p-2 overflow-auto bg-slate-900">
                             <div className="h-full w-full relative">
                               <svg
                                 width="100%"
@@ -2593,7 +2593,7 @@ VALUES ('event:5004', 'logout', CURRENT_TIMESTAMP, 'user:1001');`}
                             Requêtes Graphe
                           </div>
                           <div className="flex-1 border rounded-md overflow-auto flex flex-col">
-                            <div className="bg-slate-100 dark:bg-slate-800 p-2 border-b">
+                            <div className="bg-slate-800 p-2 border-b">
                               <pre className="text-xs overflow-auto whitespace-pre-wrap">
                                 {queryType === "simple" &&
                                   `// Recherche d'un nœud par propriété
@@ -2621,17 +2621,17 @@ CREATE (p)-[r:WORKS_AT {since: 2022, role: 'Designer'}]->(c)
 RETURN p, r, c;`}
                               </pre>
                             </div>
-                            <div className="flex-1 p-2 bg-white dark:bg-slate-900 overflow-auto">
+                            <div className="flex-1 p-2 bg-slate-900 overflow-auto">
                               <div className="text-xs font-medium mb-2">
                                 Résultats:
                               </div>
                               {queryType === "simple" && (
-                                <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded border">
+                                <div className="p-2 bg-slate-800 rounded border">
                                   <div className="text-xs mb-1 font-medium">
                                     1 nœud trouvé:
                                   </div>
-                                  <div className="flex items-center gap-2 p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded border border-indigo-200 dark:border-indigo-800">
-                                    <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-800 flex items-center justify-center border border-indigo-300 dark:border-indigo-700">
+                                  <div className="flex items-center gap-2 p-2 bg-indigo-900/20 rounded border border-indigo-800">
+                                    <div className="w-8 h-8 rounded-full bg-indigo-800 flex items-center justify-center border border-indigo-700">
                                       <span className="text-xs font-medium">
                                         p1
                                       </span>
@@ -2653,7 +2653,7 @@ RETURN p, r, c;`}
                               {queryType === "complex" && (
                                 <table className="w-full text-xs border-collapse">
                                   <thead>
-                                    <tr className="bg-slate-100 dark:bg-slate-800">
+                                    <tr className="bg-slate-800">
                                       <th className="p-1 text-left border">
                                         p.name
                                       </th>
@@ -2682,7 +2682,7 @@ RETURN p, r, c;`}
                               {queryType === "aggregation" && (
                                 <table className="w-full text-xs border-collapse">
                                   <thead>
-                                    <tr className="bg-slate-100 dark:bg-slate-800">
+                                    <tr className="bg-slate-800">
                                       <th className="p-1 text-left border">
                                         c.name
                                       </th>
@@ -2710,8 +2710,8 @@ RETURN p, r, c;`}
                               )}
                               {queryType === "update" && (
                                 <div className="space-y-3">
-                                  <div className="p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded">
-                                    <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                                  <div className="p-2 bg-green-900/20 border border-green-800 rounded">
+                                    <div className="flex items-center gap-1 text-green-400">
                                       <CheckCircle className="h-4 w-4" />
                                       <span>Opérations réussies</span>
                                     </div>
@@ -2724,10 +2724,10 @@ RETURN p, r, c;`}
                                   <div className="text-xs font-medium">
                                     Graphe mis à jour:
                                   </div>
-                                  <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded border">
+                                  <div className="p-2 bg-slate-800 rounded border">
                                     <div className="flex flex-col gap-2">
                                       <div className="flex items-center gap-2">
-                                        <div className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-800 flex items-center justify-center border border-indigo-300 dark:border-indigo-700">
+                                        <div className="w-6 h-6 rounded-full bg-indigo-800 flex items-center justify-center border border-indigo-700">
                                           <span className="text-xs">p4</span>
                                         </div>
                                         <div className="text-xs">
@@ -2739,7 +2739,7 @@ RETURN p, r, c;`}
                                         </div>
                                       </div>
                                       <div className="flex items-center gap-1 pl-8">
-                                        <div className="text-xs text-cyan-600 dark:text-cyan-400">
+                                        <div className="text-xs text-cyan-400">
                                           WORKS_AT
                                         </div>
                                         <div className="text-xs text-muted-foreground">
@@ -2750,7 +2750,7 @@ RETURN p, r, c;`}
                                         </div>
                                       </div>
                                       <div className="flex items-center gap-2 pl-12">
-                                        <div className="w-6 h-6 rounded bg-cyan-100 dark:bg-cyan-800 flex items-center justify-center border border-cyan-300 dark:border-cyan-700">
+                                        <div className="w-6 h-6 rounded bg-cyan-800 flex items-center justify-center border border-cyan-700">
                                           <span className="text-xs">c2</span>
                                         </div>
                                         <div className="text-xs">

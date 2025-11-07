@@ -17,23 +17,29 @@ export interface NotificationProps {
 const notificationConfig = {
   success: {
     icon: CheckCircle,
-    className: "border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-900/20 dark:text-green-200"
+    className: "border-green-800 bg-green-900/20 text-green-200",
   },
   error: {
     icon: AlertCircle,
-    className: "border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200"
+    className: "border-red-800 bg-red-900/20 text-red-200",
   },
   warning: {
     icon: AlertTriangle,
-    className: "border-yellow-200 bg-yellow-50 text-yellow-800 dark:border-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200"
+    className: "border-yellow-800 bg-yellow-900/20 text-yellow-200",
   },
   info: {
     icon: Info,
-    className: "border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-200"
-  }
+    className: "border-blue-800 bg-blue-900/20 text-blue-200",
+  },
 };
 
-export function Notification({ id, type, title, message, onClose }: NotificationProps) {
+export function Notification({
+  id,
+  type,
+  title,
+  message,
+  onClose,
+}: NotificationProps) {
   const config = notificationConfig[type];
   const Icon = config.icon;
 
@@ -53,9 +59,7 @@ export function Notification({ id, type, title, message, onClose }: Notification
         <Icon className="h-5 w-5 mt-0.5 shrink-0" />
         <div className="flex-1 min-w-0">
           <h4 className="font-semibold text-sm">{title}</h4>
-          {message && (
-            <p className="text-sm opacity-90 mt-1">{message}</p>
-          )}
+          {message && <p className="text-sm opacity-90 mt-1">{message}</p>}
         </div>
         <Button
           variant="ghost"
@@ -70,10 +74,10 @@ export function Notification({ id, type, title, message, onClose }: Notification
   );
 }
 
-export function NotificationContainer({ 
-  notifications, 
-  onClose 
-}: { 
+export function NotificationContainer({
+  notifications,
+  onClose,
+}: {
   notifications: NotificationProps[];
   onClose: (id: string) => void;
 }) {

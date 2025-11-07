@@ -419,7 +419,7 @@ export function ScreenReadersSection() {
               <li>
                 <strong>Informative images</strong>: Provide alt text that
                 conveys the same information as the image.
-                <pre className="bg-gray-100 dark:bg-gray-800 p-2 rounded-md mt-1 text-sm">
+                <pre className="bg-gray-800 p-2 rounded-md mt-1 text-sm">
                   &lt;img src=&quot;chart.png&quot; alt=&quot;Bar chart showing
                   sales growth of 25% in 2023&quot;&gt;
                 </pre>
@@ -428,14 +428,14 @@ export function ScreenReadersSection() {
                 <strong>Decorative images</strong>: Use empty alt text or{" "}
                 <code>role=&quot;presentation&quot;</code> to indicate that the
                 image should be ignored by screen readers.
-                <pre className="bg-gray-100 dark:bg-gray-800 p-2 rounded-md mt-1 text-sm">
+                <pre className="bg-gray-800 p-2 rounded-md mt-1 text-sm">
                   &lt;img src=&quot;decorative.png&quot; alt=&quot;&quot;&gt;
                 </pre>
               </li>
               <li>
                 <strong>Functional images</strong> (like buttons or links):
                 Describe the function rather than the appearance.
-                <pre className="bg-gray-100 dark:bg-gray-800 p-2 rounded-md mt-1 text-sm">
+                <pre className="bg-gray-800 p-2 rounded-md mt-1 text-sm">
                   &lt;img src=&quot;print-icon.png&quot; alt=&quot;Print this
                   page&quot;&gt;
                 </pre>

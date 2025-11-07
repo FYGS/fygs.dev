@@ -127,15 +127,15 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
   const getLevelColor = (level: string) => {
     switch (level) {
       case 'BEGINNER':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+        return 'bg-green-900 text-green-300';
       case 'INTERMEDIATE':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+        return 'bg-blue-900 text-blue-300';
       case 'ADVANCED':
-        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300';
+        return 'bg-orange-900 text-orange-300';
       case 'EXPERT':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+        return 'bg-red-900 text-red-300';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+        return 'bg-gray-900 text-gray-300';
     }
   };
 

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
@@ -174,12 +174,12 @@ export function CoursePaymentForm({ course, isEnrolled = false, canPreview = fal
   return (
     <Card className="sticky top-4 shadow-lg border-2">
       {isEnrolled && (
-        <div className="bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200 text-center py-2 px-4 text-sm font-medium">
+        <div className="bg-green-900/20 text-green-200 text-center py-2 px-4 text-sm font-medium">
           ✅ Vous êtes inscrit à cette formation
         </div>
       )}
       {showEnrollButton && !isEnrolled && (
-        <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200 text-center py-2 px-4 text-xs">
+        <div className="bg-blue-900/20 text-blue-200 text-center py-2 px-4 text-xs">
           Vous avez accès. Cliquez pour vous inscrire afin d&apos;ajouter la formation à votre tableau de bord.
         </div>
       )}
@@ -187,7 +187,7 @@ export function CoursePaymentForm({ course, isEnrolled = false, canPreview = fal
         <div className="space-y-2">
           <div className="text-4xl font-bold text-primary">
             {isEnrolled ? (
-              <span className="text-green-600 dark:text-green-400 text-3xl">Débloqué</span>
+              <span className="text-green-400 text-3xl">Débloqué</span>
             ) : isFree ? (
               "Gratuit"
             ) : (

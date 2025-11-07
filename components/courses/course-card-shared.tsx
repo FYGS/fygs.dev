@@ -52,11 +52,10 @@ export interface CourseCardSharedProps {
 }
 
 const LEVEL_COLORS: Record<string, string> = {
-  BEGINNER: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
-  INTERMEDIATE: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
-  ADVANCED:
-    "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
-  EXPERT: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
+  BEGINNER: "bg-green-900 text-green-300",
+  INTERMEDIATE: "bg-blue-900 text-blue-300",
+  ADVANCED: "bg-orange-900 text-orange-300",
+  EXPERT: "bg-red-900 text-red-300",
 };
 
 export function CourseCardShared({
@@ -99,7 +98,7 @@ export function CourseCardShared({
         return (
           <Badge
             variant="secondary"
-            className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300"
+            className="bg-emerald-900 text-emerald-300"
           >
             {content.badges.free.value}
           </Badge>
@@ -235,7 +234,7 @@ export function CourseCardShared({
             {accessState === "LOCKED" &&
               course.requiredTier &&
               course.requiredTier !== "FREE" && (
-                <p className="text-[10px] font-semibold text-amber-700 dark:text-amber-300 flex items-center gap-1 tracking-tight">
+                <p className="text-[10px] font-semibold text-amber-300 flex items-center gap-1 tracking-tight">
                   <Crown className="h-3 w-3 text-amber-500" />{" "}
                   {content.includedWith.value}{" "}
                   <span className="underline decoration-dotted">

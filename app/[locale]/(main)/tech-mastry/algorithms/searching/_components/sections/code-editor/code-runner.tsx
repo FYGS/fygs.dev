@@ -105,7 +105,7 @@ export function CodeRunner({
                 variant={result.passed ? "default" : "destructive"}
                 className={
                   result.passed
-                    ? "border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950/30"
+                    ? "border-green-800 bg-green-950/30"
                     : ""
                 }
               >
@@ -120,7 +120,7 @@ export function CodeRunner({
                       <AlertTitle
                         className={
                           result.passed
-                            ? "text-green-800 dark:text-green-300"
+                            ? "text-green-300"
                             : ""
                         }
                       >

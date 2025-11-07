@@ -107,7 +107,7 @@ function VerifyEmailContent() {
           </CardTitle>
           <p className="text-muted-foreground">
             {emailFromParams
-              ? `${content.verify.description} ${emailFromParams}`
+              ? `${content.verify.description.value} ${emailFromParams}`
               : content.verify.checkInbox}
           </p>
         </CardHeader>
@@ -131,7 +131,7 @@ function VerifyEmailContent() {
                     {content.common.loading}
                   </>
                 ) : countdown > 0 ? (
-                  `${content.verify.resend} ${countdown}s`
+                  `${content.verify.resend.value} ${countdown}s`
                 ) : (
                   <>
                     <RefreshCw className="h-4 w-4 mr-2" />

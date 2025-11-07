@@ -291,15 +291,15 @@ export function RealtimePerformance() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800"
+            className="bg-blue-950/30 p-4 rounded-lg border border-blue-800"
           >
             <div className="flex items-start gap-3">
-              <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+              <Info className="w-5 h-5 text-blue-400 mt-0.5" />
               <div className="space-y-2">
-                <h3 className="text-sm font-medium text-blue-800 dark:text-blue-300">
+                <h3 className="text-sm font-medium text-blue-300">
                   À propos de cette comparaison
                 </h3>
-                <p className="text-sm text-blue-700 dark:text-blue-400">
+                <p className="text-sm text-blue-400">
                   Cette comparaison mesure le temps d&apos;exécution réel de
                   chaque algorithme de tri sur un tableau aléatoire. Les
                   résultats peuvent varier en fonction de la taille du tableau,
@@ -385,7 +385,7 @@ export function RealtimePerformance() {
                     <div className="flex items-center gap-2">
                       <Badge
                         variant="outline"
-                        className={`bg-${result.color}-100 text-${result.color}-800 dark:bg-${result.color}-900/30 dark:text-${result.color}-400`}
+                        className={`bg-${result.color}-900/30 text-${result.color}-400`}
                       >
                         {index + 1}
                       </Badge>

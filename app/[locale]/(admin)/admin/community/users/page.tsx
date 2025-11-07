@@ -105,7 +105,7 @@ async function UsersContent() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Community Users</h1>
-          <p className="text-slate-600 dark:text-slate-400">
+          <p className="text-slate-400">
             Manage community members and their permissions
           </p>
         </div>
@@ -123,12 +123,12 @@ async function UsersContent() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400">
+              <div className="p-2 rounded-lg bg-blue-950 text-blue-400">
                 <Users className="h-5 w-5" />
               </div>
               <div>
                 <div className="text-xl font-bold">{users.length}</div>
-                <div className="text-sm text-slate-600 dark:text-slate-400">Total Users</div>
+                <div className="text-sm text-slate-400">Total Users</div>
               </div>
             </div>
           </CardContent>
@@ -137,14 +137,14 @@ async function UsersContent() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-400">
+              <div className="p-2 rounded-lg bg-green-950 text-green-400">
                 <MessageCircle className="h-5 w-5" />
               </div>
               <div>
                 <div className="text-xl font-bold">
                   {users.filter(u => (u._count.discussions + u._count.discussionReplies) > 0).length}
                 </div>
-                <div className="text-sm text-slate-600 dark:text-slate-400">Active Contributors</div>
+                <div className="text-sm text-slate-400">Active Contributors</div>
               </div>
             </div>
           </CardContent>
@@ -153,14 +153,14 @@ async function UsersContent() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400">
+              <div className="p-2 rounded-lg bg-purple-950 text-purple-400">
                 <Shield className="h-5 w-5" />
               </div>
               <div>
                 <div className="text-xl font-bold">
                   {users.filter(u => u.role === "ADMIN" || u.role === "INSTRUCTOR").length}
                 </div>
-                <div className="text-sm text-slate-600 dark:text-slate-400">Staff Members</div>
+                <div className="text-sm text-slate-400">Staff Members</div>
               </div>
             </div>
           </CardContent>
@@ -169,7 +169,7 @@ async function UsersContent() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-orange-50 text-orange-600 dark:bg-orange-950 dark:text-orange-400">
+              <div className="p-2 rounded-lg bg-orange-950 text-orange-400">
                 <Calendar className="h-5 w-5" />
               </div>
               <div>
@@ -179,7 +179,7 @@ async function UsersContent() {
                     return new Date(u.lastActivity) > lastWeek;
                   }).length}
                 </div>
-                <div className="text-sm text-slate-600 dark:text-slate-400">Active This Week</div>
+                <div className="text-sm text-slate-400">Active This Week</div>
               </div>
             </div>
           </CardContent>
@@ -222,7 +222,7 @@ async function UsersContent() {
                 <UserItem key={user.id} user={user} />
               ))
             ) : (
-              <p className="text-center py-8 text-slate-600 dark:text-slate-400">
+              <p className="text-center py-8 text-slate-400">
                 No community users found
               </p>
             )}
@@ -240,13 +240,13 @@ function UserItem({ user }: { user: any }) {
   const getRoleColor = (role: string) => {
     switch (role) {
       case "ADMIN":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+        return "bg-red-900 text-red-200";
       case "INSTRUCTOR":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
+        return "bg-purple-900 text-purple-200";
       case "PREMIUM":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+        return "bg-yellow-900 text-yellow-200";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+        return "bg-gray-900 text-gray-200";
     }
   };
 
@@ -272,7 +272,7 @@ function UserItem({ user }: { user: any }) {
           )}
         </div>
         
-        <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
+        <div className="flex items-center gap-4 text-sm text-slate-400">
           <div className="flex items-center gap-1">
             <Mail className="h-4 w-4" />
             <span className="truncate">{user.email}</span>
@@ -289,9 +289,9 @@ function UserItem({ user }: { user: any }) {
 
         {user.topDiscussion && (
           <div className="mt-2 text-sm">
-            <span className="text-slate-500 dark:text-slate-400">Top discussion: </span>
+            <span className="text-slate-400">Top discussion: </span>
             <span className="font-medium">{user.topDiscussion.title}</span>
-            <span className="text-slate-500 dark:text-slate-400">
+            <span className="text-slate-400">
               {" "}({user.topDiscussion._count.votes} votes, {user.topDiscussion._count.replies} replies)
             </span>
           </div>

@@ -22,9 +22,9 @@ export default function Maintenance() {
             stiffness: 100,
             damping: 10
           }}
-          className="w-24 h-24 mx-auto bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center"
+          className="w-24 h-24 mx-auto bg-blue-900/20 rounded-full flex items-center justify-center"
         >
-          <Wrench className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+          <Wrench className="w-12 h-12 text-blue-400" />
         </motion.div>
 
         <div className="space-y-4">

@@ -419,27 +419,27 @@ export function SearchingAlgorithmsOverview() {
                     Complexité Temporelle
                   </h3>
                   <div className="grid grid-cols-3 gap-4">
-                    <div className="bg-green-50 dark:bg-green-950/30 p-4 rounded-lg border border-green-100 dark:border-green-900">
+                    <div className="bg-green-950/30 p-4 rounded-lg border border-green-900">
                       <div className="text-xs text-muted-foreground mb-1">
                         Meilleur cas
                       </div>
-                      <div className="text-xl font-mono font-semibold text-green-600 dark:text-green-400">
+                      <div className="text-xl font-mono font-semibold text-green-400">
                         {currentAlgo.complexity.time.best}
                       </div>
                     </div>
-                    <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg border border-blue-100 dark:border-blue-900">
+                    <div className="bg-blue-950/30 p-4 rounded-lg border border-blue-900">
                       <div className="text-xs text-muted-foreground mb-1">
                         Cas moyen
                       </div>
-                      <div className="text-xl font-mono font-semibold text-blue-600 dark:text-blue-400">
+                      <div className="text-xl font-mono font-semibold text-blue-400">
                         {currentAlgo.complexity.time.average}
                       </div>
                     </div>
-                    <div className="bg-amber-50 dark:bg-amber-950/30 p-4 rounded-lg border border-amber-100 dark:border-amber-900">
+                    <div className="bg-amber-950/30 p-4 rounded-lg border border-amber-900">
                       <div className="text-xs text-muted-foreground mb-1">
                         Pire cas
                       </div>
-                      <div className="text-xl font-mono font-semibold text-amber-600 dark:text-amber-400">
+                      <div className="text-xl font-mono font-semibold text-amber-400">
                         {currentAlgo.complexity.time.worst}
                       </div>
                     </div>
@@ -451,11 +451,11 @@ export function SearchingAlgorithmsOverview() {
                     <Database className="w-5 h-5 text-primary" />
                     Complexité Spatiale
                   </h3>
-                  <div className="bg-purple-50 dark:bg-purple-950/30 p-4 rounded-lg border border-purple-100 dark:border-purple-900">
+                  <div className="bg-purple-950/30 p-4 rounded-lg border border-purple-900">
                     <div className="text-xs text-muted-foreground mb-1">
                       Mémoire auxiliaire
                     </div>
-                    <div className="text-xl font-mono font-semibold text-purple-600 dark:text-purple-400">
+                    <div className="text-xl font-mono font-semibold text-purple-400">
                       {currentAlgo.complexity.space}
                     </div>
                     <div className="text-xs text-muted-foreground mt-2">
@@ -534,7 +534,7 @@ export function SearchingAlgorithmsOverview() {
               {/* Avantages et inconvénients */}
               <div className="grid gap-6 md:grid-cols-2">
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-green-600 dark:text-green-400 flex items-center gap-2">
+                  <h3 className="text-lg font-semibold text-green-400 flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-green-500"></div>
                     Avantages
                   </h3>
@@ -552,7 +552,7 @@ export function SearchingAlgorithmsOverview() {
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-red-600 dark:text-red-400 flex items-center gap-2">
+                  <h3 className="text-lg font-semibold text-red-400 flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-red-500"></div>
                     Inconvénients
                   </h3>

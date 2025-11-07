@@ -85,12 +85,12 @@ export async function LearningStreak({ userId }: LearningStreakProps) {
   const streakBadge = getStreakBadge(currentStreak);
 
   return (
-    <Card className="border-0 shadow-lg bg-linear-to-br from-orange-50 via-red-50 to-pink-50 dark:from-orange-950/20 dark:via-red-950/20 dark:to-pink-950/20">
+    <Card className="border-0 shadow-lg bg-linear-to-br from-orange-950/20 via-red-950/20 to-pink-950/20">
       <CardHeader className="pb-6">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
-              <Flame className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+            <div className="p-2 rounded-lg bg-orange-900/30">
+              <Flame className="h-6 w-6 text-orange-400" />
             </div>
             <div>
               <h3 className="text-xl font-bold">Série d&apos;apprentissage</h3>
@@ -107,61 +107,61 @@ export async function LearningStreak({ userId }: LearningStreakProps) {
         {/* Main Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {/* Current Streak */}
-          <div className="text-center p-6 bg-linear-to-br from-orange-100 to-orange-50 dark:from-orange-900/40 dark:to-orange-800/20 rounded-xl border border-orange-200/50 dark:border-orange-700/30">
+          <div className="text-center p-6 bg-linear-to-br from-orange-900/40 to-orange-800/20 rounded-xl border border-orange-700/30">
             <div className="space-y-2">
-              <div className="text-4xl font-bold text-orange-600 dark:text-orange-400">
+              <div className="text-4xl font-bold text-orange-400">
                 {currentStreak}
               </div>
-              <div className="text-sm font-medium text-orange-700 dark:text-orange-300">
+              <div className="text-sm font-medium text-orange-300">
                 Jour{currentStreak !== 1 ? 's' : ''} consécutif{currentStreak !== 1 ? 's' : ''}
               </div>
             </div>
           </div>
 
           {/* Weekly Progress */}
-          <div className="p-6 bg-linear-to-br from-blue-100 to-blue-50 dark:from-blue-900/40 dark:to-blue-800/20 rounded-xl border border-blue-200/50 dark:border-blue-700/30">
+          <div className="p-6 bg-linear-to-br from-blue-900/40 to-blue-800/20 rounded-xl border border-blue-700/30">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Objectif hebdo</span>
+                  <Calendar className="h-4 w-4 text-blue-400" />
+                  <span className="text-sm font-medium text-blue-300">Objectif hebdo</span>
                 </div>
-                <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                <span className="text-xs text-blue-400 font-medium">
                   {Math.round(weeklyProgressPercent)}%
                 </span>
               </div>
-              <Progress value={weeklyProgressPercent} className="h-3 bg-blue-200/50 dark:bg-blue-800/30" />
-              <div className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+              <Progress value={weeklyProgressPercent} className="h-3 bg-blue-800/30" />
+              <div className="text-xs text-blue-400 font-medium">
                 {Math.round(thisWeekProgress / 60)}min / {weeklyGoalMinutes}min
               </div>
             </div>
           </div>
 
           {/* Average Daily */}
-          <div className="text-center p-6 bg-linear-to-br from-green-100 to-green-50 dark:from-green-900/40 dark:to-green-800/20 rounded-xl border border-green-200/50 dark:border-green-700/30">
+          <div className="text-center p-6 bg-linear-to-br from-green-900/40 to-green-800/20 rounded-xl border border-green-700/30">
             <div className="space-y-2">
-              <div className="flex items-center justify-center gap-2 text-green-700 dark:text-green-300">
+              <div className="flex items-center justify-center gap-2 text-green-300">
                 <Clock className="h-4 w-4" />
                 <span className="text-sm font-medium">Moyenne/jour</span>
               </div>
-              <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+              <div className="text-3xl font-bold text-green-400">
                 {averageDaily}
               </div>
-              <div className="text-sm font-medium text-green-700 dark:text-green-300">minutes</div>
+              <div className="text-sm font-medium text-green-300">minutes</div>
             </div>
           </div>
 
           {/* This Week */}
-          <div className="text-center p-6 bg-linear-to-br from-purple-100 to-purple-50 dark:from-purple-900/40 dark:to-purple-800/20 rounded-xl border border-purple-200/50 dark:border-purple-700/30">
+          <div className="text-center p-6 bg-linear-to-br from-purple-900/40 to-purple-800/20 rounded-xl border border-purple-700/30">
             <div className="space-y-2">
-              <div className="flex items-center justify-center gap-2 text-purple-700 dark:text-purple-300">
+              <div className="flex items-center justify-center gap-2 text-purple-300">
                 <TrendingUp className="h-4 w-4" />
                 <span className="text-sm font-medium">Cette semaine</span>
               </div>
-              <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+              <div className="text-3xl font-bold text-purple-400">
                 {recentProgress.length > 0 ? '+' : ''}{recentProgress.length}
               </div>
-              <div className="text-sm font-medium text-purple-700 dark:text-purple-300">leçons</div>
+              <div className="text-sm font-medium text-purple-300">leçons</div>
             </div>
           </div>
         </div>

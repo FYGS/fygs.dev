@@ -17,7 +17,7 @@ import { InterviewQuestions } from "../ui/interview-questions";
 function RegularComponent({ label }: { label: string }) {
   console.log(`RegularComponent rendered: ${label}`);
   return (
-    <div className="p-4 border rounded-md bg-white dark:bg-gray-800">
+    <div className="p-4 border rounded-md bg-gray-800">
       <p>{label}</p>
     </div>
   );
@@ -31,7 +31,7 @@ const MemoizedComponent = memo(function MemoizedComponent({
 }) {
   console.log(`MemoizedComponent rendered: ${label}`);
   return (
-    <div className="p-4 border rounded-md bg-white dark:bg-gray-800">
+    <div className="p-4 border rounded-md bg-gray-800">
       <p>{label}</p>
     </div>
   );
@@ -76,7 +76,7 @@ function ReactMemoDemo() {
         </div>
       </div>
 
-      <div className="bg-gray-100 dark:bg-gray-900 p-2 rounded-md">
+      <div className="bg-gray-900 p-2 rounded-md">
         <p className="text-xs">
           Open the console to see render logs. Click &quot;Increment Count&quot; to see
           the difference.
@@ -128,7 +128,7 @@ function UseCallbackDemo() {
         </div>
       </div>
 
-      <div className="bg-gray-100 dark:bg-gray-900 p-2 rounded-md">
+      <div className="bg-gray-900 p-2 rounded-md">
         <p className="text-xs">
           Open the console to see logs. The real benefit is when passing these
           functions as props to memoized child components.
@@ -196,7 +196,7 @@ function UseMemoDemo() {
         </div>
       </div>
 
-      <div className="bg-gray-100 dark:bg-gray-900 p-2 rounded-md">
+      <div className="bg-gray-900 p-2 rounded-md">
         <p className="text-xs">
           Open the console to see calculation logs. Interact with the buttons
           and input to see the difference.

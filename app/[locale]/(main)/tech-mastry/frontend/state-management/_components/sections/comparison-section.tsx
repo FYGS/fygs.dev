@@ -221,13 +221,13 @@ export function ComparisonSection() {
                 Idéal pour les petites applications ou pour partager des données qui ne changent pas fréquemment, comme les thèmes, les préférences utilisateur ou l&apos;état d&apos;authentification.
               </p>
               <div className="mt-2">
-                <Badge className="mr-2 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                <Badge className="mr-2 bg-green-900/30 text-green-400">
                   Intégré à React
                 </Badge>
-                <Badge className="mr-2 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                <Badge className="mr-2 bg-green-900/30 text-green-400">
                   Simple à mettre en place
                 </Badge>
-                <Badge className="mr-2 bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                <Badge className="mr-2 bg-red-900/30 text-red-400">
                   Performances limitées
                 </Badge>
               </div>
@@ -239,13 +239,13 @@ export function ComparisonSection() {
                 Adapté aux grandes applications avec un état complexe et de nombreux développeurs. Excellent lorsque vous avez besoin d&apos;un flux de données prévisible, d&apos;outils de débogage avancés et d&apos;un écosystème mature.
               </p>
               <div className="mt-2">
-                <Badge className="mr-2 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                <Badge className="mr-2 bg-green-900/30 text-green-400">
                   Écosystème riche
                 </Badge>
-                <Badge className="mr-2 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                <Badge className="mr-2 bg-green-900/30 text-green-400">
                   DevTools puissants
                 </Badge>
-                <Badge className="mr-2 bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                <Badge className="mr-2 bg-red-900/30 text-red-400">
                   Beaucoup de boilerplate
                 </Badge>
               </div>
@@ -257,13 +257,13 @@ export function ComparisonSection() {
                 Excellent pour les applications de petite à moyenne taille qui nécessitent une solution de gestion d&apos;état simple mais puissante. Idéal lorsque vous voulez éviter le boilerplate de Redux tout en conservant de bonnes performances.
               </p>
               <div className="mt-2">
-                <Badge className="mr-2 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                <Badge className="mr-2 bg-green-900/30 text-green-400">
                   API minimaliste
                 </Badge>
-                <Badge className="mr-2 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                <Badge className="mr-2 bg-green-900/30 text-green-400">
                   Excellentes performances
                 </Badge>
-                <Badge className="mr-2 bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+                <Badge className="mr-2 bg-yellow-900/30 text-yellow-400">
                   Écosystème plus petit
                 </Badge>
               </div>
@@ -275,13 +275,13 @@ export function ComparisonSection() {
                 Parfait pour les applications axées sur les données avec de nombreuses interactions API. Idéal lorsque votre état est principalement dérivé de données serveur et que vous avez besoin de fonctionnalités avancées comme la mise en cache, la revalidation et la gestion des erreurs.
               </p>
               <div className="mt-2">
-                <Badge className="mr-2 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                <Badge className="mr-2 bg-green-900/30 text-green-400">
                   Gestion des données serveur
                 </Badge>
-                <Badge className="mr-2 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                <Badge className="mr-2 bg-green-900/30 text-green-400">
                   Mise en cache intelligente
                 </Badge>
-                <Badge className="mr-2 bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+                <Badge className="mr-2 bg-yellow-900/30 text-yellow-400">
                   Moins adapté à l&apos;état UI pur
                 </Badge>
               </div>

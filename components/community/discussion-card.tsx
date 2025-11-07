@@ -2,7 +2,16 @@
 
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { MessageCircle, ArrowUp, ArrowDown, BookmarkIcon, Eye, Zap, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  MessageCircle,
+  ArrowUp,
+  ArrowDown,
+  BookmarkIcon,
+  Eye,
+  Zap,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
@@ -48,11 +57,16 @@ export function DiscussionCard({
   };
 
   return (
-    <Card className={cn("group hover:shadow-md transition-all duration-200", className)}>
+    <Card
+      className={cn(
+        "group hover:shadow-md transition-all duration-200",
+        className
+      )}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <Link 
+            <Link
               href={`/community/discussions/${discussion.id}`}
               className="block group-hover:text-primary transition-colors"
             >
@@ -60,19 +74,21 @@ export function DiscussionCard({
                 {discussion.title}
               </h3>
             </Link>
-            
+
             {discussion.content && (
               <div className="mb-3">
-                <div className={cn(
-                  "text-slate-600 dark:text-slate-300 text-sm prose prose-sm max-w-none",
-                  !isExpanded && shouldCollapse && "line-clamp-3"
-                )}>
-                  <MDXContent 
-                    content={discussion.content} 
-                    className="[&>*]:mb-1 [&>*:last-child]:mb-0" 
+                <div
+                  className={cn(
+                    "text-slate-300 text-sm prose prose-sm max-w-none",
+                    !isExpanded && shouldCollapse && "line-clamp-3"
+                  )}
+                >
+                  <MDXContent
+                    content={discussion.content}
+                    className="[&>*]:mb-1 [&>*:last-child]:mb-0"
                   />
                 </div>
-                
+
                 {shouldCollapse && (
                   <Button
                     variant="ghost"
@@ -82,7 +98,7 @@ export function DiscussionCard({
                       e.stopPropagation();
                       setIsExpanded(!isExpanded);
                     }}
-                    className="mt-2 h-6 px-2 text-xs text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                    className="mt-2 h-6 px-2 text-xs text-slate-400 hover:text-slate-200"
                   >
                     {isExpanded ? (
                       <>
@@ -100,8 +116,8 @@ export function DiscussionCard({
               </div>
             )}
 
-            <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
-              <Link 
+            <div className="flex items-center gap-3 text-sm text-slate-400">
+              <Link
                 href={`/community/users/${discussion.author.id}`}
                 className="flex items-center gap-2 hover:text-primary transition-colors"
               >
@@ -114,7 +130,9 @@ export function DiscussionCard({
                 <span>{discussion.author.name}</span>
               </Link>
               <span>•</span>
-              <span>{formatDistanceToNow(new Date(discussion.createdAt))} ago</span>
+              <span>
+                {formatDistanceToNow(new Date(discussion.createdAt))} ago
+              </span>
               {discussion.updatedAt !== discussion.createdAt && (
                 <>
                   <span>•</span>
@@ -130,27 +148,31 @@ export function DiscussionCard({
               size="sm"
               className={cn(
                 "h-8 w-8 p-0",
-                userVote === "UPVOTE" && "text-green-600 bg-green-50 hover:bg-green-100"
+                userVote === "UPVOTE" &&
+                  "text-green-600 bg-green-50 hover:bg-green-100"
               )}
               onClick={() => handleVote("UPVOTE")}
             >
               <ArrowUp className="h-4 w-4" />
             </Button>
-            
-            <span className={cn(
-              "text-sm font-medium px-1",
-              voteScore > 0 && "text-green-600",
-              voteScore < 0 && "text-red-600"
-            )}>
+
+            <span
+              className={cn(
+                "text-sm font-medium px-1",
+                voteScore > 0 && "text-green-600",
+                voteScore < 0 && "text-red-600"
+              )}
+            >
               {voteScore}
             </span>
-            
+
             <Button
               variant="ghost"
               size="sm"
               className={cn(
                 "h-8 w-8 p-0",
-                userVote === "DOWNVOTE" && "text-red-600 bg-red-50 hover:bg-red-100"
+                userVote === "DOWNVOTE" &&
+                  "text-red-600 bg-red-50 hover:bg-red-100"
               )}
               onClick={() => handleVote("DOWNVOTE")}
             >
@@ -162,12 +184,12 @@ export function DiscussionCard({
 
       <CardContent className="pt-0">
         <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
+          <div className="flex items-center gap-4 text-sm text-slate-400">
             <div className="flex items-center gap-1">
               <MessageCircle className="h-4 w-4" />
               <span>{discussion._count?.replies || 0}</span>
             </div>
-            
+
             <div className="flex items-center gap-1">
               <Eye className="h-4 w-4" />
               <span>{discussion.viewCount || 0}</span>
@@ -185,7 +207,8 @@ export function DiscussionCard({
                 {discussion.topic.name}
               </Badge>
             )}
-          </div>          <Button
+          </div>{" "}
+          <Button
             variant="ghost"
             size="sm"
             className={cn(
@@ -194,7 +217,9 @@ export function DiscussionCard({
             )}
             onClick={handleBookmark}
           >
-            <BookmarkIcon className={cn("h-4 w-4", isBookmarked && "fill-current")} />
+            <BookmarkIcon
+              className={cn("h-4 w-4", isBookmarked && "fill-current")}
+            />
           </Button>
         </div>
       </CardContent>

@@ -24,21 +24,21 @@ function UseStateDemo() {
       <div className="flex gap-2 justify-center">
         <button
           onClick={() => setCount(count - 1)}
-          className="px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50"
+          className="px-3 py-1 rounded-md bg-red-900/30 text-red-400 hover:bg-red-900/50"
           disabled={count <= 0}
         >
           -
         </button>
         <button
           onClick={() => setCount(0)}
-          className="px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+          className="px-3 py-1 rounded-md bg-gray-800 text-gray-300 hover:bg-gray-700"
           disabled={count === 0}
         >
           Reset
         </button>
         <button
           onClick={() => setCount(count + 1)}
-          className="px-3 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50"
+          className="px-3 py-1 rounded-md bg-green-900/30 text-green-400 hover:bg-green-900/50"
         >
           +
         </button>
@@ -93,7 +93,7 @@ function UseEffectDemo() {
       <div className="flex gap-2 justify-center">
         <button
           onClick={() => setCount(count + 1)}
-          className="px-3 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
+          className="px-3 py-1 rounded-md bg-blue-900/30 text-blue-400 hover:bg-blue-900/50"
         >
           Incrémenter
         </button>

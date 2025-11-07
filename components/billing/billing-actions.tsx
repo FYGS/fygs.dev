@@ -91,14 +91,14 @@ export function BillingActions({ currentPriceId, currentCycle, /* availablePrice
     <div className="space-y-4">
       {/* <div className="flex flex-col md:flex-row gap-3 items-start md:items-end">
         <div className="space-y-2">
-          <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Changer de cycle</p>
+          <p className="text-sm font-medium text-gray-200">Changer de cycle</p>
           <Select value={priceId} onValueChange={(v) => setPriceId(v)}>
-            <SelectTrigger className="w-56 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
+            <SelectTrigger className="w-56 border-gray-600 text-gray-100">
               <SelectValue placeholder="Sélectionner" />
             </SelectTrigger>
             <SelectContent>
               {availablePrices.map(p => (
-                <SelectItem key={p.id} value={p.id} className="text-gray-900 dark:text-gray-100">
+                <SelectItem key={p.id} value={p.id} className="text-gray-100">
                   {p.label}{p.amount ? ` - ${p.amount}€` : ''}
                 </SelectItem>
               ))}
@@ -119,7 +119,7 @@ export function BillingActions({ currentPriceId, currentCycle, /* availablePrice
           variant="outline" 
           disabled={loadingAction==='manage_subscription'}
           onClick={() => callManage({ action: 'manage_subscription' })}
-          className="border-purple-300 text-purple-700 hover:bg-purple-50 dark:border-purple-600 dark:text-purple-400 dark:hover:bg-purple-950"
+          className="border-purple-600 text-purple-400 hover:bg-purple-950"
         >
           {loadingAction==='manage_subscription' ? 'Redirection...' : 'Gérer l\'abonnement'}
         </Button>
@@ -128,7 +128,7 @@ export function BillingActions({ currentPriceId, currentCycle, /* availablePrice
             variant="outline" 
             disabled={loadingAction==='cancel_at_period_end'} 
             onClick={() => callManage({ action: 'cancel_at_period_end' })}
-            className="border-orange-300 text-orange-700 hover:bg-orange-50 dark:border-orange-600 dark:text-orange-400 dark:hover:bg-orange-950"
+            className="border-orange-600 text-orange-400 hover:bg-orange-950"
           >
             {loadingAction==='cancel_at_period_end' ? 'Annulation...' : 'Annuler en fin de période'}
           </Button>

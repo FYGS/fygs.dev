@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { Bell, BellDot, Check, X, MessageSquare, ThumbsUp, Award, Users, Star, Megaphone } from "lucide-react";
@@ -190,8 +190,8 @@ export function NotificationsDropdown({
     const content = (
       <div
         className={cn(
-          "flex items-start gap-3 p-3 rounded-lg transition-colors hover:bg-slate-50 dark:hover:bg-slate-800 group",
-          !notification.isRead && "bg-blue-50 dark:bg-blue-950/20"
+          "flex items-start gap-3 p-3 rounded-lg transition-colors hover:bg-slate-800 group",
+          !notification.isRead && "bg-blue-950/20"
         )}
       >
         <div className="flex-shrink-0">

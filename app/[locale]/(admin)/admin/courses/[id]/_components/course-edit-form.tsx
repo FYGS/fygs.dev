@@ -593,7 +593,7 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
             {course.modules.length > 0 ? (
               <div className="space-y-6">
                 {course.modules.map((module) => (
-                  <div key={module.id} className="group relative border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-800/50 shadow-sm hover:shadow-lg transition-all duration-300 hover:border-blue-300 dark:hover:border-blue-700">
+                  <div key={module.id} className="group relative border border-slate-700 rounded-xl overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800/50 shadow-sm hover:shadow-lg transition-all duration-300 hover:border-blue-700">
                     {/* Decorative gradient bar */}
                     <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500"></div>
                     
@@ -609,10 +609,10 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
                           </div>
                           
                           <div className="flex-1">
-                            <h3 className="font-bold text-xl text-slate-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            <h3 className="font-bold text-xl text-white mb-1 group-hover:text-blue-400 transition-colors">
                               {module.title}
                             </h3>
-                            <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
+                            <div className="flex items-center gap-4 text-sm text-slate-400">
                               <div className="flex items-center gap-1">
                                 <div className="w-2 h-2 rounded-full bg-green-500"></div>
                                 <span className="font-medium">{module.lessons.length} leçons</span>
@@ -632,7 +632,7 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
                             variant="outline" 
                             size="sm" 
                             asChild
-                            className="hover:bg-blue-50 hover:border-blue-300 dark:hover:bg-blue-900/20 dark:hover:border-blue-700 transition-all duration-200"
+                            className="hover:bg-blue-50 hover:border-blue-700 transition-all duration-200"
                           >
                             <Link href={`/admin/courses/${course.id}/modules/${module.id}`}>
                               <Edit className="h-4 w-4 mr-2" />
@@ -645,25 +645,25 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
                     
                     {/* Enhanced lessons preview */}
                     {module.lessons.length > 0 && (
-                      <div className="border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 p-6">
+                      <div className="border-t border-slate-700 bg-slate-800/50 p-6">
                         <div className="space-y-3">
-                          <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                          <h4 className="text-sm font-semibold text-slate-300 uppercase tracking-wide">
                             Leçons du module
                           </h4>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             {module.lessons.slice(0, 6).map((lesson) => (
                               <div 
                                 key={lesson.id} 
-                                className="flex items-center gap-3 p-3 rounded-lg bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-sm transition-all duration-200 group/lesson"
+                                className="flex items-center gap-3 p-3 rounded-lg bg-slate-900/80 border border-slate-700 hover:border-blue-700 hover:shadow-sm transition-all duration-200 group/lesson"
                               >
                                 <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-500 text-white text-xs font-bold flex items-center justify-center shadow-sm">
                                   {lesson.order}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium text-slate-900 dark:text-white truncate group-hover/lesson:text-blue-600 dark:group-hover/lesson:text-blue-400 transition-colors">
+                                  <p className="text-sm font-medium text-white truncate group-hover/lesson:text-blue-400 transition-colors">
                                     {lesson.title}
                                   </p>
-                                  <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-1">
+                                  <div className="flex items-center gap-2 text-xs text-slate-400 mt-1">
                                     {lesson.duration && (
                                       <span className="flex items-center gap-1">
                                         <div className="w-1 h-1 rounded-full bg-slate-400"></div>
@@ -682,7 +682,7 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
                             ))}
                             
                             {module.lessons.length > 6 && (
-                              <div className="flex items-center justify-center p-3 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200">
+                              <div className="flex items-center justify-center p-3 rounded-lg border-2 border-dashed border-slate-600 text-slate-400 hover:border-blue-400 hover:text-blue-400 transition-all duration-200">
                                 <span className="text-sm font-medium">
                                   +{module.lessons.length - 6} leçons supplémentaires
                                 </span>
@@ -695,15 +695,15 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
                     
                     {/* Empty state for lessons */}
                     {module.lessons.length === 0 && (
-                      <div className="border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 p-6">
+                      <div className="border-t border-slate-700 bg-slate-800/50 p-6">
                         <div className="text-center py-4">
-                          <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center mx-auto mb-3">
+                          <div className="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center mx-auto mb-3">
                             <BookOpen className="h-5 w-5 text-slate-400" />
                           </div>
-                          <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+                          <p className="text-sm text-slate-400 font-medium">
                             Aucune leçon dans ce module
                           </p>
-                          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                          <p className="text-xs text-slate-500 mt-1">
                             Ajoutez des leçons pour organiser votre contenu
                           </p>
                         </div>
@@ -715,18 +715,18 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
             ) : (
               <div className="text-center py-12">
                 <div className="relative">
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 flex items-center justify-center mx-auto mb-4">
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-900/30 to-purple-900/30 flex items-center justify-center mx-auto mb-4">
                     <BookOpen className="h-8 w-8 text-blue-500" />
                   </div>
                   <div className="absolute inset-0 w-20 h-20 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 blur-xl mx-auto animate-pulse"></div>
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                <h3 className="text-lg font-semibold text-white mb-2">
                   Aucun module créé
                 </h3>
-                <p className="text-slate-600 dark:text-slate-400 mb-4 max-w-md mx-auto">
+                <p className="text-slate-400 mb-4 max-w-md mx-auto">
                   Créez votre premier module pour organiser vos leçons en sections logiques et structurées.
                 </p>
-                <Button variant="outline" asChild className="hover:bg-blue-50 hover:border-blue-300 dark:hover:bg-blue-900/20 dark:hover:border-blue-700">
+                <Button variant="outline" asChild className="hover:bg-blue-50 hover:border-blue-700">
                   <Link href={`/admin/courses/${course.id}?tab=modules`}>
                     Créer un module
                   </Link>

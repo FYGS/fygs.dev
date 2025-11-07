@@ -5,13 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { 
-  BookOpen, 
-  Users, 
- Star, 
+import {
+  BookOpen,
+  Users,
+  Star,
   Euro,
   TrendingUp,
-  ExternalLink
+  ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -23,7 +23,7 @@ interface Course {
   enrollmentCount: number;
   averageRating: number;
   level: string;
- category: string;
+  category: string;
 }
 
 interface PopularCoursesProps {
@@ -33,26 +33,26 @@ interface PopularCoursesProps {
 export function PopularCourses({ courses }: PopularCoursesProps) {
   const formatLevel = (level: string) => {
     const levelMap: Record<string, string> = {
-      'BEGINNER': 'Débutant',
-      'INTERMEDIATE': 'Intermédiaire',
-      'ADVANCED': 'Avancé',
-      'EXPERT': 'Expert',
+      BEGINNER: "Débutant",
+      INTERMEDIATE: "Intermédiaire",
+      ADVANCED: "Avancé",
+      EXPERT: "Expert",
     };
     return levelMap[level] || level;
- };
+  };
 
   const getLevelColor = (level: string) => {
     switch (level) {
       case 'BEGINNER':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+        return 'bg-green-900 text-green-300';
       case 'INTERMEDIATE':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-90 dark:text-blue-300';
+        return 'bg-blue-90 text-blue-300';
       case 'ADVANCED':
-        return 'bg-orange-100 text-orange-800 dark:bg-orange-90 dark:text-orange-300';
+        return 'bg-orange-90 text-orange-300';
       case 'EXPERT':
-        return 'bg-red-100 text-red-800 dark:bg-red-90 dark:text-red-300';
+        return 'bg-red-90 text-red-300';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+        return "bg-gray-900 text-gray-300";
     }
   };
 
@@ -112,14 +112,14 @@ export function PopularCourses({ courses }: PopularCoursesProps) {
                         <Users className="h-3 w-3" />
                         <span>{course.enrollmentCount} inscrits</span>
                       </div>
-                      
+
                       {course.averageRating > 0 && (
                         <div className="flex items-center gap-1">
                           <Star className="h-3 w-3 fill-yellow-40 text-yellow-400" />
                           <span>{course.averageRating.toFixed(1)}</span>
                         </div>
                       )}
-                      
+
                       <div className="flex items-center gap-1">
                         <Euro className="h-3 w-3" />
                         <span>{course.price}€</span>

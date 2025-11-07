@@ -33,14 +33,16 @@ export function CourseHeader({ course }: CourseHeaderProps) {
   );
   const totalHours = Math.round(totalDuration / 3600);
   const enrollmentCount = course.enrollments.length;
-  const averageRating = course.reviews.length > 0
-    ? course.reviews.reduce((acc, review) => acc + review.rating, 0) / course.reviews.length
-    : 0;
+  const averageRating =
+    course.reviews.length > 0
+      ? course.reviews.reduce((acc, review) => acc + review.rating, 0) /
+        course.reviews.length
+      : 0;
 
   return (
     <div className="space-y-6">
       {/* Video/Thumbnail */}
-      <div className="aspect-video relative overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+      <div className="aspect-video relative overflow-hidden rounded-xl border border-slate-700 shadow-sm">
         {course.thumbnail ? (
           <Image
             src={course.thumbnail}
@@ -49,10 +51,10 @@ export function CourseHeader({ course }: CourseHeaderProps) {
             className="object-cover"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
+          <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
             <div className="text-center">
               <div className="text-6xl mb-4">🎓</div>
-              <p className="text-lg text-slate-600 dark:text-slate-400">Aperçu de la formation</p>
+              <p className="text-lg text-slate-400">Aperçu de la formation</p>
             </div>
           </div>
         )}
@@ -61,17 +63,20 @@ export function CourseHeader({ course }: CourseHeaderProps) {
       {/* Course Info */}
       <div className="space-y-4">
         <div className="flex flex-wrap gap-2">
-          <Badge variant="secondary" className="bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900 dark:text-emerald-200 dark:border-emerald-700">
+          <Badge
+            variant="secondary"
+            className="bg-emerald-900 text-emerald-200 border-emerald-700"
+          >
             {CATEGORY_LABELS[course.category]}
           </Badge>
-          <Badge variant="outline" className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300">
+          <Badge variant="outline" className="border-slate-600 text-slate-300">
             {LEVEL_LABELS[course.level]}
           </Badge>
           {course.tags.map((courseTag) => (
             <Badge
               key={courseTag.tag.name}
               variant="outline"
-              className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300"
+              className="border-slate-600 text-slate-300"
               style={{ borderColor: courseTag.tag.color }}
             >
               {courseTag.tag.name}
@@ -79,16 +84,16 @@ export function CourseHeader({ course }: CourseHeaderProps) {
           ))}
         </div>
 
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-100">
           {course.title}
         </h1>
 
-        <p className="text-lg text-slate-700 dark:text-slate-300 leading-relaxed">
+        <p className="text-lg text-slate-300 leading-relaxed">
           {course.description}
         </p>
 
         {/* Stats */}
-        <div className="flex flex-wrap gap-6 text-sm text-slate-600 dark:text-slate-400">
+        <div className="flex flex-wrap gap-6 text-sm text-slate-400">
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
             <span>{totalHours} heures de contenu</span>
@@ -100,12 +105,17 @@ export function CourseHeader({ course }: CourseHeaderProps) {
           {averageRating > 0 && (
             <div className="flex items-center gap-2">
               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-              <span>{averageRating.toFixed(1)} ({course.reviews.length} avis)</span>
+              <span>
+                {averageRating.toFixed(1)} ({course.reviews.length} avis)
+              </span>
             </div>
           )}
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            <span>Mis à jour le {new Date(course.createdAt).toLocaleDateString('fr-FR')}</span>
+            <span>
+              Mis à jour le{" "}
+              {new Date(course.createdAt).toLocaleDateString("fr-FR")}
+            </span>
           </div>
         </div>
       </div>

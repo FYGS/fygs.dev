@@ -299,7 +299,7 @@ export function highlightText(text: string, query: string): React.ReactNode[] {
         "span",
         {
           key: startPos,
-          className: "bg-yellow-200 dark:bg-yellow-800 rounded px-0.5",
+          className: "bg-yellow-800 rounded px-0.5",
         },
         text.substring(originalStartPos, originalEndPos)
       )

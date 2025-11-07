@@ -103,8 +103,8 @@ export function FilesystemCaseStudy() {
                     </li>
                   </ul>
 
-                  <div className="bg-amber-50 dark:bg-amber-950/30 p-3 rounded-lg border border-amber-200 dark:border-amber-800">
-                    <p className="text-xs text-amber-700 dark:text-amber-400">
+                  <div className="bg-amber-950/30 p-3 rounded-lg border border-amber-800">
+                    <p className="text-xs text-amber-400">
                       <strong>Note :</strong> La plupart des explorateurs de
                       fichiers modernes utilisent des variantes de QuickSort ou
                       TimSort pour le tri des listes de fichiers, avec des
@@ -234,18 +234,18 @@ function sortByType(files) {
                 </div>
               </div>
 
-              <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
+              <div className="bg-blue-950/30 p-4 rounded-lg border border-blue-800">
+                <h4 className="text-sm font-medium text-blue-300 mb-2">
                   Implémentation dans les explorateurs de fichiers
                 </h4>
-                <p className="text-sm text-blue-700 dark:text-blue-400">
+                <p className="text-sm text-blue-400">
                   L&apos;explorateur de fichiers Windows (File Explorer) utilise
                   une variante du tri naturel pour les noms de fichiers, ce qui
                   permet de trier correctement les séquences numériques (ex:
                   &quot;file1.txt&quot;, &quot;file2.txt&quot;,
                   &quot;file10.txt&quot;).
                 </p>
-                <p className="text-sm text-blue-700 dark:text-blue-400 mt-2">
+                <p className="text-sm text-blue-400 mt-2">
                   macOS Finder utilise également un tri naturel, mais avec des
                   optimisations supplémentaires pour gérer les caractères
                   spéciaux et les différentes langues. Il utilise une
@@ -428,18 +428,18 @@ const searchResults = sortSearchResults(files, "rapport");`}
                 </div>
               </div>
 
-              <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
+              <div className="bg-blue-950/30 p-4 rounded-lg border border-blue-800">
+                <h4 className="text-sm font-medium text-blue-300 mb-2">
                   Applications réelles
                 </h4>
-                <p className="text-sm text-blue-700 dark:text-blue-400">
+                <p className="text-sm text-blue-400">
                   La recherche Spotlight sur macOS utilise un système de score
                   sophistiqué pour trier les résultats, prenant en compte non
                   seulement la correspondance textuelle, mais aussi
                   l&apos;historique d&apos;utilisation, les métadonnées et même
                   le contexte de l&apos;utilisateur.
                 </p>
-                <p className="text-sm text-blue-700 dark:text-blue-400 mt-2">
+                <p className="text-sm text-blue-400 mt-2">
                   Windows Search utilise également un algorithme de tri par
                   pertinence, avec des optimisations pour les différents types
                   de fichiers et applications. Il utilise un index pour
@@ -498,8 +498,8 @@ const searchResults = sortSearchResults(files, "rapport");`}
                     </li>
                   </ul>
 
-                  <div className="bg-amber-50 dark:bg-amber-950/30 p-3 rounded-lg border border-amber-200 dark:border-amber-800">
-                    <p className="text-xs text-amber-700 dark:text-amber-400">
+                  <div className="bg-amber-950/30 p-3 rounded-lg border border-amber-800">
+                    <p className="text-xs text-amber-400">
                       <strong>Note :</strong> La création et la maintenance
                       d&apos;un index de fichiers nécessitent des algorithmes de
                       tri efficaces pour traiter de grandes quantités de
@@ -677,18 +677,18 @@ const results = index.search("rapport 2023");`}
                 </div>
               </div>
 
-              <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
+              <div className="bg-blue-950/30 p-4 rounded-lg border border-blue-800">
+                <h4 className="text-sm font-medium text-blue-300 mb-2">
                   Systèmes d&apos;indexation réels
                 </h4>
-                <p className="text-sm text-blue-700 dark:text-blue-400">
+                <p className="text-sm text-blue-400">
                   <strong>Elasticsearch</strong>, utilisé pour l&apos;indexation
                   de fichiers dans de nombreuses applications, utilise des
                   structures de données optimisées comme les index inversés et
                   les B-trees. Il implémente des algorithmes de tri sophistiqués
                   pour organiser les résultats par pertinence.
                 </p>
-                <p className="text-sm text-blue-700 dark:text-blue-400 mt-2">
+                <p className="text-sm text-blue-400 mt-2">
                   <strong>Windows Search Index</strong> utilise une combinaison
                   de tables de hachage et de B-trees pour indexer les fichiers.
                   Il implémente également un système de tri par pertinence basé

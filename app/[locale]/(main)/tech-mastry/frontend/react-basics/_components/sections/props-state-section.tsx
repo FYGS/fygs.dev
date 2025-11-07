@@ -24,7 +24,7 @@ function PropsDemo() {
           className={`px-3 py-1 rounded-md ${
             theme === "light"
               ? "bg-blue-500 text-white"
-              : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+              : "bg-gray-800 text-gray-300"
           }`}
         >
           Light
@@ -34,7 +34,7 @@ function PropsDemo() {
           className={`px-3 py-1 rounded-md ${
             theme === "dark"
               ? "bg-blue-500 text-white"
-              : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+              : "bg-gray-800 text-gray-300"
           }`}
         >
           Dark
@@ -63,13 +63,11 @@ function UserProfile({
   avatar: string;
   theme: "light" | "dark";
 }) {
-  const themeStyles = {
-    light: "bg-white border-gray-200 text-gray-800",
-    dark: "bg-gray-800 border-gray-700 text-white",
-  };
 
   return (
-    <div className={`p-4 border rounded-lg ${themeStyles[theme]}`}>
+    <div
+      className={`p-4 border rounded-lg bg-gray-800 border-gray-700 text-white`}
+    >
       <div className="flex items-center gap-3">
         <div className="relative w-12 h-12 rounded-full overflow-hidden">
           <Image
@@ -120,30 +118,30 @@ function StateDemo() {
 
   return (
     <div className="space-y-4">
-      <div className="p-4 border rounded-lg bg-white dark:bg-gray-800">
+      <div className="p-4 border rounded-lg bg-gray-800">
         <h3 className="font-medium mb-2">Compteur: {count}</h3>
         <div className="flex gap-2">
           <button
             onClick={() => setCount(count - 1)}
-            className="px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50"
+            className="px-3 py-1 rounded-md bg-red-900/30 text-red-400 hover:bg-red-900/50"
           >
             -
           </button>
           <button
             onClick={() => setCount(count + 1)}
-            className="px-3 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50"
+            className="px-3 py-1 rounded-md bg-green-900/30 text-green-400 hover:bg-green-900/50"
           >
             +
           </button>
         </div>
       </div>
 
-      <div className="p-4 border rounded-lg bg-white dark:bg-gray-800">
+      <div className="p-4 border rounded-lg bg-gray-800">
         <div className="flex justify-between items-center mb-3">
           <h3 className="font-medium">Liste de tâches</h3>
           <button
             onClick={addTodo}
-            className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
+            className="px-2 py-1 text-xs rounded-md bg-blue-900/30 text-blue-400 hover:bg-blue-900/50"
           >
             Ajouter
           </button>
@@ -224,13 +222,8 @@ function ParentComponent() {
 
 // Composant enfant qui reçoit des props
 function UserProfile({ name, role, avatar, theme }) {
-  const themeStyles = {
-    light: "bg-white text-black",
-    dark: "bg-gray-800 text-white"
-  };
-
   return (
-    <div className={themeStyles[theme]}>
+    <div className="bg-gray-800 text-white">
       <div className="relative w-12 h-12 rounded-full overflow-hidden">
         <Image 
           src={avatar} 

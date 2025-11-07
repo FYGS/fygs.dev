@@ -499,7 +499,7 @@ export function TreesGuide() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="prose prose-slate dark:prose-invert max-w-none"
+        className="prose prose-invert max-w-none"
       >
         <h2 className="text-3xl font-bold mb-4">
           Introduction aux Arbres et Graphes

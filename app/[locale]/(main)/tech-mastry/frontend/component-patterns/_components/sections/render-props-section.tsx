@@ -25,7 +25,7 @@ function MouseTracker({ render }: { render: (state: { x: number; y: number }) =>
 
   return (
     <div 
-      className="border rounded-md p-4 h-40 flex items-center justify-center bg-gray-50 dark:bg-gray-900"
+      className="border rounded-md p-4 h-40 flex items-center justify-center bg-gray-900"
       onMouseMove={handleMouseMove}
     >
       {render(mousePosition)}
@@ -77,7 +77,7 @@ function ToggleDemo() {
             <button
               onClick={toggle}
               className={`w-16 h-8 rounded-full p-1 transition-colors ${
-                on ? "bg-primary" : "bg-gray-300 dark:bg-gray-700"
+                on ? "bg-primary" : "bg-gray-700"
               }`}
             >
               <div

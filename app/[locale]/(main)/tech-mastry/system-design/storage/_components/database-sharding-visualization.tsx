@@ -187,16 +187,16 @@ export function DatabaseShardingVisualization() {
                   <div className="flex justify-center mb-4">
                     <div className="flex items-center gap-6">
                       <div className="flex flex-col items-center">
-                        <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center border border-blue-200 dark:border-blue-800">
+                        <div className="w-16 h-16 rounded-full bg-blue-900/30 flex items-center justify-center border border-blue-800">
                           <Users className="w-8 h-8 text-blue-500" />
                         </div>
                         <div className="text-xs mt-1 font-medium">Clients</div>
                       </div>
 
-                      <div className="h-0.5 w-10 bg-slate-300 dark:bg-slate-700"></div>
+                      <div className="h-0.5 w-10 bg-slate-700"></div>
 
                       <div className="flex flex-col items-center">
-                        <div className="w-32 h-16 rounded-md bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center border border-indigo-200 dark:border-indigo-800">
+                        <div className="w-32 h-16 rounded-md bg-indigo-900/30 flex items-center justify-center border border-indigo-800">
                           <div className="text-xs font-medium text-center">
                             <div className="mb-1">Shard Router</div>
                             {shardingType === "hash" && (
@@ -236,20 +236,20 @@ export function DatabaseShardingVisualization() {
                         );
 
                         // Calculate color based on load
-                        let bgColor = "bg-green-100 dark:bg-green-900/30";
+                        let bgColor = "bg-green-900/30";
                         let borderColor =
-                          "border-green-200 dark:border-green-800";
-                        let textColor = "text-green-700 dark:text-green-300";
+                          "border-green-800";
+                        let textColor = "text-green-300";
 
                         if (shardLoad > 80) {
-                          bgColor = "bg-red-100 dark:bg-red-900/30";
-                          borderColor = "border-red-200 dark:border-red-800";
-                          textColor = "text-red-700 dark:text-red-300";
+                          bgColor = "bg-red-900/30";
+                          borderColor = "border-red-800";
+                          textColor = "text-red-300";
                         } else if (shardLoad > 60) {
-                          bgColor = "bg-amber-100 dark:bg-amber-900/30";
+                          bgColor = "bg-amber-900/30";
                           borderColor =
-                            "border-amber-200 dark:border-amber-800";
-                          textColor = "text-amber-700 dark:text-amber-300";
+                            "border-amber-800";
+                          textColor = "text-amber-300";
                         }
 
                         return (
@@ -259,7 +259,7 @@ export function DatabaseShardingVisualization() {
                           >
                             <div className="flex justify-between items-center mb-2">
                               <div className="flex items-center gap-1">
-                                <Database className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                                <Database className="w-4 h-4 text-slate-400" />
                                 <span className="text-xs font-medium">
                                   Shard {index + 1}
                                 </span>
@@ -268,7 +268,7 @@ export function DatabaseShardingVisualization() {
                             </div>
 
                             {/* Shard Key Information */}
-                            <div className="text-xs mb-2 px-2 py-1 bg-white/50 dark:bg-slate-800/50 rounded border border-slate-200 dark:border-slate-700">
+                            <div className="text-xs mb-2 px-2 py-1 bg-slate-800/50 rounded border border-slate-700">
                               {shardingType === "hash" && (
                                 <div className="flex items-center gap-1">
                                   <Hash className="w-3 h-3" />
@@ -320,7 +320,7 @@ export function DatabaseShardingVisualization() {
                                   {Math.round(shardLoad)}%
                                 </span>
                               </div>
-                              <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                              <div className="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
                                 <div
                                   className={`h-full ${
                                     shardLoad > 80
@@ -424,8 +424,8 @@ export function DatabaseShardingVisualization() {
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="p-4 rounded-lg border bg-red-50 dark:bg-red-900/20 space-y-3">
-                  <h4 className="font-medium text-red-700 dark:text-red-300 flex items-center gap-1">
+                <div className="p-4 rounded-lg border bg-red-900/20 space-y-3">
+                  <h4 className="font-medium text-red-300 flex items-center gap-1">
                     <AlertCircle className="h-4 w-4" />
                     Défis du Sharding
                   </h4>
@@ -457,8 +457,8 @@ export function DatabaseShardingVisualization() {
                   </ul>
                 </div>
 
-                <div className="p-4 rounded-lg border bg-green-50 dark:bg-green-900/20 space-y-3">
-                  <h4 className="font-medium text-green-700 dark:text-green-300 flex items-center gap-1">
+                <div className="p-4 rounded-lg border bg-green-900/20 space-y-3">
+                  <h4 className="font-medium text-green-300 flex items-center gap-1">
                     <CheckCircle className="h-4 w-4" />
                     Bonnes Pratiques
                   </h4>
@@ -509,7 +509,7 @@ export function DatabaseShardingVisualization() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <h5 className="text-sm font-medium mb-2">MongoDB</h5>
-                    <pre className="text-xs p-3 bg-slate-100 dark:bg-slate-800 rounded border overflow-auto">
+                    <pre className="text-xs p-3 bg-slate-800 rounded border overflow-auto">
                       {`// Création d'une collection sharded
 sh.enableSharding("myDatabase")
 
@@ -526,7 +526,7 @@ sh.shardCollection(
 
                   <div>
                     <h5 className="text-sm font-medium mb-2">MySQL</h5>
-                    <pre className="text-xs p-3 bg-slate-100 dark:bg-slate-800 rounded border overflow-auto">
+                    <pre className="text-xs p-3 bg-slate-800 rounded border overflow-auto">
                       {`-- Création de tables partitionnées par plage
 CREATE TABLE orders (
   order_id INT,

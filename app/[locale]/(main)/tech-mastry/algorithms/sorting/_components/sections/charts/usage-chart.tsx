@@ -339,9 +339,9 @@ export function UsageChart() {
 
         {/* Recommandations */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card className="bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800">
+          <Card className="bg-green-950/30 border-green-800">
             <CardContent className="p-4">
-              <h3 className="text-sm font-medium text-green-800 dark:text-green-300 flex items-center gap-2 mb-2">
+              <h3 className="text-sm font-medium text-green-300 flex items-center gap-2 mb-2">
                 <CheckCircle className="w-4 h-4" />
                 Recommandé pour
               </h3>
@@ -353,7 +353,7 @@ export function UsageChart() {
                   .map((s) => (
                     <li
                       key={s.name}
-                      className="text-sm text-green-700 dark:text-green-400 flex items-start gap-2"
+                      className="text-sm text-green-400 flex items-start gap-2"
                     >
                       <div className="w-1 h-1 rounded-full bg-green-500 mt-1.5" />
                       <span>{s.name}</span>
@@ -363,9 +363,9 @@ export function UsageChart() {
             </CardContent>
           </Card>
 
-          <Card className="bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800">
+          <Card className="bg-red-950/30 border-red-800">
             <CardContent className="p-4">
-              <h3 className="text-sm font-medium text-red-800 dark:text-red-300 flex items-center gap-2 mb-2">
+              <h3 className="text-sm font-medium text-red-300 flex items-center gap-2 mb-2">
                 <XCircle className="w-4 h-4" />
                 Déconseillé pour
               </h3>
@@ -375,7 +375,7 @@ export function UsageChart() {
                   .map((s) => (
                     <li
                       key={s.name}
-                      className="text-sm text-red-700 dark:text-red-400 flex items-start gap-2"
+                      className="text-sm text-red-400 flex items-start gap-2"
                     >
                       <div className="w-1 h-1 rounded-full bg-red-500 mt-1.5" />
                       <span>{s.name}</span>

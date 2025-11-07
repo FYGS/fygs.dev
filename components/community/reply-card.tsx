@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { formatDistanceToNow } from "date-fns";
 import { ArrowUp, ArrowDown, MessageCircle, MoreHorizontal, Flag, Edit2, Trash2 } from "lucide-react";
@@ -147,7 +147,7 @@ export function ReplyCard({
   return (
     <div className={cn(
       "relative",
-      level > 0 && "ml-4 pl-4 border-l-2 border-slate-200 dark:border-slate-700",
+      level > 0 && "ml-4 pl-4 border-l-2 border-slate-700",
       className
     )}>
       <Card className="mb-4 group hover:shadow-sm transition-all duration-200">
@@ -241,7 +241,7 @@ export function ReplyCard({
               placeholder="Edit your reply..."
             />
           ) : (
-            <div className="prose prose-sm max-w-none dark:prose-invert mb-3">
+            <div className="prose prose-sm max-w-none prose-invert mb-3">
               <MDXContent content={content} />
             </div>
           )}
@@ -258,7 +258,7 @@ export function ReplyCard({
                   disabled={isVoting || !currentUserId}
                   className={cn(
                     "h-7 px-2",
-                    userVote === "UPVOTE" && "text-green-600 bg-green-50 dark:bg-green-950"
+                    userVote === "UPVOTE" && "text-green-400 bg-green-950"
                   )}
                 >
                   <ArrowUp className="h-3 w-3 mr-1" />
@@ -272,7 +272,7 @@ export function ReplyCard({
                   disabled={isVoting || !currentUserId}
                   className={cn(
                     "h-7 px-2",
-                    userVote === "DOWNVOTE" && "text-red-600 bg-red-50 dark:bg-red-950"
+                    userVote === "DOWNVOTE" && "text-red-400 bg-red-950"
                   )}
                 >
                   <ArrowDown className="h-3 w-3 mr-1" />

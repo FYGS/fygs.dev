@@ -587,7 +587,7 @@ export function LoadBalancerVisualization() {
                   variant="outline"
                   size="sm"
                   onClick={() => setShowExplanation(!showExplanation)}
-                  className="border-gray-300 hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-800 transition-all duration-300"
+                  className="border-gray-700 hover:bg-gray-800 transition-all duration-300"
                 >
                   {showExplanation ? (
                     <>

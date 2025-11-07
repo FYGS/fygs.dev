@@ -60,7 +60,7 @@ const EnhancedCounter = withCounter(SimpleCounter);
 
 function HOCDemo() {
   return (
-    <div className="p-4 border rounded-md bg-gray-50 dark:bg-gray-900 flex justify-center">
+    <div className="p-4 border rounded-md bg-gray-900 flex justify-center">
       <EnhancedCounter />
     </div>
   );

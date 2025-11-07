@@ -17,7 +17,7 @@ export default function ReviewsPage() {
       <div className="container py-8 max-w-7xl mx-auto space-y-8">
         {/* Hero Section */}
         <div className="text-center space-y-6">
-          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 border border-blue-200 dark:border-blue-800">
+          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-blue-800">
             <Star className="h-5 w-5 text-yellow-500" />
             <span className="text-sm font-medium">Avis authentiques de nos étudiants</span>
             <Badge variant="secondary" className="ml-2">
@@ -89,8 +89,8 @@ export default function ReviewsPage() {
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500" />
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-pink-100 to-purple-100 dark:from-pink-900/30 dark:to-purple-900/30">
-                <TrendingUp className="h-5 w-5 text-pink-600 dark:text-pink-400" />
+              <div className="p-2 rounded-lg bg-gradient-to-br from-pink-900/30 to-purple-900/30">
+                <TrendingUp className="h-5 w-5 text-pink-400" />
               </div>
               <div>
                 <h2 className="text-lg font-semibold">Avis en tendance</h2>

@@ -39,10 +39,10 @@ export function InterviewQuestions({
   };
 
   const difficultyColors = {
-    easy: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+    easy: "bg-green-900/30 text-green-400",
     medium:
-      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
-    hard: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+      "bg-yellow-900/30 text-yellow-400",
+    hard: "bg-red-900/30 text-red-400",
   };
 
   return (
@@ -89,7 +89,7 @@ export function InterviewQuestions({
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="p-4 pt-0 text-sm border-t">
-              <div className="prose prose-sm max-w-none dark:prose-invert">
+              <div className="prose prose-sm max-w-none prose-invert">
                 {q.answer}
               </div>
 

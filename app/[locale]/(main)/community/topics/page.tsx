@@ -38,7 +38,7 @@ async function TopicsContent() {
             {/* Header */}
             <div className="space-y-2">
               <h1 className="text-3xl font-bold">Community Topics</h1>
-              <p className="text-slate-600 dark:text-slate-400">
+              <p className="text-slate-400">
                 Explore all discussion topics and find communities that interest you
               </p>
             </div>
@@ -48,14 +48,14 @@ async function TopicsContent() {
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-50 dark:bg-blue-950 rounded-lg">
-                      <MessageCircle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <div className="p-2 bg-blue-950 rounded-lg">
+                      <MessageCircle className="h-5 w-5 text-blue-400" />
                     </div>
                     <div>
                       <div className="text-2xl font-bold">
                         {topics.reduce((sum, topic) => sum + (topic._count?.discussions || 0), 0)}
                       </div>
-                      <div className="text-sm text-slate-600 dark:text-slate-400">Total Discussions</div>
+                      <div className="text-sm text-slate-400">Total Discussions</div>
                     </div>
                   </div>
                 </CardContent>
@@ -64,14 +64,14 @@ async function TopicsContent() {
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-green-50 dark:bg-green-950 rounded-lg">
-                      <Users className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    <div className="p-2 bg-green-950 rounded-lg">
+                      <Users className="h-5 w-5 text-green-400" />
                     </div>
                     <div>
                       <div className="text-2xl font-bold">
                         {topics.reduce((sum, topic) => sum + (topic._count?.followers || 0), 0)}
                       </div>
-                      <div className="text-sm text-slate-600 dark:text-slate-400">Total Followers</div>
+                      <div className="text-sm text-slate-400">Total Followers</div>
                     </div>
                   </div>
                 </CardContent>
@@ -80,12 +80,12 @@ async function TopicsContent() {
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-purple-50 dark:bg-purple-950 rounded-lg">
-                      <TrendingUp className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                    <div className="p-2 bg-purple-950 rounded-lg">
+                      <TrendingUp className="h-5 w-5 text-purple-400" />
                     </div>
                     <div>
                       <div className="text-2xl font-bold">{topics.length}</div>
-                      <div className="text-sm text-slate-600 dark:text-slate-400">Active Topics</div>
+                      <div className="text-sm text-slate-400">Active Topics</div>
                     </div>
                   </div>
                 </CardContent>
@@ -124,7 +124,7 @@ async function TopicsContent() {
                 <CardContent className="text-center py-12">
                   <MessageCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                   <h3 className="text-lg font-semibold mb-2">No Topics Found</h3>
-                  <p className="text-slate-600 dark:text-slate-400">
+                  <p className="text-slate-400">
                     There are no discussion topics available at the moment.
                   </p>
                 </CardContent>
@@ -141,7 +141,7 @@ async function TopicsContent() {
         <div className="container mx-auto px-4 py-6">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-2">Error Loading Topics</h1>
-            <p className="text-slate-600 dark:text-slate-400">Please try again later.</p>
+            <p className="text-slate-400">Please try again later.</p>
           </div>
         </div>
       </div>
@@ -161,7 +161,7 @@ function TopicCard({ topic }: { topic: any }) {
             <div>
               <CardTitle className="text-lg">{topic.name}</CardTitle>
               {topic.description && (
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                <p className="text-sm text-slate-400 mt-1">
                   {topic.description}
                 </p>
               )}
@@ -180,13 +180,13 @@ function TopicCard({ topic }: { topic: any }) {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1">
               <MessageCircle className="h-4 w-4 text-slate-500" />
-              <span className="text-slate-600 dark:text-slate-400">
+              <span className="text-slate-400">
                 {topic._count?.discussions || 0} discussions
               </span>
             </div>
             <div className="flex items-center gap-1">
               <Users className="h-4 w-4 text-slate-500" />
-              <span className="text-slate-600 dark:text-slate-400">
+              <span className="text-slate-400">
                 {topic._count?.followers || 0} followers
               </span>
             </div>

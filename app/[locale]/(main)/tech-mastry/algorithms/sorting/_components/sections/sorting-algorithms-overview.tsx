@@ -544,7 +544,7 @@ export function SortingAlgorithmsOverview() {
                 {/* Avantages et Inconvénients */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-3">
-                    <h3 className="text-sm font-medium text-green-600 dark:text-green-400">
+                    <h3 className="text-sm font-medium text-green-400">
                       Avantages
                     </h3>
                     <ul className="space-y-2">
@@ -561,7 +561,7 @@ export function SortingAlgorithmsOverview() {
                   </div>
 
                   <div className="space-y-3">
-                    <h3 className="text-sm font-medium text-red-600 dark:text-red-400">
+                    <h3 className="text-sm font-medium text-red-400">
                       Inconvénients
                     </h3>
                     <ul className="space-y-2">

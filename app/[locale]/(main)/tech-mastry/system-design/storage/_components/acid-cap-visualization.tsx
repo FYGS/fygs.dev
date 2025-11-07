@@ -168,7 +168,7 @@ export function AcidCapVisualization() {
                             {/* Successful Transaction */}
                             <div className="border rounded-md p-4 bg-card flex flex-col">
                               <div className="text-center mb-4">
-                                <h4 className="font-medium text-green-600 dark:text-green-400 flex items-center justify-center gap-1">
+                                <h4 className="font-medium text-green-400 flex items-center justify-center gap-1">
                                   <CheckCircle className="h-4 w-4" />
                                   Transaction Réussie
                                 </h4>
@@ -178,42 +178,42 @@ export function AcidCapVisualization() {
                                 <div className="space-y-6">
                                   <div className="relative">
                                     <div className="flex items-center gap-2 mb-2">
-                                      <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-xs font-medium">
+                                      <div className="w-6 h-6 rounded-full bg-blue-900/30 flex items-center justify-center text-xs font-medium">
                                         1
                                       </div>
                                       <div className="text-sm">
                                         Débit du compte A: 100€
                                       </div>
                                     </div>
-                                    <div className="ml-3 h-6 border-l-2 border-dashed border-slate-300 dark:border-slate-600"></div>
+                                    <div className="ml-3 h-6 border-l-2 border-dashed border-slate-600"></div>
                                   </div>
 
                                   <div className="relative">
                                     <div className="flex items-center gap-2 mb-2">
-                                      <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-xs font-medium">
+                                      <div className="w-6 h-6 rounded-full bg-blue-900/30 flex items-center justify-center text-xs font-medium">
                                         2
                                       </div>
                                       <div className="text-sm">
                                         Crédit du compte B: 100€
                                       </div>
                                     </div>
-                                    <div className="ml-3 h-6 border-l-2 border-dashed border-slate-300 dark:border-slate-600"></div>
+                                    <div className="ml-3 h-6 border-l-2 border-dashed border-slate-600"></div>
                                   </div>
 
                                   <div className="relative">
                                     <div className="flex items-center gap-2">
-                                      <div className="w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-xs font-medium">
+                                      <div className="w-6 h-6 rounded-full bg-green-900/30 flex items-center justify-center text-xs font-medium">
                                         3
                                       </div>
-                                      <div className="text-sm font-medium text-green-600 dark:text-green-400">
+                                      <div className="text-sm font-medium text-green-400">
                                         COMMIT
                                       </div>
                                     </div>
                                   </div>
                                 </div>
 
-                                <div className="mt-6 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
-                                  <div className="text-sm text-green-700 dark:text-green-300">
+                                <div className="mt-6 p-3 bg-green-900/20 border border-green-800 rounded-md">
+                                  <div className="text-sm text-green-300">
                                     <span className="font-medium">
                                       Résultat:
                                     </span>{" "}
@@ -228,7 +228,7 @@ export function AcidCapVisualization() {
                             {/* Failed Transaction */}
                             <div className="border rounded-md p-4 bg-card flex flex-col">
                               <div className="text-center mb-4">
-                                <h4 className="font-medium text-red-600 dark:text-red-400 flex items-center justify-center gap-1">
+                                <h4 className="font-medium text-red-400 flex items-center justify-center gap-1">
                                   <XCircle className="h-4 w-4" />
                                   Transaction Échouée
                                 </h4>
@@ -238,19 +238,19 @@ export function AcidCapVisualization() {
                                 <div className="space-y-6">
                                   <div className="relative">
                                     <div className="flex items-center gap-2 mb-2">
-                                      <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-xs font-medium">
+                                      <div className="w-6 h-6 rounded-full bg-blue-900/30 flex items-center justify-center text-xs font-medium">
                                         1
                                       </div>
                                       <div className="text-sm">
                                         Débit du compte A: 100€
                                       </div>
                                     </div>
-                                    <div className="ml-3 h-6 border-l-2 border-dashed border-slate-300 dark:border-slate-600"></div>
+                                    <div className="ml-3 h-6 border-l-2 border-dashed border-slate-600"></div>
                                   </div>
 
                                   <div className="relative">
                                     <div className="flex items-center gap-2 mb-2">
-                                      <div className="w-6 h-6 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-xs font-medium">
+                                      <div className="w-6 h-6 rounded-full bg-red-900/30 flex items-center justify-center text-xs font-medium">
                                         2
                                       </div>
                                       <div className="text-sm">
@@ -262,23 +262,23 @@ export function AcidCapVisualization() {
                                         </span>
                                       </div>
                                     </div>
-                                    <div className="ml-3 h-6 border-l-2 border-dashed border-slate-300 dark:border-slate-600"></div>
+                                    <div className="ml-3 h-6 border-l-2 border-dashed border-slate-600"></div>
                                   </div>
 
                                   <div className="relative">
                                     <div className="flex items-center gap-2">
-                                      <div className="w-6 h-6 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-xs font-medium">
+                                      <div className="w-6 h-6 rounded-full bg-red-900/30 flex items-center justify-center text-xs font-medium">
                                         3
                                       </div>
-                                      <div className="text-sm font-medium text-red-600 dark:text-red-400">
+                                      <div className="text-sm font-medium text-red-400">
                                         ROLLBACK
                                       </div>
                                     </div>
                                   </div>
                                 </div>
 
-                                <div className="mt-6 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-                                  <div className="text-sm text-red-700 dark:text-red-300">
+                                <div className="mt-6 p-3 bg-red-900/20 border border-red-800 rounded-md">
+                                  <div className="text-sm text-red-300">
                                     <span className="font-medium">
                                       Résultat:
                                     </span>{" "}
@@ -311,14 +311,14 @@ export function AcidCapVisualization() {
                             {/* Valid Transaction */}
                             <div className="border rounded-md p-4 bg-card flex flex-col">
                               <div className="text-center mb-4">
-                                <h4 className="font-medium text-green-600 dark:text-green-400 flex items-center justify-center gap-1">
+                                <h4 className="font-medium text-green-400 flex items-center justify-center gap-1">
                                   <CheckCircle className="h-4 w-4" />
                                   Transaction Valide
                                 </h4>
                               </div>
 
                               <div className="flex-1 flex flex-col">
-                                <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
+                                <div className="mb-4 p-3 bg-blue-900/20 border border-blue-800 rounded-md">
                                   <div className="text-sm font-medium mb-1">
                                     Contrainte d&apos;intégrité:
                                   </div>
@@ -334,13 +334,13 @@ export function AcidCapVisualization() {
                                       État initial:
                                     </div>
                                     <div className="grid grid-cols-2 gap-2 text-xs">
-                                      <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded">
+                                      <div className="p-2 bg-slate-800 rounded">
                                         <div className="font-medium">
                                           Compte A
                                         </div>
                                         <div>Solde: 500€</div>
                                       </div>
-                                      <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded">
+                                      <div className="p-2 bg-slate-800 rounded">
                                         <div className="font-medium">
                                           Compte B
                                         </div>
@@ -353,7 +353,7 @@ export function AcidCapVisualization() {
                                     <div className="text-sm font-medium mb-1">
                                       Transaction:
                                     </div>
-                                    <div className="text-xs p-2 bg-slate-100 dark:bg-slate-800 rounded">
+                                    <div className="text-xs p-2 bg-slate-800 rounded">
                                       <div>
                                         Transférer 300€ du compte A vers le
                                         compte B
@@ -366,13 +366,13 @@ export function AcidCapVisualization() {
                                       État final:
                                     </div>
                                     <div className="grid grid-cols-2 gap-2 text-xs">
-                                      <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded">
+                                      <div className="p-2 bg-slate-800 rounded">
                                         <div className="font-medium">
                                           Compte A
                                         </div>
                                         <div>Solde: 200€</div>
                                       </div>
-                                      <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded">
+                                      <div className="p-2 bg-slate-800 rounded">
                                         <div className="font-medium">
                                           Compte B
                                         </div>
@@ -382,8 +382,8 @@ export function AcidCapVisualization() {
                                   </div>
                                 </div>
 
-                                <div className="mt-auto p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
-                                  <div className="text-sm text-green-700 dark:text-green-300">
+                                <div className="mt-auto p-3 bg-green-900/20 border border-green-800 rounded-md">
+                                  <div className="text-sm text-green-300">
                                     <span className="font-medium">
                                       Résultat:
                                     </span>{" "}
@@ -398,14 +398,14 @@ export function AcidCapVisualization() {
                             {/* Invalid Transaction */}
                             <div className="border rounded-md p-4 bg-card flex flex-col">
                               <div className="text-center mb-4">
-                                <h4 className="font-medium text-red-600 dark:text-red-400 flex items-center justify-center gap-1">
+                                <h4 className="font-medium text-red-400 flex items-center justify-center gap-1">
                                   <XCircle className="h-4 w-4" />
                                   Transaction Invalide
                                 </h4>
                               </div>
 
                               <div className="flex-1 flex flex-col">
-                                <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
+                                <div className="mb-4 p-3 bg-blue-900/20 border border-blue-800 rounded-md">
                                   <div className="text-sm font-medium mb-1">
                                     Contrainte d&apos;intégrité:
                                   </div>
@@ -421,13 +421,13 @@ export function AcidCapVisualization() {
                                       État initial:
                                     </div>
                                     <div className="grid grid-cols-2 gap-2 text-xs">
-                                      <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded">
+                                      <div className="p-2 bg-slate-800 rounded">
                                         <div className="font-medium">
                                           Compte A
                                         </div>
                                         <div>Solde: 200€</div>
                                       </div>
-                                      <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded">
+                                      <div className="p-2 bg-slate-800 rounded">
                                         <div className="font-medium">
                                           Compte B
                                         </div>
@@ -440,7 +440,7 @@ export function AcidCapVisualization() {
                                     <div className="text-sm font-medium mb-1">
                                       Transaction:
                                     </div>
-                                    <div className="text-xs p-2 bg-slate-100 dark:bg-slate-800 rounded">
+                                    <div className="text-xs p-2 bg-slate-800 rounded">
                                       <div>
                                         Transférer 300€ du compte A vers le
                                         compte B
@@ -453,15 +453,15 @@ export function AcidCapVisualization() {
                                       État final (rejeté):
                                     </div>
                                     <div className="grid grid-cols-2 gap-2 text-xs">
-                                      <div className="p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
+                                      <div className="p-2 bg-red-900/20 border border-red-800 rounded">
                                         <div className="font-medium">
                                           Compte A
                                         </div>
-                                        <div className="text-red-600 dark:text-red-400">
+                                        <div className="text-red-400">
                                           Solde: -100€
                                         </div>
                                       </div>
-                                      <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded">
+                                      <div className="p-2 bg-slate-800 rounded">
                                         <div className="font-medium">
                                           Compte B
                                         </div>
@@ -471,8 +471,8 @@ export function AcidCapVisualization() {
                                   </div>
                                 </div>
 
-                                <div className="mt-auto p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-                                  <div className="text-sm text-red-700 dark:text-red-300">
+                                <div className="mt-auto p-3 bg-red-900/20 border border-red-800 rounded-md">
+                                  <div className="text-sm text-red-300">
                                     <span className="font-medium">
                                       Résultat:
                                     </span>{" "}
@@ -513,7 +513,7 @@ export function AcidCapVisualization() {
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {/* Dirty Read */}
                                 <div className="p-3 border rounded-md">
-                                  <div className="text-sm font-medium mb-2 text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                                  <div className="text-sm font-medium mb-2 text-amber-400 flex items-center gap-1">
                                     <AlertTriangle className="h-4 w-4" />
                                     Lecture Sale (Dirty Read)
                                   </div>
@@ -522,7 +522,7 @@ export function AcidCapVisualization() {
                                     n&apos;ont pas encore été validées par une
                                     autre transaction.
                                   </div>
-                                  <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded text-xs">
+                                  <div className="p-2 bg-slate-800 rounded text-xs">
                                     <div className="mb-1">
                                       <span className="font-medium">T1:</span>{" "}
                                       Débute, met à jour le solde de A à 500€
@@ -544,7 +544,7 @@ export function AcidCapVisualization() {
 
                                 {/* Non-repeatable Read */}
                                 <div className="p-3 border rounded-md">
-                                  <div className="text-sm font-medium mb-2 text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                                  <div className="text-sm font-medium mb-2 text-amber-400 flex items-center gap-1">
                                     <AlertTriangle className="h-4 w-4" />
                                     Lecture Non-Répétable
                                   </div>
@@ -553,7 +553,7 @@ export function AcidCapVisualization() {
                                     qu&apos;elle a déjà lues et trouve que les
                                     données ont été modifiées.
                                   </div>
-                                  <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded text-xs">
+                                  <div className="p-2 bg-slate-800 rounded text-xs">
                                     <div className="mb-1">
                                       <span className="font-medium">T1:</span>{" "}
                                       Débute, lit le solde de A (200€)
@@ -572,7 +572,7 @@ export function AcidCapVisualization() {
 
                                 {/* Phantom Read */}
                                 <div className="p-3 border rounded-md">
-                                  <div className="text-sm font-medium mb-2 text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                                  <div className="text-sm font-medium mb-2 text-amber-400 flex items-center gap-1">
                                     <AlertTriangle className="h-4 w-4" />
                                     Lecture Fantôme
                                   </div>
@@ -581,7 +581,7 @@ export function AcidCapVisualization() {
                                     qui satisfont une condition et trouve que de
                                     nouvelles lignes ont été ajoutées.
                                   </div>
-                                  <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded text-xs">
+                                  <div className="p-2 bg-slate-800 rounded text-xs">
                                     <div className="mb-1">
                                       <span className="font-medium">T1:</span>{" "}
                                       Débute, lit tous les comptes avec solde
@@ -602,7 +602,7 @@ export function AcidCapVisualization() {
 
                                 {/* Lost Update */}
                                 <div className="p-3 border rounded-md">
-                                  <div className="text-sm font-medium mb-2 text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                                  <div className="text-sm font-medium mb-2 text-amber-400 flex items-center gap-1">
                                     <AlertTriangle className="h-4 w-4" />
                                     Mise à Jour Perdue
                                   </div>
@@ -611,7 +611,7 @@ export function AcidCapVisualization() {
                                     la même donnée, et l&apos;une écrase les
                                     modifications de l&apos;autre.
                                   </div>
-                                  <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded text-xs">
+                                  <div className="p-2 bg-slate-800 rounded text-xs">
                                     <div className="mb-1">
                                       <span className="font-medium">T1:</span>{" "}
                                       Débute, lit le solde de A (1000€)
@@ -778,7 +778,7 @@ export function AcidCapVisualization() {
                               <div className="space-y-4">
                                 <div className="p-3 border rounded-md">
                                   <div className="flex items-center gap-2 mb-2">
-                                    <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                                    <div className="w-8 h-8 rounded-full bg-blue-900/30 flex items-center justify-center">
                                       <Database className="h-4 w-4 text-blue-500" />
                                     </div>
                                     <div className="text-sm font-medium">
@@ -796,7 +796,7 @@ export function AcidCapVisualization() {
 
                                 <div className="p-3 border rounded-md">
                                   <div className="flex items-center gap-2 mb-2">
-                                    <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                                    <div className="w-8 h-8 rounded-full bg-green-900/30 flex items-center justify-center">
                                       <CheckCircle className="h-4 w-4 text-green-500" />
                                     </div>
                                     <div className="text-sm font-medium">
@@ -813,7 +813,7 @@ export function AcidCapVisualization() {
 
                                 <div className="p-3 border rounded-md">
                                   <div className="flex items-center gap-2 mb-2">
-                                    <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+                                    <div className="w-8 h-8 rounded-full bg-indigo-900/30 flex items-center justify-center">
                                       <Database className="h-4 w-4 text-indigo-500" />
                                     </div>
                                     <div className="text-sm font-medium">
@@ -830,7 +830,7 @@ export function AcidCapVisualization() {
 
                                 <div className="p-3 border rounded-md">
                                   <div className="flex items-center gap-2 mb-2">
-                                    <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                                    <div className="w-8 h-8 rounded-full bg-purple-900/30 flex items-center justify-center">
                                       <Database className="h-4 w-4 text-purple-500" />
                                     </div>
                                     <div className="text-sm font-medium">
@@ -860,7 +860,7 @@ export function AcidCapVisualization() {
                                 <div className="space-y-6">
                                   <div className="relative">
                                     <div className="flex items-center gap-2 mb-2">
-                                      <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-xs font-medium">
+                                      <div className="w-6 h-6 rounded-full bg-blue-900/30 flex items-center justify-center text-xs font-medium">
                                         1
                                       </div>
                                       <div className="text-sm">
@@ -868,17 +868,17 @@ export function AcidCapVisualization() {
                                         vers B
                                       </div>
                                     </div>
-                                    <div className="ml-3 h-6 border-l-2 border-dashed border-slate-300 dark:border-slate-600"></div>
+                                    <div className="ml-3 h-6 border-l-2 border-dashed border-slate-600"></div>
                                   </div>
 
                                   <div className="relative">
                                     <div className="flex items-center gap-2 mb-2">
-                                      <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-xs font-medium">
+                                      <div className="w-6 h-6 rounded-full bg-blue-900/30 flex items-center justify-center text-xs font-medium">
                                         2
                                       </div>
                                       <div className="text-sm">
                                         Écriture dans le journal (WAL)
-                                        <div className="mt-1 p-2 bg-slate-100 dark:bg-slate-800 rounded text-xs">
+                                        <div className="mt-1 p-2 bg-slate-800 rounded text-xs">
                                           <code>BEGIN TX #1234</code>
                                           <br />
                                           <code>
@@ -897,12 +897,12 @@ export function AcidCapVisualization() {
                                         </div>
                                       </div>
                                     </div>
-                                    <div className="ml-3 h-6 border-l-2 border-dashed border-slate-300 dark:border-slate-600"></div>
+                                    <div className="ml-3 h-6 border-l-2 border-dashed border-slate-600"></div>
                                   </div>
 
                                   <div className="relative">
                                     <div className="flex items-center gap-2 mb-2">
-                                      <div className="w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-xs font-medium">
+                                      <div className="w-6 h-6 rounded-full bg-green-900/30 flex items-center justify-center text-xs font-medium">
                                         3
                                       </div>
                                       <div className="text-sm">
@@ -910,12 +910,12 @@ export function AcidCapVisualization() {
                                         &quot;Transaction validée&quot;
                                       </div>
                                     </div>
-                                    <div className="ml-3 h-6 border-l-2 border-dashed border-slate-300 dark:border-slate-600"></div>
+                                    <div className="ml-3 h-6 border-l-2 border-dashed border-slate-600"></div>
                                   </div>
 
                                   <div className="relative">
                                     <div className="flex items-center gap-2 mb-2">
-                                      <div className="w-6 h-6 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-xs font-medium">
+                                      <div className="w-6 h-6 rounded-full bg-red-900/30 flex items-center justify-center text-xs font-medium">
                                         4
                                       </div>
                                       <div className="text-sm">
@@ -923,12 +923,12 @@ export function AcidCapVisualization() {
                                         courant)
                                       </div>
                                     </div>
-                                    <div className="ml-3 h-6 border-l-2 border-dashed border-slate-300 dark:border-slate-600"></div>
+                                    <div className="ml-3 h-6 border-l-2 border-dashed border-slate-600"></div>
                                   </div>
 
                                   <div className="relative">
                                     <div className="flex items-center gap-2">
-                                      <div className="w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-xs font-medium">
+                                      <div className="w-6 h-6 rounded-full bg-green-900/30 flex items-center justify-center text-xs font-medium">
                                         5
                                       </div>
                                       <div className="text-sm">
@@ -939,8 +939,8 @@ export function AcidCapVisualization() {
                                   </div>
                                 </div>
 
-                                <div className="mt-6 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
-                                  <div className="text-sm text-green-700 dark:text-green-300">
+                                <div className="mt-6 p-3 bg-green-900/20 border border-green-800 rounded-md">
+                                  <div className="text-sm text-green-300">
                                     <span className="font-medium">
                                       Résultat:
                                     </span>{" "}
@@ -1369,7 +1369,7 @@ export function AcidCapVisualization() {
                                     Ne peut pas fonctionner de manière
                                     distribuée à grande échelle
                                   </li>
-                                  <li className="text-amber-600 dark:text-amber-400 font-medium">
+                                  <li className="text-amber-400 font-medium">
                                     Impossible dans un vrai système distribué
                                   </li>
                                 </ul>
@@ -1389,8 +1389,8 @@ export function AcidCapVisualization() {
                                   </li>
                                   <li>SQLite</li>
                                 </ul>
-                                <div className="p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md mt-2">
-                                  <div className="text-xs text-amber-700 dark:text-amber-300 flex items-center gap-1">
+                                <div className="p-2 bg-amber-900/20 border border-amber-800 rounded-md mt-2">
+                                  <div className="text-xs text-amber-300 flex items-center gap-1">
                                     <AlertTriangle className="h-3 w-3 shrink-0" />
                                     <span>
                                       Dans un vrai système distribué, les
@@ -1690,8 +1690,8 @@ export function AcidCapVisualization() {
                     </ul>
                   </div>
 
-                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
-                    <h5 className="text-sm font-medium mb-2 text-blue-700 dark:text-blue-300">
+                  <div className="p-3 bg-blue-900/20 border border-blue-800 rounded-md">
+                    <h5 className="text-sm font-medium mb-2 text-blue-300">
                       Tendances Modernes
                     </h5>
                     <p className="text-xs text-muted-foreground">

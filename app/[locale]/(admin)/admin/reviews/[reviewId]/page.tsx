@@ -103,10 +103,10 @@ export default async function ReviewDetailsPage({ params }: ReviewDetailsPagePro
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "APPROVED": return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
-      case "PENDING": return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400";
-      case "REJECTED": return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
-      default: return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400";
+      case "APPROVED": return "bg-green-900/30 text-green-400";
+      case "PENDING": return "bg-yellow-900/30 text-yellow-400";
+      case "REJECTED": return "bg-red-900/30 text-red-400";
+      default: return "bg-gray-900/30 text-gray-400";
     }
   };
 
@@ -278,8 +278,8 @@ export default async function ReviewDetailsPage({ params }: ReviewDetailsPagePro
               <CardTitle>Notes de modération</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-                <p className="text-sm text-blue-800 dark:text-blue-200">
+              <div className="bg-blue-900/20 p-4 rounded-lg">
+                <p className="text-sm text-blue-200">
                   {review.moderationNotes || "Aucune note de modération."}
                 </p>
               </div>

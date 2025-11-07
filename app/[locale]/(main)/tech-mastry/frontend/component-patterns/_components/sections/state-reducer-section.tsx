@@ -39,24 +39,24 @@ function CounterDemo() {
   const [state, dispatch] = useReducer(counterReducer, { count: 0 });
   
   return (
-    <div className="p-4 border rounded-md bg-gray-50 dark:bg-gray-900 flex flex-col items-center gap-4">
+    <div className="p-4 border rounded-md bg-gray-900 flex flex-col items-center gap-4">
       <div className="text-4xl font-bold">{state.count}</div>
       <div className="flex gap-2">
         <button 
           onClick={() => dispatch({ type: 'DECREMENT' })}
-          className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600"
+          className="px-4 py-2 bg-gray-700 rounded-md hover:bg-gray-600"
         >
           -
         </button>
         <button 
           onClick={() => dispatch({ type: 'RESET' })}
-          className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600"
+          className="px-4 py-2 bg-gray-700 rounded-md hover:bg-gray-600"
         >
           Reset
         </button>
         <button 
           onClick={() => dispatch({ type: 'INCREMENT' })}
-          className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600"
+          className="px-4 py-2 bg-gray-700 rounded-md hover:bg-gray-600"
         >
           +
         </button>

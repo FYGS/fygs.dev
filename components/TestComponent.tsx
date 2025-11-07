@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useIntlayer } from "next-intlayer";
 import Link from "next/link";
 import React from "react";
@@ -6,37 +6,37 @@ import React from "react";
 export const TestComponent = () => {
   const content = useIntlayer("test");
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-12 px-4 sm:px-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 py-12 px-4 sm:px-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <header className="mb-12">
           <nav className="flex justify-between items-center mb-8">
             <Link
               href="/"
-              className="text-lg font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+              className="text-lg font-medium text-blue-400 hover:text-blue-300 transition-colors"
             >
               {content.navigation.home}
             </Link>
-            <div className="text-sm text-gray-600 dark:text-gray-300">
+            <div className="text-sm text-gray-300">
               {content.currentLanguage}: {content.language.english}
             </div>
           </nav>
 
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-4xl font-bold text-white mb-4">
             {content.title}
           </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300">
+          <p className="text-lg text-gray-300">
             {content.description}
           </p>
         </header>
 
         {/* Main Content */}
-        <main className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 mb-12">
+        <main className="bg-gray-800 rounded-xl shadow-lg p-8 mb-12">
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 className="text-2xl font-bold text-white mb-4">
               {content.content.heading}
             </h2>
-            <p className="text-gray-700 dark:text-gray-300 mb-6">
+            <p className="text-gray-300 mb-6">
               {content.content.body}
             </p>
 
@@ -44,7 +44,7 @@ export const TestComponent = () => {
               {content.content.features.map((feature, index) => (
                 <li key={index} className="flex items-start">
                   <span className="text-green-500 mr-2">✓</span>
-                  <span className="text-gray-700 dark:text-gray-300">
+                  <span className="text-gray-300">
                     {feature}
                   </span>
                 </li>
@@ -52,11 +52,11 @@ export const TestComponent = () => {
             </ul>
           </div>
 
-          <div className="mt-8 p-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-            <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">
+          <div className="mt-8 p-6 bg-blue-900/20 rounded-lg border border-blue-800">
+            <h3 className="font-semibold text-blue-200 mb-2">
               {content.welcome}
             </h3>
-            <p className="text-blue-700 dark:text-blue-300">
+            <p className="text-blue-300">
               This page is fully internationalized using intlayer. Try changing
               the language in the URL to see the content update!
             </p>
@@ -64,11 +64,11 @@ export const TestComponent = () => {
         </main>
 
         {/* Language Switcher */}
-        <section className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+        <section className="bg-gray-800 rounded-xl shadow-lg p-8">
+          <h2 className="text-2xl font-bold text-white mb-4">
             {content.languageSwitcher}
           </h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
+          <p className="text-gray-300 mb-6">
             {content.currentLanguage}:{" "}
             <span className="font-semibold">{content.language.french}</span>
           </p>
@@ -82,13 +82,13 @@ export const TestComponent = () => {
             </Link>
             <Link
               href="/fr/test"
-              className="px-4 py-2 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
             >
               {content.language.french}
             </Link>
             <Link
               href="/es/test"
-              className="px-4 py-2 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
             >
               {content.language.spanish}
             </Link>

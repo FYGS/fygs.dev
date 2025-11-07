@@ -584,7 +584,7 @@ function MonolithicArchitecture({ scenario }: { scenario: Scenario }) {
       </svg>
 
       {/* Stats Overlay */}
-      <div className="absolute bottom-4 right-4 bg-white/80 dark:bg-gray-800/80 p-3 rounded-lg shadow-xs border text-xs space-y-1">
+      <div className="absolute bottom-4 right-4 bg-gray-800/80 p-3 rounded-lg shadow-xs border text-xs space-y-1">
         <div className="flex justify-between gap-4">
           <span>Requêtes totales:</span>
           <span className="font-medium">{stats.totalRequests}</span>
@@ -1299,7 +1299,7 @@ function MicroservicesArchitecture({ scenario }: { scenario: Scenario }) {
       </svg>
 
       {/* Stats Overlay */}
-      <div className="absolute bottom-4 right-4 bg-white/80 dark:bg-gray-800/80 p-3 rounded-lg shadow-xs border text-xs space-y-1">
+      <div className="absolute bottom-4 right-4 bg-gray-800/80 p-3 rounded-lg shadow-xs border text-xs space-y-1">
         <div className="flex justify-between gap-4">
           <span>Requêtes totales:</span>
           <span className="font-medium">{stats.totalRequests}</span>

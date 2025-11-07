@@ -68,9 +68,9 @@ function MetricCard({
     if (!change) return "";
     switch (change.type) {
       case "increase":
-        return "text-green-600 bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800";
+        return "text-green-600 bg-green-950 border-green-800";
       case "decrease":
-        return "text-red-600 bg-red-50 border-red-200 dark:bg-red-950 dark:border-red-800";
+        return "text-red-600 bg-red-950 border-red-800";
       default:
         return "text-muted-foreground bg-muted border-muted";
     }

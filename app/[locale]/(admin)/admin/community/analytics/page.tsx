@@ -220,7 +220,7 @@ async function AnalyticsContent() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Community Analytics</h1>
-          <p className="text-slate-600 dark:text-slate-400">
+          <p className="text-slate-400">
             Track community engagement and growth metrics
           </p>
         </div>
@@ -281,7 +281,7 @@ async function AnalyticsContent() {
               {data.topDiscussions.length > 0 ? (
                 data.topDiscussions.map((discussion: any, index: number) => (
                   <div key={discussion.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent">
-                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-sm font-medium">
+                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-800 text-sm font-medium">
                       {index + 1}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -294,7 +294,7 @@ async function AnalyticsContent() {
                         </Badge>
                       </div>
                       <h4 className="font-medium text-sm truncate">{discussion.title}</h4>
-                      <div className="flex items-center gap-2 mt-1 text-xs text-slate-600 dark:text-slate-400">
+                      <div className="flex items-center gap-2 mt-1 text-xs text-slate-400">
                         <span>by {discussion.author?.name}</span>
                         <span>•</span>
                         <span>{discussion._count?.replies || 0} replies</span>
@@ -305,7 +305,7 @@ async function AnalyticsContent() {
                   </div>
                 ))
               ) : (
-                <p className="text-center py-4 text-slate-600 dark:text-slate-400">
+                <p className="text-center py-4 text-slate-400">
                   No discussions this month
                 </p>
               )}
@@ -331,12 +331,12 @@ async function AnalyticsContent() {
                     const totalActivity = user._count.discussions + user._count.discussionReplies;
                     return (
                       <div key={user.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent">
-                        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-sm font-medium">
+                        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-800 text-sm font-medium">
                           {index + 1}
                         </div>
                         <div className="flex-1">
                           <div className="font-medium">{user.name}</div>
-                          <div className="text-sm text-slate-600 dark:text-slate-400">
+                          <div className="text-sm text-slate-400">
                             {user._count.discussions} discussions • {user._count.discussionReplies} replies
                           </div>
                         </div>
@@ -345,7 +345,7 @@ async function AnalyticsContent() {
                     );
                   })
               ) : (
-                <p className="text-center py-4 text-slate-600 dark:text-slate-400">
+                <p className="text-center py-4 text-slate-400">
                   No active users this month
                 </p>
               )}
@@ -369,7 +369,7 @@ async function AnalyticsContent() {
                       )}
                       <div>
                         <div className="font-medium">{topic.name}</div>
-                        <div className="text-sm text-slate-600 dark:text-slate-400">
+                        <div className="text-sm text-slate-400">
                           {topic._count?.discussions || 0} discussions • {topic._count?.followers || 0} followers
                         </div>
                       </div>
@@ -381,7 +381,7 @@ async function AnalyticsContent() {
                   </div>
                 ))
               ) : (
-                <p className="text-center py-4 text-slate-600 dark:text-slate-400 md:col-span-2">
+                <p className="text-center py-4 text-slate-400 md:col-span-2">
                   No topic activity this month
                 </p>
               )}
@@ -398,10 +398,10 @@ async function AnalyticsContent() {
         <CardContent>
           {data.recentActivity.length > 0 ? (
             <div className="space-y-2">
-              <div className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+              <div className="text-sm text-slate-400 mb-4">
                 Total activity: {data.recentActivity.length} discussions
               </div>
-              <div className="h-16 bg-slate-50 dark:bg-slate-900 rounded flex items-end gap-1 p-2">
+              <div className="h-16 bg-slate-900 rounded flex items-end gap-1 p-2">
                 {/* Simple activity visualization */}
                 {Array.from({ length: 30 }, (_, i) => {
                   const date = new Date();
@@ -425,7 +425,7 @@ async function AnalyticsContent() {
                   return (
                     <div
                       key={i}
-                      className="flex-1 bg-blue-200 dark:bg-blue-800 rounded-sm min-h-[4px]"
+                      className="flex-1 bg-blue-800 rounded-sm min-h-[4px]"
                       style={{ height: `${Math.max(height, 4)}%` }}
                       title={`${date.toLocaleDateString()}: ${dayActivity} discussions`}
                     />
@@ -434,7 +434,7 @@ async function AnalyticsContent() {
               </div>
             </div>
           ) : (
-            <p className="text-center py-8 text-slate-600 dark:text-slate-400">
+            <p className="text-center py-8 text-slate-400">
               No recent activity data available
             </p>
           )}
@@ -455,10 +455,10 @@ interface MetricCardProps {
 
 function MetricCard({ title, value, thisWeek, growth, icon: Icon, color }: MetricCardProps) {
   const colorClasses = {
-    blue: "bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400",
-    green: "bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-400",
-    purple: "bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400",
-    red: "bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400"
+    blue: "bg-blue-950 text-blue-400",
+    green: "bg-green-950 text-green-400",
+    purple: "bg-purple-950 text-purple-400",
+    red: "bg-red-950 text-red-400"
   };
 
   const isPositiveGrowth = growth >= 0;
@@ -484,8 +484,8 @@ function MetricCard({ title, value, thisWeek, growth, icon: Icon, color }: Metri
         </div>
         <div>
           <div className="text-2xl font-bold">{value.toLocaleString()}</div>
-          <div className="text-sm text-slate-600 dark:text-slate-400">{title}</div>
-          <div className="text-xs text-slate-500 dark:text-slate-500 mt-1">
+          <div className="text-sm text-slate-400">{title}</div>
+          <div className="text-xs text-slate-500 mt-1">
             {thisWeek} this week
           </div>
         </div>

@@ -44,29 +44,29 @@ export function CourseAnalytics({ courses }: CourseAnalyticsProps) {
   const getLevelColor = (level: string) => {
     switch (level) {
       case 'BEGINNER':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+        return 'bg-green-900 text-green-300';
       case 'INTERMEDIATE':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+        return 'bg-blue-900 text-blue-300';
       case 'ADVANCED':
-        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300';
+        return 'bg-orange-900 text-orange-300';
       case 'EXPERT':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+        return 'bg-red-900 text-red-300';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+        return 'bg-gray-900 text-gray-300';
     }
   };
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
-      'JAVASCRIPT': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-      'TYPESCRIPT': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-      'FRONTEND': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
-      'BACKEND': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      'FULLSTACK': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300',
-      'AI': 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300',
-      'CLOUD': 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300',
+      'JAVASCRIPT': 'bg-yellow-900 text-yellow-300',
+      'TYPESCRIPT': 'bg-blue-900 text-blue-300',
+      'FRONTEND': 'bg-purple-900 text-purple-300',
+      'BACKEND': 'bg-green-900 text-green-300',
+      'FULLSTACK': 'bg-indigo-900 text-indigo-300',
+      'AI': 'bg-pink-900 text-pink-300',
+      'CLOUD': 'bg-cyan-900 text-cyan-300',
     };
-    return colors[category] || 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+    return colors[category] || 'bg-gray-900 text-gray-300';
   };
 
   // Calculer les métriques globales
