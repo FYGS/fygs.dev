@@ -308,7 +308,7 @@ export default async function CoursePage({ params, searchParams }: CoursePagePro
                           quizzes={serializedCourse.quizzes}
                         />
 
-                        <CourseReviews reviews={serializedCourse.reviews} courseId={serializedCourse.id} />
+                        <CourseReviews reviews={serializedCourse.reviews} courseId={serializedCourse.id} canReview={isUnlocked} />
                         
                     </div>
                     <div className="lg:col-span-1">

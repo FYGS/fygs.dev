@@ -81,7 +81,7 @@ export function FeaturedCoursesClient({ courses }: FeaturedCoursesClientProps) {
               asChild
               className="group hover:scale-105 transition-transform"
             >
-                <Link href="/courses">
+                <Link href="/formations">
                 <BookOpen className="h-5 w-5 mr-2" />
                 {content.viewAllCoursesButton}
                 <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
