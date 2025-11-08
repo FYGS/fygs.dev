@@ -185,6 +185,18 @@ function checkMaintenance(request: NextRequest): NextResponse | null {
 export async function middleware(request: NextRequest) {
   const { nextUrl } = request;
   const pathname = nextUrl.pathname;
+  const hostname = request.headers.get("host") || "";
+
+  // Handle www subdomain redirect to non-www
+  if (hostname.startsWith("www.")) {
+    const newHostname = hostname.replace(/^www\./, "");
+    const url = nextUrl.clone();
+    url.host = newHostname;
+    return NextResponse.redirect(url, {
+      status: 301,
+      headers: { "Cache-Control": "public, max-age=31536000, immutable" },
+    });
+  }
 
   // Early bypass for assets and API routes (before locale detection)
   if (shouldBypass(pathname)) return NextResponse.next();
@@ -206,9 +218,19 @@ export async function middleware(request: NextRequest) {
       });
     }
 
-    // General locale redirect
+    // Handle root path explicitly
+    if (pathname === "/" || pathname === "") {
+      url.pathname = `/${detectedLocale}`;
+      return NextResponse.redirect(url, {
+        status: 307, // Temporary redirect to respect user's locale preference
+      });
+    }
+
+    // General locale redirect for other paths
     url.pathname = `/${detectedLocale}${pathname}`;
-    return NextResponse.redirect(url);
+    return NextResponse.redirect(url, {
+      status: 307, // Temporary redirect to allow locale switching
+    });
   }
 
   // Handle static redirect with locale (if someone tries /fr/interview-prep, etc.)
@@ -381,7 +403,10 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Root level routes (for locale detection and redirect)
+    // Match all routes for locale detection and redirect
+    // Including: root (/), www subdomain, and all non-localized paths
+    // Excluding: API routes, static files, Next.js internals, and file extensions
+    "/",
     "/((?!api|static|assets|robots|sitemap|sw|service-worker|manifest|.*\\..*|_next).*)",
   ],
 };
