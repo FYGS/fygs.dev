@@ -287,7 +287,7 @@ export async function middleware(request: NextRequest) {
     // Preserve original path and query params for post-auth redirect
     loginUrl.searchParams.set(
       "callbackUrl",
-      encodeURIComponent(pathname + nextUrl.search)
+      pathname + nextUrl.search
     );
     loginUrl.searchParams.set("reason", "auth_required");
     return NextResponse.redirect(loginUrl);

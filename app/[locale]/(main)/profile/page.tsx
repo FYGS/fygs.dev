@@ -16,7 +16,7 @@ export default async function ProfilePage() {
   });
 
   if (!session) {
-    redirect("/auth/login");
+    redirect(`/auth/login?callbackUrl=${encodeURIComponent("/profile")}`);
   }
 
   const { user } = session;

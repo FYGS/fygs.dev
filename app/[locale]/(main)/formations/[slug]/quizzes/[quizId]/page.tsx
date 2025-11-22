@@ -46,7 +46,11 @@ export default async function QuizPage({ params }: QuizPageProps) {
   });
 
   if (!session) {
-    redirect("/auth/login");
+    redirect(
+      `/auth/login?callbackUrl=${encodeURIComponent(
+        `/formations/${slug}/quizzes/${quizId}`
+      )}`
+    );
   }
 
   const course = await CourseRepository.findBySlug(slug);

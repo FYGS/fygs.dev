@@ -59,7 +59,11 @@ export default async function VisualSupportsPage({
   });
 
   if (!session) {
-    redirect("/auth/login");
+    redirect(
+      `/auth/login?callbackUrl=${encodeURIComponent(
+        `/formations/${slug}/visual-supports`
+      )}`
+    );
   }
 
   const course = await CourseRepository.findBySlug(slug);

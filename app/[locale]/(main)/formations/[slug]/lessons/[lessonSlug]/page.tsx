@@ -59,7 +59,11 @@ export default async function LessonPage({ params }: LessonPageProps) {
   });
 
   if (!session) {
-    redirect("/auth/login");
+    redirect(
+      `/auth/login?callbackUrl=${encodeURIComponent(
+        `/formations/${slug}/lessons/${lessonSlug}`
+      )}`
+    );
   }
 
   lessonLogger.info("Lesson page accessed", {
@@ -148,18 +152,18 @@ export default async function LessonPage({ params }: LessonPageProps) {
 
   const serializedProgress = progress
     ? {
-        ...progress,
-        completedAt: progress.completedAt?.toISOString() || null,
-        createdAt: progress.createdAt.toISOString(),
-        updatedAt: progress.updatedAt.toISOString(),
-      }
+      ...progress,
+      completedAt: progress.completedAt?.toISOString() || null,
+      createdAt: progress.createdAt.toISOString(),
+      updatedAt: progress.updatedAt.toISOString(),
+    }
     : null;
 
   return (
     <div className="min-h-screen bg-slate-800">
       <div className="container py-8 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          <div className="lg:col-span-3 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-6">
             <VideoPlayer
               lesson={serializedLesson}
               userId={session.user.id}

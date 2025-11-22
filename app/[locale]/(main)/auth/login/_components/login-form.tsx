@@ -86,7 +86,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
       if (callbackUrl) {
         sessionStorage.setItem("authCallbackUrl", callbackUrl);
       }
-      await authService.signInWithProvider(provider);
+      await authService.signInWithProvider(provider, callbackUrl);
     } catch (error) {
       console.error("Social login error:", error);
       toast.error(`${content.messages.error.socialLogin} ${provider}`, {

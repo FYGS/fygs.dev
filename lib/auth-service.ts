@@ -25,13 +25,13 @@ export class AuthService {
         return AuthService.instance;
     }
 
-    async signInWithEmail(credentials: AuthCredentials): Promise<AuthResult> {
+    async signInWithEmail(credentials: AuthCredentials & { callbackURL?: string }): Promise<AuthResult> {
         try {
             const result = await signIn.email({
                 email: credentials.email,
                 password: credentials.password,
                 rememberMe: credentials.rememberMe ?? true,
-                callbackURL: "/dashboard",
+                callbackURL: credentials.callbackURL || "/dashboard",
             });
 
             if (result.error) {
@@ -86,10 +86,10 @@ export class AuthService {
         }
     }
 
-    async signInWithProvider(provider: "github" | "google"): Promise<void> {
+    async signInWithProvider(provider: "github" | "google", callbackURL?: string): Promise<void> {
         await signIn.social({
             provider,
-            callbackURL: "/dashboard",
+            callbackURL: callbackURL || "/dashboard",
             // errorCallbackURL: "/auth/login",
         });
     }
