@@ -4,6 +4,7 @@ import { LocaleAwareLink } from "@/components/ui/locale-aware-nav";
 import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 import { buttonVariants } from "@/components/ui/button";
 import { NavigationIndicator } from "@/components/ui/navigation-indicator";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
   Sheet,
   SheetContent,
@@ -76,22 +77,23 @@ export const Header = () => {
   return (
     <>
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60">
-        <div className="container flex h-16 items-center justify-between px-4 md:px-6">
+        <div className="w-full flex h-16 items-center justify-between px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16">
+          {/* Logo - Left Side */}
+          <LocaleAwareLink
+            href="/"
+            className="text-lg md:text-2xl font-extrabold text-foreground tracking-wide hover:text-primary transition-colors whitespace-nowrap shrink-0"
+          >
+            <span className="sr-only">FYGS.dev - Homepage</span>
+            fygs.dev \_°&lt;
+          </LocaleAwareLink>
+
+          {/* Desktop Navigation - Right Side */}
           <nav
-            className="flex items-center justify-between w-full"
+            className="hidden md:flex items-center gap-4 ml-auto"
             role="navigation"
             aria-label="Main navigation"
           >
-            <LocaleAwareLink
-              href="/"
-              className="text-lg md:text-2xl font-extrabold text-foreground tracking-wide hover:text-primary transition-colors whitespace-nowrap shrink-0"
-            >
-              <span className="sr-only">FYGS.dev - Homepage</span>
-              fygs.dev \_°&lt;
-            </LocaleAwareLink>
-
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-4">
+            <div className="flex items-center gap-4">
               {/* All Navigation Items - Displayed directly instead of in dropdown */}
               {content.navigation.primary.map((item) => (
                 <LocaleAwareLink
@@ -171,121 +173,124 @@ export const Header = () => {
                 </Tooltip>
               </div>
             </div>
+          </nav>
 
-            {/* Mobile Menu */}
-            <div className="flex items-center gap-2 md:hidden">
-              <Sheet open={isOpen} onOpenChange={setIsOpen}>
-                <SheetTrigger
-                  className={cn(
-                    buttonVariants({ variant: "outline", size: "icon" }),
-                    "shrink-0 relative overflow-hidden group"
-                  )}
-                  aria-label="Open menu"
-                >
-                  <div className="absolute inset-0 bg-linear-to-r from-primary/10 to-secondary/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <Menu className="size-5 relative z-10" />
-                </SheetTrigger>
-                <SheetContent
-                  side="right"
-                  className="w-[80vw] sm:w-[350px] p-0"
-                >
-                  <SheetHeader className="p-6 border-b">
-                    <SheetTitle className="text-left text-lg font-semibold">
-                      Navigation
-                    </SheetTitle>
-                  </SheetHeader>
-                  <div className="flex flex-col h-full">
-                    <div className="flex-1 py-4 overflow-y-auto">
-                      {/* Main Navigation - Primary Items */}
-                      <div className="px-6 space-y-1 mb-6">
-                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                          {content.mobile.mainNavigation.value}
-                        </p>
-                        <div className="space-y-1">
-                          {content.navigation.primary.map((item) => (
-                            <LocaleAwareLink
-                              key={item.href.value}
-                              href={item.href.value}
-                              onClick={() => setIsOpen(false)}
-                              className="block px-6 py-4 text-base transition-all relative border-b border-border/20 last:border-b-0 text-foreground/80 hover:bg-accent/30 hover:text-foreground"
-                              activeClassName="bg-linear-to-r from-primary/5 to-secondary/5 text-primary font-semibold"
-                            >
-                              {item.label.value}
-                            </LocaleAwareLink>
-                          ))}
-                        </div>
-                      </div>
+          {/* Mobile Menu */}
+          <div className="flex items-center gap-2 md:hidden">
+            <Sheet open={isOpen} onOpenChange={setIsOpen}>
+              <SheetTrigger
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "icon" }),
+                  "shrink-0 relative overflow-hidden group"
+                )}
+                aria-label="Open menu"
+              >
+                <div className="absolute inset-0 bg-linear-to-r from-primary/10 to-secondary/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <Menu className="size-5 relative z-10" />
+              </SheetTrigger>
+              <SheetContent
+                side="right"
+                className="w-[80vw] sm:w-[350px] p-0 flex flex-col"
+              >
+                <SheetHeader className="p-6 border-b shrink-0">
+                  <SheetTitle className="text-left text-lg font-semibold">
+                    Navigation
+                  </SheetTitle>
+                </SheetHeader>
 
-                      {/* Secondary Navigation */}
-                      <div className="px-6 space-y-1 mb-6">
-                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                          {content.mobile.otherPages.value}
-                        </p>
-                        <div className="space-y-1">
-                          {content.navigation.secondary.map((item) => (
-                            <LocaleAwareLink
-                              key={item.href.value}
-                              href={item.href.value}
-                              onClick={() => setIsOpen(false)}
-                              className="block px-6 py-4 text-base transition-all relative border-b border-border/20 last:border-b-0 text-foreground/80 hover:bg-accent/30 hover:text-foreground"
-                              activeClassName="bg-linear-to-r from-primary/5 to-secondary/5 text-primary font-semibold"
-                            >
-                              {item.label.value}
-                            </LocaleAwareLink>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Authentication Section for Mobile */}
-                      <div className="px-6 mb-6">
-                        <div className="p-5 bg-linear-to-br from-primary/5 to-secondary/5 rounded-xl border border-border/30 shadow-xs">
-                          <AuthNav
-                            isMobile
-                            onItemClick={() => setIsOpen(false)}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Locale Switcher Section */}
-                      <div className="px-6 mb-6">
-                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                          {content.mobile.language.value}
-                        </p>
-                        <LocaleSwitcher />
-                      </div>
-                    </div>
-
-                    {/* Social Links Footer */}
-                    <div className="px-6 py-4 border-t border-border bg-muted/20 mt-auto">
-                      <p className="text-sm text-muted-foreground mb-3">
-                        {content.mobile.followMe.value}
+                {/* Scrollable Content */}
+                <ScrollArea className="flex-1">
+                  <div className="py-4">
+                    {/* Main Navigation - Primary Items */}
+                    <div className="px-6 space-y-1 mb-6">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                        {content.mobile.mainNavigation.value}
                       </p>
-                      <div className="flex flex-col space-y-2">
-                        {SOCIAL_LINKS.map(({ href, icon: Icon, label }) => (
-                          <a
-                            key={href}
-                            href={href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={cn(
-                              buttonVariants({
-                                variant: "outline",
-                              }),
-                              "w-full justify-start"
-                            )}
-                            aria-label={label}
+                      <div className="space-y-1">
+                        {content.navigation.primary.map((item) => (
+                          <LocaleAwareLink
+                            key={item.href.value}
+                            href={item.href.value}
+                            onClick={() => setIsOpen(false)}
+                            className="block px-6 py-4 text-base transition-all relative border-b border-border/20 last:border-b-0 text-foreground/80 hover:bg-accent/30 hover:text-foreground"
+                            activeClassName="bg-linear-to-r from-primary/5 to-secondary/5 text-primary font-semibold"
                           >
-                            <Icon className="size-4 mr-2" />
-                            {label}
-                          </a>
+                            {item.label.value}
+                          </LocaleAwareLink>
                         ))}
                       </div>
                     </div>
+
+                    {/* Secondary Navigation */}
+                    <div className="px-6 space-y-1 mb-6">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                        {content.mobile.otherPages.value}
+                      </p>
+                      <div className="space-y-1">
+                        {content.navigation.secondary.map((item) => (
+                          <LocaleAwareLink
+                            key={item.href.value}
+                            href={item.href.value}
+                            onClick={() => setIsOpen(false)}
+                            className="block px-6 py-4 text-base transition-all relative border-b border-border/20 last:border-b-0 text-foreground/80 hover:bg-accent/30 hover:text-foreground"
+                            activeClassName="bg-linear-to-r from-primary/5 to-secondary/5 text-primary font-semibold"
+                          >
+                            {item.label.value}
+                          </LocaleAwareLink>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Authentication Section for Mobile */}
+                    <div className="px-6 mb-6">
+                      <div className="p-5 bg-linear-to-br from-primary/5 to-secondary/5 rounded-xl border border-border/30 shadow-xs">
+                        <AuthNav
+                          isMobile
+                          onItemClick={() => setIsOpen(false)}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Locale Switcher Section */}
+                    <div className="px-6 mb-6">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                        {content.mobile.language.value}
+                      </p>
+                      <LocaleSwitcher />
+                    </div>
                   </div>
-                </SheetContent>
-              </Sheet>
-            </div>
-          </nav>
+                  <ScrollBar orientation="vertical" />
+                </ScrollArea>
+
+                {/* Social Links Footer - Fixed at bottom */}
+                <div className="px-6 py-4 border-t border-border bg-muted/20 shrink-0">
+                  <p className="text-sm text-muted-foreground mb-3">
+                    {content.mobile.followMe.value}
+                  </p>
+                  <div className="flex flex-col space-y-2">
+                    {SOCIAL_LINKS.map(({ href, icon: Icon, label }) => (
+                      <a
+                        key={href}
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={cn(
+                          buttonVariants({
+                            variant: "outline",
+                          }),
+                          "w-full justify-start"
+                        )}
+                        aria-label={label}
+                      >
+                        <Icon className="size-4 mr-2" />
+                        {label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       </header>
       <NavigationIndicator
