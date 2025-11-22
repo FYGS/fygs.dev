@@ -10,27 +10,29 @@ import { getVisualSupports } from "../_actions/visual-supports";
 import { generateSampleVisualSupports } from "@/lib/loaders/visual-supports-loader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Eye, 
-  Target, 
-  CheckCircle, 
-  BookOpen, 
-  ArrowRight, 
-  Lightbulb, 
-  GraduationCap, 
-  Play, 
-  Pause, 
-  RotateCcw, 
-  FileText, 
-  Users, 
-  Code 
+import {
+  Eye,
+  Target,
+  CheckCircle,
+  BookOpen,
+  ArrowRight,
+  Lightbulb,
+  GraduationCap,
+  Play,
+  Pause,
+  RotateCcw,
+  FileText,
+  Users,
+  Code,
 } from "lucide-react";
 
 interface VisualSupportsPageProps {
   params: Promise<{ slug: string }>;
 }
 
-export async function generateMetadata({ params }: VisualSupportsPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: VisualSupportsPageProps): Promise<Metadata> {
   const { slug } = await params;
   const course = await CourseRepository.findBySlug(slug);
 
@@ -46,9 +48,11 @@ export async function generateMetadata({ params }: VisualSupportsPageProps): Pro
   };
 }
 
-export default async function VisualSupportsPage({ params }: VisualSupportsPageProps) {
+export default async function VisualSupportsPage({
+  params,
+}: VisualSupportsPageProps) {
   const { slug } = await params;
-  
+
   // Check authentication
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -65,8 +69,11 @@ export default async function VisualSupportsPage({ params }: VisualSupportsPageP
   }
 
   // Check user access
-  const userAccess = await AccessService.checkCourseAccess(session.user.id, course.id);
-  
+  const userAccess = await AccessService.checkCourseAccess(
+    session.user.id,
+    course.id
+  );
+
   if (!userAccess.canAccessCourse) {
     redirect(`/formations/${slug}`);
   }
@@ -82,8 +89,8 @@ export default async function VisualSupportsPage({ params }: VisualSupportsPageP
       title: vs.title,
       order: vs.order || index,
       content: {
-        slides: vs.content?.slides || vs.slides || []
-      }
+        slides: vs.content?.slides || vs.slides || [],
+      },
     }));
   } catch (error) {
     console.error("Error fetching visual supports:", error);
@@ -95,22 +102,22 @@ export default async function VisualSupportsPage({ params }: VisualSupportsPageP
       title: vs.title,
       order: vs.order || index,
       content: {
-        slides: vs.content?.slides || vs.slides || []
-      }
+        slides: vs.content?.slides || vs.slides || [],
+      },
     }));
   }
 
   // Note: serializedCourse removed as TrainingOverview only needs visualSupports data
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-slate-800">
       <div className="container py-8 max-w-7xl mx-auto">
-        <CourseBreadcrumb 
-          courseTitle={course.title} 
+        <CourseBreadcrumb
+          courseTitle={course.title}
           courseSlug={course.slug}
           currentPage="Supports Visuels"
         />
-        
+
         {/* Page Header */}
         <div className="mt-8 mb-8">
           <div className="text-center space-y-4">
@@ -121,8 +128,12 @@ export default async function VisualSupportsPage({ params }: VisualSupportsPageP
               Supports Visuels Immersifs
             </h1>
             <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-              Explorez en détail tous les concepts clés de la formation <span className="font-semibold text-emerald-400">{course.title}</span> 
-              à travers des supports visuels interactifs et des explications approfondies.
+              Explorez en détail tous les concepts clés de la formation{" "}
+              <span className="font-semibold text-emerald-600">
+                {course.title}
+              </span>{" "}
+              à travers des supports visuels interactifs et des explications
+              approfondies.
             </p>
           </div>
         </div>
@@ -142,17 +153,17 @@ export default async function VisualSupportsPage({ params }: VisualSupportsPageP
 
           {/* Additional Insights */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="border border-slate-700 shadow-sm">
+            <Card className="border border-slate-200 bg-white shadow-sm">
               <CardHeader>
-                <CardTitle className="flex items-center gap-3 text-slate-100">
-                  <div className="w-8 h-8 rounded-full bg-blue-900 flex items-center justify-center">
-                    <Target className="h-4 w-4 text-blue-400" />
+                <CardTitle className="flex items-center gap-3 text-slate-800">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                    <Target className="h-4 w-4 text-blue-600" />
                   </div>
                   Objectifs de Formation
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-2 text-sm text-slate-400">
+                <ul className="space-y-2 text-sm text-slate-700">
                   <li className="flex items-start gap-2">
                     <CheckCircle className="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0" />
                     Maîtriser les concepts fondamentaux
@@ -169,52 +180,63 @@ export default async function VisualSupportsPage({ params }: VisualSupportsPageP
               </CardContent>
             </Card>
 
-            <Card className="border border-slate-700 shadow-sm">
+            <Card className="border border-slate-200 bg-white shadow-sm">
               <CardHeader>
-                <CardTitle className="flex items-center gap-3 text-slate-100">
-                  <div className="w-8 h-8 rounded-full bg-purple-900 flex items-center justify-center">
-                    <BookOpen className="h-4 w-4 text-purple-400" />
+                <CardTitle className="flex items-center gap-3 text-slate-800">
+                  <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
+                    <BookOpen className="h-4 w-4 text-purple-600" />
                   </div>
                   Méthode d&apos;Apprentissage
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-2 text-sm text-slate-400">
+                <ul className="space-y-2 text-sm text-slate-700">
                   <li className="flex items-start gap-2">
-                    <ArrowRight className="h-4 w-4 text-slate-400 mt-0.5 flex-shrink-0" />
+                    <ArrowRight className="h-4 w-4 text-slate-600 mt-0.5 flex-shrink-0" />
                     Théorie illustrée par l&apos;exemple
                   </li>
                   <li className="flex items-start gap-2">
-                    <ArrowRight className="h-4 w-4 text-slate-400 mt-0.5 flex-shrink-0" />
+                    <ArrowRight className="h-4 w-4 text-slate-600 mt-0.5 flex-shrink-0" />
                     Exercices pratiques progressifs
                   </li>
                   <li className="flex items-start gap-2">
-                    <ArrowRight className="h-4 w-4 text-slate-400 mt-0.5 flex-shrink-0" />
+                    <ArrowRight className="h-4 w-4 text-slate-600 mt-0.5 flex-shrink-0" />
                     Projets concrets d&apos;application
                   </li>
                 </ul>
               </CardContent>
             </Card>
 
-            <Card className="border border-slate-700 shadow-sm">
+            <Card className="border border-slate-200 bg-white shadow-sm">
               <CardHeader>
-                <CardTitle className="flex items-center gap-3 text-slate-100">
-                  <div className="w-8 h-8 rounded-full bg-amber-900 flex items-center justify-center">
-                    <Lightbulb className="h-4 w-4 text-amber-400" />
+                <CardTitle className="flex items-center gap-3 text-slate-800">
+                  <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
+                    <Lightbulb className="h-4 w-4 text-amber-600" />
                   </div>
                   Points Clés
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <Badge variant="secondary" className="bg-emerald-900 text-emerald-200">
+                  <Badge
+                    variant="secondary"
+                    className="bg-emerald-100 text-emerald-700"
+                  >
                     {visualSupports.length} modules visuels
                   </Badge>
-                  <Badge variant="secondary" className="bg-blue-900 text-blue-200">
-                    {visualSupports.reduce((acc, vs) => acc + (vs.content?.slides?.length || 0), 0)} slides total
+                  <Badge
+                    variant="secondary"
+                    className="bg-blue-100 text-blue-700"
+                  >
+                    {visualSupports.reduce(
+                      (acc, vs) => acc + (vs.content?.slides?.length || 0),
+                      0
+                    )}{" "}
+                    slides total
                   </Badge>
-                  <p className="text-xs text-slate-400 mt-2">
-                    Chaque module contient des explications détaillées et des exemples concrets.
+                  <p className="text-xs text-slate-600 mt-2">
+                    Chaque module contient des explications détaillées et des
+                    exemples concrets.
                   </p>
                 </div>
               </CardContent>
@@ -222,11 +244,11 @@ export default async function VisualSupportsPage({ params }: VisualSupportsPageP
           </div>
 
           {/* Study Tips */}
-          <Card className="border border-slate-700 shadow-sm">
+          <Card className="border border-slate-200 bg-white shadow-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-slate-100">
-                <div className="w-8 h-8 rounded-full bg-indigo-900 flex items-center justify-center">
-                  <GraduationCap className="h-4 w-4 text-indigo-400" />
+              <CardTitle className="flex items-center gap-3 text-slate-800">
+                <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                  <GraduationCap className="h-4 w-4 text-indigo-600" />
                 </div>
                 Conseils d&apos;Étude
               </CardTitle>
@@ -234,8 +256,10 @@ export default async function VisualSupportsPage({ params }: VisualSupportsPageP
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <h4 className="font-semibold text-slate-100">Comment bien utiliser les supports visuels :</h4>
-                  <ul className="space-y-2 text-sm text-slate-400">
+                  <h4 className="font-semibold text-slate-800">
+                    Comment bien utiliser les supports visuels :
+                  </h4>
+                  <ul className="space-y-2 text-sm text-slate-700">
                     <li className="flex items-start gap-2">
                       <Play className="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0" />
                       Naviguez à votre rythme avec les contrôles
@@ -251,8 +275,10 @@ export default async function VisualSupportsPage({ params }: VisualSupportsPageP
                   </ul>
                 </div>
                 <div className="space-y-3">
-                  <h4 className="font-semibold text-slate-100">Pour maximiser votre apprentissage :</h4>
-                  <ul className="space-y-2 text-sm text-slate-400">
+                  <h4 className="font-semibold text-slate-800">
+                    Pour maximiser votre apprentissage :
+                  </h4>
+                  <ul className="space-y-2 text-sm text-slate-700">
                     <li className="flex items-start gap-2">
                       <FileText className="h-4 w-4 text-purple-500 mt-0.5 flex-shrink-0" />
                       Prenez des notes personnelles

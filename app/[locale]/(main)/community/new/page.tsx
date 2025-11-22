@@ -20,9 +20,9 @@ interface NewDiscussionPageProps {
 async function NewDiscussionContent({ searchParams }: NewDiscussionPageProps) {
   const resolvedSearchParams = await searchParams;
   const session = await auth.api.getSession({ headers: await headers() });
-  
+
   if (!session?.user) {
-    redirect("/auth/login");
+    redirect("/auth/login?callbackUrl=%2Fcommunity%2Fnew");
   }
 
   try {
@@ -45,7 +45,8 @@ async function NewDiscussionContent({ searchParams }: NewDiscussionPageProps) {
           <div className="mb-8">
             <h1 className="text-2xl font-bold mb-2">Start a New Discussion</h1>
             <p className="text-muted-foreground">
-              Share your knowledge, ask questions, or start a conversation with the community.
+              Share your knowledge, ask questions, or start a conversation with
+              the community.
             </p>
           </div>
 
@@ -89,9 +90,11 @@ async function NewDiscussionContent({ searchParams }: NewDiscussionPageProps) {
   }
 }
 
-export default function NewDiscussionPage({ searchParams }: NewDiscussionPageProps) {
+export default function NewDiscussionPage({
+  searchParams,
+}: NewDiscussionPageProps) {
   return (
-    <Suspense 
+    <Suspense
       fallback={
         <div className="min-h-screen bg-background">
           <div className="container mx-auto px-4 py-6">

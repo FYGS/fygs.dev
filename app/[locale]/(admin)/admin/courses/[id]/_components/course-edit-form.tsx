@@ -37,14 +37,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { 
-  Save, 
+import {
+  Save,
   X,
   Trash2,
   Loader2,
   ExternalLink,
   Edit,
-  BookOpen
+  BookOpen,
 } from "lucide-react";
 import { updateCourse, deleteCourse } from "../_actions/edit-course";
 import { CourseCategory, CourseLevel, CourseAccessTier } from "@prisma/client";
@@ -123,7 +123,7 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isDeleting, setIsDeleting] = useState(false);
-  
+
   // Initialize form state with course data
   const [formData, setFormData] = useState<FormData>({
     title: course.title,
@@ -138,7 +138,7 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
     featured: course.featured,
     previewEnabled: course.previewEnabled,
     thumbnail: course.thumbnail || "",
-    tags: course.tags.map(ct => ct.tag.id),
+    tags: course.tags.map((ct) => ct.tag.id),
     publicStructure: course.publicStructure || "",
     publicResources: course.publicResources || "",
     publicEvaluation: course.publicEvaluation || "",
@@ -147,7 +147,7 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
 
   // Selected tags for UI
   const [selectedTags, setSelectedTags] = useState<string[]>(
-    course.tags.map(ct => ct.tag.id)
+    course.tags.map((ct) => ct.tag.id)
   );
 
   // Generate slug from title
@@ -160,44 +160,47 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
 
   // Handle title change and auto-generate slug
   const handleTitleChange = (value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       title: value,
-      slug: generateSlug(value)
+      slug: generateSlug(value),
     }));
   };
 
   // Handle form field changes
-  const handleFieldChange = (field: keyof FormData, value: string | boolean | CourseCategory | CourseLevel | CourseAccessTier) => {
-    setFormData(prev => ({
+  const handleFieldChange = (
+    field: keyof FormData,
+    value: string | boolean | CourseCategory | CourseLevel | CourseAccessTier
+  ) => {
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   // Handle tag selection
   const toggleTag = (tagId: string) => {
     const newSelectedTags = selectedTags.includes(tagId)
-      ? selectedTags.filter(id => id !== tagId)
+      ? selectedTags.filter((id) => id !== tagId)
       : [...selectedTags, tagId];
-    
+
     setSelectedTags(newSelectedTags);
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      tags: newSelectedTags
+      tags: newSelectedTags,
     }));
   };
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Basic validation
     if (!formData.title.trim()) {
       toast.error("Le titre est requis");
       return;
     }
-    
+
     if (!formData.description.trim()) {
       toast.error("La description est requise");
       return;
@@ -230,10 +233,10 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
   // Handle course deletion
   const handleDelete = async () => {
     setIsDeleting(true);
-    
+
     try {
       const result = await deleteCourse(course.id);
-      
+
       if (result.success) {
         toast.success("Formation supprimée avec succès!");
         router.push("/admin/courses");
@@ -282,13 +285,15 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
                 />
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) => handleFieldChange("description", e.target.value)}
+                onChange={(e) =>
+                  handleFieldChange("description", e.target.value)
+                }
                 placeholder="Décrivez votre formation en détail..."
                 rows={4}
                 required
@@ -313,7 +318,8 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
           <CardHeader>
             <CardTitle>Section publique marketing</CardTitle>
             <CardDescription>
-              Contenu marketing affiché publiquement avant inscription. Utilisez MDX pour un formatage riche.
+              Contenu marketing affiché publiquement avant inscription. Utilisez
+              MDX pour un formatage riche.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -323,12 +329,15 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
                 <Textarea
                   id="publicStructure"
                   value={formData.publicStructure}
-                  onChange={(e) => handleFieldChange("publicStructure", e.target.value)}
+                  onChange={(e) =>
+                    handleFieldChange("publicStructure", e.target.value)
+                  }
                   placeholder="Décrivez la structure et l'organisation de votre cours..."
                   rows={6}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Format MDX supporté - utilisez **gras**, *italique*, - listes, etc.
+                  Format MDX supporté - utilisez **gras**, *italique*, - listes,
+                  etc.
                 </p>
               </div>
 
@@ -337,7 +346,9 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
                 <Textarea
                   id="publicResources"
                   value={formData.publicResources}
-                  onChange={(e) => handleFieldChange("publicResources", e.target.value)}
+                  onChange={(e) =>
+                    handleFieldChange("publicResources", e.target.value)
+                  }
                   placeholder="Listez les ressources, outils et supports fournis..."
                   rows={6}
                 />
@@ -347,11 +358,15 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="publicEvaluation">Évaluation et certification</Label>
+                <Label htmlFor="publicEvaluation">
+                  Évaluation et certification
+                </Label>
                 <Textarea
                   id="publicEvaluation"
                   value={formData.publicEvaluation}
-                  onChange={(e) => handleFieldChange("publicEvaluation", e.target.value)}
+                  onChange={(e) =>
+                    handleFieldChange("publicEvaluation", e.target.value)
+                  }
                   placeholder="Expliquez le système d'évaluation et les certifications..."
                   rows={6}
                 />
@@ -361,11 +376,15 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="publicPrerequisites">Prérequis et public cible</Label>
+                <Label htmlFor="publicPrerequisites">
+                  Prérequis et public cible
+                </Label>
                 <Textarea
                   id="publicPrerequisites"
                   value={formData.publicPrerequisites}
-                  onChange={(e) => handleFieldChange("publicPrerequisites", e.target.value)}
+                  onChange={(e) =>
+                    handleFieldChange("publicPrerequisites", e.target.value)
+                  }
                   placeholder="Définissez les prérequis et le public visé..."
                   rows={6}
                 />
@@ -391,19 +410,23 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
                 <Label>Catégorie</Label>
                 <Select
                   value={formData.category}
-                  onValueChange={(value) => handleFieldChange("category", value as CourseCategory)}
+                  onValueChange={(value) =>
+                    handleFieldChange("category", value as CourseCategory)
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="PROGRAMMING">Programmation</SelectItem>
-                    <SelectItem value="DESIGN">Design</SelectItem>
-                    <SelectItem value="MARKETING">Marketing</SelectItem>
-                    <SelectItem value="BUSINESS">Business</SelectItem>
-                    <SelectItem value="PERSONAL_DEVELOPMENT">Développement personnel</SelectItem>
-                    <SelectItem value="TECHNOLOGY">Technologie</SelectItem>
-                    <SelectItem value="OTHER">Autre</SelectItem>
+                    <SelectItem value="JAVASCRIPT">JavaScript</SelectItem>
+                    <SelectItem value="TYPESCRIPT">TypeScript</SelectItem>
+                    <SelectItem value="FRONTEND">Frontend</SelectItem>
+                    <SelectItem value="BACKEND">Backend</SelectItem>
+                    <SelectItem value="FULLSTACK">Fullstack</SelectItem>
+                    <SelectItem value="CLOUD">Cloud</SelectItem>
+                    <SelectItem value="AI">IA</SelectItem>
+                    <SelectItem value="DEVOPS">DevOps</SelectItem>
+                    <SelectItem value="PRODUCTIVITY">Productivité</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -412,7 +435,9 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
                 <Label>Niveau</Label>
                 <Select
                   value={formData.level}
-                  onValueChange={(value) => handleFieldChange("level", value as CourseLevel)}
+                  onValueChange={(value) =>
+                    handleFieldChange("level", value as CourseLevel)
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -430,7 +455,9 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
                 <Label>Accès</Label>
                 <Select
                   value={formData.accessTier}
-                  onValueChange={(value) => handleFieldChange("accessTier", value as CourseAccessTier)}
+                  onValueChange={(value) =>
+                    handleFieldChange("accessTier", value as CourseAccessTier)
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -466,7 +493,7 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
               {selectedTags.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {selectedTags.map((tagId) => {
-                    const tag = tags.find(t => t.id === tagId);
+                    const tag = tags.find((t) => t.id === tagId);
                     return tag ? (
                       <Badge key={tag.id} variant="secondary">
                         {tag.name}
@@ -509,14 +536,16 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="duration">Durée (heures)</Label>
+                <Label htmlFor="duration">Durée (minutes)</Label>
                 <Input
                   id="duration"
                   type="number"
                   min="0"
                   step="0.5"
                   value={formData.duration}
-                  onChange={(e) => handleFieldChange("duration", e.target.value)}
+                  onChange={(e) =>
+                    handleFieldChange("duration", e.target.value)
+                  }
                   placeholder="10"
                 />
               </div>
@@ -543,7 +572,9 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
                 </div>
                 <Switch
                   checked={formData.published}
-                  onCheckedChange={(checked) => handleFieldChange("published", checked)}
+                  onCheckedChange={(checked) =>
+                    handleFieldChange("published", checked)
+                  }
                 />
               </div>
 
@@ -556,7 +587,9 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
                 </div>
                 <Switch
                   checked={formData.featured}
-                  onCheckedChange={(checked) => handleFieldChange("featured", checked)}
+                  onCheckedChange={(checked) =>
+                    handleFieldChange("featured", checked)
+                  }
                 />
               </div>
 
@@ -569,7 +602,9 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
                 </div>
                 <Switch
                   checked={formData.previewEnabled}
-                  onCheckedChange={(checked) => handleFieldChange("previewEnabled", checked)}
+                  onCheckedChange={(checked) =>
+                    handleFieldChange("previewEnabled", checked)
+                  }
                 />
               </div>
             </div>
@@ -581,22 +616,24 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>Gestion des modules</span>
-              <Badge variant="secondary">
-                {course.modules.length} modules
-              </Badge>
+              <Badge variant="secondary">{course.modules.length} modules</Badge>
             </CardTitle>
             <CardDescription>
-              Gérez les modules de votre formation. Les modules permettent d&apos;organiser vos leçons en sections logiques.
+              Gérez les modules de votre formation. Les modules permettent
+              d&apos;organiser vos leçons en sections logiques.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {course.modules.length > 0 ? (
               <div className="space-y-6">
                 {course.modules.map((module) => (
-                  <div key={module.id} className="group relative border border-slate-700 rounded-xl overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800/50 shadow-sm hover:shadow-lg transition-all duration-300 hover:border-blue-700">
+                  <div
+                    key={module.id}
+                    className="group relative border border-slate-700 rounded-xl overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800/50 shadow-sm hover:shadow-lg transition-all duration-300 hover:border-blue-700"
+                  >
                     {/* Decorative gradient bar */}
                     <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500"></div>
-                    
+
                     <div className="relative p-6">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -607,7 +644,7 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
                             </div>
                             <div className="absolute inset-0 w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 opacity-20 blur-md animate-pulse"></div>
                           </div>
-                          
+
                           <div className="flex-1">
                             <h3 className="font-bold text-xl text-white mb-1 group-hover:text-blue-400 transition-colors">
                               {module.title}
@@ -615,26 +652,38 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
                             <div className="flex items-center gap-4 text-sm text-slate-400">
                               <div className="flex items-center gap-1">
                                 <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                <span className="font-medium">{module.lessons.length} leçons</span>
+                                <span className="font-medium">
+                                  {module.lessons.length} leçons
+                                </span>
                               </div>
                               {module.lessons.length > 0 && (
                                 <div className="flex items-center gap-1">
                                   <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                                  <span>{module.lessons.filter(l => l.duration).reduce((acc, l) => acc + (l.duration || 0), 0)} min total</span>
+                                  <span>
+                                    {module.lessons
+                                      .filter((l) => l.duration)
+                                      .reduce(
+                                        (acc, l) => acc + (l.duration || 0),
+                                        0
+                                      )}{" "}
+                                    min total
+                                  </span>
                                 </div>
                               )}
                             </div>
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
+                          <Button
+                            variant="outline"
+                            size="sm"
                             asChild
                             className="hover:bg-blue-50 hover:border-blue-700 transition-all duration-200"
                           >
-                            <Link href={`/admin/courses/${course.id}/modules/${module.id}`}>
+                            <Link
+                              href={`/admin/courses/${course.id}/modules/${module.id}`}
+                            >
                               <Edit className="h-4 w-4 mr-2" />
                               Modifier
                             </Link>
@@ -642,7 +691,7 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* Enhanced lessons preview */}
                     {module.lessons.length > 0 && (
                       <div className="border-t border-slate-700 bg-slate-800/50 p-6">
@@ -652,8 +701,8 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
                           </h4>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             {module.lessons.slice(0, 6).map((lesson) => (
-                              <div 
-                                key={lesson.id} 
+                              <div
+                                key={lesson.id}
                                 className="flex items-center gap-3 p-3 rounded-lg bg-slate-900/80 border border-slate-700 hover:border-blue-700 hover:shadow-sm transition-all duration-200 group/lesson"
                               >
                                 <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-500 text-white text-xs font-bold flex items-center justify-center shadow-sm">
@@ -680,11 +729,12 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
                                 </div>
                               </div>
                             ))}
-                            
+
                             {module.lessons.length > 6 && (
                               <div className="flex items-center justify-center p-3 rounded-lg border-2 border-dashed border-slate-600 text-slate-400 hover:border-blue-400 hover:text-blue-400 transition-all duration-200">
                                 <span className="text-sm font-medium">
-                                  +{module.lessons.length - 6} leçons supplémentaires
+                                  +{module.lessons.length - 6} leçons
+                                  supplémentaires
                                 </span>
                               </div>
                             )}
@@ -692,7 +742,7 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
                         </div>
                       </div>
                     )}
-                    
+
                     {/* Empty state for lessons */}
                     {module.lessons.length === 0 && (
                       <div className="border-t border-slate-700 bg-slate-800/50 p-6">
@@ -724,9 +774,14 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
                   Aucun module créé
                 </h3>
                 <p className="text-slate-400 mb-4 max-w-md mx-auto">
-                  Créez votre premier module pour organiser vos leçons en sections logiques et structurées.
+                  Créez votre premier module pour organiser vos leçons en
+                  sections logiques et structurées.
                 </p>
-                <Button variant="outline" asChild className="hover:bg-blue-50 hover:border-blue-700">
+                <Button
+                  variant="outline"
+                  asChild
+                  className="hover:bg-blue-50 hover:border-blue-700"
+                >
                   <Link href={`/admin/courses/${course.id}?tab=modules`}>
                     Créer un module
                   </Link>
@@ -735,16 +790,14 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
             )}
           </CardContent>
         </Card>
-        
+
         {/* Actions */}
         <div className="flex items-center justify-between pt-6">
           <div className="flex items-center gap-3">
             <Button variant="outline" asChild>
-              <Link href="/admin/courses">
-                Retour à la liste
-              </Link>
+              <Link href="/admin/courses">Retour à la liste</Link>
             </Button>
-            
+
             {formData.published && (
               <Button variant="outline" asChild>
                 <Link href={`/formations/${course.slug}`} target="_blank">
@@ -754,11 +807,14 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
               </Button>
             )}
           </div>
-          
+
           <div className="flex items-center gap-3">
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" disabled={isPending || isDeleting}>
+                <Button
+                  variant="destructive"
+                  disabled={isPending || isDeleting}
+                >
                   {isDeleting ? (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   ) : (
@@ -771,8 +827,9 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Êtes-vous sûr de vouloir supprimer cette formation ? Cette action est irréversible
-                    et supprimera toutes les données associées (leçons, inscriptions, progrès).
+                    Êtes-vous sûr de vouloir supprimer cette formation ? Cette
+                    action est irréversible et supprimera toutes les données
+                    associées (leçons, inscriptions, progrès).
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -786,7 +843,7 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
-            
+
             <Button type="submit" disabled={isPending || isDeleting}>
               {isPending ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />

@@ -142,6 +142,25 @@ export async function createLesson(formData: FormData) {
     revalidatePath("/admin/lessons");
     revalidatePath(`/admin/courses/${course.id}`);
     revalidatePath(`/formations/${course.slug}`);
+    revalidatePath(`/formations/${course.slug}/lessons/${lesson.slug}`);
+    revalidatePath("/formations");
+    revalidatePath("/sitemap.xml");
+
+    // Create analytics event
+    await db.analyticsEvent.create({
+      data: {
+        userId: session.user.id,
+        type: "LESSON_CREATED",
+        source: "admin",
+        properties: {
+          lessonId: lesson.id,
+          courseId: course.id,
+          title: lesson.title,
+          published: lesson.published,
+          moduleId: lesson.moduleId,
+        },
+      },
+    });
 
     // Return success - redirect will be handled by the client
     return { success: true, lessonId: lesson.id };

@@ -19,7 +19,10 @@ export default async function EditLessonPage({ params }: EditLessonPageProps) {
     headers: await headers(),
   });
 
-  if (!session?.user?.role || !["ADMIN", "INSTRUCTOR"].includes(session.user.role)) {
+  if (
+    !session?.user?.role ||
+    !["ADMIN", "INSTRUCTOR"].includes(session.user.role)
+  ) {
     notFound();
   }
 
@@ -50,19 +53,28 @@ export default async function EditLessonPage({ params }: EditLessonPageProps) {
 
   if (session.user.role === Role.INSTRUCTOR) {
     coursesQuery.where = {
-      instructorId: session.user.id
+      instructorId: session.user.id,
     };
   }
 
   const courses = await db.course.findMany(coursesQuery);
 
+  // Serialize lesson data to avoid Decimal/Date issues
+  const serializedLesson = {
+    ...lesson,
+    duration: lesson.duration ? Number(lesson.duration) : null,
+    createdAt: lesson.createdAt.toISOString(),
+    updatedAt: lesson.updatedAt.toISOString(),
+    course: {
+      ...lesson.course,
+    },
+  };
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Modifier la leçon</h1>
-        <p className="text-muted-foreground">
-          Modification de: {lesson.title}
-        </p>
+        <p className="text-muted-foreground">Modification de: {lesson.title}</p>
       </div>
 
       <Card>
@@ -70,10 +82,7 @@ export default async function EditLessonPage({ params }: EditLessonPageProps) {
           <CardTitle>Informations de la leçon</CardTitle>
         </CardHeader>
         <CardContent>
-          <LessonEditForm 
-            lesson={lesson} 
-            courses={courses}
-          />
+          <LessonEditForm lesson={serializedLesson} courses={courses} />
         </CardContent>
       </Card>
     </div>

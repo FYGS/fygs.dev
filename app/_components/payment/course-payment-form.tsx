@@ -4,17 +4,17 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { 
-  CreditCard, 
-  Shield, 
-  Check, 
-  Star, 
-  Users, 
+import {
+  CreditCard,
+  Shield,
+  Check,
+  Star,
+  Users,
   Clock,
   Zap,
   Gift,
   ArrowRight,
-  PlayCircle
+  PlayCircle,
 } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 import { formatPrice as formatPriceCentral } from "@/lib/price-format";
@@ -41,22 +41,30 @@ interface CoursePaymentFormProps {
   hasPurchased?: boolean; // user owns entitlement (purchase or subscription) but may not be enrolled
 }
 
-export function CoursePaymentForm({ course, isEnrolled = false, canPreview = false, hasPurchased = false }: CoursePaymentFormProps) {
+export function CoursePaymentForm({
+  course,
+  isEnrolled = false,
+  canPreview = false,
+  hasPurchased = false,
+}: CoursePaymentFormProps) {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const correlationId = logger.generateCorrelationId();
-  const paymentLogger = createLogger({ 
-    operation: 'course-payment',
+  const paymentLogger = createLogger({
+    operation: "course-payment",
     correlationId,
-    resourceType: 'course',
-    resourceId: course.id
+    resourceType: "course",
+    resourceId: course.id,
   });
 
-  const formatPrice = (price: number) => formatPriceCentral(price, { showFreeLabel: true });
+  const formatPrice = (price: number) =>
+    formatPriceCentral(price, { showFreeLabel: true });
 
-  const totalHours = course.duration ? Math.max(1, Math.round((course.duration * 60) / 3600)) : 0;
+  const totalHours = course.duration
+    ? Math.max(1, Math.round((course.duration * 60) / 3600))
+    : 0;
   const enrollmentCount = course.enrollmentCount ?? 0;
   const averageRating = course.averageRating ?? 0;
 
@@ -72,12 +80,11 @@ export function CoursePaymentForm({ course, isEnrolled = false, canPreview = fal
     if (!session) {
       paymentLogger.warn("Unauthenticated payment attempt", {
         userId: undefined,
-        metadata: { courseId: course.id, price: course.price }
+        metadata: { courseId: course.id, price: course.price },
       });
-      toast.warning("Vous devez être connecté",{
-        description: "Veuillez vous connecter pour effectuer un achat",
-      });
-      window.location.href = "/auth/login";
+      // Redirect to login with callback to return to course page
+      const callbackUrl = encodeURIComponent(`/formations/${course.slug}`);
+      window.location.href = `/auth/login?callbackUrl=${callbackUrl}`;
       return;
     }
 
@@ -86,7 +93,7 @@ export function CoursePaymentForm({ course, isEnrolled = false, canPreview = fal
       courseId: course.id,
       courseSlug: course.slug,
       price: course.price,
-      correlationId
+      correlationId,
     });
 
     if (course.price === 0) {
@@ -95,23 +102,31 @@ export function CoursePaymentForm({ course, isEnrolled = false, canPreview = fal
         try {
           paymentLogger.info("Starting free course enrollment", {
             userId: session.user.id,
-            resourceId: course.id
+            resourceId: course.id,
           });
           const result = await enrollCourse({ courseId: course.id });
           if (result.success) {
             paymentLogger.info("Free course enrollment successful", {
               userId: session.user.id,
-              resourceId: course.id
+              resourceId: course.id,
             });
-            toast.success("Inscription réussie", { description: result.message });
+            toast.success("Inscription réussie", {
+              description: result.message,
+            });
             const firstLesson = course.firstLessonSlug;
-            window.location.href = firstLesson ? `/formations/${course.slug}/lessons/${firstLesson}` : `/formations/${course.slug}`;
+            window.location.href = firstLesson
+              ? `/formations/${course.slug}/lessons/${firstLesson}`
+              : `/formations/${course.slug}`;
           } else {
-            toast.error("Erreur lors de l'inscription", { description: result.message });
+            toast.error("Erreur lors de l'inscription", {
+              description: result.message,
+            });
           }
         } catch (enrollError) {
-          console.error('Free course enrollment error:', enrollError);
-          toast.error("Erreur lors de l'inscription", { description: 'Une erreur est survenue' });
+          console.error("Free course enrollment error:", enrollError);
+          toast.error("Erreur lors de l'inscription", {
+            description: "Une erreur est survenue",
+          });
         }
       });
       return;
@@ -132,17 +147,17 @@ export function CoursePaymentForm({ course, isEnrolled = false, canPreview = fal
       });
 
       const data = await response.json();
-      
+
       if (response.ok && data.url) {
         window.location.href = data.url;
       } else {
-        toast.error("Erreur lors de la création du paiement",{
+        toast.error("Erreur lors de la création du paiement", {
           description: data.error || "Erreur lors de la création du paiement",
         });
       }
     } catch (paymentError) {
-      console.error('Payment creation error:', paymentError);
-      toast.error("Erreur lors de la création du paiement",{
+      console.error("Payment creation error:", paymentError);
+      toast.error("Erreur lors de la création du paiement", {
         description: "Une erreur est survenue lors de la création du paiement",
       });
     } finally {
@@ -157,19 +172,22 @@ export function CoursePaymentForm({ course, isEnrolled = false, canPreview = fal
       try {
         const result = await enrollCourse({ courseId: course.id });
         if (result.success) {
-          toast.success('Inscription réussie', { description: result.message });
+          toast.success("Inscription réussie", { description: result.message });
           const firstLesson = course.firstLessonSlug;
-          window.location.href = firstLesson ? `/formations/${course.slug}/lessons/${firstLesson}` : `/formations/${course.slug}`;
+          window.location.href = firstLesson
+            ? `/formations/${course.slug}/lessons/${firstLesson}`
+            : `/formations/${course.slug}`;
         } else {
-          toast.error('Erreur lors de l\'inscription', { description: result.message });
+          toast.error("Erreur lors de l'inscription", {
+            description: result.message,
+          });
         }
       } catch (enrollmentError) {
-        console.error('Course enrollment error:', enrollmentError);
-        toast.error('Erreur', { description: 'Une erreur est survenue' });
+        console.error("Course enrollment error:", enrollmentError);
+        toast.error("Erreur", { description: "Une erreur est survenue" });
       }
     });
   };
-
 
   return (
     <Card className="sticky top-4 shadow-lg border-2">
@@ -180,7 +198,8 @@ export function CoursePaymentForm({ course, isEnrolled = false, canPreview = fal
       )}
       {showEnrollButton && !isEnrolled && (
         <div className="bg-blue-900/20 text-blue-200 text-center py-2 px-4 text-xs">
-          Vous avez accès. Cliquez pour vous inscrire afin d&apos;ajouter la formation à votre tableau de bord.
+          Vous avez accès. Cliquez pour vous inscrire afin d&apos;ajouter la
+          formation à votre tableau de bord.
         </div>
       )}
       <CardHeader className="text-center space-y-4">
@@ -201,7 +220,7 @@ export function CoursePaymentForm({ course, isEnrolled = false, canPreview = fal
             </div>
           )}
         </div>
-        
+
         {/* Course Stats */}
         <div className="flex items-center justify-center gap-4 text-sm">
           <div className="flex items-center gap-1">
@@ -222,12 +241,14 @@ export function CoursePaymentForm({ course, isEnrolled = false, canPreview = fal
       </CardHeader>
 
       <CardContent className="space-y-6">
-        <Button 
-          className="w-full h-12 text-lg font-semibold" 
+        <Button
+          className="w-full h-12 text-lg font-semibold"
           size="lg"
           onClick={showEnrollButton ? enrollExplicitly : handlePayment}
           disabled={loading || isPending}
-          variant={isEnrolled ? 'outline' : (showEnrollButton ? 'default' : 'default')}
+          variant={
+            isEnrolled ? "outline" : showEnrollButton ? "default" : "default"
+          }
         >
           {loading || isPending ? (
             <div className="flex items-center gap-2">
@@ -271,7 +292,8 @@ export function CoursePaymentForm({ course, isEnrolled = false, canPreview = fal
               window.location.href = `/formations/${course.slug}/lessons/${course.firstLessonSlug}?preview=1`;
             }}
           >
-            <PlayCircle className="h-4 w-4 mr-2" /> Prévisualiser la première leçon
+            <PlayCircle className="h-4 w-4 mr-2" /> Prévisualiser la première
+            leçon
           </Button>
         )}
 
@@ -282,7 +304,8 @@ export function CoursePaymentForm({ course, isEnrolled = false, canPreview = fal
               <span>Garantie satisfait ou remboursé 30 jours</span>
             </div>
             <p className="text-xs text-muted-foreground">
-              Paiement sécurisé par Stripe (cartes, wallets, virements selon éligibilité)
+              Paiement sécurisé par Stripe (cartes, wallets, virements selon
+              éligibilité)
             </p>
           </div>
         )}
@@ -290,7 +313,9 @@ export function CoursePaymentForm({ course, isEnrolled = false, canPreview = fal
         <Separator />
 
         <div className="space-y-4">
-          <h4 className="font-semibold text-center">Cette formation inclut :</h4>
+          <h4 className="font-semibold text-center">
+            Cette formation inclut :
+          </h4>
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <Check className="h-5 w-5 text-green-600 shrink-0" />
@@ -298,7 +323,9 @@ export function CoursePaymentForm({ course, isEnrolled = false, canPreview = fal
             </div>
             <div className="flex items-center gap-3">
               <Check className="h-5 w-5 text-green-600 shrink-0" />
-              <span className="text-sm">Accès à vie sur tous vos appareils</span>
+              <span className="text-sm">
+                Accès à vie sur tous vos appareils
+              </span>
             </div>
             <div className="flex items-center gap-3">
               <Check className="h-5 w-5 text-green-600 shrink-0" />

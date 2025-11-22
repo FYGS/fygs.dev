@@ -350,7 +350,7 @@ export function LessonCreateForm({ courses, selectedCourseId }: LessonCreateForm
             name="duration"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Durée (secondes)</FormLabel>
+                <FormLabel>Durée (minutes)</FormLabel>
                 <FormControl>
                   <Input
                     type="number"

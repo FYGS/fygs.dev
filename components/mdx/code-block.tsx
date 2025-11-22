@@ -4,7 +4,11 @@ import { toast } from "sonner";
 import { Check, Copy, Download, Share2, Terminal } from "lucide-react";
 import { useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/esm/styles/prism";
+import {
+  vscDarkPlus,
+  vs,
+} from "react-syntax-highlighter/dist/esm/styles/prism";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 export interface CodeBlockProps {
   code: string;
@@ -120,55 +124,64 @@ export function CodeBlock({
         </div>
       </div>
 
-      <div className="relative overflow-hidden">
-        <SyntaxHighlighter
-          language={getLanguage(language)}
-          style={syntaxStyle}
-          showLineNumbers={true}
-          lineNumberStyle={{
-            minWidth: "3rem",
-            paddingRight: "1rem",
-            color: theme === "dark" ? "#6B7280" : "#9CA3AF",
-            backgroundColor: "transparent",
-            borderRight: `1px solid ${theme === "dark" ? "#374151" : "#E5E7EB"}`,
-            marginRight: "1rem",
-            textAlign: "right",
-            userSelect: "none",
-          }}
-          customStyle={{
-            margin: 0,
-            padding: "1rem",
-            background: theme === "dark" ? "#1e1e1e" : "#ffffff",
-            fontSize: "0.875rem",
-            lineHeight: "1.5",
-            borderRadius: 0,
-          }}
-          codeTagProps={{
-            style: {
-              fontFamily: "'Fira Code', 'Cascadia Code', ui-monospace, SFMono-Regular, 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace",
-            },
-          }}
-          wrapLines={true}
-          lineProps={(lineNumber) => ({
-            style: {
-              backgroundColor: highlightLines.includes(lineNumber)
-                ? theme === "dark"
-                  ? "rgba(59, 130, 246, 0.15)"
-                  : "rgba(59, 130, 246, 0.1)"
-                : "transparent",
-              display: "block",
-              width: "100%",
-              paddingLeft: "0.5rem",
-              paddingRight: "0.5rem",
-              borderLeft: highlightLines.includes(lineNumber)
-                ? `3px solid ${theme === "dark" ? "#3B82F6" : "#2563EB"}`
-                : "3px solid transparent",
-            },
-          })}
-        >
-          {code}
-        </SyntaxHighlighter>
-      </div>
+      <ScrollArea className="w-full h-[600px]">
+        <div className="relative min-w-max">
+          <SyntaxHighlighter
+            language={getLanguage(language)}
+            style={syntaxStyle}
+            showLineNumbers={true}
+            lineNumberStyle={{
+              minWidth: "3rem",
+              paddingRight: "1rem",
+              color: theme === "dark" ? "#6B7280" : "#9CA3AF",
+              backgroundColor: "transparent",
+              borderRight: `1px solid ${
+                theme === "dark" ? "#374151" : "#E5E7EB"
+              }`,
+              marginRight: "1rem",
+              textAlign: "right",
+              userSelect: "none",
+            }}
+            customStyle={{
+              margin: 0,
+              padding: "1rem",
+              background: theme === "dark" ? "#1e1e1e" : "#ffffff",
+              fontSize: "0.875rem",
+              lineHeight: "1.5",
+              borderRadius: 0,
+              width: "max-content",
+              minWidth: "100%",
+            }}
+            codeTagProps={{
+              style: {
+                fontFamily:
+                  "'Fira Code', 'Cascadia Code', ui-monospace, SFMono-Regular, 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace",
+              },
+            }}
+            wrapLines={true}
+            lineProps={(lineNumber) => ({
+              style: {
+                backgroundColor: highlightLines.includes(lineNumber)
+                  ? theme === "dark"
+                    ? "rgba(59, 130, 246, 0.15)"
+                    : "rgba(59, 130, 246, 0.1)"
+                  : "transparent",
+                display: "block",
+                width: "100%",
+                paddingLeft: "0.5rem",
+                paddingRight: "0.5rem",
+                borderLeft: highlightLines.includes(lineNumber)
+                  ? `3px solid ${theme === "dark" ? "#3B82F6" : "#2563EB"}`
+                  : "3px solid transparent",
+              },
+            })}
+          >
+            {code}
+          </SyntaxHighlighter>
+        </div>
+        <ScrollBar orientation="horizontal" />
+        <ScrollBar orientation="vertical" />
+      </ScrollArea>
     </div>
   );
 }

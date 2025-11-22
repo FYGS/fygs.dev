@@ -207,11 +207,14 @@ export async function updateCourse(
     // Revalider les pages concernées
     revalidatePath("/admin/courses");
     revalidatePath(`/admin/courses/${courseId}`);
-    revalidatePath("/courses");
+    revalidatePath("/formations");
+    revalidatePath("/sitemap.xml");
 
     if (validatedData.published) {
       revalidatePath("/");
-      revalidatePath(`/courses/${course.slug}`);
+      revalidatePath(`/formations/${course.slug}`);
+      revalidatePath(`/formations/${course.slug}/details`);
+      revalidatePath(`/formations/${course.slug}/visual-supports`);
     }
 
     return {
@@ -345,8 +348,9 @@ export async function deleteCourse(
 
     // Revalider les pages concernées
     revalidatePath("/admin/courses");
-    revalidatePath("/courses");
+    revalidatePath("/formations");
     revalidatePath("/");
+    revalidatePath("/sitemap.xml");
 
     return {
       success: true,
@@ -357,244 +361,6 @@ export async function deleteCourse(
     return {
       success: false,
       error: "Une erreur inattendue s'est produite lors de la suppression",
-    };
-  }
-}
-
-/**
- * Create a new module for a course
- */
-export async function createModule(
-  courseId: string,
-  data: { title: string; order: number }
-) {
-  try {
-    // Check authentication
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      return { success: false, error: "Non authentifié" };
-    }
-
-    // Check if user has permission to edit this course
-    const course = await db.course.findUnique({
-      where: { id: courseId },
-      select: { instructorId: true, slug: true },
-    });
-
-    if (!course) {
-      return { success: false, error: "Formation non trouvée" };
-    }
-
-    // Only instructor or admin can create modules
-    if (
-      session.user.role !== Role.ADMIN &&
-      session.user.id !== course.instructorId
-    ) {
-      return { success: false, error: "Permission refusée" };
-    }
-
-    // Generate slug from title
-    const slug = data.title
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .trim();
-
-    // Create the module
-    const newModule = await db.module.create({
-      data: {
-        courseId,
-        title: data.title,
-        slug,
-        order: data.order,
-      },
-    });
-
-    // Revalidate relevant paths
-    revalidatePath(`/admin/courses/${courseId}`);
-    revalidatePath(`/formations/${course.slug}`);
-
-    return { success: true, module: newModule };
-  } catch (error) {
-    console.error("Error creating module:", error);
-    return { success: false, error: "Erreur lors de la création du module" };
-  }
-}
-
-/**
- * Update an existing module
- */
-export async function updateModule(
-  moduleId: string,
-  data: { title?: string; order?: number }
-) {
-  try {
-    // Check authentication
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      return { success: false, error: "Non authentifié" };
-    }
-
-    // Get the module with course info
-    const existingModule = await db.module.findUnique({
-      where: { id: moduleId },
-      include: { course: { select: { instructorId: true, slug: true } } },
-    });
-
-    if (!existingModule) {
-      return { success: false, error: "Module non trouvé" };
-    }
-
-    // Only instructor or admin can update modules
-    if (
-      session.user.role !== Role.ADMIN &&
-      session.user.id !== existingModule.course.instructorId
-    ) {
-      return { success: false, error: "Permission refusée" };
-    }
-
-    // Generate new slug if title is updated
-    let slug = undefined;
-    if (data.title) {
-      slug = data.title
-        .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, "")
-        .replace(/\s+/g, "-")
-        .replace(/-+/g, "-")
-        .trim();
-    }
-
-    // Update the module
-    const updatedModule = await db.module.update({
-      where: { id: moduleId },
-      data: {
-        title: data.title,
-        slug,
-        order: data.order,
-      },
-    });
-
-    // Revalidate relevant paths
-    revalidatePath(`/admin/courses/${existingModule.courseId}`);
-    revalidatePath(`/formations/${existingModule.course.slug}`);
-
-    return { success: true, module: updatedModule };
-  } catch (error) {
-    console.error("Error updating module:", error);
-    return { success: false, error: "Erreur lors de la mise à jour du module" };
-  }
-}
-
-/**
- * Delete a module
- */
-export async function deleteModule(moduleId: string) {
-  try {
-    // Check authentication
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      return { success: false, error: "Non authentifié" };
-    }
-
-    // Get the module with course info
-    const existingModule = await db.module.findUnique({
-      where: { id: moduleId },
-      include: { course: { select: { instructorId: true, slug: true } } },
-    });
-
-    if (!existingModule) {
-      return { success: false, error: "Module non trouvé" };
-    }
-
-    // Only instructor or admin can delete modules
-    if (
-      session.user.role !== Role.ADMIN &&
-      session.user.id !== existingModule.course.instructorId
-    ) {
-      return { success: false, error: "Permission refusée" };
-    }
-
-    // Delete the module (this will cascade to lessons)
-    await db.module.delete({
-      where: { id: moduleId },
-    });
-
-    // Revalidate relevant paths
-    revalidatePath(`/admin/courses/${existingModule.courseId}`);
-    revalidatePath(`/formations/${existingModule.course.slug}`);
-
-    return { success: true };
-  } catch (error) {
-    console.error("Error deleting module:", error);
-    return { success: false, error: "Erreur lors de la suppression du module" };
-  }
-}
-
-/**
- * Reorder modules within a course
- */
-export async function reorderModules(
-  courseId: string,
-  moduleOrders: { id: string; order: number }[]
-) {
-  try {
-    // Check authentication
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      return { success: false, error: "Non authentifié" };
-    }
-
-    // Check if user has permission to edit this course
-    const course = await db.course.findUnique({
-      where: { id: courseId },
-      select: { instructorId: true, slug: true },
-    });
-
-    if (!course) {
-      return { success: false, error: "Formation non trouvée" };
-    }
-
-    // Only instructor or admin can reorder modules
-    if (
-      session.user.role !== Role.ADMIN &&
-      session.user.id !== course.instructorId
-    ) {
-      return { success: false, error: "Permission refusée" };
-    }
-
-    // Update the order of each module
-    await Promise.all(
-      moduleOrders.map(({ id, order }) =>
-        db.module.update({
-          where: { id },
-          data: { order },
-        })
-      )
-    );
-
-    // Revalidate relevant paths
-    revalidatePath(`/admin/courses/${courseId}`);
-    revalidatePath(`/formations/${course.slug}`);
-
-    return { success: true };
-  } catch (error) {
-    console.error("Error reordering modules:", error);
-    return {
-      success: false,
-      error: "Erreur lors du réordonnancement des modules",
     };
   }
 }

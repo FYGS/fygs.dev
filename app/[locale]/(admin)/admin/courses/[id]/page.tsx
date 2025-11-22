@@ -56,10 +56,7 @@ async function getCourse(id: string) {
         },
       },
       visualSupports: {
-        orderBy: [
-          { moduleId: "asc" },
-          { order: "asc" }
-        ],
+        orderBy: [{ moduleId: "asc" }, { order: "asc" }],
       },
       _count: {
         select: {
@@ -93,7 +90,10 @@ export default async function CourseEditPage({ params }: CourseEditPageProps) {
     redirect("/auth/login");
   }
 
-  if (session.user.role !== Role.ADMIN && session.user.role !== Role.INSTRUCTOR) {
+  if (
+    session.user.role !== Role.ADMIN &&
+    session.user.role !== Role.INSTRUCTOR
+  ) {
     redirect("/unauthorized");
   }
 
@@ -120,8 +120,30 @@ export default async function CourseEditPage({ params }: CourseEditPageProps) {
     ...course,
     price: course.price ? Number(course.price) : null,
     duration: course.duration ? Number(course.duration) : null,
+    createdAt: course.createdAt.toISOString(),
+    updatedAt: course.updatedAt.toISOString(),
     modules: course.modules || [],
   };
+
+  // Serialize quizzes for client components
+  const serializedQuizzes = (course.quizzes || []).map((quiz) => ({
+    ...quiz,
+    createdAt: new Date(quiz.createdAt),
+    updatedAt: new Date(quiz.updatedAt),
+    questions: quiz.questions.map((q) => ({
+      ...q,
+      createdAt: new Date(q.createdAt),
+      updatedAt: new Date(q.updatedAt),
+    })),
+  }));
+
+  // Serialize visual supports for client components
+  const serializedVisualSupports = (course.visualSupports || []).map((vs) => ({
+    ...vs,
+    createdAt: new Date(vs.createdAt),
+    updatedAt: new Date(vs.updatedAt),
+    content: vs.content as { slides: Array<{ title: string; content: any }> },
+  }));
 
   return (
     <div className="space-y-6">
@@ -160,7 +182,9 @@ export default async function CourseEditPage({ params }: CourseEditPageProps) {
           <div className="text-sm text-muted-foreground">Durée</div>
         </div>
         <div className="bg-muted/50 rounded-lg p-4">
-          <div className="text-2xl font-bold">{course.price ? Number(course.price) : 0}€</div>
+          <div className="text-2xl font-bold">
+            {course.price ? Number(course.price) : 0}€
+          </div>
           <div className="text-sm text-muted-foreground">Prix</div>
         </div>
       </div>
@@ -174,32 +198,39 @@ export default async function CourseEditPage({ params }: CourseEditPageProps) {
           <TabsTrigger value="visual-supports">Supports Visuels</TabsTrigger>
           <TabsTrigger value="settings">Paramètres</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="course" className="space-y-6">
           <CourseEditForm course={courseForForm} tags={tags} />
         </TabsContent>
-        
+
         <TabsContent value="modules" className="space-y-6">
           <ModuleCreateForm courseId={course.id} />
-          
+
           {/* Existing modules display */}
           {course.modules && course.modules.length > 0 && (
             <div className="bg-card rounded-lg border p-6">
               <h3 className="text-lg font-semibold mb-4">Modules existants</h3>
               <div className="space-y-3">
                 {course.modules.map((module) => (
-                  <div key={module.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div
+                    key={module.id}
+                    className="flex items-center justify-between p-3 border rounded-lg"
+                  >
                     <div className="flex items-center gap-3">
                       <span className="bg-primary text-primary-foreground w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium">
                         {module.order}
                       </span>
                       <div>
                         <h4 className="font-medium">{module.title}</h4>
-                        <p className="text-sm text-muted-foreground">{module.lessons.length} leçons</p>
+                        <p className="text-sm text-muted-foreground">
+                          {module.lessons.length} leçons
+                        </p>
                       </div>
                     </div>
                     <Button variant="outline" size="sm" asChild>
-                      <Link href={`/admin/courses/${course.id}/modules/${module.id}`}>
+                      <Link
+                        href={`/admin/courses/${course.id}/modules/${module.id}`}
+                      >
                         Modifier
                       </Link>
                     </Button>
@@ -209,33 +240,29 @@ export default async function CourseEditPage({ params }: CourseEditPageProps) {
             </div>
           )}
         </TabsContent>
-        
+
         <TabsContent value="quiz" className="space-y-6">
-          <QuizManagement 
-            course={course} 
-            modules={course.modules || []} 
-            initialQuizzes={(course.quizzes || []).map(quiz => ({
-              ...quiz,
-              questions: quiz.questions || []
-            }))} 
+          <QuizManagement
+            course={courseForForm}
+            modules={course.modules || []}
+            initialQuizzes={serializedQuizzes}
           />
         </TabsContent>
-        
+
         <TabsContent value="visual-supports" className="space-y-6">
-          <VisualSupportsManagement 
-            course={course} 
-            modules={course.modules || []} 
-            initialVisualSupports={(course.visualSupports || []).map(vs => ({
-              ...vs,
-              content: vs.content as { slides: Array<{ title: string; content: any }> }
-            }))} 
+          <VisualSupportsManagement
+            course={courseForForm}
+            modules={course.modules || []}
+            initialVisualSupports={serializedVisualSupports}
           />
         </TabsContent>
-        
+
         <TabsContent value="settings" className="space-y-6">
           <div className="bg-card rounded-lg border p-6">
             <h3 className="text-lg font-semibold mb-4">Paramètres avancés</h3>
-            <p className="text-muted-foreground">Configuration avancée de la formation (à venir)</p>
+            <p className="text-muted-foreground">
+              Configuration avancée de la formation (à venir)
+            </p>
           </div>
         </TabsContent>
       </Tabs>

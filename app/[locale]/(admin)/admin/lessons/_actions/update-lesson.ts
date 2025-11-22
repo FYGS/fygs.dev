@@ -10,8 +10,14 @@ import { Role } from "@prisma/client";
 // Validation schema for updating lessons
 const updateLessonSchema = z.object({
   id: z.string().cuid("ID de leçon invalide"),
-  title: z.string().min(1, "Le titre est requis").max(255, "Le titre est trop long"),
-  slug: z.string().min(1, "Le slug est requis").max(255, "Le slug est trop long"),
+  title: z
+    .string()
+    .min(1, "Le titre est requis")
+    .max(255, "Le titre est trop long"),
+  slug: z
+    .string()
+    .min(1, "Le slug est requis")
+    .max(255, "Le slug est trop long"),
   description: z.string().optional(),
   content: z.string().optional(),
   videoUrl: z.string().url("URL vidéo invalide").optional().or(z.literal("")),
@@ -32,7 +38,10 @@ export async function updateLesson(formData: FormData) {
       return { success: false, error: "Non authentifié" };
     }
 
-    if (session.user.role !== Role.ADMIN && session.user.role !== Role.INSTRUCTOR) {
+    if (
+      session.user.role !== Role.ADMIN &&
+      session.user.role !== Role.INSTRUCTOR
+    ) {
       return { success: false, error: "Permissions insuffisantes" };
     }
 
@@ -41,10 +50,12 @@ export async function updateLesson(formData: FormData) {
       id: formData.get("id") as string,
       title: formData.get("title") as string,
       slug: formData.get("slug") as string,
-      description: formData.get("description") as string || undefined,
-      content: formData.get("content") as string || undefined,
-      videoUrl: formData.get("videoUrl") as string || undefined,
-      duration: formData.get("duration") ? parseInt(formData.get("duration") as string) : undefined,
+      description: (formData.get("description") as string) || undefined,
+      content: (formData.get("content") as string) || undefined,
+      videoUrl: (formData.get("videoUrl") as string) || undefined,
+      duration: formData.get("duration")
+        ? parseInt(formData.get("duration") as string)
+        : undefined,
       order: parseInt(formData.get("order") as string),
       published: formData.get("published") === "true",
       courseId: formData.get("courseId") as string,
@@ -68,13 +79,19 @@ export async function updateLesson(formData: FormData) {
 
     // Check permissions: ADMIN can edit all lessons, INSTRUCTOR can only edit their own courses
     if (session.user.role === Role.INSTRUCTOR) {
-      if (!existingLesson.course.instructorId || existingLesson.course.instructorId !== session.user.id) {
+      if (
+        !existingLesson.course.instructorId ||
+        existingLesson.course.instructorId !== session.user.id
+      ) {
         return { success: false, error: "Vous n'avez pas accès à cette leçon" };
       }
     }
 
     // Check if slug is unique within the course (excluding current lesson)
-    if (validatedData.slug !== existingLesson.slug || validatedData.courseId !== existingLesson.courseId) {
+    if (
+      validatedData.slug !== existingLesson.slug ||
+      validatedData.courseId !== existingLesson.courseId
+    ) {
       const conflictingLesson = await db.lesson.findFirst({
         where: {
           courseId: validatedData.courseId,
@@ -84,7 +101,10 @@ export async function updateLesson(formData: FormData) {
       });
 
       if (conflictingLesson) {
-        return { success: false, error: "Ce slug existe déjà pour cette formation" };
+        return {
+          success: false,
+          error: "Ce slug existe déjà pour cette formation",
+        };
       }
     }
 
@@ -122,23 +142,47 @@ export async function updateLesson(formData: FormData) {
     // Revalidate relevant pages
     revalidatePath("/admin/lessons");
     revalidatePath(`/admin/lessons/${lesson.id}`);
+    revalidatePath(`/admin/lessons/${lesson.id}/edit`);
     revalidatePath(`/admin/courses/${lesson.course.id}`);
     revalidatePath(`/formations/${lesson.course.slug}`);
+    revalidatePath(`/formations/${lesson.course.slug}/lessons/${lesson.slug}`);
+    revalidatePath("/formations");
+    revalidatePath("/sitemap.xml");
+
+    // Create analytics event
+    await db.analyticsEvent.create({
+      data: {
+        userId: session.user.id,
+        type: "LESSON_UPDATED",
+        source: "admin",
+        properties: {
+          lessonId: lesson.id,
+          courseId: lesson.course.id,
+          title: lesson.title,
+          published: lesson.published,
+        },
+      },
+    });
 
     return { success: true, lessonId: lesson.id };
   } catch (error) {
     console.error("Error updating lesson:", error);
-    
+
     if (error instanceof z.ZodError) {
-      return { 
-        success: false, 
-        error: `Erreur de validation: ${error.errors.map(e => e.message).join(", ")}` 
+      return {
+        success: false,
+        error: `Erreur de validation: ${error.errors
+          .map((e) => e.message)
+          .join(", ")}`,
       };
     }
 
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : "Erreur lors de la mise à jour de la leçon" 
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Erreur lors de la mise à jour de la leçon",
     };
   }
 }

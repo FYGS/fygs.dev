@@ -1,24 +1,28 @@
-'use server';
+"use server";
 
 import { db } from "@/lib/db";
 import { logger } from "@/lib/structured-logger";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 
 /**
  * Create a new quiz for a course module
  */
-export async function createQuiz(courseId: string, data: {
-  moduleId: number;
-  title: string;
-  questions: Array<{
-    question: string;
-    options: string[];
-    correct: number;
-    explanation: string | null;
-    order: number;
-  }>;
-}) {
+export async function createQuiz(
+  courseId: string,
+  data: {
+    moduleId: number;
+    title: string;
+    questions: Array<{
+      question: string;
+      options: string[];
+      correct: number;
+      explanation: string | null;
+      order?: number;
+    }>;
+  }
+) {
   try {
     // Check authentication
     const session = await auth.api.getSession({
@@ -32,7 +36,7 @@ export async function createQuiz(courseId: string, data: {
     // Check if user has permission to edit this course
     const course = await db.course.findUnique({
       where: { id: courseId },
-      select: { instructorId: true }
+      select: { instructorId: true },
     });
 
     if (!course) {
@@ -40,9 +44,21 @@ export async function createQuiz(courseId: string, data: {
     }
 
     // Only instructor or admin can create quizzes
-    if (session.user.role !== "ADMIN" && session.user.id !== course.instructorId) {
+    if (
+      session.user.role !== "ADMIN" &&
+      session.user.id !== course.instructorId
+    ) {
       return { success: false, error: "Permission refusée" };
     }
+
+    // Auto-number questions if order not provided
+    const questionsWithOrder = data.questions.map((q, index) => ({
+      question: q.question,
+      options: q.options,
+      correct: q.correct,
+      explanation: q.explanation,
+      order: q.order ?? index + 1,
+    }));
 
     // Create the quiz
     const quiz = await db.quiz.create({
@@ -51,22 +67,47 @@ export async function createQuiz(courseId: string, data: {
         moduleId: data.moduleId,
         title: data.title,
         questions: {
-          create: data.questions.map(q => ({
-            question: q.question,
-            options: q.options,
-            correct: q.correct,
-            explanation: q.explanation,
-            order: q.order,
-          }))
-        }
+          create: questionsWithOrder,
+        },
       },
       include: {
         questions: {
           orderBy: {
-            order: "asc"
-          }
-        }
-      }
+            order: "asc",
+          },
+        },
+      },
+    });
+
+    // Get course slug for revalidation
+    const courseSlug = await db.course.findUnique({
+      where: { id: courseId },
+      select: { slug: true },
+    });
+
+    // Revalidate all relevant paths
+    revalidatePath(`/admin/courses/${courseId}`);
+    if (courseSlug?.slug) {
+      revalidatePath(`/formations/${courseSlug.slug}`);
+      revalidatePath(`/formations/${courseSlug.slug}/details`);
+    }
+    revalidatePath("/formations");
+    revalidatePath("/sitemap.xml");
+
+    // Create analytics event
+    await db.analyticsEvent.create({
+      data: {
+        userId: session.user.id,
+        type: "QUIZ_CREATED",
+        source: "admin",
+        properties: {
+          courseId,
+          quizId: quiz.id,
+          moduleId: data.moduleId,
+          title: data.title,
+          questionCount: data.questions.length,
+        },
+      },
     });
 
     return { success: true, quiz };
@@ -75,8 +116,8 @@ export async function createQuiz(courseId: string, data: {
       metadata: {
         courseId,
         moduleId: data.moduleId,
-        error: error instanceof Error ? error.message : String(error)
-      }
+        error: error instanceof Error ? error.message : String(error),
+      },
     });
     return { success: false, error: "Erreur lors de la création du quiz" };
   }
@@ -85,18 +126,21 @@ export async function createQuiz(courseId: string, data: {
 /**
  * Update an existing quiz
  */
-export async function updateQuiz(quizId: string, data: { 
-  title?: string; 
-  order?: number;
-  questions?: Array<{
-    id?: string;
-    question: string;
-    options: string[];
-    correct: number;
-    explanation: string | null;
-    order: number;
-  }>;
-}) {
+export async function updateQuiz(
+  quizId: string,
+  data: {
+    title?: string;
+    order?: number;
+    questions?: Array<{
+      id?: string;
+      question: string;
+      options: string[];
+      correct: number;
+      explanation: string | null;
+      order: number;
+    }>;
+  }
+) {
   try {
     // Check authentication
     const session = await auth.api.getSession({
@@ -110,7 +154,7 @@ export async function updateQuiz(quizId: string, data: {
     // Get the quiz with course info
     const existingQuiz = await db.quiz.findUnique({
       where: { id: quizId },
-      include: { course: { select: { instructorId: true } } }
+      include: { course: { select: { instructorId: true } } },
     });
 
     if (!existingQuiz) {
@@ -118,7 +162,10 @@ export async function updateQuiz(quizId: string, data: {
     }
 
     // Only instructor or admin can update quizzes
-    if (session.user.role !== "ADMIN" && session.user.id !== existingQuiz.course.instructorId) {
+    if (
+      session.user.role !== "ADMIN" &&
+      session.user.id !== existingQuiz.course.instructorId
+    ) {
       return { success: false, error: "Permission refusée" };
     }
 
@@ -138,33 +185,66 @@ export async function updateQuiz(quizId: string, data: {
       where: { id: quizId },
       data: {
         title: data.title,
-        questions: data.questions ? {
-          upsert: data.questions.map(q => ({
-            where: { id: q.id || "" },
-            create: {
-              question: q.question,
-              options: q.options,
-              correct: q.correct,
-              explanation: q.explanation,
-              order: q.order,
-            },
-            update: {
-              question: q.question,
-              options: q.options,
-              correct: q.correct,
-              explanation: q.explanation,
-              order: q.order,
+        questions: data.questions
+          ? {
+              upsert: data.questions.map((q) => ({
+                where: { id: q.id || "" },
+                create: {
+                  question: q.question,
+                  options: q.options,
+                  correct: q.correct,
+                  explanation: q.explanation,
+                  order: q.order,
+                },
+                update: {
+                  question: q.question,
+                  options: q.options,
+                  correct: q.correct,
+                  explanation: q.explanation,
+                  order: q.order,
+                },
+              })),
             }
-          }))
-        } : undefined
+          : undefined,
       },
       include: {
         questions: {
           orderBy: {
-            order: "asc"
-          }
-        }
-      }
+            order: "asc",
+          },
+        },
+      },
+    });
+
+    // Get course slug for revalidation
+    const courseSlug = await db.course.findUnique({
+      where: { id: existingQuiz.courseId },
+      select: { slug: true },
+    });
+
+    // Revalidate all relevant paths
+    revalidatePath(`/admin/courses/${existingQuiz.courseId}`);
+    if (courseSlug?.slug) {
+      revalidatePath(`/formations/${courseSlug.slug}`);
+      revalidatePath(`/formations/${courseSlug.slug}/details`);
+    }
+    revalidatePath("/formations");
+
+    // Create analytics event
+    await db.analyticsEvent.create({
+      data: {
+        userId: session.user.id,
+        type: "QUIZ_UPDATED",
+        source: "admin",
+        properties: {
+          courseId: existingQuiz.courseId,
+          quizId,
+          changes: {
+            title: data.title,
+            questionsUpdated: data.questions?.length,
+          },
+        },
+      },
     });
 
     return { success: true, quiz: updatedQuiz };
@@ -172,8 +252,8 @@ export async function updateQuiz(quizId: string, data: {
     logger.error("Error updating quiz", {
       metadata: {
         quizId,
-        error: error instanceof Error ? error.message : String(error)
-      }
+        error: error instanceof Error ? error.message : String(error),
+      },
     });
     return { success: false, error: "Erreur lors de la mise à jour du quiz" };
   }
@@ -196,7 +276,7 @@ export async function deleteQuiz(quizId: string) {
     // Get the quiz with course info
     const existingQuiz = await db.quiz.findUnique({
       where: { id: quizId },
-      include: { course: { select: { instructorId: true } } }
+      include: { course: { select: { instructorId: true } } },
     });
 
     if (!existingQuiz) {
@@ -204,13 +284,44 @@ export async function deleteQuiz(quizId: string) {
     }
 
     // Only instructor or admin can delete quizzes
-    if (session.user.role !== "ADMIN" && session.user.id !== existingQuiz.course.instructorId) {
+    if (
+      session.user.role !== "ADMIN" &&
+      session.user.id !== existingQuiz.course.instructorId
+    ) {
       return { success: false, error: "Permission refusée" };
     }
 
     // Delete the quiz (this will cascade to questions)
     await db.quiz.delete({
-      where: { id: quizId }
+      where: { id: quizId },
+    });
+
+    // Get course slug for revalidation
+    const courseSlug = await db.course.findUnique({
+      where: { id: existingQuiz.courseId },
+      select: { slug: true },
+    });
+
+    // Revalidate all relevant paths
+    revalidatePath(`/admin/courses/${existingQuiz.courseId}`);
+    if (courseSlug?.slug) {
+      revalidatePath(`/formations/${courseSlug.slug}`);
+      revalidatePath(`/formations/${courseSlug.slug}/details`);
+    }
+    revalidatePath("/formations");
+
+    // Create analytics event
+    await db.analyticsEvent.create({
+      data: {
+        userId: session.user.id,
+        type: "QUIZ_DELETED",
+        source: "admin",
+        properties: {
+          courseId: existingQuiz.courseId,
+          quizId,
+          moduleId: existingQuiz.moduleId,
+        },
+      },
     });
 
     return { success: true };
@@ -218,8 +329,8 @@ export async function deleteQuiz(quizId: string) {
     logger.error("Error deleting quiz", {
       metadata: {
         quizId,
-        error: error instanceof Error ? error.message : String(error)
-      }
+        error: error instanceof Error ? error.message : String(error),
+      },
     });
     return { success: false, error: "Erreur lors de la suppression du quiz" };
   }

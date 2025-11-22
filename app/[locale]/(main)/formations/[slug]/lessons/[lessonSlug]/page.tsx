@@ -14,7 +14,9 @@ interface LessonPageProps {
   params: Promise<{ slug: string; lessonSlug: string }>;
 }
 
-export async function generateMetadata({ params }: LessonPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: LessonPageProps): Promise<Metadata> {
   const lesson = await db.lesson.findFirst({
     where: {
       slug: (await params).lessonSlug,
@@ -35,7 +37,9 @@ export async function generateMetadata({ params }: LessonPageProps): Promise<Met
 
   return {
     title: `${lesson.title} | ${lesson.course.title} | FYGS`,
-    description: lesson.description || `Leçon ${lesson.title} du cours ${lesson.course.title}`,
+    description:
+      lesson.description ||
+      `Leçon ${lesson.title} du cours ${lesson.course.title}`,
   };
 }
 
@@ -43,11 +47,11 @@ export default async function LessonPage({ params }: LessonPageProps) {
   const { slug, lessonSlug } = await params;
 
   const correlationId = logger.generateCorrelationId();
-  const lessonLogger = createLogger({ 
-    operation: 'lesson-page-view',
+  const lessonLogger = createLogger({
+    operation: "lesson-page-view",
     correlationId,
-    resourceType: 'lesson',
-    resourceId: lessonSlug
+    resourceType: "lesson",
+    resourceId: lessonSlug,
   });
 
   const session = await auth.api.getSession({
@@ -61,7 +65,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
   lessonLogger.info("Lesson page accessed", {
     userId: session.user.id,
     resourceId: lessonSlug,
-    metadata: { courseSlug: slug }
+    metadata: { courseSlug: slug },
   });
 
   const lesson = await db.lesson.findFirst({
@@ -93,7 +97,10 @@ export default async function LessonPage({ params }: LessonPageProps) {
   }
 
   // Centralized access check
-  const canAccess = await AccessService.canAccessLesson(session.user.id, lesson.id);
+  const canAccess = await AccessService.canAccessLesson(
+    session.user.id,
+    lesson.id
+  );
   if (!canAccess) {
     redirect(`/formations/${slug}`);
   }
@@ -112,7 +119,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
   const allProgress = await db.progress.findMany({
     where: {
       userId: session.user.id,
-      lessonId: { in: lesson.course.lessons.map(l => l.id) },
+      lessonId: { in: lesson.course.lessons.map((l) => l.id) },
     },
     select: {
       lessonId: true,
@@ -120,19 +127,45 @@ export default async function LessonPage({ params }: LessonPageProps) {
     },
   });
 
-  const currentLessonIndex = lesson.course.lessons.findIndex(l => l.id === lesson.id);
+  const currentLessonIndex = lesson.course.lessons.findIndex(
+    (l) => l.id === lesson.id
+  );
+
+  // Serialize data to avoid Decimal/Date issues with client components
+  const serializedLesson = {
+    ...lesson,
+    duration: lesson.duration ? Number(lesson.duration) : null,
+    createdAt: lesson.createdAt.toISOString(),
+    updatedAt: lesson.updatedAt.toISOString(),
+    course: {
+      ...lesson.course,
+      price: lesson.course.price ? Number(lesson.course.price) : null,
+      duration: lesson.course.duration ? Number(lesson.course.duration) : null,
+      createdAt: lesson.course.createdAt.toISOString(),
+      updatedAt: lesson.course.updatedAt.toISOString(),
+    },
+  };
+
+  const serializedProgress = progress
+    ? {
+        ...progress,
+        completedAt: progress.completedAt?.toISOString() || null,
+        createdAt: progress.createdAt.toISOString(),
+        updatedAt: progress.updatedAt.toISOString(),
+      }
+    : null;
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-slate-800">
       <div className="container py-8 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-3 space-y-6">
             <VideoPlayer
-              lesson={lesson}
+              lesson={serializedLesson}
               userId={session.user.id}
-              initialProgress={progress}
+              initialProgress={serializedProgress}
             />
-            <LessonContentComponent lesson={lesson} />
+            <LessonContentComponent lesson={serializedLesson} />
             <LessonNavigation
               lessons={lesson.course.lessons}
               currentLessonIndex={currentLessonIndex}

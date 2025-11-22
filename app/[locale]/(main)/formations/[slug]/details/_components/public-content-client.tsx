@@ -8,12 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CourseBreadcrumb } from "../../_components/course-breadcrumb";
-import { 
-  BookOpen, 
-  Target, 
-  CheckCircle, 
-  Lightbulb, 
-  ArrowLeft, 
+import {
+  BookOpen,
+  Target,
+  CheckCircle,
+  Lightbulb,
+  ArrowLeft,
   Sparkles,
   FileText,
   Users,
@@ -24,7 +24,7 @@ import {
   ChevronDown,
   ChevronUp,
   Maximize2,
-  Minimize2
+  Minimize2,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -40,8 +40,12 @@ interface PublicContentPageClientProps {
   };
 }
 
-export function PublicContentPageClient({ course }: PublicContentPageClientProps) {
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+export function PublicContentPageClient({
+  course,
+}: PublicContentPageClientProps) {
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(
+    new Set()
+  );
   const [allExpanded, setAllExpanded] = useState(false);
 
   const sections = [
@@ -54,7 +58,8 @@ export function PublicContentPageClient({ course }: PublicContentPageClientProps
       color: "from-blue-500 to-cyan-500",
       bgGradient: "from-blue-950/20 via-cyan-950/20 to-blue-950/20",
       borderColor: "border-blue-800",
-      description: "Découvrez comment notre formation est structurée pour maximiser votre apprentissage, avec une progression logique et des étapes claires.",
+      description:
+        "Découvrez comment notre formation est structurée pour maximiser votre apprentissage, avec une progression logique et des étapes claires.",
     },
     {
       id: "resources",
@@ -65,7 +70,8 @@ export function PublicContentPageClient({ course }: PublicContentPageClientProps
       color: "from-emerald-500 to-teal-500",
       bgGradient: "from-emerald-950/20 via-teal-950/20 to-emerald-950/20",
       borderColor: "border-emerald-800",
-      description: "Accédez à une bibliothèque complète de ressources : documents, vidéos, exercices pratiques et projets concrets.",
+      description:
+        "Accédez à une bibliothèque complète de ressources : documents, vidéos, exercices pratiques et projets concrets.",
     },
     {
       id: "evaluation",
@@ -76,7 +82,8 @@ export function PublicContentPageClient({ course }: PublicContentPageClientProps
       color: "from-purple-500 to-violet-500",
       bgGradient: "from-purple-950/20 via-violet-950/20 to-purple-950/20",
       borderColor: "border-purple-800",
-      description: "Comprenez comment vos compétences seront évaluées avec transparence et bienveillance pour garantir votre réussite.",
+      description:
+        "Comprenez comment vos compétences seront évaluées avec transparence et bienveillance pour garantir votre réussite.",
     },
     {
       id: "prerequisites",
@@ -87,12 +94,13 @@ export function PublicContentPageClient({ course }: PublicContentPageClientProps
       color: "from-amber-500 to-orange-500",
       bgGradient: "from-amber-950/20 via-orange-950/20 to-amber-950/20",
       borderColor: "border-amber-800",
-      description: "Vérifiez si cette formation correspond à votre niveau actuel et découvrez le profil type des participants.",
+      description:
+        "Vérifiez si cette formation correspond à votre niveau actuel et découvrez le profil type des participants.",
     },
-  ].filter(section => section.content);
+  ].filter((section) => section.content);
 
   const toggleSection = (sectionId: string) => {
-    setExpandedSections(prev => {
+    setExpandedSections((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(sectionId)) {
         newSet.delete(sectionId);
@@ -108,7 +116,7 @@ export function PublicContentPageClient({ course }: PublicContentPageClientProps
       setExpandedSections(new Set());
       setAllExpanded(false);
     } else {
-      setExpandedSections(new Set(sections.map(s => s.id)));
+      setExpandedSections(new Set(sections.map((s) => s.id)));
       setAllExpanded(true);
     }
   };
@@ -117,8 +125,8 @@ export function PublicContentPageClient({ course }: PublicContentPageClientProps
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800">
         <div className="container py-8 max-w-7xl mx-auto">
-          <CourseBreadcrumb 
-            courseTitle={course.title} 
+          <CourseBreadcrumb
+            courseTitle={course.title}
             courseSlug={course.slug}
             currentPage="Détails de la Formation"
           />
@@ -142,28 +150,34 @@ export function PublicContentPageClient({ course }: PublicContentPageClientProps
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800">
+    <div className="min-h-screen bg-slate-800">
       {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-40">
-        <div className="w-full h-full bg-repeat bg-[length:60px_60px]" style={{
-          backgroundImage: `url("data:image/svg+xml,%3csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3e%3cg fill='none' fill-rule='evenodd'%3e%3cg fill='%23000000' fill-opacity='0.02'%3e%3ccircle cx='30' cy='30' r='2'/%3e%3c/g%3e%3c/g%3e%3c/svg%3e")`,
-        }} />
+      <div className="absolute inset-0 opacity-10">
+        <div
+          className="w-full h-full bg-repeat bg-[length:60px_60px]"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3e%3cg fill='none' fill-rule='evenodd'%3e%3cg fill='%236366f1' fill-opacity='0.03'%3e%3ccircle cx='30' cy='30' r='2'/%3e%3c/g%3e%3c/g%3e%3c/svg%3e")`,
+          }}
+        />
       </div>
-      
+
       <div className="relative container py-8 max-w-7xl mx-auto">
-        <CourseBreadcrumb 
-          courseTitle={course.title} 
+        <CourseBreadcrumb
+          courseTitle={course.title}
           courseSlug={course.slug}
           currentPage="Détails de la Formation"
         />
-        
+
         {/* Page Header */}
         <div className="mt-8 mb-12">
           <div className="text-center space-y-6">
             {/* Back Button */}
             <div className="flex justify-center mb-6">
               <Link href={`/formations/${course.slug}`}>
-                <Button variant="outline" className="group hover:bg-blue-950/20 border-blue-700">
+                <Button
+                  variant="outline"
+                  className="group hover:bg-blue-950/20 border-blue-700"
+                >
                   <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
                   Retour à la formation
                 </Button>
@@ -172,8 +186,8 @@ export function PublicContentPageClient({ course }: PublicContentPageClientProps
 
             {/* Hero Section */}
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-cyan-500/10 rounded-3xl blur-xl"></div>
-              <Card className="relative border-0 bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-sm shadow-2xl">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 via-purple-400/20 to-cyan-400/20 rounded-3xl blur-2xl"></div>
+              <Card className="relative border border-blue-200/50 bg-gradient-to-br from-white/95 via-blue-50/90 to-purple-50/85 backdrop-blur-sm shadow-2xl">
                 <CardHeader className="pb-6">
                   <div className="flex flex-col items-center gap-6">
                     <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 via-purple-500 to-cyan-500 flex items-center justify-center shadow-lg">
@@ -185,13 +199,15 @@ export function PublicContentPageClient({ course }: PublicContentPageClientProps
                           Détails Complets
                         </span>
                       </CardTitle>
-                      <h2 className="text-2xl md:text-3xl font-semibold text-slate-200 mb-4">
+                      <h2 className="text-2xl md:text-3xl font-semibold text-slate-800 mb-4">
                         {course.title}
                       </h2>
-                      <p className="text-lg text-slate-400 max-w-3xl mx-auto leading-relaxed">
-                        Plongez dans tous les aspects de cette formation exceptionnelle. 
-                        Découvrez en détail ce qui vous attend, les ressources mises à votre disposition, 
-                        et comment votre parcours d&apos;apprentissage sera organisé pour votre réussite.
+                      <p className="text-lg text-slate-700 max-w-3xl mx-auto leading-relaxed">
+                        Plongez dans tous les aspects de cette formation
+                        exceptionnelle. Découvrez en détail ce qui vous attend,
+                        les ressources mises à votre disposition, et comment
+                        votre parcours d&apos;apprentissage sera organisé pour
+                        votre réussite.
                       </p>
                     </div>
                   </div>
@@ -199,34 +215,36 @@ export function PublicContentPageClient({ course }: PublicContentPageClientProps
                 <CardContent className="pt-0">
                   {/* Stats */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    <div className="text-center p-4 rounded-xl bg-gradient-to-br from-blue-950/30 to-cyan-950/30">
-                      <FileText className="h-6 w-6 text-blue-400 mx-auto mb-2" />
-                      <div className="font-bold text-lg text-white">{sections.length}</div>
-                      <div className="text-xs text-slate-400">Sections</div>
+                    <div className="text-center p-4 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-50 border border-blue-200">
+                      <FileText className="h-6 w-6 text-blue-600 mx-auto mb-2" />
+                      <div className="font-bold text-lg text-slate-800">
+                        {sections.length}
+                      </div>
+                      <div className="text-xs text-slate-600">Sections</div>
                     </div>
-                    <div className="text-center p-4 rounded-xl bg-gradient-to-br from-emerald-950/30 to-teal-950/30">
-                      <Users className="h-6 w-6 text-emerald-400 mx-auto mb-2" />
-                      <div className="font-bold text-lg text-white">∞</div>
-                      <div className="text-xs text-slate-400">Accès</div>
+                    <div className="text-center p-4 rounded-xl bg-gradient-to-br from-emerald-100 to-teal-50 border border-emerald-200">
+                      <Users className="h-6 w-6 text-emerald-600 mx-auto mb-2" />
+                      <div className="font-bold text-lg text-slate-800">∞</div>
+                      <div className="text-xs text-slate-600">Accès</div>
                     </div>
-                    <div className="text-center p-4 rounded-xl bg-gradient-to-br from-purple-950/30 to-violet-950/30">
-                      <Award className="h-6 w-6 text-purple-400 mx-auto mb-2" />
-                      <div className="font-bold text-lg text-white">💯</div>
-                      <div className="text-xs text-slate-400">Qualité</div>
+                    <div className="text-center p-4 rounded-xl bg-gradient-to-br from-purple-100 to-violet-50 border border-purple-200">
+                      <Award className="h-6 w-6 text-purple-600 mx-auto mb-2" />
+                      <div className="font-bold text-lg text-slate-800">💯</div>
+                      <div className="text-xs text-slate-600">Qualité</div>
                     </div>
-                    <div className="text-center p-4 rounded-xl bg-gradient-to-br from-amber-950/30 to-orange-950/30">
-                      <Heart className="h-6 w-6 text-amber-400 mx-auto mb-2" />
-                      <div className="font-bold text-lg text-white">🎯</div>
-                      <div className="text-xs text-slate-400">Passion</div>
+                    <div className="text-center p-4 rounded-xl bg-gradient-to-br from-amber-100 to-orange-50 border border-amber-200">
+                      <Heart className="h-6 w-6 text-amber-600 mx-auto mb-2" />
+                      <div className="font-bold text-lg text-slate-800">🎯</div>
+                      <div className="text-xs text-slate-600">Passion</div>
                     </div>
                   </div>
-                  
+
                   {/* Expand/Collapse All Button */}
                   <div className="text-center">
-                    <Button 
+                    <Button
                       onClick={toggleAllSections}
                       variant="outline"
-                      className="group hover:bg-blue-950/20 border-blue-700"
+                      className="group hover:bg-blue-50 border-blue-300 text-blue-700 hover:text-blue-800"
                     >
                       {allExpanded ? (
                         <>
@@ -248,63 +266,77 @@ export function PublicContentPageClient({ course }: PublicContentPageClientProps
         </div>
 
         {/* Content Sections */}
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8 px-2 sm:px-0">
           {sections.map((section, index) => {
             const IconComponent = section.icon;
             const isExpanded = expandedSections.has(section.id);
-            
+
             return (
               <div key={section.id} className="relative">
                 {/* Section Number */}
-                <div className="absolute -left-4 top-8 z-10">
-                  <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${section.color} flex items-center justify-center shadow-lg`}>
-                    <span className="text-white font-bold text-lg">{index + 1}</span>
+                <div className="absolute -left-2 sm:-left-4 top-6 sm:top-8 z-10">
+                  <div
+                    className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br ${section.color} flex items-center justify-center shadow-lg`}
+                  >
+                    <span className="text-white font-bold text-base sm:text-lg">
+                      {index + 1}
+                    </span>
                   </div>
                 </div>
 
                 {/* Section Content */}
-                <Card className={`
-                  ${section.borderColor} border-2 shadow-xl hover:shadow-2xl transition-all duration-500
-                  bg-gradient-to-br ${section.bgGradient} backdrop-blur-sm
-                  group hover:scale-[1.01] transform ml-8
-                `}>
-                  <CardHeader 
-                    className="pb-6 cursor-pointer"
+                <Card
+                  className={`
+                  ${section.borderColor} border-2 shadow-lg hover:shadow-xl transition-all duration-500
+                  bg-slate-400 backdrop-blur-sm
+                  group hover:scale-[1.01] transform ml-6 sm:ml-8
+                `}
+                >
+                  <CardHeader
+                    className="pb-4 sm:pb-6 cursor-pointer"
                     onClick={() => toggleSection(section.id)}
                   >
-                    <div className="flex items-start gap-6">
-                      <div className={`p-4 rounded-xl bg-gradient-to-br ${section.color} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                        <IconComponent className="w-8 h-8 text-white" />
+                    <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-6">
+                      <div
+                        className={`p-3 sm:p-4 rounded-xl bg-gradient-to-br ${section.color} shadow-lg group-hover:scale-110 transition-transform duration-300 flex-shrink-0`}
+                      >
+                        <IconComponent className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                       </div>
-                      <div className="flex-1">
-                        <CardTitle className="text-2xl font-bold text-white mb-2">
+                      <div className="flex-1 min-w-0">
+                        <CardTitle className="text-xl sm:text-2xl font-bold text-slate-900 mb-2 break-words">
                           {section.title}
                         </CardTitle>
-                        <p className="text-slate-400 text-lg mb-4">
+                        <p className="text-base sm:text-lg text-slate-800 mb-3 sm:mb-4 break-words">
                           {section.subtitle}
                         </p>
-                        <p className="text-sm text-slate-400 leading-relaxed">
+                        <p className="text-sm text-slate-700 leading-relaxed break-words">
                           {section.description}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge 
-                          variant="secondary" 
+                      <div className="flex flex-row sm:flex-col items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
+                        <Badge
+                          variant="secondary"
                           className={`bg-gradient-to-r ${section.color} text-white border-0 shadow-sm`}
+                          onClick={(e) => e.stopPropagation()}
                         >
                           <Rocket className="w-3 h-3 mr-1" />
                           Détaillé
                         </Badge>
-                        <Badge 
-                          variant="outline" 
-                          className="border-slate-600"
+                        <Badge
+                          variant="outline"
+                          className="border-slate-400 text-slate-800 bg-white/50"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           Section {index + 1}
                         </Badge>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-8 w-8 p-0 hover:bg-slate-800"
+                          className="h-8 w-8 p-0 hover:bg-blue-50"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleSection(section.id);
+                          }}
                         >
                           {isExpanded ? (
                             <ChevronUp className="h-4 w-4" />
@@ -318,21 +350,21 @@ export function PublicContentPageClient({ course }: PublicContentPageClientProps
 
                   {isExpanded && (
                     <>
-                      <Separator className="mx-6 bg-gradient-to-r from-transparent to-transparent via-slate-600" />
+                      <Separator className="mx-4 sm:mx-6 bg-slate-300" />
 
                       <CardContent className="pt-6 pb-8">
-                        <ScrollArea className="h-auto max-h-[80vh] w-full">
-                          <div className="space-y-2 pr-4">
-                            <MarkdownRenderer 
-                              content={section.content || ""} 
-                              className="prose-lg max-w-none"
+                        <ScrollArea className="h-[60vh] w-full">
+                          <div className="space-y-4 pr-4">
+                            <MarkdownRenderer
+                              content={section.content || ""}
+                              className="prose prose-slate prose-base sm:prose-lg max-w-none prose-headings:text-slate-900 prose-p:text-slate-800 prose-strong:text-slate-900 prose-a:text-blue-700 prose-li:text-slate-800"
                             />
                           </div>
                         </ScrollArea>
-                        
+
                         {/* Bottom accent */}
-                        <div className="mt-8 pt-6 border-t border-slate-700">
-                          <div className="flex items-center justify-center gap-2 text-sm text-slate-400">
+                        <div className="mt-8 pt-6 border-t border-slate-200">
+                          <div className="flex items-center justify-center gap-2 text-sm text-slate-700">
                             <Zap className="w-4 h-4" />
                             <span>Informations mises à jour régulièrement</span>
                             <Zap className="w-4 h-4" />
@@ -341,14 +373,14 @@ export function PublicContentPageClient({ course }: PublicContentPageClientProps
                       </CardContent>
                     </>
                   )}
-                  
+
                   {!isExpanded && (
                     <CardContent className="pt-0 pb-6">
                       <div className="text-center">
-                        <p className="text-sm text-slate-400 mb-2">
+                        <p className="text-sm text-slate-700 mb-2">
                           Cliquez pour voir le contenu détaillé
                         </p>
-                        <div className="flex items-center justify-center gap-2 text-xs text-slate-500">
+                        <div className="flex items-center justify-center gap-2 text-xs text-slate-600">
                           <ChevronDown className="h-3 w-3" />
                           <span>Développer</span>
                           <ChevronDown className="h-3 w-3" />
@@ -371,17 +403,26 @@ export function PublicContentPageClient({ course }: PublicContentPageClientProps
                   Prêt(e) à commencer votre apprentissage ?
                 </h3>
                 <p className="text-xl text-blue-100 mb-8">
-                  Rejoignez des milliers d&apos;apprenants qui ont transformé leur carrière grâce à nos formations de qualité.
+                  Rejoignez des milliers d&apos;apprenants qui ont transformé
+                  leur carrière grâce à nos formations de qualité.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link href={`/formations/${course.slug}`}>
-                    <Button size="lg" variant="secondary" className="bg-white text-blue-600 hover:bg-blue-50 shadow-lg">
+                    <Button
+                      size="lg"
+                      variant="secondary"
+                      className="bg-white text-blue-600 hover:bg-blue-50 shadow-lg"
+                    >
                       <BookOpen className="w-5 h-5 mr-2" />
                       Découvrir la formation
                     </Button>
                   </Link>
                   <Link href="/contact">
-                    <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="border-white text-white hover:bg-white/10"
+                    >
                       <Users className="w-5 h-5 mr-2" />
                       Poser une question
                     </Button>

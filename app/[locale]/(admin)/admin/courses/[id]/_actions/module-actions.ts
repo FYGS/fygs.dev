@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { logger } from "@/lib/structured-logger";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 
 /**
  * Get all modules for a course
@@ -68,7 +69,7 @@ export async function getModulesByCourse(courseId: string) {
  */
 export async function createModule(
   courseId: string,
-  data: { title: string; order: number }
+  data: { title: string; order?: number }
 ) {
   try {
     // Check authentication
@@ -97,6 +98,18 @@ export async function createModule(
       return { success: false, error: "Permission refusée" };
     }
 
+    // Auto-calculate order if not provided
+    let order = data.order;
+    if (order === undefined) {
+      // Get the highest order number for this course
+      const maxOrderModule = await db.module.findFirst({
+        where: { courseId },
+        orderBy: { order: "desc" },
+        select: { order: true },
+      });
+      order = (maxOrderModule?.order ?? 0) + 1;
+    }
+
     // Generate slug from title
     const slug = data.title
       .toLowerCase()
@@ -111,7 +124,37 @@ export async function createModule(
         courseId,
         title: data.title,
         slug,
-        order: data.order,
+        order,
+      },
+    });
+
+    // Get course slug for revalidation
+    const courseSlug = await db.course.findUnique({
+      where: { id: courseId },
+      select: { slug: true },
+    });
+
+    // Revalidate all relevant paths
+    revalidatePath(`/admin/courses/${courseId}`);
+    if (courseSlug?.slug) {
+      revalidatePath(`/formations/${courseSlug.slug}`);
+      revalidatePath(`/formations/${courseSlug.slug}/details`);
+    }
+    revalidatePath("/formations");
+    revalidatePath("/sitemap.xml");
+
+    // Create analytics event
+    await db.analyticsEvent.create({
+      data: {
+        userId: session.user.id,
+        type: "MODULE_CREATED",
+        source: "admin",
+        properties: {
+          courseId,
+          moduleId: newModule.id,
+          title: data.title,
+          order,
+        },
       },
     });
 
@@ -182,6 +225,34 @@ export async function updateModule(
       },
     });
 
+    // Get course slug for revalidation
+    const courseSlug = await db.course.findUnique({
+      where: { id: existingModule.courseId },
+      select: { slug: true },
+    });
+
+    // Revalidate all relevant paths
+    revalidatePath(`/admin/courses/${existingModule.courseId}`);
+    if (courseSlug?.slug) {
+      revalidatePath(`/formations/${courseSlug.slug}`);
+      revalidatePath(`/formations/${courseSlug.slug}/details`);
+    }
+    revalidatePath("/formations");
+
+    // Create analytics event
+    await db.analyticsEvent.create({
+      data: {
+        userId: session.user.id,
+        type: "MODULE_UPDATED",
+        source: "admin",
+        properties: {
+          courseId: existingModule.courseId,
+          moduleId,
+          changes: data,
+        },
+      },
+    });
+
     return { success: true, module: updatedModule };
   } catch (error) {
     logger.error("Error updating module", {
@@ -228,6 +299,33 @@ export async function deleteModule(moduleId: string) {
     // Delete the module (this will cascade to lessons)
     await db.module.delete({
       where: { id: moduleId },
+    });
+
+    // Get course slug for revalidation
+    const courseSlug = await db.course.findUnique({
+      where: { id: existingModule.courseId },
+      select: { slug: true },
+    });
+
+    // Revalidate all relevant paths
+    revalidatePath(`/admin/courses/${existingModule.courseId}`);
+    if (courseSlug?.slug) {
+      revalidatePath(`/formations/${courseSlug.slug}`);
+      revalidatePath(`/formations/${courseSlug.slug}/details`);
+    }
+    revalidatePath("/formations");
+
+    // Create analytics event
+    await db.analyticsEvent.create({
+      data: {
+        userId: session.user.id,
+        type: "MODULE_DELETED",
+        source: "admin",
+        properties: {
+          courseId: existingModule.courseId,
+          moduleId,
+        },
+      },
     });
 
     return { success: true };
@@ -285,6 +383,33 @@ export async function reorderModules(
         })
       )
     );
+
+    // Get course slug for revalidation
+    const courseSlug = await db.course.findUnique({
+      where: { id: courseId },
+      select: { slug: true },
+    });
+
+    // Revalidate all relevant paths
+    revalidatePath(`/admin/courses/${courseId}`);
+    if (courseSlug?.slug) {
+      revalidatePath(`/formations/${courseSlug.slug}`);
+      revalidatePath(`/formations/${courseSlug.slug}/details`);
+    }
+    revalidatePath("/formations");
+
+    // Create analytics event
+    await db.analyticsEvent.create({
+      data: {
+        userId: session.user.id,
+        type: "MODULES_REORDERED",
+        source: "admin",
+        properties: {
+          courseId,
+          moduleCount: moduleOrders.length,
+        },
+      },
+    });
 
     return { success: true };
   } catch (error) {

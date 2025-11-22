@@ -4,41 +4,48 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Check, 
-  Star, 
+import {
+  Check,
+  Star,
   Zap,
   Crown,
   BookOpen,
   Award,
-  Headphones} from "lucide-react";
+  Headphones,
+} from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 import { toast } from "sonner";
 
-import { enqueueAnalytics } from '@/lib/analytics-batch';
+import { enqueueAnalytics } from "@/lib/analytics-batch";
 
 interface SubscriptionPlansProps {
-  currentPlan?: 'free' | 'premium';
+  currentPlan?: "free" | "premium";
   hasMonthly?: boolean;
   hasYearly?: boolean;
-  defaultCycle?: 'monthly' | 'yearly';
-  currentCycle?: 'monthly' | 'yearly' | 'unknown';
+  defaultCycle?: "monthly" | "yearly";
+  currentCycle?: "monthly" | "yearly" | "unknown";
   previousCycleDerived?: boolean; // true when defaultCycle came from prior subscription (for badge)
 }
 
-export function SubscriptionPlans({ currentPlan = 'free', hasYearly = false, defaultCycle = 'monthly', previousCycleDerived = false }: SubscriptionPlansProps) {
+export function SubscriptionPlans({
+  currentPlan = "free",
+  hasYearly = false,
+  defaultCycle = "monthly",
+  previousCycleDerived = false,
+}: SubscriptionPlansProps) {
   const { data: session } = useSession();
   const [loading, setLoading] = useState<string | null>(null);
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>(defaultCycle);
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">(
+    defaultCycle
+  );
   const yearlyConfigured = hasYearly;
-  const effectiveBillingCycle = yearlyConfigured ? billingCycle : 'monthly';
+  const effectiveBillingCycle = yearlyConfigured ? billingCycle : "monthly";
 
   const handleSubscribe = async (planType: "premium") => {
     if (!session) {
-      toast.warning("Vous devez être connecté",{
-        description: "Veuillez vous connecter pour vous abonner",
-      });
-      window.location.href = "/auth/login";
+      // Redirect to login with callback to return to pricing page
+      const callbackUrl = encodeURIComponent(window.location.pathname);
+      window.location.href = `/auth/login?callbackUrl=${callbackUrl}`;
       return;
     }
 
@@ -58,18 +65,20 @@ export function SubscriptionPlans({ currentPlan = 'free', hasYearly = false, def
       });
 
       const data = await response.json();
-      
+
       if (response.ok && data.url) {
         window.location.href = data.url;
       } else {
-        toast.error("Erreur lors de la création de l'abonnement",{
-          description: data.error || "Erreur lors de la création de l'abonnement",
+        toast.error("Erreur lors de la création de l'abonnement", {
+          description:
+            data.error || "Erreur lors de la création de l'abonnement",
         });
       }
     } catch (subscriptionError) {
-      console.error('Subscription creation error:', subscriptionError);
-      toast.error("Erreur lors de la création de l'abonnement",{
-        description: "Une erreur est survenue lors de la création de l'abonnement",
+      console.error("Subscription creation error:", subscriptionError);
+      toast.error("Erreur lors de la création de l'abonnement", {
+        description:
+          "Une erreur est survenue lors de la création de l'abonnement",
       });
     } finally {
       setLoading(null);
@@ -101,8 +110,8 @@ export function SubscriptionPlans({ currentPlan = 'free', hasYearly = false, def
     {
       id: "premium",
       name: "Premium",
-      price: billingCycle === 'monthly' ? 29 : 290,
-      period: billingCycle === 'monthly' ? "/mois" : "/an",
+      price: billingCycle === "monthly" ? 29 : 290,
+      period: billingCycle === "monthly" ? "/mois" : "/an",
       description: "Accès illimité à tout le contenu",
       features: [
         "Accès illimité à toutes les formations",
@@ -127,17 +136,18 @@ export function SubscriptionPlans({ currentPlan = 'free', hasYearly = false, def
       <div className="text-center space-y-4">
         <h2 className="text-3xl font-bold">Choisissez votre plan</h2>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Accédez à notre catalogue complet de formations premium et accélérez votre carrière en développement.
+          Accédez à notre catalogue complet de formations premium et accélérez
+          votre carrière en développement.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
         {plans.map((plan) => (
-          <Card 
-            key={plan.id} 
+          <Card
+            key={plan.id}
             className={`relative ${
-              plan.popular 
-                ? "border-primary shadow-lg scale-105" 
+              plan.popular
+                ? "border-primary shadow-lg scale-105"
                 : "border-border"
             }`}
           >
@@ -162,33 +172,77 @@ export function SubscriptionPlans({ currentPlan = 'free', hasYearly = false, def
                 </div>
                 <p className="text-muted-foreground">{plan.description}</p>
               </div>
-              
+
               <div className="space-y-2">
-                {plan.id === 'premium' && (
+                {plan.id === "premium" && (
                   <div className="flex items-center justify-center gap-2">
                     <button
-                      onClick={() => { setBillingCycle('monthly'); enqueueAnalytics({ type: 'SUBSCRIPTION_CYCLE_TOGGLED', context: { to: 'monthly', from: billingCycle, location: 'pricing' } }); }}
-                      className={`px-3 py-1 text-xs rounded-full border ${effectiveBillingCycle==='monthly' ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted'}`}
-                    >Mensuel</button>
+                      onClick={() => {
+                        setBillingCycle("monthly");
+                        enqueueAnalytics({
+                          type: "SUBSCRIPTION_CYCLE_TOGGLED",
+                          context: {
+                            to: "monthly",
+                            from: billingCycle,
+                            location: "pricing",
+                          },
+                        });
+                      }}
+                      className={`px-3 py-1 text-xs rounded-full border ${
+                        effectiveBillingCycle === "monthly"
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-muted"
+                      }`}
+                    >
+                      Mensuel
+                    </button>
                     <button
-                      onClick={() => yearlyConfigured && (setBillingCycle('yearly'), enqueueAnalytics({ type: 'SUBSCRIPTION_CYCLE_TOGGLED', context: { to: 'yearly', from: billingCycle, location: 'pricing' } }))}
+                      onClick={() =>
+                        yearlyConfigured &&
+                        (setBillingCycle("yearly"),
+                        enqueueAnalytics({
+                          type: "SUBSCRIPTION_CYCLE_TOGGLED",
+                          context: {
+                            to: "yearly",
+                            from: billingCycle,
+                            location: "pricing",
+                          },
+                        }))
+                      }
                       disabled={!yearlyConfigured}
-                      className={`px-3 py-1 text-xs rounded-full border ${effectiveBillingCycle==='yearly' ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted'} ${!yearlyConfigured ? 'opacity-40 cursor-not-allowed' : ''}`}
-                    >Annuel -2 mois</button>
+                      className={`px-3 py-1 text-xs rounded-full border ${
+                        effectiveBillingCycle === "yearly"
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-muted"
+                      } ${
+                        !yearlyConfigured ? "opacity-40 cursor-not-allowed" : ""
+                      }`}
+                    >
+                      Annuel -2 mois
+                    </button>
                   </div>
                 )}
                 <div className="text-4xl font-bold">
                   {plan.price === 0 ? "Gratuit" : `${plan.price}€`}
-                  <span className="text-lg font-normal text-muted-foreground">{plan.period}</span>
+                  <span className="text-lg font-normal text-muted-foreground">
+                    {plan.period}
+                  </span>
                 </div>
-                {plan.id === "premium" && effectiveBillingCycle === 'yearly' && (
-                  <p className="text-xs text-green-600">Économisez 2 mois</p>
-                )}
-                {plan.id === 'premium' && previousCycleDerived && defaultCycle === 'yearly' && (
-                  <p className="text-[10px] text-primary font-medium uppercase tracking-wide">Basé sur votre précédent abonnement</p>
-                )}
-                {plan.id === 'premium' && !yearlyConfigured && (
-                  <p className="text-xs text-muted-foreground">(Annuel bientôt disponible)</p>
+                {plan.id === "premium" &&
+                  effectiveBillingCycle === "yearly" && (
+                    <p className="text-xs text-green-600">Économisez 2 mois</p>
+                  )}
+                {plan.id === "premium" &&
+                  previousCycleDerived &&
+                  defaultCycle === "yearly" && (
+                    <p className="text-[10px] text-primary font-medium uppercase tracking-wide">
+                      Basé sur votre précédent abonnement
+                    </p>
+                  )}
+                {plan.id === "premium" && !yearlyConfigured && (
+                  <p className="text-xs text-muted-foreground">
+                    (Annuel bientôt disponible)
+                  </p>
                 )}
               </div>
             </CardHeader>
@@ -201,26 +255,32 @@ export function SubscriptionPlans({ currentPlan = 'free', hasYearly = false, def
                     <span className="text-sm">{feature}</span>
                   </div>
                 ))}
-                
-                {plan.limitations && plan.limitations.map((limitation, index) => (
-                  <div key={index} className="flex items-start gap-3 opacity-60">
-                    <div className="h-5 w-5 shrink-0 mt-0.5 flex items-center justify-center">
-                      <div className="h-2 w-2 bg-muted-foreground rounded-full" />
+
+                {plan.limitations &&
+                  plan.limitations.map((limitation, index) => (
+                    <div
+                      key={index}
+                      className="flex items-start gap-3 opacity-60"
+                    >
+                      <div className="h-5 w-5 shrink-0 mt-0.5 flex items-center justify-center">
+                        <div className="h-2 w-2 bg-muted-foreground rounded-full" />
+                      </div>
+                      <span className="text-sm text-muted-foreground line-through">
+                        {limitation}
+                      </span>
                     </div>
-                    <span className="text-sm text-muted-foreground line-through">
-                      {limitation}
-                    </span>
-                  </div>
-                ))}
+                  ))}
               </div>
 
               <Button
                 className="w-full h-12 text-lg font-semibold"
                 variant={plan.buttonVariant}
                 size="lg"
-                onClick={() => plan.id === "premium" && handleSubscribe("premium")}
+                onClick={() =>
+                  plan.id === "premium" && handleSubscribe("premium")
+                }
                 disabled={
-                  loading === plan.id || 
+                  loading === plan.id ||
                   (plan.id === "free" && currentPlan === "free") ||
                   (plan.id === "premium" && currentPlan === "premium")
                 }

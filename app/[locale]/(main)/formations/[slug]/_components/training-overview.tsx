@@ -1,12 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ChevronRight, ChevronLeft, Play, Pause, RotateCcw, Eye, EyeOff, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
+import {
+  ChevronRight,
+  ChevronLeft,
+  Play,
+  Pause,
+  RotateCcw,
+  Eye,
+  EyeOff,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+} from "lucide-react";
 
 interface VisualSupportData {
   id: string;
@@ -32,26 +43,41 @@ interface TrainingOverviewProps {
   hideVisualSupportsLink?: boolean;
 }
 
-export function TrainingOverview({ course, visualSupports, defaultOpen = false, hideVisualSupportsLink = false }: TrainingOverviewProps) {
+export function TrainingOverview({
+  course,
+  visualSupports,
+  defaultOpen = true,
+  hideVisualSupportsLink = false,
+}: TrainingOverviewProps) {
   // Filter out visual supports without valid content structure
-  const validVisualSupports = visualSupports.filter(vs => 
-    vs.content && vs.content.slides && Array.isArray(vs.content.slides) && vs.content.slides.length > 0
+  const validVisualSupports = visualSupports.filter(
+    (vs) =>
+      vs.content &&
+      vs.content.slides &&
+      Array.isArray(vs.content.slides) &&
+      vs.content.slides.length > 0
   );
 
   const [isExpanded, setIsExpanded] = useState(defaultOpen);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [selectedModule, setSelectedModule] = useState<number | null>(null);
+  const [selectedModule, setSelectedModule] = useState<number | null>(
+    validVisualSupports.length > 0 ? validVisualSupports[0].moduleId : null
+  );
   const [isPlaying, setIsPlaying] = useState(false);
   const [showContent, setShowContent] = useState(true);
+  const hasInitialized = useRef(false);
 
-  // Load visual supports data
+  // Load visual supports data (only once)
   useEffect(() => {
-    if (validVisualSupports.length > 0) {
+    if (!hasInitialized.current && validVisualSupports.length > 0) {
       setSelectedModule(validVisualSupports[0].moduleId);
+      hasInitialized.current = true;
     }
   }, [validVisualSupports]);
 
-  const currentModule = validVisualSupports.find(vs => vs.moduleId === selectedModule);
+  const currentModule = validVisualSupports.find(
+    (vs) => vs.moduleId === selectedModule
+  );
   const totalSlides = currentModule?.content?.slides?.length || 0;
 
   const nextSlide = () => {
@@ -82,7 +108,7 @@ export function TrainingOverview({ course, visualSupports, defaultOpen = false, 
   useEffect(() => {
     if (isPlaying && totalSlides > 0) {
       const interval = setInterval(() => {
-        setCurrentSlide(prev => (prev + 1) % totalSlides);
+        setCurrentSlide((prev) => (prev + 1) % totalSlides);
       }, 5000); // 5 seconds per slide
 
       return () => clearInterval(interval);
@@ -100,9 +126,9 @@ export function TrainingOverview({ course, visualSupports, defaultOpen = false, 
   }
 
   return (
-    <Card className="overflow-hidden border shadow-sm bg-slate-900 border-slate-700">
-      <CardHeader 
-        className="cursor-pointer hover:bg-slate-800 transition-colors"
+    <Card className="overflow-hidden border shadow-sm bg-white/95 border-slate-200">
+      <CardHeader
+        className="cursor-pointer hover:bg-slate-50 transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <CardTitle className="flex items-center justify-between">
@@ -110,44 +136,56 @@ export function TrainingOverview({ course, visualSupports, defaultOpen = false, 
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
               <Eye className="h-4 w-4 text-white" />
             </div>
-            <span className="text-xl font-bold text-slate-100">
+            <span className="text-xl font-bold text-slate-800">
               Aperçu de la Formation
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="bg-emerald-900 text-emerald-200 border-emerald-700">
-              {validVisualSupports.length} module{validVisualSupports.length > 1 ? 's' : ''}
+            <Badge
+              variant="secondary"
+              className="bg-emerald-100 text-emerald-700 border-emerald-300"
+            >
+              {validVisualSupports.length} module
+              {validVisualSupports.length > 1 ? "s" : ""}
             </Badge>
             {isExpanded ? (
-              <ChevronUp className="h-5 w-5 text-slate-400" />
+              <ChevronUp className="h-5 w-5 text-slate-600" />
             ) : (
-              <ChevronDown className="h-5 w-5 text-slate-400" />
+              <ChevronDown className="h-5 w-5 text-slate-600" />
             )}
           </div>
         </CardTitle>
       </CardHeader>
-      
+
       {isExpanded && (
         <CardContent className="space-y-6">
           {/* Summary and Link to Full Experience */}
           <div className="space-y-4">
-            <p className="text-slate-300 leading-relaxed">
-              Découvrez les points clés de cette formation à travers des supports visuels interactifs. 
-              Cette section vous donne un aperçu des concepts essentiels qui seront abordés.
+            <p className="text-slate-700 leading-relaxed">
+              Découvrez les points clés de cette formation à travers des
+              supports visuels interactifs. Cette section vous donne un aperçu
+              des concepts essentiels qui seront abordés.
             </p>
             {!hideVisualSupportsLink && (
-              <div className="flex items-center justify-between p-4 bg-slate-800 rounded-lg border border-slate-700">
+              <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
                     <ExternalLink className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-slate-100">Expérience Complète</h4>
-                    <p className="text-sm text-slate-400">Accédez à tous les supports visuels en mode immersif</p>
+                    <h4 className="font-semibold text-slate-900">
+                      Expérience Complète
+                    </h4>
+                    <p className="text-sm text-slate-500">
+                      Accédez à tous les supports visuels en mode immersif
+                    </p>
                   </div>
                 </div>
                 <Link href={`/formations/${course.slug}/visual-supports`}>
-                  <Button variant="outline" className="bg-slate-900 border-emerald-700 text-emerald-300 hover:bg-emerald-900/20">
+                  <Button
+                    variant="outline"
+                    className="bg-white border-emerald-400 text-emerald-700 hover:bg-emerald-50"
+                  >
                     Voir Tout
                     <ExternalLink className="h-4 w-4 ml-2" />
                   </Button>
@@ -155,27 +193,37 @@ export function TrainingOverview({ course, visualSupports, defaultOpen = false, 
               </div>
             )}
           </div>
-          
-          <Separator className="bg-slate-700" />
-          
+
+          <Separator className="bg-slate-200" />
+
           {/* Module Selection */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {validVisualSupports.map((vs) => (
-              <Card 
-                key={vs.id} 
+              <Card
+                key={vs.id}
                 className={`cursor-pointer transition-all duration-200 border ${
-                  selectedModule === vs.moduleId 
-                    ? 'ring-2 ring-emerald-500 bg-emerald-950 border-emerald-700' 
-                    : 'hover:shadow-md hover:bg-slate-800 border-slate-700'
+                  selectedModule === vs.moduleId
+                    ? "ring-2 ring-emerald-500 bg-emerald-50 border-emerald-400"
+                    : "hover:shadow-md hover:bg-blue-50 border-slate-200 bg-white"
                 }`}
-                onClick={() => setSelectedModule(vs.moduleId)}
+                onClick={() => {
+                  setSelectedModule(vs.moduleId);
+                  setCurrentSlide(0);
+                }}
               >
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold text-sm text-slate-100">{vs.title}</h4>
-                    <Badge variant="outline" className="text-xs border-slate-600 text-slate-300">Module {vs.moduleId}</Badge>
+                    <h4 className="font-semibold text-sm text-slate-800">
+                      {vs.title}
+                    </h4>
+                    <Badge
+                      variant="outline"
+                      className="text-xs border-slate-300 text-slate-700"
+                    >
+                      Module {vs.moduleId}
+                    </Badge>
                   </div>
-                  <div className="flex items-center justify-between text-sm text-slate-400">
+                  <div className="flex items-center justify-between text-sm text-slate-600">
                     <span>{vs.content?.slides?.length || 0} slides</span>
                   </div>
                 </CardContent>
@@ -185,18 +233,24 @@ export function TrainingOverview({ course, visualSupports, defaultOpen = false, 
 
           {/* Visual Support Player */}
           {currentModule && (
-            <Card className="border-slate-700 bg-slate-900">
-              <CardHeader className="border-b border-slate-700">
+            <Card className="border-slate-200 bg-white">
+              <CardHeader className="border-b border-slate-200">
                 <CardTitle className="flex items-center justify-between">
-                  <span className="text-lg text-slate-100">📊 {currentModule.title}</span>
+                  <span className="text-lg text-slate-800">
+                    📊 {currentModule.title}
+                  </span>
                   <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={toggleContentVisibility}
                     >
-                      {showContent ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      {showContent ? 'Masquer' : 'Afficher'}
+                      {showContent ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                      {showContent ? "Masquer" : "Afficher"}
                     </Button>
                     <Badge variant="secondary">
                       {currentSlide + 1} / {totalSlides}
@@ -215,32 +269,38 @@ export function TrainingOverview({ course, visualSupports, defaultOpen = false, 
                       disabled={currentSlide === 0}
                     >
                       <ChevronLeft className="h-4 w-4 mr-1" />
-                      Précédent
+                      <span className="hidden sm:inline">Précédent</span>
+                      <span className="sm:hidden">Préc</span>
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={nextSlide}
                       disabled={currentSlide === totalSlides - 1}
+                      className="text-xs sm:text-sm"
                     >
-                      Suivant
+                      <span className="hidden sm:inline">Suivant</span>
+                      <span className="sm:hidden">Suiv</span>
                       <ChevronRight className="h-4 w-4 ml-1" />
                     </Button>
                   </div>
-                  
-                  <div className="flex items-center gap-2">
+
+                  <div className="flex flex-wrap items-center gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={resetSlides}
+                      className="text-xs sm:text-sm"
                     >
                       <RotateCcw className="h-4 w-4 mr-1" />
-                      Reprendre
+                      <span className="hidden sm:inline">Reprendre</span>
+                      <span className="sm:hidden">Reset</span>
                     </Button>
                     <Button
                       variant={isPlaying ? "destructive" : "default"}
                       size="sm"
                       onClick={toggleAutoplay}
+                      className="text-xs sm:text-sm"
                     >
                       {isPlaying ? (
                         <>
@@ -250,7 +310,8 @@ export function TrainingOverview({ course, visualSupports, defaultOpen = false, 
                       ) : (
                         <>
                           <Play className="h-4 w-4 mr-1" />
-                          Lecture Auto
+                          <span className="hidden sm:inline">Lecture Auto</span>
+                          <span className="sm:hidden">Auto</span>
                         </>
                       )}
                     </Button>
@@ -258,49 +319,55 @@ export function TrainingOverview({ course, visualSupports, defaultOpen = false, 
                 </div>
 
                 {/* Slide Progress Bar */}
-                <div className="w-full bg-slate-700 rounded-full h-2 mb-6">
-                  <div 
+                <div className="w-full bg-slate-200 rounded-full h-2 mb-6">
+                  <div
                     className="bg-gradient-to-r from-emerald-500 to-teal-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${((currentSlide + 1) / totalSlides) * 100}%` }}
+                    style={{
+                      width: `${((currentSlide + 1) / totalSlides) * 100}%`,
+                    }}
                   />
                 </div>
 
                 {/* Current Slide Content */}
-                {showContent && currentModule?.content?.slides?.[currentSlide] && (
-                  <div className="space-y-4">
-                    <div className="text-center">
-                      <h3 className="text-xl font-bold mb-4 text-slate-100">
-                        {currentModule.content.slides[currentSlide].title}
-                      </h3>
-                      <Separator className="mb-6 bg-slate-700" />
+                {showContent &&
+                  currentModule?.content?.slides?.[currentSlide] && (
+                    <div className="space-y-4">
+                      <div className="text-center">
+                        <h3 className="text-xl font-bold mb-4 text-slate-800">
+                          {currentModule.content.slides[currentSlide].title}
+                        </h3>
+                        <Separator className="mb-6 bg-slate-200" />
+                      </div>
+
+                      {/* Slide Content with HTML rendering */}
+                      <div
+                        className="prose prose-slate prose-sm max-w-none text-center prose-headings:text-slate-800 prose-p:text-slate-700 prose-strong:text-slate-900"
+                        dangerouslySetInnerHTML={{
+                          __html:
+                            currentModule.content.slides[currentSlide].content,
+                        }}
+                      />
                     </div>
-                    
-                    {/* Slide Content with HTML rendering */}
-                    <div 
-                      className="prose prose-sm max-w-none text-center prose-invert"
-                      dangerouslySetInnerHTML={{ 
-                        __html: currentModule.content.slides[currentSlide].content 
-                      }}
-                    />
-                  </div>
-                )}
+                  )}
 
                 {/* Slide Thumbnails */}
                 <div className="mt-8">
-                  <h4 className="text-sm font-medium mb-3 text-slate-100">Navigation rapide</h4>
+                  <h4 className="text-sm font-medium mb-3 text-slate-800">
+                    Navigation rapide
+                  </h4>
                   <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
                     {currentModule?.content?.slides?.map((slide, index) => (
                       <Card
                         key={index}
                         className={`cursor-pointer transition-all duration-200 border ${
                           index === currentSlide
-                            ? 'ring-2 ring-emerald-500 bg-emerald-950 border-emerald-700'
-                            : 'hover:shadow-sm opacity-70 hover:opacity-100 hover:bg-slate-800 border-slate-700'
+                            ? "ring-2 ring-emerald-500 bg-emerald-50 border-emerald-400"
+                            : "hover:shadow-sm opacity-70 hover:opacity-100 hover:bg-blue-50 border-slate-200 bg-white"
                         }`}
                         onClick={() => setCurrentSlide(index)}
                       >
                         <CardContent className="p-2">
-                          <div className="text-xs font-medium text-center truncate text-slate-300">
+                          <div className="text-xs font-medium text-center truncate text-slate-700">
                             {slide.title}
                           </div>
                           <div className="text-xs text-muted-foreground text-center mt-1">

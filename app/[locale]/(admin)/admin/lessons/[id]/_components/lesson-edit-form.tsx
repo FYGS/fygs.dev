@@ -285,7 +285,7 @@ export function LessonEditForm({ lesson, courses }: LessonEditFormProps) {
               name="duration"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Durée (secondes)</FormLabel>
+                  <FormLabel>Durée (minutes)</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
