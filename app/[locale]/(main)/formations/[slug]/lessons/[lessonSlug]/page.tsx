@@ -81,8 +81,23 @@ export default async function LessonPage({ params }: LessonPageProps) {
     include: {
       course: {
         include: {
+          modules: {
+            orderBy: { order: "asc" },
+            include: {
+              lessons: {
+                where: { published: true },
+                orderBy: { order: "asc" },
+                select: {
+                  id: true,
+                  title: true,
+                  slug: true,
+                  order: true,
+                },
+              },
+            },
+          },
           lessons: {
-            where: { published: true },
+            where: { published: true, moduleId: null },
             orderBy: { order: "asc" },
             select: {
               id: true,
@@ -109,6 +124,18 @@ export default async function LessonPage({ params }: LessonPageProps) {
     redirect(`/formations/${slug}`);
   }
 
+  // Fetch quizzes separately since they are not directly related to Module in Prisma
+  const quizzes = await db.quiz.findMany({
+    where: {
+      courseId: lesson.courseId,
+    },
+    select: {
+      id: true,
+      title: true,
+      moduleId: true,
+    },
+  });
+
   // Get user progress for this lesson
   const progress = await db.progress.findUnique({
     where: {
@@ -119,21 +146,75 @@ export default async function LessonPage({ params }: LessonPageProps) {
     },
   });
 
-  // Get progress for all lessons in the course
-  const allProgress = await db.progress.findMany({
-    where: {
-      userId: session.user.id,
-      lessonId: { in: lesson.course.lessons.map((l) => l.id) },
-    },
-    select: {
-      lessonId: true,
-      completed: true,
-    },
-  });
+  // Flatten lessons and quizzes for navigation and progress
+  const allLessonIds = [
+    ...lesson.course.lessons.map(l => l.id),
+    ...lesson.course.modules.flatMap(m => m.lessons.map(l => l.id))
+  ];
 
-  const currentLessonIndex = lesson.course.lessons.findIndex(
-    (l) => l.id === lesson.id
+  const allQuizIds = quizzes.map(q => q.id);
+
+  // Get progress for all lessons and quizzes in the course
+  const [allLessonProgress, allQuizResults] = await Promise.all([
+    db.progress.findMany({
+      where: {
+        userId: session.user.id,
+        lessonId: { in: allLessonIds },
+      },
+      select: {
+        lessonId: true,
+        completed: true,
+      },
+    }),
+    db.quizResult.findMany({
+      where: {
+        userId: session.user.id,
+        quizId: { in: allQuizIds },
+      },
+      select: {
+        quizId: true,
+        score: true,
+        total: true,
+        percentage: true,
+      },
+    }),
+  ]);
+
+  // Unify progress data
+  const unifiedProgress = [
+    ...allLessonProgress.map(p => ({ itemId: p.lessonId, completed: p.completed, type: 'lesson' as const })),
+    ...allQuizResults.map(q => ({ itemId: q.quizId, completed: q.percentage >= 70, type: 'quiz' as const })),
+  ];
+
+  // Re-construct the linear list of items for navigation
+  const sortedModules = lesson.course.modules;
+  const standaloneLessons = lesson.course.lessons;
+
+  // Create unified items list for navigation
+  const linearItems = [
+    ...standaloneLessons.map(l => ({ ...l, type: 'lesson' as const, url: `/formations/${slug}/lessons/${l.slug}` })),
+    ...sortedModules.flatMap(m => [
+      ...m.lessons.map(l => ({ ...l, type: 'lesson' as const, url: `/formations/${slug}/lessons/${l.slug}` })),
+      ...quizzes
+        .filter(q => q.moduleId === m.order)
+        .map(q => ({ ...q, slug: q.id, order: 999, type: 'quiz' as const, url: `/formations/${slug}/quizzes/${q.id}` }))
+    ])
+  ];
+
+  const currentItemIndex = linearItems.findIndex(
+    (item) => item.id === lesson.id
   );
+
+  // Prepare modules with quizzes for LessonProgress
+  const modulesWithQuizzes = sortedModules.map(m => ({
+    ...m,
+    items: [
+      ...m.lessons.map(l => ({ ...l, type: 'lesson' as const, url: `/formations/${slug}/lessons/${l.slug}` })),
+      ...quizzes
+        .filter(q => q.moduleId === m.order)
+        .map(q => ({ ...q, slug: q.id, order: 999, type: 'quiz' as const, url: `/formations/${slug}/quizzes/${q.id}` }))
+    ]
+  }));
 
   // Serialize data to avoid Decimal/Date issues with client components
   const serializedLesson = {
@@ -171,18 +252,23 @@ export default async function LessonPage({ params }: LessonPageProps) {
             />
             <LessonContentComponent lesson={serializedLesson} />
             <LessonNavigation
-              lessons={lesson.course.lessons}
-              currentLessonIndex={currentLessonIndex}
+              lessons={linearItems}
+              currentLessonIndex={currentItemIndex}
               courseSlug={slug}
             />
           </div>
           <div className="lg:col-span-1">
             <div className="sticky top-8">
               <LessonProgress
-                lessons={lesson.course.lessons}
+                lessons={standaloneLessons.map(l => ({
+                  ...l,
+                  type: 'lesson' as const,
+                  url: `/formations/${slug}/lessons/${l.slug}`
+                }))}
+                modules={modulesWithQuizzes}
                 currentLessonId={lesson.id}
                 courseSlug={slug}
-                progressData={allProgress}
+                progressData={unifiedProgress}
               />
             </div>
           </div>
