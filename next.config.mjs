@@ -1,6 +1,14 @@
 import MonacoWebpackPlugin from "monaco-editor-webpack-plugin";
 
 import { withIntlayer } from "next-intlayer/server";
+import withPWAInit from "next-pwa";
+
+const withPWA = withPWAInit({
+  dest: "public",
+  disable: process.env.NODE_ENV === "development",
+  register: true,
+  skipWaiting: true,
+});
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -70,4 +78,4 @@ const nextConfig = {
   reactStrictMode: true,
 };
 
-export default withIntlayer(nextConfig);
+export default withIntlayer(withPWA(nextConfig));

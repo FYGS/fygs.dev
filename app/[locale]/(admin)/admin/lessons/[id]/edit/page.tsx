@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -19,11 +19,14 @@ export default async function EditLessonPage({ params }: EditLessonPageProps) {
     headers: await headers(),
   });
 
-  if (
-    !session?.user?.role ||
-    !["ADMIN", "INSTRUCTOR"].includes(session.user.role)
-  ) {
-    notFound();
+  // Check authentication
+  if (!session?.user) {
+    redirect("/auth/login?callbackUrl=/admin/lessons/" + id + "/edit");
+  }
+
+  // Check authorization
+  if (!session.user.role || !["ADMIN", "INSTRUCTOR"].includes(session.user.role)) {
+    redirect("/unauthorized");
   }
 
   // Fetch lesson data

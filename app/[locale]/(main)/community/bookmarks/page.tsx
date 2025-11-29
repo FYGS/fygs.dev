@@ -22,7 +22,7 @@ async function BookmarksContent({ searchParams }: BookmarksPageProps) {
   const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session?.user) {
-    redirect("/auth/login");
+    redirect("/auth/login?callbackUrl=/community/bookmarks");
   }
 
   const page = parseInt(resolvedSearchParams.page || "1");

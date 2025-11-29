@@ -10,7 +10,7 @@ import { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   // Default to multilingual support with French as primary
   const name = "FYGS Learning Platform - Formations Premium";
-  const shortName = "FYGS Academy";
+  const shortName = "FYGS DEV";
   const description =
     "Master modern web technologies: JavaScript, TypeScript, React, Next.js, Node.js, AI and Cloud. Premium courses with hands-on projects.";
 

@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { ArrowLeft, Users, Heart } from "lucide-react";
@@ -23,7 +23,7 @@ async function FollowingContent({ searchParams }: FollowingPageProps) {
   const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session?.user) {
-    notFound();
+    redirect("/auth/login?callbackUrl=/community/following");
   }
 
   const page = parseInt(resolvedSearchParams.page || "1");
@@ -32,7 +32,7 @@ async function FollowingContent({ searchParams }: FollowingPageProps) {
   try {
     // Get followed topics
     const followedTopics = await CommunityService.getFollowedTopics(session.user.id);
-    
+
     if (followedTopics.length === 0) {
       return (
         <div className="min-h-screen bg-background">
@@ -158,7 +158,7 @@ async function FollowingContent({ searchParams }: FollowingPageProps) {
                     </Link>
                   </Button>
                 )}
-                
+
                 <span className="flex items-center px-3 py-2 text-sm">
                   Page {page} of {discussionsResult.pagination.totalPages}
                 </span>
@@ -193,7 +193,7 @@ async function FollowingContent({ searchParams }: FollowingPageProps) {
 
 export default function FollowingPage({ searchParams }: FollowingPageProps) {
   return (
-    <Suspense 
+    <Suspense
       fallback={
         <div className="min-h-screen bg-background">
           <div className="container mx-auto px-4 py-6">

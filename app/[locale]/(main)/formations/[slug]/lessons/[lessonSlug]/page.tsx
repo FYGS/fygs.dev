@@ -267,7 +267,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
                 }))}
                 modules={modulesWithQuizzes}
                 currentLessonId={lesson.id}
-                courseSlug={slug}
+
                 progressData={unifiedProgress}
               />
             </div>

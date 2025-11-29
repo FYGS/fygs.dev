@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { ArrowLeft, Crown, Users, MessageCircle, Clock, Github, Linkedin, Globe } from "lucide-react";
@@ -28,7 +28,7 @@ async function MentorshipContent({ searchParams }: MentorshipPageProps) {
   const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session?.user) {
-    notFound();
+    redirect("/auth/login?callbackUrl=/community/mentorship");
   }
 
   const activeTab = resolvedSearchParams.tab || "find-mentor";

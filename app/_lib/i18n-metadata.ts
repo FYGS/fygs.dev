@@ -68,27 +68,37 @@ export async function generateI18nMetadata({
   const imageUrl = image?.startsWith("http")
     ? image
     : image
-    ? `${SITE_URL}${image}`
-    : `${SITE_URL}/images/og-image.png`;
+      ? `${SITE_URL}${image}`
+      : `${SITE_URL}/images/og-image.png`;
 
   const metadata: Metadata = {
     title: localizedTitle,
     description: localizedDescription,
     keywords: localizedKeywords,
     manifest: `/manifest.webmanifest`,
+    icons: {
+      icon: [
+        { url: '/images/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+        { url: '/images/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+        { url: '/images/favicon.svg', type: 'image/svg+xml' },
+      ],
+      apple: [
+        { url: '/images/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+      ],
+    },
     robots: noIndex
       ? { index: false, follow: false }
       : {
+        index: true,
+        follow: true,
+        googleBot: {
           index: true,
           follow: true,
-          googleBot: {
-            index: true,
-            follow: true,
-            "max-video-preview": -1,
-            "max-image-preview": "large",
-            "max-snippet": -1,
-          },
+          "max-video-preview": -1,
+          "max-image-preview": "large",
+          "max-snippet": -1,
         },
+      },
     alternates: {
       canonical: fullUrl,
       languages: { ...multilingualUrls, "x-default": path || "/" },

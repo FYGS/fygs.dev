@@ -1,6 +1,6 @@
-import type { PropsWithChildren, FC } from "react";
+import type { ReactNode } from "react";
 import "./globals.css";
 
-const RootLayout: FC<PropsWithChildren> = ({ children }) => children;
-
-export default RootLayout;
+export default function RootLayout({ children }: { children: ReactNode }) {
+    return children;
+}

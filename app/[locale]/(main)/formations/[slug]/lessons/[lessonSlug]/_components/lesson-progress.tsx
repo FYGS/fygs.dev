@@ -30,7 +30,6 @@ interface LessonProgressProps {
   lessons: CourseItem[]; // Standalone lessons
   modules?: Module[];
   currentLessonId: string;
-  courseSlug: string;
   progressData: ProgressData[];
 }
 
@@ -38,7 +37,6 @@ export function LessonProgress({
   lessons,
   modules = [],
   currentLessonId,
-  courseSlug,
   progressData,
 }: LessonProgressProps) {
   const progressMap = progressData.reduce((acc, p) => {
@@ -73,10 +71,10 @@ export function LessonProgress({
       <div
         key={item.id}
         className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${isCurrent
-            ? "bg-primary/20 border-primary"
-            : isAccessible
-              ? "border-gray-700 hover:bg-gray-800"
-              : "border-gray-800 opacity-50"
+          ? "bg-primary/20 border-primary"
+          : isAccessible
+            ? "border-gray-700 hover:bg-gray-800"
+            : "border-gray-800 opacity-50"
           }`}
       >
         <div className="flex items-center justify-center w-6 h-6 rounded-full shrink-0">
@@ -99,8 +97,8 @@ export function LessonProgress({
             >
               <p
                 className={`text-sm font-medium truncate ${isCurrent
-                    ? "text-primary"
-                    : "text-white hover:text-primary"
+                  ? "text-primary"
+                  : "text-white hover:text-primary"
                   }`}
               >
                 {item.order !== 999 ? `${item.order}. ` : ''}{item.title}

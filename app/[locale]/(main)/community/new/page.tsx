@@ -22,7 +22,7 @@ async function NewDiscussionContent({ searchParams }: NewDiscussionPageProps) {
   const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session?.user) {
-    redirect("/auth/login?callbackUrl=%2Fcommunity%2Fnew");
+    redirect("/auth/login?callbackUrl=/community/new");
   }
 
   try {
