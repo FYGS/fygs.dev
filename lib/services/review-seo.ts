@@ -85,7 +85,7 @@ export class ReviewSEOService {
   static generateReviewSchema(
     review: any,
     course: { title: string; description?: string; slug?: string },
-    provider: { name: string; url?: string } = { name: "FYGS Academy" }
+    provider: { name: string; url?: string } = { name: "FYGS DEV" }
   ): ReviewSchemaData {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://fygs.dev";
 
@@ -140,7 +140,7 @@ export class ReviewSEOService {
     },
     reviews?: any[],
     instructor?: { name: string; jobTitle?: string },
-    provider: { name: string; url?: string } = { name: "FYGS Academy" }
+    provider: { name: string; url?: string } = { name: "FYGS DEV" }
   ): CourseAggregateRatingSchema {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://fygs.dev";
 

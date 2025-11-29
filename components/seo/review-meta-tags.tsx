@@ -51,7 +51,7 @@ export function generateReviewMetadata({
       type: "article",
       url: metaTags.openGraph.url,
       images: metaTags.openGraph.images,
-      siteName: "FYGS Academy",
+      siteName: "FYGS DEV",
     },
     
     twitter: {
@@ -59,7 +59,7 @@ export function generateReviewMetadata({
       title: metaTags.twitter.title,
       description: metaTags.twitter.description,
       images: metaTags.twitter.images,
-      creator: "@fygsacademy",
+      creator: "@fygsdev",
     },
     
     alternates: {
@@ -117,7 +117,7 @@ export function generateCourseReviewsMetadata({
           alt: `Avis étudiants sur ${course.title}`,
         },
       ],
-      siteName: "FYGS Academy",
+      siteName: "FYGS DEV",
     },
     
     twitter: {
@@ -125,7 +125,7 @@ export function generateCourseReviewsMetadata({
       title,
       description,
       images: [ogImageUrl],
-      creator: "@fygsacademy",
+      creator: "@fygsdev",
     },
     
     alternates: {

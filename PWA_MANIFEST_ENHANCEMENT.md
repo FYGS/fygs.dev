@@ -19,7 +19,7 @@ Enhanced the PWA manifest from a basic implementation to a world-class, modern P
 ```typescript
 {
   name: "FYGS Learning Platform - Formations Premium",
-  short_name: "FYGS Academy",
+  short_name: "FYGS DEV",
   description: "Plateforme de formations...",
   icons: [2 icons],          // ❌ Limited
   shortcuts: [4 shortcuts],  // ❌ Basic
@@ -34,7 +34,7 @@ Enhanced the PWA manifest from a basic implementation to a world-class, modern P
 ```typescript
 {
   name: "Localized name (FR/EN/ES)",
-  short_name: "FYGS Academy",
+  short_name: "FYGS DEV",
   description: "Comprehensive localized description...",
   icons: [7 icons + SVG],           // ✅ Complete set
   shortcuts: [5 shortcuts + UTM],   // ✅ Smart shortcuts
