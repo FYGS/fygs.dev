@@ -231,16 +231,6 @@ export function ProgressDashboard() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight mb-2">
-          Learning Dashboard
-        </h1>
-        <p className="text-muted-foreground">
-          Track your progress, identify strengths and weaknesses, and plan your
-          learning journey.
-        </p>
-      </div>
-
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="backdrop-blur-xs bg-background/80 border-border/50 shadow-md hover:shadow-lg transition-shadow">
@@ -254,7 +244,7 @@ export function ProgressDashboard() {
             <div className="flex flex-col">
               <div className="text-3xl font-bold">
                 {progressData.challengesCompleted}
-                <span className="text-muted-foreground text-sm font-normal ml-1">
+                <span className="text-foreground/70 text-sm font-normal ml-1">
                   / {progressData.totalChallenges}
                 </span>
               </div>
@@ -282,9 +272,9 @@ export function ProgressDashboard() {
               <div className="text-3xl font-bold">
                 {progressData.streakDays}
               </div>
-              <div className="text-muted-foreground mb-1">days</div>
+              <div className="text-foreground/70 mb-1">days</div>
             </div>
-            <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+            <div className="text-xs text-foreground/60 mt-1 flex items-center gap-1">
               <Calendar className="h-3 w-3" />
               Last activity: Today
             </div>
@@ -417,7 +407,7 @@ export function ProgressDashboard() {
                         {path.icon}
                         <span className="font-medium">{path.title}</span>
                       </div>
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-sm text-foreground/70">
                         {path.completedModules}/{path.totalModules} modules
                       </span>
                     </div>
@@ -506,7 +496,7 @@ export function ProgressDashboard() {
                         <h4 className="font-medium capitalize">
                           {skill.replace(/([A-Z])/g, " $1").trim()}
                         </h4>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-foreground/70">
                           {level < 40
                             ? "Needs significant improvement. Focus on fundamentals."
                             : level < 70
@@ -534,7 +524,7 @@ export function ProgressDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent className="h-[300px] flex items-center justify-center">
-              <div className="text-muted-foreground">
+              <div className="text-foreground/60">
                 Skill progress chart will be displayed here
               </div>
             </CardContent>
@@ -564,7 +554,7 @@ export function ProgressDashboard() {
                 </div>
                 <div>
                   <h4 className="font-medium">System Design Mastery</h4>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-foreground/70">
                     Based on your skill assessment, focusing on system design
                     would be beneficial for your career growth.
                   </p>
@@ -585,7 +575,7 @@ export function ProgressDashboard() {
                 </div>
                 <div>
                   <h4 className="font-medium">Advanced Data Structures</h4>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-foreground/70">
                     Enhance your understanding of complex data structures to
                     solve challenging problems more efficiently.
                   </p>
@@ -620,7 +610,7 @@ export function ProgressDashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground mb-2">
+                  <p className="text-sm text-foreground/70 mb-2">
                     {achievement.description}
                   </p>
                   {achievement.isUnlocked ? (

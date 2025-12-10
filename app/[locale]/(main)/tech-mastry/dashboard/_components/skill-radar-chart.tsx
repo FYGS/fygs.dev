@@ -51,7 +51,10 @@ export function SkillRadarChart({ skills }: SkillRadarChartProps) {
         />
         <PolarAngleAxis
           dataKey="subject"
-          tick={{ fill: isDark ? "hsl(var(--foreground))" : "#333" }}
+          tick={{
+            fill: isDark ? "hsl(var(--foreground))" : "hsl(var(--foreground))",
+            fontWeight: 500,
+          }}
           fontSize={12}
         />
         <PolarRadiusAxis

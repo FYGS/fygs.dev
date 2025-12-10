@@ -1,0 +1,416 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+
+type AlgorithmType = "bubble" | "selection" | "insertion" | "merge" | "quick";
+
+interface SortingStep {
+  array: number[];
+  highlighted: number[];
+  comparing: number[];
+  sorted: number[];
+}
+
+export function SortingAlgorithmsVisualization({ 
+  arraySize, 
+  speed 
+}: { 
+  arraySize: number; 
+  speed: number; 
+}) {
+  const [array, setArray] = useState<number[]>([]);
+  const [steps, setSteps] = useState<SortingStep[]>([]);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [algorithm, setAlgorithm] = useState<AlgorithmType>("bubble");
+  const [isCompleted, setIsCompleted] = useState(false);
+
+  // Initialize array with random values
+  const initializeArray = useCallback(() => {
+    const newArray = Array.from({ length: arraySize }, () => 
+      Math.floor(Math.random() * 100) + 1
+    );
+    setArray(newArray);
+    setSteps([]);
+    setCurrentStep(0);
+    setIsCompleted(false);
+  }, [arraySize]);
+
+  // Generate steps for bubble sort
+ const generateBubbleSortSteps = useCallback((arr: number[]): SortingStep[] => {
+    const steps: SortingStep[] = [];
+    const array = [...arr];
+    const n = array.length;
+
+    for (let i = 0; i < n - 1; i++) {
+      for (let j = 0; j < n - i - 1; j++) {
+        // Add step before comparison
+        steps.push({
+          array: [...array],
+          highlighted: [],
+          comparing: [j, j + 1],
+          sorted: Array.from({ length: n }, (_, idx) => idx >= n - i)
+            .map((v, i) => (v ? i : -1))
+            .filter(v => v !== -1)
+        });
+
+        if (array[j] > array[j + 1]) {
+          // Swap elements
+          [array[j], array[j + 1]] = [array[j + 1], array[j]];
+          
+          // Add step after swap
+          steps.push({
+            array: [...array],
+            highlighted: [j, j + 1],
+            comparing: [],
+            sorted: Array.from({ length: n }, (_, idx) => idx >= n - i - 1)
+              .map((v, i) => (v ? i : -1))
+              .filter(v => v !== -1)
+          });
+        }
+      }
+    }
+
+    // Add final sorted array
+    steps.push({
+      array: [...array],
+      highlighted: [],
+      comparing: [],
+      sorted: Array.from({ length: n }, (_, i) => i)
+    });
+
+    return steps;
+ }, []);
+
+  // Generate steps for selection sort
+ const generateSelectionSortSteps = useCallback((arr: number[]): SortingStep[] => {
+    const steps: SortingStep[] = [];
+    const array = [...arr];
+    const n = array.length;
+
+    for (let i = 0; i < n - 1; i++) {
+      let minIdx = i;
+      
+      // Add step showing initial state
+      steps.push({
+        array: [...array],
+        highlighted: [],
+        comparing: [i],
+        sorted: Array.from({ length: n }, (_, idx) => idx < i)
+          .map((v, i) => (v ? i : -1))
+          .filter(v => v !== -1)
+      });
+
+      for (let j = i + 1; j < n; j++) {
+        // Add step for comparison
+        steps.push({
+          array: [...array],
+          highlighted: [minIdx],
+          comparing: [j],
+          sorted: Array.from({ length: n }, (_, idx) => idx < i)
+            .map((v, i) => (v ? i : -1))
+            .filter(v => v !== -1)
+        });
+
+        if (array[j] < array[minIdx]) {
+          minIdx = j;
+        }
+      }
+
+      // Swap if needed
+      if (minIdx !== i) {
+        [array[i], array[minIdx]] = [array[minIdx], array[i]];
+        
+        // Add step after swap
+        steps.push({
+          array: [...array],
+          highlighted: [i, minIdx],
+          comparing: [],
+          sorted: Array.from({ length: n }, (_, idx) => idx <= i)
+            .map((v, i) => (v ? i : -1))
+            .filter(v => v !== -1)
+        });
+      } else {
+        // Add step when no swap is needed
+        steps.push({
+          array: [...array],
+          highlighted: [i],
+          comparing: [],
+          sorted: Array.from({ length: n }, (_, idx) => idx <= i)
+            .map((v, i) => (v ? i : -1))
+            .filter(v => v !== -1)
+        });
+      }
+    }
+
+    // Add final sorted array
+    steps.push({
+      array: [...array],
+      highlighted: [],
+      comparing: [],
+      sorted: Array.from({ length: n }, (_, i) => i)
+    });
+
+    return steps;
+ }, []);
+
+  // Generate steps for insertion sort
+  const generateInsertionSortSteps = useCallback((arr: number[]): SortingStep[] => {
+    const steps: SortingStep[] = [];
+    const array = [...arr];
+    const n = array.length;
+
+    for (let i = 1; i < n; i++) {
+      const key = array[i];
+      let j = i - 1;
+
+      // Add step before inner loop
+      steps.push({
+        array: [...array],
+        highlighted: [i],
+        comparing: [j, i],
+        sorted: Array.from({ length: n }, (_, idx) => idx < i)
+          .map((v, i) => (v ? i : -1))
+          .filter(v => v !== -1)
+      });
+
+      while (j >= 0 && array[j] > key) {
+        array[j + 1] = array[j];
+        
+        // Add step during shifting
+        steps.push({
+          array: [...array],
+          highlighted: [j, j + 1],
+          comparing: [j, i],
+          sorted: Array.from({ length: n }, (_, idx) => idx <= i)
+            .map((v, i) => (v ? i : -1))
+            .filter(v => v !== -1)
+        });
+        
+        j--;
+      }
+      
+      array[j + 1] = key;
+      
+      // Add step after insertion
+      steps.push({
+        array: [...array],
+        highlighted: [j + 1],
+        comparing: [],
+        sorted: Array.from({ length: n }, (_, idx) => idx <= i)
+          .map((v, i) => (v ? i : -1))
+          .filter(v => v !== -1)
+      });
+    }
+
+    // Add final sorted array
+    steps.push({
+      array: [...array],
+      highlighted: [],
+      comparing: [],
+      sorted: Array.from({ length: n }, (_, i) => i)
+    });
+
+    return steps;
+  }, []);
+
+  // Generate steps based on selected algorithm
+  const generateSteps = useCallback(() => {
+    if (array.length === 0) return;
+
+    let newSteps: SortingStep[] = [];
+    
+    switch (algorithm) {
+      case "bubble":
+        newSteps = generateBubbleSortSteps(array);
+        break;
+      case "selection":
+        newSteps = generateSelectionSortSteps(array);
+        break;
+      case "insertion":
+        newSteps = generateInsertionSortSteps(array);
+        break;
+      default:
+        newSteps = generateBubbleSortSteps(array);
+    }
+    
+    setSteps(newSteps);
+    setCurrentStep(0);
+    setIsCompleted(false);
+  }, [array, algorithm, generateBubbleSortSteps, generateSelectionSortSteps, generateInsertionSortSteps]);
+
+  // Initialize array on mount and when arraySize changes
+ useEffect(() => {
+    initializeArray();
+ }, [arraySize, initializeArray]);
+
+  // Play the visualization
+  useEffect(() => {
+    if (!isPlaying || currentStep >= steps.length - 1) {
+      if (currentStep >= steps.length - 1) {
+        setIsCompleted(true);
+        setIsPlaying(false);
+      }
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setCurrentStep(prev => prev + 1);
+    }, 100 - (speed * 9)); // Speed calculation: 10ms to 910ms per step
+
+    return () => clearTimeout(timer);
+  }, [isPlaying, currentStep, steps.length, speed]);
+
+  // Handle algorithm change
+  useEffect(() => {
+    generateSteps();
+  }, [algorithm, generateSteps]);
+
+  const handlePlay = () => {
+    if (currentStep >= steps.length - 1) {
+      setCurrentStep(0);
+    }
+    setIsPlaying(true);
+  };
+
+  const handlePause = () => {
+    setIsPlaying(false);
+  };
+
+  const handleReset = () => {
+    setIsPlaying(false);
+    setCurrentStep(0);
+    setIsCompleted(false);
+  };
+
+  const handleNext = () => {
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(prev => prev + 1);
+    }
+ };
+
+  const handlePrev = () => {
+    if (currentStep > 0) {
+      setCurrentStep(prev => prev - 1);
+    }
+  };
+
+  const getAlgorithmComplexity = () => {
+    switch (algorithm) {
+      case "bubble":
+        return { time: "O(n²)", space: "O(1)" };
+      case "selection":
+        return { time: "O(n²)", space: "O(1)" };
+      case "insertion":
+        return { time: "O(n²)", space: "O(1)" };
+      case "merge":
+        return { time: "O(n log n)", space: "O(n)" };
+      case "quick":
+        return { time: "O(n log n) average", space: "O(log n)" };
+      default:
+        return { time: "O(n²)", space: "O(1)" };
+    }
+  };
+
+  const complexity = getAlgorithmComplexity();
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap justify-between items-center gap-4">
+        <div className="flex flex-wrap gap-2">
+          {(["bubble", "selection", "insertion"] as AlgorithmType[]).map((algo) => (
+            <Button
+              key={algo}
+              variant={algorithm === algo ? "default" : "outline"}
+              size="sm"
+              onClick={() => setAlgorithm(algo)}
+            >
+              {algo.charAt(0).toUpperCase() + algo.slice(1)} Sort
+            </Button>
+          ))}
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Badge variant="outline">Time: {complexity.time}</Badge>
+          <Badge variant="outline">Space: {complexity.space}</Badge>
+        </div>
+      </div>
+
+      <Card className="p-4 bg-muted/30">
+        <div className="flex items-end justify-center h-64 gap-1 p-4">
+          {steps.length > 0 && steps[currentStep] ? (
+            steps[currentStep].array.map((value, index) => {
+              const isHighlighted = steps[currentStep].highlighted.includes(index);
+              const isComparing = steps[currentStep].comparing.includes(index);
+              const isSorted = steps[currentStep].sorted.includes(index);
+              
+              let barColor = "bg-primary/40";
+              if (isSorted) barColor = "bg-green-500";
+              else if (isHighlighted) barColor = "bg-yellow-500";
+              else if (isComparing) barColor = "bg-red-500";
+              
+              return (
+                <div
+                  key={index}
+                  className={`${barColor} transition-all duration-300 rounded-t-sm min-w-[20px]`}
+                  style={{
+                    height: `${(value / 100) * 100}%`,
+                  }}
+                >
+                  <div className="text-[8px] text-center text-muted-foreground pt-1">
+                    {value}
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            array.map((value, index) => (
+              <div
+                key={index}
+                className="bg-primary/40 rounded-t-sm min-w-[20px]"
+                style={{
+                  height: `${(value / 100) * 10}%`,
+                }}
+              >
+                <div className="text-[8px] text-center text-muted-foreground pt-1">
+                  {value}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </Card>
+
+      <div className="flex flex-wrap justify-center gap-2">
+        <Button variant="outline" onClick={handlePrev} disabled={currentStep === 0}>
+          Prev
+        </Button>
+        {!isPlaying ? (
+          <Button onClick={handlePlay} disabled={steps.length === 0}>
+            {currentStep === 0 || isCompleted ? "Start" : "Resume"}
+          </Button>
+        ) : (
+          <Button onClick={handlePause}>Pause</Button>
+        )}
+        <Button variant="outline" onClick={handleNext} disabled={currentStep >= (steps.length - 1)}>
+          Next
+        </Button>
+        <Button variant="outline" onClick={handleReset}>
+          Reset
+        </Button>
+        <Button variant="outline" onClick={initializeArray}>
+          Randomize
+        </Button>
+      </div>
+
+      {steps.length > 0 && (
+        <div className="text-center text-sm text-muted-foreground">
+          Step {currentStep + 1} of {steps.length}
+        </div>
+      )}
+    </div>
+  );
+}

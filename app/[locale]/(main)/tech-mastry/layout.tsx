@@ -107,7 +107,7 @@ export default function InterviewPrepLayout({
       </Sheet>
 
       {/* Desktop Sidebar */}
-      <div className="hidden border-r bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60 md:block md:w-80 lg:w-96 xl:w-104 transition-all duration-300 ease-in-out">
+      <div className="hidden border-r bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60 md:block md:w-72 lg:w-80 xl:w-96 2xl:w-[400px] transition-all duration-300 ease-in-out">
         <div className="flex h-full flex-col">
           <div className="flex h-16 items-center justify-between px-6 border-b bg-linear-to-r from-background via-background/80 to-background">
             <div className="flex items-center gap-2">
@@ -187,7 +187,7 @@ export default function InterviewPrepLayout({
       <div className="flex w-full flex-col">
         {/* Top Bar */}
         <header className="sticky top-0 z-30 h-14 border-b bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60">
-          <div className="container flex h-full max-w-7xl items-center justify-between px-6 lg:px-8">
+          <div className="flex h-full w-full max-w-[1920px] mx-auto items-center justify-between px-6 lg:px-8 xl:px-12 2xl:px-16">
             <div className="flex items-center gap-6">
               <div className="md:hidden w-4" />{" "}
               {/* Spacer for mobile menu button */}
@@ -207,7 +207,7 @@ export default function InterviewPrepLayout({
 
         {/* Content Area */}
         <main className="flex-1">
-          <div className="container max-w-7xl px-6 py-8 lg:px-8 lg:py-10">
+          <div className="w-full max-w-[1920px] mx-auto px-6 py-8 lg:px-8 lg:py-10 xl:px-12 2xl:px-16">
             <Suspense
               fallback={
                 <div className="flex items-center justify-center h-32">
@@ -226,7 +226,7 @@ export default function InterviewPrepLayout({
 
         {/* Footer */}
         <footer className="border-t bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60">
-          <div className="container flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-6 md:h-14 md:flex-row lg:px-8">
+          <div className="flex w-full max-w-[1920px] mx-auto flex-col items-center justify-between gap-4 px-6 py-6 md:h-14 md:flex-row lg:px-8 xl:px-12 2xl:px-16">
             <p className="text-sm text-muted-foreground">
               Créé avec ❤️ pour aider les développeurs à maîtriser les
               compétences techniques avancées

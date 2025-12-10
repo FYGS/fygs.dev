@@ -42,21 +42,36 @@ import {
   Wand2,
   X,
   Zap,
+  TrendingUp,
+  Target,
+  Trophy,
+  GraduationCap,
+  Star,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useEditorStore } from "../_stores/editor-store";
+import { generateCodeAnalysis } from "@/app/_services/ai-code-service";
 
 interface Message {
   id: string;
   role: "user" | "assistant" | "system";
   content: string;
   timestamp: Date;
-  type?: "text" | "code" | "analysis" | "hint";
+  type?: "text" | "code" | "analysis" | "hint" | "recommendation";
   metadata?: {
     code?: string;
     explanation?: string;
+    recommendation?: LearningRecommendation;
     [key: string]: unknown;
   };
+}
+
+interface LearningRecommendation {
+  skillGap: string;
+  resources: string[];
+  nextSteps: string[];
+  difficultyLevel: "beginner" | "intermediate" | "advanced";
+  estimatedTime: string;
 }
 
 interface EnhancedAIAssistantProps {
@@ -72,7 +87,7 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
       id: "welcome",
       role: "assistant",
       content:
-        "Hello! I'm your AI coding assistant. I can help you with code suggestions, debugging, and optimization. What would you like help with today?",
+        "Hello! I'm your AI coding assistant. I can help you with code suggestions, debugging, optimization, and personalized learning recommendations. What would you like help with today?",
       timestamp: new Date(),
       type: "text",
     },
@@ -82,6 +97,7 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
   const [codeAnalysis, setCodeAnalysis] = useState<CodeAnalysis | null>(null);
   const [codeHint, setCodeHint] = useState<CodeHint | null>(null);
   const [hintRequested, setHintRequested] = useState(false);
+  const [recommendations, setRecommendations] = useState<LearningRecommendation | null>(null);
   const { code, language } = useEditorStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -118,6 +134,7 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
       codeRef.current = code;
       analyzedRef.current = false;
       setCodeAnalysis(null);
+      setRecommendations(null);
     }
   }, [code]);
 
@@ -137,22 +154,7 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
     setIsLoading(true);
 
     try {
-      // In a production environment, this would call an API
-      // Commented out to avoid actual API calls during development
-      // const response = await fetch("/api/ai/chat", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify({
-      //     message: input,
-      //     code,
-      //     language,
-      //     challengeId,
-      //   }),
-      // }).then((res) => res.json());
-
-      // Simulate API call
+      // Simulate API call with enhanced response
       setTimeout(() => {
         const assistantMessage: Message = {
           id: crypto.randomUUID(),
@@ -187,6 +189,7 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
     // Reset state and start analyzing
     setIsAnalyzing(true);
     setCodeAnalysis(null);
+    setRecommendations(null);
 
     // Create a timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
@@ -200,22 +203,10 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
     }, 10000); // 10 second timeout
 
     try {
-      // In a production environment, this would call an API
-      // const response = await fetch("/api/ai/analyze", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify({
-      //     code,
-      //     language,
-      //   }),
-      // }).then((res) => res.json());
-
       // Simulate API call
       const analysisPromise = new Promise<CodeAnalysis>((resolve) => {
         setTimeout(() => {
-          const analysis = simulateCodeAnalysis(code, language);
+          const analysis = generateCodeAnalysis(code, language);
           resolve(analysis);
         }, 1500);
       });
@@ -232,6 +223,10 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
       analyzedRef.current = true;
       codeRef.current = code;
 
+      // Generate learning recommendations based on the analysis
+      const recommendations = generateLearningRecommendations(analysis, language);
+      setRecommendations(recommendations);
+
       // Show success toast
       toast.success("Analysis complete", {
         description: "Your code has been analyzed successfully.",
@@ -247,6 +242,45 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
     }
   };
 
+  const generateLearningRecommendations = (
+    analysis: CodeAnalysis,
+    language: string
+  ): LearningRecommendation => {
+    // Determine skill gaps based on analysis
+    const issues = analysis.suggestions.filter(s => s.severity === 'warning' || s.severity === 'critical');
+    const skillGap = issues.length > 0 
+      ? issues[0].description 
+      : "No major issues found. Consider advancing to more complex algorithms.";
+
+    // Generate resources based on language and issues found
+    const resources = [
+      `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/${language === 'javascript' ? 'Functions' : 'Objects'}`,
+      `https://www.freecodecamp.org/learn/javascript-algorithms-and-data-structures/`,
+      `https://github.com/getify/You-Dont-Know-JS/blob/1st-ed/${language}/README.md`
+    ];
+
+    // Generate next steps based on analysis
+    const nextSteps = [
+      "Review the suggestions provided in the analysis",
+      "Practice similar problems to reinforce the concepts",
+      "Explore advanced patterns for the identified issues"
+    ];
+
+    // Determine difficulty level based on analysis
+    const difficultyScore = analysis.complexity.score;
+    let difficultyLevel: "beginner" | "intermediate" | "advanced" = "intermediate";
+    if (difficultyScore < 4) difficultyLevel = "beginner";
+    else if (difficultyScore > 7) difficultyLevel = "advanced";
+
+    return {
+      skillGap,
+      resources,
+      nextSteps,
+      difficultyLevel,
+      estimatedTime: "30-60 minutes"
+    };
+  };
+
   const getHint = async () => {
     if (!challengeId) {
       toast.error("No challenge selected", {
@@ -258,19 +292,6 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
     setHintRequested(true);
 
     try {
-      // In a production environment, this would call an API
-      // const response = await fetch("/api/ai/hint", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify({
-      //     challengeId,
-      //     code,
-      //     language,
-      //   }),
-      // }).then((res) => res.json());
-
       // Simulate API call
       setTimeout(() => {
         const hint = simulateHint(challengeId);
@@ -299,6 +320,42 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
     }
   };
 
+  const getRecommendations = async () => {
+    if (!code.trim()) {
+      toast.error("No code to analyze", {
+        description: "Please write some code first.",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Analyze code to generate recommendations
+      const analysis = generateCodeAnalysis(code, language);
+      const recs = generateLearningRecommendations(analysis, language);
+      setRecommendations(recs);
+
+      // Add recommendation message
+      const recommendationMessage: Message = {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: `Based on your code analysis, I recommend focusing on improving your knowledge of ${recs.skillGap}. Here are some resources and next steps.`,
+        timestamp: new Date(),
+        type: "recommendation",
+        metadata: {
+          recommendation: recs,
+        },
+      };
+
+      setMessages((prev) => [...prev, recommendationMessage]);
+    } catch (error) {
+      console.error("Error generating recommendations:", error);
+      toast.error("Failed to generate recommendations. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Placeholder function - replace with actual AI integration
   const generateAIResponse = (
     query: string,
@@ -322,84 +379,17 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
       } else {
         return "I would be happy to provide a hint, but it seems you are not working on a specific challenge. Could you clarify what you need help with?";
       }
+    } else if (
+      query.toLowerCase().includes("learn") ||
+      query.toLowerCase().includes("improve") ||
+      query.toLowerCase().includes("recommend")
+    ) {
+      const analysis = generateCodeAnalysis(_code, language);
+      const recs = generateLearningRecommendations(analysis, language);
+      return `Based on your code, I recommend focusing on ${recs.skillGap}. Here are some next steps:\n\n${recs.nextSteps.join('\n- ')}`;
     } else {
       return `I have analyzed your ${language} code. It looks like you are working on an algorithm implementation. Can you tell me more about what you are trying to achieve, or what specific help you need?`;
     }
-  };
-
-  // Simulate code analysis - replace with actual API call in production
-  const simulateCodeAnalysis = (
-    code: string,
-    language: string
-  ): CodeAnalysis => {
-    const hasLoop = code.includes("for") || code.includes("while");
-    const hasRecursion =
-      code.includes("function") &&
-      code.includes("return") &&
-      code.includes(code.match(/function\s+(\w+)/)?.[1] || "");
-    const hasErrorHandling = code.includes("try") && code.includes("catch");
-
-    return {
-      suggestions: [
-        {
-          type: "optimization" as const,
-          description: hasLoop
-            ? "Consider using array methods like map/filter/reduce instead of loops for better readability"
-            : "Your code looks well-optimized",
-          severity: "info" as const,
-        },
-        {
-          type: "style" as const,
-          description:
-            "Add more descriptive variable names for better code readability",
-          severity: "info" as const,
-        },
-        ...(hasErrorHandling
-          ? []
-          : [
-              {
-                type: "bug" as const,
-                description: "Add error handling to make your code more robust",
-                severity: "warning" as const,
-              },
-            ]),
-        ...(hasRecursion
-          ? [
-              {
-                type: "performance" as const,
-                description: "Consider memoization to optimize recursive calls",
-                severity: "info" as const,
-                code: "const memo = {};\nfunction memoizedFn(n) {\n  if (n in memo) return memo[n];\n  // Your recursive logic\n  memo[n] = result;\n  return result;\n}",
-              },
-            ]
-          : []),
-      ],
-      explanation: `This ${language} code ${
-        code.length > 100 ? "is moderately complex and " : ""
-      }${hasLoop ? "uses loops for iteration" : "doesn't use explicit loops"}${
-        hasRecursion ? " and implements recursion" : ""
-      }${
-        hasErrorHandling
-          ? " with proper error handling"
-          : " without explicit error handling"
-      }.`,
-      complexity: {
-        time: hasLoop ? "O(n)" : hasRecursion ? "O(2^n)" : "O(1)",
-        space: hasRecursion ? "O(n)" : "O(1)",
-        score: hasRecursion ? 7 : hasLoop ? 4 : 2,
-      },
-      summary: `${language} implementation that ${
-        code.length < 50
-          ? "is concise and "
-          : code.length > 200
-          ? "is extensive and "
-          : ""
-      }${hasLoop ? "uses iteration" : ""}${
-        hasLoop && hasRecursion ? " and " : ""
-      }${hasRecursion ? "uses recursion" : ""}${
-        !hasLoop && !hasRecursion ? "uses simple operations" : ""
-      }.`,
-    };
   };
 
   // Simulate hint generation - replace with actual API call in production
@@ -517,9 +507,9 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
                 <div>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Sparkles className="h-5 w-5 text-primary" />
-                    AI Code Assistant
+                    AI Learning Assistant
                   </CardTitle>
-                  <CardDescription>Get help with your code</CardDescription>
+                  <CardDescription>Get help with your code and learning path</CardDescription>
                 </div>
                 <Button
                   variant="ghost"
@@ -535,7 +525,7 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
                 onValueChange={setActiveTab}
                 className="w-full"
               >
-                <TabsList className="grid grid-cols-3 w-full">
+                <TabsList className="grid grid-cols-4 w-full">
                   <TabsTrigger
                     value="chat"
                     className="flex items-center gap-1.5"
@@ -549,6 +539,13 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
                   >
                     <Search className="h-4 w-4" />
                     <span>Analyze</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="recommend"
+                    className="flex items-center gap-1.5"
+                  >
+                    <Target className="h-4 w-4" />
+                    <span>Recommend</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="hint"
@@ -598,6 +595,27 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
                                       <pre>{message.metadata.code}</pre>
                                     </div>
                                   )}
+
+                                {message.type === "recommendation" &&
+                                  message.metadata?.recommendation && (
+                                    <div className="mt-3 space-y-2">
+                                      <h4 className="font-medium text-sm">Recommended Learning Path:</h4>
+                                      <div className="text-xs space-y-1">
+                                        <div className="flex items-start gap-2">
+                                          <Star className="h-3 w-3 mt-0.5 text-yellow-500" />
+                                          <span>{message.metadata.recommendation.skillGap}</span>
+                                        </div>
+                                        <div className="flex items-start gap-2">
+                                          <TrendingUp className="h-3 w-3 mt-0.5 text-green-500" />
+                                          <span>Next steps: {message.metadata.recommendation.nextSteps[0]}</span>
+                                        </div>
+                                        <div className="flex items-start gap-2">
+                                          <GraduationCap className="h-3 w-3 mt-0.5 text-blue-500" />
+                                          <span>Estimated time: {message.metadata.recommendation.estimatedTime}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
                               </div>
                               <p className="text-xs text-muted-foreground">
                                 {message.timestamp.toLocaleTimeString()}
@@ -633,7 +651,7 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
                       className="flex w-full items-center space-x-2"
                     >
                       <Input
-                        placeholder="Ask for help or suggestions..."
+                        placeholder="Ask for help, suggestions, or learning recommendations..."
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         className="flex-1 bg-background/50"
@@ -767,9 +785,7 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
                                   }`}
                                   initial={{ width: 0 }}
                                   animate={{
-                                    width: `${
-                                      codeAnalysis.complexity.score * 10
-                                    }%`,
+                                    width: `${codeAnalysis.complexity.score * 10}%`,
                                   }}
                                   transition={{ duration: 0.5, delay: 0.4 }}
                                 />
@@ -851,6 +867,63 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
                             )}
                           </div>
                         </div>
+
+                        {recommendations && (
+                          <div className="pt-4 border-t border-border/30">
+                            <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
+                              <Target className="h-4 w-4 text-primary" />
+                              Personalized Recommendations
+                            </h3>
+                            <div className="space-y-3">
+                              <div className="p-3 bg-blue-500/10 rounded-md border border-blue-500/20">
+                                <div className="flex items-start gap-2">
+                                  <TrendingUp className="h-4 w-4 mt-0.5 text-blue-500" />
+                                  <div>
+                                    <p className="text-sm font-medium">Focus Area</p>
+                                    <p className="text-sm">{recommendations.skillGap}</p>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div className="p-3 bg-green-500/10 rounded-md border border-green-500/20">
+                                <div className="flex items-start gap-2">
+                                  <GraduationCap className="h-4 w-4 mt-0.5 text-green-500" />
+                                  <div>
+                                    <p className="text-sm font-medium">Next Steps</p>
+                                    <ul className="text-sm list-disc pl-4 space-y-1 mt-1">
+                                      {recommendations.nextSteps.map((step, i) => (
+                                        <li key={i}>{step}</li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div className="p-3 bg-purple-500/10 rounded-md border border-purple-500/20">
+                                <div className="flex items-start gap-2">
+                                  <Trophy className="h-4 w-4 mt-0.5 text-purple-500" />
+                                  <div>
+                                    <p className="text-sm font-medium">Resources</p>
+                                    <ul className="text-sm list-disc pl-4 space-y-1 mt-1">
+                                      {recommendations.resources.slice(0, 2).map((resource, i) => (
+                                        <li key={i} className="break-all">
+                                          <a 
+                                            href={resource} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="text-primary hover:underline"
+                                          >
+                                            {resource}
+                                          </a>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className="flex flex-col items-center justify-center py-12 space-y-5">
@@ -879,6 +952,111 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
                             Analyze Code
                           </Button>
                         </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </TabsContent>
+
+                <TabsContent value="recommend" className="m-0">
+                  <CardContent className="p-4 space-y-4">
+                    {isLoading && !recommendations ? (
+                      <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                        <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                        <p className="text-sm text-muted-foreground">
+                          Generating personalized recommendations...
+                        </p>
+                      </div>
+                    ) : recommendations ? (
+                      <div className="space-y-6">
+                        <div className="text-center">
+                          <div className="mx-auto bg-gradient-to-r from-primary/10 to-purple-500/10 p-3 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+                            <Target className="h-8 w-8 text-primary" />
+                          </div>
+                          <h3 className="font-medium text-lg">Personalized Learning Path</h3>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Based on your current skill level and code analysis
+                          </p>
+                        </div>
+
+                        <div className="space-y-4">
+                          <div className="p-4 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-lg border border-blue-500/20">
+                            <div className="flex items-center gap-2 mb-2">
+                              <TrendingUp className="h-5 w-5 text-blue-500" />
+                              <h4 className="font-medium">Focus Area</h4>
+                            </div>
+                            <p className="text-sm">{recommendations.skillGap}</p>
+                          </div>
+
+                          <div>
+                            <h4 className="font-medium mb-2 flex items-center gap-2">
+                              <GraduationCap className="h-4 w-4 text-primary" />
+                              Next Steps
+                            </h4>
+                            <div className="space-y-2">
+                              {recommendations.nextSteps.map((step, index) => (
+                                <div key={index} className="flex items-start gap-2">
+                                  <div className="mt-1 w-2 h-2 rounded-full bg-primary flex-shrink-0"></div>
+                                  <p className="text-sm">{step}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div>
+                            <h4 className="font-medium mb-2 flex items-center gap-2">
+                              <BookOpenIcon className="h-4 w-4 text-primary" />
+                              Recommended Resources
+                            </h4>
+                            <div className="space-y-2">
+                              {recommendations.resources.map((resource, index) => (
+                                <a
+                                  key={index}
+                                  href={resource}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="block p-3 bg-muted/30 rounded-md border border-border/50 hover:bg-muted/50 transition-colors text-sm"
+                                >
+                                  {resource}
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between p-3 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 rounded-lg border border-yellow-500/20">
+                            <div className="flex items-center gap-2">
+                              <Trophy className="h-4 w-4 text-yellow-500" />
+                              <div>
+                                <p className="text-sm font-medium">Difficulty Level</p>
+                                <p className="text-xs text-muted-foreground capitalize">{recommendations.difficultyLevel}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-medium">Estimated Time</p>
+                              <p className="text-xs text-muted-foreground">{recommendations.estimatedTime}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex justify-end">
+                          <Button onClick={() => getRecommendations()}>
+                            <RefreshCwIcon className="mr-2 h-4 w-4" />
+                            Regenerate
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                        <Target className="h-12 w-12 text-muted-foreground" />
+                        <div className="text-center">
+                          <h3 className="font-medium">Personalized Learning Path</h3>
+                          <p className="text-sm text-muted-foreground max-w-xs mt-1">
+                            Get customized recommendations based on your current skills and goals.
+                          </p>
+                        </div>
+                        <Button onClick={getRecommendations} className="mt-2">
+                          <Target className="mr-2 h-4 w-4" />
+                          Generate Recommendations
+                        </Button>
                       </div>
                     )}
                   </CardContent>
@@ -959,3 +1137,19 @@ export function EnhancedAIAssistant({ challengeId }: EnhancedAIAssistantProps) {
     </>
   );
 }
+
+// Icons needed for the component
+const BookOpenIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 0 0 1 0-5H20"></path>
+  </svg>
+);
+
+const RefreshCwIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+    <path d="M21 3v5h-5"></path>
+    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+    <path d="M8 16H3v5"></path>
+  </svg>
+);
