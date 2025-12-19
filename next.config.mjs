@@ -8,6 +8,20 @@ const withPWA = withPWAInit({
   disable: process.env.NODE_ENV === "development",
   register: true,
   skipWaiting: true,
+  runtimeCaching: [
+    {
+      urlPattern: /^https?.*/,
+      handler: "NetworkFirst",
+      options: {
+        cacheName: "offlineCache",
+        expiration: {
+          maxEntries: 200,
+        },
+      },
+    },
+  ],
+  // Exclude large files from precaching
+  buildExcludes: [/chunks\/4614\..*\.js$/, /static\/monaco\/.*\.worker\.js$/],
 });
 
 /** @type {import('next').NextConfig} */
