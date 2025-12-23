@@ -17,6 +17,27 @@ export function serializeCourseSummary(prismaCourse: any): CourseSummaryDTO {
     ? prismaCourse.reviews.reduce((s: number, r: any) => s + r.rating, 0) /
       prismaCourse.reviews.length
     : 0;
+
+  // Get the first lesson slug (prioritize standalone lessons, then first module's first lesson)
+  let firstLessonSlug = null;
+  const allLessons = prismaCourse.lessons || [];
+
+  // First, try standalone lessons (moduleId is null)
+  const standaloneLessons = allLessons
+    .filter((l: any) => !l.moduleId)
+    .sort((a: any, b: any) => a.order - b.order);
+
+  if (standaloneLessons.length > 0) {
+    firstLessonSlug = standaloneLessons[0].slug;
+  } else {
+    // If no standalone lessons, get first lesson from first module
+    const modules = (prismaCourse.modules || []).sort((a: any, b: any) => a.order - b.order);
+    if (modules.length > 0 && modules[0].lessons?.length > 0) {
+      const moduleLessons = modules[0].lessons.sort((a: any, b: any) => a.order - b.order);
+      firstLessonSlug = moduleLessons[0].slug;
+    }
+  }
+
   return {
     id: prismaCourse.id,
     title: prismaCourse.title,
@@ -37,7 +58,7 @@ export function serializeCourseSummary(prismaCourse: any): CourseSummaryDTO {
     })),
     requiredTier: prismaCourse.accessTier,
     previewEnabled: prismaCourse.previewEnabled,
-    firstLessonSlug: prismaCourse.lessons?.[0]?.slug || null,
+    firstLessonSlug,
     // Access flags default (will be enriched later)
     isUnlocked: undefined,
     isInSubscription: undefined,

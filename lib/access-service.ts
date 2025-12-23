@@ -296,19 +296,51 @@ export class AccessService {
       where: { id: lessonId },
       select: {
         courseId: true,
-        course: { select: { accessTier: true, previewEnabled: true } },
+        course: {
+          select: {
+            accessTier: true,
+            previewEnabled: true,
+            lessons: {
+              where: { published: true, moduleId: null },
+              orderBy: { order: "asc" },
+              select: { id: true },
+              take: 1,
+            },
+            modules: {
+              orderBy: { order: "asc" },
+              select: {
+                id: true,
+                lessons: {
+                  where: { published: true },
+                  orderBy: { order: "asc" },
+                  select: { id: true },
+                  take: 1,
+                },
+              },
+              take: 1,
+            },
+          },
+        },
       },
     });
     if (!lesson) return false;
     const access = await this.checkCourseAccess(userId, lesson.courseId);
     if (access.canAccessLessons) return true;
     if (access.canPreviewFirstLesson) {
-      const first = await db.lesson.findFirst({
-        where: { courseId: lesson.courseId, published: true },
-        orderBy: { order: "asc" },
-        select: { id: true },
-      });
-      return first?.id === lessonId;
+      // Get the first lesson (prioritize standalone, then first module's first lesson)
+      let firstLessonId: string | null = null;
+
+      const standaloneLessons = lesson.course.lessons || [];
+      if (standaloneLessons.length > 0) {
+        firstLessonId = standaloneLessons[0].id;
+      } else {
+        const modules = lesson.course.modules || [];
+        if (modules.length > 0 && modules[0].lessons?.length > 0) {
+          firstLessonId = modules[0].lessons[0].id;
+        }
+      }
+
+      return firstLessonId === lessonId;
     }
     return false;
   }

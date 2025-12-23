@@ -56,14 +56,26 @@ export function LessonProgress({
       ? Math.round((completedItems / allItems.length) * 100)
       : 0;
 
-  const renderItem = (item: CourseItem, index: number, globalIndex: number) => {
+  const renderItem = (item: CourseItem, globalIndex: number, displayNumber?: number) => {
     const itemProgress = progressMap[item.id];
     const isCompleted = itemProgress?.completed || false;
     const isCurrent = item.id === currentLessonId;
-    // Check if previous item is completed or if it's the first item
-    const isAccessible =
-      globalIndex === 0 ||
-      progressMap[allItems[globalIndex - 1]?.id]?.completed;
+
+    // Accessibility logic:
+    // - First item is always accessible
+    // - Quiz is accessible if all lessons in its module are completed
+    // - Lesson is accessible if previous lesson is completed
+    let isAccessible = false;
+    if (globalIndex === 0) {
+      isAccessible = true;
+    } else if (item.type === 'quiz') {
+      // Quiz is always accessible (user can attempt anytime)
+      // But we can make it conditional on module completion if needed
+      isAccessible = true;
+    } else {
+      // Lesson: check if previous item is completed
+      isAccessible = progressMap[allItems[globalIndex - 1]?.id]?.completed || false;
+    }
 
     const Icon = item.type === 'quiz' ? FileQuestion : Play;
 
@@ -101,12 +113,26 @@ export function LessonProgress({
                   : "text-white hover:text-primary"
                   }`}
               >
-                {item.order !== 999 ? `${item.order}. ` : ''}{item.title}
+                {item.type === 'quiz' ? (
+                  <span className="flex items-center gap-1">
+                    <FileQuestion className="h-3 w-3 inline" />
+                    {item.title}
+                  </span>
+                ) : (
+                  `${displayNumber !== undefined ? `${displayNumber}. ` : ''}${item.title}`
+                )}
               </p>
             </Link>
           ) : (
             <p className="text-sm font-medium truncate text-gray-500">
-              {item.order !== 999 ? `${item.order}. ` : ''}{item.title}
+              {item.type === 'quiz' ? (
+                <span className="flex items-center gap-1">
+                  <FileQuestion className="h-3 w-3 inline" />
+                  {item.title}
+                </span>
+              ) : (
+                `${displayNumber !== undefined ? `${displayNumber}. ` : ''}${item.title}`
+              )}
             </p>
           )}
         </div>
@@ -134,28 +160,47 @@ export function LessonProgress({
             {/* Standalone Lessons */}
             {lessons.length > 0 && (
               <div className="space-y-2">
-                {lessons.map((lesson, index) =>
-                  renderItem(lesson, index, index)
-                )}
+                {lessons.map((lesson, index) => {
+                  const globalIndex = index;
+                  return renderItem(lesson, globalIndex, index + 1);
+                })}
               </div>
             )}
 
             {/* Modules */}
-            {modules.map((module) => (
-              <div key={module.id} className="space-y-2">
-                <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider sticky top-0 bg-gray-900 py-2 z-10">
-                  {module.title}
-                </h3>
-                <div className="space-y-2">
-                  {module.items.map((item) => {
-                    const globalIndex = allItems.findIndex(
-                      (i) => i.id === item.id
-                    );
-                    return renderItem(item, 0, globalIndex);
-                  })}
+            {modules.map((module, moduleIndex) => {
+              // Count lessons before this module (standalone + previous modules)
+              let lessonNumberOffset = lessons.length;
+              for (let i = 0; i < moduleIndex; i++) {
+                lessonNumberOffset += modules[i].items.filter(item => item.type === 'lesson').length;
+              }
+
+              return (
+                <div key={module.id} className="space-y-2">
+                  <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider sticky top-0 bg-gray-900 py-2 z-10">
+                    {module.title}
+                  </h3>
+                  <div className="space-y-2">
+                    {module.items.map((item, itemIndex) => {
+                      const globalIndex = allItems.findIndex(
+                        (i) => i.id === item.id
+                      );
+
+                      // Calculate display number for lessons only
+                      let displayNumber: number | undefined = undefined;
+                      if (item.type === 'lesson') {
+                        const lessonsBeforeInModule = module.items
+                          .slice(0, itemIndex)
+                          .filter(i => i.type === 'lesson').length;
+                        displayNumber = lessonNumberOffset + lessonsBeforeInModule + 1;
+                      }
+
+                      return renderItem(item, globalIndex, displayNumber);
+                    })}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           <ScrollBar orientation="horizontal" />
           <ScrollBar orientation="vertical" />

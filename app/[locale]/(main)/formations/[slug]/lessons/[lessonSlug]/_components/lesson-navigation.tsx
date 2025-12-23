@@ -8,7 +8,7 @@ interface CourseItem {
   title: string;
   slug: string;
   order: number;
-  type: 'lesson' | 'quiz';
+  type: 'lesson' | 'quiz'; // Can be lesson or quiz in the navigation flow
   url: string;
 }
 

@@ -70,7 +70,7 @@ export default async function QuizPage({ params }: QuizPageProps) {
   }
 
   // Fetch quiz with questions
-  const [quiz, allQuizzes] = await Promise.all([
+  const [quiz, allQuizzes, modules] = await Promise.all([
     db.quiz.findUnique({
       where: {
         id: quizId,
@@ -95,10 +95,33 @@ export default async function QuizPage({ params }: QuizPageProps) {
       },
       orderBy: [{ moduleId: "asc" }, { createdAt: "asc" }],
     }),
+    // Fetch modules with lessons to find the last lesson before quiz
+    db.module.findMany({
+      where: { courseId: course.id },
+      select: {
+        id: true,
+        order: true,
+        lessons: {
+          where: { published: true },
+          orderBy: { order: "desc" },
+          select: { slug: true },
+          take: 1,
+        },
+      },
+    }),
   ]);
 
   if (!quiz) {
     notFound();
+  }
+
+  // Find the last lesson of the quiz's module
+  let previousLessonSlug: string | null = null;
+  if (quiz.moduleId) {
+    const quizModule = modules.find((m) => m.order === quiz.moduleId);
+    if (quizModule && quizModule.lessons.length > 0) {
+      previousLessonSlug = quizModule.lessons[0].slug;
+    }
   }
 
   const serializedQuiz = {
@@ -137,6 +160,7 @@ export default async function QuizPage({ params }: QuizPageProps) {
             courseSlug={course.slug}
             courseId={course.id}
             currentQuizId={quizId}
+            previousLessonSlug={previousLessonSlug}
           />
         </div>
       </div>

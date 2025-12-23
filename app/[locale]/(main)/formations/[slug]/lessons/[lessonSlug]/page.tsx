@@ -190,15 +190,41 @@ export default async function LessonPage({ params }: LessonPageProps) {
   const sortedModules = lesson.course.modules;
   const standaloneLessons = lesson.course.lessons;
 
-  // Create unified items list for navigation
+  // Create linear items list for navigation
+  // Order: standalone lessons → each module (lessons + quiz) → next module
   const linearItems = [
-    ...standaloneLessons.map(l => ({ ...l, type: 'lesson' as const, url: `/formations/${slug}/lessons/${l.slug}` })),
-    ...sortedModules.flatMap(m => [
-      ...m.lessons.map(l => ({ ...l, type: 'lesson' as const, url: `/formations/${slug}/lessons/${l.slug}` })),
-      ...quizzes
+    // Standalone lessons (moduleId is null)
+    ...standaloneLessons
+      .sort((a, b) => a.order - b.order)
+      .map(l => ({
+        ...l,
+        type: 'lesson' as const,
+        url: `/formations/${slug}/lessons/${l.slug}`
+      })),
+    // Modules with their lessons AND quizzes
+    ...sortedModules.flatMap(m => {
+      const moduleLessons = m.lessons
+        .sort((a, b) => a.order - b.order)
+        .map(l => ({
+          ...l,
+          type: 'lesson' as const,
+          url: `/formations/${slug}/lessons/${l.slug}`
+        }));
+
+      // Quiz.moduleId (Int) references Module.order (Int), not Module.id
+      const moduleQuizzes = quizzes
         .filter(q => q.moduleId === m.order)
-        .map(q => ({ ...q, slug: q.id, order: 999, type: 'quiz' as const, url: `/formations/${slug}/quizzes/${q.id}` }))
-    ])
+        .map(q => ({
+          ...q,
+          slug: q.id,
+          order: 999,
+          type: 'quiz' as const,
+          url: `/formations/${slug}/quizzes/${q.id}`
+        }));
+
+      // Return lessons followed by quizzes for this module
+      return [...moduleLessons, ...moduleQuizzes];
+    })
   ];
 
   const currentItemIndex = linearItems.findIndex(
@@ -209,10 +235,23 @@ export default async function LessonPage({ params }: LessonPageProps) {
   const modulesWithQuizzes = sortedModules.map(m => ({
     ...m,
     items: [
-      ...m.lessons.map(l => ({ ...l, type: 'lesson' as const, url: `/formations/${slug}/lessons/${l.slug}` })),
+      ...m.lessons
+        .sort((a, b) => a.order - b.order)
+        .map(l => ({
+          ...l,
+          type: 'lesson' as const,
+          url: `/formations/${slug}/lessons/${l.slug}`
+        })),
+      // Quiz.moduleId (Int) references Module.order (Int), not Module.id
       ...quizzes
         .filter(q => q.moduleId === m.order)
-        .map(q => ({ ...q, slug: q.id, order: 999, type: 'quiz' as const, url: `/formations/${slug}/quizzes/${q.id}` }))
+        .map(q => ({
+          ...q,
+          slug: q.id,
+          order: 999,
+          type: 'quiz' as const,
+          url: `/formations/${slug}/quizzes/${q.id}`
+        }))
     ]
   }));
 

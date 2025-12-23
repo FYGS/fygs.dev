@@ -185,14 +185,19 @@ export function CourseCardShared({
       <CardContent
         className={cn("space-y-3", size === "compact" ? "p-4" : "p-6")}
       >
-        <h3
-          className={cn(
-            "font-semibold leading-tight line-clamp-2",
-            size === "compact" ? "text-sm" : "text-lg"
-          )}
+        <Link
+          href={`/formations/${course.slug}`}
+          className="block group/title"
         >
-          {course.title}
-        </h3>
+          <h3
+            className={cn(
+              "font-semibold leading-tight line-clamp-2 group-hover/title:text-primary transition-colors",
+              size === "compact" ? "text-sm" : "text-lg"
+            )}
+          >
+            {course.title}
+          </h3>
+        </Link>
         <p
           className={cn(
             "text-muted-foreground line-clamp-2",

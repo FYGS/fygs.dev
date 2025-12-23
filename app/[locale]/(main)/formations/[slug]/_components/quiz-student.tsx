@@ -45,6 +45,7 @@ interface QuizStudentProps {
   courseSlug: string;
   courseId: string;
   currentQuizId: string;
+  previousLessonSlug?: string | null;
 }
 
 export function QuizStudent({
@@ -53,6 +54,7 @@ export function QuizStudent({
   courseSlug,
   courseId,
   currentQuizId,
+  previousLessonSlug,
 }: QuizStudentProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<
@@ -171,6 +173,21 @@ export function QuizStudent({
 
   return (
     <div className="space-y-6">
+      {/* Return to Lessons Button */}
+      {previousLessonSlug && (
+        <div className="flex justify-center">
+          <Link href={`/formations/${courseSlug}/lessons/${previousLessonSlug}`}>
+            <Button
+              variant="outline"
+              className="flex items-center gap-2 border-primary/50 hover:border-primary hover:bg-primary/10"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Retour aux leçons
+            </Button>
+          </Link>
+        </div>
+      )}
+
       {/* Quiz Navigation Header */}
       {allQuizzes.length > 1 && (
         <Card className="border border-slate-700 shadow-sm">

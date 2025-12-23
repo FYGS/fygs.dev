@@ -61,8 +61,27 @@ export class CourseRepository {
         lessons: {
           where: { published: true },
           orderBy: { order: "asc" },
-          select: { slug: true },
-          take: 1,
+          select: {
+            slug: true,
+            order: true,
+            moduleId: true,
+          },
+        },
+        modules: {
+          orderBy: { order: "asc" },
+          select: {
+            id: true,
+            order: true,
+            lessons: {
+              where: { published: true },
+              orderBy: { order: "asc" },
+              select: {
+                slug: true,
+                order: true,
+              },
+              take: 1,
+            },
+          },
         },
         instructor: {
           select: {
@@ -185,7 +204,23 @@ export class CourseRepository {
         lessons: {
           where: { published: true },
           orderBy: { order: "asc" },
-          select: { id: true, duration: true, slug: true },
+          select: { id: true, duration: true, slug: true, order: true, moduleId: true },
+        },
+        modules: {
+          orderBy: { order: "asc" },
+          select: {
+            id: true,
+            order: true,
+            lessons: {
+              where: { published: true },
+              orderBy: { order: "asc" },
+              select: {
+                slug: true,
+                order: true,
+              },
+              take: 1,
+            },
+          },
         },
       },
       orderBy: [{ featured: "desc" }, { createdAt: "desc" }],

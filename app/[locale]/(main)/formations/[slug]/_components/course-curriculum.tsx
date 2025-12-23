@@ -41,8 +41,9 @@ export function CourseCurriculum({
   };
 
   // Get quizzes for a specific module
-  const getModuleQuizzes = (moduleIndex: number) => {
-    return quizzes.filter(quiz => quiz.moduleId === moduleIndex + 1);
+  // Quiz.moduleId (Int) references Module.order (Int), not Module.id
+  const getModuleQuizzes = (moduleOrder: number) => {
+    return quizzes.filter(quiz => quiz.moduleId === moduleOrder);
   };
   const formatDuration = (seconds: number | null) => {
     if (!seconds) return "À venir";
@@ -192,7 +193,7 @@ export function CourseCurriculum({
                   
                   {/* Quizzes Section - Display as links at the end of each module */}
                   {isEnrolled && (() => {
-                    const moduleQuizzes = getModuleQuizzes(moduleIndex);
+                    const moduleQuizzes = getModuleQuizzes(module.order);
                     
                     return moduleQuizzes.length > 0 && (
                       <div className="space-y-1">
