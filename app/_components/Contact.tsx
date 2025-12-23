@@ -105,7 +105,7 @@ export const Contact = () => {
               url="mailto:fygs.dev@gmail.com"
               name="me@contact.com"
               description="Email me for any inquiries"
-              image="https://lh3.googleusercontent.com/a/ACg8ocIMjYoOFbL2_xkgKy1N14BS3AvMok9pZfr_Qj9W03TOiJNCGw1=s83-c-mo"
+              image="https://lh3.googleusercontent.com/a/ACg8ocLyWsphW_y-YNkW5Hmyzb0E8mxBDtJCDctdTWV3l4HtyHnnfkYI=s432-c-no"
               mediumImage="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Gmail_icon_%282020%29.svg/640px-Gmail_icon_%282020%29.svg.png"
             />
           </motion.div>
