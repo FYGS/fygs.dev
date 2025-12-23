@@ -39,6 +39,7 @@
   ],
   "exclude": [
     "node_modules",
-    "scripts/migrate-techmastry.ts"
+    "scripts/migrate-techmastry.ts",
+    "tests/**/*"
   ]
 }
