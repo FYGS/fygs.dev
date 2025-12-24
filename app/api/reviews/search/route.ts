@@ -3,8 +3,6 @@ import { ReviewSearchService } from "@/lib/services/review-search";
 import { ReviewStatus } from "@prisma/client";
 import { logger } from "@/lib/structured-logger";
 
-export const runtime = "edge";
-
 /**
  * Advanced review search with full-text search and complex filtering
  * GET /api/reviews/search?q=excellent&courseId=xxx&rating=5&verified=true

@@ -35,13 +35,14 @@ export async function enrollCourse(input: z.infer<typeof enrollCourseSchema>): P
     logger.info('Starting course enrollment', { resourceId: courseId, resourceType: 'course' })
 
     // Get authenticated user
-    const session = await auth.api.getSession({ headers: await headers() })
-    
+    const reqHeaders = await headers()
+    const session = await auth.api.getSession({ headers: reqHeaders })
+
     if (!session?.user?.id) {
       logger.warn('Enrollment attempt without authentication')
       return {
         success: false,
-        message: 'Authentication required',
+        message: 'Veuillez vous connecter pour vous inscrire à cette formation',
         error: 'UNAUTHORIZED'
       }
     }
@@ -64,16 +65,16 @@ export async function enrollCourse(input: z.infer<typeof enrollCourseSchema>): P
       contextLogger.warn('Course not found for enrollment')
       return {
         success: false,
-        message: 'Course not found',
+        message: 'Formation introuvable',
         error: 'COURSE_NOT_FOUND'
       }
     }
-    
+
     if (!course.published) {
       contextLogger.warn('Enrollment attempt on unpublished course')
       return {
         success: false,
-        message: 'Course is not available for enrollment',
+        message: 'Cette formation n\'est pas disponible à l\'inscription',
         error: 'COURSE_NOT_PUBLISHED'
       }
     }
@@ -96,7 +97,7 @@ export async function enrollCourse(input: z.infer<typeof enrollCourseSchema>): P
       contextLogger.info('User already enrolled in course', { metadata: { enrollmentId: existingEnrollment.id } })
       return {
         success: true,
-        message: 'Already enrolled in course',
+        message: 'Vous êtes déjà inscrit à cette formation',
         enrollment: existingEnrollment,
         alreadyEnrolled: true
       }
@@ -123,7 +124,7 @@ export async function enrollCourse(input: z.infer<typeof enrollCourseSchema>): P
       if (!hasSubscription && !coursePurchase) {
         return {
           success: false,
-          message: 'Premium subscription or course purchase required',
+          message: 'Un abonnement Premium ou l\'achat de la formation est requis',
           error: 'PREMIUM_ACCESS_REQUIRED'
         }
       }
@@ -171,7 +172,7 @@ export async function enrollCourse(input: z.infer<typeof enrollCourseSchema>): P
 
     return {
       success: true,
-      message: `Successfully enrolled in ${course.title}`,
+      message: `Inscription réussie à ${course.title}`,
       enrollment
     }
     
@@ -181,14 +182,14 @@ export async function enrollCourse(input: z.infer<typeof enrollCourseSchema>): P
     if (error instanceof z.ZodError) {
       return {
         success: false,
-        message: 'Invalid input data',
+        message: 'Données invalides',
         error: 'VALIDATION_ERROR'
       }
     }
-    
+
     return {
       success: false,
-      message: 'Failed to enroll in course',
+      message: 'Une erreur est survenue lors de l\'inscription',
       error: 'INTERNAL_ERROR'
     }
   }

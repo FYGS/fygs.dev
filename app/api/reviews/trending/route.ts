@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { ReviewSearchService } from "@/lib/services/review-search";
 import { logger } from "@/lib/structured-logger";
 
-export const runtime = "edge";
-
 /**
  * Get trending reviews (high engagement)
  * GET /api/reviews/trending?courseId=xxx&period=week&limit=10
