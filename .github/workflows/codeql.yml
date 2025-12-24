@@ -1,15 +1,13 @@
 name: CodeQL Security Analysis
 
-# Temporarily disabled - Code scanning needs to be enabled in repository settings
-# To enable: Go to repository Settings > Security > Code security and analysis > Enable Code scanning
 on:
-  workflow_dispatch:  # Manual trigger only
-  # push:
-  #   branches: [ main, develop ]
-  # pull_request:
-  #   branches: [ main ]
-  # schedule:
-  #   - cron: '0 6 * * 1'  # Weekly on Mondays at 6 AM UTC
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 6 * * 1'  # Weekly on Mondays at 6 AM UTC
+  workflow_dispatch:
 
 jobs:
   analyze:

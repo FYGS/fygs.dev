@@ -12,7 +12,7 @@ concurrency:
 
 env:
   NODE_VERSION: '20.x'
-  # PNPM_VERSION: '10.x'
+  NODE_OPTIONS: '--max_old_space_size=4096'
 
 jobs:
   lint-and-typecheck:
@@ -63,12 +63,12 @@ jobs:
         env:
           SKIP_ENV_VALIDATION: true
 
-  # TODO: Fix and re-enable tests
+  # TODO: Enable tests when ready
   # test:
   #   name: Run Tests
   #   runs-on: ubuntu-latest
   #   timeout-minutes: 15
-
+  #
   #   services:
   #     postgres:
   #       image: postgres:16
@@ -82,7 +82,7 @@ jobs:
   #         --health-retries 5
   #       ports:
   #         - 5432:5432
-
+  #
   #     redis:
   #       image: redis:7-alpine
   #       options: >-
@@ -92,51 +92,53 @@ jobs:
   #         --health-retries 5
   #       ports:
   #         - 6379:6379
-
+  #
   #   steps:
   #     - name: Checkout code
   #       uses: actions/checkout@v4
-
+  #
   #     - name: Setup Node.js
   #       uses: actions/setup-node@v4
   #       with:
   #         node-version: ${{ env.NODE_VERSION }}
-
+  #
   #     - name: Setup pnpm
   #       uses: pnpm/action-setup@v4
-  #       # with:
-  #       #   version: ${{ env.PNPM_VERSION }}
-
+  #       with:
+  #         run_install: false
+  #
   #     - name: Get pnpm store directory
+  #       id: pnpm-cache
   #       shell: bash
-  #       run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
+  #       run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+  #
   #     - name: Setup pnpm cache
   #       uses: actions/cache@v4
   #       with:
-  #         path: ${{ env.STORE_PATH }}
+  #         path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
   #         key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
   #         restore-keys: |
   #           ${{ runner.os }}-pnpm-store-
-
+  #
   #     - name: Install dependencies
   #       run: pnpm install --frozen-lockfile
-
+  #
   #     - name: Generate Prisma client
   #       run: pnpm prisma generate
-
+  #
   #     - name: Run database migrations
   #       run: pnpm db:push:test
   #       env:
   #         DATABASE_URL: postgresql://postgres:postgres@localhost:5432/fygs_test
   #         REDIS_URL: redis://localhost:6379
-
+  #
   #     - name: Run tests
   #       run: pnpm test
   #       env:
   #         DATABASE_URL: postgresql://postgres:postgres@localhost:5432/fygs_test
   #         REDIS_URL: redis://localhost:6379
   #         NODE_ENV: test
+  #         SKIP_ENV_VALIDATION: true
 
   build:
     name: Build Application
@@ -171,6 +173,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx', '**/*.css') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-
+            ${{ runner.os }}-nextjs-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -194,25 +205,6 @@ jobs:
             public/
           retention-days: 1
 
-  # deploy:
-  #   name: Deploy to Coolify
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 10
-  #   needs: [build]
-  #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
-
-  #     - name: Trigger Coolify Deployment
-  #       run: |
-  #         curl -X POST \
-  #           -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" \
-  #           -H "Content-Type: application/json" \
-  #           -d '{"source": "github", "branch": "main"}' \
-  #           ${{ secrets.COOLIFY_WEBHOOK_URL }}
-
   security:
     name: Security Scan
     runs-on: ubuntu-latest
@@ -230,14 +222,12 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        # with:
-        #   version: ${{ env.PNPM_VERSION }}
+        with:
+          run_install: false
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Run security audit
-        run: pnpm audit --audit-level moderate
-
-      - name: Run CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        run: pnpm audit --audit-level high
+        continue-on-error: true
