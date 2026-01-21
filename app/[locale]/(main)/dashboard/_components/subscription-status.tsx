@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { CheckCircle, XCircle, Crown, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,30 +20,69 @@ export function SubscriptionStatus({
   userName,
   cycle = "monthly",
 }: SubscriptionStatusProps) {
+  const router = useRouter();
+
   useEffect(() => {
+    // Use sessionStorage to ensure notification shows only once per session
+    const notificationKey = `subscription-${type}-${cycle}-shown`;
+    const hasShown = sessionStorage.getItem(notificationKey);
+
+    if (hasShown) {
+      // Already shown this session, just clean up params
+      const timeout = setTimeout(() => {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("subscription");
+        url.searchParams.delete("cycle");
+        window.history.replaceState({}, "", url.toString());
+      }, 100);
+      return () => clearTimeout(timeout);
+    }
+
     if (type === "success") {
       notify.success(
         "🎉 Abonnement Premium activé !",
         cycle === "yearly"
           ? "Abonnement annuel confirmé. Vous économisez 2 mois ! Accès complet immédiat à tout le contenu."
           : "Bienvenue dans la communauté Premium ! Vous avez maintenant accès à tous les cours et fonctionnalités exclusives.",
-        8000
+        8000,
       );
 
-      // Force page reload after short delay to ensure UI updates
+      // Mark as shown
+      sessionStorage.setItem(notificationKey, "true");
+
+      // Refresh server components data without full page reload
+      router.refresh();
+
+      // Clean up URL query params after showing the message
       const timeout = setTimeout(() => {
-        window.location.reload();
-      }, 2000);
+        const url = new URL(window.location.href);
+        url.searchParams.delete("subscription");
+        url.searchParams.delete("cycle");
+        window.history.replaceState({}, "", url.toString());
+      }, 1000);
 
       return () => clearTimeout(timeout);
     } else if (type === "canceled") {
       notify.warning(
         "Abonnement annulé",
         "Votre abonnement Premium a été annulé. Vous pouvez réessayer à tout moment.",
-        6000
+        6000,
       );
+
+      // Mark as shown
+      sessionStorage.setItem(notificationKey, "true");
+
+      // Clean up URL query params
+      const timeout = setTimeout(() => {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("subscription");
+        url.searchParams.delete("cycle");
+        window.history.replaceState({}, "", url.toString());
+      }, 1000);
+
+      return () => clearTimeout(timeout);
     }
-  }, [type, cycle]);
+  }, [type, cycle, router]);
 
   if (type === "success") {
     return (

@@ -47,7 +47,7 @@ export function CoursePaymentForm({
   canPreview = false,
   hasPurchased = false,
 }: CoursePaymentFormProps) {
-  const { data: session } = useSession();
+  const { data: session, isPending: isSessionPending } = useSession();
   const [loading, setLoading] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -69,6 +69,7 @@ export function CoursePaymentForm({
   const averageRating = course.averageRating ?? 0;
 
   const handlePayment = async () => {
+    // If already enrolled, redirect to first lesson or course page
     if (isEnrolled) {
       const firstLessonSlug = course.firstLessonSlug || null;
       window.location.href = firstLessonSlug
@@ -77,13 +78,15 @@ export function CoursePaymentForm({
       return;
     }
 
-    if (!session) {
+    // Handle unauthenticated users - redirect to login with callback
+    if (!session || isSessionPending) {
       paymentLogger.warn("Unauthenticated payment attempt", {
         userId: undefined,
         metadata: { courseId: course.id, price: course.price },
       });
       // Redirect to login with callback to return to course page
-      const callbackUrl = encodeURIComponent(`/formations/${course.slug}`);
+      const currentPath = `/formations/${course.slug}`;
+      const callbackUrl = encodeURIComponent(currentPath);
       window.location.href = `/auth/login?callbackUrl=${callbackUrl}`;
       return;
     }
@@ -168,6 +171,14 @@ export function CoursePaymentForm({
   const isFree = course.price === 0;
   const showEnrollButton = hasPurchased && !isEnrolled;
   const enrollExplicitly = () => {
+    // Handle unauthenticated users for enrollment button as well
+    if (!session || isSessionPending) {
+      const currentPath = `/formations/${course.slug}`;
+      const callbackUrl = encodeURIComponent(currentPath);
+      window.location.href = `/auth/login?callbackUrl=${callbackUrl}`;
+      return;
+    }
+
     startTransition(async () => {
       try {
         const result = await enrollCourse({ courseId: course.id });
@@ -245,12 +256,12 @@ export function CoursePaymentForm({
           className="w-full h-12 text-lg font-semibold"
           size="lg"
           onClick={showEnrollButton ? enrollExplicitly : handlePayment}
-          disabled={loading || isPending}
+          disabled={loading || isPending || isSessionPending}
           variant={
             isEnrolled ? "outline" : showEnrollButton ? "default" : "default"
           }
         >
-          {loading || isPending ? (
+          {loading || isPending || isSessionPending ? (
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
               <span>Traitement...</span>

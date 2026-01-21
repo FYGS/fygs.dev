@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       {
         eventType: "webhook.request_read_error",
       },
-      error instanceof Error ? error : new Error(String(error))
+      error instanceof Error ? error : new Error(String(error)),
     );
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
@@ -77,8 +77,8 @@ export async function POST(req: NextRequest) {
                 typeof session.customer === "string"
                   ? session.customer
                   : typeof session.customer === "object"
-                  ? session.customer?.id
-                  : null,
+                    ? session.customer?.id
+                    : null,
               createdAt: new Date(session.created * 1000).toISOString(),
               hasPaymentIntent: !!session.payment_intent,
             },
@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
                     userId,
                     resourceType: "subscription",
                     resourceId: session.subscription as string,
-                  }
+                  },
                 );
               } catch (subscriptionError) {
                 logger.error(
@@ -161,7 +161,7 @@ export async function POST(req: NextRequest) {
                   },
                   subscriptionError instanceof Error
                     ? subscriptionError
-                    : new Error(String(subscriptionError))
+                    : new Error(String(subscriptionError)),
                 );
               }
             }
@@ -190,7 +190,7 @@ export async function POST(req: NextRequest) {
                         course.slug,
                         session.amount_total
                           ? session.amount_total / 100
-                          : undefined
+                          : undefined,
                       );
                       logger.info("Course purchase email sent", {
                         eventType: "email.course_purchase_sent",
@@ -210,7 +210,7 @@ export async function POST(req: NextRequest) {
                       user.email,
                       "Premium",
                       session.amount_total ? session.amount_total / 100 : 0,
-                      "monthly"
+                      "monthly",
                     );
                     logger.info("Premium subscription email sent", {
                       eventType: "email.subscription_welcome_sent",
@@ -230,7 +230,7 @@ export async function POST(req: NextRequest) {
                   },
                   emailError instanceof Error
                     ? emailError
-                    : new Error(String(emailError))
+                    : new Error(String(emailError)),
                 );
                 // Don't fail the webhook for email errors
               }
@@ -243,7 +243,7 @@ export async function POST(req: NextRequest) {
               eventType: "webhook.checkout_session_error",
               resourceType: "checkout_session",
             },
-            error instanceof Error ? error : new Error(String(error))
+            error instanceof Error ? error : new Error(String(error)),
           );
           throw error; // Re-throw to trigger webhook retry
         }
@@ -298,15 +298,42 @@ export async function POST(req: NextRequest) {
             // Cast subscription to any to safely access properties that might not be in the type definition
             const subData = subscription as any;
 
+            // Get period dates from subscription_item (items.data[0]) as they are not at root level
+            const subscriptionItem = subscription.items?.data?.[0];
+            const itemData = subscriptionItem as any;
+
             // Add safe access to period timestamps with fallbacks
+            // Period dates are in items.data[0], not at subscription root level
             const currentPeriodStart =
-              subData.current_period_start ||
+              itemData?.current_period_start ||
               subData.billing_cycle_anchor ||
+              subData.start_date ||
               Math.floor(Date.now() / 1000);
 
             const currentPeriodEnd =
-              subData.current_period_end ||
-              Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60; // Default to 30 days later
+              itemData?.current_period_end ||
+              Math.floor(Date.now() / 1000) +
+                (interval === "yearly" ? 365 : 30) * 24 * 60 * 60;
+
+            // Log detailed period information for debugging
+            logger.info("Subscription period details", {
+              eventType: event.type,
+              userId,
+              resourceId: subscription.id,
+              metadata: {
+                currentPeriodStartRaw: itemData?.current_period_start,
+                currentPeriodEndRaw: itemData?.current_period_end,
+                currentPeriodStartDate: new Date(
+                  currentPeriodStart * 1000,
+                ).toISOString(),
+                currentPeriodEndDate: new Date(
+                  currentPeriodEnd * 1000,
+                ).toISOString(),
+                billingCycle: interval,
+                priceId,
+                status: subscription.status,
+              },
+            });
 
             const subscriptionData = {
               userId,
@@ -342,7 +369,7 @@ export async function POST(req: NextRequest) {
                       "Premium",
                       (subscription as any).items.data[0]?.price?.unit_amount /
                         100 || 0,
-                      interval
+                      interval,
                     );
                     Analytics.subscriptionStarted(userId, {
                       priceId,
@@ -375,7 +402,7 @@ export async function POST(req: NextRequest) {
                   },
                   emailError instanceof Error
                     ? emailError
-                    : new Error(String(emailError))
+                    : new Error(String(emailError)),
                 );
               }
             }
@@ -397,7 +424,7 @@ export async function POST(req: NextRequest) {
               eventType: "webhook.subscription_update_error",
               resourceType: "subscription",
             },
-            error instanceof Error ? error : new Error(String(error))
+            error instanceof Error ? error : new Error(String(error)),
           );
           throw error;
         }
@@ -429,7 +456,7 @@ export async function POST(req: NextRequest) {
               if (user) {
                 await emailService.sendSubscriptionCanceledEmail(
                   user.name || "Étudiant",
-                  user.email
+                  user.email,
                 );
                 // Record cancellation via soft cancel analytics (even if immediate delete event)
                 Analytics.subscriptionCanceledSoft(userId, {
@@ -454,7 +481,7 @@ export async function POST(req: NextRequest) {
                 },
                 emailError instanceof Error
                   ? emailError
-                  : new Error(String(emailError))
+                  : new Error(String(emailError)),
               );
             }
 
@@ -474,7 +501,7 @@ export async function POST(req: NextRequest) {
               eventType: "webhook.subscription_deletion_error",
               resourceType: "subscription",
             },
-            error instanceof Error ? error : new Error(String(error))
+            error instanceof Error ? error : new Error(String(error)),
           );
           throw error;
         }
@@ -488,7 +515,7 @@ export async function POST(req: NextRequest) {
           // Webhook is the single source of truth for successful subscription payments
           if (invoice.subscription) {
             const subscription = await paymentService.getSubscription(
-              invoice.subscription as string
+              invoice.subscription as string,
             );
             const userId = subscription.metadata?.userId;
 
@@ -518,7 +545,7 @@ export async function POST(req: NextRequest) {
                   userId,
                   stripePaymentIntentId: invoice.subscription,
                   amount: new Prisma.Decimal(
-                    ((invoice.amount_paid || 0) / 100).toFixed(2)
+                    ((invoice.amount_paid || 0) / 100).toFixed(2),
                   ),
                   currency: invoice.currency || "eur",
                   status: PaymentStatus.COMPLETED,
@@ -572,7 +599,7 @@ export async function POST(req: NextRequest) {
               eventType: "webhook.payment_success_error",
               resourceType: "invoice",
             },
-            error instanceof Error ? error : new Error(String(error))
+            error instanceof Error ? error : new Error(String(error)),
           );
           throw error;
         }
@@ -586,7 +613,7 @@ export async function POST(req: NextRequest) {
           // Webhook is the single source of truth for payment failures
           if (invoice.subscription) {
             const subscription = await paymentService.getSubscription(
-              invoice.subscription as string
+              invoice.subscription as string,
             );
             const userId = subscription.metadata?.userId;
 
@@ -611,7 +638,7 @@ export async function POST(req: NextRequest) {
                 // Send payment failed notification email using modern template
                 await emailService.sendPaymentFailedEmail(
                   user.name || "Étudiant",
-                  user.email
+                  user.email,
                 );
                 logger.info("Payment failed email sent", {
                   eventType: "email.payment_failed_sent",
@@ -647,7 +674,7 @@ export async function POST(req: NextRequest) {
               eventType: "webhook.payment_failure_error",
               resourceType: "invoice",
             },
-            error instanceof Error ? error : new Error(String(error))
+            error instanceof Error ? error : new Error(String(error)),
           );
           throw error;
         }
@@ -676,7 +703,7 @@ export async function POST(req: NextRequest) {
     // Return an appropriate error response but don't expose details
     return NextResponse.json(
       { error: "Webhook handler failed" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 

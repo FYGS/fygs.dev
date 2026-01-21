@@ -54,7 +54,7 @@ class PaymentService {
 
   // Create checkout session for one-time payments (courses)
   async createCheckoutSession(
-    data: CheckoutSessionData
+    data: CheckoutSessionData,
   ): Promise<{ url: string; sessionId: string }> {
     try {
       // Fetch course details to get accurate price and title
@@ -70,8 +70,8 @@ class PaymentService {
       const amountCents = Math.max(
         0,
         Math.round(
-          (course.price?.toNumber?.() ?? Number(course.price ?? 0)) * 100
-        )
+          (course.price?.toNumber?.() ?? Number(course.price ?? 0)) * 100,
+        ),
       );
 
       const session = await stripe.checkout.sessions.create({
@@ -130,7 +130,7 @@ class PaymentService {
 
   // Create subscription checkout session
   async createSubscriptionSession(
-    data: SubscriptionData
+    data: SubscriptionData,
   ): Promise<{ url: string; sessionId: string }> {
     try {
       // Determine billing cycle (monthly/yearly) from environment mapping for analytics/metadata
@@ -196,12 +196,11 @@ class PaymentService {
   // Switch subscription price (monthly <-> yearly)
   async switchSubscriptionPrice(
     stripeSubscriptionId: string,
-    newPriceId: string
+    newPriceId: string,
   ) {
     try {
-      const subscription = await stripe.subscriptions.retrieve(
-        stripeSubscriptionId
-      );
+      const subscription =
+        await stripe.subscriptions.retrieve(stripeSubscriptionId);
       const currentItemId = subscription.items.data[0].id;
       await stripe.subscriptions.update(stripeSubscriptionId, {
         cancel_at_period_end: false,
@@ -217,7 +216,7 @@ class PaymentService {
           .catch(() => null);
         if (upcoming && upcoming.id && db.invoiceAudit) {
           const amountDue = new Prisma.Decimal(
-            ((upcoming.amount_due || 0) / 100).toFixed(2)
+            ((upcoming.amount_due || 0) / 100).toFixed(2),
           );
 
           // Check if audit already exists
@@ -283,7 +282,7 @@ class PaymentService {
   async createCustomer(
     email: string,
     name?: string,
-    userId?: string
+    userId?: string,
   ): Promise<string> {
     try {
       const customer = await stripe.customers.create({
@@ -345,7 +344,7 @@ class PaymentService {
   async createSubscriptionPrice(
     productId: string,
     amount: number,
-    interval: "month" | "year" = "month"
+    interval: "month" | "year" = "month",
   ): Promise<string> {
     try {
       const price = await stripe.prices.create({
@@ -441,7 +440,7 @@ class PaymentService {
             // Calculate safe amount
             const amountTotal = session.amount_total || 0;
             const amountDecimal = new Prisma.Decimal(
-              (amountTotal / 100).toFixed(2)
+              (amountTotal / 100).toFixed(2),
             );
 
             if (existingPayment) {
@@ -457,7 +456,7 @@ class PaymentService {
                 },
               });
               logger.info(
-                `✅ Payment updated to COMPLETED for user ${userId}, course ${productId}`
+                `✅ Payment updated to COMPLETED for user ${userId}, course ${productId}`,
               );
             } else {
               // Create new payment record
@@ -474,7 +473,7 @@ class PaymentService {
                 },
               });
               logger.info(
-                `✅ Payment created for user ${userId}, course ${productId}`
+                `✅ Payment created for user ${userId}, course ${productId}`,
               );
             }
           } catch (paymentError) {
@@ -500,7 +499,7 @@ class PaymentService {
             // Auto-enroll the user (idempotent)
             await this.grantCourseAccess(userId, productId);
             logger.info(
-              `✅ User ${userId} auto-enrolled in course ${productId}`
+              `✅ User ${userId} auto-enrolled in course ${productId}`,
             );
           } catch (enrollmentError) {
             logger.error(`❌ Failed to auto-enroll user:`, {
@@ -590,7 +589,7 @@ class PaymentService {
           // Calculate safe amount
           const amountTotal = session.amount_total || 0;
           const amountDecimal = new Prisma.Decimal(
-            (amountTotal / 100).toFixed(2)
+            (amountTotal / 100).toFixed(2),
           );
 
           // Find and update existing pending payment record if it exists
@@ -618,7 +617,7 @@ class PaymentService {
               {
                 resourceId: session.id,
                 metadata: { subscriptionId },
-              }
+              },
             );
           } else {
             // Create new payment record
@@ -735,7 +734,7 @@ class PaymentService {
 
       if (existingEnrollment) {
         console.log(
-          `Course access already exists: User ${userId} -> Course ${courseId}`
+          `Course access already exists: User ${userId} -> Course ${courseId}`,
         );
         return;
       }
@@ -760,7 +759,7 @@ class PaymentService {
       });
 
       console.log(
-        `Course access granted: User ${userId} -> Course ${courseId} (${course.title})`
+        `Course access granted: User ${userId} -> Course ${courseId} (${course.title})`,
       );
     } catch (error) {
       console.error(`Failed to grant course access: ${error}`);
@@ -771,7 +770,7 @@ class PaymentService {
   // Grant subscription access
   private async grantSubscriptionAccess(
     userId: string,
-    subscriptionId: string
+    subscriptionId: string,
   ): Promise<void> {
     const logger = createLogger({
       operation: "grant-subscription",
@@ -831,14 +830,43 @@ class PaymentService {
       // Cast to access properties potentially missing in the type definition
       const subAny = stripeSubscription as any;
 
+      // Get period dates from subscription_item (items.data[0]) as they are not at root level
+      const subscriptionItem = stripeSubscription.items?.data?.[0];
+      const itemData = subscriptionItem as any;
+
       // Safe access to period timestamps with fallbacks to current time
       const now = Date.now();
       const currentPeriodStart = new Date(
-        (subAny.current_period_start || Math.floor(now / 1000)) * 1000
+        (itemData?.current_period_start ||
+          subAny.billing_cycle_anchor ||
+          subAny.start_date ||
+          Math.floor(now / 1000)) * 1000,
       );
+
+      // Get billing interval to calculate proper fallback period
+      const billingInterval =
+        subscriptionItem?.price?.recurring?.interval || "month";
+      const fallbackPeriodSeconds =
+        billingInterval === "year" ? 365 * 24 * 60 * 60 : 30 * 24 * 60 * 60;
+
       const currentPeriodEnd = new Date(
-        (subAny.current_period_end || Math.floor(now / 1000) + 2592000) * 1000 // Default to 30 days if missing
+        (itemData?.current_period_end ||
+          Math.floor(now / 1000) + fallbackPeriodSeconds) * 1000,
       );
+
+      // Log period details for debugging
+      logger.info("Subscription period from Stripe", {
+        resourceId: subscriptionId,
+        metadata: {
+          userId,
+          currentPeriodStartRaw: itemData?.current_period_start,
+          currentPeriodEndRaw: itemData?.current_period_end,
+          currentPeriodStartDate: currentPeriodStart.toISOString(),
+          currentPeriodEndDate: currentPeriodEnd.toISOString(),
+          billingInterval,
+          status: stripeSubscription.status,
+        },
+      });
 
       // Get price ID safely
       const priceId =
@@ -959,7 +987,7 @@ class PaymentService {
       throw new Error(
         `Failed to get subscription: ${
           error instanceof Error ? error.message : String(error)
-        }`
+        }`,
       );
     }
   }
