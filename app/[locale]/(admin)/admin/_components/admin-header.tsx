@@ -31,6 +31,9 @@ import { useTheme } from "next-themes";
 import Link from "next/link";
 import { AdminQuickActions } from "./admin-quick-actions";
 import { Role } from "@prisma/client";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface AdminHeaderProps {
   user: {
@@ -45,6 +48,27 @@ interface AdminHeaderProps {
 export function AdminHeader({ user }: AdminHeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const { theme, setTheme } = useTheme();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await authClient.signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            toast.success("Déconnexion réussie");
+            router.push("/auth/login");
+          },
+          onError: (ctx) => {
+            toast.error("Erreur lors de la déconnexion");
+            console.error("Logout error:", ctx.error);
+          },
+        },
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Erreur lors de la déconnexion");
+    }
+  };
 
   const getRoleColor = (role: string) => {
     switch (role) {
@@ -216,7 +240,10 @@ export function AdminHeader({ user }: AdminHeaderProps) {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-400">
+              <DropdownMenuItem 
+                className="text-red-400 cursor-pointer"
+                onClick={handleLogout}
+              >
                 <LogOut className="mr-2 h-4 w-4" />
                 Déconnexion
               </DropdownMenuItem>
