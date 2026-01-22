@@ -76,19 +76,6 @@ class PaymentService {
 
       const session = await stripe.checkout.sessions.create({
         mode: "payment",
-        // Explicit list for type safety; Stripe will filter by eligibility
-        payment_method_types: [
-          "card",
-          // "bancontact",
-          // "ideal",
-          // "sofort",
-          // "p24",
-          // "eps",
-          // "giropay",
-          // "alipay",
-          "link",
-          "paypal",
-        ],
         line_items: [
           {
             price_data: {
@@ -142,18 +129,6 @@ class PaymentService {
 
       const session = await stripe.checkout.sessions.create({
         mode: "subscription",
-        payment_method_types: [
-          "card",
-          // "bancontact",
-          // "ideal",
-          // "sofort",
-          // "p24",
-          // "eps",
-          // "giropay",
-          // "alipay",
-          "link",
-          "paypal",
-        ],
         line_items: [
           {
             price: data.priceId,
