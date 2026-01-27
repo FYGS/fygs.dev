@@ -161,7 +161,8 @@
   /* Search dropdown styles */
   @apply z-99999; /* Ensure it's always on top */
   pointer-events: auto !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+  box-shadow:
+    0 10px 25px -5px rgba(0, 0, 0, 0.1),
     0 8px 10px -6px rgba(0, 0, 0, 0.1);
   animation: fadeInSearch 0.2s ease-out forwards;
 }
@@ -204,15 +205,81 @@
 
 @utility mdx-content {
   /* Code block styles */
-  @apply prose-code:text-primary prose-pre:bg-muted/50 prose-pre:border prose-pre:border-border;
+  @apply prose-code:text-primary prose-pre:bg-transparent prose-pre:p-0 prose-pre:m-0;
 
   & pre {
-    @apply rounded-lg overflow-x-auto backdrop-blur-xs transition-all duration-300;
+    @apply rounded-lg overflow-hidden my-6 transition-all duration-300;
   }
 
   & code {
     @apply bg-muted/50 rounded px-1.5 py-0.5 font-mono text-sm;
   }
+
+  /* Assurer que les blocs de code ne dépassent pas */
+  & > * {
+    @apply max-w-full;
+  }
+}
+
+/* Scrollbar personnalisée pour les blocs de code */
+.code-block-scroll,
+.code-block-scroll > *,
+.code-block-scroll pre {
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(100, 116, 139, 0.7) rgba(15, 23, 42, 0.5) !important;
+}
+
+.code-block-scroll::-webkit-scrollbar,
+.code-block-scroll > *::-webkit-scrollbar,
+.code-block-scroll pre::-webkit-scrollbar {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+.code-block-scroll::-webkit-scrollbar-track,
+.code-block-scroll > *::-webkit-scrollbar-track,
+.code-block-scroll pre::-webkit-scrollbar-track {
+  background: rgba(30, 30, 30, 0.8) !important;
+  border-radius: 0 !important;
+}
+
+.code-block-scroll::-webkit-scrollbar-thumb,
+.code-block-scroll > *::-webkit-scrollbar-thumb,
+.code-block-scroll pre::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    135deg,
+    rgba(100, 116, 139, 0.8),
+    rgba(71, 85, 105, 0.8)
+  ) !important;
+  border-radius: 7px !important;
+  border: 3px solid rgba(30, 30, 30, 0.8) !important;
+}
+
+.code-block-scroll::-webkit-scrollbar-thumb:hover,
+.code-block-scroll > *::-webkit-scrollbar-thumb:hover,
+.code-block-scroll pre::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(129, 140, 248, 0.9),
+    rgba(99, 102, 241, 0.9)
+  ) !important;
+  border-color: rgba(30, 30, 30, 0.9) !important;
+}
+
+.code-block-scroll::-webkit-scrollbar-thumb:active,
+.code-block-scroll > *::-webkit-scrollbar-thumb:active,
+.code-block-scroll pre::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(
+    135deg,
+    rgba(165, 180, 252, 1),
+    rgba(129, 140, 248, 1)
+  ) !important;
+}
+
+.code-block-scroll::-webkit-scrollbar-corner,
+.code-block-scroll > *::-webkit-scrollbar-corner,
+.code-block-scroll pre::-webkit-scrollbar-corner {
+  background: rgba(30, 30, 30, 0.8) !important;
 }
 
 @utility line-highlight {

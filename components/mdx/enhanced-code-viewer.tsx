@@ -48,9 +48,9 @@ export function EnhancedCodeViewer({
       </motion.div>
 
       <Dialog open={isExpanded} onOpenChange={setIsExpanded}>
-        <DialogContent className="max-w-6xl w-[90vw] h-[80vh] p-0">
+        <DialogContent className="max-w-6xl w-[90vw] h-[85vh] p-0 gap-0">
           <div className="flex flex-col h-full">
-            <div className="flex items-center justify-between p-4 border-b">
+            <div className="flex items-center justify-between p-4 border-b shrink-0">
               <h2 className="text-lg font-semibold">Code Viewer</h2>
               <div className="flex items-center gap-2">
                 <Button variant="ghost" size="icon">
@@ -68,7 +68,7 @@ export function EnhancedCodeViewer({
                 </Button>
               </div>
             </div>
-            <div className="flex-1 overflow-auto">
+            <div className="flex-1 min-h-0">
               <CodeBlock
                 code={code}
                 language={language}
