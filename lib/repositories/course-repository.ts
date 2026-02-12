@@ -35,66 +35,55 @@ export class CourseRepository {
   }
 
   static async findFeatured(limit = 6) {
-    const courses = await db.course.findMany({
-      where: { published: true, featured: true },
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        description: true,
-        thumbnail: true,
-        price: true,
-        level: true,
-        category: true,
-        duration: true,
-        featured: true,
-        published: true,
-        accessTier: true,
-        previewEnabled: true,
-        createdAt: true,
-        updatedAt: true,
-        tags: {
-          include: { tag: true },
-        },
-        enrollments: { select: { id: true } },
-        reviews: { select: { rating: true } },
-        lessons: {
-          where: { published: true },
-          orderBy: { order: "asc" },
-          select: {
-            slug: true,
-            order: true,
-            moduleId: true,
+    try {
+      const courses = await db.course.findMany({
+        where: { published: true, featured: true },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          description: true,
+          thumbnail: true,
+          price: true,
+          level: true,
+          category: true,
+          duration: true,
+          featured: true,
+          published: true,
+          accessTier: true,
+          previewEnabled: true,
+          createdAt: true,
+          updatedAt: true,
+          tags: {
+            include: { tag: true },
           },
-        },
-        modules: {
-          orderBy: { order: "asc" },
-          select: {
-            id: true,
-            order: true,
-            lessons: {
-              where: { published: true },
-              orderBy: { order: "asc" },
-              select: {
-                slug: true,
-                order: true,
-              },
-              take: 1,
+          enrollments: { select: { id: true } },
+          reviews: { select: { rating: true } },
+          lessons: {
+            where: { published: true },
+            orderBy: { order: "asc" as const },
+            select: {
+              slug: true,
+              order: true,
+            },
+            take: 1,
+          },
+          instructor: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
             },
           },
         },
-        instructor: {
-          select: {
-            id: true,
-            name: true,
-            image: true,
-          },
-        },
-      },
-      orderBy: [{ createdAt: "desc" }],
-      take: limit,
-    });
-    return courses;
+        orderBy: [{ createdAt: "desc" }],
+        take: limit,
+      });
+      return courses;
+    } catch (error) {
+      console.error("[CourseRepository.findFeatured] DB query failed:", error);
+      return [];
+    }
   }
 
   static async findBySlug(slug: string) {
@@ -204,7 +193,13 @@ export class CourseRepository {
         lessons: {
           where: { published: true },
           orderBy: { order: "asc" },
-          select: { id: true, duration: true, slug: true, order: true, moduleId: true },
+          select: {
+            id: true,
+            duration: true,
+            slug: true,
+            order: true,
+            moduleId: true,
+          },
         },
         modules: {
           orderBy: { order: "asc" },
@@ -231,13 +226,19 @@ export class CourseRepository {
 
 // Provide a cached version for featured to reduce DB hits across RSC boundaries
 // Cached featured courses with tag-based revalidation
-export const getCachedFeaturedCourses = unstable_cache(
-  async (limit: number = 6) => {
-    return CourseRepository.findFeatured(limit);
-  },
-  ["featured-courses"],
-  { tags: [COURSE_TAG_FEATURED] }
-);
+export const getCachedFeaturedCourses = async (limit: number = 6) => {
+  try {
+    const fn = unstable_cache(
+      async () => CourseRepository.findFeatured(limit),
+      [`featured-courses-${limit}`],
+      { tags: [COURSE_TAG_FEATURED] },
+    );
+    return await fn();
+  } catch (error) {
+    console.error("[getCachedFeaturedCourses] Cache/fetch failed:", error);
+    return [];
+  }
+};
 
 // Cached course list (basic filters). We purposely keep a broad tag so any mutation revalidates all lists.
 export const getCachedCourseList = unstable_cache(
@@ -245,5 +246,5 @@ export const getCachedCourseList = unstable_cache(
     return CourseRepository.list(filters);
   },
   ["courses-list"],
-  { tags: [COURSE_TAG_LIST] }
+  { tags: [COURSE_TAG_LIST] },
 );

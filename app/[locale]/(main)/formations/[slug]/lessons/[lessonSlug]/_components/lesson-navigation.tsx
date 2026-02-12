@@ -31,7 +31,7 @@ export function LessonNavigation({
       : null;
 
   return (
-    <Card className="bg-gradient-to-br from-gray-900/95 via-gray-800/95 to-gray-900/90 border-gray-700/50 shadow-xl">
+    <Card className="bg-gradient-to-br from-card via-card to-card/90 border-border/50 shadow-xl">
       <CardContent className="p-4 sm:p-6">
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1">
@@ -39,7 +39,7 @@ export function LessonNavigation({
               <Button
                 variant="outline"
                 asChild
-                className={`group h-auto py-3 px-4 border-gray-700 hover:bg-gray-800 transition-all ${
+                className={`group h-auto py-3 px-4 border-border hover:bg-accent/50 transition-all ${
                   previousItem.type === "quiz"
                     ? "hover:border-violet-500/50"
                     : "hover:border-blue-500/50"
@@ -48,7 +48,7 @@ export function LessonNavigation({
                 <Link href={previousItem.url}>
                   <ChevronLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
                   <div className="text-left">
-                    <div className="text-xs text-gray-400 mb-0.5 flex items-center gap-1">
+                    <div className="text-xs text-muted-foreground mb-0.5 flex items-center gap-1">
                       {previousItem.type === "quiz" ? (
                         <>
                           <Target className="h-3 w-3" />
@@ -65,7 +65,7 @@ export function LessonNavigation({
                       className={`text-sm font-medium line-clamp-1 ${
                         previousItem.type === "quiz"
                           ? "text-violet-300"
-                          : "text-white"
+                          : "text-foreground"
                       }`}
                     >
                       {previousItem.title}
@@ -82,7 +82,7 @@ export function LessonNavigation({
             <Button
               variant="ghost"
               asChild
-              className="text-gray-300 hover:text-white hover:bg-gray-800"
+              className="text-muted-foreground hover:text-foreground hover:bg-accent/50"
             >
               <Link href={`/formations/${courseSlug}`}>Retour au cours</Link>
             </Button>
@@ -93,7 +93,7 @@ export function LessonNavigation({
               <Button
                 variant="outline"
                 asChild
-                className={`group h-auto py-3 px-4 border-gray-700 hover:bg-gray-800 transition-all ${
+                className={`group h-auto py-3 px-4 border-border hover:bg-accent/50 transition-all ${
                   nextItem.type === "quiz"
                     ? "hover:border-violet-500/50"
                     : "hover:border-blue-500/50"
@@ -101,7 +101,7 @@ export function LessonNavigation({
               >
                 <Link href={nextItem.url}>
                   <div className="text-right">
-                    <div className="text-xs text-gray-400 mb-0.5 flex items-center gap-1 justify-end">
+                    <div className="text-xs text-muted-foreground mb-0.5 flex items-center gap-1 justify-end">
                       {nextItem.type === "quiz" ? (
                         <>
                           Quiz suivant
@@ -118,7 +118,7 @@ export function LessonNavigation({
                       className={`text-sm font-medium line-clamp-1 ${
                         nextItem.type === "quiz"
                           ? "text-violet-300"
-                          : "text-white"
+                          : "text-foreground"
                       }`}
                     >
                       {nextItem.title}

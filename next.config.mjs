@@ -8,20 +8,62 @@ const withPWA = withPWAInit({
   disable: process.env.NODE_ENV === "development",
   register: true,
   skipWaiting: true,
+  // Fluid PWA: rely on runtime caching, not aggressive precaching
+  dynamicStartUrl: false,
   runtimeCaching: [
     {
-      urlPattern: /^https?.*/,
+      // Pages — network first, fall back to cache
+      urlPattern: /^https?:\/\/[^/]+\/(fr|en|es)(\/.*)?$/,
       handler: "NetworkFirst",
       options: {
-        cacheName: "offlineCache",
+        cacheName: "pages-cache",
         expiration: {
-          maxEntries: 200,
+          maxEntries: 64,
+          maxAgeSeconds: 24 * 60 * 60, // 24h
+        },
+        networkTimeoutSeconds: 10,
+      },
+    },
+    {
+      // API calls — network first with shorter TTL
+      urlPattern: /\/api\/.*/,
+      handler: "NetworkFirst",
+      options: {
+        cacheName: "api-cache",
+        expiration: {
+          maxEntries: 32,
+          maxAgeSeconds: 5 * 60, // 5 min
+        },
+        networkTimeoutSeconds: 10,
+      },
+    },
+    {
+      // Static assets (images, fonts, etc.) — cache first
+      urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|avif|ico|woff2?|ttf|eot)$/i,
+      handler: "CacheFirst",
+      options: {
+        cacheName: "static-assets",
+        expiration: {
+          maxEntries: 128,
+          maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+        },
+      },
+    },
+    {
+      // JS/CSS bundles — stale while revalidate
+      urlPattern: /\/_next\/static\/.*/,
+      handler: "StaleWhileRevalidate",
+      options: {
+        cacheName: "next-static",
+        expiration: {
+          maxEntries: 64,
+          maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
         },
       },
     },
   ],
   // Exclude large files from precaching
-  buildExcludes: [/chunks\/4614\..*\.js$/, /static\/monaco\/.*\.worker\.js$/],
+  buildExcludes: [/chunks\/.*\.js$/, /static\/monaco\/.*\.worker\.js$/],
 });
 
 /** @type {import('next').NextConfig} */
@@ -82,7 +124,7 @@ const nextConfig = {
           languages: ["typescript", "javascript", "html", "css"],
           filename: "static/monaco/[name].worker.js",
           publicPath: "/_next/",
-        })
+        }),
       );
     }
     return config;

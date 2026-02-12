@@ -1,58 +1,8 @@
-"use client";
-
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
-
-// Define types for our schema objects
-interface PersonSchema {
-  "@context": string;
- "@type": "Person";
-  name: string;
-  jobTitle: string;
-  description: string;
-  url: string;
-  sameAs: string[];
-  image?: string;
- email: string;
-  alumniOf?: {
-    "@type": string;
-    name: string;
-  };
-  knowsAbout: string[];
-  worksFor?: {
-    "@type": string;
-    name: string;
-    description: string;
- };
-  address?: {
-    "@type": string;
-    addressCountry: string;
-  };
-  workLocation?: {
-    "@type": string;
-    address: {
-      "@type": string;
-      addressCountry: string;
-    };
-  };
-}
-
-interface WebSiteSchema {
-  "@context": string;
- "@type": "WebSite";
-  name: string;
-  url: string;
-  description: string;
-  potentialAction: {
-    "@type": "SearchAction";
-    target: string;
-    "query-input": string;
-  };
-}
+const SITE_URL = "https://fygs.dev";
 
 interface BreadcrumbListSchema {
   "@context": string;
- "@type": "BreadcrumbList";
+  "@type": "BreadcrumbList";
   itemListElement: Array<{
     "@type": "ListItem";
     position: number;
@@ -61,142 +11,158 @@ interface BreadcrumbListSchema {
   }>;
 }
 
-// Function to generate breadcrumbs based on current path
-const generateBreadcrumbs = (pathname: string): BreadcrumbListSchema => {
-  const pathParts = pathname.split('/').filter(Boolean);
-  const breadcrumbs: BreadcrumbListSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: []
-  };
+const pathLabels: Record<string, string> = {
+  formations: "Formations",
+  blog: "Blog",
+  projects: "Projets",
+  community: "Communauté",
+  dashboard: "Tableau de bord",
+  pricing: "Tarifs",
+  contact: "Contact",
+  me: "À propos",
+  reviews: "Avis",
+  lessons: "Leçons",
+  quizzes: "Quiz",
+};
 
-  // Add home as first breadcrumb
-  breadcrumbs.itemListElement.push({
-    "@type": "ListItem",
-    position: 1,
-    name: "Accueil",
-    item: "https://fygs.dev"
-  });
+function generateBreadcrumbs(pathname: string): BreadcrumbListSchema {
+  const cleanPath = pathname.replace(/^\/(fr|en|es)/, "");
+  const pathParts = cleanPath.split("/").filter(Boolean);
 
-  // Add other path segments
+  const items: BreadcrumbListSchema["itemListElement"] = [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Accueil",
+      item: SITE_URL,
+    },
+  ];
+
   pathParts.forEach((part, index) => {
-    const capitalizedPart = part.charAt(0).toUpperCase() + part.slice(1);
-    breadcrumbs.itemListElement.push({
+    const label =
+      pathLabels[part] ||
+      part.charAt(0).toUpperCase() + part.slice(1).replace(/-/g, " ");
+    const url = `${SITE_URL}/${pathParts.slice(0, index + 1).join("/")}`;
+    items.push({
       "@type": "ListItem",
       position: index + 2,
-      name: capitalizedPart,
-      item: `https://fygs.dev/${pathParts.slice(0, index + 1).join('/')}`
+      name: label,
+      ...(index < pathParts.length - 1 ? { item: url } : {}),
     });
   });
 
-  return breadcrumbs;
-};
-
-// Function to determine which schema to render based on the current page
-const getSchema = (pathname: string): (PersonSchema | WebSiteSchema | BreadcrumbListSchema)[] => {
-  const schemas: (PersonSchema | WebSiteSchema | BreadcrumbListSchema)[] = [];
-  
-  // Always include the person schema for the main website
-  const personSchema: PersonSchema = {
+  return {
     "@context": "https://schema.org",
-    "@type": "Person",
-    name: "Fernand SOUALO",
-    jobTitle: "Software Engineer",
+    "@type": "BreadcrumbList",
+    itemListElement: items,
+  };
+}
+
+function getSchemas(pathname: string): object[] {
+  const schemas: object[] = [];
+
+  // Organization schema
+  schemas.push({
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "FYGS",
+    url: SITE_URL,
+    logo: `${SITE_URL}/images/android-chrome-512x512.png`,
     description:
-      "Expert Software Engineer specializing in full-stack development with TypeScript, NestJS, Node.js, Next.js, React, and cloud technologies.",
-    url: "https://fygs.dev",
+      "Plateforme de formations premium pour développeurs. JavaScript, TypeScript, React, Next.js, Node.js, IA et Cloud.",
     sameAs: [
       "https://github.com/fygs",
       "https://www.linkedin.com/in/fernandsoualo/",
       "https://hashnode.com/@FYGS",
     ],
-    image: "https://fygs.dev/images/og-image.png",
-    email: "fygs.dev@gmail.com",
-    alumniOf: {
-      "@type": "Organization",
-      name: "Sorbonne Université (Ex Université Pierre et Marie Curie, Paris VI)",
+    founder: {
+      "@type": "Person",
+      name: "Fernand SOUALO",
+      jobTitle: "Software Engineer & Educator",
+      url: `${SITE_URL}/me`,
     },
-    knowsAbout: [
-      "Software Engineering",
-      "Web Development",
-      "TypeScript",
-      "React",
-      "Node.js",
-      "Cloud Architecture",
-      "AWS",
-      "System Design",
-      "NestJS",
-      "Next.js",
-      "Database Design",
-      "API Development",
-      "Microservices",
-      "DevOps",
-      "CI/CD",
-      "Docker",
-    ],
-    worksFor: {
-      "@type": "Organization",
-      name: "Freelance Software Engineer",
-      description:
-        "Independent software engineering consultant specializing in full-stack development",
+    contactPoint: {
+      "@type": "ContactPoint",
+      email: "fygs.dev@gmail.com",
+      contactType: "customer support",
     },
-    address: {
-      "@type": "PostalAddress",
-      addressCountry: "France",
-    },
-    workLocation: {
-      "@type": "Place",
-      address: {
-        "@type": "PostalAddress",
-        addressCountry: "France",
-      },
-    },
-  };
+  });
 
-  schemas.push(personSchema);
-
-  // Add website schema for homepage
-  if (pathname === "/" || pathname === "") {
-    const websiteSchema: WebSiteSchema = {
+  // Website schema for homepage
+  const cleanPath = pathname.replace(/^\/(fr|en|es)/, "");
+  if (!cleanPath || cleanPath === "/" || cleanPath === "") {
+    schemas.push({
       "@context": "https://schema.org",
       "@type": "WebSite",
-      name: "Fernand SOUALO - Software Engineer Portfolio",
-      url: "https://fygs.dev",
+      name: "FYGS Learning Platform",
+      url: SITE_URL,
       description:
-        "Expert Software Engineer specializing in full-stack development with TypeScript, NestJS, Node.js, Next.js, React, and cloud technologies.",
+        "Plateforme de formations premium pour développeurs web. JavaScript, TypeScript, React, Next.js, Node.js, IA et Cloud.",
+      inLanguage: ["fr", "en", "es"],
       potentialAction: {
         "@type": "SearchAction",
-        target: "https://fygs.dev/search?q={search_term_string}",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: `${SITE_URL}/formations?search={search_term_string}`,
+        },
         "query-input": "required name=search_term_string",
       },
-    };
-    schemas.push(websiteSchema);
+    });
+
+    // Educational organization
+    schemas.push({
+      "@context": "https://schema.org",
+      "@type": "EducationalOrganization",
+      name: "FYGS Learning Platform",
+      url: SITE_URL,
+      description:
+        "Formations premium en développement web avec projets pratiques, quiz interactifs et certifications.",
+      areaServed: "Worldwide",
+      hasOfferCatalog: {
+        "@type": "OfferCatalog",
+        name: "Catalogue de formations",
+        itemListElement: [
+          {
+            "@type": "OfferCatalog",
+            name: "JavaScript & TypeScript",
+            description: "Formations complètes JavaScript et TypeScript",
+          },
+          {
+            "@type": "OfferCatalog",
+            name: "React & Next.js",
+            description: "Formations React et Next.js de débutant à expert",
+          },
+          {
+            "@type": "OfferCatalog",
+            name: "Backend & Cloud",
+            description: "Node.js, API, bases de données et déploiement cloud",
+          },
+        ],
+      },
+    });
   }
 
-  // Add breadcrumbs for all pages except root
-  if (pathname !== "/" && pathname !== "") {
+  // Breadcrumbs for non-root pages
+  if (cleanPath && cleanPath !== "/" && cleanPath !== "") {
     schemas.push(generateBreadcrumbs(pathname));
   }
 
   return schemas;
-};
+}
 
 export function JsonLd() {
-  const pathname = usePathname();
-  const [schema, setSchema] = useState<(PersonSchema | WebSiteSchema | BreadcrumbListSchema)[]>([]);
-
-  useEffect(() => {
-    setSchema(getSchema(pathname || "/"));
-  }, [pathname]);
+  // Use a simple server-compatible approach - render base schemas
+  // The pathname will be handled at layout level
+  const schemas = getSchemas("/");
 
   return (
     <>
-      {schema.map((schemaItem, index) => (
+      {schemas.map((schemaItem, index) => (
         <script
-          key={index}
+          key={`jsonld-${index}`}
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ 
-            __html: JSON.stringify(schemaItem, null, 2) 
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(schemaItem),
           }}
         />
       ))}

@@ -1,6 +1,7 @@
 /**
  * Internationalized Metadata Utilities
  * Provides helpers to generate SEO metadata with i18n support
+ * Consolidated SEO system for FYGS Learning Platform
  */
 
 import { Metadata } from "next";
@@ -29,8 +30,19 @@ export interface I18nMetadataProps {
   tags?: string[];
 }
 
+/** Map locale code to OpenGraph locale format */
+function toOgLocale(locale: string): string {
+  const map: Record<string, string> = {
+    fr: "fr_FR",
+    en: "en_US",
+    es: "es_ES",
+  };
+  return map[locale] || locale;
+}
+
 /**
  * Generate metadata with i18n support
+ * This is the primary metadata generator for all pages
  */
 export async function generateI18nMetadata({
   locale,
@@ -61,7 +73,7 @@ export async function generateI18nMetadata({
 
   // Translate keywords
   const localizedKeywords = keywords.map((kw) =>
-    typeof kw === "string" ? kw : t(kw as IConfigLocales<string>)
+    typeof kw === "string" ? kw : t(kw as IConfigLocales<string>),
   );
 
   // Image URL
@@ -71,6 +83,12 @@ export async function generateI18nMetadata({
       ? `${SITE_URL}${image}`
       : `${SITE_URL}/images/og-image.png`;
 
+  // Build alternates languages map with full URLs for proper hreflang
+  const alternateLanguages: Record<string, string> = {};
+  for (const [langKey, langPath] of Object.entries(multilingualUrls)) {
+    alternateLanguages[langKey] = `${SITE_URL}${langPath}`;
+  }
+
   const metadata: Metadata = {
     title: localizedTitle,
     description: localizedDescription,
@@ -78,34 +96,44 @@ export async function generateI18nMetadata({
     manifest: `/manifest.webmanifest`,
     icons: {
       icon: [
-        { url: '/images/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
-        { url: '/images/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
-        { url: '/images/favicon.svg', type: 'image/svg+xml' },
+        { url: "/images/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+        { url: "/images/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+        { url: "/images/favicon.svg", type: "image/svg+xml" },
       ],
       apple: [
-        { url: '/images/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+        {
+          url: "/images/apple-touch-icon.png",
+          sizes: "180x180",
+          type: "image/png",
+        },
       ],
     },
     robots: noIndex
       ? { index: false, follow: false }
       : {
-        index: true,
-        follow: true,
-        googleBot: {
           index: true,
           follow: true,
-          "max-video-preview": -1,
-          "max-image-preview": "large",
-          "max-snippet": -1,
+          googleBot: {
+            index: true,
+            follow: true,
+            "max-video-preview": -1,
+            "max-image-preview": "large",
+            "max-snippet": -1,
+          },
         },
-      },
     alternates: {
       canonical: fullUrl,
-      languages: { ...multilingualUrls, "x-default": path || "/" },
+      languages: {
+        ...alternateLanguages,
+        "x-default": `${SITE_URL}${path || "/"}`,
+      },
     },
     openGraph: {
       type,
-      locale: locale,
+      locale: toOgLocale(locale),
+      alternateLocale: ["fr", "en", "es"]
+        .filter((l) => l !== locale)
+        .map(toOgLocale),
       url: fullUrl,
       siteName: "FYGS Learning Platform",
       title: localizedTitle,
@@ -132,6 +160,13 @@ export async function generateI18nMetadata({
       images: [imageUrl],
       creator: "@fernand_soualo",
       site: "@fygs_dev",
+    },
+    other: {
+      "apple-mobile-web-app-capable": "yes",
+      "apple-mobile-web-app-status-bar-style": "black-translucent",
+      "apple-mobile-web-app-title": "FYGS",
+      "mobile-web-app-capable": "yes",
+      "theme-color": "#29333d",
     },
   };
 
@@ -160,7 +195,7 @@ export function createArticleMetadata(
   locale: LocalesValues,
   path: string,
   publishedTime?: string,
-  modifiedTime?: string
+  modifiedTime?: string,
 ) {
   return {
     locale,

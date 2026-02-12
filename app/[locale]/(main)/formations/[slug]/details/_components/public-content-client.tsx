@@ -123,7 +123,7 @@ export function PublicContentPageClient({
 
   if (sections.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-card">
         <div className="container py-8 max-w-7xl mx-auto">
           <CourseBreadcrumb
             courseTitle={course.title}
@@ -131,10 +131,10 @@ export function PublicContentPageClient({
             currentPage="Détails de la Formation"
           />
           <div className="text-center py-16">
-            <h1 className="text-3xl font-bold text-white mb-4">
+            <h1 className="text-3xl font-bold text-foreground mb-4">
               Aucun contenu disponible
             </h1>
-            <p className="text-slate-400 mb-8">
+            <p className="text-muted-foreground mb-8">
               Les détails de cette formation ne sont pas encore disponibles.
             </p>
             <Link href={`/formations/${course.slug}`}>
@@ -150,7 +150,7 @@ export function PublicContentPageClient({
   }
 
   return (
-    <div className="min-h-screen bg-slate-800">
+    <div className="min-h-screen bg-background">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
         <div
@@ -187,7 +187,7 @@ export function PublicContentPageClient({
             {/* Hero Section */}
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 via-purple-500/30 to-cyan-500/30 rounded-3xl blur-2xl"></div>
-              <Card className="relative border-2 border-blue-500/30 bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-slate-900/90 backdrop-blur-sm shadow-2xl">
+              <Card className="relative border-2 border-blue-500/30 bg-gradient-to-br from-card via-card to-card/90 backdrop-blur-sm shadow-2xl">
                 <CardHeader className="pb-6">
                   <div className="flex flex-col items-center gap-6">
                     <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 via-purple-500 to-cyan-500 flex items-center justify-center shadow-lg">
@@ -199,10 +199,10 @@ export function PublicContentPageClient({
                           Détails Complets
                         </span>
                       </CardTitle>
-                      <h2 className="text-2xl md:text-3xl font-semibold text-white mb-4">
+                      <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-4">
                         {course.title}
                       </h2>
-                      <p className="text-lg text-slate-200 max-w-3xl mx-auto leading-relaxed">
+                      <p className="text-lg text-foreground/85 max-w-3xl mx-auto leading-relaxed">
                         Plongez dans tous les aspects de cette formation
                         exceptionnelle. Découvrez en détail ce qui vous attend,
                         les ressources mises à votre disposition, et comment
@@ -217,25 +217,35 @@ export function PublicContentPageClient({
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                     <div className="text-center p-4 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30">
                       <FileText className="h-6 w-6 text-blue-400 mx-auto mb-2" />
-                      <div className="font-bold text-lg text-white">
+                      <div className="font-bold text-lg text-foreground">
                         {sections.length}
                       </div>
-                      <div className="text-xs text-slate-300">Sections</div>
+                      <div className="text-xs text-muted-foreground">
+                        Sections
+                      </div>
                     </div>
                     <div className="text-center p-4 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30">
                       <Users className="h-6 w-6 text-emerald-400 mx-auto mb-2" />
-                      <div className="font-bold text-lg text-white">∞</div>
-                      <div className="text-xs text-slate-300">Accès</div>
+                      <div className="font-bold text-lg text-foreground">∞</div>
+                      <div className="text-xs text-muted-foreground">Accès</div>
                     </div>
                     <div className="text-center p-4 rounded-xl bg-gradient-to-br from-purple-500/20 to-violet-500/20 border border-purple-500/30">
                       <Award className="h-6 w-6 text-purple-400 mx-auto mb-2" />
-                      <div className="font-bold text-lg text-white">💯</div>
-                      <div className="text-xs text-slate-300">Qualité</div>
+                      <div className="font-bold text-lg text-foreground">
+                        💯
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Qualité
+                      </div>
                     </div>
                     <div className="text-center p-4 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30">
                       <Heart className="h-6 w-6 text-amber-400 mx-auto mb-2" />
-                      <div className="font-bold text-lg text-white">🎯</div>
-                      <div className="text-xs text-slate-300">Passion</div>
+                      <div className="font-bold text-lg text-foreground">
+                        🎯
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Passion
+                      </div>
                     </div>
                   </div>
 
@@ -288,7 +298,7 @@ export function PublicContentPageClient({
                 <Card
                   className={`
                   ${section.borderColor} border-2 shadow-lg hover:shadow-xl transition-all duration-500
-                  bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-slate-900/90 backdrop-blur-sm
+                  bg-gradient-to-br from-card via-card to-card/90 backdrop-blur-sm
                   group hover:scale-[1.01] transform ml-6 sm:ml-8
                 `}
                 >
@@ -303,13 +313,13 @@ export function PublicContentPageClient({
                         <IconComponent className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-xl sm:text-2xl font-bold text-white mb-2 break-words">
+                        <CardTitle className="text-xl sm:text-2xl font-bold text-foreground mb-2 break-words">
                           {section.title}
                         </CardTitle>
-                        <p className="text-base sm:text-lg text-slate-200 mb-3 sm:mb-4 break-words">
+                        <p className="text-base sm:text-lg text-foreground/85 mb-3 sm:mb-4 break-words">
                           {section.subtitle}
                         </p>
-                        <p className="text-sm text-slate-300 leading-relaxed break-words">
+                        <p className="text-sm text-muted-foreground leading-relaxed break-words">
                           {section.description}
                         </p>
                       </div>
@@ -324,7 +334,7 @@ export function PublicContentPageClient({
                         </Badge>
                         <Badge
                           variant="outline"
-                          className="border-slate-600 text-slate-200 bg-slate-800/80"
+                          className="border-border text-foreground/85 bg-secondary/80"
                           onClick={(e) => e.stopPropagation()}
                         >
                           Section {index + 1}
@@ -332,7 +342,7 @@ export function PublicContentPageClient({
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-8 w-8 p-0 hover:bg-slate-700/50 text-slate-200"
+                          className="h-8 w-8 p-0 hover:bg-secondary text-foreground/85"
                           onClick={(e) => {
                             e.stopPropagation();
                             toggleSection(section.id);
@@ -350,21 +360,21 @@ export function PublicContentPageClient({
 
                   {isExpanded && (
                     <>
-                      <Separator className="my-0 bg-slate-700/50" />
+                      <Separator className="my-0 bg-border/50" />
 
                       <CardContent className="pt-6 pb-8">
                         <ScrollArea className="h-[60vh] w-full">
                           <div className="space-y-4 pr-4">
                             <MarkdownRenderer
                               content={section.content || ""}
-                              className="prose prose-slate prose-base sm:prose-lg max-w-none prose-headings:text-white prose-p:text-slate-200 prose-strong:text-slate-100 prose-a:text-blue-400 prose-li:text-slate-200 prose-code:text-slate-300"
+                              className="prose prose-invert prose-base sm:prose-lg max-w-none prose-headings:text-foreground prose-p:text-foreground/85 prose-strong:text-foreground prose-a:text-blue-400 prose-li:text-foreground/85 prose-code:text-muted-foreground"
                             />
                           </div>
                         </ScrollArea>
 
                         {/* Bottom accent */}
-                        <div className="mt-8 pt-6 border-t border-slate-700/50">
-                          <div className="flex items-center justify-center gap-2 text-sm text-slate-400">
+                        <div className="mt-8 pt-6 border-t border-border/50">
+                          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                             <Zap className="w-4 h-4" />
                             <span>Informations mises à jour régulièrement</span>
                             <Zap className="w-4 h-4" />
@@ -377,10 +387,10 @@ export function PublicContentPageClient({
                   {!isExpanded && (
                     <CardContent className="pt-0 pb-6">
                       <div className="text-center">
-                        <p className="text-sm text-slate-300 mb-2">
+                        <p className="text-sm text-muted-foreground mb-2">
                           Cliquez pour voir le contenu détaillé
                         </p>
-                        <div className="flex items-center justify-center gap-2 text-xs text-slate-400">
+                        <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground/70">
                           <ChevronDown className="h-3 w-3" />
                           <span>Développer</span>
                           <ChevronDown className="h-3 w-3" />

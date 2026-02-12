@@ -3,8 +3,13 @@ import { getCachedFeaturedCourses } from "@/lib/repositories/course-repository";
 import { serializeFeatured } from "@/lib/serializers/course-serializer";
 
 async function getFeaturedCourses() {
-  const raw = await getCachedFeaturedCourses(6);
-  return raw.map(serializeFeatured);
+  try {
+    const raw = await getCachedFeaturedCourses(6);
+    return raw.map(serializeFeatured);
+  } catch (error) {
+    console.error("[FeaturedCourses] Failed to fetch featured courses:", error);
+    return [];
+  }
 }
 
 export async function FeaturedCourses() {

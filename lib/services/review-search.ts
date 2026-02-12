@@ -66,7 +66,7 @@ export class ReviewSearchService {
    */
   static async searchReviews(
     filters: ReviewSearchFilters,
-    options: ReviewSearchOptions = {}
+    options: ReviewSearchOptions = {},
   ): Promise<ReviewSearchResult> {
     const {
       page = 1,
@@ -77,102 +77,117 @@ export class ReviewSearchService {
       includeVotes = true,
     } = options;
 
-    // Build where clause
-    const where = this.buildWhereClause(filters);
+    try {
+      // Build where clause
+      const where = this.buildWhereClause(filters);
 
-    // Build order clause
-    const orderBy = this.buildOrderClause(sortBy, filters.search);
+      // Build order clause
+      const orderBy = this.buildOrderClause(sortBy, filters.search);
 
-    // Get total count
-    const totalCount = await db.review.count({ where });
+      // Get total count
+      const totalCount = await db.review.count({ where });
 
-    // Get reviews
-    const reviews = await db.review.findMany({
-      where,
-      orderBy,
-      skip: (page - 1) * limit,
-      take: limit,
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            image: true,
-            role: true,
-            emailVerified: true,
-          },
-        },
-        course: {
-          select: {
-            id: true,
-            title: true,
-            slug: true,
-          },
-        },
-        ...(includeVotes && {
-          votes: {
+      // Get reviews
+      const reviews = await db.review.findMany({
+        where,
+        orderBy,
+        skip: (page - 1) * limit,
+        take: limit,
+        include: {
+          user: {
             select: {
               id: true,
-              userId: true,
-              helpful: true,
+              name: true,
+              image: true,
+              role: true,
+              emailVerified: true,
             },
           },
-        }),
-        ...(includeReplies && {
-          replies: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  image: true,
-                  role: true,
-                },
+          course: {
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+            },
+          },
+          ...(includeVotes && {
+            votes: {
+              select: {
+                id: true,
+                userId: true,
+                helpful: true,
               },
             },
-            orderBy: {
-              createdAt: "asc",
+          }),
+          ...(includeReplies && {
+            replies: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    image: true,
+                    role: true,
+                  },
+                },
+              },
+              orderBy: {
+                createdAt: "asc",
+              },
+            },
+          }),
+          _count: {
+            select: {
+              votes: true,
+              replies: true,
+              reports: true,
             },
           },
-        }),
-        _count: {
-          select: {
-            votes: true,
-            replies: true,
-            reports: true,
-          },
         },
-      },
-    });
+      });
 
-    // Calculate pagination
-    const totalPages = Math.ceil(totalCount / limit);
-    const hasNextPage = page < totalPages;
-    const hasPrevPage = page > 1;
+      // Calculate pagination
+      const totalPages = Math.ceil(totalCount / limit);
+      const hasNextPage = page < totalPages;
+      const hasPrevPage = page > 1;
 
-    const result: ReviewSearchResult = {
-      reviews,
-      pagination: {
-        page,
-        limit,
-        totalCount,
-        totalPages,
-        hasNextPage,
-        hasPrevPage,
-      },
-    };
+      const result: ReviewSearchResult = {
+        reviews,
+        pagination: {
+          page,
+          limit,
+          totalCount,
+          totalPages,
+          hasNextPage,
+          hasPrevPage,
+        },
+      };
 
-    // Add stats if requested
-    if (includeStats) {
-      result.stats = await this.getSearchStats(where);
+      // Add stats if requested
+      if (includeStats) {
+        result.stats = await this.getSearchStats(where);
+      }
+
+      // Add facets for filtering UI
+      if (filters.courseId) {
+        result.facets = await this.getFacets(filters);
+      }
+
+      return result;
+    } catch (error) {
+      console.error("[ReviewSearchService.searchReviews] Query failed:", error);
+      return {
+        reviews: [],
+        pagination: {
+          page,
+          limit,
+          totalCount: 0,
+          totalPages: 0,
+          hasNextPage: false,
+          hasPrevPage: false,
+        },
+      };
     }
-
-    // Add facets for filtering UI
-    if (filters.courseId) {
-      result.facets = await this.getFacets(filters);
-    }
-
-    return result;
   }
 
   /**
@@ -181,13 +196,13 @@ export class ReviewSearchService {
   static getCourseReviews = cache(
     async (
       courseId: string,
-      options: ReviewSearchOptions = {}
+      options: ReviewSearchOptions = {},
     ): Promise<ReviewSearchResult> => {
       return this.searchReviews(
         { courseId, status: ReviewStatus.APPROVED },
-        options
+        options,
       );
-    }
+    },
   );
 
   /**
@@ -196,7 +211,7 @@ export class ReviewSearchService {
   static async searchByText(
     query: string,
     filters: Omit<ReviewSearchFilters, "search"> = {},
-    options: ReviewSearchOptions = {}
+    options: ReviewSearchOptions = {},
   ): Promise<ReviewSearchResult> {
     if (!query.trim()) {
       return this.searchReviews(filters, options);
@@ -219,7 +234,7 @@ export class ReviewSearchService {
    */
   static async getTrendingReviews(
     filters: ReviewSearchFilters = {},
-    options: ReviewSearchOptions = {}
+    options: ReviewSearchOptions = {},
   ): Promise<ReviewSearchResult> {
     const trendingFilters: ReviewSearchFilters = {
       ...filters,
@@ -239,7 +254,7 @@ export class ReviewSearchService {
    */
   static async getModerationQueue(
     filters: ReviewSearchFilters = {},
-    options: ReviewSearchOptions = {}
+    options: ReviewSearchOptions = {},
   ): Promise<ReviewSearchResult> {
     const moderationFilters: ReviewSearchFilters = {
       ...filters,
@@ -257,7 +272,7 @@ export class ReviewSearchService {
    * Build Prisma where clause from filters
    */
   private static buildWhereClause(
-    filters: ReviewSearchFilters
+    filters: ReviewSearchFilters,
   ): Prisma.ReviewWhereInput {
     const where: Prisma.ReviewWhereInput = {};
 
@@ -383,7 +398,7 @@ export class ReviewSearchService {
    */
   private static buildOrderClause(
     sortBy: string,
-    hasSearch?: string
+    hasSearch?: string,
   ): Prisma.ReviewOrderByWithRelationInput[] {
     switch (sortBy) {
       case "oldest":
@@ -521,7 +536,7 @@ export class ReviewSearchService {
     const counts = await Promise.all(
       ranges.map((range) => {
         const dateFrom = new Date(
-          now.getTime() - range.days * 24 * 60 * 60 * 1000
+          now.getTime() - range.days * 24 * 60 * 60 * 1000,
         );
         return db.review.count({
           where: {
@@ -529,7 +544,7 @@ export class ReviewSearchService {
             createdAt: { gte: dateFrom },
           },
         });
-      })
+      }),
     );
 
     return ranges.map((range, index) => ({

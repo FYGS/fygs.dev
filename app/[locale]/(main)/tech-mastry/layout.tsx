@@ -8,65 +8,15 @@ import { Breadcrumbs } from "./_components/breadcrumbs";
 import { SearchBar } from "./_components/search-bar";
 import { TopicsNav } from "./_components/topics-nav";
 import { generateRouteMetadata } from "../_lib/metadata-helpers";
-import { LocalesValues } from "intlayer";
-import { SITE_URL } from "@/app/_lib/constants";
+import { sectionSEO } from "@/app/_lib/seo-config";
+import type { LocalesValues } from "intlayer";
 
-/**
- * Generate SEO-optimized metadata for tech-mastry with i18n
- */
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ locale: LocalesValues }>;
 }): Promise<Metadata> {
-  return generateRouteMetadata(params, {
-    title: {
-      fr: "Préparation aux Entretiens Techniques | Guide Complet FYGS",
-      en: "Technical Interview Preparation | Complete FYGS Guide",
-      es: "Preparación para Entrevistas Técnicas | Guía Completa FYGS",
-    },
-    description: {
-      fr: "Guide complet de préparation aux entretiens techniques : algorithmes, structures de données, systèmes distribués et bonnes pratiques. Ressources essentielles pour les développeurs.",
-      en: "Complete technical interview preparation guide: algorithms, data structures, distributed systems and best practices. Essential resources for developers.",
-      es: "Guía completa de preparación para entrevistas técnicas: algoritmos, estructuras de datos, sistemas distribuidos y mejores prácticas. Recursos esenciales para desarrolladores.",
-    },
-    keywords: [
-      {
-        fr: "entretiens techniques",
-        en: "technical interviews",
-        es: "entrevistas técnicas",
-      },
-      { fr: "algorithmes", en: "algorithms", es: "algoritmos" },
-      {
-        fr: "structures de données",
-        en: "data structures",
-        es: "estructuras de datos",
-      },
-      {
-        fr: "systèmes distribués",
-        en: "distributed systems",
-        es: "sistemas distribuidos",
-      },
-      {
-        fr: "architecture cloud",
-        en: "cloud architecture",
-        es: "arquitectura cloud",
-      },
-      {
-        fr: "guide développeur",
-        en: "developer guide",
-        es: "guía desarrollador",
-      },
-      {
-        fr: "préparation entretien",
-        en: "interview preparation",
-        es: "preparación entrevista",
-      },
-      { fr: "bonnes pratiques", en: "best practices", es: "mejores prácticas" },
-    ],
-    path: "/tech-mastry",
-    image: `${SITE_URL}/tech-mastry/og.png`,
-  });
+  return generateRouteMetadata(params, sectionSEO.techMastry);
 }
 
 export default function InterviewPrepLayout({

@@ -30,11 +30,11 @@ export function LessonContent({ lesson }: LessonContentProps) {
   return (
     <div className="space-y-8">
       {/* Lesson Header */}
-      <div className="space-y-4 pb-6 border-b border-gray-800/50">
+      <div className="space-y-4 pb-6 border-b border-border/50">
         <div className="flex items-center gap-3 flex-wrap">
           <Badge
             variant="secondary"
-            className="bg-blue-500/20 text-blue-400 border-blue-500/30"
+            className="bg-primary/15 text-primary border-primary/30"
           >
             Leçon {lesson.order}
           </Badge>
@@ -44,12 +44,12 @@ export function LessonContent({ lesson }: LessonContentProps) {
           </div>
         </div>
 
-        <h1 className="text-3xl md:text-4xl font-bold text-white leading-tight">
+        <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight">
           {lesson.title}
         </h1>
 
         {lesson.description && (
-          <p className="text-lg text-gray-300 leading-relaxed max-w-4xl">
+          <p className="text-lg text-muted-foreground leading-relaxed max-w-4xl">
             {lesson.description}
           </p>
         )}
@@ -57,24 +57,24 @@ export function LessonContent({ lesson }: LessonContentProps) {
 
       {/* Lesson Content */}
       {lesson.content && (
-        <Card className="bg-gradient-to-br from-gray-900/95 via-gray-800/95 to-gray-900/90 border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-300">
+        <Card className="bg-gradient-to-br from-card via-card to-card/90 border-border/50 shadow-xl hover:shadow-2xl transition-all duration-300">
           <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2.5 text-white text-xl">
-              <FileText className="h-5 w-5 text-blue-400" />
+            <CardTitle className="flex items-center gap-2.5 text-foreground text-xl">
+              <FileText className="h-5 w-5 text-primary" />
               Contenu de la leçon
             </CardTitle>
           </CardHeader>
           <CardContent
-            className="mdx-content prose prose-invert prose-slate max-w-none
-            prose-headings:text-white prose-headings:font-bold
-            prose-p:text-gray-200 prose-p:leading-relaxed
-            prose-a:text-blue-400 prose-a:no-underline hover:prose-a:text-blue-300
-            prose-strong:text-white prose-strong:font-semibold
-            prose-code:text-emerald-400 prose-code:bg-gray-800/50 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
+            className="mdx-content prose prose-invert max-w-none
+            prose-headings:text-foreground prose-headings:font-bold
+            prose-p:text-foreground/85 prose-p:leading-relaxed
+            prose-a:text-primary prose-a:no-underline hover:prose-a:text-primary/80
+            prose-strong:text-foreground prose-strong:font-semibold
+            prose-code:text-emerald-400 prose-code:bg-secondary/50 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
             prose-pre:bg-transparent prose-pre:p-0
-            prose-ul:text-gray-200 prose-ol:text-gray-200
-            prose-li:text-gray-200 prose-li:marker:text-blue-400
-            prose-blockquote:border-blue-500/50 prose-blockquote:text-gray-300
+            prose-ul:text-foreground/85 prose-ol:text-foreground/85
+            prose-li:text-foreground/85 prose-li:marker:text-primary
+            prose-blockquote:border-primary/50 prose-blockquote:text-muted-foreground
             prose-img:rounded-lg prose-img:shadow-lg
           "
           >
@@ -93,34 +93,34 @@ export function LessonContent({ lesson }: LessonContentProps) {
       )}
 
       {/* Resources Section */}
-      <Card className="bg-gradient-to-br from-gray-900/95 via-gray-800/95 to-gray-900/90 border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-300">
+      <Card className="bg-gradient-to-br from-card via-card to-card/90 border-border/50 shadow-xl hover:shadow-2xl transition-all duration-300">
         <CardHeader className="pb-4">
-          <CardTitle className="text-white text-xl">Ressources</CardTitle>
+          <CardTitle className="text-foreground text-xl">Ressources</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="text-gray-200">
-            <h4 className="font-semibold mb-3 text-lg text-white">
+          <div className="text-foreground/85">
+            <h4 className="font-semibold mb-3 text-lg text-foreground">
               Dans cette leçon, vous apprendrez :
             </h4>
             <ul className="list-disc list-inside space-y-2 text-sm">
-              <li className="text-gray-300 leading-relaxed">
+              <li className="text-muted-foreground leading-relaxed">
                 Les concepts fondamentaux abordés
               </li>
-              <li className="text-gray-300 leading-relaxed">
+              <li className="text-muted-foreground leading-relaxed">
                 Les bonnes pratiques à retenir
               </li>
-              <li className="text-gray-300 leading-relaxed">
+              <li className="text-muted-foreground leading-relaxed">
                 Les exercices pratiques à réaliser
               </li>
-              <li className="text-gray-300 leading-relaxed">
+              <li className="text-muted-foreground leading-relaxed">
                 Les ressources complémentaires
               </li>
             </ul>
           </div>
 
-          <div className="pt-4 border-t border-gray-700/50">
-            <p className="text-sm text-gray-400 leading-relaxed bg-blue-500/10 border-l-4 border-blue-500/50 p-4 rounded-r-lg">
-              💡 <strong className="text-blue-400">Conseil :</strong> Prenez des
+          <div className="pt-4 border-t border-border/50">
+            <p className="text-sm text-muted-foreground leading-relaxed bg-primary/10 border-l-4 border-primary/50 p-4 rounded-r-lg">
+              💡 <strong className="text-primary">Conseil :</strong> Prenez des
               notes pendant la vidéo et n&apos;hésitez pas à revenir sur les
               parties importantes. La pratique est essentielle pour maîtriser
               ces concepts.

@@ -312,8 +312,6 @@
 
 @layer base {
   :root {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
     --background: 220 13% 18%;
     --foreground: 219 14% 71%;
     --muted: 220 12% 22%;

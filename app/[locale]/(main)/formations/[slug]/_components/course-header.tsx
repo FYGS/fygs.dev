@@ -29,7 +29,7 @@ const LEVEL_LABELS: Record<string, string> = {
 export function CourseHeader({ course }: CourseHeaderProps) {
   const totalDuration = course.lessons.reduce(
     (acc, lesson) => acc + (lesson.duration || 0),
-    0
+    0,
   );
   const totalHours = Math.round(totalDuration / 3600);
   const enrollmentCount = course.enrollments.length;
@@ -42,7 +42,7 @@ export function CourseHeader({ course }: CourseHeaderProps) {
   return (
     <div className="space-y-6">
       {/* Video/Thumbnail */}
-      <div className="aspect-video relative overflow-hidden rounded-xl border border-slate-700 shadow-sm">
+      <div className="aspect-video relative overflow-hidden rounded-xl border border-border shadow-sm">
         {course.thumbnail ? (
           <Image
             src={course.thumbnail}
@@ -54,7 +54,9 @@ export function CourseHeader({ course }: CourseHeaderProps) {
           <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
             <div className="text-center">
               <div className="text-6xl mb-4">🎓</div>
-              <p className="text-lg text-slate-400">Aperçu de la formation</p>
+              <p className="text-lg text-muted-foreground">
+                Aperçu de la formation
+              </p>
             </div>
           </div>
         )}
@@ -69,14 +71,17 @@ export function CourseHeader({ course }: CourseHeaderProps) {
           >
             {CATEGORY_LABELS[course.category]}
           </Badge>
-          <Badge variant="outline" className="border-slate-600 text-slate-300">
+          <Badge
+            variant="outline"
+            className="border-border text-muted-foreground"
+          >
             {LEVEL_LABELS[course.level]}
           </Badge>
           {course.tags.map((courseTag) => (
             <Badge
               key={courseTag.tag.name}
               variant="outline"
-              className="border-slate-600 text-slate-300"
+              className="border-border text-muted-foreground"
               style={{ borderColor: courseTag.tag.color }}
             >
               {courseTag.tag.name}
@@ -84,16 +89,16 @@ export function CourseHeader({ course }: CourseHeaderProps) {
           ))}
         </div>
 
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-100">
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
           {course.title}
         </h1>
 
-        <p className="text-lg text-slate-300 leading-relaxed">
+        <p className="text-lg text-muted-foreground leading-relaxed">
           {course.description}
         </p>
 
         {/* Stats */}
-        <div className="flex flex-wrap gap-6 text-sm text-slate-400">
+        <div className="flex flex-wrap gap-6 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
             <span>{totalHours} heures de contenu</span>

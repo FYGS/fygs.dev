@@ -2,34 +2,36 @@ import { Metadata } from "next";
 import { SITE_BASE_URL, SITE_URL } from "./constants";
 
 const defaultTitle =
-  "Fernand SOUALO - Expert Software Engineer | Full-Stack Development";
+  "FYGS Learning Platform - Formations Premium pour Développeurs";
 const defaultDescription =
-  "Experienced Software Engineer specializing in building modern, scalable web applications with TypeScript, Node.js, Next.js, React, and cloud technologies. Explore my portfolio and technical insights.";
+  "Maîtrisez les technologies web modernes : JavaScript, TypeScript, React, Next.js, Node.js, IA et Cloud. Formations premium avec projets pratiques, certifications et communauté active.";
 
 export const defaultMetadata: Metadata = {
   metadataBase: SITE_BASE_URL,
   title: {
     default: defaultTitle,
-    template: "%s | Fernand SOUALO",
+    template: "%s | FYGS",
   },
   description: defaultDescription,
   keywords: [
-    "Fernand SOUALO",
-    "Software Engineer",
-    "Full-Stack Developer",
+    "FYGS",
+    "formations développeur",
+    "cours en ligne",
+    "JavaScript",
     "TypeScript",
-    "Node.js",
-    "Next.js",
     "React",
-    "AWS",
-    "Cloud Architecture",
-    "Web Development",
-    "Technical Blog",
-    "Software Architecture",
+    "Next.js",
+    "Node.js",
+    "développement web",
+    "formation premium",
+    "apprentissage en ligne",
+    "IA",
+    "Cloud",
+    "Full-Stack",
   ],
-  authors: [{ name: "Fernand SOUALO", url: SITE_URL }],
-  creator: "Fernand SOUALO",
-  publisher: "Fernand SOUALO",
+  authors: [{ name: "FYGS", url: SITE_URL }],
+  creator: "FYGS",
+  publisher: "FYGS",
   robots: {
     index: true,
     follow: true,
@@ -43,9 +45,9 @@ export const defaultMetadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    locale: "en_US",
+    locale: "fr_FR",
     url: SITE_URL,
-    siteName: "Fernand SOUALO",
+    siteName: "FYGS Learning Platform",
     title: defaultTitle,
     description: defaultDescription,
     images: [
@@ -53,7 +55,7 @@ export const defaultMetadata: Metadata = {
         url: "/images/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Fernand SOUALO - Expert Software Engineer",
+        alt: "FYGS Learning Platform - Formations Premium",
       },
     ],
   },
@@ -62,22 +64,26 @@ export const defaultMetadata: Metadata = {
     title: defaultTitle,
     description: defaultDescription,
     images: ["/images/og-image.png"],
-    creator: "Fernand SOUALO",
-    site: SITE_URL,
+    creator: "@fernand_soualo",
+    site: "@fygs_dev",
   },
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
     yandex: process.env.NEXT_PUBLIC_YANDEX_VERIFICATION,
     other: {
-      "norton-safeweb-site-verification":
-        process.env.NEXT_PUBLIC_NORTON_VERIFICATION ?? "",
+      ...(process.env.NEXT_PUBLIC_NORTON_VERIFICATION
+        ? {
+            "norton-safeweb-site-verification":
+              process.env.NEXT_PUBLIC_NORTON_VERIFICATION,
+          }
+        : {}),
     },
   },
   alternates: {
     canonical: SITE_URL,
     languages: {
-      "en-US": `${SITE_URL}/en`,
       "fr-FR": `${SITE_URL}/fr`,
+      "en-US": `${SITE_URL}/en`,
       "es-ES": `${SITE_URL}/es`,
     },
   },
@@ -85,18 +91,18 @@ export const defaultMetadata: Metadata = {
   icons: {
     icon: [
       { url: "/images/favicon.svg", type: "image/svg+xml" },
-      {
-        url: "/images/android-chrome-512x512.png",
-        sizes: "512x512",
-        type: "image/png",
-      },
+      { url: "/images/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/images/favicon-16x16.png", sizes: "16x16", type: "image/png" },
       {
         url: "/images/android-chrome-192x192.png",
         sizes: "192x192",
         type: "image/png",
       },
-      { url: "/images/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/images/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      {
+        url: "/images/android-chrome-512x512.png",
+        sizes: "512x512",
+        type: "image/png",
+      },
     ],
     apple: [{ url: "/images/apple-touch-icon.png", sizes: "180x180" }],
     other: [
@@ -108,7 +114,12 @@ export const defaultMetadata: Metadata = {
     ],
   },
   other: {
-    "msapplication-TileColor": "#da532c",
-    "theme-color": "#ffffff",
+    "msapplication-TileColor": "#29333d",
+    "theme-color": "#29333d",
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
+    "apple-mobile-web-app-title": "FYGS",
+    "mobile-web-app-capable": "yes",
+    "application-name": "FYGS",
   },
 };

@@ -78,6 +78,20 @@ const LocaleLayout: NextLayoutIntlayer = async ({ children, params }) => {
       dir={getHTMLTextDir(locale)} /*suppressHydrationWarning*/
     >
       <head>
+        {/* PWA - iOS installability */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta
+          name="apple-mobile-web-app-status-bar-style"
+          content="black-translucent"
+        />
+        <meta name="apple-mobile-web-app-title" content="FYGS" />
+        <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
+        {/* PWA - Android & general */}
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="application-name" content="FYGS" />
+        <meta name="theme-color" content="#29333d" />
+        <meta name="msapplication-TileColor" content="#29333d" />
+        {/* Structured data */}
         <JsonLd />
       </head>
       <body
@@ -85,7 +99,7 @@ const LocaleLayout: NextLayoutIntlayer = async ({ children, params }) => {
           GeistSans.variable,
           GeistMono.variable,
           AnekTelugu.variable,
-          "font-sans h-full bg-background text-foreground"
+          "font-sans h-full bg-background text-foreground",
         )}
         {...(process.env.NODE_ENV === "development"
           ? { "cz-shortcut-listen": "true" }
@@ -115,17 +129,20 @@ const LocaleLayout: NextLayoutIntlayer = async ({ children, params }) => {
           dangerouslySetInnerHTML={{
             __html: `
               if ('serviceWorker' in navigator) {
-                // Register service worker after page load to avoid blocking
-                window.addEventListener('load', () => {
-                  // Use requestIdleCallback for better performance
+                window.addEventListener('load', function() {
+                  var registerSW = function() {
+                    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+                      .then(function(reg) {
+                        // Check for updates periodically
+                        reg.update();
+                        setInterval(function() { reg.update(); }, 60 * 60 * 1000);
+                      })
+                      .catch(function() {});
+                  };
                   if ('requestIdleCallback' in window) {
-                    requestIdleCallback(() => {
-                      navigator.serviceWorker.register('/sw.js').catch(() => {});
-                    });
+                    requestIdleCallback(registerSW);
                   } else {
-                    setTimeout(() => {
-                      navigator.serviceWorker.register('/sw.js').catch(() => {});
-                    }, 2000);
+                    setTimeout(registerSW, 1000);
                   }
                 });
               }

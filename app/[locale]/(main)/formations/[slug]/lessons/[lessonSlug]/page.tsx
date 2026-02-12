@@ -61,8 +61,8 @@ export default async function LessonPage({ params }: LessonPageProps) {
   if (!session) {
     redirect(
       `/auth/login?callbackUrl=${encodeURIComponent(
-        `/formations/${slug}/lessons/${lessonSlug}`
-      )}`
+        `/formations/${slug}/lessons/${lessonSlug}`,
+      )}`,
     );
   }
 
@@ -118,7 +118,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
   // Centralized access check
   const canAccess = await AccessService.canAccessLesson(
     session.user.id,
-    lesson.id
+    lesson.id,
   );
   if (!canAccess) {
     redirect(`/formations/${slug}`);
@@ -148,11 +148,11 @@ export default async function LessonPage({ params }: LessonPageProps) {
 
   // Flatten lessons and quizzes for navigation and progress
   const allLessonIds = [
-    ...lesson.course.lessons.map(l => l.id),
-    ...lesson.course.modules.flatMap(m => m.lessons.map(l => l.id))
+    ...lesson.course.lessons.map((l) => l.id),
+    ...lesson.course.modules.flatMap((m) => m.lessons.map((l) => l.id)),
   ];
 
-  const allQuizIds = quizzes.map(q => q.id);
+  const allQuizIds = quizzes.map((q) => q.id);
 
   // Get progress for all lessons and quizzes in the course
   const [allLessonProgress, allQuizResults] = await Promise.all([
@@ -182,8 +182,16 @@ export default async function LessonPage({ params }: LessonPageProps) {
 
   // Unify progress data
   const unifiedProgress = [
-    ...allLessonProgress.map(p => ({ itemId: p.lessonId, completed: p.completed, type: 'lesson' as const })),
-    ...allQuizResults.map(q => ({ itemId: q.quizId, completed: q.percentage >= 70, type: 'quiz' as const })),
+    ...allLessonProgress.map((p) => ({
+      itemId: p.lessonId,
+      completed: p.completed,
+      type: "lesson" as const,
+    })),
+    ...allQuizResults.map((q) => ({
+      itemId: q.quizId,
+      completed: q.percentage >= 70,
+      type: "quiz" as const,
+    })),
   ];
 
   // Re-construct the linear list of items for navigation
@@ -196,63 +204,63 @@ export default async function LessonPage({ params }: LessonPageProps) {
     // Standalone lessons (moduleId is null)
     ...standaloneLessons
       .sort((a, b) => a.order - b.order)
-      .map(l => ({
+      .map((l) => ({
         ...l,
-        type: 'lesson' as const,
-        url: `/formations/${slug}/lessons/${l.slug}`
+        type: "lesson" as const,
+        url: `/formations/${slug}/lessons/${l.slug}`,
       })),
     // Modules with their lessons AND quizzes
-    ...sortedModules.flatMap(m => {
+    ...sortedModules.flatMap((m) => {
       const moduleLessons = m.lessons
         .sort((a, b) => a.order - b.order)
-        .map(l => ({
+        .map((l) => ({
           ...l,
-          type: 'lesson' as const,
-          url: `/formations/${slug}/lessons/${l.slug}`
+          type: "lesson" as const,
+          url: `/formations/${slug}/lessons/${l.slug}`,
         }));
 
       // Quiz.moduleId (Int) references Module.order (Int), not Module.id
       const moduleQuizzes = quizzes
-        .filter(q => q.moduleId === m.order)
-        .map(q => ({
+        .filter((q) => q.moduleId === m.order)
+        .map((q) => ({
           ...q,
           slug: q.id,
           order: 999,
-          type: 'quiz' as const,
-          url: `/formations/${slug}/quizzes/${q.id}`
+          type: "quiz" as const,
+          url: `/formations/${slug}/quizzes/${q.id}`,
         }));
 
       // Return lessons followed by quizzes for this module
       return [...moduleLessons, ...moduleQuizzes];
-    })
+    }),
   ];
 
   const currentItemIndex = linearItems.findIndex(
-    (item) => item.id === lesson.id
+    (item) => item.id === lesson.id,
   );
 
   // Prepare modules with quizzes for LessonProgress
-  const modulesWithQuizzes = sortedModules.map(m => ({
+  const modulesWithQuizzes = sortedModules.map((m) => ({
     ...m,
     items: [
       ...m.lessons
         .sort((a, b) => a.order - b.order)
-        .map(l => ({
+        .map((l) => ({
           ...l,
-          type: 'lesson' as const,
-          url: `/formations/${slug}/lessons/${l.slug}`
+          type: "lesson" as const,
+          url: `/formations/${slug}/lessons/${l.slug}`,
         })),
       // Quiz.moduleId (Int) references Module.order (Int), not Module.id
       ...quizzes
-        .filter(q => q.moduleId === m.order)
-        .map(q => ({
+        .filter((q) => q.moduleId === m.order)
+        .map((q) => ({
           ...q,
           slug: q.id,
           order: 999,
-          type: 'quiz' as const,
-          url: `/formations/${slug}/quizzes/${q.id}`
-        }))
-    ]
+          type: "quiz" as const,
+          url: `/formations/${slug}/quizzes/${q.id}`,
+        })),
+    ],
   }));
 
   // Serialize data to avoid Decimal/Date issues with client components
@@ -272,15 +280,15 @@ export default async function LessonPage({ params }: LessonPageProps) {
 
   const serializedProgress = progress
     ? {
-      ...progress,
-      completedAt: progress.completedAt?.toISOString() || null,
-      createdAt: progress.createdAt.toISOString(),
-      updatedAt: progress.updatedAt.toISOString(),
-    }
+        ...progress,
+        completedAt: progress.completedAt?.toISOString() || null,
+        createdAt: progress.createdAt.toISOString(),
+        updatedAt: progress.updatedAt.toISOString(),
+      }
     : null;
 
   return (
-    <div className="min-h-screen bg-slate-800">
+    <div className="min-h-screen bg-background">
       <div className="container py-8 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
@@ -299,14 +307,13 @@ export default async function LessonPage({ params }: LessonPageProps) {
           <div className="lg:col-span-1">
             <div className="sticky top-8">
               <LessonProgress
-                lessons={standaloneLessons.map(l => ({
+                lessons={standaloneLessons.map((l) => ({
                   ...l,
-                  type: 'lesson' as const,
-                  url: `/formations/${slug}/lessons/${l.slug}`
+                  type: "lesson" as const,
+                  url: `/formations/${slug}/lessons/${l.slug}`,
                 }))}
                 modules={modulesWithQuizzes}
                 currentLessonId={lesson.id}
-
                 progressData={unifiedProgress}
               />
             </div>

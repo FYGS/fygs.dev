@@ -1,58 +1,47 @@
 import { MetadataRoute } from "next";
 
 /**
- * Modern PWA Manifest with comprehensive support
- * Implements latest PWA standards and best practices
+ * PWA Manifest - Optimized for Android & iOS installability
  *
- * Note: Manifests are static in Next.js. For per-locale manifests,
- * use middleware or dynamic routes: /[locale]/manifest.webmanifest
+ * Key requirements for installability:
+ * - Android: name, icons (192px + 512px), start_url, display, proper screenshots
+ * - iOS: apple-touch-icon in <head>, apple-mobile-web-app-capable meta tag
+ * - Both: HTTPS, service worker, manifest linked via <link rel="manifest">
  */
 export default function manifest(): MetadataRoute.Manifest {
-  // Default to multilingual support with French as primary
-  const name = "FYGS Learning Platform - Formations Premium";
-  const shortName = "FYGS DEV";
-  const description =
-    "Master modern web technologies: JavaScript, TypeScript, React, Next.js, Node.js, AI and Cloud. Premium courses with hands-on projects.";
-
   return {
-    // Basic information
-    id: "/?source=pwa",
-    name,
-    short_name: shortName,
-    description,
+    // Identity
+    id: "/",
+    name: "FYGS DEV",
+    short_name: "FYGS",
+    description:
+      "FYGS DEV est une plateforme d'apprentissage en ligne dédiée aux développeurs, offrant des formations de qualité, des ressources pédagogiques et une communauté engagée pour accompagner votre progression dans le développement web et mobile. Maîtrisez JavaScript, TypeScript, React, Next.js, Node.js, IA et Cloud. Formations premium avec projets pratiques.",
 
     // Navigation
     start_url: "/",
     scope: "/",
 
-    // Display modes (ordered by preference)
+    // Display - standalone for native app feel
     display: "standalone",
-    display_override: ["window-controls-overlay", "standalone", "minimal-ui"],
+    display_override: ["standalone", "minimal-ui"],
 
     // Orientation
-    orientation: "portrait-primary",
+    orientation: "any",
 
-    // Theme colors (from globals.css - dark theme primary)
-    theme_color: "#d9dce0", // --primary: 220 13% 86%
-    background_color: "#29333d", // --background: 220 13% 18%
+    // Theme colors matching the app's dark theme
+    theme_color: "#29333d",
+    background_color: "#29333d",
 
-    // Locale and direction (default, will be overridden by HTML lang)
+    // Locale
     lang: "fr",
     dir: "ltr",
 
-    // Categories for app stores
-    categories: [
-      "education",
-      "development",
-      "technology",
-      "productivity",
-      "learning",
-      "training",
-    ],
+    // App store categories
+    categories: ["education", "development", "productivity"],
 
-    // Icons - comprehensive sizes for all platforms
+    // Icons - comprehensive for all platforms
     icons: [
-      // Standard PNG icons with "any" purpose (not maskable to avoid loading issues)
+      // Standard favicons
       {
         src: "/images/favicon-16x16.png",
         sizes: "16x16",
@@ -71,12 +60,14 @@ export default function manifest(): MetadataRoute.Manifest {
         type: "image/png",
         purpose: "any",
       },
+      // Apple touch icon
       {
         src: "/images/apple-touch-icon.png",
         sizes: "180x180",
         type: "image/png",
         purpose: "any",
       },
+      // Android Chrome icons (required: 192px + 512px)
       {
         src: "/images/android-chrome-192x192.png",
         sizes: "192x192",
@@ -89,7 +80,7 @@ export default function manifest(): MetadataRoute.Manifest {
         type: "image/png",
         purpose: "any",
       },
-      // Maskable icons for adaptive icons (Android) - duplicate with purpose maskable
+      // Maskable icons for adaptive icon support (Android)
       {
         src: "/images/android-chrome-192x192.png",
         sizes: "192x192",
@@ -104,33 +95,31 @@ export default function manifest(): MetadataRoute.Manifest {
       },
     ],
 
-    // Screenshots for app store listings (both desktop and mobile)
+    // Screenshots - REQUIRED for rich install UI on mobile
     screenshots: [
-      // Wide format for desktop/tablet
       {
         src: "/screenshots/home-desktop-1200x630.png",
         sizes: "1200x630",
         type: "image/png",
         form_factor: "wide",
-        label: "FYGS Platform main screen",
+        label: "FYGS DEV - Vue bureau",
       },
-      // Narrow format for mobile (required for rich install UI on mobile)
       {
         src: "/screenshots/home-mobile-1080x1920.png",
         sizes: "1080x1920",
         type: "image/png",
         form_factor: "narrow",
-        label: "FYGS Platform mobile interface",
+        label: "FYGS DEV - Vue mobile",
       },
     ],
 
-    // Shortcuts for quick actions (max 4 for best cross-platform support)
+    // Shortcuts for quick actions (max 4)
     shortcuts: [
       {
-        name: "Courses",
-        short_name: "Courses",
-        url: "/formations?utm_source=pwa_shortcut",
-        description: "Explore and discover available courses",
+        name: "Formations",
+        short_name: "Cours",
+        url: "/formations",
+        description: "Découvrir les formations disponibles",
         icons: [
           {
             src: "/screenshots/formations-96x96.png",
@@ -142,8 +131,8 @@ export default function manifest(): MetadataRoute.Manifest {
       {
         name: "Blog",
         short_name: "Blog",
-        url: "/blog?utm_source=pwa_shortcut",
-        description: "Read latest articles and tutorials",
+        url: "/blog",
+        description: "Lire les derniers articles",
         icons: [
           {
             src: "/screenshots/blog-96x96.png",
@@ -153,10 +142,10 @@ export default function manifest(): MetadataRoute.Manifest {
         ],
       },
       {
-        name: "Community",
+        name: "Communauté",
         short_name: "Forum",
-        url: "/community?utm_source=pwa_shortcut",
-        description: "Join and participate in the community",
+        url: "/community",
+        description: "Rejoindre la communauté",
         icons: [
           {
             src: "/screenshots/community-96x96.png",
@@ -166,10 +155,10 @@ export default function manifest(): MetadataRoute.Manifest {
         ],
       },
       {
-        name: "Dashboard",
+        name: "Tableau de bord",
         short_name: "Dashboard",
-        url: "/dashboard?utm_source=pwa_shortcut",
-        description: "Access your personal dashboard",
+        url: "/dashboard",
+        description: "Accéder au tableau de bord",
         icons: [
           {
             src: "/screenshots/dashboard-96x96.png",
@@ -180,45 +169,7 @@ export default function manifest(): MetadataRoute.Manifest {
       },
     ],
 
-    // Protocol handlers for deep linking
-    protocol_handlers: [
-      {
-        protocol: "web+fygs",
-        url: "/handle?type=%s",
-      },
-    ],
-
-    // Share target for Web Share API
-    share_target: {
-      action: "/share",
-      method: "POST",
-      enctype: "multipart/form-data",
-      params: {
-        title: "title",
-        text: "text",
-        url: "url",
-        files: [
-          {
-            name: "media",
-            accept: ["image/*", "video/*", "audio/*", "application/pdf"],
-          },
-        ],
-      },
-    },
-
-    // File handlers for opening specific file types
-    file_handlers: [
-      {
-        action: "/dashboard/upload",
-        accept: {
-          "text/markdown": [".md", ".markdown"],
-          "application/pdf": [".pdf"],
-          "image/*": [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"],
-        },
-      },
-    ],
-
-    // Related applications
+    // Do not prefer native apps
     prefer_related_applications: false,
     related_applications: [],
   };

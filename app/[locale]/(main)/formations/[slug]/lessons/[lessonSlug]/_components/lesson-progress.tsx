@@ -104,23 +104,23 @@ export function LessonProgress({
       <div
         className={`flex items-center justify-between p-2.5 rounded-lg border transition-all ${
           isCurrent
-            ? "bg-blue-500/20 border-blue-500/50"
+            ? "bg-primary/15 border-primary/40"
             : isAccessible
-              ? "border-gray-700 hover:bg-gray-800/50"
-              : "border-gray-800 opacity-50"
+              ? "border-border hover:bg-accent/50"
+              : "border-border/50 opacity-50"
         }`}
       >
         <div className="flex items-center gap-2.5 flex-1 min-w-0">
-          <div className="flex items-center justify-center w-5 h-5 rounded-full bg-slate-700 text-slate-300 text-xs font-medium shrink-0">
+          <div className="flex items-center justify-center w-5 h-5 rounded-full bg-secondary text-secondary-foreground text-xs font-medium shrink-0">
             {displayNumber}
           </div>
           <p
             className={`text-sm font-medium truncate ${
               isCurrent
-                ? "text-blue-400"
+                ? "text-primary"
                 : isAccessible
-                  ? "text-white"
-                  : "text-gray-500"
+                  ? "text-foreground"
+                  : "text-muted-foreground"
             }`}
           >
             {item.title}
@@ -130,11 +130,11 @@ export function LessonProgress({
           {isCompleted ? (
             <Check className="h-4 w-4 text-green-500" />
           ) : isCurrent ? (
-            <Play className="h-4 w-4 text-blue-400" />
+            <Play className="h-4 w-4 text-primary" />
           ) : isAccessible ? (
-            <div className="w-2 h-2 rounded-full bg-gray-500" />
+            <div className="w-2 h-2 rounded-full bg-muted-foreground" />
           ) : (
-            <Lock className="h-4 w-4 text-gray-600" />
+            <Lock className="h-4 w-4 text-muted-foreground/60" />
           )}
         </div>
       </div>
@@ -194,24 +194,26 @@ export function LessonProgress({
   };
 
   return (
-    <Card className="bg-gradient-to-br from-gray-900/95 via-gray-800/95 to-gray-900/90 border-gray-700/50 sticky top-4">
+    <Card className="bg-gradient-to-br from-card via-card to-card/90 border-border/50">
       <CardHeader className="pb-4">
-        <CardTitle className="text-white text-lg flex items-center justify-between">
+        <CardTitle className="text-foreground text-lg flex items-center justify-between">
           <span>Progression</span>
           <Badge
             variant="secondary"
-            className="bg-blue-500/20 text-blue-400 border-blue-500/30"
+            className="bg-primary/15 text-primary border-primary/30"
           >
             {completedItems}/{allItems.length}
           </Badge>
         </CardTitle>
         <div className="space-y-2">
           <Progress value={progressPercentage} className="h-2" />
-          <p className="text-sm text-gray-400">{progressPercentage}% terminé</p>
+          <p className="text-sm text-muted-foreground">
+            {progressPercentage}% terminé
+          </p>
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        <ScrollArea className="h-[calc(100vh-16rem)] max-h-[600px]">
+        <ScrollArea className="h-[calc(100vh-14rem)]">
           <div className="space-y-1 px-4 pb-4">
             {/* Standalone Lessons */}
             {lessons.length > 0 &&
@@ -248,24 +250,24 @@ export function LessonProgress({
                   open={isOpen}
                   onOpenChange={() => toggleModule(moduleIndex)}
                 >
-                  <CollapsibleTrigger className="w-full text-left hover:bg-gray-800/50 transition-colors rounded-lg">
+                  <CollapsibleTrigger className="w-full text-left hover:bg-accent/50 transition-colors rounded-lg">
                     <div className="p-2.5 flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
                         <span className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0">
                           {moduleIndex + 1}
                         </span>
-                        <h3 className="font-semibold text-sm text-white truncate">
+                        <h3 className="font-semibold text-sm text-foreground truncate">
                           {module.title}
                         </h3>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-muted-foreground">
                           {moduleLessonCount}
                         </span>
                         {isOpen ? (
-                          <ChevronDown className="h-4 w-4 text-gray-400" />
+                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
                         ) : (
-                          <ChevronRight className="h-4 w-4 text-gray-400" />
+                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
                         )}
                       </div>
                     </div>
