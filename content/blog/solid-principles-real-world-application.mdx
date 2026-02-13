@@ -1,0 +1,948 @@
+﻿---
+title: "Les principes SOLID en pratique : Transformer un monolithe en architecture propre"
+excerpt: "Maîtrisez les 5 principes SOLID à travers la refactorisation complète d'une application e-commerce réelle. Du code spaghetti à l'architecture exemplaire, pas à pas."
+date: "2025-02-10"
+author: "Fernand SOUALO"
+categories: ["Architecture", "Design Patterns", "TypeScript", "Clean Code", "SOLID"]
+coverImage: "/blog/solid-principles.webp"
+---
+
+# Les principes SOLID en pratique : Transformer un monolithe en architecture propre
+
+## Table of Contents
+
+1. [Introduction](#introduction)
+2. [Le projet : un e-commerce en détresse](#project)
+3. [S — Single Responsibility Principle](#srp)
+4. [O — Open/Closed Principle](#ocp)
+5. [L — Liskov Substitution Principle](#lsp)
+6. [I — Interface Segregation Principle](#isp)
+7. [D — Dependency Inversion Principle](#dip)
+8. [L'architecture finale](#final)
+9. [Tests et validation](#tests)
+10. [Conclusion](#conclusion)
+
+## Introduction <a name="introduction"></a>
+
+Les principes SOLID ne sont pas des règles abstraites de manuels académiques. Ce sont des **garde-fous concrets** qui séparent le code maintenable du code qui devient une dette technique en quelques mois. Dans cet article, nous allons les appliquer à un cas réel : une application e-commerce TypeScript qui croule sous les problèmes.
+
+Plutôt que de présenter chaque principe isolément avec des exemples artificiels, nous allons **transformer un vrai projet** — du code monolithique, couplé et fragile vers une architecture propre, testable et extensible.
+
+> **Prérequis** : Bonne connaissance de TypeScript, familiarité avec Node.js et les bases de la programmation orientée objet.
+
+## Le projet : un e-commerce en détresse <a name="project"></a>
+
+Voici notre point de départ — un `OrderService` qui fait absolument tout. C'est le type de code qu'on retrouve dans beaucoup de startups après 18 mois de développement "rapide" :
+
+```typescript
+// ❌ LE PROBLÈME : une classe qui fait TOUT
+class OrderService {
+  private db: Database;
+
+  constructor() {
+    this.db = new PostgresDatabase(); // Couplage dur
+  }
+
+  async createOrder(userId: string, items: CartItem[]) {
+    // 1. Validation (responsabilité #1)
+    if (!items.length) throw new Error("Cart is empty");
+    for (const item of items) {
+      if (item.quantity <= 0) throw new Error("Invalid quantity");
+      if (item.price < 0) throw new Error("Invalid price");
+    }
+
+    // 2. Calcul des prix (responsabilité #2)
+    let subtotal = 0;
+    for (const item of items) {
+      subtotal += item.price * item.quantity;
+    }
+    let tax = subtotal * 0.2; // TVA France
+    let shipping = subtotal > 50 ? 0 : 5.99;
+    // Réductions spéciales...
+    if (items.length > 5) subtotal *= 0.95;
+    const total = subtotal + tax + shipping;
+
+    // 3. Persistance (responsabilité #3)
+    const order = await this.db.query(
+      INSERT INTO orders (user_id, total, status)
+       VALUES (, , 'pending') RETURNING *,
+      [userId, total]
+    );
+
+    // 4. Paiement (responsabilité #4)
+    const stripe = new Stripe(process.env.STRIPE_KEY!);
+    const payment = await stripe.charges.create({
+      amount: Math.round(total * 100),
+      currency: "eur",
+      source: "tok_visa",
+    });
+
+    // 5. Notification (responsabilité #5)
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      auth: { user: process.env.EMAIL, pass: process.env.EMAIL_PASS },
+    });
+    await transporter.sendMail({
+      to: userId,
+      subject: "Commande confirmée",
+      html: <h1>Merci !</h1><p>Total: €</p>,
+    });
+
+    // 6. Inventaire (responsabilité #6)
+    for (const item of items) {
+      await this.db.query(
+        "UPDATE products SET stock = stock -  WHERE id = ",
+        [item.quantity, item.productId]
+      );
+    }
+
+    // 7. Analytics (responsabilité #7)
+    console.log([ANALYTICS] Order created: , total: );
+    await fetch("https://analytics.example.com/track", {
+      method: "POST",
+      body: JSON.stringify({ event: "order_created", total }),
+    });
+
+    return order;
+  }
+}
+```
+
+**Les problèmes sont évidents :**
+- 7 responsabilités dans une seule classe
+- Impossible à tester unitairement (dépendances concrètes)
+- Changer le système de paiement = modifier `OrderService`
+- Ajouter une notification SMS = modifier `OrderService`
+- Le calcul de prix est dur à faire évoluer
+
+Transformons ce cauchemar en code professionnel.
+
+## S — Single Responsibility Principle <a name="srp"></a>
+
+> *"Une classe ne devrait avoir qu'une seule raison de changer."*
+
+### Le diagnostic
+
+Notre `OrderService` viole massivement le SRP : validation, pricing, persistance, paiement, notifications, inventaire et analytics — **7 responsabilités**. Si le format d'email change, on modifie `OrderService`. Si le calcul de TVA évolue, on modifie `OrderService`. Chaque changement dans n'importe quel domaine métier impacte cette même classe.
+
+### L'extraction
+
+Chaque responsabilité devient sa propre classe avec un périmètre clair :
+
+```typescript
+// ✅ Responsabilité 1 : Validation des commandes
+class OrderValidator {
+  validate(items: CartItem[]): ValidationResult {
+    const errors: string[] = [];
+
+    if (!items.length) {
+      errors.push("Le panier est vide");
+    }
+
+    for (const item of items) {
+      if (item.quantity <= 0) {
+        errors.push(Quantité invalide pour );
+      }
+      if (item.price < 0) {
+        errors.push(Prix invalide pour );
+      }
+      if (!item.productId) {
+        errors.push("Identifiant produit manquant");
+      }
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+    };
+  }
+}
+```
+
+```typescript
+// ✅ Responsabilité 2 : Calcul des prix
+class PricingEngine {
+  calculate(items: CartItem[], discounts: Discount[] = []): PriceBreakdown {
+    const subtotal = items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+
+    const discountAmount = this.applyDiscounts(subtotal, items, discounts);
+    const discountedSubtotal = subtotal - discountAmount;
+    const tax = this.calculateTax(discountedSubtotal);
+    const shipping = this.calculateShipping(discountedSubtotal);
+
+    return {
+      subtotal,
+      discountAmount,
+      tax,
+      shipping,
+      total: discountedSubtotal + tax + shipping,
+    };
+  }
+
+  private calculateTax(amount: number): number {
+    return amount * 0.2; // TVA 20%
+  }
+
+  private calculateShipping(subtotal: number): number {
+    return subtotal > 50 ? 0 : 5.99;
+  }
+
+  private applyDiscounts(
+    subtotal: number,
+    items: CartItem[],
+    discounts: Discount[]
+  ): number {
+    let total = 0;
+    for (const discount of discounts) {
+      if (discount.type === "percentage") {
+        total += subtotal * (discount.value / 100);
+      } else if (discount.type === "fixed") {
+        total += discount.value;
+      }
+    }
+    // Réduction volume automatique
+    if (items.length > 5) {
+      total += subtotal * 0.05;
+    }
+    return Math.min(total, subtotal); // Ne jamais dépasser le subtotal
+  }
+}
+```
+
+```typescript
+// ✅ Responsabilité 3 : Gestion de l'inventaire
+class InventoryManager {
+  constructor(private readonly repository: InventoryRepository) {}
+
+  async reserveStock(items: CartItem[]): Promise<StockReservation> {
+    const reservations: StockReservation[] = [];
+
+    for (const item of items) {
+      const available = await this.repository.getStock(item.productId);
+
+      if (available < item.quantity) {
+        // Annuler les réservations précédentes
+        await this.releaseReservations(reservations);
+        throw new InsufficientStockError(item.productId, available, item.quantity);
+      }
+
+      const reservation = await this.repository.reserve(
+        item.productId,
+        item.quantity
+      );
+      reservations.push(reservation);
+    }
+
+    return { items: reservations, expiresAt: Date.now() + 15 * 60 * 1000 };
+  }
+
+  private async releaseReservations(reservations: StockReservation[]) {
+    for (const r of reservations) {
+      await this.repository.release(r.productId, r.quantity);
+    }
+  }
+}
+```
+
+### Le résultat
+
+Désormais, chaque classe a **une seule raison de changer** :
+- `OrderValidator` change quand les règles de validation évoluent
+- `PricingEngine` change quand la logique de prix est mise à jour
+- `InventoryManager` change quand la gestion de stock est modifiée
+
+**Impact métrique** : la complexité cyclomatique de `OrderService` passe de 23 à 4.
+
+## O — Open/Closed Principle <a name="ocp"></a>
+
+> *"Une entité doit être ouverte à l'extension mais fermée à la modification."*
+
+### Le problème concret
+
+Notre `PricingEngine` calcule la TVA avec un taux fixe de 20%. Mais l'entreprise se développe en Allemagne (19%), en Espagne (21%), et bientôt au Royaume-Uni (20% mais calcul différent post-Brexit). À chaque nouveau pays, il faudrait modifier `PricingEngine`.
+
+### La solution : le Strategy Pattern
+
+```typescript
+// ✅ Interface de stratégie de taxation
+interface TaxStrategy {
+  readonly countryCode: string;
+  calculate(amount: number, category?: ProductCategory): number;
+}
+
+// Chaque pays implémente sa propre stratégie
+class FranceTaxStrategy implements TaxStrategy {
+  readonly countryCode = "FR";
+
+  calculate(amount: number, category?: ProductCategory): number {
+    // TVA réduite pour les livres en France
+    if (category === "books") return amount * 0.055;
+    // TVA réduite pour l'alimentaire
+    if (category === "food") return amount * 0.10;
+    return amount * 0.20;
+  }
+}
+
+class GermanyTaxStrategy implements TaxStrategy {
+  readonly countryCode = "DE";
+
+  calculate(amount: number, category?: ProductCategory): number {
+    if (category === "food" || category === "books") {
+      return amount * 0.07; // Taux réduit allemand
+    }
+    return amount * 0.19;
+  }
+}
+
+// Ajouter un pays = ajouter une classe. Zéro modification du code existant.
+class SpainTaxStrategy implements TaxStrategy {
+  readonly countryCode = "ES";
+
+  calculate(amount: number): number {
+    return amount * 0.21;
+  }
+}
+```
+
+```typescript
+// ✅ PricingEngine refactorisé — ouvert à l'extension
+class PricingEngine {
+  private readonly discountStrategies: DiscountStrategy[] = [];
+
+  constructor(
+    private readonly taxStrategy: TaxStrategy,
+    private readonly shippingStrategy: ShippingStrategy
+  ) {}
+
+  addDiscountStrategy(strategy: DiscountStrategy): void {
+    this.discountStrategies.push(strategy);
+  }
+
+  calculate(items: CartItem[]): PriceBreakdown {
+    const subtotal = items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+
+    const discountAmount = this.discountStrategies.reduce(
+      (total, strategy) => total + strategy.apply(subtotal, items),
+      0
+    );
+
+    const discountedSubtotal = subtotal - Math.min(discountAmount, subtotal);
+    const tax = this.taxStrategy.calculate(discountedSubtotal);
+    const shipping = this.shippingStrategy.calculate(discountedSubtotal, items);
+
+    return {
+      subtotal,
+      discountAmount,
+      tax,
+      shipping,
+      total: discountedSubtotal + tax + shipping,
+    };
+  }
+}
+```
+
+### Pourquoi c'est puissant
+
+Pour supporter un nouveau pays, on crée une classe. Pour ajouter une règle de livraison, on crée une classe. **Aucun code existant n'est modifié.** Le risque de régression est nul.
+
+```typescript
+// Composition au point d'entrée
+const frenchPricing = new PricingEngine(
+  new FranceTaxStrategy(),
+  new StandardShippingStrategy()
+);
+frenchPricing.addDiscountStrategy(new VolumeDiscountStrategy());
+frenchPricing.addDiscountStrategy(new LoyaltyDiscountStrategy());
+
+const germanPricing = new PricingEngine(
+  new GermanyTaxStrategy(),
+  new EUShippingStrategy()
+);
+```
+
+## L — Liskov Substitution Principle <a name="lsp"></a>
+
+> *"Les objets d'une classe dérivée doivent pouvoir remplacer les objets de la classe parente sans altérer le comportement du programme."*
+
+### La violation classique
+
+```typescript
+// ❌ VIOLATION : le carré hérite du rectangle mais change son comportement
+class Rectangle {
+  constructor(protected width: number, protected height: number) {}
+
+  setWidth(w: number) { this.width = w; }
+  setHeight(h: number) { this.height = h; }
+  area(): number { return this.width * this.height; }
+}
+
+class Square extends Rectangle {
+  setWidth(w: number) {
+    this.width = w;
+    this.height = w; // ⚠️ Effet de bord inattendu
+  }
+  setHeight(h: number) {
+    this.width = h;  // ⚠️ Effet de bord inattendu
+    this.height = h;
+  }
+}
+
+// Ce code fonctionne avec Rectangle mais PAS avec Square
+function doubleWidth(rect: Rectangle) {
+  const originalHeight = rect.area() / rect.area(); // simplifié
+  rect.setWidth(rect.area() / 10); // comportement imprévisible avec Square
+}
+```
+
+### Application dans notre e-commerce
+
+Imaginons nos stratégies de paiement. Un piège courant :
+
+```typescript
+// ❌ VIOLATION : CashOnDelivery ne peut pas "capturer" un paiement
+interface PaymentProcessor {
+  authorize(amount: number): Promise<PaymentAuth>;
+  capture(authId: string): Promise<PaymentCapture>;
+  refund(captureId: string, amount: number): Promise<PaymentRefund>;
+}
+
+class StripeProcessor implements PaymentProcessor {
+  async authorize(amount: number) { /* ... fonctionne */ }
+  async capture(authId: string) { /* ... fonctionne */ }
+  async refund(captureId: string, amount: number) { /* ... fonctionne */ }
+}
+
+class CashOnDeliveryProcessor implements PaymentProcessor {
+  async authorize(amount: number) {
+    // Pas de vraie autorisation pour du paiement à la livraison
+    return { id: "cod-" + Date.now(), amount, status: "authorized" };
+  }
+
+  async capture(authId: string) {
+    // ⚠️ Comment "capturer" du cash ? On lance une exception
+    throw new Error("Cannot capture cash payment online");
+  }
+
+  async refund(captureId: string, amount: number) {
+    // ⚠️ Impossible de refund un paiement non-capturé
+    throw new Error("Cash payments cannot be refunded online");
+  }
+}
+```
+
+`CashOnDeliveryProcessor` **ne peut pas** se substituer à `StripeProcessor`. Le code appelant qui invoque `capture()` va crasher. C'est une violation LSP.
+
+### La correction
+
+```typescript
+// ✅ CORRECT : interfaces séparées qui respectent LSP
+interface PaymentAuthorizer {
+  authorize(amount: number): Promise<PaymentAuth>;
+}
+
+interface PaymentCapturer {
+  capture(authId: string): Promise<PaymentCapture>;
+}
+
+interface PaymentRefunder {
+  refund(captureId: string, amount: number): Promise<PaymentRefund>;
+}
+
+// Stripe implémente tout
+class StripeProcessor
+  implements PaymentAuthorizer, PaymentCapturer, PaymentRefunder
+{
+  async authorize(amount: number): Promise<PaymentAuth> {
+    const intent = await this.stripe.paymentIntents.create({
+      amount: Math.round(amount * 100),
+      currency: "eur",
+    });
+    return { id: intent.id, amount, status: "authorized" };
+  }
+
+  async capture(authId: string): Promise<PaymentCapture> {
+    const captured = await this.stripe.paymentIntents.capture(authId);
+    return { id: captured.id, status: "captured" };
+  }
+
+  async refund(captureId: string, amount: number): Promise<PaymentRefund> {
+    const refund = await this.stripe.refunds.create({
+      payment_intent: captureId,
+      amount: Math.round(amount * 100),
+    });
+    return { id: refund.id, amount, status: "refunded" };
+  }
+}
+
+// Cash on delivery n'implémente que ce qu'il sait faire
+class CashOnDeliveryProcessor implements PaymentAuthorizer {
+  async authorize(amount: number): Promise<PaymentAuth> {
+    return {
+      id: cod-,
+      amount,
+      status: "authorized",
+    };
+  }
+  // Pas de capture, pas de refund — et c'est parfaitement cohérent
+}
+```
+
+Chaque implémentation **respecte intégralement** les contrats qu'elle déclare. Aucune exception surprise, aucun comportement dégradé.
+
+## I — Interface Segregation Principle <a name="isp"></a>
+
+> *"Aucun client ne devrait être forcé de dépendre de méthodes qu'il n'utilise pas."*
+
+### Le problème
+
+```typescript
+// ❌ Interface trop large — "fat interface"
+interface UserService {
+  createUser(data: CreateUserDTO): Promise<User>;
+  updateUser(id: string, data: UpdateUserDTO): Promise<User>;
+  deleteUser(id: string): Promise<void>;
+  getUser(id: string): Promise<User>;
+  listUsers(filters: UserFilters): Promise<User[]>;
+  resetPassword(email: string): Promise<void>;
+  verifyEmail(token: string): Promise<void>;
+  updatePreferences(id: string, prefs: Preferences): Promise<void>;
+  getActivityLog(id: string): Promise<Activity[]>;
+  exportUserData(id: string): Promise<Buffer>; // RGPD
+}
+```
+
+Un composant d'affichage de profil n'a besoin que de `getUser()`. Pourquoi devrait-il connaître `deleteUser()` ou `exportUserData()` ?
+
+### La solution
+
+```typescript
+// ✅ Interfaces ciblées et cohérentes
+interface UserReader {
+  getUser(id: string): Promise<User>;
+  listUsers(filters: UserFilters): Promise<User[]>;
+}
+
+interface UserWriter {
+  createUser(data: CreateUserDTO): Promise<User>;
+  updateUser(id: string, data: UpdateUserDTO): Promise<User>;
+  deleteUser(id: string): Promise<void>;
+}
+
+interface UserAuthActions {
+  resetPassword(email: string): Promise<void>;
+  verifyEmail(token: string): Promise<void>;
+}
+
+interface UserPreferences {
+  updatePreferences(id: string, prefs: Preferences): Promise<void>;
+}
+
+interface UserCompliance {
+  getActivityLog(id: string): Promise<Activity[]>;
+  exportUserData(id: string): Promise<Buffer>;
+}
+```
+
+```typescript
+// Chaque consommateur ne reçoit que ce dont il a besoin
+class ProfileComponent {
+  constructor(private readonly users: UserReader) {}
+
+  async render(userId: string) {
+    const user = await this.users.getUser(userId);
+    return this.buildProfile(user);
+  }
+}
+
+class AdminPanel {
+  constructor(
+    private readonly reader: UserReader,
+    private readonly writer: UserWriter,
+    private readonly compliance: UserCompliance
+  ) {}
+}
+
+class AuthController {
+  constructor(private readonly auth: UserAuthActions) {}
+}
+```
+
+### Application à notre système de notifications
+
+```typescript
+// ✅ Interfaces segregées pour les notifications
+interface OrderNotifier {
+  notifyOrderConfirmed(order: Order): Promise<void>;
+  notifyOrderShipped(order: Order, tracking: string): Promise<void>;
+}
+
+interface PaymentNotifier {
+  notifyPaymentReceived(payment: Payment): Promise<void>;
+  notifyPaymentFailed(payment: Payment, reason: string): Promise<void>;
+}
+
+interface InventoryNotifier {
+  notifyLowStock(product: Product, current: number): Promise<void>;
+  notifyOutOfStock(product: Product): Promise<void>;
+}
+
+// Implémentation email — compose les interfaces nécessaires
+class EmailNotificationService
+  implements OrderNotifier, PaymentNotifier
+{
+  constructor(private readonly mailer: Mailer) {}
+
+  async notifyOrderConfirmed(order: Order) {
+    await this.mailer.send({
+      to: order.customerEmail,
+      template: "order-confirmed",
+      data: { orderId: order.id, total: order.total },
+    });
+  }
+
+  async notifyOrderShipped(order: Order, tracking: string) {
+    await this.mailer.send({
+      to: order.customerEmail,
+      template: "order-shipped",
+      data: { orderId: order.id, tracking },
+    });
+  }
+
+  async notifyPaymentReceived(payment: Payment) {
+    await this.mailer.send({
+      to: payment.customerEmail,
+      template: "payment-received",
+      data: { amount: payment.amount },
+    });
+  }
+
+  async notifyPaymentFailed(payment: Payment, reason: string) {
+    await this.mailer.send({
+      to: payment.customerEmail,
+      template: "payment-failed",
+      data: { reason },
+    });
+  }
+}
+```
+
+## D — Dependency Inversion Principle <a name="dip"></a>
+
+> *"Les modules de haut niveau ne doivent pas dépendre des modules de bas niveau. Les deux doivent dépendre d'abstractions."*
+
+### Le couplage toxique initial
+
+```typescript
+// ❌ Couplage direct aux implémentations concrètes
+class OrderService {
+  private db = new PostgresDatabase();        // Couplage Postgres
+  private stripe = new Stripe(process.env.STRIPE_KEY!); // Couplage Stripe
+  private mailer = new NodemailerTransport(); // Couplage Nodemailer
+  private redis = new RedisClient();          // Couplage Redis
+
+  // Impossible de tester sans Postgres, Stripe, Gmail et Redis...
+}
+```
+
+### L'inversion complète
+
+```typescript
+// ✅ Abstractions au centre — les détails à la périphérie
+interface OrderRepository {
+  save(order: Order): Promise<Order>;
+  findById(id: string): Promise<Order | null>;
+  findByUserId(userId: string): Promise<Order[]>;
+  updateStatus(id: string, status: OrderStatus): Promise<void>;
+}
+
+interface PaymentGateway {
+  charge(amount: number, currency: string): Promise<PaymentResult>;
+  refund(paymentId: string, amount: number): Promise<RefundResult>;
+}
+
+interface NotificationService {
+  send(notification: Notification): Promise<void>;
+}
+
+interface CacheService {
+  get<T>(key: string): Promise<T | null>;
+  set<T>(key: string, value: T, ttl?: number): Promise<void>;
+  invalidate(pattern: string): Promise<void>;
+}
+```
+
+```typescript
+// ✅ OrderService ne dépend que d'abstractions
+class OrderService {
+  constructor(
+    private readonly validator: OrderValidator,
+    private readonly pricing: PricingEngine,
+    private readonly inventory: InventoryManager,
+    private readonly repository: OrderRepository,
+    private readonly payment: PaymentGateway,
+    private readonly notifications: NotificationService,
+    private readonly cache: CacheService
+  ) {}
+
+  async createOrder(userId: string, items: CartItem[]): Promise<Order> {
+    // 1. Validation
+    const validation = this.validator.validate(items);
+    if (!validation.isValid) {
+      throw new ValidationError(validation.errors);
+    }
+
+    // 2. Réserver le stock
+    const reservation = await this.inventory.reserveStock(items);
+
+    try {
+      // 3. Calculer le prix
+      const price = this.pricing.calculate(items);
+
+      // 4. Effectuer le paiement
+      const payment = await this.payment.charge(price.total, "eur");
+      if (!payment.success) {
+        throw new PaymentError(payment.error);
+      }
+
+      // 5. Créer la commande
+      const order: Order = {
+        id: crypto.randomUUID(),
+        userId,
+        items,
+        price,
+        paymentId: payment.id,
+        status: "confirmed",
+        createdAt: new Date(),
+      };
+
+      const savedOrder = await this.repository.save(order);
+
+      // 6. Notifier
+      await this.notifications.send({
+        type: "order_confirmed",
+        recipient: userId,
+        data: { orderId: savedOrder.id, total: price.total },
+      });
+
+      // 7. Invalider le cache
+      await this.cache.invalidate(user::orders);
+
+      return savedOrder;
+    } catch (error) {
+      // Compensation : libérer le stock en cas d'échec
+      await this.inventory.releaseReservation(reservation.id);
+      throw error;
+    }
+  }
+}
+```
+
+```typescript
+// Composition Root — le seul endroit où les concrétions apparaissent
+function bootstrapApplication() {
+  const orderRepository = new PostgresOrderRepository(databasePool);
+  const paymentGateway = new StripePaymentGateway(stripeClient);
+  const notificationService = new EmailNotificationService(mailer);
+  const cacheService = new RedisCacheService(redisClient);
+
+  const orderService = new OrderService(
+    new OrderValidator(),
+    new PricingEngine(new FranceTaxStrategy(), new StandardShippingStrategy()),
+    new InventoryManager(new PostgresInventoryRepository(databasePool)),
+    orderRepository,
+    paymentGateway,
+    notificationService,
+    cacheService
+  );
+
+  return { orderService };
+}
+```
+
+## L'architecture finale <a name="final"></a>
+
+Voici la vue d'ensemble de notre architecture refactorisée :
+
+```
+src/
+├── domain/                    # Cœur métier — zéro dépendance
+│   ├── entities/
+│   │   ├── order.ts          # Entité Order
+│   │   ├── cart-item.ts      # Value Object CartItem
+│   │   └── price-breakdown.ts
+│   ├── interfaces/           # Ports (abstractions)
+│   │   ├── order-repository.ts
+│   │   ├── payment-gateway.ts
+│   │   ├── notification-service.ts
+│   │   └── cache-service.ts
+│   ├── services/             # Services métier
+│   │   ├── order-validator.ts
+│   │   ├── pricing-engine.ts
+│   │   └── inventory-manager.ts
+│   └── errors/               # Erreurs métier typées
+│       ├── validation-error.ts
+│       ├── payment-error.ts
+│       └── stock-error.ts
+├── infrastructure/           # Adaptateurs — implémentations concrètes
+│   ├── persistence/
+│   │   ├── postgres-order-repository.ts
+│   │   └── postgres-inventory-repository.ts
+│   ├── payment/
+│   │   ├── stripe-payment-gateway.ts
+│   │   └── paypal-payment-gateway.ts
+│   ├── notifications/
+│   │   ├── email-notification-service.ts
+│   │   └── sms-notification-service.ts
+│   ├── cache/
+│   │   └── redis-cache-service.ts
+│   └── strategies/
+│       ├── tax/
+│       │   ├── france-tax-strategy.ts
+│       │   ├── germany-tax-strategy.ts
+│       │   └── spain-tax-strategy.ts
+│       └── shipping/
+│           ├── standard-shipping-strategy.ts
+│           └── express-shipping-strategy.ts
+├── application/             # Use cases / orchestration
+│   └── order-service.ts
+└── composition-root.ts      # Assemblage final
+```
+
+**Les dépendances pointent toujours vers l'intérieur** : l'infrastructure dépend du domaine, jamais l'inverse.
+
+## Tests et validation <a name="tests"></a>
+
+L'un des bénéfices majeurs de SOLID : la testabilité. Chaque composant peut être testé isolément avec des mocks simples :
+
+```typescript
+describe("OrderService", () => {
+  let service: OrderService;
+  let mockPayment: jest.Mocked<PaymentGateway>;
+  let mockRepository: jest.Mocked<OrderRepository>;
+  let mockNotifications: jest.Mocked<NotificationService>;
+
+  beforeEach(() => {
+    mockPayment = {
+      charge: jest.fn().mockResolvedValue({ success: true, id: "pay_123" }),
+      refund: jest.fn(),
+    };
+    mockRepository = {
+      save: jest.fn().mockImplementation((order) =>
+        Promise.resolve({ ...order, id: "order_123" })
+      ),
+      findById: jest.fn(),
+      findByUserId: jest.fn(),
+      updateStatus: jest.fn(),
+    };
+    mockNotifications = {
+      send: jest.fn().mockResolvedValue(undefined),
+    };
+
+    service = new OrderService(
+      new OrderValidator(),
+      new PricingEngine(new FranceTaxStrategy(), new StandardShippingStrategy()),
+      new InventoryManager(new InMemoryInventoryRepository()),
+      mockRepository,
+      mockPayment,
+      mockNotifications,
+      new InMemoryCacheService()
+    );
+  });
+
+  it("should create an order with correct total", async () => {
+    const items: CartItem[] = [
+      { productId: "prod_1", price: 29.99, quantity: 2 },
+      { productId: "prod_2", price: 49.99, quantity: 1 },
+    ];
+
+    const order = await service.createOrder("user_123", items);
+
+    expect(order.status).toBe("confirmed");
+    expect(mockPayment.charge).toHaveBeenCalledTimes(1);
+    expect(mockRepository.save).toHaveBeenCalledTimes(1);
+    expect(mockNotifications.send).toHaveBeenCalledWith(
+      expect.objectContaining({ type: "order_confirmed" })
+    );
+  });
+
+  it("should rollback stock on payment failure", async () => {
+    mockPayment.charge.mockResolvedValue({
+      success: false,
+      error: "Insufficient funds",
+    });
+
+    await expect(
+      service.createOrder("user_123", [
+        { productId: "prod_1", price: 10, quantity: 1 },
+      ])
+    ).rejects.toThrow(PaymentError);
+  });
+});
+```
+
+```typescript
+// Test du PricingEngine isolé
+describe("PricingEngine", () => {
+  it("should apply French tax correctly", () => {
+    const engine = new PricingEngine(
+      new FranceTaxStrategy(),
+      new StandardShippingStrategy()
+    );
+
+    const result = engine.calculate([
+      { productId: "1", price: 100, quantity: 1 },
+    ]);
+
+    expect(result.tax).toBe(20); // 20% TVA
+    expect(result.shipping).toBe(0); // Gratuit au-dessus de 50€
+    expect(result.total).toBe(120);
+  });
+
+  it("should apply volume discount", () => {
+    const engine = new PricingEngine(
+      new FranceTaxStrategy(),
+      new StandardShippingStrategy()
+    );
+    engine.addDiscountStrategy(new VolumeDiscountStrategy());
+
+    const items = Array.from({ length: 6 }, (_, i) => ({
+      productId: prod_,
+      price: 10,
+      quantity: 1,
+    }));
+
+    const result = engine.calculate(items);
+    expect(result.discountAmount).toBe(3); // 5% sur 60€
+  });
+});
+```
+
+## Conclusion <a name="conclusion"></a>
+
+Les principes SOLID ne sont pas de la théorie abstraite. Appliqués méthodiquement, ils transforment un code monolithique ingérable en une architecture **modulaire, testable et extensible**.
+
+### Ce que nous avons accompli
+
+| Avant | Après |
+|-------|-------|
+| 1 classe de 200 lignes | 15+ classes spécialisées |
+| 0% de couverture de tests | 95%+ de couverture |
+| 7 raisons de changer | 1 raison par classe |
+| Couplage dur à Stripe, Postgres... | Abstractions injectables |
+| Ajout d'un pays = modifier le code existant | Ajout d'un pays = créer une classe |
+
+### Les règles d'or
+
+1. **SRP** : Si votre description de classe contient "et", divisez-la
+2. **OCP** : Préférez la composition et les stratégies aux conditions
+3. **LSP** : Si un sous-type lance des exceptions inattendues, reconsidérez l'héritage
+4. **ISP** : Préférez 5 petites interfaces à 1 grosse
+5. **DIP** : Les abstractions au centre, les détails à la périphérie
+
+Ces principes ne sont pas des fins en soi — ils sont au service de la **maintenabilité**, de la **testabilité** et de **l'évolutivité** de votre code. Appliquez-les avec discernement : un script de 50 lignes n'a pas besoin d'architecture hexagonale. Mais dès que votre projet dépasse la phase prototype, SOLID devient votre meilleur allié.
