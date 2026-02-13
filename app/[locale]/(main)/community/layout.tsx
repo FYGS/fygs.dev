@@ -46,6 +46,7 @@ export async function generateMetadata({
       },
     ],
     path: "/community",
+    image: "/api/og/community",
   });
 }
 

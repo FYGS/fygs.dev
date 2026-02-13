@@ -23,6 +23,7 @@ export async function generateMetadata({
       es: "Inicie sesión o cree su cuenta FYGS para acceder a nuestros cursos premium, seguir su progreso y obtener certificaciones.",
     },
     path: "/auth",
+    image: "/api/og/auth",
   });
 }
 

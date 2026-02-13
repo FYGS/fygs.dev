@@ -40,9 +40,28 @@ export async function generateMetadata({
     title: `${course.title} | Formations FYGS`,
     description: course.description,
     openGraph: {
-      title: course.title,
+      title: `${course.title} | Formations FYGS`,
+      description: course.description,
+      type: "website",
+      url: `/formations/${slug}`,
+      siteName: "FYGS Learning Platform",
+      images: course.thumbnail
+        ? [
+            {
+              url: course.thumbnail,
+              width: 1200,
+              height: 630,
+              alt: course.title,
+            },
+          ]
+        : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${course.title} | Formations FYGS`,
       description: course.description,
       images: course.thumbnail ? [course.thumbnail] : [],
+      creator: "@fernand_soualo",
     },
   };
 }

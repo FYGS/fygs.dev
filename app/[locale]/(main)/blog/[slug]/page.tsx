@@ -119,62 +119,94 @@ export default async function BlogPostPage({ params }: Props) {
           </div>
 
           {/* Main Content */}
-          <article className="prose prose-invert space-y-8">
-            <div>
-              {/* Article Content */}
-              <div className="w-full -mx-4 px-4 sm:px-0 sm:-mx-0">
-                <CoverImage
-                  src={post.coverImage}
-                  alt={post.title}
-                  priority
-                  className="w-full"
-                  sizes="(min-width: 1280px) 1200px, (min-width: 780px) 80vw, 95vw"
-                />
+          <article className="min-w-0">
+            {/* Cover Image */}
+            <div className="w-full -mx-4 px-4 sm:px-0 sm:-mx-0 mb-8">
+              <CoverImage
+                src={post.coverImage}
+                alt={post.title}
+                priority
+                className="w-full rounded-xl shadow-2xl"
+                sizes="(min-width: 1280px) 1200px, (min-width: 780px) 80vw, 95vw"
+              />
+            </div>
+
+            {/* Article Header */}
+            <header className="space-y-6 mb-10">
+              {/* Categories */}
+              <div className="flex flex-wrap gap-2">
+                {post.categories.map((category) => (
+                  <Badge
+                    key={category}
+                    variant="secondary"
+                    className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 transition-colors"
+                  >
+                    {category}
+                  </Badge>
+                ))}
               </div>
 
-              <header className="space-y-4">
-                <div className="flex flex-wrap gap-2">
-                  {post.categories.map((category) => (
-                    <Badge key={category} variant="secondary">
-                      {category}
-                    </Badge>
-                  ))}
-                </div>
-                <div className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1.5 sm:gap-2">
-                    <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    <time dateTime={post.date}>
-                      {new Date(post.date).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </time>
-                  </div>
-                  <div className="flex items-center gap-1.5 sm:gap-2">
-                    <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    {post.readingTime}
-                  </div>
-                </div>
-              </header>
+              {/* Title */}
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
+                <span className="bg-gradient-to-br from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent">
+                  {post.title}
+                </span>
+              </h1>
 
-              <div className="mdx-content">{post.content}</div>
-
-              {/* Mobile Stats */}
-              <footer className="mt-16 pt-8 border-t border-muted md:hidden">
-                <div className="flex flex-col items-center gap-4">
-                  <h3 className="text-lg font-medium text-muted-foreground">
-                    Did you find this article helpful?
-                  </h3>
-                  <PostStatsView
-                    slug={slug}
-                    readingTime={post.readingTime}
-                    className="w-full max-w-md mx-auto"
-                    initialStats={stats}
-                  />
+              {/* Meta info bar */}
+              <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-sm text-muted-foreground border-b border-border/50 pb-6">
+                {/* Author */}
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-xs font-bold text-primary-foreground">
+                    {post.author
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")}
+                  </div>
+                  <span className="font-medium text-foreground">
+                    {post.author}
+                  </span>
                 </div>
-              </footer>
-            </div>
+
+                <span className="text-border">|</span>
+
+                {/* Date */}
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="h-4 w-4 text-primary/70" />
+                  <time dateTime={post.date}>
+                    {new Date(post.date).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </time>
+                </div>
+
+                {/* Reading time */}
+                <div className="flex items-center gap-1.5">
+                  <Clock className="h-4 w-4 text-primary/70" />
+                  <span>{post.readingTime}</span>
+                </div>
+              </div>
+            </header>
+
+            {/* Article Body */}
+            <div className="mdx-content">{post.content}</div>
+
+            {/* Mobile Stats */}
+            <footer className="mt-16 pt-8 border-t border-muted md:hidden">
+              <div className="flex flex-col items-center gap-4">
+                <h3 className="text-lg font-medium text-muted-foreground">
+                  Did you find this article helpful?
+                </h3>
+                <PostStatsView
+                  slug={slug}
+                  readingTime={post.readingTime}
+                  className="w-full max-w-md mx-auto"
+                  initialStats={stats}
+                />
+              </div>
+            </footer>
           </article>
 
           {/* Desktop Stats */}

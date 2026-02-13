@@ -9,6 +9,7 @@ import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
 import { BLOG_DIR, BlogPost, BlogPostMeta } from "./types";
 import { calculateReadingTime } from "./utils";
+import { components } from "@/components/mdx";
 
 async function getFileLastModifiedDate(filePath: string): Promise<string> {
   try {
@@ -28,6 +29,7 @@ export async function getBlogPost(slug: string): Promise<BlogPost> {
 
   const { content: mdxContent } = await compileMDX({
     source: content,
+    components,
     options: {
       parseFrontmatter: true,
       mdxOptions: {
@@ -74,11 +76,11 @@ export async function getBlogPostsMeta(): Promise<BlogPostMeta[]> {
           draft: data.draft,
           readingTime: calculateReadingTime(fileContent),
         };
-      })
+      }),
   );
 
   const sortedPosts = posts.sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
   );
 
   if (process.env.NODE_ENV === "production") {
@@ -103,11 +105,11 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
           ...blogPost,
           readingTime: calculateReadingTime(content),
         };
-      })
+      }),
   );
 
   const sortedPosts = posts.sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
   );
 
   if (process.env.NODE_ENV === "production") {

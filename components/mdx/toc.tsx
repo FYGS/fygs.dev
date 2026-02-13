@@ -18,8 +18,11 @@ export function TableOfContents({ className }: TOCProps) {
   const [activeId, setActiveId] = useState<string>();
 
   useEffect(() => {
-    // Generate unique keys for headers without IDs
-    const elements = Array.from(document.querySelectorAll("h2, h3, h4"))
+    // Only grab headings inside the article's mdx-content container
+    const container = document.querySelector("article .mdx-content");
+    if (!container) return;
+
+    const elements = Array.from(container.querySelectorAll("h2, h3, h4"))
       .map((element, index) => {
         const id = element.id || `heading-${index}`;
         if (!element.id) {
@@ -43,7 +46,7 @@ export function TableOfContents({ className }: TOCProps) {
           }
         });
       },
-      { rootMargin: "-100px 0px -66%" }
+      { rootMargin: "-100px 0px -66%" },
     );
 
     elements.forEach(({ id }) => {
@@ -83,7 +86,7 @@ export function TableOfContents({ className }: TOCProps) {
                 "pl-4 inline-block w-full transition-colors duration-300",
                 "text-muted-foreground hover:text-foreground",
                 "hover:bg-muted/50 rounded",
-                activeId === heading.id && "text-primary font-medium"
+                activeId === heading.id && "text-primary font-medium",
               )}
               onClick={(e) => {
                 e.preventDefault();

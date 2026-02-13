@@ -1,64 +1,139 @@
+/* ================================================================== */
+/*  MDX Blog Content Styles                                           */
+/*  Works in concert with custom components from components/mdx       */
+/* ================================================================== */
+
 @layer utilities {
+  /* ── Base container ──────────────────────────────────────────────── */
   .mdx-content {
-    @apply prose prose-invert max-w-none
-      prose-headings:text-foreground
-      prose-p:text-muted-foreground
-      prose-a:text-primary prose-a:hover:text-primary/80
-      prose-strong:text-foreground
-      prose-code:text-primary prose-code:bg-primary/10 prose-code:p-1 prose-code:rounded
-      prose-pre:bg-muted prose-pre:border prose-pre:border-border
-      prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:text-muted-foreground
-      prose-li:text-muted-foreground
-      prose-table:border-collapse prose-table:border-0
-      prose-th:border prose-th:border-border prose-th:bg-muted/50 prose-th:p-3 prose-th:text-left prose-th:font-semibold
-      prose-td:border prose-td:border-border prose-td:p-3 prose-td:text-left;
+    @apply max-w-none text-base leading-relaxed text-muted-foreground;
   }
 
+  /* ── Heading anchor links (rehype-slug) ──────────────────────────── */
+  .mdx-content h2:hover .heading-anchor,
+  .mdx-content h3:hover .heading-anchor,
+  .mdx-content h4:hover .heading-anchor {
+    @apply opacity-100;
+  }
+
+  .mdx-content .heading-anchor {
+    @apply opacity-0 transition-opacity duration-200 ml-2 text-primary/50 no-underline;
+  }
+
+  /* ── Code block scrollbar ────────────────────────────────────────── */
   .mdx-content pre {
-    @apply bg-background/50 border rounded-lg overflow-x-auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(100, 116, 139, 0.4) transparent;
   }
 
-  .mdx-content code {
-    @apply text-primary bg-primary/10 rounded px-1 py-0.5;
+  .mdx-content pre::-webkit-scrollbar {
+    height: 6px;
   }
 
-  .mdx-content pre code {
-    @apply bg-transparent text-foreground p-0;
+  .mdx-content pre::-webkit-scrollbar-track {
+    background: transparent;
   }
 
-  .mdx-content h2 {
-    @apply mt-12 scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0;
+  .mdx-content pre::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, 0.4);
+    border-radius: 3px;
   }
 
-  .mdx-content h3 {
-    @apply mt-8 scroll-m-20 text-2xl font-semibold tracking-tight;
+  .mdx-content pre::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.6);
   }
 
-  .mdx-content ul {
-    @apply my-6 ml-6 list-disc;
+  /* ── Syntax highlighting colors (rehype-highlight) ───────────────── */
+  .mdx-content .hljs {
+    @apply text-slate-300;
   }
 
-  .mdx-content ol {
-    @apply my-6 ml-6 list-decimal;
+  .mdx-content .hljs-keyword,
+  .mdx-content .hljs-selector-tag,
+  .mdx-content .hljs-built_in {
+    @apply text-purple-400;
   }
 
-  .mdx-content table {
-    @apply w-full border-collapse border border-border my-6;
+  .mdx-content .hljs-string,
+  .mdx-content .hljs-addition {
+    @apply text-emerald-400;
   }
 
-  .mdx-content th {
-    @apply border border-border bg-muted/50 px-4 py-3 text-left font-semibold text-foreground;
+  .mdx-content .hljs-comment,
+  .mdx-content .hljs-quote {
+    @apply text-slate-500 italic;
   }
 
-  .mdx-content td {
-    @apply border border-border px-4 py-3 text-left text-muted-foreground;
+  .mdx-content .hljs-number,
+  .mdx-content .hljs-literal {
+    @apply text-amber-400;
   }
 
-  .mdx-content tr {
-    @apply border-b border-border;
+  .mdx-content .hljs-type,
+  .mdx-content .hljs-title,
+  .mdx-content .hljs-class {
+    @apply text-sky-400;
   }
 
-  .mdx-content tbody tr:nth-child(even) {
-    @apply bg-muted/20;
+  .mdx-content .hljs-function {
+    @apply text-blue-400;
+  }
+
+  .mdx-content .hljs-attr,
+  .mdx-content .hljs-attribute {
+    @apply text-cyan-400;
+  }
+
+  .mdx-content .hljs-variable,
+  .mdx-content .hljs-template-variable {
+    @apply text-orange-400;
+  }
+
+  .mdx-content .hljs-deletion {
+    @apply text-red-400;
+  }
+
+  .mdx-content .hljs-meta {
+    @apply text-yellow-400;
+  }
+
+  .mdx-content .hljs-params {
+    @apply text-orange-300;
+  }
+
+  .mdx-content .hljs-regexp {
+    @apply text-red-300;
+  }
+
+  .mdx-content .hljs-symbol {
+    @apply text-teal-400;
+  }
+
+  .mdx-content .hljs-property {
+    @apply text-sky-300;
+  }
+
+  /* ── Selection highlight inside code ─────────────────────────────── */
+  .mdx-content pre ::selection {
+    @apply bg-primary/30;
+  }
+
+  /* ── Counter-based ordered lists ─────────────────────────────────── */
+  .mdx-content .counter-reset-list {
+    counter-reset: list-counter;
+  }
+
+  .mdx-content .counter-reset-list > li {
+    counter-increment: list-counter;
+  }
+
+  .mdx-content .counter-reset-list > li > span:first-child::before {
+    content: counter(list-counter) ".";
+    @apply font-semibold text-primary mr-2;
+  }
+
+  /* ── Step counter ────────────────────────────────────────────────── */
+  .mdx-content {
+    counter-reset: step;
   }
 }

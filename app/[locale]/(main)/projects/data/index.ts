@@ -2,35 +2,172 @@ import { Project } from "../types";
 
 export const FEATURED_PROJECTS: Project[] = [
   {
+    id: "pdf-ai-chat",
+    title: "PDF AI Chat",
+    description:
+      "An intelligent AI-powered application that allows users to upload PDF documents and have natural conversations with their content. Leverages advanced language models to extract, analyze, and discuss document information in real-time.",
+    image: "/projects/pdf-ai-chat.png",
+    detailImages: [
+      {
+        url: "/projects/pdf-ai-chat.png",
+        alt: "PDF AI Chat Homepage",
+      },
+    ],
+    technologies: [
+      "Next.js 15",
+      "TypeScript",
+      "OpenAI API",
+      "LangChain",
+      "Pinecone",
+      "TailwindCSS",
+      "Vercel AI SDK",
+      "Uploadthing",
+    ],
+    link: "https://pdf-ai-chat-opal.vercel.app/",
+    features: [
+      "📄 PDF document upload & parsing",
+      "🤖 AI-powered conversational interface",
+      "🔍 Semantic search across document content",
+      "💬 Context-aware Q&A with citations",
+      "📊 Vector embeddings for accurate retrieval",
+      "⚡ Real-time streaming responses",
+      "🎨 Clean and intuitive dark UI",
+      "📱 Fully responsive design",
+    ],
+    stats: {
+      stars: 0,
+      forks: 0,
+      contributors: 1,
+      linesOfCode: 4500,
+    },
+    technicalDetails:
+      "Built with Next.js 15 App Router, integrating OpenAI's GPT model via LangChain for document comprehension. Uses Pinecone vector database for efficient semantic search across PDF content. Implements Vercel AI SDK for streaming responses and Uploadthing for secure file handling.",
+    challenges:
+      "Implementing efficient document chunking and embedding strategies to maintain context accuracy across large PDFs. Optimizing vector search latency while preserving response quality and relevance.",
+  },
+  {
+    id: "bonsprofs",
+    title: "BonsProfs",
+    description:
+      "A professional matchmaking platform connecting teachers, tutors, and students. Features advanced search, profile management, and a booking system to facilitate educational connections.",
+    image: "/projects/bonsprofs.png",
+    detailImages: [
+      {
+        url: "/projects/bonsprofs.png",
+        alt: "BonsProfs Homepage",
+      },
+    ],
+    technologies: [
+      "Next.js 15",
+      "TypeScript",
+      "Prisma",
+      "PostgreSQL",
+      "TailwindCSS",
+      "Better Auth",
+      "Stripe",
+      "Zod",
+    ],
+    link: "https://bonsprofs.com/",
+    features: [
+      "👨‍🏫 Teacher/tutor profile creation & management",
+      "🔍 Advanced search with filters (subject, level, location)",
+      "📅 Booking & scheduling system",
+      "💳 Integrated payment processing",
+      "⭐ Review & rating system",
+      "📱 Mobile-first responsive design",
+      "🔒 Secure authentication & authorization",
+      "📊 Dashboard for teachers and students",
+      "🌍 Multi-subject and multi-level support",
+      "💬 Messaging between students and teachers",
+    ],
+    stats: {
+      stars: 0,
+      forks: 0,
+      contributors: 1,
+      linesOfCode: 12000,
+    },
+    technicalDetails:
+      "Full-stack platform built with Next.js 15 App Router, Prisma ORM with PostgreSQL for relational data management. Implements Better Auth for secure authentication, Stripe for payment processing, and Zod for end-to-end type-safe validation.",
+    challenges:
+      "Designing a scalable matching algorithm that considers multiple criteria (subject, availability, location, rating) while maintaining fast search performance. Building a real-time booking system that handles concurrent reservations without conflicts.",
+  },
+  {
+    id: "abilogs",
+    title: "AbiLogs",
+    description:
+      "A comprehensive logistics management application for tracking shipments, managing inventory, and optimizing supply chain operations. Features real-time tracking, analytics dashboards, and automated reporting.",
+    image: "/projects/abilogs.png",
+    detailImages: [
+      {
+        url: "/projects/abilogs.png",
+        alt: "AbiLogs Homepage",
+      },
+    ],
+    technologies: [
+      "Next.js 15",
+      "TypeScript",
+      "Prisma",
+      "PostgreSQL",
+      "TailwindCSS",
+      "Chart.js",
+      "React Hook Form",
+      "Zod",
+    ],
+    link: "https://abilogs.vercel.app/",
+    features: [
+      "📦 Shipment tracking & management",
+      "📊 Analytics dashboard with real-time metrics",
+      "🗺️ Route optimization & visualisation",
+      "📋 Inventory management system",
+      "📈 Automated reporting & exports",
+      "👥 Multi-role access (admin, dispatcher, driver)",
+      "🔔 Real-time notifications & alerts",
+      "📱 Mobile-responsive interface",
+      "🔒 Secure role-based access control",
+      "📄 Document management for shipping papers",
+    ],
+    stats: {
+      stars: 0,
+      forks: 0,
+      contributors: 1,
+      linesOfCode: 8000,
+    },
+    technicalDetails:
+      "Built with Next.js 15, featuring a comprehensive logistics dashboard with Chart.js for data visualization. Uses Prisma ORM with PostgreSQL for complex relational data. Implements role-based access control for different user types (admin, dispatcher, driver).",
+    challenges:
+      "Managing complex real-time data synchronization across multiple user roles while maintaining data consistency. Implementing efficient route optimization algorithms and rendering large datasets in interactive dashboard visualizations.",
+  },
+  {
     id: "evopur",
     title: "Evopur",
-    description: "Professional ecological household cleaning services platform offering comprehensive home cleaning solutions with eco-friendly products and sustainable practices for a healthier living environment.",
+    description:
+      "Professional ecological household cleaning services platform offering comprehensive home cleaning solutions with eco-friendly products and sustainable practices for a healthier living environment.",
     image: "/projects/evopur.png",
     detailImages: [
       {
         url: "/projects/evopur-home.png",
-        alt: "Evopur Homepage"
+        alt: "Evopur Homepage",
       },
       {
         url: "/projects/evopur-home2.png",
-        alt: "Evopur Services Page"
+        alt: "Evopur Services Page",
       },
       {
         url: "/projects/evopur-about.png",
-        alt: "Evopur About Page"
+        alt: "Evopur About Page",
       },
       {
         url: "/projects/evopur-contact.png",
-        alt: "Evopur Contact Page"
+        alt: "Evopur Contact Page",
       },
       {
         url: "/projects/evopur-blog.png",
-        alt: "Evopur Blog Page"
+        alt: "Evopur Blog Page",
       },
       {
         url: "/projects/evopur-testimonials.png",
-        alt: "Evopur Testimonials Page"
-      }
+        alt: "Evopur Testimonials Page",
+      },
     ],
     technologies: [
       "Next.js 15",
@@ -55,21 +192,23 @@ export const FEATURED_PROJECTS: Project[] = [
       "🏠 Service area coverage map",
       "💰 Transparent pricing structure",
       "⭐ Customer testimonials section",
-      "🔒 Secure booking process"
+      "🔒 Secure booking process",
     ],
-    technicalDetails: "Built with Next.js 15 using the App Router, featuring server-side rendering for optimal SEO performance. Implements Framer Motion for smooth animations, React Hook Form with Zod validation for form handling, and Nodemailer for reliable email delivery. The design emphasizes sustainability with a green color palette and eco-friendly imagery.",
-    challenges: "Creating a trustworthy and professional image for a cleaning service while emphasizing environmental responsibility. Implementing an intuitive booking system that captures all necessary service details while maintaining a simple user experience.",
+    technicalDetails:
+      "Built with Next.js 15 using the App Router, featuring server-side rendering for optimal SEO performance. Implements Framer Motion for smooth animations, React Hook Form with Zod validation for form handling, and Nodemailer for reliable email delivery. The design emphasizes sustainability with a green color palette and eco-friendly imagery.",
+    challenges:
+      "Creating a trustworthy and professional image for a cleaning service while emphasizing environmental responsibility. Implementing an intuitive booking system that captures all necessary service details while maintaining a simple user experience.",
     stats: {
       stars: 0,
       forks: 0,
       contributors: 1,
-      linesOfCode: 3500
+      linesOfCode: 3500,
     },
     testimonial: {
       text: "Evopur transformed our approach to home cleaning with their exceptional eco-friendly services. The website perfectly reflects their commitment to sustainability.",
       author: "Marie Dubois",
-      role: "Satisfied Customer"
-    }
+      role: "Satisfied Customer",
+    },
   },
   {
     id: "ncr",
@@ -141,12 +280,12 @@ export const FEATURED_PROJECTS: Project[] = [
       stars: 0,
       forks: 0,
       contributors: 1,
-      linesOfCode: 3700
+      linesOfCode: 3700,
     },
     testimonial: {
       text: "NCR transformed our approach to certificate requests with their exceptional digitalization services. The website perfectly reflects their commitment to sustainability.",
       author: "Mohamed Kaba",
-      role: "Satisfied Customer"
+      role: "Satisfied Customer",
     },
     technicalDetails:
       "Built with Next.js 14, implementing a multi-tenant architecture for different municipalities. Uses Appwrite database as a service for robust data management and Docker for containerization. Integrates Orange Money API for secure mobile payments with real-time transaction validation.",
@@ -220,7 +359,7 @@ export const FEATURED_PROJECTS: Project[] = [
       stars: 0,
       forks: 0,
       contributors: 1,
-      linesOfCode: 2500
+      linesOfCode: 2500,
     },
     technicalDetails:
       "Built with Next.js 15, using Prisma ORM with PostgreSQL for robust data management. Implements spaced repetition algorithms for optimal learning with efficient database querying. Features a robust assessment system with detailed analytics and progress tracking.",
@@ -272,7 +411,7 @@ export const FEATURED_PROJECTS: Project[] = [
       stars: 0,
       forks: 0,
       contributors: 1,
-      linesOfCode: 2000
+      linesOfCode: 2000,
     },
     technicalDetails:
       "Integrates with Google Calendar for scheduling and Stripe for payments. Features a custom CRM system for managing client relationships and training progress.",
@@ -324,7 +463,7 @@ export const FEATURED_PROJECTS: Project[] = [
       stars: 0,
       forks: 0,
       contributors: 1,
-      linesOfCode: 2000
+      linesOfCode: 2000,
     },
     technicalDetails:
       "Built with Next.js 15, featuring a custom product configuration system and real-time order tracking. Implements Stripe for secure payment processing.",
