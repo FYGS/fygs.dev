@@ -28,6 +28,7 @@ import { SkillRadarChart } from "./skill-radar-chart";
 import { StreakCalendar } from "./streak-calendar";
 import { LearningPathCard } from "./learning-path-card";
 import { RecentActivities } from "./recent-activities";
+import { useProgress } from "../../_hooks/use-progress";
 
 interface ProgressStats {
   challengesCompleted: number;
@@ -192,19 +193,38 @@ const mockProgressData: ProgressStats = {
 export function ProgressDashboard() {
   const [progressData, setProgressData] = useState<ProgressStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { progress, isLoaded, getStreakDays } = useProgress();
 
   useEffect(() => {
-    // Simulate API call
+    // Merge real localStorage progress with mock data
     const fetchData = async () => {
       setIsLoading(true);
-      // In a real app, this would be an API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setProgressData(mockProgressData);
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Hydrate mock data with real progress from localStorage
+      const realStreak = isLoaded
+        ? getStreakDays()
+        : mockProgressData.streakDays;
+      const realChallenges = isLoaded
+        ? progress.challengesCompleted.length
+        : mockProgressData.challengesCompleted;
+      const realTimeHours = isLoaded
+        ? Math.round(progress.totalTimeMinutes / 60)
+        : 42;
+
+      setProgressData({
+        ...mockProgressData,
+        streakDays: Math.max(realStreak, mockProgressData.streakDays),
+        challengesCompleted: Math.max(
+          realChallenges,
+          mockProgressData.challengesCompleted,
+        ),
+      });
       setIsLoading(false);
     };
 
     fetchData();
-  }, []);
+  }, [isLoaded, progress, getStreakDays]);
 
   if (isLoading || !progressData) {
     return (
@@ -299,7 +319,8 @@ export function ProgressDashboard() {
             </div>
             <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
               <Award className="h-3 w-3" />
-              Latest: {progressData.achievements.find((a) => a.isUnlocked)?.title}
+              Latest:{" "}
+              {progressData.achievements.find((a) => a.isUnlocked)?.title}
             </div>
           </CardContent>
         </Card>
@@ -445,19 +466,19 @@ export function ProgressDashboard() {
                           level < 40
                             ? "bg-red-500/20"
                             : level < 70
-                            ? "bg-yellow-500/20"
-                            : "bg-green-500/20"
+                              ? "bg-yellow-500/20"
+                              : "bg-green-500/20",
                         )}
                         indicatorClassName={cn(
                           level < 40
                             ? "bg-red-500"
                             : level < 70
-                            ? "bg-yellow-500"
-                            : "bg-green-500"
+                              ? "bg-yellow-500"
+                              : "bg-green-500",
                         )}
                       />
                     </div>
-                  )
+                  ),
                 )}
               </CardContent>
             </Card>
@@ -485,8 +506,8 @@ export function ProgressDashboard() {
                             level < 40
                               ? "bg-red-500/10 text-red-500"
                               : level < 70
-                              ? "bg-yellow-500/10 text-yellow-500"
-                              : "bg-green-500/10 text-green-500"
+                                ? "bg-yellow-500/10 text-yellow-500"
+                                : "bg-green-500/10 text-green-500",
                           )}
                         >
                           <Brain className="h-4 w-4" />
@@ -500,8 +521,8 @@ export function ProgressDashboard() {
                           {level < 40
                             ? "Needs significant improvement. Focus on fundamentals."
                             : level < 70
-                            ? "Good progress, but more practice needed."
-                            : "Strong skills. Consider advanced topics."}
+                              ? "Good progress, but more practice needed."
+                              : "Strong skills. Consider advanced topics."}
                         </p>
                         <Button
                           variant="link"
@@ -600,7 +621,7 @@ export function ProgressDashboard() {
                   "backdrop-blur-xs border-border/50 shadow-md transition-all",
                   achievement.isUnlocked
                     ? "bg-background/80"
-                    : "bg-muted/30 opacity-70"
+                    : "bg-muted/30 opacity-70",
                 )}
               >
                 <CardHeader className="pb-2">
@@ -617,8 +638,7 @@ export function ProgressDashboard() {
                     <div className="flex items-center gap-2 text-xs text-green-500">
                       <CheckCircle2 className="h-3.5 w-3.5" />
                       <span>
-                        Unlocked{" "}
-                        {achievement.unlockedAt?.toLocaleDateString()}
+                        Unlocked {achievement.unlockedAt?.toLocaleDateString()}
                       </span>
                     </div>
                   ) : (
@@ -660,7 +680,7 @@ export function ProgressDashboard() {
                     <div className="text-xs text-green-500 mt-1">
                       Completed on{" "}
                       {new Date(
-                        Date.now() - 1000 * 60 * 60 * 24 * 30
+                        Date.now() - 1000 * 60 * 60 * 24 * 30,
                       ).toLocaleDateString()}
                     </div>
                   </div>

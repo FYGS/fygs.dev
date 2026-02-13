@@ -1,0 +1,25 @@
+import type { Metadata } from "next";
+import { BestPracticesExercises } from "./_components/exercises";
+
+export const metadata: Metadata = {
+  title: "Exercices Situationnels | Tech-Mastry",
+  description: "Mettez en pratique les bonnes pratiques avec des exercices de refactoring, code review et design.",
+};
+
+export default function ExercisesPage() {
+  return (
+    <main className="container py-8 space-y-12 animate-fadeIn">
+      <div className="text-center space-y-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-linear-to-br from-emerald-500/20 to-green-500/20 mb-2">
+          <span className="text-3xl">💡</span>
+        </div>
+        <h1 className="text-4xl font-bold">Exercices Situationnels</h1>
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          Mettez en pratique les bonnes pratiques de développement avec des exercices
+          de refactoring, code review et design architectural.
+        </p>
+      </div>
+      <BestPracticesExercises />
+    </main>
+  );
+}

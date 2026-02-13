@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -298,7 +299,7 @@ export function AdvancedCodingChallenges() {
 
       // Calculate performance metrics
       const accuracy = Math.round(
-        (mockResult.testCasesPassed / mockResult.totalTestCases) * 100
+        (mockResult.testCasesPassed / mockResult.totalTestCases) * 100,
       );
       const efficiency = Math.max(0, 100 - mockResult.executionTime / 10); // Lower execution time = higher efficiency
 
@@ -322,7 +323,7 @@ export function AdvancedCodingChallenges() {
     // Simulate test execution
     setTimeout(() => {
       const testCase = selectedChallenge.testCases.find(
-        (tc: any) => tc.id === testCaseId
+        (tc: any) => tc.id === testCaseId,
       );
       if (!testCase) return;
 
@@ -358,7 +359,7 @@ export function AdvancedCodingChallenges() {
       setUserPoints((prev) => prev - hint.revealCost);
     } else {
       alert(
-        `You need ${hint.revealCost} points to reveal this hint. You currently have ${userPoints} points.`
+        `You need ${hint.revealCost} points to reveal this hint. You currently have ${userPoints} points.`,
       );
     }
   };
@@ -507,6 +508,18 @@ export function AdvancedCodingChallenges() {
                   </div>
                   <Button
                     variant="outline"
+                    asChild
+                    className="flex items-center gap-2"
+                  >
+                    <Link
+                      href={`/tech-mastry/playground?code=${encodeURIComponent(selectedChallenge.starterCode)}&title=${encodeURIComponent(selectedChallenge.title)}`}
+                    >
+                      <Code className="h-4 w-4" />
+                      Playground
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="outline"
                     onClick={resetChallenge}
                     className="flex items-center gap-2"
                   >
@@ -608,7 +621,7 @@ export function AdvancedCodingChallenges() {
                                 )}
                               </div>
                             </div>
-                          )
+                          ),
                         )}
                       </div>
                     </div>
@@ -625,15 +638,15 @@ export function AdvancedCodingChallenges() {
                             className={cn(
                               "border border-border/50",
                               submissionResult?.detailedResults.find(
-                                (r: any) => r.testCaseId === testCase.id
+                                (r: any) => r.testCaseId === testCase.id,
                               )?.passed
                                 ? "border-green-500/30 bg-green-500/5"
                                 : submissionResult &&
-                                  !submissionResult.detailedResults.find(
-                                    (r: any) => r.testCaseId === testCase.id
-                                  )?.passed
-                                ? "border-red-500/30 bg-red-500/5"
-                                : ""
+                                    !submissionResult.detailedResults.find(
+                                      (r: any) => r.testCaseId === testCase.id,
+                                    )?.passed
+                                  ? "border-red-500/30 bg-red-500/5"
+                                  : "",
                             )}
                           >
                             <CardContent className="p-4">
@@ -661,7 +674,8 @@ export function AdvancedCodingChallenges() {
                                     </p>
                                     <p className="text-sm font-mono">
                                       {submissionResult.detailedResults.find(
-                                        (r: any) => r.testCaseId === testCase.id
+                                        (r: any) =>
+                                          r.testCaseId === testCase.id,
                                       )?.actual || "Not executed"}
                                     </p>
                                   </div>
@@ -815,10 +829,10 @@ export function AdvancedCodingChallenges() {
                                       "h-3 w-3",
                                       i <
                                         Math.floor(
-                                          performanceMetrics.rating / 20
+                                          performanceMetrics.rating / 20,
                                         )
                                         ? "text-amber-500 fill-amber-500"
-                                        : "text-muted-foreground"
+                                        : "text-muted-foreground",
                                     )}
                                   />
                                 ))}
@@ -856,7 +870,7 @@ export function AdvancedCodingChallenges() {
                       rank === 1 && "bg-yellow-500/10 border-yellow-500/20",
                       rank === 2 && "bg-gray-500/10 border-gray-500/20",
                       rank === 3 && "bg-orange-800/10 border-orange-800/20",
-                      rank > 3 && "border-border/50 hover:bg-muted/30"
+                      rank > 3 && "border-border/50 hover:bg-muted/30",
                     )}
                   >
                     <div
@@ -865,7 +879,7 @@ export function AdvancedCodingChallenges() {
                         rank === 1 && "bg-yellow-500/20 text-yellow-500",
                         rank === 2 && "bg-gray-500/20 text-gray-500",
                         rank === 3 && "bg-orange-800/20 text-orange-800",
-                        rank > 3 && "bg-muted text-muted-foreground"
+                        rank > 3 && "bg-muted text-muted-foreground",
                       )}
                     >
                       {rank}
