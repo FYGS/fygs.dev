@@ -41,7 +41,8 @@ const L = {
 
 // ─── Generator ──────────────────────────────────────────────────────────────
 
-export const generatePDF = () => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const generatePDF = (locale: string = "en") => {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   let y = 0;
 

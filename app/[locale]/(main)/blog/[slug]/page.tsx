@@ -20,6 +20,7 @@ import { Calendar, Clock } from "lucide-react";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { useIntlayer } from "next-intlayer/server";
 import { getPostStats } from "../actions/stats";
 import { ViewCounter } from "./_components/view-counter";
 
@@ -107,6 +108,9 @@ export default async function BlogPostPage({ params }: Props) {
   // Use lightweight metadata instead of full MDX compilation for related articles
   const allPostsMeta = await getBlogPostsMeta();
   const uniquePosts = allPostsMeta.filter((p) => p.slug !== post.slug);
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { helpful } = useIntlayer("blog-post", locale);
 
   return (
     <>
@@ -198,11 +202,7 @@ export default async function BlogPostPage({ params }: Props) {
             <footer className="mt-16 pt-8 border-t border-muted md:hidden">
               <div className="flex flex-col items-center gap-4">
                 <h3 className="text-lg font-medium text-muted-foreground">
-                  {locale === "fr"
-                    ? "Cet article vous a été utile ?"
-                    : locale === "es"
-                      ? "¿Te resultó útil este artículo?"
-                      : "Did you find this article helpful?"}
+                  {helpful}
                 </h3>
                 <PostStatsView
                   slug={slug}

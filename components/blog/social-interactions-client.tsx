@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { useBlogStats } from "@/stores/use-blog-stats";
 import { motion, useAnimation } from "framer-motion";
 import { Heart, Share2 } from "lucide-react";
-import { useLocale } from "next-intlayer";
+import { useIntlayer } from "next-intlayer";
 import { useEffect, useState } from "react";
 
 interface SocialInteractionsClientProps {
@@ -34,7 +34,17 @@ export function SocialInteractionsClient({
 }: SocialInteractionsClientProps) {
   const [hasLiked, setHasLiked] = useState(false);
   const controls = useAnimation();
-  const { locale } = useLocale();
+  const {
+    liked,
+    unliked,
+    likedDesc,
+    unlikedDesc,
+    likeError,
+    shareError,
+    tooltipLiked,
+    tooltipLike,
+    tooltipShare,
+  } = useIntlayer("blog-social");
   const {
     likes,
     shares,
@@ -79,41 +89,12 @@ export function SocialInteractionsClient({
       // Sync once to confirm server state
       await syncStats(slug);
 
-      toast.success(
-        isLiked
-          ? locale === "fr"
-            ? "Article aimé !"
-            : locale === "es"
-              ? "¡Artículo gustado!"
-              : "Article liked!"
-          : locale === "fr"
-            ? "Like retiré"
-            : locale === "es"
-              ? "Like eliminado"
-              : "Like removed",
-        {
-          description: isLiked
-            ? locale === "fr"
-              ? "Merci pour votre appréciation."
-              : locale === "es"
-                ? "Gracias por tu apreciación."
-                : "Thank you for your appreciation."
-            : locale === "fr"
-              ? "Vous avez retiré votre like."
-              : locale === "es"
-                ? "Has eliminado tu like."
-                : "You've removed your like.",
-        },
-      );
+      toast.success(isLiked ? liked : unliked, {
+        description: isLiked ? likedDesc : unlikedDesc,
+      });
     } catch (error) {
       console.error(error);
-      toast.error(
-        locale === "fr"
-          ? "Impossible de traiter votre like. Veuillez réessayer."
-          : locale === "es"
-            ? "No se pudo procesar tu like. Inténtalo de nuevo."
-            : "Could not process your like. Please try again.",
-      );
+      toast.error(likeError);
     }
   };
 
@@ -133,13 +114,7 @@ export function SocialInteractionsClient({
     } catch (error) {
       if (!(error instanceof Error && error.name === "AbortError")) {
         console.error(error);
-        toast.error(
-          locale === "fr"
-            ? "Impossible de partager l'article. Veuillez réessayer."
-            : locale === "es"
-              ? "No se pudo compartir el artículo. Inténtalo de nuevo."
-              : "Could not share the article. Please try again.",
-        );
+        toast.error(shareError);
       }
     }
   };
@@ -186,19 +161,7 @@ export function SocialInteractionsClient({
               </motion.button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>
-                {hasLiked
-                  ? locale === "fr"
-                    ? "Vous avez aimé cet article"
-                    : locale === "es"
-                      ? "Te gustó este artículo"
-                      : "You liked this"
-                  : locale === "fr"
-                    ? "Aimer cet article"
-                    : locale === "es"
-                      ? "Me gusta este artículo"
-                      : "Like this article"}
-              </p>
+              <p>{hasLiked ? tooltipLiked : tooltipLike}</p>
             </TooltipContent>
           </Tooltip>
 
@@ -218,13 +181,7 @@ export function SocialInteractionsClient({
               </motion.button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>
-                {locale === "fr"
-                  ? "Partager cet article"
-                  : locale === "es"
-                    ? "Compartir este artículo"
-                    : "Share this article"}
-              </p>
+              <p>{tooltipShare}</p>
             </TooltipContent>
           </Tooltip>
         </>

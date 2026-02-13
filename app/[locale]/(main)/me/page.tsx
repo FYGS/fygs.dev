@@ -15,56 +15,290 @@ import { cn } from "@/lib/utils";
 import {
   Award,
   Briefcase,
+  Building2,
   Calendar,
+  Clock,
   Code2,
   ExternalLink,
   Globe2,
   GraduationCap,
   Linkedin,
   Mail,
+  MapPin,
   Phone,
   Rocket,
   Target,
+  Train,
+  Users,
+  Workflow,
 } from "lucide-react";
 import Link from "next/link";
+import { useIntlayer } from "next-intlayer/server";
 import {
   CERTIFICATIONS,
-  DESCRIPTION,
   EDUCATION_ITEMS,
   EXPERIENCE_ITEMS,
-  PREFERENCES,
   SKILLS,
 } from "./data";
 
-export default function ResumePage() {
+interface Props {
+  params: Promise<{ locale: string }>;
+}
+
+export default async function ResumePage({ params }: Props) {
+  const { locale } = await params;
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const cv = useIntlayer("cv-page", locale);
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const cvData = useIntlayer("cv-data", locale);
+
+  // Combine localized data with icons
+  const experienceItems = [
+    {
+      icon: Briefcase,
+      company: cvData.description.experience.allianz.company,
+      role: cvData.description.experience.allianz.role,
+    },
+    {
+      icon: Briefcase,
+      company: cvData.description.experience.ge.company,
+      role: cvData.description.experience.ge.role,
+    },
+    {
+      icon: Rocket,
+      company: cvData.description.experience.ouestech.company,
+      role: cvData.description.experience.ouestech.role,
+    },
+  ];
+
+  const expertiseItems = [
+    {
+      icon: Code2,
+      title: cvData.description.expertise.react.title,
+      description: cvData.description.expertise.react.description,
+    },
+    {
+      icon: Workflow,
+      title: cvData.description.expertise.nodejs.title,
+      description: cvData.description.expertise.nodejs.description,
+    },
+    {
+      icon: Code2,
+      title: cvData.description.expertise.python.title,
+      description: cvData.description.expertise.python.description,
+    },
+    {
+      icon: Rocket,
+      title: cvData.description.expertise.cloud.title,
+      description: cvData.description.expertise.cloud.description,
+    },
+  ];
+
+  const servicesItems = [
+    cvData.description.services.items.webDev,
+    cvData.description.services.items.modernization,
+    cvData.description.services.items.optimization,
+    cvData.description.services.items.cicd,
+    cvData.description.services.items.api,
+    cvData.description.services.items.training,
+    cvData.description.services.items.workshops,
+    cvData.description.services.items.support,
+  ];
+
+  const whyMeItems = [
+    {
+      icon: Target,
+      text: cvData.description.whyMe.items.expertise,
+    },
+    {
+      icon: Users,
+      text: cvData.description.whyMe.items.translation,
+    },
+    {
+      icon: Award,
+      text: cvData.description.whyMe.items.results,
+    },
+  ];
+
+  const preferenceSections = [
+    {
+      icon: Clock,
+      title: cvData.preferences.workSchedule.title,
+      options: ["5 days/week", "1-4 days/week"],
+      current: "5 days/week",
+      details: {
+        "5 days/week": cvData.preferences.workSchedule.detail5days,
+        "1-4 days/week": cvData.preferences.workSchedule.detail1to4days,
+      },
+    },
+    {
+      icon: Calendar,
+      title: cvData.preferences.contractDuration.title,
+      options: ["0-6 months", "6+ months"],
+      current: "6+ months",
+      details: {
+        "0-6 months": cvData.preferences.contractDuration.detailShort,
+        "6+ months": cvData.preferences.contractDuration.detailLong,
+      },
+    },
+    {
+      icon: Building2,
+      title: cvData.preferences.workEnvironment.title,
+      options: ["On-site", "Hybrid", "Remote"],
+      current: "Hybrid",
+      details: {
+        "On-site": cvData.preferences.workEnvironment.detailOnsite,
+        Hybrid: cvData.preferences.workEnvironment.detailHybrid,
+        Remote: cvData.preferences.workEnvironment.detailRemote,
+      },
+    },
+    {
+      icon: Train,
+      title: cvData.preferences.mobility.title,
+      options: ["Île-de-France region"],
+      current: "Île-de-France region",
+      details: {
+        "Île-de-France region": cvData.preferences.mobility.detail,
+      },
+    },
+    {
+      icon: MapPin,
+      title: cvData.preferences.location.title,
+      options: ["Paris, France"],
+      current: "Paris, France",
+      details: {
+        "Paris, France": cvData.preferences.location.detail,
+      },
+    },
+  ];
+
+  // Build localized experience items
+  const expEntries = [
+    cvData.experiences.allianz,
+    cvData.experiences.ouestech,
+    cvData.experiences.geHealthcare1,
+    cvData.experiences.geHealthcare2,
+    cvData.experiences.schneider,
+    cvData.experiences.atlanSpace,
+  ];
+  const contractTypeMap: Record<string, unknown> = {
+    "Full-time": cvData.contractTypes.fullTime,
+    Entrepreneurship: cvData.contractTypes.entrepreneurship,
+    Internship: cvData.contractTypes.internship,
+  };
+  const localizedExperiences = EXPERIENCE_ITEMS.map((item, i) => {
+    const exp = expEntries[i];
+    return {
+      ...item,
+      title: exp.title as unknown as string,
+      type: (contractTypeMap[item.type || ""] ??
+        item.type) as unknown as string,
+      description: Object.values(exp.description) as unknown as string[],
+      achievements: Object.values(exp.achievements) as unknown as string[],
+      context: exp.context as unknown as string,
+      date: item.current
+        ? item.date.replace("Present", String(cvData.present))
+        : item.date,
+    };
+  });
+
+  // Build localized education items
+  const eduEntries = [
+    cvData.education.sorbonne,
+    cvData.education.upmc,
+    cvData.education.ensa,
+    cvData.education.lycee,
+  ];
+  const localizedEducation = EDUCATION_ITEMS.map((item, i) => {
+    const edu = eduEntries[i];
+    return {
+      ...item,
+      title: edu.title as unknown as string,
+      description: Object.values(edu.description) as unknown as string[],
+      achievements: Object.values(edu.achievements) as unknown as string[],
+    };
+  });
+
+  // Build localized technical skills
+  const categoryMap: Record<string, unknown> = {
+    "Backend Development": cvData.skillCategories.backend,
+    "Frontend Development": cvData.skillCategories.frontend,
+    "Cloud & DevOps": cvData.skillCategories.cloud,
+    "Databases & Storage": cvData.skillCategories.databases,
+  };
+  const localizedTechnicalSkills = SKILLS.technical.map(
+    ({ category, skills }) => ({
+      category: (categoryMap[category] ?? category) as unknown as string,
+      skills,
+    }),
+  );
+
+  // Build localized languages
+  const localizedLanguages = [
+    {
+      language: cvData.spokenLanguages.french.name,
+      level: cvData.spokenLanguages.french.level,
+    },
+    {
+      language: cvData.spokenLanguages.english.name,
+      level: cvData.spokenLanguages.english.level,
+    },
+  ];
+
+  // Build localized soft skills
+  const localizedSoftSkills = [
+    cvData.softSkills.leadership,
+    cvData.softSkills.problemSolving,
+    cvData.softSkills.teamwork,
+    cvData.softSkills.agile,
+    cvData.softSkills.projectManagement,
+    cvData.softSkills.clientComm,
+  ];
+
   return (
     <Section className="flex flex-col gap-8 py-8">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-4xl font-bold">Fernand SOUALO</h1>
-          <p className="text-xl text-muted-foreground mt-2">
-            Senior Software Engineer
-          </p>
+      <Card className="relative overflow-hidden border-none bg-gradient-to-br from-primary/5 via-background to-primary/10 shadow-sm">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,hsl(var(--primary)/0.08),transparent_50%)]" />
+        <div className="relative p-6 sm:p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="space-y-2">
+            <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
+              Fernand SOUALO
+            </h1>
+            <div className="flex items-center gap-3">
+              <div className="h-1 w-12 rounded-full bg-primary" />
+              <p className="text-lg sm:text-xl text-primary font-medium">
+                {cv.role}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-4 pt-2 text-sm text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5" /> Paris, France
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Mail className="h-3.5 w-3.5" /> fygs.dev@gmail.com
+              </span>
+            </div>
+          </div>
+          <DownloadCVButton />
         </div>
-        <DownloadCVButton />
-      </div>
+      </Card>
 
       {/* Description Section avec effets de survol */}
-      <Card className="p-6 hover:shadow-lg transition-all duration-300 group">
-        <div className="space-y-6">
+      <Card className="p-6 sm:p-8 hover:shadow-lg transition-all duration-300 group border-t-2 border-t-primary/30">
+        <div className="space-y-8">
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-primary group-hover:scale-[1.02] transition-transform duration-300">
-              {DESCRIPTION.intro.title}
+            <h2 className="text-2xl font-bold text-primary group-hover:scale-[1.01] transition-transform duration-300">
+              {cvData.description.intro.title}
             </h2>
             <p className="text-lg text-muted-foreground group-hover:text-foreground/90 transition-colors duration-300">
-              {DESCRIPTION.intro.subtitle}
+              {cvData.description.intro.subtitle}
             </p>
             <p className="text-xl font-semibold group-hover:text-primary transition-colors duration-300">
-              {DESCRIPTION.intro.mainText}
+              {cvData.description.intro.mainText}
             </p>
             <p className="text-muted-foreground group-hover:text-foreground/80 transition-colors duration-300">
-              {DESCRIPTION.intro.description}
+              {cvData.description.intro.description}
             </p>
           </div>
 
@@ -72,10 +306,10 @@ export default function ResumePage() {
           <div className="space-y-4 pt-4 border-t">
             <h3 className="text-xl font-semibold flex items-center gap-2">
               <Briefcase className="h-5 w-5 text-primary" />
-              {DESCRIPTION.experience.title}
+              {cvData.description.experience.title}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {DESCRIPTION.experience.items.map((item, index) => (
+              {experienceItems.map((item, index) => (
                 <div
                   key={index}
                   className="flex items-start gap-3 p-4 rounded-lg border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-md hover:-translate-y-1 bg-card hover:bg-accent/50"
@@ -98,10 +332,10 @@ export default function ResumePage() {
           <div className="space-y-4 pt-4 border-t">
             <h3 className="text-xl font-semibold flex items-center gap-2">
               <Rocket className="h-5 w-5 text-primary" />
-              {DESCRIPTION.services.title}
+              {cvData.description.services.title}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-              {DESCRIPTION.services.items.map((service, index) => (
+              {servicesItems.map((service, index) => (
                 <div
                   key={index}
                   className="flex items-center gap-2 p-2 rounded-md hover:bg-accent/50 transition-all duration-300 group cursor-default"
@@ -119,10 +353,10 @@ export default function ResumePage() {
           <div className="space-y-4 pt-4 border-t">
             <h3 className="text-xl font-semibold flex items-center gap-2">
               <Target className="h-5 w-5 text-primary" />
-              {DESCRIPTION.whyMe.title}
+              {cvData.description.whyMe.title}
             </h3>
             <div className="space-y-2">
-              {DESCRIPTION.whyMe.items.map((item, index) => (
+              {whyMeItems.map((item, index) => (
                 <div
                   key={index}
                   className="p-3 rounded-lg border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-md group cursor-default"
@@ -144,10 +378,10 @@ export default function ResumePage() {
           <div className="space-y-4 pt-4 border-t">
             <h3 className="text-xl font-semibold flex items-center gap-2">
               <Code2 className="h-5 w-5 text-primary" />
-              {DESCRIPTION.expertise.title}
+              {cvData.description.expertise.title}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {DESCRIPTION.expertise.items.map((item, index) => (
+              {expertiseItems.map((item, index) => (
                 <div
                   key={index}
                   className="p-4 rounded-lg border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-md hover:-translate-y-1 group cursor-default"
@@ -178,19 +412,21 @@ export default function ResumePage() {
             <div className="flex items-center gap-2 mb-6">
               <Briefcase className="h-6 w-6 text-primary" />
               <h2 className="text-2xl font-semibold">
-                Professional Experience
+                {cv.sections.experience}
               </h2>
             </div>
-            <Timeline items={EXPERIENCE_ITEMS} />
+            <Timeline items={localizedExperiences} />
           </Card>
 
           {/* Education */}
           <Card className="p-6">
             <div className="flex items-center gap-2 mb-6">
               <GraduationCap className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-semibold">Education</h2>
+              <h2 className="text-2xl font-semibold">
+                {cv.sections.education}
+              </h2>
             </div>
-            <Timeline items={EDUCATION_ITEMS} variant="education" />
+            <Timeline items={localizedEducation} variant="education" />
           </Card>
         </div>
 
@@ -202,25 +438,25 @@ export default function ResumePage() {
               <div className="flex items-center gap-2">
                 <Code2 className="h-5 w-5 text-primary" />
                 <h2 className="text-xl font-semibold hover:text-primary transition-colors duration-300">
-                  Technical Skills
+                  {cv.sections.technicalSkills}
                 </h2>
               </div>
 
               <div className="space-y-6">
-                {SKILLS.technical.map(({ category, skills }) => (
+                {localizedTechnicalSkills.map(({ category, skills }) => (
                   <div
-                    key={category}
-                    className="space-y-2 hover:translate-x-1 transition-transform duration-300"
+                    key={String(category)}
+                    className="space-y-2.5 hover:translate-x-0.5 transition-transform duration-300"
                   >
-                    <h3 className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-300">
+                    <h3 className="text-sm font-semibold text-primary/80 uppercase tracking-wider">
                       {category}
                     </h3>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-1.5">
                       {skills.map((skill) => (
                         <Badge
                           key={skill}
                           variant="outline"
-                          className="hover:bg-primary/10 hover:text-primary hover:scale-105 hover:shadow-xs transition-all duration-300"
+                          className="text-xs hover:bg-primary/10 hover:text-primary hover:scale-105 hover:shadow-xs transition-all duration-300"
                         >
                           {skill}
                         </Badge>
@@ -232,8 +468,7 @@ export default function ResumePage() {
 
               <div className="pt-4 border-t">
                 <p className="text-sm text-muted-foreground hover:text-foreground/80 transition-colors duration-300">
-                  Continuously learning and exploring new technologies to stay
-                  at the forefront of web development.
+                  {cv.skills.learningNote}
                 </p>
               </div>
             </div>
@@ -244,22 +479,46 @@ export default function ResumePage() {
             <div className="flex items-center gap-2 mb-4">
               <Globe2 className="h-5 w-5 text-primary group-hover:rotate-12 transition-transform duration-300" />
               <h2 className="text-xl font-semibold group-hover:text-primary transition-colors duration-300">
-                Languages
+                {cv.sections.languages}
               </h2>
             </div>
             <div className="space-y-3">
-              {SKILLS.languages.map(({ language, level }) => (
+              {localizedLanguages.map(({ language, level }, i) => (
                 <div
-                  key={language}
-                  className="flex justify-between items-center p-2 rounded-lg hover:bg-accent/50 transition-all duration-300 group/item cursor-default"
+                  key={i}
+                  className="flex justify-between items-center p-2.5 rounded-lg hover:bg-accent/50 transition-all duration-300 group/item cursor-default"
                 >
                   <span className="font-medium group-hover/item:text-primary transition-colors duration-300">
                     {language}
                   </span>
-                  <span className="text-muted-foreground px-3 py-1 rounded-full border border-transparent group-hover/item:border-primary/30 group-hover/item:bg-primary/5 transition-all duration-300">
+                  <Badge
+                    variant="secondary"
+                    className="bg-primary/5 text-primary border-primary/20 group-hover/item:bg-primary/10 transition-all duration-300"
+                  >
                     {level}
-                  </span>
+                  </Badge>
                 </div>
+              ))}
+            </div>
+          </Card>
+
+          {/* Soft Skills */}
+          <Card className="p-6 hover:shadow-lg transition-all duration-300 group">
+            <div className="flex items-center gap-2 mb-4">
+              <Users className="h-5 w-5 text-primary group-hover:scale-110 transition-transform duration-300" />
+              <h2 className="text-xl font-semibold group-hover:text-primary transition-colors duration-300">
+                {cv.sections.softSkills}
+              </h2>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {localizedSoftSkills.map((skill, i) => (
+                <Badge
+                  key={i}
+                  variant="secondary"
+                  className="bg-primary/5 text-primary/90 hover:bg-primary/15 hover:scale-105 transition-all duration-300 cursor-default"
+                >
+                  {skill}
+                </Badge>
               ))}
             </div>
           </Card>
@@ -269,7 +528,7 @@ export default function ResumePage() {
             <div className="flex items-center gap-2 mb-4">
               <Award className="h-5 w-5 text-primary group-hover:scale-110 transition-transform duration-300" />
               <h2 className="text-xl font-semibold group-hover:text-primary transition-colors duration-300">
-                Certifications
+                {cv.sections.certifications}
               </h2>
             </div>
             <div className="space-y-4">
@@ -292,11 +551,11 @@ export default function ResumePage() {
                           {cert.issuer}
                         </span>
                         <span className="px-2 py-0.5 rounded-full text-xs border border-transparent group-hover/cert:border-primary/30 group-hover/cert:bg-primary/5 transition-all duration-300">
-                          {cert.date} - {cert.validUntil}
+                          {cert.date} - {cvData.certification.validUntil}
                         </span>
                       </div>
                       <div className="text-muted-foreground/80 group-hover/cert:text-muted-foreground transition-colors duration-300">
-                        Credential ID: {cert.credentialId}
+                        {cv.certifications.credentialId} {cert.credentialId}
                       </div>
                     </div>
                   </div>
@@ -309,12 +568,17 @@ export default function ResumePage() {
           <Card className="p-6">
             <div className="space-y-6">
               <div className="flex items-center gap-2">
-                <h2 className="text-xl font-semibold">{PREFERENCES.title}</h2>
+                <h2 className="text-xl font-semibold">
+                  {cvData.preferences.title}
+                </h2>
               </div>
 
               <div className="space-y-4">
-                {PREFERENCES.sections.map((section) => (
-                  <div key={section.title} className="space-y-2">
+                {preferenceSections.map((section, index) => (
+                  <div
+                    key={String(section.title) + index}
+                    className="space-y-2"
+                  >
                     <div className="flex items-center gap-2 text-primary">
                       <section.icon className="h-4 w-4" />
                       <h3 className="text-sm font-medium">{section.title}</h3>
@@ -322,30 +586,30 @@ export default function ResumePage() {
                     <div className="flex flex-wrap gap-2">
                       {section.options.map((option: string) => (
                         <Tooltip key={option}>
-                            <TooltipTrigger asChild>
-                              <div
-                                className={cn(
-                                  "text-sm px-3 py-1 rounded-full border transition-all duration-300",
-                                  "hover:scale-105 hover:shadow-md cursor-pointer",
-                                  "transform-gpu hover:-translate-y-0.5",
-                                  option === section.current
-                                    ? "bg-primary/10 border-primary/30 text-primary"
-                                    : "border-border text-muted-foreground hover:border-primary/30"
-                                )}
-                              >
-                                {option}
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="max-w-xs">
-                              <p>
-                                {
-                                  section.details[
-                                    option as keyof typeof section.details
-                                  ]
-                                }
-                              </p>
-                            </TooltipContent>
-                          </Tooltip>
+                          <TooltipTrigger asChild>
+                            <div
+                              className={cn(
+                                "text-sm px-3 py-1 rounded-full border transition-all duration-300",
+                                "hover:scale-105 hover:shadow-md cursor-pointer",
+                                "transform-gpu hover:-translate-y-0.5",
+                                option === section.current
+                                  ? "bg-primary/10 border-primary/30 text-primary"
+                                  : "border-border text-muted-foreground hover:border-primary/30",
+                              )}
+                            >
+                              {option}
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-xs">
+                            <p>
+                              {
+                                section.details[
+                                  option as keyof typeof section.details
+                                ]
+                              }
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
                       ))}
                     </div>
                   </div>
@@ -359,8 +623,7 @@ export default function ResumePage() {
                 }}
               >
                 <p className="text-sm text-muted-foreground">
-                  Open to discussing flexible arrangements based on project
-                  requirements
+                  {cv.preferences.flexNote}
                 </p>
               </div>
             </div>
@@ -372,7 +635,7 @@ export default function ResumePage() {
       <Card className="p-6">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">Preview CV</h2>
+            <h2 className="text-2xl font-bold">{cv.preview.title}</h2>
             <DownloadCVButton />
           </div>
           <CVPreview />
@@ -384,12 +647,10 @@ export default function ResumePage() {
         <div className="p-8 space-y-6">
           <div className="text-center space-y-4">
             <h2 className="text-3xl font-bold bg-linear-to-r from-primary to-primary/50 bg-clip-text text-transparent">
-              Ready to Build Something Amazing?
+              {cv.cta.title}
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Let&apos;s collaborate to transform your ideas into exceptional
-              digital solutions. I&apos;m available for freelance projects and
-              technical consulting.
+              {cv.cta.description}
             </p>
 
             {/* Indicateur de disponibilité */}
@@ -403,11 +664,11 @@ export default function ResumePage() {
               href="mailto:fygs.dev@gmail.com"
               className={cn(
                 buttonVariants({ variant: "default", size: "lg" }),
-                "group min-w-[200px] bg-primary/90 hover:bg-primary transition-all duration-300"
+                "group min-w-[200px] bg-primary/90 hover:bg-primary transition-all duration-300",
               )}
             >
               <Mail className="mr-2 h-5 w-5 transition-transform duration-300 group-hover:-rotate-12" />
-              Email Me
+              {cv.cta.emailMe}
             </Link>
 
             {/* Calendrier de réservation */}
@@ -418,11 +679,11 @@ export default function ResumePage() {
               rel="noopener noreferrer"
               className={cn(
                 buttonVariants({ variant: "secondary", size: "lg" }),
-                "flex items-center gap-2 bg-primary/10 text-primary hover:bg-primary/20 px-4 py-2 rounded-md transition-colors duration-300"
+                "flex items-center gap-2 bg-primary/10 text-primary hover:bg-primary/20 px-4 py-2 rounded-md transition-colors duration-300",
               )}
             >
               <Calendar className="mr-2 h-5 w-5" />
-              Schedule a Meeting
+              {cv.cta.scheduleMeeting}
             </Link>
 
             <Link
@@ -431,11 +692,11 @@ export default function ResumePage() {
               rel="noopener noreferrer"
               className={cn(
                 buttonVariants({ variant: "secondary", size: "lg" }),
-                "group min-w-[200px] hover:bg-primary/10 transition-all duration-300"
+                "group min-w-[200px] hover:bg-primary/10 transition-all duration-300",
               )}
             >
               <Linkedin className="mr-2 h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
-              Connect on LinkedIn
+              {cv.cta.connectLinkedin}
             </Link>
           </div>
 
@@ -460,7 +721,7 @@ export default function ResumePage() {
               animation: "fadeIn 0.5s ease-in-out 0.5s forwards",
             }}
           >
-            Available for projects worldwide • Quick response within 24 hours
+            {cv.cta.availability}
           </div>
         </div>
       </Card>

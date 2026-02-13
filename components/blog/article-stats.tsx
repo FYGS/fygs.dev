@@ -5,7 +5,7 @@ import { fadeIn } from "@/lib/animations";
 import { useBlogStats } from "@/stores/use-blog-stats";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Clock, Eye, ThumbsUp, Users } from "lucide-react";
-import { useLocale } from "next-intlayer";
+import { useIntlayer } from "next-intlayer";
 import { useRef } from "react";
 
 interface ArticleStatsProps {
@@ -23,7 +23,14 @@ export function ArticleStats({
 }: ArticleStatsProps) {
   // Use Zustand store values (updated by user actions), fall back to SSR initial props
   const store = useBlogStats();
-  const { locale } = useLocale();
+  const {
+    views: viewsLabel,
+    view: viewLabel,
+    likes: likesLabel,
+    like: likeLabel,
+    shares: sharesLabel,
+    share: shareLabel,
+  } = useIntlayer("blog-stats");
   const views = store.views || initialViews;
   const likes = store.likes || initialLikes;
   const shares = store.shares || initialShares;
@@ -62,8 +69,7 @@ export function ArticleStats({
           >
             <Eye className="h-4 w-4 text-primary transition-colors group-hover:text-primary/80" />
             <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-              {views.toLocaleString(locale)}{" "}
-              {locale === "fr" ? "vues" : locale === "es" ? "vistas" : "views"}
+              {views.toLocaleString()} {views === 1 ? viewLabel : viewsLabel}
             </span>
           </motion.div>
           <motion.div
@@ -73,12 +79,7 @@ export function ArticleStats({
           >
             <ThumbsUp className="h-4 w-4 text-primary transition-colors group-hover:text-primary/80" />
             <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-              {likes.toLocaleString(locale)}{" "}
-              {locale === "fr"
-                ? "j'aime"
-                : locale === "es"
-                  ? "me gusta"
-                  : "likes"}
+              {likes.toLocaleString()} {likes === 1 ? likeLabel : likesLabel}
             </span>
           </motion.div>
           <motion.div
@@ -88,12 +89,8 @@ export function ArticleStats({
           >
             <Users className="h-4 w-4 text-primary transition-colors group-hover:text-primary/80" />
             <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-              {shares.toLocaleString(locale)}{" "}
-              {locale === "fr"
-                ? "partages"
-                : locale === "es"
-                  ? "compartidos"
-                  : "shares"}
+              {shares.toLocaleString()}{" "}
+              {shares === 1 ? shareLabel : sharesLabel}
             </span>
           </motion.div>
         </div>

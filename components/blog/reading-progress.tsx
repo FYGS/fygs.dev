@@ -4,18 +4,11 @@ import { useReadingProgress } from "@/hooks/use-reading-progress";
 import { formatReadingTime } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { Timer } from "lucide-react";
-import { useLocale } from "next-intlayer";
+import { useIntlayer } from "next-intlayer";
 
 export function ReadingProgress() {
   const { progress, timeSpent, isComplete } = useReadingProgress();
-  const { locale } = useLocale();
-
-  const label =
-    locale === "fr"
-      ? "Temps de lecture :"
-      : locale === "es"
-        ? "Tiempo de lectura:"
-        : "Time spent reading:";
+  const { timeSpent: label } = useIntlayer("blog-stats");
 
   return (
     <>

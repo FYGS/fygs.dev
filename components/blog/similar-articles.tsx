@@ -10,7 +10,7 @@ import { BlogPost, BlogPostMeta } from "@/lib/types";
 import { motion } from "framer-motion";
 import { Calendar, Clock, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { useLocale } from "next-intlayer";
+import { useIntlayer, useLocale } from "next-intlayer";
 import { useMemo, useState } from "react";
 import { ArticlePreview } from "./article-preview";
 
@@ -62,6 +62,7 @@ export function SimilarArticles({
   allPosts,
   maxArticles = 3,
 }: SimilarArticlesProps) {
+  const { similarArticles } = useIntlayer("blog-post");
   const { locale } = useLocale();
 
   const similarPosts = useMemo(() => {
@@ -100,11 +101,7 @@ export function SimilarArticles({
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold flex items-center gap-2">
         <Sparkles className="h-5 w-5 text-primary" />
-        {locale === "fr"
-          ? "Articles similaires"
-          : locale === "es"
-            ? "Artículos similares"
-            : "Similar Articles"}
+        {similarArticles}
       </h2>
       <div className="grid gap-4">
         {similarPosts.map((post, index) => (
