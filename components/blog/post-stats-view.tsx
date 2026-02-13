@@ -12,24 +12,14 @@ export function PostStatsView({
   className,
   initialStats,
 }: PostStatsViewProps) {
-  const { setViews, setLikes, setShares, syncStats } = useBlogStats();
+  const { setViews, setLikes, setShares } = useBlogStats();
 
-  // Initialize the store with the initial stats
+  // Initialize the store with SSR data once — no polling
   useEffect(() => {
     setViews(initialStats.views);
     setLikes(initialStats.likes);
     setShares(initialStats.shares);
-
-    // Sync with the server immediately
-    syncStats(slug);
-
-    // Set up an interval to periodically sync stats
-    const intervalId = setInterval(() => {
-      syncStats(slug);
-    }, 5000); // Sync every 5 seconds
-
-    return () => clearInterval(intervalId);
-  }, [slug, initialStats, setViews, setLikes, setShares, syncStats]);
+  }, [slug, initialStats, setViews, setLikes, setShares]);
 
   return (
     <div className={className}>

@@ -2,13 +2,14 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { BlogPost } from "@/lib/types";
+import { BlogPostMeta } from "@/lib/types";
 import { AnimatePresence, motion } from "framer-motion";
 import { Calendar, Clock } from "lucide-react";
 import Image from "next/image";
+import { useLocale } from "next-intlayer";
 
 interface ArticlePreviewProps {
-  post: BlogPost;
+  post: BlogPostMeta;
   isVisible: boolean;
   position: { x: number; y: number };
 }
@@ -18,6 +19,8 @@ export function ArticlePreview({
   isVisible,
   position,
 }: ArticlePreviewProps) {
+  const { locale } = useLocale();
+
   return (
     <AnimatePresence>
       {isVisible && (
@@ -67,7 +70,7 @@ export function ArticlePreview({
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
                     <time dateTime={post.date}>
-                      {new Date(post.date).toLocaleDateString("en-US", {
+                      {new Date(post.date).toLocaleDateString(locale, {
                         year: "numeric",
                         month: "short",
                         day: "numeric",

@@ -10,6 +10,7 @@ import { Suspense, use } from "react";
 import { BlogPostCard } from "@/components/blog/blog-post-card";
 import { CategoryFilter } from "@/components/blog/category-filter";
 import { StatsProvider } from "@/providers/blog/stats-provider";
+import { useLocale } from "next-intlayer";
 
 interface BlogClientPageProps {
   postsPromise: Promise<BlogPostMeta[]>;
@@ -19,13 +20,14 @@ const POSTS_PER_PAGE = 6;
 
 export default function BlogClientPage({ postsPromise }: BlogClientPageProps) {
   const posts = use(postsPromise);
+  const { locale } = useLocale();
 
   const [searchTerm] = useQueryState("q", { defaultValue: "" });
   const [currentPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [selectedCategory] = useQueryState("category", { defaultValue: "" });
   const [pageSize] = useQueryState(
     "size",
-    parseAsInteger.withDefault(POSTS_PER_PAGE)
+    parseAsInteger.withDefault(POSTS_PER_PAGE),
   );
 
   const searchParams = {
@@ -36,7 +38,7 @@ export default function BlogClientPage({ postsPromise }: BlogClientPageProps) {
   };
 
   const categories = Array.from(
-    new Set(posts.flatMap((post) => post.categories))
+    new Set(posts.flatMap((post) => post.categories)),
   ).sort();
 
   let filteredPosts = posts;
@@ -46,13 +48,13 @@ export default function BlogClientPage({ postsPromise }: BlogClientPageProps) {
     filteredPosts = posts.filter(
       (post) =>
         post.title.toLowerCase().includes(lowerCaseSearchTerm) ||
-        post.excerpt.toLowerCase().includes(lowerCaseSearchTerm)
+        post.excerpt.toLowerCase().includes(lowerCaseSearchTerm),
     );
   }
 
   if (selectedCategory) {
     filteredPosts = filteredPosts.filter((post) =>
-      post.categories.includes(selectedCategory)
+      post.categories.includes(selectedCategory),
     );
   }
 
@@ -67,12 +69,18 @@ export default function BlogClientPage({ postsPromise }: BlogClientPageProps) {
         <div className="space-y-8">
           <div className="space-y-4">
             <h1 className="text-4xl font-bold" id="blog-title">
-              Technical Blog
+              {locale === "fr"
+                ? "Blog Technique"
+                : locale === "es"
+                  ? "Blog Técnico"
+                  : "Technical Blog"}
             </h1>
             <p className="text-muted-foreground max-w-2xl">
-              Expert software engineering articles covering modern web
-              development, cloud architecture, and best practices. Written by a
-              seasoned Full-Stack Developer with real-world experience.
+              {locale === "fr"
+                ? "Articles d'ingénierie logicielle couvrant le développement web moderne, l'architecture cloud et les bonnes pratiques. Rédigés par un développeur Full-Stack expérimenté."
+                : locale === "es"
+                  ? "Artículos de ingeniería de software sobre desarrollo web moderno, arquitectura cloud y mejores prácticas. Escritos por un desarrollador Full-Stack con experiencia real."
+                  : "Expert software engineering articles covering modern web development, cloud architecture, and best practices. Written by a seasoned Full-Stack Developer with real-world experience."}
             </p>
           </div>
 
@@ -112,7 +120,11 @@ export default function BlogClientPage({ postsPromise }: BlogClientPageProps) {
 
           {filteredPosts.length === 0 && (
             <p className="text-center text-muted-foreground" role="alert">
-              No blog posts found {searchTerm && `for "${searchTerm}"`}
+              {locale === "fr"
+                ? `Aucun article trouvé${searchTerm ? ` pour "${searchTerm}"` : ""}`
+                : locale === "es"
+                  ? `No se encontraron artículos${searchTerm ? ` para "${searchTerm}"` : ""}`
+                  : `No blog posts found${searchTerm ? ` for "${searchTerm}"` : ""}`}
             </p>
           )}
         </div>

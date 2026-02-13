@@ -14,6 +14,7 @@ import {
   Share2,
 } from "lucide-react";
 import Link from "next/link";
+import { useLocale } from "next-intlayer";
 import { CoverImage } from "./cover-image";
 
 interface BlogPostCardProps {
@@ -26,6 +27,8 @@ interface BlogPostCardProps {
 }
 
 export function BlogPostCard({ post, initialStats }: BlogPostCardProps) {
+  const { locale } = useLocale();
+
   const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();
     try {
@@ -35,9 +38,21 @@ export function BlogPostCard({ post, initialStats }: BlogPostCardProps) {
           text: post.excerpt,
           url: `${window.location.origin}/blog/${post.slug}`,
         });
-        toast.success("Shared successfully", {
-          description: "Thank you for sharing!",
-        });
+        toast.success(
+          locale === "fr"
+            ? "Partagé avec succès"
+            : locale === "es"
+              ? "Compartido con éxito"
+              : "Shared successfully",
+          {
+            description:
+              locale === "fr"
+                ? "Merci pour le partage !"
+                : locale === "es"
+                  ? "¡Gracias por compartir!"
+                  : "Thank you for sharing!",
+          },
+        );
       }
     } catch (error) {
       if (!(error instanceof Error && error.name === "AbortError")) {
@@ -63,7 +78,9 @@ export function BlogPostCard({ post, initialStats }: BlogPostCardProps) {
 
           {/* Read more indicator */}
           <div className="absolute bottom-4 right-4 flex items-center gap-1.5 text-sm font-medium text-foreground opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0">
-            <span>Read</span>
+            <span>
+              {locale === "fr" ? "Lire" : locale === "es" ? "Leer" : "Read"}
+            </span>
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </div>
         </div>
@@ -77,7 +94,11 @@ export function BlogPostCard({ post, initialStats }: BlogPostCardProps) {
                 className="text-xs flex items-center gap-1"
               >
                 <FileEdit className="h-3 w-3" />
-                Draft
+                {locale === "fr"
+                  ? "Brouillon"
+                  : locale === "es"
+                    ? "Borrador"
+                    : "Draft"}
               </Badge>
             )}
             {post.categories.map((category) => (
@@ -128,7 +149,7 @@ export function BlogPostCard({ post, initialStats }: BlogPostCardProps) {
             <div className="flex items-center gap-1.5">
               <Calendar className="h-3.5 w-3.5" />
               <time dateTime={post.date}>
-                {new Date(post.date).toLocaleDateString("en-US", {
+                {new Date(post.date).toLocaleDateString(locale, {
                   year: "numeric",
                   month: "short",
                   day: "numeric",

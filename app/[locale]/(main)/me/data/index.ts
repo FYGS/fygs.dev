@@ -68,18 +68,29 @@ export const EXPERIENCE_ITEMS = [
       "Ensuring high code quality and performance optimization",
       "Managing entire development lifecycle from conception to deployment",
       "Implementing responsive and accessible user interfaces",
+      "Delivering technical training sessions in Python, TypeScript, Node.js, and React",
+      "Mentoring junior developers and conducting code reviews",
     ],
     achievements: [
       "Successfully delivered 15+ projects for diverse clients",
       "Achieved 98% client satisfaction rate",
       "Reduced average page load time by 60%",
       "Implemented automated testing increasing code coverage to 90%",
+      "Trained 50+ developers across multiple corporate workshops",
     ],
-    technologies: ["React", "NextJS", "TypeScript", "TailwindCSS", "Node.js"],
+    technologies: [
+      "React",
+      "NextJS",
+      "TypeScript",
+      "TailwindCSS",
+      "Node.js",
+      "Python",
+      "FastAPI",
+    ],
     current: true,
     context: `As co-founder and lead developer of Ouestech, I have the opportunity to work on a variety of exciting projects across different sectors. This experience has allowed me to develop strong adaptability and deep expertise in modern web technologies.
 
-    My partner and I handle the entire development lifecycle, from design to production, including development and deployment. This position has enabled me to develop not only my technical skills but also my project management and client communication abilities.`,
+    My partner and I handle the entire development lifecycle, from design to production, including development and deployment. Beyond development, I also deliver technical training workshops and bootcamps for corporate teams on modern web technologies and Python development. This position has enabled me to develop not only my technical skills but also my project management, client communication, and teaching abilities.`,
   },
   {
     date: "2019 - 2023",
@@ -338,6 +349,7 @@ export const SKILLS = {
         "Express",
         "TypeScript",
         "Python",
+        "FastAPI",
         "RESTful APIs",
         "GraphQL",
       ],
@@ -396,11 +408,11 @@ export const DESCRIPTION = {
   intro: {
     title: "About Me",
     subtitle:
-      "Specialized in TypeScript, Next.js, Node.js, NestJS, and React to bring your ambitious projects to life?",
+      "Specialized in TypeScript, Next.js, Node.js, NestJS, Python, and React to bring your ambitious projects to life?",
     mainText:
-      "I'm a Software Engineer | Expert in TypeScript, Next.js, Node.js, NestJS, and React",
+      "I'm a Software Engineer & Technical Trainer | Expert in TypeScript, Next.js, Node.js, NestJS, Python, FastAPI, and React",
     description:
-      "With over 7 years of experience as a fullstack developer, I transform ambitious ideas into high-performance, scalable web solutions. My passion for technological innovation enables me to create robust applications that meet the complex needs of modern businesses.",
+      "With over 7 years of experience as a fullstack developer and technical trainer, I transform ambitious ideas into high-performance, scalable web solutions. My passion for technological innovation and knowledge sharing enables me to create robust applications and empower teams through training and mentorship.",
   },
   experience: {
     title: "Experience in Leading Companies",
@@ -441,6 +453,11 @@ export const DESCRIPTION = {
         icon: Workflow,
       },
       {
+        title: "Python / FastAPI",
+        description: "High-performance APIs and automation scripts",
+        icon: Code2,
+      },
+      {
         title: "Cloud Architecture",
         description: "Serverless development with AWS services",
         icon: Rocket,
@@ -455,7 +472,8 @@ export const DESCRIPTION = {
       "Development process optimization",
       "CI/CD pipeline implementation",
       "API design and development",
-      "Technical training and mentoring",
+      "Technical training and mentoring (Python, TypeScript, Node.js, React)",
+      "Corporate workshops and bootcamps",
       "Technical support and maintenance",
     ],
   },

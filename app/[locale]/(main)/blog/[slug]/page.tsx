@@ -15,7 +15,7 @@ import { SimilarArticles } from "@/components/blog/similar-articles";
 import { TableOfContents } from "@/components/mdx/toc";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getAllBlogPosts, getBlogPost } from "@/lib/mdx";
+import { getBlogPost, getBlogPostsMeta } from "@/lib/mdx";
 import { Calendar, Clock } from "lucide-react";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -26,11 +26,12 @@ import { ViewCounter } from "./_components/view-counter";
 interface Props {
   params: Promise<{
     slug: string;
+    locale: string;
   }>;
 }
 
 export async function generateStaticParams() {
-  const posts = await getAllBlogPosts();
+  const posts = await getBlogPostsMeta();
   return posts.map((post) => ({
     slug: post.slug,
   }));
@@ -93,7 +94,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function BlogPostPage({ params }: Props) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const post = await getBlogPost(slug);
 
   if (!post) {
@@ -103,9 +104,9 @@ export default async function BlogPostPage({ params }: Props) {
   // Fetch stats - view count will be handled client-side
   const stats = await getPostStats(slug);
 
-  // Ensure unique posts across sections
-  const allPosts = await getAllBlogPosts();
-  const uniquePosts = allPosts.filter((p) => p.slug !== post.slug);
+  // Use lightweight metadata instead of full MDX compilation for related articles
+  const allPostsMeta = await getBlogPostsMeta();
+  const uniquePosts = allPostsMeta.filter((p) => p.slug !== post.slug);
 
   return (
     <>
@@ -174,7 +175,7 @@ export default async function BlogPostPage({ params }: Props) {
                 <div className="flex items-center gap-1.5">
                   <Calendar className="h-4 w-4 text-primary/70" />
                   <time dateTime={post.date}>
-                    {new Date(post.date).toLocaleDateString("en-US", {
+                    {new Date(post.date).toLocaleDateString(locale, {
                       year: "numeric",
                       month: "long",
                       day: "numeric",
@@ -197,7 +198,11 @@ export default async function BlogPostPage({ params }: Props) {
             <footer className="mt-16 pt-8 border-t border-muted md:hidden">
               <div className="flex flex-col items-center gap-4">
                 <h3 className="text-lg font-medium text-muted-foreground">
-                  Did you find this article helpful?
+                  {locale === "fr"
+                    ? "Cet article vous a été utile ?"
+                    : locale === "es"
+                      ? "¿Te resultó útil este artículo?"
+                      : "Did you find this article helpful?"}
                 </h3>
                 <PostStatsView
                   slug={slug}
@@ -235,9 +240,10 @@ export default async function BlogPostPage({ params }: Props) {
               maxArticles={3}
             />
             <PopularArticles
-              currentPost={post}
+              currentSlug={post.slug}
               maxArticles={3}
-              excludeSlugs={uniquePosts.slice(0, 3).map((p) => p.slug)} // Exclude already shown posts
+              excludeSlugs={uniquePosts.slice(0, 3).map((p) => p.slug)}
+              locale={locale}
             />
           </div>
         </Suspense>

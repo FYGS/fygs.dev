@@ -1,33 +1,31 @@
-import { getAllBlogPosts } from "@/lib/mdx";
+import { getBlogPostsMeta } from "@/lib/mdx";
 import {
   getLikeCount,
   getPopularPosts,
   getShareCount,
   getViewCount,
 } from "@/lib/reading-stats";
-import { BlogPost } from "@/lib/types";
 import { TrendingUp } from "lucide-react";
 import { BlogPostCard } from "@/components/blog/blog-post-card";
 
 interface PopularArticlesProps {
-  currentPost: BlogPost;
+  currentSlug: string;
   maxArticles?: number;
-  excludeSlugs?: string[]; // Add this prop
+  excludeSlugs?: string[];
 }
 
 export async function PopularArticles({
-  currentPost,
+  currentSlug,
   maxArticles = 3,
   excludeSlugs = [],
 }: PopularArticlesProps) {
-  const popularSlugs = await getPopularPosts(maxArticles * 2); // Fetch more to ensure we have enough after filtering
-  const allPosts = await getAllBlogPosts();
+  const popularSlugs = await getPopularPosts(maxArticles * 2);
+  const allPosts = await getBlogPostsMeta();
 
   const popularPosts = allPosts
     .filter((post) => popularSlugs.includes(post.slug))
     .filter(
-      (post) =>
-        post.slug !== currentPost.slug && !excludeSlugs.includes(post.slug)
+      (post) => post.slug !== currentSlug && !excludeSlugs.includes(post.slug),
     )
     .slice(0, maxArticles);
 
@@ -40,7 +38,7 @@ export async function PopularArticles({
       views: await getViewCount(post.slug),
       likes: await getLikeCount(post.slug),
       shares: await getShareCount(post.slug),
-    }))
+    })),
   );
 
   return (

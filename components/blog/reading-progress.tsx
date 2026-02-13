@@ -4,9 +4,18 @@ import { useReadingProgress } from "@/hooks/use-reading-progress";
 import { formatReadingTime } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { Timer } from "lucide-react";
+import { useLocale } from "next-intlayer";
 
 export function ReadingProgress() {
   const { progress, timeSpent, isComplete } = useReadingProgress();
+  const { locale } = useLocale();
+
+  const label =
+    locale === "fr"
+      ? "Temps de lecture :"
+      : locale === "es"
+        ? "Tiempo de lectura:"
+        : "Time spent reading:";
 
   return (
     <>
@@ -30,7 +39,7 @@ export function ReadingProgress() {
             <div className="flex items-center gap-2 text-sm">
               <Timer className="h-4 w-4 text-primary" />
               <p className="text-muted-foreground">
-                Time spent reading: {formatReadingTime(timeSpent)}
+                {label} {formatReadingTime(timeSpent)}
               </p>
             </div>
           </motion.div>

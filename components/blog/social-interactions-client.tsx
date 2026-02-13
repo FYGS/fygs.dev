@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { useBlogStats } from "@/stores/use-blog-stats";
 import { motion, useAnimation } from "framer-motion";
 import { Heart, Share2 } from "lucide-react";
+import { useLocale } from "next-intlayer";
 import { useEffect, useState } from "react";
 
 interface SocialInteractionsClientProps {
@@ -33,6 +34,7 @@ export function SocialInteractionsClient({
 }: SocialInteractionsClientProps) {
   const [hasLiked, setHasLiked] = useState(false);
   const controls = useAnimation();
+  const { locale } = useLocale();
   const {
     likes,
     shares,
@@ -41,6 +43,7 @@ export function SocialInteractionsClient({
     incrementLikes,
     decrementLikes,
     incrementShares,
+    syncStats,
   } = useBlogStats();
 
   useEffect(() => {
@@ -48,23 +51,11 @@ export function SocialInteractionsClient({
     setHasLiked(liked === "true");
   }, [slug]);
 
-  const { syncStats } = useBlogStats();
-
+  // Initialize with provided values — no polling
   useEffect(() => {
-    // Initialize with the provided values
     setLikes(initialLikes);
     setShares(shareCount);
-
-    // Then sync with the latest values from the server
-    syncStats(slug);
-
-    // Set up an interval to periodically sync stats
-    const intervalId = setInterval(() => {
-      syncStats(slug);
-    }, 5000); // Sync every 5 seconds
-
-    return () => clearInterval(intervalId);
-  }, [initialLikes, shareCount, setLikes, setShares, syncStats, slug]);
+  }, [initialLikes, shareCount, setLikes, setShares]);
 
   const handleLike = async () => {
     try {
@@ -73,10 +64,10 @@ export function SocialInteractionsClient({
         transition: { duration: 0.3 },
       });
 
-      const userId = "anonymous"; // Replace with actual user ID when auth is added
+      const userId = "anonymous";
       const isLiked = await onLike(userId);
 
-      // Update the local state immediately for a responsive feel
+      // Optimistic update
       if (isLiked) {
         incrementLikes();
       } else {
@@ -85,17 +76,44 @@ export function SocialInteractionsClient({
       setHasLiked(isLiked);
       localStorage.setItem(`blog-like-${slug}`, String(isLiked));
 
-      // Then sync with the server to get the accurate count
+      // Sync once to confirm server state
       await syncStats(slug);
 
-      toast.success(isLiked ? "Article liked!" : "Like removed", {
-        description: isLiked
-          ? "Thank you for your appreciation."
-          : "You've removed your like.",
-      });
+      toast.success(
+        isLiked
+          ? locale === "fr"
+            ? "Article aimé !"
+            : locale === "es"
+              ? "¡Artículo gustado!"
+              : "Article liked!"
+          : locale === "fr"
+            ? "Like retiré"
+            : locale === "es"
+              ? "Like eliminado"
+              : "Like removed",
+        {
+          description: isLiked
+            ? locale === "fr"
+              ? "Merci pour votre appréciation."
+              : locale === "es"
+                ? "Gracias por tu apreciación."
+                : "Thank you for your appreciation."
+            : locale === "fr"
+              ? "Vous avez retiré votre like."
+              : locale === "es"
+                ? "Has eliminado tu like."
+                : "You've removed your like.",
+        },
+      );
     } catch (error) {
       console.error(error);
-      toast.error("Could not process your like. Please try again.");
+      toast.error(
+        locale === "fr"
+          ? "Impossible de traiter votre like. Veuillez réessayer."
+          : locale === "es"
+            ? "No se pudo procesar tu like. Inténtalo de nuevo."
+            : "Could not process your like. Please try again.",
+      );
     }
   };
 
@@ -109,13 +127,19 @@ export function SocialInteractionsClient({
         await onShare();
         incrementShares();
 
-        // Sync with the server to get the accurate count
+        // Sync once to confirm server state
         await syncStats(slug);
       }
     } catch (error) {
       if (!(error instanceof Error && error.name === "AbortError")) {
         console.error(error);
-        toast.error("Could not share the article. Please try again.");
+        toast.error(
+          locale === "fr"
+            ? "Impossible de partager l'article. Veuillez réessayer."
+            : locale === "es"
+              ? "No se pudo compartir el artículo. Inténtalo de nuevo."
+              : "Could not share the article. Please try again.",
+        );
       }
     }
   };
@@ -129,7 +153,7 @@ export function SocialInteractionsClient({
     <Card
       className={cn(
         "p-4 backdrop-blur-xs bg-card/80 border-muted/50",
-        variant === "large" && "p-6"
+        variant === "large" && "p-6",
       )}
     >
       <motion.div
@@ -137,7 +161,7 @@ export function SocialInteractionsClient({
         {...fadeIn}
       >
         <>
-        <Tooltip>
+          <Tooltip>
             <TooltipTrigger asChild>
               <motion.button
                 {...scaleIn}
@@ -145,7 +169,7 @@ export function SocialInteractionsClient({
                   "inline-flex items-center justify-center gap-3 rounded-md font-medium transition-colors",
                   "hover:bg-primary/10 active:bg-primary/20",
                   buttonClasses,
-                  hasLiked && "text-red-500"
+                  hasLiked && "text-red-500",
                 )}
                 onClick={handleLike}
               >
@@ -154,7 +178,7 @@ export function SocialInteractionsClient({
                     className={cn(
                       "transition-all",
                       iconClasses,
-                      hasLiked && "fill-red-500 text-red-500"
+                      hasLiked && "fill-red-500 text-red-500",
                     )}
                   />
                 </motion.div>
@@ -162,7 +186,19 @@ export function SocialInteractionsClient({
               </motion.button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>{hasLiked ? "You liked this" : "Like this article"}</p>
+              <p>
+                {hasLiked
+                  ? locale === "fr"
+                    ? "Vous avez aimé cet article"
+                    : locale === "es"
+                      ? "Te gustó este artículo"
+                      : "You liked this"
+                  : locale === "fr"
+                    ? "Aimer cet article"
+                    : locale === "es"
+                      ? "Me gusta este artículo"
+                      : "Like this article"}
+              </p>
             </TooltipContent>
           </Tooltip>
 
@@ -173,7 +209,7 @@ export function SocialInteractionsClient({
                 className={cn(
                   "inline-flex items-center justify-center gap-3 rounded-md font-medium transition-colors",
                   "hover:bg-primary/10 active:bg-primary/20",
-                  buttonClasses
+                  buttonClasses,
                 )}
                 onClick={handleShare}
               >
@@ -182,7 +218,13 @@ export function SocialInteractionsClient({
               </motion.button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Share this article</p>
+              <p>
+                {locale === "fr"
+                  ? "Partager cet article"
+                  : locale === "es"
+                    ? "Compartir este artículo"
+                    : "Share this article"}
+              </p>
             </TooltipContent>
           </Tooltip>
         </>

@@ -6,46 +6,52 @@ import {
   calculateContentSimilarity,
   extractKeywords,
 } from "@/lib/content-analysis";
-import { BlogPost } from "@/lib/types";
+import { BlogPost, BlogPostMeta } from "@/lib/types";
 import { motion } from "framer-motion";
 import { Calendar, Clock, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { useLocale } from "next-intlayer";
 import { useMemo, useState } from "react";
 import { ArticlePreview } from "./article-preview";
 
 interface SimilarArticlesProps {
-  currentPost: BlogPost;
-  allPosts: BlogPost[];
+  currentPost: BlogPost | BlogPostMeta;
+  allPosts: BlogPostMeta[];
   maxArticles?: number;
 }
 
-function calculateSimilarityScore(post1: BlogPost, post2: BlogPost): number {
+function calculateSimilarityScore(
+  post1: BlogPost | BlogPostMeta,
+  post2: BlogPostMeta,
+): number {
   let score = 0;
 
-  // Score basé sur les catégories communes (30% du score total)
+  // Score based on common categories (40% of total score)
   const commonCategories = post1.categories.filter((cat) =>
-    post2.categories.includes(cat)
+    post2.categories.includes(cat),
   );
   score +=
     (commonCategories.length /
       Math.max(post1.categories.length, post2.categories.length)) *
-    0.3;
+    0.4;
 
-  // Score basé sur le contenu (50% du score total)
-  const post1Keywords = extractKeywords(post1.content + post1.excerpt);
-  const post2Keywords = extractKeywords(post2.content + post2.excerpt);
+  // Score based on excerpt text similarity (40% of total score)
+  const post1Text = post1.excerpt + " " + post1.title;
+  const post2Text = post2.excerpt + " " + post2.title;
+  const post1Keywords = extractKeywords(post1Text);
+  const post2Keywords = extractKeywords(post2Text);
   const contentSimilarity = calculateContentSimilarity(
     post1Keywords,
-    post2Keywords
+    post2Keywords,
   );
-  score += contentSimilarity * 0.5;
+  score += contentSimilarity * 0.4;
 
-  // Score basé sur la proximité temporelle (20% du score total)
+  // Score based on temporal proximity (20% of total score)
   const dateDiff = Math.abs(
-    new Date(post1.date).getTime() - new Date(post2.date).getTime()
+    new Date(post1.date).getTime() - new Date(post2.date).getTime(),
   );
   const daysDiff = dateDiff / (1000 * 60 * 60 * 24);
-  const timeScore = Math.max(0, 1 - daysDiff / 365); // Score maximal pour les articles de moins d'un an
+  const timeScore = Math.max(0, 1 - daysDiff / 365);
   score += timeScore * 0.2;
 
   return score;
@@ -56,6 +62,8 @@ export function SimilarArticles({
   allPosts,
   maxArticles = 3,
 }: SimilarArticlesProps) {
+  const { locale } = useLocale();
+
   const similarPosts = useMemo(() => {
     return allPosts
       .filter((post) => post.slug !== currentPost.slug)
@@ -67,16 +75,16 @@ export function SimilarArticles({
       .slice(0, maxArticles);
   }, [currentPost, allPosts, maxArticles]);
 
-  const [previewPost, setPreviewPost] = useState<BlogPost | null>(null);
+  const [previewPost, setPreviewPost] = useState<BlogPostMeta | null>(null);
   const [previewPosition, setPreviewPosition] = useState({ x: 0, y: 0 });
 
-  const handleMouseEnter = (post: BlogPost, event: React.MouseEvent) => {
+  const handleMouseEnter = (post: BlogPostMeta, event: React.MouseEvent) => {
     const rect = event.currentTarget.getBoundingClientRect();
     setPreviewPosition({
       x: rect.right + 20, // 20px de marge à droite de l'article
       y: Math.min(
         rect.top,
-        window.innerHeight - 400 // Éviter que la prévisualisation ne sorte de l'écran
+        window.innerHeight - 400, // Éviter que la prévisualisation ne sorte de l'écran
       ),
     });
     setPreviewPost(post);
@@ -92,7 +100,11 @@ export function SimilarArticles({
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold flex items-center gap-2">
         <Sparkles className="h-5 w-5 text-primary" />
-        Similar Articles
+        {locale === "fr"
+          ? "Articles similaires"
+          : locale === "es"
+            ? "Artículos similares"
+            : "Similar Articles"}
       </h2>
       <div className="grid gap-4">
         {similarPosts.map((post, index) => (
@@ -132,7 +144,7 @@ export function SimilarArticles({
                       <div className="flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
                         <time dateTime={post.date}>
-                          {new Date(post.date).toLocaleDateString("en-US", {
+                          {new Date(post.date).toLocaleDateString(locale, {
                             year: "numeric",
                             month: "short",
                             day: "numeric",
@@ -144,18 +156,6 @@ export function SimilarArticles({
                         {post.readingTime}
                       </div>
                     </div>
-                    <div className="text-xs">
-                      {Math.round(post.similarityScore * 100)}% match
-                    </div>
-                  </div>
-
-                  <div className="h-1 w-full bg-accent/50 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-primary transition-all duration-300 group-hover:w-full"
-                      style={{
-                        width: `${post.similarityScore * 100}%`,
-                      }}
-                    />
                   </div>
                 </div>
               </Card>
@@ -165,7 +165,7 @@ export function SimilarArticles({
       </div>
 
       <ArticlePreview
-        post={previewPost as BlogPost}
+        post={previewPost as BlogPostMeta}
         isVisible={previewPost !== null}
         position={previewPosition}
       />

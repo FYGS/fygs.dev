@@ -1,4 +1,4 @@
-import { getAllBlogPosts } from "@/lib/mdx";
+import { getBlogPostsMeta } from "@/lib/mdx";
 import { getMultilingualUrls } from "intlayer";
 import type { MetadataRoute } from "next";
 
@@ -8,7 +8,7 @@ const SITE_URL = "https://fygs.dev";
  * Generate sitemap with i18n support
  */
 export async function generateSitemap(): Promise<MetadataRoute.Sitemap> {
-  const blogPosts = await getAllBlogPosts();
+  const blogPosts = await getBlogPostsMeta();
 
   // Base routes with multilingual URLs
   const baseRoutes = [
