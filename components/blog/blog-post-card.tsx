@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { BlogPostMeta } from "@/lib/types";
 import { motion } from "framer-motion";
 import {
-  ArrowRight,
+  ArrowUpRight,
   Calendar,
   Clock,
   Eye,
@@ -53,75 +53,83 @@ export function BlogPostCard({ post, initialStats }: BlogPostCardProps) {
 
   return (
     <Link href={`/blog/${post.slug}`} className="block w-full group">
-      <Card className="overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 transition-all duration-500">
-        {/* Image wrapper with gradient overlay */}
+      <Card className="overflow-hidden border-border/40 bg-card/60 backdrop-blur-sm hover:border-primary/20 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 h-full flex flex-col">
+        {/* Image wrapper */}
         <div className="relative w-full overflow-hidden">
-          <div className="transition-transform duration-500 group-hover:scale-105">
+          <div className="transition-transform duration-700 ease-out group-hover:scale-[1.03]">
             <CoverImage
               src={post.coverImage}
               alt={post.title}
               sizes="(max-width: 640px) 100vw, (max-width: 768px) 90vw, (max-width: 1024px) 45vw, 400px"
             />
           </div>
-          {/* Gradient overlay on hover */}
-          <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent opacity-0 group-hover:opacity-60 transition-opacity duration-500" />
 
-          {/* Read more indicator */}
-          <div className="absolute bottom-4 right-4 flex items-center gap-1.5 text-sm font-medium text-foreground opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0">
+          {/* Floating read indicator */}
+          <div className="absolute bottom-3 right-3 flex items-center gap-1 text-xs font-medium text-white bg-primary/90 backdrop-blur-sm px-3 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0 shadow-lg">
             <span>{read}</span>
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            <ArrowUpRight className="h-3 w-3" />
           </div>
         </div>
 
-        <div className="p-5 sm:p-6 space-y-4">
+        <div className="p-5 sm:p-6 space-y-3.5 flex-1 flex flex-col">
           {/* Categories */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {post.draft && (
               <Badge
                 variant="destructive"
-                className="text-xs flex items-center gap-1"
+                className="text-[10px] flex items-center gap-1 px-2 py-0.5"
               >
-                <FileEdit className="h-3 w-3" />
+                <FileEdit className="h-2.5 w-2.5" />
                 {draft}
               </Badge>
             )}
-            {post.categories.map((category) => (
+            {post.categories.slice(0, 3).map((category) => (
               <Badge
                 key={category}
                 variant="secondary"
-                className="text-xs bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 transition-colors"
+                className="text-[10px] font-medium bg-primary/8 text-primary/90 border-primary/15 hover:bg-primary/15 transition-colors px-2 py-0.5"
               >
                 {category}
               </Badge>
             ))}
+            {post.categories.length > 3 && (
+              <Badge
+                variant="secondary"
+                className="text-[10px] font-medium bg-muted/60 text-muted-foreground px-2 py-0.5"
+              >
+                +{post.categories.length - 3}
+              </Badge>
+            )}
           </div>
 
           {/* Title & Excerpt */}
-          <div className="space-y-2.5">
-            <h2 className="text-xl sm:text-2xl font-bold leading-tight group-hover:text-primary transition-colors duration-300 line-clamp-2">
+          <div className="space-y-2 flex-1">
+            <h2 className="text-lg sm:text-xl font-semibold leading-snug group-hover:text-primary transition-colors duration-300 line-clamp-2">
               {post.title}
             </h2>
-            <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+            <p className="text-sm text-muted-foreground/80 line-clamp-2 leading-relaxed">
               {post.excerpt}
             </p>
           </div>
 
-          {/* Stats */}
-          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1.5">
-              <Clock className="h-3.5 w-3.5 text-primary/60" />
+          {/* Stats row */}
+          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground/70">
+            <div className="flex items-center gap-1">
+              <Clock className="h-3 w-3" />
               <span>{post.readingTime}</span>
             </div>
             {initialStats && (
               <>
-                <span className="text-border">·</span>
-                <div className="flex items-center gap-1.5">
-                  <Eye className="h-3.5 w-3.5 text-primary/60" />
+                <span className="text-border/50">·</span>
+                <div className="flex items-center gap-1">
+                  <Eye className="h-3 w-3" />
                   <span>{initialStats.views.toLocaleString()}</span>
                 </div>
-                <span className="text-border">·</span>
-                <div className="flex items-center gap-1.5">
-                  <Heart className="h-3.5 w-3.5 text-primary/60" />
+                <span className="text-border/50">·</span>
+                <div className="flex items-center gap-1">
+                  <Heart className="h-3 w-3" />
                   <span>{initialStats.likes.toLocaleString()}</span>
                 </div>
               </>
@@ -129,9 +137,9 @@ export function BlogPostCard({ post, initialStats }: BlogPostCardProps) {
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border/50 pt-4">
+          <div className="flex items-center justify-between text-xs text-muted-foreground/60 border-t border-border/30 pt-3 mt-auto">
             <div className="flex items-center gap-1.5">
-              <Calendar className="h-3.5 w-3.5" />
+              <Calendar className="h-3 w-3" />
               <time dateTime={post.date}>
                 {new Date(post.date).toLocaleDateString(locale, {
                   year: "numeric",
@@ -142,9 +150,10 @@ export function BlogPostCard({ post, initialStats }: BlogPostCardProps) {
             </div>
             <motion.button
               onClick={handleShare}
-              whileHover={{ scale: 1.1 }}
+              whileHover={{ scale: 1.15 }}
               whileTap={{ scale: 0.9 }}
-              className="p-2 hover:text-primary transition-colors rounded-full hover:bg-primary/10"
+              className="p-1.5 hover:text-primary transition-colors rounded-full hover:bg-primary/10"
+              aria-label="Share article"
             >
               <Share2 className="h-3.5 w-3.5" />
             </motion.button>

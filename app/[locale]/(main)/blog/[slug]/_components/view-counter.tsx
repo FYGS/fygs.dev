@@ -1,16 +1,21 @@
 "use client";
 
 import { useBlogStats } from "@/stores/use-blog-stats";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 interface ViewCounterProps {
   slug: string;
 }
 
 export function ViewCounter({ slug }: ViewCounterProps) {
-  const { incrementViews } = useBlogStats();
+  const { setViews } = useBlogStats();
+  const hasIncremented = useRef(false);
 
   useEffect(() => {
+    // Prevent double-increment in StrictMode / re-renders
+    if (hasIncremented.current) return;
+    hasIncremented.current = true;
+
     const incrementViewCount = async () => {
       try {
         const response = await fetch(`/api/blog/views/${slug}`, {
@@ -19,7 +24,11 @@ export function ViewCounter({ slug }: ViewCounterProps) {
         });
 
         if (response.ok) {
-          incrementViews();
+          const data = await response.json();
+          // Use actual server count to keep UI in sync
+          if (data.count) {
+            setViews(data.count);
+          }
         }
       } catch (error) {
         console.error("Failed to increment view count:", error);
@@ -27,7 +36,7 @@ export function ViewCounter({ slug }: ViewCounterProps) {
     };
 
     incrementViewCount();
-  }, [slug, incrementViews]);
+  }, [slug, setViews]);
 
   return null;
 }

@@ -6,7 +6,6 @@ import {
   generateArticleJsonLd,
   generateJsonLdScript,
 } from "@/app/_lib/jsonld-utils";
-import { generateArticleMetadata } from "@/app/_lib/seo-utils";
 import { CoverImage } from "@/components/blog/cover-image";
 import { PopularArticles } from "@/components/blog/popular-articles";
 import { PostStatsView } from "@/components/blog/post-stats-view";
@@ -39,7 +38,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const post = await getBlogPost(slug);
 
   if (!post) {
@@ -47,28 +46,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const baseUrl = SITE_URL;
-  const articleUrl = `${baseUrl}/blog/${slug}`;
+  const articleUrl = `${baseUrl}/${locale}/blog/${slug}`;
   const imageUrl = post.coverImage.startsWith("http")
     ? post.coverImage
     : `${baseUrl}${post.coverImage}`;
 
-  const metadata = generateArticleMetadata({
-    title: post.title,
-    description: post.excerpt,
-    image: imageUrl,
-    path: `/blog/${slug}`,
-    publishedTime: post.date,
-    modifiedTime: post.lastModified,
-    authors: [{ name: post.author, url: `${baseUrl}/me` }],
-    tags: post.categories,
-    keywords: [
-      ...post.categories,
-      "Software Development",
-      "Technical Article",
-      "Programming Tutorial",
-      ...post.title.toLowerCase().split(" "),
-    ],
-  });
+  // Map locale to OpenGraph locale format
+  const ogLocaleMap: Record<string, string> = {
+    fr: "fr_FR",
+    en: "en_US",
+    es: "es_ES",
+  };
+  const ogLocale = ogLocaleMap[locale] || "fr_FR";
+  const alternateLocales = Object.entries(ogLocaleMap)
+    .filter(([key]) => key !== locale)
+    .map(([, value]) => value);
 
   // Generate JSON-LD
   const jsonLd = generateArticleJsonLd({
@@ -84,9 +76,53 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 
   return {
-    ...metadata,
+    title: post.title,
+    description: post.excerpt,
+    keywords: [
+      ...post.categories,
+      "Software Development",
+      "Technical Article",
+      "Programming Tutorial",
+    ],
+    authors: [{ name: post.author, url: `${baseUrl}/me` }],
     alternates: {
       canonical: articleUrl,
+      languages: {
+        "fr-FR": `${baseUrl}/fr/blog/${slug}`,
+        "en-US": `${baseUrl}/en/blog/${slug}`,
+        "es-ES": `${baseUrl}/es/blog/${slug}`,
+        "x-default": `${baseUrl}/blog/${slug}`,
+      },
+    },
+    openGraph: {
+      type: "article",
+      locale: ogLocale,
+      alternateLocale: alternateLocales,
+      url: articleUrl,
+      siteName: "FYGS Learning Platform",
+      title: post.title,
+      description: post.excerpt,
+      publishedTime: post.date,
+      modifiedTime: post.lastModified,
+      authors: [post.author],
+      tags: post.categories,
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: post.title,
+          type: "image/webp",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.excerpt,
+      images: [imageUrl],
+      creator: "@fernand_soualo",
+      site: "@fygs_dev",
     },
     other: {
       "json-ld": generateJsonLdScript(jsonLd),
@@ -137,14 +173,14 @@ export default async function BlogPostPage({ params }: Props) {
             </div>
 
             {/* Article Header */}
-            <header className="space-y-6 mb-10">
+            <header className="space-y-5 mb-10">
               {/* Categories */}
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {post.categories.map((category) => (
                   <Badge
                     key={category}
                     variant="secondary"
-                    className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 transition-colors"
+                    className="text-[10px] font-medium bg-primary/8 text-primary/90 border-primary/15 hover:bg-primary/15 transition-colors px-2 py-0.5 tracking-wide"
                   >
                     {category}
                   </Badge>
@@ -152,32 +188,30 @@ export default async function BlogPostPage({ params }: Props) {
               </div>
 
               {/* Title */}
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
-                <span className="bg-gradient-to-br from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent">
-                  {post.title}
-                </span>
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.1] text-foreground">
+                {post.title}
               </h1>
 
               {/* Meta info bar */}
-              <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-sm text-muted-foreground border-b border-border/50 pb-6">
+              <div className="flex flex-wrap items-center gap-4 sm:gap-5 text-sm text-muted-foreground/70 border-b border-border/30 pb-5">
                 {/* Author */}
                 <div className="flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-xs font-bold text-primary-foreground">
+                  <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-semibold text-primary">
                     {post.author
                       .split(" ")
                       .map((n) => n[0])
                       .join("")}
                   </div>
-                  <span className="font-medium text-foreground">
+                  <span className="font-medium text-foreground/80 text-sm">
                     {post.author}
                   </span>
                 </div>
 
-                <span className="text-border">|</span>
+                <span className="text-border/40">·</span>
 
                 {/* Date */}
                 <div className="flex items-center gap-1.5">
-                  <Calendar className="h-4 w-4 text-primary/70" />
+                  <Calendar className="h-3.5 w-3.5" />
                   <time dateTime={post.date}>
                     {new Date(post.date).toLocaleDateString(locale, {
                       year: "numeric",
@@ -189,7 +223,7 @@ export default async function BlogPostPage({ params }: Props) {
 
                 {/* Reading time */}
                 <div className="flex items-center gap-1.5">
-                  <Clock className="h-4 w-4 text-primary/70" />
+                  <Clock className="h-3.5 w-3.5" />
                   <span>{post.readingTime}</span>
                 </div>
               </div>

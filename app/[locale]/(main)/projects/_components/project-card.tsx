@@ -3,10 +3,8 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useHoverAnimation } from "@/hooks/use-hover-animation";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
-import { ArrowRight, ExternalLink, Github } from "lucide-react";
+import { ArrowUpRight, ExternalLink, Github } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -19,123 +17,115 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, isPriority = false }: ProjectCardProps) {
-  const { x, y, scale } = useHoverAnimation();
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <motion.div style={{ x, y, scale }} whileHover="hover" className="h-full">
-      <Card className="overflow-hidden h-full flex flex-col">
-        <div className="relative aspect-video rounded-lg overflow-hidden">
-          <motion.div
-            className="relative h-48"
-            variants={{
-              hover: { scale: 1.05 },
-            }}
-            transition={{ duration: 0.3 }}
-          >
-            <Image
-              src={project.image}
-              alt={project.title}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className="object-cover transition-transform group-hover:scale-105"
-              priority={isPriority}
-              quality={85}
-            />
-          </motion.div>
-          <div className="absolute inset-0 bg-linear-to-t from-background/80 to-transparent" />
-          <div className="absolute bottom-4 left-4 right-4 flex flex-wrap gap-2">
-            {project.technologies.map((tech) => (
-              <Badge
-                key={tech}
-                variant="secondary"
-                className="bg-background/80 backdrop-blur-xs"
-              >
-                {tech}
-              </Badge>
-            ))}
-          </div>
+    <Card className="overflow-hidden h-full flex flex-col group border-border/40 bg-card/60 backdrop-blur-sm hover:border-primary/20 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500">
+      {/* Image */}
+      <div className="relative overflow-hidden">
+        <div className="relative h-52 transition-transform duration-700 ease-out group-hover:scale-[1.03]">
+          <Image
+            src={project.image}
+            alt={project.title}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover"
+            priority={isPriority}
+            quality={85}
+          />
         </div>
-
-        <div className="p-6 flex-1 flex flex-col">
-          <motion.h3
-            className="text-2xl font-semibold mb-3 transition-colors"
-            variants={{
-              hover: { color: "var(--primary)" },
-            }}
-          >
-            {project.title}
-          </motion.h3>
-
-          <motion.p
-            className={cn(
-              "text-muted-foreground mb-4",
-              !isExpanded && "line-clamp-3"
-            )}
-          >
-            {project.description}
-          </motion.p>
-
-          {!isExpanded && (
-            <Button
-              variant="link"
-              className="self-start -mt-2 mb-4 text-primary"
-              onClick={() => setIsExpanded(true)}
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent opacity-60" />
+        {/* Tech badges floating over image */}
+        <div className="absolute bottom-3 left-4 right-4 flex flex-wrap gap-1.5">
+          {project.technologies.slice(0, 4).map((tech) => (
+            <Badge
+              key={tech}
+              variant="secondary"
+              className="text-[10px] bg-background/80 backdrop-blur-sm border-border/30 px-2 py-0.5"
             >
-              Read More
-              <ArrowRight className="ml-2 h-4 w-4" />
+              {tech}
+            </Badge>
+          ))}
+          {project.technologies.length > 4 && (
+            <Badge
+              variant="secondary"
+              className="text-[10px] bg-background/80 backdrop-blur-sm border-border/30 px-2 py-0.5"
+            >
+              +{project.technologies.length - 4}
+            </Badge>
+          )}
+        </div>
+      </div>
+
+      <div className="p-5 sm:p-6 flex-1 flex flex-col gap-3">
+        <h3 className="text-xl font-semibold tracking-tight group-hover:text-primary transition-colors duration-300">
+          {project.title}
+        </h3>
+
+        <p
+          className={cn(
+            "text-sm text-muted-foreground/80 leading-relaxed",
+            !isExpanded && "line-clamp-3",
+          )}
+        >
+          {project.description}
+        </p>
+
+        {!isExpanded && project.description.length > 150 && (
+          <button
+            className="self-start text-xs text-primary hover:text-primary/80 font-medium transition-colors"
+            onClick={() => setIsExpanded(true)}
+          >
+            Read More
+          </button>
+        )}
+
+        <ProjectStats stats={project.stats} />
+
+        {project.testimonial && (
+          <blockquote className="border-l-2 border-primary/30 pl-3 text-sm italic text-muted-foreground/70 mt-1">
+            &quot;{project.testimonial.text}&quot;
+            <footer className="mt-1 text-xs not-italic">
+              <strong className="text-foreground/80">
+                {project.testimonial.author}
+              </strong>
+              <span className="text-muted-foreground/50">
+                {" "}
+                — {project.testimonial.role}
+              </span>
+            </footer>
+          </blockquote>
+        )}
+
+        {/* Actions */}
+        <div className="flex gap-2 mt-auto pt-3 border-t border-border/30">
+          <Link href={`/projects/${project.id}`} className="flex-1">
+            <Button size="sm" className="w-full gap-1.5 text-xs">
+              View Details
+              <ArrowUpRight className="h-3.5 w-3.5" />
             </Button>
-          )}
-
-          <ProjectStats stats={project.stats} />
-
-          {project.testimonial && (
-            <motion.blockquote
-              className="border-l-4 border-primary pl-4 italic mt-4"
-              variants={{
-                hover: { x: 5 },
-              }}
-            >
-              &quot;{project.testimonial.text}&quot;
-              <footer className="mt-2 text-sm">
-                <strong>{project.testimonial.author}</strong>
-                <span className="text-muted-foreground">
-                  {" "}
-                  - {project.testimonial.role}
-                </span>
-              </footer>
-            </motion.blockquote>
-          )}
-
-          <div className="flex gap-2 mt-6">
-            <Link href={`/projects/${project.id}`} className="flex-1">
-              <Button className="w-full">View Details</Button>
-            </Link>
-            <div className="flex gap-2">
-              {project.githubUrl && (
-                <Link
-                  href={project.githubUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Button variant="outline" size="icon">
-                    <Github className="h-4 w-4" />
-                  </Button>
-                </Link>
-              )}
+          </Link>
+          <div className="flex gap-1.5">
+            {project.githubUrl && (
               <Link
-                href={project.link}
+                href={project.githubUrl}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <Button variant="outline" size="icon">
-                  <ExternalLink className="h-4 w-4" />
+                <Button variant="outline" size="icon" className="h-8 w-8">
+                  <Github className="h-3.5 w-3.5" />
                 </Button>
               </Link>
-            </div>
+            )}
+            <Link href={project.link} target="_blank" rel="noopener noreferrer">
+              <Button variant="outline" size="icon" className="h-8 w-8">
+                <ExternalLink className="h-3.5 w-3.5" />
+              </Button>
+            </Link>
           </div>
         </div>
-      </Card>
-    </motion.div>
+      </div>
+    </Card>
   );
 }

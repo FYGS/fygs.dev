@@ -15,6 +15,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useIntlayer } from "next-intlayer";
 import { ProjectCard } from "./_components/project-card";
 import { ProjectListItem } from "./_components/project-list-item";
 import { TechnologyFilter } from "./_components/technology-filter";
@@ -75,9 +76,10 @@ function ProjectsContent() {
   const { savePage, getPageScroll } = usePageMemoryContext();
   const router = useRouter();
   const dynamicSearchParams = useSearchParams();
+  const { title, description, noResults } = useIntlayer("projects-page");
 
   const [selectedTechnologies, setSelectedTechnologies] = useState<string[]>(
-    []
+    [],
   );
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const hasScrolled = useRef(false);
@@ -98,7 +100,7 @@ function ProjectsContent() {
   // Mémoriser les technologies uniques
   const allTechnologies = useMemo(() => {
     return Array.from(
-      new Set(FEATURED_PROJECTS.flatMap((project) => project.technologies))
+      new Set(FEATURED_PROJECTS.flatMap((project) => project.technologies)),
     );
   }, []);
 
@@ -106,7 +108,7 @@ function ProjectsContent() {
   const filteredProjects = useMemo(() => {
     if (selectedTechnologies.length === 0) return FEATURED_PROJECTS;
     return FEATURED_PROJECTS.filter((project) =>
-      project.technologies.some((tech) => selectedTechnologies.includes(tech))
+      project.technologies.some((tech) => selectedTechnologies.includes(tech)),
     );
   }, [selectedTechnologies]);
 
@@ -117,7 +119,7 @@ function ProjectsContent() {
     // Ensure we don't exceed array bounds
     return filteredProjects.slice(
       startIndex,
-      Math.min(endIndex, filteredProjects.length)
+      Math.min(endIndex, filteredProjects.length),
     );
   }, [filteredProjects, currentPage, pageSize]); // Add pageSize dependency
 
@@ -143,7 +145,7 @@ function ProjectsContent() {
   const createQueryString = useCallback(
     (params: Record<string, string | number | null>) => {
       const newSearchParams = new URLSearchParams(
-        dynamicSearchParams.toString()
+        dynamicSearchParams.toString(),
       );
 
       Object.entries(params).forEach(([key, value]) => {
@@ -156,7 +158,7 @@ function ProjectsContent() {
 
       return newSearchParams.toString() ? `?${newSearchParams}` : "";
     },
-    [dynamicSearchParams]
+    [dynamicSearchParams],
   );
 
   const handleViewModeChange = useCallback(
@@ -168,7 +170,7 @@ function ProjectsContent() {
       router.push(`/projects${query}`);
       setViewMode(mode);
     },
-    [createQueryString, currentPage, router]
+    [createQueryString, currentPage, router],
   );
 
   const handleTechnologiesChange = useCallback(
@@ -182,7 +184,7 @@ function ProjectsContent() {
       router.push(`/projects${query}`);
       setSelectedTechnologies(technologies);
     },
-    [createQueryString, pageSize, viewMode, router]
+    [createQueryString, pageSize, viewMode, router],
   );
 
   return (
@@ -190,8 +192,8 @@ function ProjectsContent() {
       <FadeIn>
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <h1 className="text-3xl sm:text-4xl font-bold">
-              Featured Projects
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+              {title}
             </h1>
             <div className="flex items-center gap-4 self-end sm:self-auto">
               <ViewToggle view={viewMode} onChange={handleViewModeChange} />
@@ -202,9 +204,8 @@ function ProjectsContent() {
               />
             </div>
           </div>
-          <p className="text-muted-foreground max-w-2xl text-sm sm:text-base">
-            Each project is crafted with attention to detail, focusing on
-            performance, scalability, and user experience.
+          <p className="text-muted-foreground max-w-2xl text-sm sm:text-base leading-relaxed">
+            {description}
           </p>
         </div>
       </FadeIn>
@@ -212,9 +213,7 @@ function ProjectsContent() {
       <FadeInStagger>
         {filteredProjects.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">
-              No projects found with the selected technologies.
-            </p>
+            <p className="text-muted-foreground">{noResults}</p>
           </div>
         ) : (
           <>
@@ -223,7 +222,7 @@ function ProjectsContent() {
                 "grid gap-8",
                 viewMode === "grid"
                   ? "grid-cols-1 md:grid-cols-2"
-                  : "grid-cols-1"
+                  : "grid-cols-1",
               )}
             >
               {paginatedProjects.map((project, index) => (

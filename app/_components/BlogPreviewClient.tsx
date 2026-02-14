@@ -3,6 +3,8 @@
 import { BlogPostCard } from "@/components/blog/blog-post-card";
 import { useIntlayer } from "next-intlayer";
 import type { BlogPostMeta } from "@/lib/types";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 interface BlogPreviewClientProps {
   posts: BlogPostMeta[];
@@ -12,43 +14,40 @@ export function BlogPreviewClient({ posts }: BlogPreviewClientProps) {
   const content = useIntlayer("blog-preview");
 
   return (
-    <section className="py-16 lg:py-24 relative overflow-hidden">
-      {/* Background effects */}
-      <div className="absolute inset-0 bg-linear-to-br from-muted/30 via-background to-muted/20" />
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/5 rounded-full blur-3xl animate-pulse delay-1000" />
+    <section className="py-20 lg:py-28 relative overflow-hidden">
+      {/* Subtle background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-muted/20 to-transparent" />
 
       <div className="container max-w-7xl mx-auto px-4 relative">
         {/* Header */}
-        <div className="text-center space-y-4 mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-            <span className="h-4 w-4">📰</span>
+        <div className="text-center space-y-4 mb-14">
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/8 text-primary text-xs font-medium tracking-wide uppercase">
             {content.badge.value}
-          </div>
-          <h2 className="text-4xl lg:text-5xl font-bold bg-linear-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent mb-4">
+          </span>
+          <h2 className="text-3xl lg:text-4xl font-bold tracking-tight">
             {content.title.value}
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-base text-muted-foreground max-w-xl mx-auto leading-relaxed">
             {content.description.value}
           </p>
         </div>
 
         {/* Blog Posts Grid */}
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((post) => (
             <BlogPostCard key={post.slug} post={post} />
           ))}
         </div>
 
         {/* CTA */}
-        <div className="text-center mt-16">
-          <a
+        <div className="text-center mt-12">
+          <Link
             href="/blog"
-            className="inline-flex items-center gap-2 rounded-lg border bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors group"
           >
             {content.seeAllButton.value}
-            <span className="h-5 w-5">→</span>
-          </a>
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </Link>
         </div>
       </div>
     </section>

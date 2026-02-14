@@ -68,11 +68,16 @@ export default function BlogClientPage({ postsPromise }: BlogClientPageProps) {
     <StatsProvider>
       <Section>
         <div className="space-y-8">
-          <div className="space-y-4">
-            <h1 className="text-4xl font-bold" id="blog-title">
+          <div className="space-y-3">
+            <h1
+              className="text-3xl sm:text-4xl font-bold tracking-tight"
+              id="blog-title"
+            >
               {title}
             </h1>
-            <p className="text-muted-foreground max-w-2xl">{description}</p>
+            <p className="text-muted-foreground/80 max-w-2xl text-sm sm:text-base leading-relaxed">
+              {description}
+            </p>
           </div>
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -81,7 +86,7 @@ export default function BlogClientPage({ postsPromise }: BlogClientPageProps) {
           </div>
 
           <div
-            className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3"
+            className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
             role="feed"
             aria-busy={false}
           >
