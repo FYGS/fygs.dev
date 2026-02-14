@@ -1,11 +1,8 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import {
   BookOpen,
-  ExternalLink,
   Filter,
   GraduationCap,
   Headphones,
@@ -37,11 +34,26 @@ interface CategoryInfo {
 const categories: CategoryInfo[] = [
   { id: "all", label: "Toutes", icon: Filter, color: "text-foreground" },
   { id: "books", label: "Livres", icon: BookOpen, color: "text-blue-500" },
-  { id: "courses", label: "Cours", icon: GraduationCap, color: "text-green-500" },
+  {
+    id: "courses",
+    label: "Cours",
+    icon: GraduationCap,
+    color: "text-green-500",
+  },
   { id: "youtube", label: "YouTube", icon: Youtube, color: "text-red-500" },
-  { id: "podcasts", label: "Podcasts", icon: Headphones, color: "text-purple-500" },
+  {
+    id: "podcasts",
+    label: "Podcasts",
+    icon: Headphones,
+    color: "text-purple-500",
+  },
   { id: "practice", label: "Pratique", icon: Trophy, color: "text-orange-500" },
-  { id: "communities", label: "Communautés", icon: Users, color: "text-cyan-500" },
+  {
+    id: "communities",
+    label: "Communautés",
+    icon: Users,
+    color: "text-cyan-500",
+  },
 ];
 
 const resources: Record<Exclude<Category, "all">, Resource[]> = {
@@ -49,7 +61,8 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
     {
       title: "Cracking the Coding Interview",
       author: "Gayle Laakmann McDowell",
-      description: "La référence pour la préparation aux entretiens techniques. 189 questions et solutions avec stratégies de résolution.",
+      description:
+        "La référence pour la préparation aux entretiens techniques. 189 questions et solutions avec stratégies de résolution.",
       level: "Tous niveaux",
       tags: ["Entretiens", "Algorithmes", "Structures de données"],
       recommended: true,
@@ -57,7 +70,8 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
     {
       title: "System Design Interview",
       author: "Alex Xu",
-      description: "Guide complet de conception de systèmes avec des études de cas détaillées de vraies architectures.",
+      description:
+        "Guide complet de conception de systèmes avec des études de cas détaillées de vraies architectures.",
       level: "Intermédiaire",
       tags: ["System Design", "Architecture", "Scalabilité"],
       recommended: true,
@@ -65,7 +79,8 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
     {
       title: "Clean Code",
       author: "Robert C. Martin",
-      description: "Principes et pratiques pour écrire du code lisible, maintenable et professionnel.",
+      description:
+        "Principes et pratiques pour écrire du code lisible, maintenable et professionnel.",
       level: "Intermédiaire",
       tags: ["Qualité de code", "Bonnes pratiques", "Refactoring"],
       recommended: true,
@@ -73,7 +88,8 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
     {
       title: "Designing Data-Intensive Applications",
       author: "Martin Kleppmann",
-      description: "Exploration approfondie des systèmes de données modernes : bases de données, streaming, batch processing.",
+      description:
+        "Exploration approfondie des systèmes de données modernes : bases de données, streaming, batch processing.",
       level: "Avancé",
       tags: ["Bases de données", "Systèmes distribués", "Architecture"],
       recommended: true,
@@ -81,42 +97,48 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
     {
       title: "Clean Architecture",
       author: "Robert C. Martin",
-      description: "Principes d'architecture logicielle pour créer des systèmes durables et maintenables.",
+      description:
+        "Principes d'architecture logicielle pour créer des systèmes durables et maintenables.",
       level: "Avancé",
       tags: ["Architecture", "SOLID", "Design Patterns"],
     },
     {
       title: "Head First Design Patterns",
       author: "Eric Freeman & Elisabeth Robson",
-      description: "Introduction visuelle et ludique aux design patterns les plus importants.",
+      description:
+        "Introduction visuelle et ludique aux design patterns les plus importants.",
       level: "Débutant",
       tags: ["Design Patterns", "OOP", "Java"],
     },
     {
       title: "Domain-Driven Design",
       author: "Eric Evans",
-      description: "L'ouvrage fondateur du DDD : bounded contexts, aggregates, et modélisation du domaine.",
+      description:
+        "L'ouvrage fondateur du DDD : bounded contexts, aggregates, et modélisation du domaine.",
       level: "Avancé",
       tags: ["DDD", "Architecture", "Modélisation"],
     },
     {
       title: "The Pragmatic Programmer",
       author: "David Thomas & Andrew Hunt",
-      description: "Conseils pratiques et philosophie pour devenir un développeur complet et efficace.",
+      description:
+        "Conseils pratiques et philosophie pour devenir un développeur complet et efficace.",
       level: "Tous niveaux",
       tags: ["Carrière", "Bonnes pratiques", "Productivité"],
     },
     {
       title: "Refactoring",
       author: "Martin Fowler",
-      description: "Techniques systématiques pour améliorer le code existant sans changer son comportement.",
+      description:
+        "Techniques systématiques pour améliorer le code existant sans changer son comportement.",
       level: "Intermédiaire",
       tags: ["Refactoring", "Code Quality", "Patterns"],
     },
     {
       title: "Introduction to Algorithms (CLRS)",
       author: "Cormen, Leiserson, Rivest & Stein",
-      description: "Le manuel de référence universitaire sur les algorithmes. Exhaustif et rigoureux.",
+      description:
+        "Le manuel de référence universitaire sur les algorithmes. Exhaustif et rigoureux.",
       level: "Avancé",
       tags: ["Algorithmes", "Mathématiques", "Référence"],
     },
@@ -125,7 +147,8 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
     {
       title: "Grokking the System Design Interview",
       author: "Design Gurus",
-      description: "Cours interactif de system design avec 25+ études de cas et diagrammes.",
+      description:
+        "Cours interactif de system design avec 25+ études de cas et diagrammes.",
       level: "Intermédiaire",
       url: "https://www.designgurus.io/course/grokking-the-system-design-interview",
       tags: ["System Design", "Entretiens", "Architecture"],
@@ -134,7 +157,8 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
     {
       title: "NeetCode Roadmap",
       author: "NeetCode",
-      description: "Parcours structuré de 150 problèmes LeetCode essentiels avec explications vidéo.",
+      description:
+        "Parcours structuré de 150 problèmes LeetCode essentiels avec explications vidéo.",
       level: "Tous niveaux",
       url: "https://neetcode.io/roadmap",
       tags: ["Algorithmes", "LeetCode", "Roadmap"],
@@ -143,7 +167,8 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
     {
       title: "Frontend Masters — Complete Intro to React",
       author: "Brian Holt",
-      description: "Introduction complète à React par un ingénieur Microsoft/Netflix.",
+      description:
+        "Introduction complète à React par un ingénieur Microsoft/Netflix.",
       level: "Débutant",
       url: "https://frontendmasters.com/courses/complete-react-v8/",
       tags: ["React", "Frontend", "JavaScript"],
@@ -151,7 +176,8 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
     {
       title: "MIT OpenCourseWare — Introduction to Algorithms",
       author: "MIT",
-      description: "Le cours d'algorithmes du MIT gratuit en ligne avec vidéos, notes et exercices.",
+      description:
+        "Le cours d'algorithmes du MIT gratuit en ligne avec vidéos, notes et exercices.",
       level: "Avancé",
       url: "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/",
       tags: ["Algorithmes", "Université", "Gratuit"],
@@ -159,7 +185,8 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
     {
       title: "Josh Comeau — The Joy of React",
       author: "Josh W. Comeau",
-      description: "Cours interactif et visuel pour maîtriser React en profondeur.",
+      description:
+        "Cours interactif et visuel pour maîtriser React en profondeur.",
       level: "Intermédiaire",
       url: "https://www.joyofreact.com/",
       tags: ["React", "Frontend", "Interactif"],
@@ -169,7 +196,8 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
     {
       title: "Fireship",
       author: "Jeff Delaney",
-      description: "Vidéos courtes et incisives couvrant les technologies modernes en 100 secondes.",
+      description:
+        "Vidéos courtes et incisives couvrant les technologies modernes en 100 secondes.",
       level: "Tous niveaux",
       url: "https://www.youtube.com/@Fireship",
       tags: ["Web", "Technologies", "Tutoriels rapides"],
@@ -178,7 +206,8 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
     {
       title: "NeetCode",
       author: "NeetCode",
-      description: "Explications détaillées des problèmes LeetCode avec approche systématique.",
+      description:
+        "Explications détaillées des problèmes LeetCode avec approche systématique.",
       level: "Intermédiaire",
       url: "https://www.youtube.com/@NeetCode",
       tags: ["LeetCode", "Algorithmes", "Entretiens"],
@@ -187,7 +216,8 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
     {
       title: "Theo — t3.gg",
       author: "Theo Browne",
-      description: "Opinions argumentées sur l'écosystème TypeScript/React et les tendances tech.",
+      description:
+        "Opinions argumentées sur l'écosystème TypeScript/React et les tendances tech.",
       level: "Intermédiaire",
       url: "https://www.youtube.com/@t3dotgg",
       tags: ["TypeScript", "React", "Next.js"],
@@ -195,7 +225,8 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
     {
       title: "ByteByteGo",
       author: "Alex Xu",
-      description: "Explications visuelles de concepts de system design et d'architecture.",
+      description:
+        "Explications visuelles de concepts de system design et d'architecture.",
       level: "Intermédiaire",
       url: "https://www.youtube.com/@ByteByteGo",
       tags: ["System Design", "Architecture", "Visualisations"],
@@ -203,7 +234,8 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
     {
       title: "Hussein Nasser",
       author: "Hussein Nasser",
-      description: "Deep dives sur les bases de données, le networking et l'architecture backend.",
+      description:
+        "Deep dives sur les bases de données, le networking et l'architecture backend.",
       level: "Avancé",
       url: "https://www.youtube.com/@haboretechnologies",
       tags: ["Backend", "Databases", "Networking"],
@@ -213,7 +245,8 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
     {
       title: "Syntax.fm",
       author: "Wes Bos & Scott Tolinski",
-      description: "Le podcast web development le plus populaire. CSS, JS, tooling et carrière.",
+      description:
+        "Le podcast web development le plus populaire. CSS, JS, tooling et carrière.",
       level: "Tous niveaux",
       url: "https://syntax.fm/",
       tags: ["Web Dev", "JavaScript", "CSS"],
@@ -222,7 +255,8 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
     {
       title: "Software Engineering Daily",
       author: "SE Daily",
-      description: "Interviews avec des ingénieurs de grandes entreprises tech sur l'architecture et les pratiques.",
+      description:
+        "Interviews avec des ingénieurs de grandes entreprises tech sur l'architecture et les pratiques.",
       level: "Intermédiaire",
       url: "https://softwareengineeringdaily.com/",
       tags: ["Architecture", "Interviews", "Tech"],
@@ -230,7 +264,8 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
     {
       title: "The Changelog",
       author: "Changelog Media",
-      description: "Conversations avec les créateurs et mainteneurs de l'open source.",
+      description:
+        "Conversations avec les créateurs et mainteneurs de l'open source.",
       level: "Tous niveaux",
       url: "https://changelog.com/podcast",
       tags: ["Open Source", "Tech", "Communauté"],
@@ -240,7 +275,8 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
     {
       title: "LeetCode",
       author: "LeetCode",
-      description: "La plateforme de référence avec 2000+ problèmes, contests et discussions.",
+      description:
+        "La plateforme de référence avec 2000+ problèmes, contests et discussions.",
       level: "Tous niveaux",
       url: "https://leetcode.com/",
       tags: ["Algorithmes", "Entretiens", "Compétitions"],
@@ -249,7 +285,8 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
     {
       title: "HackerRank",
       author: "HackerRank",
-      description: "Challenges de programmation avec certifications et préparation aux entretiens.",
+      description:
+        "Challenges de programmation avec certifications et préparation aux entretiens.",
       level: "Tous niveaux",
       url: "https://www.hackerrank.com/",
       tags: ["Certification", "Algorithmique", "Multi-langages"],
@@ -257,7 +294,8 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
     {
       title: "Exercism",
       author: "Exercism",
-      description: "Exercices de code gratuits avec mentorat dans 65+ langages de programmation.",
+      description:
+        "Exercices de code gratuits avec mentorat dans 65+ langages de programmation.",
       level: "Débutant",
       url: "https://exercism.org/",
       tags: ["Mentorat", "Multi-langages", "Gratuit"],
@@ -265,7 +303,8 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
     {
       title: "Project Euler",
       author: "Project Euler",
-      description: "Problèmes mathématiques nécessitant de la programmation. Parfait pour algorithmique avancée.",
+      description:
+        "Problèmes mathématiques nécessitant de la programmation. Parfait pour algorithmique avancée.",
       level: "Avancé",
       url: "https://projecteuler.net/",
       tags: ["Mathématiques", "Algorithmes", "Défis"],
@@ -273,7 +312,8 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
     {
       title: "CodeWars",
       author: "CodeWars",
-      description: "Kata de programmation avec système de classement et communauté active.",
+      description:
+        "Kata de programmation avec système de classement et communauté active.",
       level: "Intermédiaire",
       url: "https://www.codewars.com/",
       tags: ["Kata", "Communauté", "Multi-langages"],
@@ -283,7 +323,8 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
     {
       title: "Stack Overflow",
       author: "Stack Exchange",
-      description: "La communauté Q&A la plus grande pour les développeurs. Indispensable.",
+      description:
+        "La communauté Q&A la plus grande pour les développeurs. Indispensable.",
       level: "Tous niveaux",
       url: "https://stackoverflow.com/",
       tags: ["Q&A", "Communauté", "Support"],
@@ -291,7 +332,8 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
     {
       title: "Dev.to",
       author: "Forem",
-      description: "Plateforme de blogging et communauté pour développeurs. Articles et discussions.",
+      description:
+        "Plateforme de blogging et communauté pour développeurs. Articles et discussions.",
       level: "Tous niveaux",
       url: "https://dev.to/",
       tags: ["Blog", "Communauté", "Articles"],
@@ -299,7 +341,8 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
     {
       title: "Discord — Reactiflux",
       author: "Reactiflux",
-      description: "La plus grande communauté Discord pour React/JS avec aide en temps réel.",
+      description:
+        "La plus grande communauté Discord pour React/JS avec aide en temps réel.",
       level: "Tous niveaux",
       url: "https://www.reactiflux.com/",
       tags: ["React", "Discord", "Entraide"],
@@ -307,7 +350,8 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
     {
       title: "GitHub Discussions",
       author: "GitHub",
-      description: "Discussions sur les projets open source, RFC et contributions.",
+      description:
+        "Discussions sur les projets open source, RFC et contributions.",
       level: "Tous niveaux",
       url: "https://github.com/",
       tags: ["Open Source", "Collaboration", "Code"],
@@ -315,7 +359,12 @@ const resources: Record<Exclude<Category, "all">, Resource[]> = {
   ],
 };
 
-type LevelFilter = "all" | "Débutant" | "Intermédiaire" | "Avancé" | "Tous niveaux";
+type LevelFilter =
+  | "all"
+  | "Débutant"
+  | "Intermédiaire"
+  | "Avancé"
+  | "Tous niveaux";
 
 const learningPaths = [
   {
@@ -363,7 +412,7 @@ export function ResourcesList() {
   const filteredResources =
     activeCategory === "all"
       ? Object.entries(resources).flatMap(([cat, items]) =>
-          items.map((r) => ({ ...r, _category: cat }))
+          items.map((r) => ({ ...r, _category: cat })),
         )
       : resources[activeCategory].map((r) => ({
           ...r,
@@ -418,7 +467,9 @@ export function ResourcesList() {
                   : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
               }`}
             >
-              <cat.icon className={`w-4 h-4 ${activeCategory === cat.id ? "" : cat.color}`} />
+              <cat.icon
+                className={`w-4 h-4 ${activeCategory === cat.id ? "" : cat.color}`}
+              />
               {cat.label}
             </button>
           ))}
@@ -426,21 +477,27 @@ export function ResourcesList() {
 
         {/* Level Filter */}
         <div className="flex flex-wrap gap-2">
-          {(["all", "Débutant", "Intermédiaire", "Avancé", "Tous niveaux"] as LevelFilter[]).map(
-            (level) => (
-              <button
-                key={level}
-                onClick={() => setLevelFilter(level)}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
-                  levelFilter === level
-                    ? "bg-primary/10 text-primary border border-primary/30"
-                    : "bg-muted/30 text-muted-foreground hover:bg-muted/50"
-                }`}
-              >
-                {level === "all" ? "Tous niveaux" : level}
-              </button>
-            )
-          )}
+          {(
+            [
+              "all",
+              "Débutant",
+              "Intermédiaire",
+              "Avancé",
+              "Tous niveaux",
+            ] as LevelFilter[]
+          ).map((level) => (
+            <button
+              key={level}
+              onClick={() => setLevelFilter(level)}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                levelFilter === level
+                  ? "bg-primary/10 text-primary border border-primary/30"
+                  : "bg-muted/30 text-muted-foreground hover:bg-muted/50"
+              }`}
+            >
+              {level === "all" ? "Tous niveaux" : level}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -461,8 +518,16 @@ export function ResourcesList() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: "Livres", count: resources.books.length, icon: BookOpen },
-          { label: "Cours", count: resources.courses.length, icon: GraduationCap },
-          { label: "Sites de pratique", count: resources.practice.length, icon: Trophy },
+          {
+            label: "Cours",
+            count: resources.courses.length,
+            icon: GraduationCap,
+          },
+          {
+            label: "Sites de pratique",
+            count: resources.practice.length,
+            icon: Trophy,
+          },
           {
             label: "Total ressources",
             count: Object.values(resources).flat().length,

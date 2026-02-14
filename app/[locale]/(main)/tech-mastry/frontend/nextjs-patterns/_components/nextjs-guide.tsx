@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { Code2 } from "lucide-react";
+
 import { useState } from "react";
 
 const patterns = [
@@ -32,7 +32,12 @@ export default async function DashboardPage() {
 // Règle d'or : Server par défaut, Client seulement quand nécessaire
 // ❌ useState, useEffect, onClick → Client
 // ✅ fetch, db, fs, env secrets → Server`,
-    keyPoints: ["Rendu côté serveur par défaut", "Accès direct DB/API/env", "Pas de JS envoyé au client", "Suspense pour le streaming"],
+    keyPoints: [
+      "Rendu côté serveur par défaut",
+      "Accès direct DB/API/env",
+      "Pas de JS envoyé au client",
+      "Suspense pour le streaming",
+    ],
   },
   {
     name: "Server Actions",
@@ -76,7 +81,12 @@ export async function updateProfile(prevState, formData) {
     return { success: false, message: 'Erreur de validation' };
   }
 }`,
-    keyPoints: ["Mutations côté serveur type-safe", "Revalidation automatique", "Progressive enhancement (fonctionne sans JS)", "Validation Zod intégrée"],
+    keyPoints: [
+      "Mutations côté serveur type-safe",
+      "Revalidation automatique",
+      "Progressive enhancement (fonctionne sans JS)",
+      "Validation Zod intégrée",
+    ],
   },
   {
     name: "Caching & Revalidation",
@@ -125,7 +135,12 @@ async function getDynamicData() {
   });
   return res.json();
 }`,
-    keyPoints: ["4 stratégies : Static, ISR, On-demand, Dynamic", "Tags pour invalidation granulaire", "revalidatePath vs revalidateTag", "Partial Prerendering (PPR) en expérimental"],
+    keyPoints: [
+      "4 stratégies : Static, ISR, On-demand, Dynamic",
+      "Tags pour invalidation granulaire",
+      "revalidatePath vs revalidateTag",
+      "Partial Prerendering (PPR) en expérimental",
+    ],
   },
   {
     name: "Streaming & Suspense",
@@ -168,7 +183,12 @@ async function ParallelPage() {
   
   return <Dashboard users={users} posts={posts} analytics={analytics} />;
 }`,
-    keyPoints: ["Streaming HTML progressif", "Suspense boundaries granulaires", "loading.tsx par segment de route", "Promise.all pour le parallélisme"],
+    keyPoints: [
+      "Streaming HTML progressif",
+      "Suspense boundaries granulaires",
+      "loading.tsx par segment de route",
+      "Promise.all pour le parallélisme",
+    ],
   },
 ];
 
@@ -184,7 +204,9 @@ export function NextjsGuide() {
             onClick={() => setActivePattern(i)}
             className={cn(
               "px-4 py-2 rounded-lg text-sm font-medium transition-all",
-              activePattern === i ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/80"
+              activePattern === i
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted hover:bg-muted/80",
             )}
           >
             {p.name}
@@ -201,7 +223,9 @@ export function NextjsGuide() {
           <h4 className="font-semibold mb-2">Points clés</h4>
           <div className="flex flex-wrap gap-2">
             {patterns[activePattern].keyPoints.map((kp, i) => (
-              <Badge key={i} variant="outline">{kp}</Badge>
+              <Badge key={i} variant="outline">
+                {kp}
+              </Badge>
             ))}
           </div>
         </div>
@@ -215,18 +239,50 @@ export function NextjsGuide() {
             <thead>
               <tr className="border-b bg-muted/50">
                 <th className="p-3 text-left font-semibold">Besoin</th>
-                <th className="p-3 text-left font-semibold text-blue-500">Server</th>
-                <th className="p-3 text-left font-semibold text-purple-500">Client</th>
+                <th className="p-3 text-left font-semibold text-blue-500">
+                  Server
+                </th>
+                <th className="p-3 text-left font-semibold text-purple-500">
+                  Client
+                </th>
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b"><td className="p-3">Fetch data</td><td className="p-3">✅</td><td className="p-3">⚠️ (useEffect)</td></tr>
-              <tr className="border-b"><td className="p-3">Accès DB/API directe</td><td className="p-3">✅</td><td className="p-3">❌</td></tr>
-              <tr className="border-b"><td className="p-3">Secrets/env vars</td><td className="p-3">✅</td><td className="p-3">❌</td></tr>
-              <tr className="border-b"><td className="p-3">Interactivité (onClick)</td><td className="p-3">❌</td><td className="p-3">✅</td></tr>
-              <tr className="border-b"><td className="p-3">State (useState)</td><td className="p-3">❌</td><td className="p-3">✅</td></tr>
-              <tr className="border-b"><td className="p-3">Effects (useEffect)</td><td className="p-3">❌</td><td className="p-3">✅</td></tr>
-              <tr><td className="p-3">Browser APIs</td><td className="p-3">❌</td><td className="p-3">✅</td></tr>
+              <tr className="border-b">
+                <td className="p-3">Fetch data</td>
+                <td className="p-3">✅</td>
+                <td className="p-3">⚠️ (useEffect)</td>
+              </tr>
+              <tr className="border-b">
+                <td className="p-3">Accès DB/API directe</td>
+                <td className="p-3">✅</td>
+                <td className="p-3">❌</td>
+              </tr>
+              <tr className="border-b">
+                <td className="p-3">Secrets/env vars</td>
+                <td className="p-3">✅</td>
+                <td className="p-3">❌</td>
+              </tr>
+              <tr className="border-b">
+                <td className="p-3">Interactivité (onClick)</td>
+                <td className="p-3">❌</td>
+                <td className="p-3">✅</td>
+              </tr>
+              <tr className="border-b">
+                <td className="p-3">State (useState)</td>
+                <td className="p-3">❌</td>
+                <td className="p-3">✅</td>
+              </tr>
+              <tr className="border-b">
+                <td className="p-3">Effects (useEffect)</td>
+                <td className="p-3">❌</td>
+                <td className="p-3">✅</td>
+              </tr>
+              <tr>
+                <td className="p-3">Browser APIs</td>
+                <td className="p-3">❌</td>
+                <td className="p-3">✅</td>
+              </tr>
             </tbody>
           </table>
         </div>

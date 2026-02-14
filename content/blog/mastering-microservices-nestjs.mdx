@@ -1,0 +1,1043 @@
+---
+title: "Maîtriser les Microservices avec NestJS : Projet Complet de A à Z"
+excerpt: "Architecture, implémentation et déploiement d'un système e-commerce en microservices avec NestJS. API Gateway, communication inter-services, CQRS, Event Sourcing, Docker et Kubernetes — le guide ultime."
+date: "2025-08-10"
+author: "Fernand SOUALO"
+categories: ["NestJS", "Microservices", "Node.js", "Architecture", "TypeScript"]
+coverImage: "/blog/microservices-nestjs.png"
+---
+
+# Maîtriser les Microservices avec NestJS : Projet Complet de A à Z
+
+## Table of Contents
+
+1. [Pourquoi les Microservices ?](#pourquoi)
+2. [Architecture du Projet E-Commerce](#architecture)
+3. [Setup du Monorepo NestJS](#setup)
+4. [API Gateway — Point d'Entrée Unique](#gateway)
+5. [User Service — Authentification & Profils](#user-service)
+6. [Product Service — Catalogue & Inventaire](#product-service)
+7. [Order Service — Commandes & Paiements](#order-service)
+8. [Notification Service — Emails & Push](#notification-service)
+9. [Communication Inter-Services](#communication)
+10. [Event-Driven Architecture avec RabbitMQ](#events)
+11. [CQRS Pattern en Pratique](#cqrs)
+12. [Base de Données par Service](#database)
+13. [Observabilité — Logs, Metrics, Tracing](#observabilite)
+14. [Tests d'Intégration](#tests)
+15. [Docker & Docker Compose](#docker)
+16. [Déploiement Kubernetes](#kubernetes)
+17. [Patterns de Résilience](#resilience)
+18. [Conclusion et Leçons Apprises](#conclusion)
+
+## Pourquoi les Microservices ? <a name="pourquoi"></a>
+
+Avant de foncer dans le code, posons la question honnêtement : **avez-vous vraiment besoin de microservices ?**
+
+### Monolithe vs Microservices — La Vérité
+
+| Critère | Monolithe | Microservices |
+|---------|-----------|---------------|
+| **Complexité de départ** | Simple | Complexe |
+| **Déploiement** | Un seul artifact | N services indépendants |
+| **Scaling** | Tout ou rien | Granulaire (scale le service qui en a besoin) |
+| **Team size** | 1-8 devs | 8+ devs (1 team par service) |
+| **Cohérence des données** | Transaction ACID simple | Saga pattern, eventual consistency |
+| **Debugging** | Stack trace linéaire | Distributed tracing nécessaire |
+| **Latence** | Appels en mémoire | Appels réseau (+ latence) |
+| **Idéal quand** | MVP, startup early-stage | Scale, équipes multiples, domaine complexe |
+
+> **Règle** : Commencez par un monolithe bien structuré. Migrez vers les microservices quand la douleur l'exige (déploiements trop fréquents, équipes qui se marchent dessus, scaling de fonctionnalités spécifiques).
+
+### Notre Projet : E-Commerce "ShopScale"
+
+Nous allons construire un e-commerce avec 5 microservices :
+
+```
+┌─────────────────────────────────────────────────┐
+│                   CLIENTS                        │
+│          (Web App, Mobile App, API)              │
+└──────────────────────┬──────────────────────────┘
+                       │
+                       ▼
+┌──────────────────────────────────────────────────┐
+│               API GATEWAY (NestJS)               │
+│      Auth, Rate Limiting, Request Routing        │
+└──────┬──────┬──────┬──────────┬─────────────────┘
+       │      │      │          │
+       ▼      ▼      ▼          ▼
+┌──────┐ ┌────┐ ┌────┐  ┌──────────────┐
+│ User │ │Prod│ │Ord.│  │ Notification │
+│ Svc  │ │Svc │ │Svc │  │    Service   │
+└──┬───┘ └──┬─┘ └──┬─┘  └──────┬───────┘
+   │        │      │           │
+   ▼        ▼      ▼           ▼
+┌──────┐ ┌────┐ ┌────┐  ┌──────────────┐
+│Postgr│ │Mong│ │Post│  │    Redis      │
+│  DB  │ │oDB │ │ DB │  │   Pub/Sub     │
+└──────┘ └────┘ └────┘  └──────────────┘
+
+       ┌─────────────────────────┐
+       │  RabbitMQ (Event Bus)   │
+       └─────────────────────────┘
+```
+
+## Setup du Monorepo NestJS <a name="setup"></a>
+
+```bash
+# Initialiser le workspace NestJS
+nest new shopscale --strict
+cd shopscale
+
+# Créer les apps (microservices)
+nest generate app api-gateway
+nest generate app user-service
+nest generate app product-service
+nest generate app order-service
+nest generate app notification-service
+
+# Créer les librairies partagées
+nest generate library common       # DTOs, interfaces, utils
+nest generate library database     # Database connections
+nest generate library messaging    # RabbitMQ helpers
+```
+
+### Structure du projet
+
+```
+shopscale/
+├── apps/
+│   ├── api-gateway/          # API Gateway (HTTP → microservices)
+│   ├── user-service/         # Gestion utilisateurs + auth
+│   ├── product-service/      # Catalogue produits
+│   ├── order-service/        # Commandes + paiements
+│   └── notification-service/ # Notifications multi-canal
+├── libs/
+│   ├── common/               # DTOs, interfaces, constantes
+│   ├── database/             # Config Prisma/TypeORM
+│   └── messaging/            # RabbitMQ wrappers
+├── docker-compose.yml
+├── nest-cli.json
+└── package.json
+```
+
+### Configuration du nest-cli.json
+
+```json
+{
+  "collection": "@nestjs/schematics",
+  "monorepo": true,
+  "root": "apps/api-gateway",
+  "compilerOptions": {
+    "webpack": true,
+    "tsConfigPath": "apps/api-gateway/tsconfig.app.json"
+  },
+  "projects": {
+    "api-gateway": {
+      "type": "application",
+      "root": "apps/api-gateway",
+      "entryFile": "main",
+      "sourceRoot": "apps/api-gateway/src"
+    },
+    "user-service": {
+      "type": "application",
+      "root": "apps/user-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/user-service/src"
+    },
+    "common": {
+      "type": "library",
+      "root": "libs/common",
+      "entryFile": "index",
+      "sourceRoot": "libs/common/src"
+    }
+  }
+}
+```
+
+## API Gateway — Point d'Entrée Unique <a name="gateway"></a>
+
+L'API Gateway est le seul point d'entrée HTTP. Il route les requêtes vers les bons microservices :
+
+```typescript
+// apps/api-gateway/src/main.ts
+import { NestFactory } from "@nestjs/core";
+import { ValidationPipe } from "@nestjs/common";
+import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
+import { AppModule } from "./app.module";
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+  }));
+
+  app.enableCors({
+    origin: process.env.ALLOWED_ORIGINS?.split(",") ?? ["http://localhost:3000"],
+    credentials: true,
+  });
+
+  // Swagger API documentation
+  const config = new DocumentBuilder()
+    .setTitle("ShopScale API")
+    .setDescription("E-Commerce Microservices API")
+    .setVersion("1.0")
+    .addBearerAuth()
+    .build();
+  
+  SwaggerModule.setup("api/docs", app, SwaggerModule.createDocument(app, config));
+
+  await app.listen(3000);
+  console.log("🚀 API Gateway running on http://localhost:3000");
+}
+bootstrap();
+```
+
+```typescript
+// apps/api-gateway/src/app.module.ts
+import { Module } from "@nestjs/common";
+import { ClientsModule, Transport } from "@nestjs/microservices";
+import { ThrottlerModule } from "@nestjs/throttler";
+import { UsersController } from "./controllers/users.controller";
+import { ProductsController } from "./controllers/products.controller";
+import { OrdersController } from "./controllers/orders.controller";
+import { AuthGuard } from "./guards/auth.guard";
+
+@Module({
+  imports: [
+    // Rate limiting
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 100,
+    }]),
+
+    // Connexion aux microservices via RabbitMQ
+    ClientsModule.register([
+      {
+        name: "USER_SERVICE",
+        transport: Transport.RMQ,
+        options: {
+          urls: [process.env.RABBITMQ_URL ?? "amqp://localhost:5672"],
+          queue: "user_queue",
+          queueOptions: { durable: true },
+        },
+      },
+      {
+        name: "PRODUCT_SERVICE",
+        transport: Transport.RMQ,
+        options: {
+          urls: [process.env.RABBITMQ_URL ?? "amqp://localhost:5672"],
+          queue: "product_queue",
+          queueOptions: { durable: true },
+        },
+      },
+      {
+        name: "ORDER_SERVICE",
+        transport: Transport.RMQ,
+        options: {
+          urls: [process.env.RABBITMQ_URL ?? "amqp://localhost:5672"],
+          queue: "order_queue",
+          queueOptions: { durable: true },
+        },
+      },
+    ]),
+  ],
+  controllers: [UsersController, ProductsController, OrdersController],
+  providers: [AuthGuard],
+})
+export class AppModule {}
+```
+
+```typescript
+// apps/api-gateway/src/controllers/orders.controller.ts
+import {
+  Body, Controller, Get, Inject, Param, Post, UseGuards, Req
+} from "@nestjs/common";
+import { ClientProxy } from "@nestjs/microservices";
+import { ApiTags, ApiBearerAuth, ApiOperation } from "@nestjs/swagger";
+import { AuthGuard } from "../guards/auth.guard";
+import { CreateOrderDto } from "@app/common/dto/create-order.dto";
+import { firstValueFrom, timeout } from "rxjs";
+
+@ApiTags("Orders")
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
+@Controller("orders")
+export class OrdersController {
+  constructor(
+    @Inject("ORDER_SERVICE") private readonly orderClient: ClientProxy,
+    @Inject("PRODUCT_SERVICE") private readonly productClient: ClientProxy,
+  ) {}
+
+  @Post()
+  @ApiOperation({ summary: "Create a new order" })
+  async createOrder(@Body() dto: CreateOrderDto, @Req() req: any) {
+    // 1. Vérifier le stock auprès du Product Service
+    const stockCheck = await firstValueFrom(
+      this.productClient.send("check_stock", { items: dto.items }).pipe(timeout(5000))
+    );
+
+    if (!stockCheck.available) {
+      return { success: false, message: "Some items are out of stock", unavailable: stockCheck.unavailable };
+    }
+
+    // 2. Créer la commande via l'Order Service
+    const order = await firstValueFrom(
+      this.orderClient.send("create_order", {
+        ...dto,
+        userId: req.user.id,
+      }).pipe(timeout(10000))
+    );
+
+    return { success: true, order };
+  }
+
+  @Get()
+  @ApiOperation({ summary: "Get user orders" })
+  async getUserOrders(@Req() req: any) {
+    return firstValueFrom(
+      this.orderClient.send("get_user_orders", { userId: req.user.id }).pipe(timeout(5000))
+    );
+  }
+
+  @Get(":id")
+  @ApiOperation({ summary: "Get order by ID" })
+  async getOrder(@Param("id") id: string, @Req() req: any) {
+    return firstValueFrom(
+      this.orderClient.send("get_order", { id, userId: req.user.id }).pipe(timeout(5000))
+    );
+  }
+}
+```
+
+## User Service — Authentification & Profils <a name="user-service"></a>
+
+```typescript
+// apps/user-service/src/main.ts
+import { NestFactory } from "@nestjs/core";
+import { MicroserviceOptions, Transport } from "@nestjs/microservices";
+import { UserServiceModule } from "./user-service.module";
+
+async function bootstrap() {
+  const app = await NestFactory.createMicroservice<MicroserviceOptions>(
+    UserServiceModule,
+    {
+      transport: Transport.RMQ,
+      options: {
+        urls: [process.env.RABBITMQ_URL ?? "amqp://localhost:5672"],
+        queue: "user_queue",
+        queueOptions: { durable: true },
+        prefetchCount: 10,
+      },
+    },
+  );
+
+  await app.listen();
+  console.log("👤 User Service is listening on RabbitMQ");
+}
+bootstrap();
+```
+
+```typescript
+// apps/user-service/src/user.controller.ts
+import { Controller } from "@nestjs/common";
+import { MessagePattern, Payload, EventPattern } from "@nestjs/microservices";
+import { UserService } from "./user.service";
+
+@Controller()
+export class UserController {
+  constructor(private readonly userService: UserService) {}
+
+  @MessagePattern("register_user")
+  async register(@Payload() data: RegisterDto) {
+    return this.userService.register(data);
+  }
+
+  @MessagePattern("login_user")
+  async login(@Payload() data: LoginDto) {
+    return this.userService.login(data);
+  }
+
+  @MessagePattern("validate_token")
+  async validateToken(@Payload() data: { token: string }) {
+    return this.userService.validateToken(data.token);
+  }
+
+  @MessagePattern("get_user_profile")
+  async getProfile(@Payload() data: { userId: string }) {
+    return this.userService.getProfile(data.userId);
+  }
+
+  @EventPattern("order_completed")
+  async handleOrderCompleted(@Payload() data: { userId: string; orderId: string }) {
+    // Mettre à jour les stats utilisateur
+    await this.userService.incrementOrderCount(data.userId);
+  }
+}
+```
+
+```typescript
+// apps/user-service/src/user.service.ts
+import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { PrismaService } from "@app/database";
+import * as bcrypt from "bcrypt";
+
+@Injectable()
+export class UserService {
+  constructor(
+    private prisma: PrismaService,
+    private jwt: JwtService,
+  ) {}
+
+  async register(data: RegisterDto) {
+    const existing = await this.prisma.user.findUnique({
+      where: { email: data.email },
+    });
+
+    if (existing) {
+      return { success: false, error: "Email already registered" };
+    }
+
+    const hashedPassword = await bcrypt.hash(data.password, 12);
+
+    const user = await this.prisma.user.create({
+      data: {
+        email: data.email,
+        name: data.name,
+        password: hashedPassword,
+      },
+      select: { id: true, email: true, name: true, createdAt: true },
+    });
+
+    const token = this.jwt.sign({ sub: user.id, email: user.email });
+
+    return { success: true, user, token };
+  }
+
+  async login(data: LoginDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { email: data.email },
+    });
+
+    if (!user || !(await bcrypt.compare(data.password, user.password))) {
+      throw new UnauthorizedException("Invalid credentials");
+    }
+
+    const token = this.jwt.sign({ sub: user.id, email: user.email });
+
+    return {
+      success: true,
+      user: { id: user.id, email: user.email, name: user.name },
+      token,
+    };
+  }
+
+  async validateToken(token: string) {
+    try {
+      const payload = this.jwt.verify(token);
+      const user = await this.prisma.user.findUnique({
+        where: { id: payload.sub },
+        select: { id: true, email: true, name: true, role: true },
+      });
+      return { valid: true, user };
+    } catch {
+      return { valid: false };
+    }
+  }
+
+  async getProfile(userId: string) {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        orderCount: true,
+        createdAt: true,
+      },
+    });
+  }
+
+  async incrementOrderCount(userId: string) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { orderCount: { increment: 1 } },
+    });
+  }
+}
+```
+
+## Communication Inter-Services <a name="communication"></a>
+
+### Patterns de Communication
+
+```typescript
+// ── 1. Request-Response (Synchrone) ──
+// Quand on a besoin d'une réponse immédiate
+
+// Côté émetteur (API Gateway)
+const user = await firstValueFrom(
+  this.userClient.send("get_user_profile", { userId: "123" })
+    .pipe(timeout(5000))
+);
+
+// Côté récepteur (User Service)
+@MessagePattern("get_user_profile")
+async getProfile(@Payload() data: { userId: string }) {
+  return this.userService.getProfile(data.userId);
+}
+
+// ── 2. Event-Based (Asynchrone) ──
+// Fire-and-forget, pas de réponse attendue
+
+// Côté émetteur (Order Service)
+this.notificationClient.emit("order_created", {
+  orderId: order.id,
+  userId: order.userId,
+  items: order.items,
+  total: order.total,
+});
+
+// Côté récepteur (Notification Service)
+@EventPattern("order_created")
+async handleOrderCreated(@Payload() data: OrderCreatedEvent) {
+  await this.sendOrderConfirmation(data);
+}
+```
+
+### Shared DTOs (libs/common)
+
+```typescript
+// libs/common/src/dto/create-order.dto.ts
+import { IsArray, IsNotEmpty, IsNumber, IsString, ValidateNested, Min } from "class-validator";
+import { Type } from "class-transformer";
+import { ApiProperty } from "@nestjs/swagger";
+
+export class OrderItemDto {
+  @ApiProperty({ example: "prod_123" })
+  @IsString()
+  @IsNotEmpty()
+  productId: string;
+
+  @ApiProperty({ example: 2 })
+  @IsNumber()
+  @Min(1)
+  quantity: number;
+}
+
+export class CreateOrderDto {
+  @ApiProperty({ type: [OrderItemDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => OrderItemDto)
+  items: OrderItemDto[];
+
+  @ApiProperty({ example: "123 Rue de Paris, 75001" })
+  @IsString()
+  @IsNotEmpty()
+  shippingAddress: string;
+}
+
+// libs/common/src/events/order.events.ts
+export interface OrderCreatedEvent {
+  orderId: string;
+  userId: string;
+  items: Array<{ productId: string; quantity: number; price: number }>;
+  total: number;
+  shippingAddress: string;
+  createdAt: Date;
+}
+
+export interface OrderStatusChangedEvent {
+  orderId: string;
+  userId: string;
+  previousStatus: OrderStatus;
+  newStatus: OrderStatus;
+  timestamp: Date;
+}
+
+export type OrderStatus = "PENDING" | "CONFIRMED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+```
+
+## Event-Driven Architecture avec RabbitMQ <a name="events"></a>
+
+```typescript
+// libs/messaging/src/rabbitmq.module.ts
+import { DynamicModule, Module } from "@nestjs/common";
+import { ClientsModule, Transport } from "@nestjs/microservices";
+
+interface RmqModuleOptions {
+  name: string;
+  queue: string;
+}
+
+@Module({})
+export class RmqModule {
+  static register(options: RmqModuleOptions[]): DynamicModule {
+    return {
+      module: RmqModule,
+      imports: [
+        ClientsModule.register(
+          options.map(({ name, queue }) => ({
+            name,
+            transport: Transport.RMQ,
+            options: {
+              urls: [process.env.RABBITMQ_URL ?? "amqp://localhost:5672"],
+              queue,
+              queueOptions: { durable: true },
+              socketOptions: {
+                heartbeatIntervalInSeconds: 60,
+                reconnectTimeInSeconds: 5,
+              },
+            },
+          }))
+        ),
+      ],
+      exports: [ClientsModule],
+    };
+  }
+}
+```
+
+```typescript
+// apps/order-service/src/order.service.ts — Saga Pattern
+import { Injectable, Inject } from "@nestjs/common";
+import { ClientProxy } from "@nestjs/microservices";
+import { firstValueFrom, timeout, catchError } from "rxjs";
+
+@Injectable()
+export class OrderService {
+  constructor(
+    @Inject("PRODUCT_SERVICE") private productClient: ClientProxy,
+    @Inject("NOTIFICATION_SERVICE") private notificationClient: ClientProxy,
+    private prisma: PrismaService,
+  ) {}
+
+  async createOrder(data: CreateOrderInput): Promise<OrderResult> {
+    // ── SAGA : Séquence de transactions compensables ──
+
+    // Étape 1 : Réserver le stock
+    const reservation = await firstValueFrom(
+      this.productClient.send("reserve_stock", { items: data.items })
+        .pipe(
+          timeout(5000),
+          catchError(err => {
+            throw new Error(`Stock reservation failed: ${err.message}`);
+          })
+        )
+    );
+
+    if (!reservation.success) {
+      return { success: false, error: "Stock unavailable" };
+    }
+
+    try {
+      // Étape 2 : Créer la commande en DB
+      const order = await this.prisma.order.create({
+        data: {
+          userId: data.userId,
+          status: "PENDING",
+          total: reservation.total,
+          shippingAddress: data.shippingAddress,
+          items: {
+            create: data.items.map(item => ({
+              productId: item.productId,
+              quantity: item.quantity,
+              price: reservation.prices[item.productId],
+            })),
+          },
+        },
+        include: { items: true },
+      });
+
+      // Étape 3 : Émettre l'événement (asynchrone)
+      this.notificationClient.emit("order_created", {
+        orderId: order.id,
+        userId: data.userId,
+        items: order.items,
+        total: order.total,
+      });
+
+      return { success: true, order };
+    } catch (error) {
+      // ── COMPENSATION : Annuler la réservation en cas d'échec ──
+      await firstValueFrom(
+        this.productClient.send("release_stock", {
+          reservationId: reservation.id,
+        })
+      );
+
+      throw error;
+    }
+  }
+}
+```
+
+## Docker & Docker Compose <a name="docker"></a>
+
+```dockerfile
+# Dockerfile (Multi-stage build)
+FROM node:20-alpine AS base
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+FROM base AS deps
+COPY package.json pnpm-lock.yaml ./
+RUN corepack enable pnpm && pnpm install --frozen-lockfile
+
+FROM base AS builder
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+ARG SERVICE_NAME
+RUN npx nest build ${SERVICE_NAME}
+
+FROM base AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nestjs
+COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
+COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
+USER nestjs
+ARG SERVICE_NAME
+CMD ["node", "dist/apps/${SERVICE_NAME}/main"]
+```
+
+```yaml
+# docker-compose.yml
+version: "3.8"
+
+services:
+  # ── Infrastructure ──
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: rabbitmq-diagnostics check_running
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-users:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: users
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - pg_users_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  postgres-orders:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: orders
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - pg_orders_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+  mongodb-products:
+    image: mongo:7
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  # ── Microservices ──
+  api-gateway:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: api-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
+      JWT_SECRET: your-super-secret-key
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  user-service:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: user-service
+    environment:
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
+      DATABASE_URL: postgresql://postgres:postgres@postgres-users:5432/users
+      JWT_SECRET: your-super-secret-key
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres-users:
+        condition: service_started
+
+  product-service:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: product-service
+    environment:
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
+      MONGODB_URL: mongodb://admin:admin@mongodb-products:27017/products?authSource=admin
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mongodb-products:
+        condition: service_started
+
+  order-service:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: order-service
+    environment:
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
+      DATABASE_URL: postgresql://postgres:postgres@postgres-orders:5432/orders
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres-orders:
+        condition: service_started
+
+  notification-service:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: notification-service
+    environment:
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
+      REDIS_URL: redis://redis:6379
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+volumes:
+  rabbitmq_data:
+  pg_users_data:
+  pg_orders_data:
+  mongo_data:
+```
+
+## Patterns de Résilience <a name="resilience"></a>
+
+```typescript
+// ── Circuit Breaker Pattern ──
+import { Injectable } from "@nestjs/common";
+
+interface CircuitBreakerOptions {
+  failureThreshold: number;
+  resetTimeout: number;
+}
+
+@Injectable()
+export class CircuitBreaker {
+  private failures = 0;
+  private lastFailureTime = 0;
+  private state: "CLOSED" | "OPEN" | "HALF_OPEN" = "CLOSED";
+
+  constructor(private options: CircuitBreakerOptions = {
+    failureThreshold: 5,
+    resetTimeout: 30000,
+  }) {}
+
+  async execute<T>(fn: () => Promise<T>): Promise<T> {
+    if (this.state === "OPEN") {
+      if (Date.now() - this.lastFailureTime > this.options.resetTimeout) {
+        this.state = "HALF_OPEN";
+      } else {
+        throw new Error("Circuit breaker is OPEN — service unavailable");
+      }
+    }
+
+    try {
+      const result = await fn();
+      this.onSuccess();
+      return result;
+    } catch (error) {
+      this.onFailure();
+      throw error;
+    }
+  }
+
+  private onSuccess(): void {
+    this.failures = 0;
+    this.state = "CLOSED";
+  }
+
+  private onFailure(): void {
+    this.failures++;
+    this.lastFailureTime = Date.now();
+    if (this.failures >= this.options.failureThreshold) {
+      this.state = "OPEN";
+      console.warn("🔴 Circuit breaker OPENED — too many failures");
+    }
+  }
+}
+
+// Utilisation dans un service
+@Injectable()
+export class ResilientOrderService {
+  private productBreaker = new CircuitBreaker({ failureThreshold: 3, resetTimeout: 15000 });
+
+  async checkStock(items: OrderItemDto[]) {
+    return this.productBreaker.execute(async () => {
+      return firstValueFrom(
+        this.productClient.send("check_stock", { items }).pipe(timeout(5000))
+      );
+    });
+  }
+}
+```
+
+```typescript
+// ── Retry avec Backoff Exponentiel ──
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3,
+  baseDelay: number = 1000,
+): Promise<T> {
+  let lastError: Error;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error as Error;
+      if (attempt < maxRetries) {
+        const delay = baseDelay * Math.pow(2, attempt) + Math.random() * 1000;
+        console.warn(`Retry ${attempt + 1}/${maxRetries} after ${Math.round(delay)}ms`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+
+  throw lastError!;
+}
+```
+
+## Tests d'Intégration <a name="tests"></a>
+
+```typescript
+// apps/order-service/test/order.e2e-spec.ts
+import { Test, TestingModule } from "@nestjs/testing";
+import { INestMicroservice } from "@nestjs/common";
+import { Transport } from "@nestjs/microservices";
+import { OrderServiceModule } from "../src/order-service.module";
+
+describe("Order Service (e2e)", () => {
+  let app: INestMicroservice;
+  let orderService: OrderService;
+
+  beforeAll(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [OrderServiceModule],
+    })
+    .overrideProvider("PRODUCT_SERVICE")
+    .useValue({
+      send: jest.fn().mockReturnValue(of({
+        success: true,
+        total: 99.99,
+        prices: { prod_1: 49.99, prod_2: 50.00 },
+      })),
+      emit: jest.fn(),
+    })
+    .compile();
+
+    app = moduleFixture.createNestMicroservice({
+      transport: Transport.TCP,
+    });
+
+    orderService = moduleFixture.get<OrderService>(OrderService);
+    await app.listen();
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it("should create an order successfully", async () => {
+    const result = await orderService.createOrder({
+      userId: "user_123",
+      items: [
+        { productId: "prod_1", quantity: 1 },
+        { productId: "prod_2", quantity: 1 },
+      ],
+      shippingAddress: "123 Rue de Paris",
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.order).toBeDefined();
+    expect(result.order.total).toBe(99.99);
+    expect(result.order.status).toBe("PENDING");
+  });
+
+  it("should handle stock unavailability", async () => {
+    // Override le mock pour retourner stock indisponible
+    jest.spyOn(orderService["productClient"], "send")
+      .mockReturnValueOnce(of({ success: false, unavailable: ["prod_1"] }));
+
+    const result = await orderService.createOrder({
+      userId: "user_123",
+      items: [{ productId: "prod_1", quantity: 100 }],
+      shippingAddress: "123 Rue de Paris",
+    });
+
+    expect(result.success).toBe(false);
+  });
+});
+```
+
+## Conclusion et Leçons Apprises <a name="conclusion"></a>
+
+### Les 10 Commandements des Microservices
+
+1. **Un service = un domaine métier** — Pas de service "utils" fourre-tout
+2. **Base de données par service** — Jamais de DB partagée entre services
+3. **Communication asynchrone par défaut** — Sync uniquement quand nécessaire
+4. **Idempotence partout** — Chaque message peut être reçu plusieurs fois
+5. **Circuit breaker obligatoire** — Ne jamais appeler un service sans protection
+6. **Observabilité dès le jour 1** — Logs structurés, metrics, distributed tracing
+7. **Tests d'intégration** — Tester les contrats entre services
+8. **Déploiement indépendant** — Chaque service a son CI/CD
+9. **Documentation des API** — Swagger/OpenAPI pour chaque service
+10. **Commencer monolithe** — Migrer vers les microservices quand c'est justifié
+
+### Quand NE PAS utiliser les microservices
+
+- Équipe < 5 développeurs
+- MVP ou prototype
+- Domaine simple et bien compris
+- Pas de besoin de scaling indépendant
+- Pas d'expertise DevOps dans l'équipe
+
+> **Le meilleur microservice est celui que vous n'avez pas besoin de créer.** Commencez par un monolithe modulaire bien structuré, et extrayez des services quand la douleur l'impose.

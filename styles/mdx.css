@@ -20,27 +20,49 @@
     @apply opacity-0 transition-opacity duration-200 ml-2 text-primary/50 no-underline;
   }
 
-  /* ── Code block scrollbar ────────────────────────────────────────── */
+  /* ── Responsive code blocks — never overflow the viewport ─────── */
+  .mdx-content > div,
+  .mdx-content > pre,
+  .mdx-content > * {
+    @apply max-w-full;
+    min-width: 0;
+  }
+
   .mdx-content pre {
+    @apply overflow-x-auto overflow-y-auto;
+    max-height: 80vh;
     scrollbar-width: thin;
     scrollbar-color: rgba(100, 116, 139, 0.4) transparent;
+    word-break: normal;
+    overflow-wrap: normal;
+    white-space: pre;
+  }
+
+  .mdx-content pre code {
+    @apply block w-max min-w-full;
   }
 
   .mdx-content pre::-webkit-scrollbar {
-    height: 6px;
+    height: 8px;
+    width: 8px;
   }
 
   .mdx-content pre::-webkit-scrollbar-track {
-    background: transparent;
+    background: rgba(30, 30, 30, 0.4);
+    border-radius: 4px;
   }
 
   .mdx-content pre::-webkit-scrollbar-thumb {
-    background: rgba(100, 116, 139, 0.4);
-    border-radius: 3px;
+    background: rgba(100, 116, 139, 0.5);
+    border-radius: 4px;
   }
 
   .mdx-content pre::-webkit-scrollbar-thumb:hover {
-    background: rgba(100, 116, 139, 0.6);
+    background: rgba(100, 116, 139, 0.7);
+  }
+
+  .mdx-content pre::-webkit-scrollbar-corner {
+    background: transparent;
   }
 
   /* ── Syntax highlighting colors (rehype-highlight) ───────────────── */

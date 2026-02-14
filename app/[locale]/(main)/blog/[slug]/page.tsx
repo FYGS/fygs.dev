@@ -124,7 +124,7 @@ export default async function BlogPostPage({ params }: Props) {
           </div>
 
           {/* Main Content */}
-          <article className="min-w-0">
+          <article className="min-w-0 overflow-hidden">
             {/* Cover Image */}
             <div className="w-full -mx-4 px-4 sm:px-0 sm:-mx-0 mb-8">
               <CoverImage

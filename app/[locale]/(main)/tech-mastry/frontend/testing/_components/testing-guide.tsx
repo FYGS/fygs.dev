@@ -1,6 +1,5 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Code2 } from "lucide-react";
@@ -55,7 +54,8 @@ describe('API service', () => {
   },
   {
     name: "Tests de Composants (Testing Library)",
-    description: "Tester les composants React comme l'utilisateur les voit et interagit.",
+    description:
+      "Tester les composants React comme l'utilisateur les voit et interagit.",
     code: `import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { LoginForm } from './LoginForm';
@@ -110,7 +110,8 @@ describe('LoginForm', () => {
   },
   {
     name: "Tests E2E (Playwright)",
-    description: "Tester les parcours utilisateur complets dans un vrai navigateur.",
+    description:
+      "Tester les parcours utilisateur complets dans un vrai navigateur.",
     code: `import { test, expect } from '@playwright/test';
 
 test.describe('Authentication Flow', () => {
@@ -216,9 +217,24 @@ describe('useDebounce', () => {
 ];
 
 const pyramid = [
-  { name: "E2E", pct: 10, color: "bg-red-500", desc: "Peu, lents, parcours critiques" },
-  { name: "Intégration", pct: 30, color: "bg-yellow-500", desc: "Composants + services" },
-  { name: "Unitaires", pct: 60, color: "bg-green-500", desc: "Nombreux, rapides, isolés" },
+  {
+    name: "E2E",
+    pct: 10,
+    color: "bg-red-500",
+    desc: "Peu, lents, parcours critiques",
+  },
+  {
+    name: "Intégration",
+    pct: 30,
+    color: "bg-yellow-500",
+    desc: "Composants + services",
+  },
+  {
+    name: "Unitaires",
+    pct: 60,
+    color: "bg-green-500",
+    desc: "Nombreux, rapides, isolés",
+  },
 ];
 
 export function TestingGuide() {
@@ -231,11 +247,22 @@ export function TestingGuide() {
         <h2 className="text-xl font-bold mb-4">Pyramide des Tests</h2>
         <div className="flex flex-col items-center gap-2 py-4">
           {pyramid.map((level, i) => (
-            <div key={level.name} className="flex items-center gap-4" style={{ width: `${40 + i * 30}%` }}>
-              <div className={cn("h-10 rounded-lg flex items-center justify-center text-white text-sm font-medium w-full", level.color)}>
+            <div
+              key={level.name}
+              className="flex items-center gap-4"
+              style={{ width: `${40 + i * 30}%` }}
+            >
+              <div
+                className={cn(
+                  "h-10 rounded-lg flex items-center justify-center text-white text-sm font-medium w-full",
+                  level.color,
+                )}
+              >
                 {level.name} ({level.pct}%)
               </div>
-              <span className="text-xs text-muted-foreground whitespace-nowrap">{level.desc}</span>
+              <span className="text-xs text-muted-foreground whitespace-nowrap">
+                {level.desc}
+              </span>
             </div>
           ))}
         </div>
@@ -249,7 +276,9 @@ export function TestingGuide() {
             onClick={() => setActiveTest(i)}
             className={cn(
               "px-4 py-2 rounded-lg text-sm font-medium transition-all",
-              activeTest === i ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/80"
+              activeTest === i
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted hover:bg-muted/80",
             )}
           >
             {t.name}
@@ -260,7 +289,9 @@ export function TestingGuide() {
       <Card className="p-6 space-y-4">
         <div className="space-y-2">
           <h2 className="text-2xl font-bold">{testTypes[activeTest].name}</h2>
-          <p className="text-muted-foreground">{testTypes[activeTest].description}</p>
+          <p className="text-muted-foreground">
+            {testTypes[activeTest].description}
+          </p>
         </div>
         <div>
           <h3 className="font-semibold mb-2 flex items-center gap-2">
@@ -283,7 +314,10 @@ export function TestingGuide() {
             "Moquez les dépendances externes (API, localStorage), jamais la logique interne",
             "Utilisez data-testid en dernier recours — préférez les rôles ARIA et les labels",
           ].map((tip, i) => (
-            <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
+            <li
+              key={i}
+              className="text-sm text-muted-foreground flex items-start gap-2"
+            >
               <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
               {tip}
             </li>

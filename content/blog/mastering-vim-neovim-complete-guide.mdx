@@ -1,0 +1,319 @@
+﻿---
+title: "Maîtriser Vim/Neovim : De Zéro à Expert — Le Guide Ultime"
+excerpt: "Transformez votre productivité avec Vim/Neovim. Modes, mouvements, text objects, macros, configuration moderne avec Lua, LSP, TreeSitter, plugins essentiels et workflow pratique. Le guide complet pour passer de débutant à expert."
+date: "2025-10-05"
+author: "Fernand SOUALO"
+categories: ["Vim", "Neovim", "Productivité", "Éditeur", "DevTools", "Terminal"]
+coverImage: "/blog/vim-neovim-mastery.png"
+---
+
+# Maîtriser Vim/Neovim : De Zéro à Expert — Le Guide Ultime
+
+## Pourquoi Vim/Neovim ?
+
+Vim n'est pas juste un éditeur de texte — c'est un **langage pour manipuler du texte**. Une fois maîtrisé, vous éditez du code à la vitesse de la pensée.
+
+### Les Avantages
+
+| Avantage          | Explication                                               |
+| ----------------- | --------------------------------------------------------- |
+| **Vitesse**       | Édition sans souris, tout au clavier                      |
+| **Ubiquité**      | Disponible sur tous les systèmes Unix, SSH-friendly       |
+| **Légèreté**      | Démarre instantanément, consomme peu de ressources        |
+| **Composabilité** | Opérateurs + mouvements = grammaire de l''édition         |
+| **Extensibilité** | Écosystème de plugins massif                              |
+| **Productivité**  | Macros, répétitions, text objects — automatisation totale |
+
+### Vim vs Neovim
+
+Neovim est un fork moderne de Vim avec des améliorations significatives :
+
+- **Lua** comme langage de configuration (plus rapide que Vimscript)
+- **LSP intégré** (Language Server Protocol)
+- **TreeSitter** (coloration syntaxique basée sur AST)
+- **Jobs asynchrones** natifs
+- **Terminal moderne** avec `:terminal`
+- **API Lua** moderne et rapide
+
+> **Recommandation** : Commencez avec Neovim. Il conserve 100% de compatibilité Vim tout en offrant des fonctionnalités modernes.
+
+## Installation
+
+```bash
+# macOS
+brew install neovim
+
+# Ubuntu/Debian
+sudo apt install neovim
+
+# Arch Linux
+sudo pacman -S neovim
+
+# Windows (Chocolatey)
+choco install neovim
+
+# Configuration basique
+mkdir -p ~/.config/nvim
+echo ''vim.opt.number = true'' > ~/.config/nvim/init.lua
+```
+
+## Les Modes — Le Cœur de Vim
+
+Vim a plusieurs modes pour différentes tâches :
+
+| Mode        | Déclencheur        | Usage                     |
+| ----------- | ------------------ | ------------------------- |
+| **NORMAL**  | `<Esc>`            | Navigation, commandes     |
+| **INSERT**  | `i`, `a`, `o`      | Insertion de texte        |
+| **VISUAL**  | `v`, `V`, `Ctrl-v` | Sélection de texte        |
+| **COMMAND** | `:`                | Commandes ex (`:w`, `:q`) |
+
+### Mode Normal — Le Mode par Défaut
+
+```vim
+h  " ← gauche
+j  " ↓ bas
+k  " ↑ haut
+l  " → droite
+```
+
+### Mode Insert — Écriture
+
+```vim
+i   " Insert avant le curseur
+a   " Insert après le curseur
+o   " Insert nouvelle ligne en dessous
+I   " Insert au début de la ligne
+A   " Insert à la fin de la ligne
+O   " Insert nouvelle ligne au-dessus
+```
+
+## Mouvements Fondamentaux
+
+### Par Mot
+
+```vim
+w   " Next word (début du mot suivant)
+b   " Previous word
+e   " End of word
+```
+
+### Par Ligne
+
+```vim
+0   " Début de ligne
+^   " Premier caractère non-blanc
+$   " Fin de ligne
+gg  " Début du fichier
+G   " Fin du fichier
+```
+
+### Recherche
+
+```vim
+fX   " Find X — saute au prochain caractère X
+FX   " Find backward
+tX   " Until — juste avant X
+/pattern  " Recherche en avant
+n         " Prochaine occurrence
+N         " Occurrence précédente
+```
+
+## Opérateurs et Text Objects
+
+La vraie puissance : **Opérateur + Mouvement = Action**
+
+### Opérateurs
+
+```vim
+d   " Delete (coupe)
+c   " Change (supprime et passe en Insert)
+y   " Yank (copie)
+```
+
+### Text Objects
+
+```vim
+iw  " Inner word
+aw  " A word (avec espaces)
+i"  " Inner quotes
+a"  " A quotes (inclut les guillemets)
+i(  " Inner parenthèses
+a(  " A parenthèses
+it  " Inner HTML tag
+```
+
+### Exemples
+
+```vim
+daw     " Delete a word
+ciw     " Change inner word
+yi(     " Yank inside parentheses
+da]     " Delete around brackets
+```
+
+## Registres et Macros
+
+### Registres
+
+```vim
+"ayiw  " Yank dans registre ''a''
+"ap    " Paste depuis registre ''a''
+"+yy   " Yank vers clipboard système
+```
+
+### Macros
+
+```vim
+qa            " Enregistrer macro dans ''a''
+... actions ...
+q             " Stop recording
+@a            " Exécuter macro
+10@a          " Exécuter 10 fois
+```
+
+## Configuration Moderne (Neovim + Lua)
+
+Créez `~/.config/nvim/init.lua` :
+
+```lua
+-- Options
+vim.opt.number = true
+vim.opt.relativenumber = true
+vim.opt.mouse = ''a''
+vim.opt.ignorecase = true
+vim.opt.smartcase = true
+vim.opt.tabstop = 2
+vim.opt.shiftwidth = 2
+vim.opt.expandtab = true
+vim.opt.termguicolors = true
+
+-- Leader key
+vim.g.mapleader = '' ''
+
+-- Keymaps
+vim.keymap.set(''n'', ''<leader>w'', '':w<CR>'')
+vim.keymap.set(''n'', ''<leader>q'', '':q<CR>'')
+```
+
+## Plugins Essentiels
+
+Utilisez **lazy.nvim** comme gestionnaire :
+
+```lua
+-- Fuzzy Finder
+{
+  "nvim-telescope/telescope.nvim",
+  dependencies = { "nvim-lua/plenary.nvim" }
+}
+
+-- File Explorer
+{
+  "nvim-tree/nvim-tree.lua",
+  dependencies = { "nvim-tree/nvim-web-devicons" }
+}
+
+-- LSP
+{
+  "neovim/nvim-lspconfig",
+  "williamboman/mason.nvim"
+}
+
+-- TreeSitter
+{
+  "nvim-treesitter/nvim-treesitter",
+  build = ":TSUpdate"
+}
+
+-- Git Integration
+{
+  "lewis6991/gitsigns.nvim"
+}
+```
+
+## Workflow Pratique
+
+```vim
+" Navigation fichiers
+<leader>ff    " Fuzzy find files (Telescope)
+<leader>fg    " Grep dans tous les fichiers
+<leader>e     " File explorer
+
+" LSP
+gd            " Go to definition
+gr            " Find references
+K             " Hover documentation
+<leader>ca    " Code actions
+<leader>rn    " Rename symbol
+
+" Buffers
+:bn           " Next buffer
+:bp           " Previous buffer
+:bd           " Delete buffer
+
+" Splits
+:vs           " Vertical split
+:sp           " Horizontal split
+Ctrl-w h/j/k/l " Navigate splits
+```
+
+## Astuces Avancées
+
+### Marks
+
+```vim
+ma        " Set mark ''a''
+`a        " Jump to mark ''a''
+```
+
+### Dot Command
+
+Le `.` répète la dernière modification :
+
+```vim
+A;<Esc>   " Add ; at end
+j.        " Repeat on next line
+```
+
+### Global Commands
+
+```vim
+:g/console.log/d    " Delete all console.log
+:g/TODO/normal A!   " Add ! at end of TODOs
+```
+
+## Plan de Progression (30 jours)
+
+**Semaine 1 : Fondamentaux**
+
+- Modes, mouvements hjkl, wbe
+- Opérateurs d, c, y
+- Recherche /, n, \*
+
+**Semaine 2 : Text Objects**
+
+- ciw, daw, di(, da]
+- Visual mode
+- Buffers, splits
+
+**Semaine 3 : Automatisation**
+
+- Registres
+- Macros
+- Marks
+
+**Semaine 4 : Configuration**
+
+- Neovim + Lua
+- LSP, TreeSitter
+- Plugins
+
+## Ressources
+
+- `vimtutor` — Tutorial intégré (lancez dans terminal)
+- [Neovim Documentation](https://neovim.io/doc/)
+- [Vim Adventures](https://vim-adventures.com/) — Jeu pour apprendre
+- [LazyVim](https://www.lazyvim.org/) — Distribution prête à l''emploi
+- [NvChad](https://nvchad.com/) — Config moderne
+
+> **Le secret** : Pratiquez TOUS LES JOURS pendant 1 mois. Après, vous ne pourrez plus vous en passer. 🚀

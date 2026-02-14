@@ -2,7 +2,6 @@ import { Metadata } from "next";
 import { LayersDiagram } from "./_components/layers-diagram";
 import { CodeExamples } from "./_components/code-examples";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Layers, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
@@ -39,23 +38,30 @@ export default function CleanArchitecturePage() {
           {[
             {
               title: "Testabilité",
-              description: "Les règles métier peuvent être testées sans UI, base de données ou serveur web.",
+              description:
+                "Les règles métier peuvent être testées sans UI, base de données ou serveur web.",
               color: "text-green-500",
             },
             {
               title: "Indépendance",
-              description: "Le système ne dépend pas d'un framework, d'une base de données ou d'une UI spécifique.",
+              description:
+                "Le système ne dépend pas d'un framework, d'une base de données ou d'une UI spécifique.",
               color: "text-blue-500",
             },
             {
               title: "Maintenabilité",
-              description: "Les changements dans une couche externe n'affectent pas les couches internes.",
+              description:
+                "Les changements dans une couche externe n'affectent pas les couches internes.",
               color: "text-purple-500",
             },
           ].map((item) => (
             <Card key={item.title} className="p-6 space-y-2 border-border/40">
-              <h3 className={"text-lg font-semibold " + item.color}>{item.title}</h3>
-              <p className="text-sm text-muted-foreground">{item.description}</p>
+              <h3 className={"text-lg font-semibold " + item.color}>
+                {item.title}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {item.description}
+              </p>
             </Card>
           ))}
         </div>
@@ -66,7 +72,9 @@ export default function CleanArchitecturePage() {
       <Card className="p-6 bg-gradient-to-r from-primary/5 to-transparent border-primary/20">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-semibold">Continuez avec les principes SOLID</h3>
+            <h3 className="font-semibold">
+              Continuez avec les principes SOLID
+            </h3>
             <p className="text-sm text-muted-foreground">
               Les principes SOLID sont le fondement de la Clean Architecture.
             </p>

@@ -1,29 +1,47 @@
 import { Metadata } from "next";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Lock } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Sécurité Backend | TechMastry",
-  description: "Auth, JWT, OAuth, rate limiting, input validation et bonnes pratiques de sécurité backend",
+  description:
+    "Auth, JWT, OAuth, rate limiting, input validation et bonnes pratiques de sécurité backend",
 };
 
 const authFlows = [
   {
     name: "JWT Authentication",
-    steps: ["User envoie credentials", "Server vérifie et génère access + refresh token", "Client stocke les tokens", "Access token dans Authorization header", "Refresh quand expiré"],
+    steps: [
+      "User envoie credentials",
+      "Server vérifie et génère access + refresh token",
+      "Client stocke les tokens",
+      "Access token dans Authorization header",
+      "Refresh quand expiré",
+    ],
     pros: ["Stateless", "Scalable", "Cross-domain"],
     cons: ["Pas révocable natif", "Payload en base64 (lisible)"],
   },
   {
     name: "OAuth 2.0 (Authorization Code)",
-    steps: ["Redirect vers provider (Google/GitHub)", "User autorise", "Provider redirect avec auth code", "Server échange code contre tokens", "Server crée session locale"],
+    steps: [
+      "Redirect vers provider (Google/GitHub)",
+      "User autorise",
+      "Provider redirect avec auth code",
+      "Server échange code contre tokens",
+      "Server crée session locale",
+    ],
     pros: ["Pas de gestion de mots de passe", "SSO", "Scopes granulaires"],
     cons: ["Complexité du flow", "Dépendance au provider"],
   },
   {
     name: "Session-based Auth",
-    steps: ["User envoie credentials", "Server crée session (stockée en Redis)", "Session ID dans cookie HttpOnly", "Cookie envoyé automatiquement", "Server vérifie session ID"],
+    steps: [
+      "User envoie credentials",
+      "Server crée session (stockée en Redis)",
+      "Session ID dans cookie HttpOnly",
+      "Cookie envoyé automatiquement",
+      "Server vérifie session ID",
+    ],
     pros: ["Révocable instantanément", "Données côté serveur", "Simple"],
     cons: ["Sticky sessions", "Stockage centralisé nécessaire"],
   },
@@ -50,10 +68,12 @@ export default function BackendSecurityPage() {
           <Lock className="w-8 h-8" />
         </div>
         <div className="space-y-4">
-          <h1 className="text-4xl font-bold tracking-tight">Sécurité Backend</h1>
+          <h1 className="text-4xl font-bold tracking-tight">
+            Sécurité Backend
+          </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Authentification, autorisation, validation et toutes les bonnes pratiques
-            pour sécuriser vos applications backend.
+            Authentification, autorisation, validation et toutes les bonnes
+            pratiques pour sécuriser vos applications backend.
           </p>
         </div>
       </section>
@@ -70,20 +90,28 @@ export default function BackendSecurityPage() {
                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">
                       {i + 1}
                     </span>
-                    <span className="text-sm text-muted-foreground">{step}</span>
-                    {i < flow.steps.length - 1 && <span className="text-muted-foreground mx-1">→</span>}
+                    <span className="text-sm text-muted-foreground">
+                      {step}
+                    </span>
+                    {i < flow.steps.length - 1 && (
+                      <span className="text-muted-foreground mx-1">→</span>
+                    )}
                   </div>
                 ))}
               </div>
               <div className="grid grid-cols-2 gap-4 mt-2">
                 <div>
                   {flow.pros.map((p) => (
-                    <p key={p} className="text-xs text-muted-foreground">✅ {p}</p>
+                    <p key={p} className="text-xs text-muted-foreground">
+                      ✅ {p}
+                    </p>
                   ))}
                 </div>
                 <div>
                   {flow.cons.map((c) => (
-                    <p key={c} className="text-xs text-muted-foreground">⚠️ {c}</p>
+                    <p key={c} className="text-xs text-muted-foreground">
+                      ⚠️ {c}
+                    </p>
                   ))}
                 </div>
               </div>

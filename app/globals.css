@@ -208,7 +208,15 @@
   @apply prose-code:text-primary prose-pre:bg-transparent prose-pre:p-0 prose-pre:m-0;
 
   & pre {
-    @apply rounded-lg overflow-hidden my-6 transition-all duration-300;
+    @apply rounded-lg overflow-x-auto overflow-y-auto my-6 transition-all duration-300;
+    max-height: 80vh;
+    word-break: normal;
+    overflow-wrap: normal;
+    white-space: pre;
+  }
+
+  & pre code {
+    @apply block w-max min-w-full;
   }
 
   & code {
@@ -218,6 +226,7 @@
   /* Assurer que les blocs de code ne dépassent pas */
   & > * {
     @apply max-w-full;
+    min-width: 0;
   }
 }
 

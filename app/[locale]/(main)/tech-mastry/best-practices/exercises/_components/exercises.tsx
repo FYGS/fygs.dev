@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { Code2, CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle } from "lucide-react";
 import { useState } from "react";
 
 const exercises = [
@@ -11,7 +11,8 @@ const exercises = [
     title: "Code Review : Identifier les problèmes",
     difficulty: "medium",
     category: "Code Quality",
-    description: "Trouvez les problèmes dans ce code et proposez des corrections.",
+    description:
+      "Trouvez les problèmes dans ce code et proposez des corrections.",
     badCode: `// ❌ Code à revoir
 async function getData(id) {
   let data = null;
@@ -194,10 +195,15 @@ export function BestPracticesExercises() {
         {exercises.map((ex, i) => (
           <button
             key={ex.title}
-            onClick={() => { setActiveExercise(i); setShowSolution(false); }}
+            onClick={() => {
+              setActiveExercise(i);
+              setShowSolution(false);
+            }}
             className={cn(
               "px-4 py-2 rounded-lg text-sm font-medium transition-all",
-              activeExercise === i ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/80"
+              activeExercise === i
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted hover:bg-muted/80",
             )}
           >
             {ex.title}
@@ -208,13 +214,27 @@ export function BestPracticesExercises() {
       <Card className="p-6 space-y-6">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-bold">{exercises[activeExercise].title}</h2>
-            <Badge variant="outline">{exercises[activeExercise].category}</Badge>
-            <Badge className={exercises[activeExercise].difficulty === "hard" ? "bg-red-500/10 text-red-500" : "bg-yellow-500/10 text-yellow-500"}>
-              {exercises[activeExercise].difficulty === "hard" ? "Difficile" : "Moyen"}
+            <h2 className="text-xl font-bold">
+              {exercises[activeExercise].title}
+            </h2>
+            <Badge variant="outline">
+              {exercises[activeExercise].category}
+            </Badge>
+            <Badge
+              className={
+                exercises[activeExercise].difficulty === "hard"
+                  ? "bg-red-500/10 text-red-500"
+                  : "bg-yellow-500/10 text-yellow-500"
+              }
+            >
+              {exercises[activeExercise].difficulty === "hard"
+                ? "Difficile"
+                : "Moyen"}
             </Badge>
           </div>
-          <p className="text-muted-foreground">{exercises[activeExercise].description}</p>
+          <p className="text-muted-foreground">
+            {exercises[activeExercise].description}
+          </p>
         </div>
 
         {/* Bad Code */}
@@ -230,10 +250,15 @@ export function BestPracticesExercises() {
 
         {/* Issues to Find */}
         <div>
-          <h4 className="font-semibold mb-2">Problèmes à identifier ({exercises[activeExercise].issues.length})</h4>
+          <h4 className="font-semibold mb-2">
+            Problèmes à identifier ({exercises[activeExercise].issues.length})
+          </h4>
           <ul className="space-y-1">
             {exercises[activeExercise].issues.map((issue, i) => (
-              <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
+              <li
+                key={i}
+                className="text-sm text-muted-foreground flex items-start gap-2"
+              >
                 <div className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 shrink-0" />
                 {issue}
               </li>

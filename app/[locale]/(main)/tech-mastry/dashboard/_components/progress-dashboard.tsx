@@ -208,9 +208,6 @@ export function ProgressDashboard() {
       const realChallenges = isLoaded
         ? progress.challengesCompleted.length
         : mockProgressData.challengesCompleted;
-      const realTimeHours = isLoaded
-        ? Math.round(progress.totalTimeMinutes / 60)
-        : 42;
 
       setProgressData({
         ...mockProgressData,

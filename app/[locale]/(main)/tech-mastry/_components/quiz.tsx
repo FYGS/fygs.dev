@@ -28,12 +28,15 @@ export interface QuizQuestion {
 
 interface QuizProps {
   questions: QuizQuestion[];
-  title?: string;
   onComplete?: (score: number, total: number) => void;
   showCategories?: boolean;
 }
 
-export function Quiz({ questions, title = "Quiz", onComplete, showCategories = true }: QuizProps) {
+export function Quiz({
+  questions,
+  onComplete,
+  showCategories = true,
+}: QuizProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
@@ -59,19 +62,28 @@ export function Quiz({ questions, title = "Quiz", onComplete, showCategories = t
     }
   }, [isComplete, startTime]);
 
-  const handleAnswer = useCallback((index: number) => {
-    if (isAnswered) return;
-    setSelectedAnswer(index);
-    setIsAnswered(true);
-    const correct = index === filteredQuestions[currentIndex].correctIndex;
-    if (correct) setScore((s) => s + 1);
-    setAnswers((prev) => [...prev, index]);
-  }, [isAnswered, currentIndex, filteredQuestions]);
+  const handleAnswer = useCallback(
+    (index: number) => {
+      if (isAnswered) return;
+      setSelectedAnswer(index);
+      setIsAnswered(true);
+      const correct = index === filteredQuestions[currentIndex].correctIndex;
+      if (correct) setScore((s) => s + 1);
+      setAnswers((prev) => [...prev, index]);
+    },
+    [isAnswered, currentIndex, filteredQuestions],
+  );
 
   const handleNext = useCallback(() => {
     if (currentIndex + 1 >= filteredQuestions.length) {
       setIsComplete(true);
-      onComplete?.(score + (selectedAnswer === filteredQuestions[currentIndex].correctIndex ? 0 : 0), filteredQuestions.length);
+      onComplete?.(
+        score +
+          (selectedAnswer === filteredQuestions[currentIndex].correctIndex
+            ? 0
+            : 0),
+        filteredQuestions.length,
+      );
     } else {
       setCurrentIndex((i) => i + 1);
       setSelectedAnswer(null);
@@ -102,19 +114,27 @@ export function Quiz({ questions, title = "Quiz", onComplete, showCategories = t
 
   const getDifficultyColor = (d: string) => {
     switch (d) {
-      case "easy": return "bg-green-500/10 text-green-500";
-      case "medium": return "bg-yellow-500/10 text-yellow-500";
-      case "hard": return "bg-red-500/10 text-red-500";
-      default: return "";
+      case "easy":
+        return "bg-green-500/10 text-green-500";
+      case "medium":
+        return "bg-yellow-500/10 text-yellow-500";
+      case "hard":
+        return "bg-red-500/10 text-red-500";
+      default:
+        return "";
     }
   };
 
   const getDifficultyLabel = (d: string) => {
     switch (d) {
-      case "easy": return "Facile";
-      case "medium": return "Moyen";
-      case "hard": return "Difficile";
-      default: return d;
+      case "easy":
+        return "Facile";
+      case "medium":
+        return "Moyen";
+      case "hard":
+        return "Difficile";
+      default:
+        return d;
     }
   };
 
@@ -134,8 +154,8 @@ export function Quiz({ questions, title = "Quiz", onComplete, showCategories = t
             {pct >= 80
               ? "Excellent ! Vous maîtrisez bien ce sujet."
               : pct >= 60
-              ? "Bon résultat ! Quelques points à revoir."
-              : "Continuez à pratiquer pour améliorer votre score."}
+                ? "Bon résultat ! Quelques points à revoir."
+                : "Continuez à pratiquer pour améliorer votre score."}
           </p>
         </div>
         <div className="flex justify-center gap-4 text-sm text-muted-foreground">
@@ -151,14 +171,21 @@ export function Quiz({ questions, title = "Quiz", onComplete, showCategories = t
         <div className="text-left space-y-3 mt-6">
           <h4 className="font-semibold text-sm">Revue des réponses</h4>
           {filteredQuestions.map((q, i) => (
-            <div key={q.id} className={cn(
-              "p-3 rounded-lg border text-sm",
-              answers[i] === q.correctIndex ? "border-green-500/30 bg-green-500/5" : "border-red-500/30 bg-red-500/5"
-            )}>
+            <div
+              key={q.id}
+              className={cn(
+                "p-3 rounded-lg border text-sm",
+                answers[i] === q.correctIndex
+                  ? "border-green-500/30 bg-green-500/5"
+                  : "border-red-500/30 bg-red-500/5",
+              )}
+            >
               <div className="flex items-start gap-2">
-                {answers[i] === q.correctIndex
-                  ? <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
-                  : <XCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />}
+                {answers[i] === q.correctIndex ? (
+                  <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+                ) : (
+                  <XCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
+                )}
                 <div>
                   <p className="font-medium">{q.question}</p>
                   {answers[i] !== q.correctIndex && (
@@ -189,7 +216,10 @@ export function Quiz({ questions, title = "Quiz", onComplete, showCategories = t
           <Button
             variant={selectedCategory === null ? "default" : "outline"}
             size="sm"
-            onClick={() => { setSelectedCategory(null); handleReset(); }}
+            onClick={() => {
+              setSelectedCategory(null);
+              handleReset();
+            }}
           >
             Toutes ({questions.length})
           </Button>
@@ -198,7 +228,10 @@ export function Quiz({ questions, title = "Quiz", onComplete, showCategories = t
               key={cat}
               variant={selectedCategory === cat ? "default" : "outline"}
               size="sm"
-              onClick={() => { setSelectedCategory(cat); handleReset(); }}
+              onClick={() => {
+                setSelectedCategory(cat);
+                handleReset();
+              }}
             >
               {cat} ({questions.filter((q) => q.category === cat).length})
             </Button>
@@ -224,7 +257,9 @@ export function Quiz({ questions, title = "Quiz", onComplete, showCategories = t
       <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
         <div
           className="h-full bg-primary transition-all duration-300 rounded-full"
-          style={{ width: `${((currentIndex + 1) / filteredQuestions.length) * 100}%` }}
+          style={{
+            width: `${((currentIndex + 1) / filteredQuestions.length) * 100}%`,
+          }}
         />
       </div>
 
@@ -252,25 +287,29 @@ export function Quiz({ questions, title = "Quiz", onComplete, showCategories = t
                   ? i === currentQuestion.correctIndex
                     ? "border-green-500 bg-green-500/10"
                     : i === selectedAnswer
-                    ? "border-red-500 bg-red-500/10"
-                    : "border-border opacity-50"
-                  : "border-border hover:border-primary/50 hover:bg-accent cursor-pointer"
+                      ? "border-red-500 bg-red-500/10"
+                      : "border-border opacity-50"
+                  : "border-border hover:border-primary/50 hover:bg-accent cursor-pointer",
               )}
             >
               <div className="flex items-center gap-3">
-                <span className={cn(
-                  "w-7 h-7 rounded-full flex items-center justify-center text-sm font-medium border shrink-0",
-                  isAnswered && i === currentQuestion.correctIndex
-                    ? "border-green-500 text-green-500 bg-green-500/10"
-                    : isAnswered && i === selectedAnswer
-                    ? "border-red-500 text-red-500 bg-red-500/10"
-                    : "border-muted-foreground/30"
-                )}>
-                  {isAnswered && i === currentQuestion.correctIndex
-                    ? <CheckCircle2 className="w-4 h-4" />
-                    : isAnswered && i === selectedAnswer
-                    ? <XCircle className="w-4 h-4" />
-                    : String.fromCharCode(65 + i)}
+                <span
+                  className={cn(
+                    "w-7 h-7 rounded-full flex items-center justify-center text-sm font-medium border shrink-0",
+                    isAnswered && i === currentQuestion.correctIndex
+                      ? "border-green-500 text-green-500 bg-green-500/10"
+                      : isAnswered && i === selectedAnswer
+                        ? "border-red-500 text-red-500 bg-red-500/10"
+                        : "border-muted-foreground/30",
+                  )}
+                >
+                  {isAnswered && i === currentQuestion.correctIndex ? (
+                    <CheckCircle2 className="w-4 h-4" />
+                  ) : isAnswered && i === selectedAnswer ? (
+                    <XCircle className="w-4 h-4" />
+                  ) : (
+                    String.fromCharCode(65 + i)
+                  )}
                 </span>
                 <span className="text-sm">{option}</span>
               </div>
@@ -280,23 +319,31 @@ export function Quiz({ questions, title = "Quiz", onComplete, showCategories = t
 
         {/* Explanation */}
         {isAnswered && (
-          <div className={cn(
-            "p-4 rounded-lg border",
-            selectedAnswer === currentQuestion.correctIndex
-              ? "border-green-500/30 bg-green-500/5"
-              : "border-red-500/30 bg-red-500/5"
-          )}>
+          <div
+            className={cn(
+              "p-4 rounded-lg border",
+              selectedAnswer === currentQuestion.correctIndex
+                ? "border-green-500/30 bg-green-500/5"
+                : "border-red-500/30 bg-red-500/5",
+            )}
+          >
             <p className="text-sm font-medium mb-1">
-              {selectedAnswer === currentQuestion.correctIndex ? "Correct !" : "Incorrect"}
+              {selectedAnswer === currentQuestion.correctIndex
+                ? "Correct !"
+                : "Incorrect"}
             </p>
-            <p className="text-sm text-muted-foreground">{currentQuestion.explanation}</p>
+            <p className="text-sm text-muted-foreground">
+              {currentQuestion.explanation}
+            </p>
           </div>
         )}
 
         {isAnswered && (
           <div className="flex justify-end">
             <Button onClick={handleNext} className="gap-2">
-              {currentIndex + 1 >= filteredQuestions.length ? "Voir les résultats" : "Suivant"}
+              {currentIndex + 1 >= filteredQuestions.length
+                ? "Voir les résultats"
+                : "Suivant"}
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>

@@ -1,0 +1,888 @@
+---
+title: "Développement Full-Stack Moderne avec Next.js : Le Guide Ultime"
+excerpt: "Construisez une application SaaS complète avec Next.js 15+, Server Components, Server Actions, Prisma, Tailwind CSS et le déploiement. Du setup initial au monitoring en production — tout ce qu'il faut savoir."
+date: "2025-09-01"
+author: "Fernand SOUALO"
+categories: ["Next.js", "React", "Full-Stack", "TypeScript", "Web Development"]
+coverImage: "/blog/fullstack-nextjs.png"
+---
+
+# Développement Full-Stack Moderne avec Next.js : Le Guide Ultime
+
+## Table of Contents
+
+1. [Pourquoi Next.js ?](#pourquoi)
+2. [Architecture du Projet SaaS](#architecture)
+3. [Setup du Projet](#setup)
+4. [App Router en Profondeur](#app-router)
+5. [Server Components vs Client Components](#server-client)
+6. [Server Actions — Le Nouveau Paradigme](#server-actions)
+7. [Base de Données avec Prisma](#database)
+8. [Authentification](#auth)
+9. [Formulaires et Validation](#forms)
+10. [API Routes et Route Handlers](#api)
+11. [Gestion d'État](#state)
+12. [Styling avec Tailwind CSS](#styling)
+13. [Optimisation des Performances](#performance)
+14. [SEO et Metadata](#seo)
+15. [Middleware et Sécurité](#middleware)
+16. [Testing](#testing)
+17. [Déploiement et CI/CD](#deployment)
+18. [Monitoring en Production](#monitoring)
+19. [Conclusion](#conclusion)
+
+## Pourquoi Next.js ? <a name="pourquoi"></a>
+
+Next.js n'est pas juste un framework React — c'est un **framework full-stack** qui résout les problèmes que les développeurs rencontrent dans chaque projet :
+
+| Problème | Solution Next.js |
+|----------|-----------------|
+| SEO avec React SPA | Server-Side Rendering + Static Generation |
+| Performance initiale | Streaming, Suspense, Server Components |
+| Routing | App Router basé sur le file system |
+| Data fetching | Server Components + Server Actions |
+| API backend | Route Handlers |
+| Optimisation images | Composant Image avec optimisation automatique |
+| Bundle size | Tree shaking, code splitting automatique |
+
+### Ce qu'on va Construire
+
+Un **SaaS de gestion de projets** ("TaskFlow") avec :
+- Dashboard avec analytics temps réel
+- Gestion de projets et tâches (CRUD complet)
+- Authentification multi-provider
+- Abonnements et quotas
+- Paramètres utilisateur
+- Dark/light mode
+
+## Architecture du Projet <a name="architecture"></a>
+
+```
+taskflow/
+├── src/
+│   ├── app/
+│   │   ├── (auth)/              # Routes d'authentification
+│   │   │   ├── login/page.tsx
+│   │   │   ├── register/page.tsx
+│   │   │   └── layout.tsx
+│   │   ├── (dashboard)/         # Routes protégées
+│   │   │   ├── layout.tsx       # Sidebar + Header
+│   │   │   ├── page.tsx         # Dashboard home
+│   │   │   ├── projects/
+│   │   │   │   ├── page.tsx     # Liste des projets
+│   │   │   │   ├── [id]/page.tsx # Détail projet
+│   │   │   │   └── new/page.tsx # Créer un projet
+│   │   │   ├── tasks/
+│   │   │   │   └── [id]/page.tsx
+│   │   │   └── settings/
+│   │   │       └── page.tsx
+│   │   ├── api/                  # Route Handlers
+│   │   │   ├── webhooks/
+│   │   │   └── cron/
+│   │   ├── layout.tsx            # Root layout
+│   │   ├── loading.tsx
+│   │   ├── error.tsx
+│   │   ├── not-found.tsx
+│   │   └── globals.css
+│   ├── components/
+│   │   ├── ui/                   # shadcn/ui components
+│   │   ├── dashboard/            # Dashboard-specific
+│   │   ├── projects/             # Project-related
+│   │   └── shared/               # Shared components
+│   ├── lib/
+│   │   ├── db.ts                 # Prisma client
+│   │   ├── auth.ts               # Auth config
+│   │   ├── validators.ts         # Zod schemas
+│   │   └── utils.ts              # Utilities
+│   ├── actions/                  # Server Actions
+│   │   ├── projects.ts
+│   │   ├── tasks.ts
+│   │   └── user.ts
+│   ├── hooks/                    # Custom hooks
+│   └── types/                    # TypeScript types
+├── prisma/
+│   ├── schema.prisma
+│   └── seed.ts
+├── public/
+├── next.config.ts
+├── tailwind.config.ts
+└── package.json
+```
+
+## App Router en Profondeur <a name="app-router"></a>
+
+### Fichiers Spéciaux
+
+```typescript
+// app/layout.tsx — Layout racine (s'applique à toutes les pages)
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import { ThemeProvider } from "@/components/providers/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
+import "./globals.css";
+
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
+  title: {
+    default: "TaskFlow — Project Management",
+    template: "%s | TaskFlow",
+  },
+  description: "Modern project management for modern teams",
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="fr" suppressHydrationWarning>
+      <body className={inter.className}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+          <Toaster richColors position="top-right" />
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+}
+
+// app/loading.tsx — Skeleton global
+export default function Loading() {
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+    </div>
+  );
+}
+
+// app/error.tsx — Error boundary global
+"use client";
+
+import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  useEffect(() => {
+    console.error(error);
+  }, [error]);
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+      <h2 className="text-2xl font-bold">Something went wrong!</h2>
+      <p className="text-muted-foreground">{error.message}</p>
+      <Button onClick={reset}>Try again</Button>
+    </div>
+  );
+}
+
+// app/not-found.tsx — Page 404
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+
+export default function NotFound() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+      <h1 className="text-6xl font-bold text-primary">404</h1>
+      <p className="text-xl text-muted-foreground">Page not found</p>
+      <Button asChild>
+        <Link href="/">Go home</Link>
+      </Button>
+    </div>
+  );
+}
+```
+
+### Route Groups et Layouts
+
+```typescript
+// app/(dashboard)/layout.tsx — Layout avec sidebar
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
+import { Sidebar } from "@/components/dashboard/sidebar";
+import { Header } from "@/components/dashboard/header";
+
+export default async function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const session = await auth();
+
+  if (!session?.user) {
+    redirect("/login");
+  }
+
+  return (
+    <div className="flex h-screen">
+      <Sidebar user={session.user} />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header user={session.user} />
+        <main className="flex-1 overflow-y-auto p-6 bg-muted/30">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}
+```
+
+## Server Components vs Client Components <a name="server-client"></a>
+
+### Règle de Décision
+
+```typescript
+// ── SERVER Component (par défaut) ──
+// Utiliser quand : data fetching, accès DB/filesystem, secrets, pas d'interactivité
+export default async function ProjectsPage() {
+  // Accès direct à la base de données — pas d'API nécessaire !
+  const projects = await db.project.findMany({
+    where: { userId: session.user.id },
+    orderBy: { updatedAt: "desc" },
+    include: {
+      _count: { select: { tasks: true } },
+    },
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Projets</h1>
+        <CreateProjectButton />  {/* Client Component */}
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {projects.map((project) => (
+          <ProjectCard key={project.id} project={project} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── CLIENT Component ──
+// Utiliser quand : event handlers, hooks, browser APIs, interactivité
+"use client";
+
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { createProject } from "@/actions/projects";
+import { toast } from "sonner";
+
+export function CreateProjectButton() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+
+  const handleSubmit = async (formData: FormData) => {
+    startTransition(async () => {
+      const result = await createProject(formData);
+      if (result.success) {
+        toast.success("Projet créé !");
+        setIsOpen(false);
+        router.refresh();
+      } else {
+        toast.error(result.error);
+      }
+    });
+  };
+
+  return (
+    <>
+      <Button onClick={() => setIsOpen(true)}>
+        <Plus className="h-4 w-4 mr-2" />
+        Nouveau projet
+      </Button>
+      {isOpen && (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <DialogContent>
+            <form action={handleSubmit}>
+              <Input name="name" placeholder="Nom du projet" required />
+              <Textarea name="description" placeholder="Description" />
+              <Button type="submit" disabled={isPending}>
+                {isPending ? "Création..." : "Créer"}
+              </Button>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
+  );
+}
+```
+
+### Composition Server + Client
+
+```typescript
+// La clé : Server Components peuvent CONTENIR des Client Components
+// Mais PAS l'inverse
+
+// ✅ BON — Server Component wrapping Client Component
+export default async function Dashboard() {
+  const stats = await getStats(); // Server-side
+  const projects = await getProjects(); // Server-side
+
+  return (
+    <div>
+      <StatsCards stats={stats} />           {/* Server (pas d'interactivité) */}
+      <InteractiveChart data={stats} />       {/* Client (chart interactive) */}
+      <ProjectList projects={projects} />     {/* Server */}
+    </div>
+  );
+}
+
+// ❌ MAUVAIS — Client Component importants un Server Component
+"use client";
+import { ServerComponent } from "./server-component"; // ⚠️ Sera converti en client !
+
+// ✅ BON — Passer le Server Component comme children
+"use client";
+export function ClientWrapper({ children }: { children: React.ReactNode }) {
+  const [isOpen, setIsOpen] = useState(true);
+  return isOpen ? <div>{children}</div> : null;
+}
+
+// Dans un Server Component parent :
+<ClientWrapper>
+  <ServerDataComponent /> {/* Reste un Server Component ! */}
+</ClientWrapper>
+```
+
+## Server Actions — Le Nouveau Paradigme <a name="server-actions"></a>
+
+Les Server Actions remplacent les API routes pour les mutations :
+
+```typescript
+// src/actions/projects.ts
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
+import { db } from "@/lib/db";
+import { auth } from "@/lib/auth";
+
+// Schéma de validation Zod
+const createProjectSchema = z.object({
+  name: z.string().min(1, "Le nom est requis").max(100),
+  description: z.string().max(500).optional(),
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+});
+
+export async function createProject(formData: FormData) {
+  // 1. Authentification
+  const session = await auth();
+  if (!session?.user) {
+    return { success: false, error: "Non authentifié" };
+  }
+
+  // 2. Validation
+  const parsed = createProjectSchema.safeParse({
+    name: formData.get("name"),
+    description: formData.get("description"),
+    color: formData.get("color"),
+  });
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: parsed.error.issues[0].message,
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  // 3. Vérification des quotas
+  const projectCount = await db.project.count({
+    where: { userId: session.user.id },
+  });
+
+  const maxProjects = session.user.plan === "PRO" ? 50 : 5;
+  if (projectCount >= maxProjects) {
+    return {
+      success: false,
+      error: `Limite de ${maxProjects} projets atteinte. Passez au plan Pro.`,
+    };
+  }
+
+  // 4. Création
+  try {
+    const project = await db.project.create({
+      data: {
+        ...parsed.data,
+        userId: session.user.id,
+      },
+    });
+
+    // 5. Revalidation du cache
+    revalidatePath("/projects");
+
+    return { success: true, project };
+  } catch (error) {
+    console.error("Failed to create project:", error);
+    return { success: false, error: "Erreur lors de la création du projet" };
+  }
+}
+
+export async function updateProject(projectId: string, formData: FormData) {
+  const session = await auth();
+  if (!session?.user) return { success: false, error: "Non authentifié" };
+
+  // Vérifier la propriété
+  const project = await db.project.findFirst({
+    where: { id: projectId, userId: session.user.id },
+  });
+
+  if (!project) {
+    return { success: false, error: "Projet non trouvé" };
+  }
+
+  const data = createProjectSchema.partial().parse({
+    name: formData.get("name") || undefined,
+    description: formData.get("description") || undefined,
+  });
+
+  await db.project.update({
+    where: { id: projectId },
+    data,
+  });
+
+  revalidatePath(`/projects/${projectId}`);
+  revalidatePath("/projects");
+
+  return { success: true };
+}
+
+export async function deleteProject(projectId: string) {
+  const session = await auth();
+  if (!session?.user) return { success: false, error: "Non authentifié" };
+
+  await db.project.delete({
+    where: { id: projectId, userId: session.user.id },
+  });
+
+  revalidatePath("/projects");
+  return { success: true };
+}
+```
+
+### Server Actions avec useActionState (React 19)
+
+```typescript
+"use client";
+
+import { useActionState } from "react";
+import { createProject } from "@/actions/projects";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+type State = {
+  success: boolean;
+  error?: string;
+  fieldErrors?: Record<string, string[]>;
+} | null;
+
+export function CreateProjectForm() {
+  const [state, formAction, isPending] = useActionState<State, FormData>(
+    async (_prevState, formData) => {
+      return await createProject(formData);
+    },
+    null
+  );
+
+  return (
+    <form action={formAction} className="space-y-4">
+      <div>
+        <Label htmlFor="name">Nom du projet</Label>
+        <Input
+          id="name"
+          name="name"
+          required
+          className={state?.fieldErrors?.name ? "border-red-500" : ""}
+        />
+        {state?.fieldErrors?.name && (
+          <p className="text-sm text-red-500 mt-1">
+            {state.fieldErrors.name[0]}
+          </p>
+        )}
+      </div>
+
+      <div>
+        <Label htmlFor="description">Description</Label>
+        <Textarea id="description" name="description" />
+      </div>
+
+      {state?.error && (
+        <div className="bg-red-500/10 text-red-500 p-3 rounded-lg text-sm">
+          {state.error}
+        </div>
+      )}
+
+      <Button type="submit" disabled={isPending} className="w-full">
+        {isPending ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            Création en cours...
+          </>
+        ) : (
+          "Créer le projet"
+        )}
+      </Button>
+    </form>
+  );
+}
+```
+
+## Base de Données avec Prisma <a name="database"></a>
+
+```prisma
+// prisma/schema.prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  avatar    String?
+  plan      Plan     @default(FREE)
+  
+  projects  Project[]
+  sessions  Session[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  color       String   @default("#6366F1")
+  archived    Boolean  @default(false)
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  tasks       Task[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Task {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  status      TaskStatus @default(TODO)
+  priority    Priority   @default(MEDIUM)
+  dueDate     DateTime?
+  position    Int        @default(0)
+  
+  projectId   String
+  project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  assigneeId  String?
+  
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([projectId])
+  @@index([status])
+}
+
+enum Plan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+```
+
+```typescript
+// src/lib/db.ts — Singleton Prisma (Next.js compatible)
+import { PrismaClient } from "@prisma/client";
+
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
+
+export const db = globalForPrisma.prisma ?? new PrismaClient({
+  log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+});
+
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = db;
+}
+```
+
+## Optimisation des Performances <a name="performance"></a>
+
+```typescript
+// ── Streaming avec Suspense ──
+import { Suspense } from "react";
+
+export default function DashboardPage() {
+  return (
+    <div className="space-y-8">
+      {/* Les stats se chargent immédiatement */}
+      <Suspense fallback={<StatsCardsSkeleton />}>
+        <StatsCards />
+      </Suspense>
+      
+      {/* Les projets récents streament après */}
+      <Suspense fallback={<ProjectsGridSkeleton />}>
+        <RecentProjects />
+      </Suspense>
+      
+      {/* L'activité récente stream en dernier */}
+      <Suspense fallback={<ActivityFeedSkeleton />}>
+        <ActivityFeed />
+      </Suspense>
+    </div>
+  );
+}
+
+// Chaque composant fait son propre data fetching
+async function StatsCards() {
+  const stats = await db.project.aggregate({
+    where: { userId: session.user.id },
+    _count: true,
+  });
+  // ... render
+}
+
+// ── Parallel Data Fetching ──
+async function DashboardContent() {
+  // Ces requêtes s'exécutent EN PARALLÈLE, pas séquentiellement !
+  const [projects, tasks, activity] = await Promise.all([
+    db.project.findMany({ where: { userId: session.user.id }, take: 6 }),
+    db.task.findMany({ where: { assigneeId: session.user.id, status: "TODO" } }),
+    db.activity.findMany({ where: { userId: session.user.id }, take: 10 }),
+  ]);
+
+  return <Dashboard projects={projects} tasks={tasks} activity={activity} />;
+}
+
+// ── Dynamic Imports pour le Code Splitting ──
+import dynamic from "next/dynamic";
+
+const HeavyChart = dynamic(() => import("@/components/chart"), {
+  loading: () => <ChartSkeleton />,
+  ssr: false, // N'exécuter que côté client
+});
+
+// ── Image Optimization ──
+import Image from "next/image";
+
+export function ProjectAvatar({ src, name }: { src: string; name: string }) {
+  return (
+    <Image
+      src={src}
+      alt={name}
+      width={40}
+      height={40}
+      className="rounded-full"
+      placeholder="blur"
+      blurDataURL="data:image/png;base64,..."
+    />
+  );
+}
+```
+
+## SEO et Metadata <a name="seo"></a>
+
+```typescript
+// app/(dashboard)/projects/[id]/page.tsx
+import type { Metadata } from "next";
+
+// Metadata dynamique basée sur les données
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const project = await db.project.findUnique({ where: { id } });
+
+  if (!project) {
+    return { title: "Project Not Found" };
+  }
+
+  return {
+    title: project.name,
+    description: project.description ?? `Manage ${project.name} on TaskFlow`,
+    openGraph: {
+      title: `${project.name} — TaskFlow`,
+      description: project.description ?? "Project management made simple",
+      type: "website",
+    },
+  };
+}
+```
+
+## Middleware et Sécurité <a name="middleware"></a>
+
+```typescript
+// middleware.ts
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+const protectedPaths = ["/projects", "/settings", "/tasks"];
+const authPaths = ["/login", "/register"];
+
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const sessionToken = request.cookies.get("session-token")?.value;
+
+  // Rediriger les utilisateurs non authentifiés
+  if (protectedPaths.some(path => pathname.startsWith(path))) {
+    if (!sessionToken) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  // Rediriger les utilisateurs authentifiés loin des pages auth
+  if (authPaths.some(path => pathname.startsWith(path))) {
+    if (sessionToken) {
+      return NextResponse.redirect(new URL("/projects", request.url));
+    }
+  }
+
+  // Security headers
+  const response = NextResponse.next();
+  response.headers.set("X-Frame-Options", "DENY");
+  response.headers.set("X-Content-Type-Options", "nosniff");
+  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+
+  return response;
+}
+
+export const config = {
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+};
+```
+
+## Testing <a name="testing"></a>
+
+```typescript
+// __tests__/actions/projects.test.ts
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { createProject, deleteProject } from "@/actions/projects";
+
+// Mock Prisma
+vi.mock("@/lib/db", () => ({
+  db: {
+    project: {
+      create: vi.fn(),
+      count: vi.fn(),
+      delete: vi.fn(),
+      findFirst: vi.fn(),
+    },
+  },
+}));
+
+// Mock auth
+vi.mock("@/lib/auth", () => ({
+  auth: vi.fn(),
+}));
+
+describe("createProject", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (auth as any).mockResolvedValue({
+      user: { id: "user_1", plan: "FREE" },
+    });
+  });
+
+  it("creates a project successfully", async () => {
+    (db.project.count as any).mockResolvedValue(0);
+    (db.project.create as any).mockResolvedValue({
+      id: "proj_1",
+      name: "Test Project",
+    });
+
+    const formData = new FormData();
+    formData.set("name", "Test Project");
+
+    const result = await createProject(formData);
+    expect(result.success).toBe(true);
+    expect(result.project?.name).toBe("Test Project");
+  });
+
+  it("rejects when quota exceeded", async () => {
+    (db.project.count as any).mockResolvedValue(5); // Free plan limit
+
+    const formData = new FormData();
+    formData.set("name", "Over Limit");
+
+    const result = await createProject(formData);
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("Limite");
+  });
+
+  it("validates input data", async () => {
+    const formData = new FormData();
+    formData.set("name", ""); // Empty name
+
+    const result = await createProject(formData);
+    expect(result.success).toBe(false);
+    expect(result.fieldErrors?.name).toBeDefined();
+  });
+});
+```
+
+## Conclusion <a name="conclusion"></a>
+
+Next.js est devenu **le framework full-stack de référence** pour le développement web moderne. En combinant React Server Components, Server Actions, et les optimisations automatiques, il permet de construire des applications performantes avec une expérience développeur exceptionnelle.
+
+### Checklist du Développeur Next.js
+
+- [ ] **Architecture** : App Router avec Route Groups
+- [ ] **Data Fetching** : Server Components par défaut, Client uniquement pour l'interactivité
+- [ ] **Mutations** : Server Actions avec validation Zod
+- [ ] **Base de données** : Prisma avec singleton pattern
+- [ ] **Auth** : Middleware + session checks dans les layouts
+- [ ] **Performance** : Suspense, streaming, parallel data fetching
+- [ ] **SEO** : Metadata API dynamique + sitemap + robots.txt
+- [ ] **Sécurité** : Middleware, CSRF, rate limiting, input validation
+- [ ] **Tests** : Vitest pour unit/integration, Playwright pour e2e
+- [ ] **Monitoring** : Error tracking, analytics, performance metrics
+
+> **Conseil final** : Next.js évolue rapidement. Suivez les [release notes officielles](https://nextjs.org/blog) et la [documentation](https://nextjs.org/docs) pour rester à jour sur les meilleures pratiques.

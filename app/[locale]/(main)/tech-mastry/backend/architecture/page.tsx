@@ -1,11 +1,11 @@
 import { Metadata } from "next";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Layers } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Architecture Backend | TechMastry",
-  description: "Patterns d'architecture backend : MVC, Clean Architecture, CQRS, Event Sourcing et Repository",
+  description:
+    "Patterns d'architecture backend : MVC, Clean Architecture, CQRS, Event Sourcing et Repository",
 };
 
 const patterns = [
@@ -26,7 +26,11 @@ class UserController {
   {
     name: "Repository Pattern",
     desc: "Abstraction de la couche d'accès aux données. Découple la logique métier du stockage.",
-    pros: ["Testable (mock repos)", "Interchangeable (SQL→NoSQL)", "Clean interfaces"],
+    pros: [
+      "Testable (mock repos)",
+      "Interchangeable (SQL→NoSQL)",
+      "Clean interfaces",
+    ],
     cons: ["Boilerplate", "Can leak abstractions"],
     code: `interface UserRepository {
   findById(id: string): Promise<User | null>;
@@ -45,7 +49,11 @@ class PrismaUserRepository implements UserRepository {
   {
     name: "CQRS",
     desc: "Command Query Responsibility Segregation. Sépare les lectures des écritures pour optimiser chaque chemin.",
-    pros: ["Performance optimisée", "Scalabilité indépendante", "Modèles read/write spécifiques"],
+    pros: [
+      "Performance optimisée",
+      "Scalabilité indépendante",
+      "Modèles read/write spécifiques",
+    ],
     cons: ["Complexité accrue", "Eventual consistency", "Plus de code"],
     code: `// Command (écriture)
 class CreateOrderCommand {
@@ -73,7 +81,11 @@ class OrderReadModel {
   {
     name: "Event Sourcing",
     desc: "Au lieu de stocker l'état actuel, stockez tous les événements qui ont mené à cet état. Rejouer pour reconstruire.",
-    pros: ["Audit trail complet", "Time travel debugging", "Replay & projection"],
+    pros: [
+      "Audit trail complet",
+      "Time travel debugging",
+      "Replay & projection",
+    ],
     cons: ["Complexité", "Storage important", "Schema evolution"],
     code: `// Store events, not state
 const events = [
@@ -105,10 +117,12 @@ export default function BackendArchitecturePage() {
           <Layers className="w-8 h-8" />
         </div>
         <div className="space-y-4">
-          <h1 className="text-4xl font-bold tracking-tight">Architecture Backend</h1>
+          <h1 className="text-4xl font-bold tracking-tight">
+            Architecture Backend
+          </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Patterns d&apos;architecture pour structurer vos applications backend :
-            MVC, Repository, CQRS et Event Sourcing.
+            Patterns d&apos;architecture pour structurer vos applications
+            backend : MVC, Repository, CQRS et Event Sourcing.
           </p>
         </div>
       </section>
@@ -121,12 +135,16 @@ export default function BackendArchitecturePage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 {p.pros.map((pro) => (
-                  <p key={pro} className="text-sm text-muted-foreground">✅ {pro}</p>
+                  <p key={pro} className="text-sm text-muted-foreground">
+                    ✅ {pro}
+                  </p>
                 ))}
               </div>
               <div>
                 {p.cons.map((con) => (
-                  <p key={con} className="text-sm text-muted-foreground">⚠️ {con}</p>
+                  <p key={con} className="text-sm text-muted-foreground">
+                    ⚠️ {con}
+                  </p>
                 ))}
               </div>
             </div>

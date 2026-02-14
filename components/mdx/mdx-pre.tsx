@@ -80,7 +80,7 @@ export function MDXPre({
   }, []);
 
   return (
-    <div className="group relative my-6 overflow-hidden rounded-xl border border-border/60 bg-[#1e1e2e] shadow-lg transition-shadow hover:shadow-xl">
+    <div className="group relative my-6 overflow-hidden rounded-xl border border-border/60 bg-[#1e1e2e] shadow-lg transition-shadow hover:shadow-xl max-w-full min-w-0">
       {/* Header bar */}
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5 bg-white/[0.03]">
         <div className="flex items-center gap-3">
@@ -126,8 +126,9 @@ export function MDXPre({
       <pre
         ref={preRef}
         className={cn(
-          "overflow-x-auto p-4 text-sm leading-relaxed",
+          "overflow-x-auto overflow-y-auto max-h-[80vh] p-4 text-sm leading-relaxed",
           "[&>code]:bg-transparent [&>code]:p-0 [&>code]:border-0",
+          "[&>code]:block [&>code]:w-max [&>code]:min-w-full",
           className,
         )}
         {...props}

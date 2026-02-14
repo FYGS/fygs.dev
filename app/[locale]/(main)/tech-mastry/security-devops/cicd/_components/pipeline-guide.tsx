@@ -3,20 +3,54 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { Check, GitCommit, Package, Play, Shield, TestTube } from "lucide-react";
+import { GitCommit, Package, Play, Shield, TestTube } from "lucide-react";
 import { useState } from "react";
 
 const pipelineStages = [
-  { id: "commit", label: "Commit", icon: GitCommit, color: "text-blue-500", bgColor: "bg-blue-500" },
-  { id: "test", label: "Test", icon: TestTube, color: "text-yellow-500", bgColor: "bg-yellow-500" },
-  { id: "security", label: "Security", icon: Shield, color: "text-red-500", bgColor: "bg-red-500" },
-  { id: "build", label: "Build", icon: Package, color: "text-purple-500", bgColor: "bg-purple-500" },
-  { id: "deploy", label: "Deploy", icon: Play, color: "text-green-500", bgColor: "bg-green-500" },
+  {
+    id: "commit",
+    label: "Commit",
+    icon: GitCommit,
+    color: "text-blue-500",
+    bgColor: "bg-blue-500",
+  },
+  {
+    id: "test",
+    label: "Test",
+    icon: TestTube,
+    color: "text-yellow-500",
+    bgColor: "bg-yellow-500",
+  },
+  {
+    id: "security",
+    label: "Security",
+    icon: Shield,
+    color: "text-red-500",
+    bgColor: "bg-red-500",
+  },
+  {
+    id: "build",
+    label: "Build",
+    icon: Package,
+    color: "text-purple-500",
+    bgColor: "bg-purple-500",
+  },
+  {
+    id: "deploy",
+    label: "Deploy",
+    icon: Play,
+    color: "text-green-500",
+    bgColor: "bg-green-500",
+  },
 ];
 
-const stageDetails: Record<string, { description: string; tools: string[]; code: string }> = {
+const stageDetails: Record<
+  string,
+  { description: string; tools: string[]; code: string }
+> = {
   commit: {
-    description: "Le développeur push son code. Le pipeline se déclenche automatiquement.",
+    description:
+      "Le développeur push son code. Le pipeline se déclenche automatiquement.",
     tools: ["Git Hooks", "Commitlint", "Husky", "Lint-staged"],
     code: `# .github/workflows/ci.yml
 name: CI Pipeline
@@ -36,7 +70,8 @@ jobs:
       - run: pnpm lint`,
   },
   test: {
-    description: "Tests unitaires, d'intégration et e2e pour valider la qualité du code.",
+    description:
+      "Tests unitaires, d'intégration et e2e pour valider la qualité du code.",
     tools: ["Vitest", "Playwright", "Jest", "Testing Library"],
     code: `  test:
     needs: lint
@@ -53,7 +88,8 @@ jobs:
           path: test-results/`,
   },
   security: {
-    description: "Scan des dépendances et du code pour détecter les vulnérabilités.",
+    description:
+      "Scan des dépendances et du code pour détecter les vulnérabilités.",
     tools: ["Dependabot", "Snyk", "CodeQL", "Trivy"],
     code: `  security:
     needs: test
@@ -67,7 +103,8 @@ jobs:
           severity: 'HIGH,CRITICAL'`,
   },
   build: {
-    description: "Construction de l'image Docker et des artefacts de production.",
+    description:
+      "Construction de l'image Docker et des artefacts de production.",
     tools: ["Docker", "Buildx", "GHCR", "ECR"],
     code: `  build:
     needs: security
@@ -83,7 +120,8 @@ jobs:
           cache-to: type=gha,mode=max`,
   },
   deploy: {
-    description: "Déploiement automatique en staging puis production avec stratégie de rollback.",
+    description:
+      "Déploiement automatique en staging puis production avec stratégie de rollback.",
     tools: ["Vercel", "AWS ECS", "Kubernetes", "ArgoCD"],
     code: `  deploy-staging:
     needs: build
@@ -125,7 +163,7 @@ export function PipelineGuide() {
                 "flex items-center gap-2 px-4 py-3 rounded-lg transition-all whitespace-nowrap",
                 activeStage === stage.id
                   ? stage.bgColor + " text-white shadow-lg"
-                  : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                  : "bg-muted/50 text-muted-foreground hover:bg-muted",
               )}
             >
               <stage.icon className="w-4 h-4" />
@@ -142,7 +180,9 @@ export function PipelineGuide() {
         <p className="text-muted-foreground">{detail.description}</p>
         <div className="flex flex-wrap gap-2">
           {detail.tools.map((t) => (
-            <Badge key={t} variant="outline">{t}</Badge>
+            <Badge key={t} variant="outline">
+              {t}
+            </Badge>
           ))}
         </div>
         <pre className="bg-muted/50 rounded-lg p-4 overflow-x-auto text-sm">

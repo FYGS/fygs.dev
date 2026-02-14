@@ -1,0 +1,778 @@
+---
+title: "Comprendre Git de A à Z : Le Guide Complet de l'Expert"
+excerpt: "Du premier commit aux stratégies avancées de branching, maîtrisez Git en profondeur. Rebase interactif, cherry-pick, bisect, worktrees, hooks et workflows d'équipe — le guide qui transforme votre utilisation de Git."
+date: "2025-07-01"
+author: "Fernand SOUALO"
+categories: ["Git", "DevOps", "Workflow", "Collaboration", "Productivité"]
+coverImage: "/blog/git-mastery.png"
+---
+
+# Comprendre Git de A à Z : Le Guide Complet de l'Expert
+
+## Table of Contents
+
+1. [Pourquoi maîtriser Git ?](#pourquoi)
+2. [Le Modèle Mental de Git](#modele)
+3. [Les Fondamentaux Maîtrisés](#fondamentaux)
+4. [Branching Stratégique](#branching)
+5. [Merge vs Rebase — Le Débat Tranché](#merge-rebase)
+6. [Rebase Interactif — L'Outil Magique](#rebase-interactif)
+7. [Git Stash — Votre Brouillon Temporaire](#stash)
+8. [Cherry-Pick et Bisect](#cherry-bisect)
+9. [Git Worktrees — Travailler sur Plusieurs Branches](#worktrees)
+10. [Reflog — Votre Filet de Sécurité](#reflog)
+11. [Git Hooks — Automatiser Votre Workflow](#hooks)
+12. [Stratégies de Branching en Équipe](#strategies)
+13. [Résolution de Conflits Comme un Pro](#conflits)
+14. [Astuces de Productivité](#astuces)
+15. [.gitconfig Ultime](#gitconfig)
+16. [Conclusion](#conclusion)
+
+## Pourquoi maîtriser Git ? <a name="pourquoi"></a>
+
+Git n'est pas juste un outil de versioning — c'est le **système nerveux central** de tout projet logiciel moderne. Pourtant, la plupart des développeurs n'utilisent que 10% de ses capacités : `add`, `commit`, `push`, `pull`, `merge`. 
+
+Maîtriser Git signifie :
+- ⏱️ **Gagner des heures** en évitant les galères de merge
+- 🔍 **Débugger en minutes** grâce à `bisect`
+- 📦 **Livrer du code propre** avec un historique lisible
+- 🤝 **Collaborer efficacement** avec des workflows clairs
+
+## Le Modèle Mental de Git <a name="modele"></a>
+
+Avant les commandes, comprenez le **modèle de données** de Git :
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                    ZONES DE TRAVAIL GIT                       │
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│  Working Directory    Staging Area     Local Repo    Remote  │
+│  (vos fichiers)       (index)          (.git/)       (origin)│
+│                                                              │
+│      ──git add──►      ──git commit──►   ──git push──►       │
+│      ◄──git checkout── ◄──git reset──    ◄──git fetch──      │
+│                                          ◄──git pull──       │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Les 3 Objets Fondamentaux
+
+```bash
+# 1. BLOB — Le contenu d'un fichier (sans le nom)
+git hash-object -w myfile.txt
+# Retourne: a1b2c3d... (SHA-1 du contenu)
+
+# 2. TREE — Un dossier (liste de blobs et d'autres trees)
+git ls-tree HEAD
+# 100644 blob a1b2c3d  src/index.ts
+# 040000 tree e4f5g6h  src/components/
+
+# 3. COMMIT — Un snapshot + métadonnées
+git cat-file -p HEAD
+# tree a1b2c3d...
+# parent f7g8h9j...
+# author Fernand SOUALO <fygs@dev.com> 1700000000 +0100
+# committer Fernand SOUALO <fygs@dev.com> 1700000000 +0100
+# 
+# feat: add user authentication
+```
+
+> **Insight clé** : Un commit ne stocke pas les diffs — il stocke un **snapshot complet** du projet. Git est ultra-efficace car il déduplique via les hashes SHA.
+
+### Les Branches sont des Pointeurs
+
+```bash
+# Une branche est juste un fichier contenant un hash de commit
+cat .git/refs/heads/main
+# a1b2c3d4e5f6g7h8i9j0... (40 caractères)
+
+# HEAD est un pointeur vers la branche courante
+cat .git/HEAD
+# ref: refs/heads/main
+```
+
+## Les Fondamentaux Maîtrisés <a name="fondamentaux"></a>
+
+### Commit comme un Pro
+
+```bash
+# ── Conventional Commits — Standard de l'industrie ──
+git commit -m "feat: add user registration with email verification"
+git commit -m "fix: resolve race condition in payment processing"
+git commit -m "docs: update API documentation for v2 endpoints"
+git commit -m "refactor: extract validation logic into shared module"
+git commit -m "perf: optimize database queries with proper indexing"
+git commit -m "test: add unit tests for TransferService"
+git commit -m "chore: upgrade dependencies to latest versions"
+
+# ── Commit avec body détaillé ──
+git commit -m "feat: implement real-time notifications" -m "
+- Add WebSocket connection for live updates
+- Implement notification queue with retry logic
+- Add read/unread status tracking
+- Support email, SMS, and push notification channels
+
+Closes #142"
+```
+
+### Anatomie d'un git log Parfait
+
+```bash
+# ── Visualiser l'historique comme un graph ──
+git log --oneline --graph --all --decorate
+
+# ── Format personnalisé ──
+git log --pretty=format:"%C(yellow)%h%C(reset) %C(green)(%cr)%C(reset) %C(bold blue)<%an>%C(reset) %s%C(red)%d%C(reset)" --graph
+
+# ── Chercher dans l'historique ──
+git log --grep="payment"               # Par message de commit
+git log -S "processPayment"            # Par contenu modifié (pickaxe)
+git log --author="Fernand"             # Par auteur
+git log --since="2 weeks ago"          # Par date
+git log --follow -- src/services/auth.ts # Suivre un fichier renommé
+git log --all -- "**/auth*"            # Tous fichiers contenant "auth"
+```
+
+### git diff — Comprendre les Changements
+
+```bash
+# Diff entre working dir et staging
+git diff
+
+# Diff entre staging et dernier commit
+git diff --staged
+git diff --cached   # Alias
+
+# Diff entre deux commits
+git diff abc123..def456
+
+# Diff entre branches
+git diff main..feature/auth
+
+# Diff avec stats
+git diff --stat main..feature/auth
+#  src/auth/login.ts      | 45 +++++++++++
+#  src/auth/middleware.ts  | 12 ++-
+#  tests/auth.test.ts     | 89 +++++++++++++++++
+#  3 files changed, 143 insertions(+), 3 deletions(-)
+
+# Diff d'un seul fichier
+git diff HEAD~3 -- src/services/user.ts
+
+# Diff avec couleurs de mots (pas de lignes)
+git diff --word-diff
+```
+
+## Branching Stratégique <a name="branching"></a>
+
+```bash
+# ── Créer et basculer en une commande ──
+git switch -c feature/user-auth
+# Équivalent moderne de: git checkout -b feature/user-auth
+
+# ── Lister les branches avec infos ──
+git branch -vv
+# * feature/auth  a1b2c3d [origin/feature/auth: ahead 2] feat: add JWT
+#   main          d4e5f6g [origin/main] chore: release v2.1
+
+# ── Supprimer les branches mergées ──
+git branch --merged main | grep -v "main" | xargs git branch -d
+
+# ── Renommer une branche ──
+git branch -m old-name new-name
+
+# ── Suivre une branche distante ──
+git switch --track origin/feature/new-api
+```
+
+### Stratégie de Nommage
+
+```bash
+# Convention de nommage recommandée
+feature/user-authentication      # Nouvelle fonctionnalité
+fix/payment-race-condition       # Correction de bug
+hotfix/security-vulnerability    # Correction urgente en prod
+refactor/extract-validation      # Refactoring
+docs/api-v2-documentation        # Documentation
+chore/upgrade-dependencies       # Maintenance
+release/v2.1.0                   # Release
+```
+
+## Merge vs Rebase — Le Débat Tranché <a name="merge-rebase"></a>
+
+### git merge — Préserve l'Historique
+
+```bash
+# Merge avec commit de merge (--no-ff)
+git switch main
+git merge --no-ff feature/auth
+# Crée un commit de merge M qui unit les deux historiques
+
+# Résultat dans le graph :
+#   * M (merge commit)
+#   |\
+#   | * feat: add JWT validation
+#   | * feat: add login endpoint
+#   |/
+#   * previous commit on main
+```
+
+### git rebase — Historique Linéaire
+
+```bash
+# Rebase votre branche SUR main
+git switch feature/auth
+git rebase main
+
+# AVANT le rebase :
+#   * feat: add JWT (feature/auth)
+#   * feat: add login
+#   |
+#   | * hotfix: security patch (main)
+#   |/
+#   * commit commun
+
+# APRÈS le rebase :
+#   * feat: add JWT (feature/auth)
+#   * feat: add login
+#   * hotfix: security patch (main)
+#   * commit commun
+```
+
+### Quand Utiliser Quoi ?
+
+| Situation | Recommandation | Pourquoi |
+|-----------|---------------|----------|
+| Feature branch → main | **Squash merge** | Un commit propre par feature |
+| Main → votre branche | **Rebase** | Historique linéaire, pas de merge commits parasites |
+| Branche partagée | **Merge** | Ne jamais rebase une branche partagée ! |
+| Release → main | **Merge --no-ff** | Préserver l'historique de la release |
+| Hotfix → main + develop | **Merge** | Traçabilité claire du fix |
+
+> **Règle d'or** : Ne JAMAIS rebase une branche qui a été poussée et que d'autres utilisent. Le rebase réécrit l'historique.
+
+## Rebase Interactif — L'Outil Magique <a name="rebase-interactif"></a>
+
+Le rebase interactif est probablement la fonctionnalité la plus puissante de Git :
+
+```bash
+# Réécrire les 5 derniers commits
+git rebase -i HEAD~5
+
+# L'éditeur s'ouvre avec :
+pick a1b2c3d feat: add user model
+pick d4e5f6g fix: typo in user model
+pick h7i8j9k feat: add user service
+pick l0m1n2o wip: testing stuff
+pick p3q4r5s feat: add user controller
+
+# Vous pouvez :
+# pick   = garder le commit tel quel
+# reword = garder mais modifier le message
+# edit   = s'arrêter pour modifier le commit
+# squash = fusionner avec le commit précédent (garder les messages)
+# fixup  = fusionner avec le commit précédent (supprimer le message)
+# drop   = supprimer le commit
+# reorder = changer l'ordre des lignes
+
+# Résultat souhaité :
+pick a1b2c3d feat: add user model
+fixup d4e5f6g fix: typo in user model
+pick h7i8j9k feat: add user service
+drop l0m1n2o wip: testing stuff
+pick p3q4r5s feat: add user controller
+```
+
+### Cas d'Usage Courants
+
+```bash
+# ── Fusionner les 3 derniers commits en un seul ──
+git rebase -i HEAD~3
+# Mettre "squash" sur les 2 derniers, garder "pick" sur le premier
+
+# ── Auto-squash avec --fixup ──
+# 1. Faire le commit de fix en référençant le commit à fixer
+git commit --fixup=a1b2c3d
+
+# 2. Rebase avec auto-squash
+git rebase -i --autosquash main
+# Les fixup commits sont automatiquement placés après leur cible
+
+# ── Modifier un ancien commit ──
+git rebase -i HEAD~5
+# Mettre "edit" sur le commit à modifier
+# Git s'arrête à ce commit
+git add forgotten-file.ts
+git commit --amend --no-edit
+git rebase --continue
+```
+
+## Git Stash — Votre Brouillon Temporaire <a name="stash"></a>
+
+```bash
+# ── Stash basique ──
+git stash                         # Stash tout (tracked modifiés + staged)
+git stash -u                      # Inclure les fichiers non-trackés
+git stash -a                      # Inclure les fichiers ignorés aussi
+
+# ── Stash avec message ──
+git stash push -m "WIP: refactoring auth middleware"
+
+# ── Stash sélectif ──
+git stash push -p                 # Mode interactif, stash hunk par hunk
+git stash push src/auth/          # Stash seulement certains fichiers
+
+# ── Gérer les stashes ──
+git stash list
+# stash@{0}: On feature/auth: WIP: refactoring auth middleware
+# stash@{1}: WIP on main: fix: update deps
+
+git stash show -p stash@{0}       # Voir le contenu d'un stash
+git stash apply stash@{0}         # Appliquer sans supprimer
+git stash pop                     # Appliquer et supprimer
+git stash drop stash@{1}          # Supprimer un stash
+git stash clear                   # Supprimer tous les stashes
+
+# ── Créer une branche depuis un stash ──
+git stash branch feature/from-stash stash@{0}
+```
+
+## Cherry-Pick et Bisect <a name="cherry-bisect"></a>
+
+### Cherry-Pick — Prendre un Commit Spécifique
+
+```bash
+# Appliquer un commit spécifique sur la branche courante
+git cherry-pick a1b2c3d
+
+# Cherry-pick sans commit (garder les changements en staging)
+git cherry-pick --no-commit a1b2c3d
+
+# Cherry-pick de plusieurs commits
+git cherry-pick a1b2c3d d4e5f6g h7i8j9k
+
+# Cherry-pick d'un range
+git cherry-pick main~5..main~2
+
+# En cas de conflit
+git cherry-pick --continue   # Après résolution
+git cherry-pick --abort      # Annuler
+```
+
+### Bisect — Trouver le Commit Fautif
+
+```bash
+# ── Le scénario ──
+# "Le bug n'était pas là il y a 2 semaines, mais il est là maintenant"
+# Au lieu de vérifier 200 commits un par un...
+
+# 1. Démarrer bisect
+git bisect start
+
+# 2. Marquer le commit actuel comme mauvais
+git bisect bad
+
+# 3. Marquer un commit ancien comme bon
+git bisect good v2.0.0    # ou un hash
+
+# 4. Git checkout automatiquement au milieu
+# Tester → marquer bon ou mauvais
+git bisect good   # ou
+git bisect bad
+
+# 5. Répéter — Git fait une recherche binaire
+# En 7 étapes max, trouve le coupable parmi 128 commits !
+
+# 6. Terminer
+git bisect reset
+
+# ── Bisect automatisé (le top !) ──
+git bisect start HEAD v2.0.0
+git bisect run npm test
+# Git teste automatiquement chaque commit et trouve le fautif !
+
+git bisect run ./test-specific-bug.sh
+# Votre script doit retourner 0 (bon) ou 1 (mauvais)
+```
+
+## Git Worktrees — Travailler sur Plusieurs Branches <a name="worktrees"></a>
+
+Besoin de travailler sur un hotfix pendant que votre feature branch compile ? Les worktrees vous permettent d'avoir **plusieurs checkouts du même repo** :
+
+```bash
+# ── Créer un worktree ──
+git worktree add ../project-hotfix hotfix/critical-fix
+# Crée un dossier ../project-hotfix avec la branche hotfix
+
+# ── Lister les worktrees ──
+git worktree list
+# /home/dev/project          a1b2c3d [feature/auth]
+# /home/dev/project-hotfix   d4e5f6g [hotfix/critical-fix]
+
+# ── Travailler dans le worktree ──
+cd ../project-hotfix
+# Faire vos modifications...
+git add . && git commit -m "fix: critical security patch"
+git push
+
+# ── Revenir et supprimer ──
+cd ../project
+git worktree remove ../project-hotfix
+
+# ── Cas d'usage avancé : review une PR ──
+git worktree add ../pr-review origin/feature/new-api
+cd ../pr-review
+# Tester, reviewer...
+cd ../project
+git worktree remove ../pr-review
+```
+
+## Reflog — Votre Filet de Sécurité <a name="reflog"></a>
+
+Le reflog enregistre **tout mouvement de HEAD**. C'est votre machine à remonter le temps :
+
+```bash
+# ── Voir le reflog ──
+git reflog
+# a1b2c3d HEAD@{0}: commit: feat: add new feature
+# d4e5f6g HEAD@{1}: rebase -i (finish): returning to refs/heads/main
+# h7i8j9k HEAD@{2}: rebase -i (pick): feat: add service
+# l0m1n2o HEAD@{3}: rebase -i (start): checkout main
+# p3q4r5s HEAD@{4}: commit: wip: testing stuff
+
+# ── Récupérer un commit "perdu" ──
+# Vous avez fait un rebase et perdu un commit ?
+git reflog
+# Trouvez le hash avant le rebase
+git checkout p3q4r5s
+# Ou créez une branche
+git branch recovered-work p3q4r5s
+
+# ── Annuler un rebase raté ──
+git reflog
+# Trouvez l'état avant le rebase (HEAD@{N})
+git reset --hard HEAD@{4}
+
+# ── Récupérer après un reset --hard ──
+# Même après un reset --hard, le reflog conserve la trace
+git reset --hard HEAD~5     # Oups ! 5 commits perdus
+git reflog                  # Trouver le hash avant le reset
+git reset --hard HEAD@{1}   # Restaurer !
+```
+
+> **Le reflog est local** : il n'est pas poussé vers le remote. Il expire après 90 jours par défaut. C'est votre filet de sécurité personnel.
+
+## Git Hooks — Automatiser Votre Workflow <a name="hooks"></a>
+
+```bash
+# Les hooks vivent dans .git/hooks/
+# Pour les partager avec l'équipe, utilisez husky
+
+# ── Installation avec Husky ──
+npx husky init
+```
+
+```javascript
+// .husky/pre-commit
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Lint les fichiers staged seulement
+npx lint-staged
+```
+
+```json
+// package.json — lint-staged config
+{
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,css}": [
+      "prettier --write"
+    ]
+  }
+}
+```
+
+```bash
+# .husky/commit-msg — Valider le format des commits
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+npx --no -- commitlint --edit "$1"
+
+# commitlint.config.js
+# module.exports = {
+#   extends: ['@commitlint/config-conventional'],
+#   rules: {
+#     'type-enum': [2, 'always', [
+#       'feat', 'fix', 'docs', 'style', 'refactor',
+#       'perf', 'test', 'chore', 'ci', 'build'
+#     ]],
+#   },
+# };
+```
+
+```bash
+# .husky/pre-push — Vérifications avant push
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🧪 Running tests before push..."
+npm test
+
+echo "🔍 Type checking..."
+npx tsc --noEmit
+
+echo "✅ All checks passed. Pushing..."
+```
+
+## Stratégies de Branching en Équipe <a name="strategies"></a>
+
+### GitHub Flow (Recommandé pour la plupart des projets)
+
+```
+main (toujours déployable)
+  │
+  ├── feature/user-auth ──── PR ──── merge ──── deploy
+  │
+  ├── fix/payment-bug ──── PR ──── merge ──── deploy
+  │
+  └── feature/dashboard ──── PR ──── merge ──── deploy
+```
+
+```bash
+# Workflow quotidien
+git switch main
+git pull origin main
+git switch -c feature/new-feature
+
+# Travailler...
+git add . && git commit -m "feat: implement feature"
+
+# Mettre à jour avec les derniers changements de main
+git fetch origin
+git rebase origin/main
+
+# Pousser et créer une PR
+git push -u origin feature/new-feature
+gh pr create --title "feat: implement new feature" --body "Description..."
+```
+
+### Trunk-Based Development (Pour les équipes expérimentées)
+
+```bash
+# Tout le monde travaille proche de main
+# Branches de feature ultra-courtes (< 1 jour)
+git switch -c feature/small-change
+# ... modifications ...
+git commit -m "feat: small focused change"
+git push -u origin feature/small-change
+# PR → merge rapide (< 24h)
+
+# Feature flags pour les features incomplètes
+if (featureFlags.isEnabled("new-dashboard")) {
+  return <NewDashboard />;
+}
+return <OldDashboard />;
+```
+
+## Résolution de Conflits Comme un Pro <a name="conflits"></a>
+
+```bash
+# ── Quand un conflit survient ──
+git merge feature/auth
+#   CONFLICT (content): Merge conflict in src/auth.ts
+#   Automatic merge failed; fix conflicts and then commit the result.
+
+# ── Les marqueurs de conflit ──
+# <<<<<<< HEAD (votre code actuel)
+# const authMethod = "jwt";
+# =======
+# const authMethod = "session";
+# >>>>>>> feature/auth (le code entrant)
+
+# ── Stratégies de résolution ──
+# 1. Résolution manuelle dans l'éditeur
+# 2. Accepter l'un ou l'autre
+git checkout --ours src/auth.ts    # Garder notre version
+git checkout --theirs src/auth.ts  # Garder leur version
+
+# 3. Merge tool visuel
+git mergetool
+
+# ── Prévenir les conflits ──
+# - Rebase fréquent sur main
+# - Petites branches, petites PRs
+# - Communication d'équipe sur les fichiers modifiés
+# - Code ownership clair
+```
+
+### Résoudre les Conflits de Rebase
+
+```bash
+# Pendant un rebase, pour chaque conflit :
+git rebase main
+# CONFLICT in file.ts
+
+# 1. Résoudre le conflit dans l'éditeur
+# 2. Ajouter le fichier résolu
+git add src/file.ts
+
+# 3. Continuer le rebase
+git rebase --continue
+
+# Si ça devient trop compliqué :
+git rebase --abort   # Annule tout le rebase
+```
+
+## Astuces de Productivité <a name="astuces"></a>
+
+```bash
+# ── Alias Git essentiels ──
+git config --global alias.co "checkout"
+git config --global alias.sw "switch"
+git config --global alias.br "branch"
+git config --global alias.st "status -sb"
+git config --global alias.lg "log --oneline --graph --all --decorate"
+git config --global alias.last "log -1 HEAD"
+git config --global alias.unstage "reset HEAD --"
+git config --global alias.amend "commit --amend --no-edit"
+git config --global alias.wip "commit -am 'WIP'"
+git config --global alias.undo "reset --soft HEAD~1"
+git config --global alias.cleanup "!git branch --merged | grep -v '\*\|main\|develop' | xargs git branch -d"
+
+# ── Commandes méconnues mais ultra-utiles ──
+
+# Voir qui a modifié chaque ligne
+git blame src/auth.ts
+git blame -L 50,70 src/auth.ts   # Lignes 50-70 seulement
+
+# Rechercher dans tous les commits
+git grep "processPayment" $(git rev-list --all)
+
+# Voir les fichiers modifiés entre deux branches
+git diff --name-only main..feature/auth
+
+# Compter les commits par auteur
+git shortlog -sn --no-merges
+
+# Restaurer un fichier d'un ancien commit
+git restore --source=HEAD~3 -- src/config.ts
+
+# Créer un patch
+git diff > my-changes.patch
+git apply my-changes.patch
+
+# Signer ses commits
+git config --global commit.gpgsign true
+git config --global user.signingkey YOUR_GPG_KEY_ID
+```
+
+## .gitconfig Ultime <a name="gitconfig"></a>
+
+```ini
+# ~/.gitconfig
+
+[user]
+    name = Fernand SOUALO
+    email = fygs.dev@gmail.com
+    signingkey = YOUR_KEY
+
+[core]
+    editor = code --wait
+    autocrlf = input
+    pager = delta    # Meilleur diff viewer (cargo install git-delta)
+
+[init]
+    defaultBranch = main
+
+[pull]
+    rebase = true
+
+[push]
+    autoSetupRemote = true
+    default = current
+
+[fetch]
+    prune = true
+    prunetags = true
+
+[merge]
+    conflictStyle = diff3
+    tool = vscode
+
+[mergetool "vscode"]
+    cmd = code --wait $MERGED
+
+[diff]
+    colorMoved = default
+    tool = vscode
+
+[difftool "vscode"]
+    cmd = code --wait --diff $LOCAL $REMOTE
+
+[rebase]
+    autoSquash = true
+    autoStash = true
+
+[rerere]
+    enabled = true
+    # "REuse REcorded REsolution" — Git se souvient des résolutions de conflits
+
+[commit]
+    gpgsign = true
+
+[alias]
+    co = checkout
+    sw = switch
+    br = branch -vv
+    st = status -sb
+    lg = log --oneline --graph --all --decorate --color
+    last = log -1 HEAD --format='%C(yellow)%h%C(reset) %s %C(green)(%cr)%C(reset)'
+    amend = commit --amend --no-edit
+    undo = reset --soft HEAD~1
+    wip = !git add -A && git commit -m 'WIP'
+    unwip = reset HEAD~1
+    cleanup = !git branch --merged | grep -v '\\*\\|main\\|develop' | xargs git branch -d
+    fresh = !git fetch --all && git rebase origin/main
+    contributors = shortlog -sn --no-merges
+    today = log --since=midnight --oneline --no-merges
+    week = log --since='1 week ago' --oneline --no-merges
+    files = diff --name-status
+    
+[delta]
+    navigate = true
+    side-by-side = true
+    line-numbers = true
+```
+
+## Conclusion <a name="conclusion"></a>
+
+Git est un outil immensément puissant dont la maîtrise sépare les développeurs efficaces des autres. Voici votre **checklist de progression** :
+
+### Niveau Débutant ✅
+- `add`, `commit`, `push`, `pull`
+- Créer et merger des branches
+- Résoudre les conflits basiques
+
+### Niveau Intermédiaire 🔄
+- Rebase interactif
+- Stash stratégique
+- Cherry-pick
+- Conventional Commits
+- Git hooks avec Husky
+
+### Niveau Expert 🏆
+- Bisect automatisé
+- Worktrees
+- Reflog comme filet de sécurité
+- .gitconfig optimisé
+- Stratégies de branching d'équipe
+- Rerere pour auto-résolution de conflits
+
+> **Conseil final** : Pratiquez dans un repo de test. Créez un repo, faites des commits, branchez, rebasez, cassez tout, utilisez le reflog pour récupérer. C'est en expérimentant sans risque que vous deviendrez vraiment à l'aise.

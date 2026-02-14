@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Container } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -27,12 +26,30 @@ const concepts = [
 ];
 
 const k8sResources = [
-  { name: "Pod", desc: "Plus petite unité déployable. Un ou plusieurs conteneurs partageant réseau et stockage." },
-  { name: "Deployment", desc: "Gère le cycle de vie des Pods. Rolling updates, rollbacks, scaling." },
-  { name: "Service", desc: "Expose les Pods avec un point d'accès réseau stable (ClusterIP, NodePort, LoadBalancer)." },
-  { name: "Ingress", desc: "Routage HTTP/HTTPS externe vers les Services internes. TLS termination." },
-  { name: "ConfigMap/Secret", desc: "Configuration externalisée et gestion des secrets (chiffrés au repos)." },
-  { name: "HPA", desc: "Horizontal Pod Autoscaler. Scale automatique basé sur CPU/mémoire/métriques custom." },
+  {
+    name: "Pod",
+    desc: "Plus petite unité déployable. Un ou plusieurs conteneurs partageant réseau et stockage.",
+  },
+  {
+    name: "Deployment",
+    desc: "Gère le cycle de vie des Pods. Rolling updates, rollbacks, scaling.",
+  },
+  {
+    name: "Service",
+    desc: "Expose les Pods avec un point d'accès réseau stable (ClusterIP, NodePort, LoadBalancer).",
+  },
+  {
+    name: "Ingress",
+    desc: "Routage HTTP/HTTPS externe vers les Services internes. TLS termination.",
+  },
+  {
+    name: "ConfigMap/Secret",
+    desc: "Configuration externalisée et gestion des secrets (chiffrés au repos).",
+  },
+  {
+    name: "HPA",
+    desc: "Horizontal Pod Autoscaler. Scale automatique basé sur CPU/mémoire/métriques custom.",
+  },
 ];
 
 export default function DockerKubernetesPage() {
@@ -43,9 +60,12 @@ export default function DockerKubernetesPage() {
           <Container className="w-8 h-8" />
         </div>
         <div className="space-y-4">
-          <h1 className="text-4xl font-bold tracking-tight">Docker & Kubernetes</h1>
+          <h1 className="text-4xl font-bold tracking-tight">
+            Docker & Kubernetes
+          </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Conteneurisation et orchestration : les fondations du déploiement cloud moderne.
+            Conteneurisation et orchestration : les fondations du déploiement
+            cloud moderne.
           </p>
         </div>
       </section>

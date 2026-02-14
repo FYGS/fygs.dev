@@ -1,0 +1,1267 @@
+---
+title: "Maîtriser la Programmation Orientée Objet : Le Guide Ultime Appliqué"
+excerpt: "De l'encapsulation au polymorphisme, maîtrisez tous les concepts de la POO à travers la construction complète d'un système de gestion bancaire en TypeScript. Cas réels, design patterns et bonnes pratiques."
+date: "2025-06-15"
+author: "Fernand SOUALO"
+categories: ["OOP", "TypeScript", "Architecture", "Design Patterns", "Clean Code"]
+coverImage: "/blog/oop-mastery.png"
+---
+
+# Maîtriser la Programmation Orientée Objet : Le Guide Ultime Appliqué
+
+## Table of Contents
+
+1. [Pourquoi la POO ?](#pourquoi-poo)
+2. [Les 4 Piliers Fondamentaux](#piliers)
+3. [Encapsulation en Profondeur](#encapsulation)
+4. [Héritage et Composition](#heritage)
+5. [Polymorphisme Avancé](#polymorphisme)
+6. [Abstraction et Interfaces](#abstraction)
+7. [Projet Fil Rouge : Système Bancaire](#projet)
+8. [Design Patterns Essentiels](#patterns)
+9. [SOLID en Pratique](#solid)
+10. [Anti-Patterns à Éviter](#anti-patterns)
+11. [Tests Unitaires en POO](#tests)
+12. [POO vs Fonctionnel — Quand Utiliser Quoi ?](#poo-vs-fp)
+13. [Conclusion et Ressources](#conclusion)
+
+## Pourquoi la POO ? <a name="pourquoi-poo"></a>
+
+La Programmation Orientée Objet n'est pas juste un paradigme de programmation — c'est une **manière de modéliser le monde réel** en code. Quand vous concevez un système de paiement, vous manipulez des `Transactions`, des `Comptes`, des `Utilisateurs`. La POO vous permet de structurer votre code exactement comme vous pensez au problème.
+
+> **Le problème fondamental** : Sans POO, un système bancaire de 50 000 lignes devient un plat de spaghetti où changer le calcul des intérêts casse les transferts internationaux. Avec la POO, chaque concept vit dans sa propre classe, testable et modifiable indépendamment.
+
+### Ce que vous allez construire
+
+Dans cet article, nous allons construire un **système bancaire complet** avec :
+- Comptes courants, épargne et investissement
+- Transactions avec validation et historique
+- Système de notifications multi-canal
+- Calcul d'intérêts et de frais dynamiques
+- Reports et analytics
+
+Chaque concept de POO sera illustré à travers ce projet réel.
+
+## Les 4 Piliers Fondamentaux <a name="piliers"></a>
+
+Avant de plonger dans le code, comprenons les 4 piliers qui soutiennent toute la POO :
+
+| Pilier | Description | Analogie Réelle |
+|--------|-------------|-----------------|
+| **Encapsulation** | Cacher les détails internes, exposer une interface publique | Un DAB : vous insérez votre carte et entrez un PIN, la mécanique interne est cachée |
+| **Héritage** | Créer des classes spécialisées à partir de classes générales | Un compte épargne **est un** compte bancaire avec des fonctionnalités supplémentaires |
+| **Polymorphisme** | Un même message, des comportements différents | `calculerIntérêts()` se comporte différemment pour un compte épargne vs un compte investissement |
+| **Abstraction** | Définir le "quoi" sans le "comment" | Une interface `Notifiable` dit qu'on peut notifier, sans dire comment (email, SMS, push) |
+
+## Encapsulation en Profondeur <a name="encapsulation"></a>
+
+L'encapsulation est le fondement de la POO. Elle consiste à **regrouper les données et les comportements qui les manipulent**, tout en contrôlant l'accès.
+
+### Le Problème Sans Encapsulation
+
+```typescript
+// ❌ MAUVAIS — Données exposées, logique éparpillée
+const account = {
+  balance: 1000,
+  owner: "Alice",
+  transactions: [],
+};
+
+// N'importe qui peut modifier directement le solde !
+account.balance = -999999; // 💥 Incohérence totale
+account.transactions.push({ amount: -999999 }); // Pas de validation
+```
+
+### La Solution avec Encapsulation
+
+```typescript
+class BankAccount {
+  // Propriétés privées — inaccessibles de l'extérieur
+  private _balance: number;
+  private _transactions: Transaction[] = [];
+  private readonly _accountNumber: string;
+  private readonly _owner: string;
+  private readonly _createdAt: Date;
+
+  constructor(owner: string, initialDeposit: number = 0) {
+    if (initialDeposit < 0) {
+      throw new Error("Le dépôt initial ne peut pas être négatif");
+    }
+    this._owner = owner;
+    this._balance = initialDeposit;
+    this._accountNumber = this.generateAccountNumber();
+    this._createdAt = new Date();
+
+    if (initialDeposit > 0) {
+      this.recordTransaction("DEPOT_INITIAL", initialDeposit);
+    }
+  }
+
+  // Getter — accès en lecture seule au solde
+  get balance(): number {
+    return this._balance;
+  }
+
+  get owner(): string {
+    return this._owner;
+  }
+
+  get accountNumber(): string {
+    return this._accountNumber;
+  }
+
+  // Méthode publique avec validation
+  deposit(amount: number, description?: string): void {
+    if (amount <= 0) {
+      throw new InvalidAmountError("Le montant du dépôt doit être positif");
+    }
+    if (amount > 1_000_000) {
+      throw new LimitExceededError("Dépôt supérieur à la limite autorisée");
+    }
+
+    this._balance += amount;
+    this.recordTransaction("DEPOT", amount, description);
+  }
+
+  withdraw(amount: number, description?: string): void {
+    if (amount <= 0) {
+      throw new InvalidAmountError("Le montant du retrait doit être positif");
+    }
+    if (amount > this._balance) {
+      throw new InsufficientFundsError(
+        `Fonds insuffisants. Solde: ${this._balance}, Demandé: ${amount}`
+      );
+    }
+
+    this._balance -= amount;
+    this.recordTransaction("RETRAIT", -amount, description);
+  }
+
+  // Méthode privée — détail d'implémentation caché
+  private recordTransaction(
+    type: string,
+    amount: number,
+    description?: string
+  ): void {
+    this._transactions.push({
+      id: crypto.randomUUID(),
+      type,
+      amount,
+      balanceAfter: this._balance,
+      timestamp: new Date(),
+      description: description ?? type,
+    });
+  }
+
+  private generateAccountNumber(): string {
+    return `FR${Date.now()}${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+  }
+
+  // Copie défensive — on retourne une copie, pas la référence
+  getTransactionHistory(): ReadonlyArray<Transaction> {
+    return [...this._transactions];
+  }
+
+  getStatement(from?: Date, to?: Date): string {
+    let transactions = this._transactions;
+    if (from) transactions = transactions.filter(t => t.timestamp >= from);
+    if (to) transactions = transactions.filter(t => t.timestamp <= to);
+
+    return transactions
+      .map(t => `[${t.timestamp.toLocaleDateString()}] ${t.type}: ${t.amount > 0 ? '+' : ''}${t.amount}€ → Solde: ${t.balanceAfter}€`)
+      .join("\n");
+  }
+}
+```
+
+### Les 3 Niveaux d'Accès en TypeScript
+
+```typescript
+class Example {
+  public name: string;       // Accessible partout (défaut)
+  protected id: number;      // Accessible dans la classe et ses enfants
+  private secret: string;    // Accessible uniquement dans cette classe
+  readonly createdAt: Date;  // Accessible en lecture seule après initialisation
+}
+```
+
+> **Règle d'or** : Commencez toujours par `private`. Passez à `protected` uniquement si une sous-classe en a besoin. Utilisez `public` uniquement pour l'API de votre classe.
+
+## Héritage et Composition <a name="heritage"></a>
+
+L'héritage permet de créer des hiérarchies de classes. Un `SavingsAccount` **est un** `BankAccount` avec des capacités supplémentaires.
+
+### Héritage : La Hiérarchie des Comptes
+
+```typescript
+// Classe abstraite — ne peut pas être instanciée directement
+abstract class BankAccount {
+  private _balance: number;
+  private _transactions: Transaction[] = [];
+
+  constructor(
+    protected readonly owner: string,
+    initialDeposit: number = 0
+  ) {
+    this._balance = initialDeposit;
+  }
+
+  get balance(): number {
+    return this._balance;
+  }
+
+  deposit(amount: number): void {
+    this.validateAmount(amount);
+    this._balance += amount;
+    this.recordTransaction("DEPOT", amount);
+  }
+
+  withdraw(amount: number): void {
+    this.validateAmount(amount);
+    this.validateWithdrawal(amount);
+    this._balance -= amount;
+    this.recordTransaction("RETRAIT", -amount);
+  }
+
+  // Méthode abstraite — chaque sous-classe DOIT l'implémenter
+  abstract calculateInterest(): number;
+  abstract getAccountType(): string;
+
+  // Méthode protégée — accessible dans les sous-classes
+  protected validateAmount(amount: number): void {
+    if (amount <= 0) throw new InvalidAmountError("Montant invalide");
+  }
+
+  // Hook method — les sous-classes peuvent override
+  protected validateWithdrawal(amount: number): void {
+    if (amount > this._balance) {
+      throw new InsufficientFundsError("Fonds insuffisants");
+    }
+  }
+
+  protected adjustBalance(amount: number): void {
+    this._balance += amount;
+  }
+
+  private recordTransaction(type: string, amount: number): void {
+    this._transactions.push({
+      id: crypto.randomUUID(),
+      type,
+      amount,
+      balanceAfter: this._balance,
+      timestamp: new Date(),
+    });
+  }
+}
+
+// ── Compte Courant ──────────────────────────────────────────────
+class CheckingAccount extends BankAccount {
+  private overdraftLimit: number;
+
+  constructor(owner: string, initialDeposit = 0, overdraftLimit = 500) {
+    super(owner, initialDeposit); // Appel au constructeur parent
+    this.overdraftLimit = overdraftLimit;
+  }
+
+  // Override de la validation de retrait
+  protected validateWithdrawal(amount: number): void {
+    if (amount > this.balance + this.overdraftLimit) {
+      throw new InsufficientFundsError(
+        `Retrait impossible. Solde + découvert autorisé: ${this.balance + this.overdraftLimit}€`
+      );
+    }
+  }
+
+  calculateInterest(): number {
+    return 0; // Pas d'intérêts sur un compte courant
+  }
+
+  getAccountType(): string {
+    return "COURANT";
+  }
+}
+
+// ── Compte Épargne ──────────────────────────────────────────────
+class SavingsAccount extends BankAccount {
+  private readonly interestRate: number;
+  private readonly minimumBalance: number;
+  private withdrawalsThisMonth: number = 0;
+  private readonly maxWithdrawalsPerMonth: number = 3;
+
+  constructor(
+    owner: string,
+    initialDeposit: number,
+    interestRate: number = 0.02,
+    minimumBalance: number = 100
+  ) {
+    super(owner, initialDeposit);
+    this.interestRate = interestRate;
+    this.minimumBalance = minimumBalance;
+  }
+
+  protected validateWithdrawal(amount: number): void {
+    super.validateWithdrawal(amount); // Appel à la validation parent
+
+    if (this.balance - amount < this.minimumBalance) {
+      throw new MinimumBalanceError(
+        `Le solde ne peut pas descendre en dessous de ${this.minimumBalance}€`
+      );
+    }
+
+    if (this.withdrawalsThisMonth >= this.maxWithdrawalsPerMonth) {
+      throw new WithdrawalLimitError(
+        `Limite de ${this.maxWithdrawalsPerMonth} retraits/mois atteinte`
+      );
+    }
+
+    this.withdrawalsThisMonth++;
+  }
+
+  calculateInterest(): number {
+    const interest = this.balance * this.interestRate;
+    this.adjustBalance(interest);
+    return interest;
+  }
+
+  getAccountType(): string {
+    return "EPARGNE";
+  }
+
+  resetMonthlyWithdrawals(): void {
+    this.withdrawalsThisMonth = 0;
+  }
+}
+
+// ── Compte Investissement ────────────────────────────────────────
+class InvestmentAccount extends BankAccount {
+  private portfolio: Map<string, { shares: number; pricePerShare: number }> = new Map();
+  private readonly managementFeeRate: number;
+
+  constructor(owner: string, initialDeposit: number, managementFeeRate = 0.015) {
+    super(owner, initialDeposit);
+    this.managementFeeRate = managementFeeRate;
+  }
+
+  buyStock(symbol: string, shares: number, pricePerShare: number): void {
+    const totalCost = shares * pricePerShare;
+    this.withdraw(totalCost);
+
+    const existing = this.portfolio.get(symbol);
+    if (existing) {
+      const totalShares = existing.shares + shares;
+      const avgPrice = (existing.shares * existing.pricePerShare + totalCost) / totalShares;
+      this.portfolio.set(symbol, { shares: totalShares, pricePerShare: avgPrice });
+    } else {
+      this.portfolio.set(symbol, { shares, pricePerShare });
+    }
+  }
+
+  sellStock(symbol: string, shares: number, currentPrice: number): number {
+    const holding = this.portfolio.get(symbol);
+    if (!holding || holding.shares < shares) {
+      throw new Error(`Actions insuffisantes pour ${symbol}`);
+    }
+
+    const revenue = shares * currentPrice;
+    this.deposit(revenue);
+
+    holding.shares -= shares;
+    if (holding.shares === 0) this.portfolio.delete(symbol);
+
+    return revenue;
+  }
+
+  calculateInterest(): number {
+    // Les comptes d'investissement n'ont pas d'intérêts fixes,
+    // mais des frais de gestion
+    const fee = this.balance * this.managementFeeRate;
+    this.adjustBalance(-fee);
+    return -fee;
+  }
+
+  getAccountType(): string {
+    return "INVESTISSEMENT";
+  }
+
+  getPortfolioValue(): number {
+    let total = 0;
+    for (const [, holding] of this.portfolio) {
+      total += holding.shares * holding.pricePerShare;
+    }
+    return total;
+  }
+}
+```
+
+### Composition : "Préférer la Composition à l'Héritage"
+
+L'héritage crée un couplage fort entre parent et enfant. La composition offre plus de flexibilité :
+
+```typescript
+// ── COMPOSITION : Services injectables ─────────────────────────
+
+interface NotificationService {
+  notify(recipient: string, message: string): Promise<void>;
+}
+
+interface AuditLogger {
+  log(event: AuditEvent): void;
+}
+
+interface InterestCalculator {
+  calculate(balance: number, accountType: string): number;
+}
+
+// Implémentations concrètes
+class EmailNotification implements NotificationService {
+  async notify(recipient: string, message: string): Promise<void> {
+    console.log(`📧 Email à ${recipient}: ${message}`);
+    // Appel réel à un service d'email
+  }
+}
+
+class SMSNotification implements NotificationService {
+  async notify(recipient: string, message: string): Promise<void> {
+    console.log(`📱 SMS à ${recipient}: ${message}`);
+  }
+}
+
+class ConsoleAuditLogger implements AuditLogger {
+  log(event: AuditEvent): void {
+    console.log(`[AUDIT] ${event.timestamp.toISOString()} — ${event.action}: ${event.details}`);
+  }
+}
+
+// ── La classe utilise la COMPOSITION ────────────────────────────
+class EnhancedBankAccount extends BankAccount {
+  constructor(
+    owner: string,
+    initialDeposit: number,
+    private notifier: NotificationService,    // Injecté
+    private auditor: AuditLogger,             // Injecté
+    private interestCalc: InterestCalculator   // Injecté
+  ) {
+    super(owner, initialDeposit);
+  }
+
+  async deposit(amount: number): Promise<void> {
+    super.deposit(amount);
+    this.auditor.log({
+      action: "DEPOSIT",
+      details: `${amount}€ deposited`,
+      timestamp: new Date(),
+    });
+    await this.notifier.notify(
+      this.owner,
+      `Dépôt de ${amount}€ effectué. Nouveau solde: ${this.balance}€`
+    );
+  }
+
+  calculateInterest(): number {
+    return this.interestCalc.calculate(this.balance, this.getAccountType());
+  }
+
+  getAccountType(): string {
+    return "ENHANCED";
+  }
+}
+
+// Utilisation — facile à tester et à faire évoluer
+const account = new EnhancedBankAccount(
+  "Alice",
+  1000,
+  new EmailNotification(),    // On peut changer en SMSNotification
+  new ConsoleAuditLogger(),   // On peut changer en DatabaseAuditLogger
+  new StandardInterestCalc()  // On peut changer la stratégie
+);
+```
+
+> **Règle** : Utilisez l'héritage pour les relations "est un" (`SavingsAccount` est un `BankAccount`). Utilisez la composition pour les relations "a un" (un compte **a** un notifier, un logger, un calculateur).
+
+## Polymorphisme Avancé <a name="polymorphisme"></a>
+
+Le polymorphisme permet de traiter des objets de types différents de manière uniforme.
+
+### Polymorphisme de Sous-type
+
+```typescript
+class Bank {
+  private accounts: BankAccount[] = [];
+
+  addAccount(account: BankAccount): void {
+    this.accounts.push(account);
+  }
+
+  // Polymorphisme : calculateInterest() fait la bonne chose
+  // selon le type RÉEL de chaque compte
+  applyMonthlyInterest(): Map<string, number> {
+    const results = new Map<string, number>();
+
+    for (const account of this.accounts) {
+      const interest = account.calculateInterest();
+      results.set(account.accountNumber, interest);
+      console.log(
+        `[${account.getAccountType()}] ${account.owner}: ${interest > 0 ? '+' : ''}${interest.toFixed(2)}€`
+      );
+    }
+
+    return results;
+  }
+
+  // On traite tous les comptes de la même manière
+  getTotalAssets(): number {
+    return this.accounts.reduce((total, acc) => total + acc.balance, 0);
+  }
+
+  generateReport(): AccountReport[] {
+    return this.accounts.map(acc => ({
+      owner: acc.owner,
+      type: acc.getAccountType(),
+      balance: acc.balance,
+      interestRate: acc.calculateInterest(),
+    }));
+  }
+}
+
+// Utilisation
+const bank = new Bank();
+bank.addAccount(new CheckingAccount("Alice", 5000));
+bank.addAccount(new SavingsAccount("Bob", 10000, 0.03));
+bank.addAccount(new InvestmentAccount("Charlie", 50000));
+
+// Chaque compte calcule ses intérêts différemment !
+bank.applyMonthlyInterest();
+// [COURANT] Alice: 0.00€
+// [EPARGNE] Bob: +300.00€
+// [INVESTISSEMENT] Charlie: -750.00€ (frais de gestion)
+```
+
+### Polymorphisme ad hoc (Surcharge de méthodes)
+
+TypeScript supporte la surcharge via les signatures multiples :
+
+```typescript
+class TransactionProcessor {
+  // Signatures multiples (surcharge)
+  process(transaction: SingleTransaction): TransactionResult;
+  process(transactions: SingleTransaction[]): TransactionResult[];
+  process(
+    input: SingleTransaction | SingleTransaction[]
+  ): TransactionResult | TransactionResult[] {
+    if (Array.isArray(input)) {
+      return input.map(tx => this.processOne(tx));
+    }
+    return this.processOne(input);
+  }
+
+  private processOne(tx: SingleTransaction): TransactionResult {
+    // Logique de traitement unique
+    return {
+      id: tx.id,
+      status: "SUCCESS",
+      processedAt: new Date(),
+    };
+  }
+}
+```
+
+## Abstraction et Interfaces <a name="abstraction"></a>
+
+L'abstraction définit un **contrat** que les implémentations doivent respecter.
+
+```typescript
+// Interface = contrat pur
+interface PaymentProcessor {
+  processPayment(amount: number, currency: string): Promise<PaymentResult>;
+  refund(transactionId: string, amount: number): Promise<RefundResult>;
+  getTransactionStatus(transactionId: string): Promise<TransactionStatus>;
+}
+
+interface FraudDetector {
+  analyze(transaction: TransactionData): Promise<FraudAnalysis>;
+  reportFraud(transactionId: string): Promise<void>;
+}
+
+// Classe abstraite = contrat + code commun
+abstract class BasePaymentProcessor implements PaymentProcessor {
+  constructor(protected readonly apiKey: string) {}
+
+  // Implémentation commune (Template Method Pattern)
+  async processPayment(amount: number, currency: string): Promise<PaymentResult> {
+    // 1. Validation commune
+    this.validateAmount(amount);
+    this.validateCurrency(currency);
+
+    // 2. Vérification fraude commune
+    const fraudCheck = await this.checkFraud({ amount, currency });
+    if (fraudCheck.isHighRisk) {
+      throw new FraudDetectedError("Transaction bloquée par le système anti-fraude");
+    }
+
+    // 3. Traitement spécifique (délégué aux sous-classes)
+    return this.executePayment(amount, currency);
+  }
+
+  // Méthodes abstraites — chaque processeur les implémente
+  protected abstract executePayment(amount: number, currency: string): Promise<PaymentResult>;
+  abstract refund(transactionId: string, amount: number): Promise<RefundResult>;
+  abstract getTransactionStatus(transactionId: string): Promise<TransactionStatus>;
+
+  // Méthode commune
+  private validateAmount(amount: number): void {
+    if (amount <= 0) throw new Error("Montant invalide");
+    if (amount > 100_000) throw new Error("Montant supérieur au plafond");
+  }
+
+  private validateCurrency(currency: string): void {
+    const supported = ["EUR", "USD", "GBP"];
+    if (!supported.includes(currency)) {
+      throw new Error(`Devise non supportée: ${currency}`);
+    }
+  }
+
+  protected async checkFraud(data: Partial<TransactionData>): Promise<FraudAnalysis> {
+    // Logique commune de détection de fraude
+    return { isHighRisk: false, score: 0.1 };
+  }
+}
+
+// ── Implémentation Stripe ──────────────────────────────────────
+class StripeProcessor extends BasePaymentProcessor {
+  protected async executePayment(amount: number, currency: string): Promise<PaymentResult> {
+    // Appel réel à l'API Stripe
+    console.log(`[Stripe] Traitement de ${amount} ${currency}`);
+    return { transactionId: `stripe_${Date.now()}`, status: "SUCCESS" };
+  }
+
+  async refund(transactionId: string, amount: number): Promise<RefundResult> {
+    console.log(`[Stripe] Remboursement ${transactionId}: ${amount}€`);
+    return { refundId: `ref_${Date.now()}`, status: "REFUNDED" };
+  }
+
+  async getTransactionStatus(transactionId: string): Promise<TransactionStatus> {
+    return { id: transactionId, status: "COMPLETED", provider: "stripe" };
+  }
+}
+
+// ── Implémentation PayPal ──────────────────────────────────────
+class PayPalProcessor extends BasePaymentProcessor {
+  protected async executePayment(amount: number, currency: string): Promise<PaymentResult> {
+    console.log(`[PayPal] Traitement de ${amount} ${currency}`);
+    return { transactionId: `pp_${Date.now()}`, status: "SUCCESS" };
+  }
+
+  async refund(transactionId: string, amount: number): Promise<RefundResult> {
+    console.log(`[PayPal] Remboursement ${transactionId}: ${amount}€`);
+    return { refundId: `ppref_${Date.now()}`, status: "REFUNDED" };
+  }
+
+  async getTransactionStatus(transactionId: string): Promise<TransactionStatus> {
+    return { id: transactionId, status: "COMPLETED", provider: "paypal" };
+  }
+}
+```
+
+## Projet Fil Rouge : Système Bancaire Complet <a name="projet"></a>
+
+Assemblons tous les concepts dans une architecture complète :
+
+```typescript
+// ── Types et Interfaces ─────────────────────────────────────────
+interface Transaction {
+  id: string;
+  type: string;
+  amount: number;
+  balanceAfter: number;
+  timestamp: Date;
+  description?: string;
+}
+
+interface AuditEvent {
+  action: string;
+  details: string;
+  timestamp: Date;
+  userId?: string;
+}
+
+interface AccountReport {
+  owner: string;
+  type: string;
+  balance: number;
+  interestRate: number;
+}
+
+// ── Exceptions Métier ────────────────────────────────────────────
+class BankError extends Error {
+  constructor(message: string, public readonly code: string) {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
+class InsufficientFundsError extends BankError {
+  constructor(message: string) { super(message, "INSUFFICIENT_FUNDS"); }
+}
+
+class InvalidAmountError extends BankError {
+  constructor(message: string) { super(message, "INVALID_AMOUNT"); }
+}
+
+class MinimumBalanceError extends BankError {
+  constructor(message: string) { super(message, "MINIMUM_BALANCE"); }
+}
+
+class WithdrawalLimitError extends BankError {
+  constructor(message: string) { super(message, "WITHDRAWAL_LIMIT"); }
+}
+
+class AccountNotFoundError extends BankError {
+  constructor(accountId: string) {
+    super(`Compte ${accountId} introuvable`, "ACCOUNT_NOT_FOUND");
+  }
+}
+
+// ── Service de Transfert ────────────────────────────────────────
+class TransferService {
+  constructor(
+    private auditor: AuditLogger,
+    private notifier: NotificationService
+  ) {}
+
+  async transfer(
+    from: BankAccount,
+    to: BankAccount,
+    amount: number,
+    description?: string
+  ): Promise<TransferResult> {
+    // Validation
+    if (from.accountNumber === to.accountNumber) {
+      throw new BankError("Impossible de transférer vers le même compte", "SAME_ACCOUNT");
+    }
+
+    try {
+      // Transaction (pas de vrai ACID ici, mais le concept est montré)
+      from.withdraw(amount);
+      to.deposit(amount);
+
+      const result: TransferResult = {
+        id: crypto.randomUUID(),
+        from: from.accountNumber,
+        to: to.accountNumber,
+        amount,
+        timestamp: new Date(),
+        status: "SUCCESS",
+      };
+
+      // Audit & Notifications
+      this.auditor.log({
+        action: "TRANSFER",
+        details: `${amount}€ de ${from.owner} vers ${to.owner}`,
+        timestamp: new Date(),
+      });
+
+      await this.notifier.notify(
+        from.owner,
+        `Virement de ${amount}€ vers ${to.owner} effectué`
+      );
+      await this.notifier.notify(
+        to.owner,
+        `Vous avez reçu ${amount}€ de ${from.owner}`
+      );
+
+      return result;
+    } catch (error) {
+      // Rollback en cas d'échec du dépôt
+      if (error instanceof Error && from.balance < amount) {
+        from.deposit(amount); // Restore
+      }
+      throw error;
+    }
+  }
+}
+
+interface TransferResult {
+  id: string;
+  from: string;
+  to: string;
+  amount: number;
+  timestamp: Date;
+  status: "SUCCESS" | "FAILED";
+}
+```
+
+### Architecture Finale
+
+```typescript
+// ── Point d'entrée : La Banque ───────────────────────────────────
+class BankingSystem {
+  private accounts = new Map<string, BankAccount>();
+  private transferService: TransferService;
+
+  constructor(
+    private notifier: NotificationService,
+    private auditor: AuditLogger
+  ) {
+    this.transferService = new TransferService(auditor, notifier);
+  }
+
+  openAccount(type: "checking" | "savings" | "investment", owner: string, deposit: number): BankAccount {
+    let account: BankAccount;
+
+    switch (type) {
+      case "checking":
+        account = new CheckingAccount(owner, deposit);
+        break;
+      case "savings":
+        account = new SavingsAccount(owner, deposit);
+        break;
+      case "investment":
+        account = new InvestmentAccount(owner, deposit);
+        break;
+    }
+
+    this.accounts.set(account.accountNumber, account);
+    this.auditor.log({
+      action: "ACCOUNT_OPENED",
+      details: `Compte ${type} ouvert pour ${owner} avec ${deposit}€`,
+      timestamp: new Date(),
+    });
+
+    return account;
+  }
+
+  getAccount(accountNumber: string): BankAccount {
+    const account = this.accounts.get(accountNumber);
+    if (!account) throw new AccountNotFoundError(accountNumber);
+    return account;
+  }
+
+  async transfer(fromId: string, toId: string, amount: number): Promise<TransferResult> {
+    const from = this.getAccount(fromId);
+    const to = this.getAccount(toId);
+    return this.transferService.transfer(from, to, amount);
+  }
+
+  applyMonthlyInterest(): void {
+    for (const account of this.accounts.values()) {
+      const interest = account.calculateInterest();
+      if (interest !== 0) {
+        console.log(`[${account.getAccountType()}] ${account.owner}: ${interest > 0 ? '+' : ''}${interest.toFixed(2)}€`);
+      }
+    }
+  }
+
+  generateMonthlyReport(): AccountReport[] {
+    return Array.from(this.accounts.values()).map(acc => ({
+      owner: acc.owner,
+      type: acc.getAccountType(),
+      balance: acc.balance,
+      interestRate: acc.calculateInterest(),
+    }));
+  }
+}
+```
+
+## Design Patterns Essentiels <a name="patterns"></a>
+
+### Observer Pattern — Système de Notifications
+
+```typescript
+interface Observer<T> {
+  update(event: T): void;
+}
+
+interface Observable<T> {
+  subscribe(observer: Observer<T>): void;
+  unsubscribe(observer: Observer<T>): void;
+  notifyAll(event: T): void;
+}
+
+class AccountEventEmitter implements Observable<AccountEvent> {
+  private observers: Set<Observer<AccountEvent>> = new Set();
+
+  subscribe(observer: Observer<AccountEvent>): void {
+    this.observers.add(observer);
+  }
+
+  unsubscribe(observer: Observer<AccountEvent>): void {
+    this.observers.delete(observer);
+  }
+
+  notifyAll(event: AccountEvent): void {
+    for (const observer of this.observers) {
+      observer.update(event);
+    }
+  }
+}
+
+class FraudDetectionObserver implements Observer<AccountEvent> {
+  update(event: AccountEvent): void {
+    if (event.type === "WITHDRAWAL" && event.amount > 5000) {
+      console.warn(`🚨 Retrait suspect : ${event.amount}€ sur le compte ${event.accountId}`);
+    }
+  }
+}
+
+class AnalyticsObserver implements Observer<AccountEvent> {
+  update(event: AccountEvent): void {
+    // Envoyer vers le système d'analytics
+    console.log(`📊 Analytics: ${event.type} — ${event.amount}€`);
+  }
+}
+```
+
+### Strategy Pattern — Calcul d'Intérêts
+
+```typescript
+interface InterestStrategy {
+  calculate(balance: number): number;
+  getName(): string;
+}
+
+class SimpleInterest implements InterestStrategy {
+  constructor(private rate: number) {}
+
+  calculate(balance: number): number {
+    return balance * this.rate;
+  }
+
+  getName(): string {
+    return `Intérêt simple (${this.rate * 100}%)`;
+  }
+}
+
+class CompoundInterest implements InterestStrategy {
+  constructor(
+    private annualRate: number,
+    private compoundingPeriods: number = 12
+  ) {}
+
+  calculate(balance: number): number {
+    const monthlyRate = this.annualRate / this.compoundingPeriods;
+    return balance * monthlyRate;
+  }
+
+  getName(): string {
+    return `Intérêt composé (${this.annualRate * 100}% annuel)`;
+  }
+}
+
+class TieredInterest implements InterestStrategy {
+  private tiers = [
+    { threshold: 10_000, rate: 0.01 },
+    { threshold: 50_000, rate: 0.02 },
+    { threshold: Infinity, rate: 0.03 },
+  ];
+
+  calculate(balance: number): number {
+    let remaining = balance;
+    let totalInterest = 0;
+    let prevThreshold = 0;
+
+    for (const tier of this.tiers) {
+      const amount = Math.min(remaining, tier.threshold - prevThreshold);
+      totalInterest += amount * tier.rate;
+      remaining -= amount;
+      prevThreshold = tier.threshold;
+      if (remaining <= 0) break;
+    }
+
+    return totalInterest;
+  }
+
+  getName(): string {
+    return "Intérêt par paliers";
+  }
+}
+
+// Utilisation
+class FlexibleSavingsAccount extends BankAccount {
+  constructor(
+    owner: string,
+    initialDeposit: number,
+    private strategy: InterestStrategy // Injecté
+  ) {
+    super(owner, initialDeposit);
+  }
+
+  calculateInterest(): number {
+    return this.strategy.calculate(this.balance);
+  }
+
+  // On peut changer de stratégie à l'exécution !
+  setInterestStrategy(strategy: InterestStrategy): void {
+    this.strategy = strategy;
+  }
+
+  getAccountType(): string {
+    return "EPARGNE_FLEXIBLE";
+  }
+}
+```
+
+## SOLID en Pratique <a name="solid"></a>
+
+Récapitulons comment notre projet bancaire applique les principes SOLID :
+
+| Principe | Application dans notre projet |
+|----------|-------------------------------|
+| **S** — Single Responsibility | `BankAccount` gère les comptes, `TransferService` gère les virements, `NotificationService` gère les notifications |
+| **O** — Open/Closed | Nouveau type de compte ? Créer une sous-classe. Nouveau processeur de paiement ? Implémenter l'interface |
+| **L** — Liskov Substitution | `SavingsAccount` et `CheckingAccount` sont interchangeables dans `Bank.applyMonthlyInterest()` |
+| **I** — Interface Segregation | `NotificationService`, `AuditLogger` et `InterestCalculator` sont des interfaces disttinctes |
+| **D** — Dependency Inversion | `EnhancedBankAccount` dépend d'interfaces, pas de classes concrètes |
+
+## Anti-Patterns à Éviter <a name="anti-patterns"></a>
+
+### 1. God Class (Classe Dieu)
+
+```typescript
+// ❌ MAUVAIS — Une classe qui fait tout
+class EverythingService {
+  createUser() { /* ... */ }
+  processPayment() { /* ... */ }
+  sendEmail() { /* ... */ }
+  generateReport() { /* ... */ }
+  validateInput() { /* ... */ }
+  connectToDatabase() { /* ... */ }
+  // 50 autres méthodes...
+}
+
+// ✅ BON — Responsabilités séparées
+class UserService { createUser() { /* ... */ } }
+class PaymentService { processPayment() { /* ... */ } }
+class EmailService { sendEmail() { /* ... */ } }
+class ReportService { generateReport() { /* ... */ } }
+```
+
+### 2. Inheritance Hell (Enfer de l'Héritage)
+
+```typescript
+// ❌ MAUVAIS — Hiérarchie trop profonde
+class Entity { /* ... */ }
+class LivingEntity extends Entity { /* ... */ }
+class Animal extends LivingEntity { /* ... */ }
+class Mammal extends Animal { /* ... */ }
+class DomesticMammal extends Mammal { /* ... */ }
+class Dog extends DomesticMammal { /* ... */ }
+class GoldenRetriever extends Dog { /* ... */ }
+
+// ✅ BON — Composition avec interfaces
+interface Walkable { walk(): void; }
+interface Feedable { feed(food: Food): void; }
+interface Trainable { train(command: string): void; }
+
+class Pet implements Walkable, Feedable, Trainable {
+  constructor(
+    private walker: WalkBehavior,
+    private feeder: FeedBehavior,
+    private trainer: TrainBehavior
+  ) {}
+
+  walk() { this.walker.walk(); }
+  feed(food: Food) { this.feeder.feed(food); }
+  train(command: string) { this.trainer.train(command); }
+}
+```
+
+### 3. Anemic Domain Model
+
+```typescript
+// ❌ MAUVAIS — Objet sans logique métier
+class Order {
+  id: string;
+  items: OrderItem[];
+  total: number;
+  status: string;
+}
+
+// La logique est dans un service séparé
+class OrderService {
+  calculateTotal(order: Order) {
+    order.total = order.items.reduce((sum, item) => sum + item.price * item.qty, 0);
+  }
+  validate(order: Order) { /* ... */ }
+  apply discount(order: Order) { /* ... */ }
+}
+
+// ✅ BON — Modèle riche avec logique métier
+class Order {
+  private _items: OrderItem[] = [];
+  private _status: OrderStatus = "DRAFT";
+
+  get total(): number {
+    return this._items.reduce((sum, item) => sum + item.subtotal, 0);
+  }
+
+  addItem(item: OrderItem): void {
+    if (this._status !== "DRAFT") throw new Error("Commande déjà finalisée");
+    this._items.push(item);
+  }
+
+  applyDiscount(code: string): number {
+    // Logique métier dans le modèle
+    const discount = this.calculateDiscount(code);
+    return discount;
+  }
+
+  finalize(): void {
+    if (this._items.length === 0) throw new Error("Commande vide");
+    this._status = "FINALIZED";
+  }
+}
+```
+
+## Tests Unitaires en POO <a name="tests"></a>
+
+```typescript
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+describe("BankAccount", () => {
+  let account: CheckingAccount;
+
+  beforeEach(() => {
+    account = new CheckingAccount("Alice", 1000);
+  });
+
+  describe("deposit", () => {
+    it("augmente le solde du montant déposé", () => {
+      account.deposit(500);
+      expect(account.balance).toBe(1500);
+    });
+
+    it("rejette les montants négatifs", () => {
+      expect(() => account.deposit(-100)).toThrow(InvalidAmountError);
+    });
+
+    it("rejette les montants nuls", () => {
+      expect(() => account.deposit(0)).toThrow(InvalidAmountError);
+    });
+  });
+
+  describe("withdraw", () => {
+    it("diminue le solde", () => {
+      account.withdraw(300);
+      expect(account.balance).toBe(700);
+    });
+
+    it("autorise le découvert jusqu'à la limite", () => {
+      account.withdraw(1400); // 1000 solde + 500 découvert
+      expect(account.balance).toBe(-400);
+    });
+
+    it("rejette au-delà de la limite de découvert", () => {
+      expect(() => account.withdraw(2000)).toThrow(InsufficientFundsError);
+    });
+  });
+});
+
+describe("SavingsAccount", () => {
+  let account: SavingsAccount;
+
+  beforeEach(() => {
+    account = new SavingsAccount("Bob", 5000, 0.03, 100);
+  });
+
+  it("calcule les intérêts correctement", () => {
+    const interest = account.calculateInterest();
+    expect(interest).toBe(150); // 5000 * 0.03
+  });
+
+  it("limite les retraits mensuels", () => {
+    account.withdraw(100);
+    account.withdraw(100);
+    account.withdraw(100);
+    expect(() => account.withdraw(100)).toThrow(WithdrawalLimitError);
+  });
+
+  it("empêche de descendre sous le solde minimum", () => {
+    expect(() => account.withdraw(4950)).toThrow(MinimumBalanceError);
+  });
+});
+
+describe("TransferService", () => {
+  it("transfère correctement entre deux comptes", async () => {
+    const mockNotifier: NotificationService = {
+      notify: vi.fn().mockResolvedValue(undefined),
+    };
+    const mockAuditor: AuditLogger = { log: vi.fn() };
+
+    const service = new TransferService(mockAuditor, mockNotifier);
+    const from = new CheckingAccount("Alice", 1000);
+    const to = new CheckingAccount("Bob", 500);
+
+    await service.transfer(from, to, 300);
+
+    expect(from.balance).toBe(700);
+    expect(to.balance).toBe(800);
+    expect(mockNotifier.notify).toHaveBeenCalledTimes(2);
+    expect(mockAuditor.log).toHaveBeenCalledTimes(1);
+  });
+});
+```
+
+## POO vs Fonctionnel — Quand Utiliser Quoi ? <a name="poo-vs-fp"></a>
+
+| Critère | POO | Fonctionnel |
+|---------|-----|-------------|
+| **État** | État encapsulé dans des objets | Éviter l'état mutable, fonctions pures |
+| **Idéal pour** | Modéliser des entités du domaine (User, Order, Account) | Transformations de données (map, filter, reduce) |
+| **Extension** | Ajouter de nouveaux types facile (nouvelle sous-classe) | Ajouter de nouvelles opérations facile (nouvelle fonction) |
+| **Tests** | Mocking des dépendances | Fonctions pures, pas de mocking nécessaire |
+| **Quand utiliser** | Systèmes avec beaucoup d'entités et de comportements | Pipelines de données, traitement de flux |
+
+> **En pratique** : Combinez les deux ! Utilisez la POO pour votre domaine métier et le fonctionnel pour les transformations de données.
+
+```typescript
+// Combinaison POO + FP dans un projet réel
+class AccountAnalytics {
+  constructor(private accounts: BankAccount[]) {}
+
+  // Style fonctionnel pour les transformations
+  getHighValueAccounts(threshold: number): BankAccount[] {
+    return this.accounts
+      .filter(acc => acc.balance > threshold)
+      .sort((a, b) => b.balance - a.balance);
+  }
+
+  getTotalByType(): Map<string, number> {
+    return this.accounts.reduce((map, acc) => {
+      const type = acc.getAccountType();
+      map.set(type, (map.get(type) ?? 0) + acc.balance);
+      return map;
+    }, new Map<string, number>());
+  }
+
+  getAverageBalance(): number {
+    if (this.accounts.length === 0) return 0;
+    const total = this.accounts.reduce((sum, acc) => sum + acc.balance, 0);
+    return total / this.accounts.length;
+  }
+}
+```
+
+## Conclusion et Ressources <a name="conclusion"></a>
+
+La POO n'est pas juste 4 mots-clés à mémoriser — c'est une discipline de conception qui, bien appliquée, produit du code :
+
+- **Compréhensible** : Le code reflète le domaine métier
+- **Maintenable** : Chaque modification est isolée
+- **Testable** : Les dépendances sont injectables et mockables
+- **Extensible** : Nouveaux comportements sans modifier l'existant
+
+### Checklist POO
+
+- [ ] Mes classes ont une seule responsabilité ?
+- [ ] J'utilise la composition plutôt que l'héritage profond ?
+- [ ] Mes dépendances sont injectées via des interfaces ?
+- [ ] Mes propriétés sont privées par défaut ?
+- [ ] Mes exceptions sont typées et explicites ?
+- [ ] Mes tests couvrent les cas limites ?
+
+### Pour aller plus loin
+
+- **Clean Code** de Robert C. Martin — Les bases de l'écriture de code propre
+- **Design Patterns: Elements of Reusable Object-Oriented Software** (Gang of Four) — La référence des design patterns
+- **Head First Design Patterns** — Version accessible avec illustrations
+- **Refactoring** de Martin Fowler — Comment améliorer du code existant
