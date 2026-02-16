@@ -42,7 +42,7 @@ export function Testimonials() {
   const prevTestimonial = () => {
     setCurrentIndex(
       (prev) =>
-        (prev - 1 + content.testimonials.length) % content.testimonials.length
+        (prev - 1 + content.testimonials.length) % content.testimonials.length,
     );
     setIsAutoPlaying(false);
   };
@@ -70,7 +70,7 @@ export function Testimonials() {
             {content.badge.value}
           </div>
           <motion.h2
-            className="text-4xl lg:text-5xl font-bold bg-linear-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent mb-4"
+            className="text-4xl lg:text-5xl font-bold text-gradient-heading mb-4"
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.6 }}
@@ -146,16 +146,11 @@ export function Testimonials() {
                 >
                   <Avatar className="w-24 h-24 mx-auto lg:mx-0 ring-4 ring-primary/20">
                     <AvatarImage
-                      src={
-                        currentTestimonial.avatar.value
-                      }
-                      alt={
-                        currentTestimonial.name.value
-                      }
+                      src={currentTestimonial.avatar.value}
+                      alt={currentTestimonial.name.value}
                     />
                     <AvatarFallback className="text-lg font-semibold">
-                      {(currentTestimonial.name.value
-                      )
+                      {currentTestimonial.name.value
                         .split(" ")
                         .map((n) => n[0])
                         .join("")}

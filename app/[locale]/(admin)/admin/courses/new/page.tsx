@@ -4,7 +4,13 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { CourseCreateForm } from "./_components/course-create-form";
 import { db } from "@/lib/db";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -18,7 +24,7 @@ export const metadata: Metadata = {
 async function getFormData() {
   // Récupérer les tags existants pour le formulaire
   const tags = await db.tag.findMany({
-    orderBy: { name: 'asc' }
+    orderBy: { name: "asc" },
   });
 
   return { tags };
@@ -34,7 +40,10 @@ export default async function CreateCoursePage() {
     redirect("/auth/login?callbackUrl=/admin/courses/new");
   }
 
-  if (session.user.role !== Role.ADMIN && session.user.role !== Role.INSTRUCTOR) {
+  if (
+    session.user.role !== Role.ADMIN &&
+    session.user.role !== Role.INSTRUCTOR
+  ) {
     redirect("/dashboard");
   }
 
@@ -50,9 +59,9 @@ export default async function CreateCoursePage() {
             Retour aux formations
           </Link>
         </Button>
-        
+
         <div className="flex-1">
-          <h1 className="text-3xl font-bold bg-linear-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold text-gradient-heading">
             Créer une nouvelle formation
           </h1>
           <p className="text-muted-foreground mt-1">
@@ -66,13 +75,12 @@ export default async function CreateCoursePage() {
         <CardHeader>
           <CardTitle>Informations de la formation</CardTitle>
           <CardDescription>
-            Configurez les détails de base de votre formation. Vous pourrez ajouter les leçons après la création.
+            Configurez les détails de base de votre formation. Vous pourrez
+            ajouter les leçons après la création.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <CourseCreateForm 
-            tags={tags}
-          />
+          <CourseCreateForm tags={tags} />
         </CardContent>
       </Card>
     </div>

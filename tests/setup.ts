@@ -1,57 +1,40 @@
-import { beforeAll, afterAll, beforeEach } from "vitest";
-import { exec } from "child_process";
-import { promisify } from "util";
+/**
+ * Test Setup
+ *
+ * Unit tests: No external dependencies — run with mocks only.
+ * Integration tests: Require Docker (postgres + redis) via docker-compose.test.yml.
+ *
+ * The database is reset once before all tests (not per-test) for performance.
+ * Individual tests should handle their own data isolation via transactions or cleanup.
+ */
 
-const execAsync = promisify(exec);
+import { beforeAll, afterAll } from "vitest";
 
-// Setup test database before all tests
+const isIntegrationTest = process.env.TEST_INTEGRATION === "true";
+
 beforeAll(async () => {
+  if (!isIntegrationTest) {
+    // Unit tests don't need database setup
+    return;
+  }
+
   try {
-    console.log("Setting up test environment...");
+    const { exec } = await import("child_process");
+    const { promisify } = await import("util");
+    const execAsync = promisify(exec);
 
-    // Check if Docker Compose services are running
-    try {
-      await execAsync("docker-compose -f docker-compose.test.yml ps");
-      console.log("Docker Compose test services are running");
-    } catch {
-      console.log("Starting Docker Compose test services...");
-      await execAsync("docker-compose -f docker-compose.test.yml up -d");
-      // Wait for services to be ready
-      await new Promise((resolve) => setTimeout(resolve, 10000));
-    }
-
-    // Push the schema to test database
-    await execAsync("dotenv -e .env.test -- npx prisma db push --force-reset");
-    console.log("Test database schema pushed successfully");
-
-    // Run any necessary seeds for basic test data
-    // await execAsync('dotenv -e .env.test -- npx prisma db seed');
-    // console.log('Test database seeded successfully');
+    console.log("[test:setup] Pushing schema to test database...");
+    await execAsync("dotenv -e .env.test -- npx prisma db push --force-reset", {
+      timeout: 30000,
+    });
+    console.log("[test:setup] Test database ready.");
   } catch (error) {
-    console.error("Failed to setup test environment:", error);
+    console.error("[test:setup] Failed to setup test database:", error);
     throw error;
   }
 });
 
-// Clean up after all tests
 afterAll(async () => {
-  try {
-    console.log("Cleaning up test environment...");
-    // Note: We don't stop Docker services here as they might be needed for other test runs
-    // Use `pnpm test:teardown` to fully clean up
-  } catch (error) {
-    console.error("Failed to cleanup test environment:", error);
-  }
-});
-
-// Clean database state before each test to ensure isolation
-beforeEach(async () => {
-  try {
-    // Truncate all tables for test isolation
-    // This is more reliable than trying to delete specific records
-    await execAsync("dotenv -e .env.test -- npx prisma db push --force-reset");
-  } catch (error) {
-    console.warn("Failed to reset database between tests:", error);
-    // Don't throw - let the test try to continue
-  }
+  if (!isIntegrationTest) return;
+  console.log("[test:teardown] Test suite complete.");
 });

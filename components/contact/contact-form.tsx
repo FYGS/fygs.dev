@@ -6,11 +6,23 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 // import { toast } from "sonner";
 import { notify } from "@/lib/notification-store";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Briefcase, Handshake, GraduationCap, MessageCircle } from "lucide-react";
+import {
+  Loader2,
+  Briefcase,
+  Handshake,
+  GraduationCap,
+  MessageCircle,
+} from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useIntlayer } from "next-intlayer";
@@ -20,7 +32,9 @@ const contactSchema = z.object({
   email: z.string().email("Invalid email address"),
   subject: z.string().min(5, "Subject must contain at least 5 characters"),
   message: z.string().min(10, "Message must contain at least 10 characters"),
-  type: z.enum(['recruitment', 'collaboration', 'training', 'general']).optional(),
+  type: z
+    .enum(["recruitment", "collaboration", "training", "general"])
+    .optional(),
   company: z.string().optional(),
   position: z.string().optional(),
 });
@@ -40,11 +54,11 @@ export function ContactForm() {
   } = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema),
     defaultValues: {
-      type: 'general'
-    }
+      type: "general",
+    },
   });
 
-  const watchedType = watch('type');
+  const watchedType = watch("type");
 
   // Sync watchedType with form value management
   useEffect(() => {
@@ -73,7 +87,7 @@ export function ContactForm() {
         notify.success(
           content.notifications.success.title.value,
           content.notifications.success.description.value,
-          40
+          40,
         );
         // toast.success("Message envoyé !");
         reset();
@@ -81,7 +95,7 @@ export function ContactForm() {
         notify.error(
           content.notifications.error.title.value,
           content.notifications.error.description.value,
-          6000
+          6000,
         );
         // toast.error("Erreur lors de l'envoi");
       }
@@ -90,7 +104,7 @@ export function ContactForm() {
       notify.error(
         content.notifications.error.title.value,
         content.notifications.error.description.value,
-        6000
+        6000,
       );
       // toast.error("Erreur lors de l'envoi");
     } finally {
@@ -100,63 +114,63 @@ export function ContactForm() {
 
   const getContactTypeInfo = (type: string) => {
     switch (type) {
-      case 'recruitment':
+      case "recruitment":
         return {
           icon: Briefcase,
           title: content.contactTypes.recruitment.title.value,
           description: content.contactTypes.recruitment.description.value,
-          placeholder: content.contactTypes.recruitment.placeholder.value
+          placeholder: content.contactTypes.recruitment.placeholder.value,
         };
-      case 'collaboration':
+      case "collaboration":
         return {
           icon: Handshake,
           title: content.contactTypes.collaboration.title.value,
           description: content.contactTypes.collaboration.description.value,
-          placeholder: content.contactTypes.collaboration.placeholder.value
+          placeholder: content.contactTypes.collaboration.placeholder.value,
         };
-      case 'training':
+      case "training":
         return {
           icon: GraduationCap,
           title: content.contactTypes.training.title.value,
           description: content.contactTypes.training.description.value,
-          placeholder: content.contactTypes.training.placeholder.value
+          placeholder: content.contactTypes.training.placeholder.value,
         };
       default:
         return {
           icon: MessageCircle,
           title: content.contactTypes.general.title.value,
           description: content.contactTypes.general.description.value,
-          placeholder: content.contactTypes.general.placeholder.value
+          placeholder: content.contactTypes.general.placeholder.value,
         };
     }
   };
 
-  const typeInfo = getContactTypeInfo(watchedType || 'general');
+  const typeInfo = getContactTypeInfo(watchedType || "general");
   const TypeIcon = typeInfo.icon;
 
   return (
     <Card className="p-6 shadow-lg border-0 bg-linear-to-br from-card via-card to-muted/20 hover:shadow-xl transition-all duration-300">
       <div className="mb-6">
-        <h3 className="text-2xl font-bold mb-2 bg-linear-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+        <h3 className="text-2xl font-bold mb-2 text-gradient-heading">
           {content.title.value}
         </h3>
-        <p className="text-muted-foreground">
-          {content.description.value}
-        </p>
+        <p className="text-muted-foreground">{content.description.value}</p>
       </div>
-      
+
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Contact Type Selection */}
         <div className="space-y-2">
           <Label htmlFor="type">{content.contactType.label.value}</Label>
           <Select
-            value={watchedType || 'general'}
+            value={watchedType || "general"}
             onValueChange={(value) => {
-              setValue('type', value as any);
+              setValue("type", value as any);
             }}
           >
             <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-primary/20">
-              <SelectValue placeholder={content.contactType.placeholder.value} />
+              <SelectValue
+                placeholder={content.contactType.placeholder.value}
+              />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="general">
@@ -193,7 +207,9 @@ export function ContactForm() {
             <TypeIcon className="h-5 w-5 text-primary" />
             <h4 className="font-semibold text-primary">{typeInfo.title}</h4>
           </div>
-          <p className="text-sm text-muted-foreground">{typeInfo.description}</p>
+          <p className="text-sm text-muted-foreground">
+            {typeInfo.description}
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -206,12 +222,16 @@ export function ContactForm() {
               className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
             />
             {errors.name && (
-              <span className="text-sm text-destructive">{content.formFields.name.error.value}</span>
+              <span className="text-sm text-destructive">
+                {content.formFields.name.error.value}
+              </span>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">{content.formFields.email.label.value}</Label>
+            <Label htmlFor="email">
+              {content.formFields.email.label.value}
+            </Label>
             <Input
               id="email"
               type="email"
@@ -220,16 +240,20 @@ export function ContactForm() {
               className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
             />
             {errors.email && (
-              <span className="text-sm text-destructive">{content.formFields.email.error.value}</span>
+              <span className="text-sm text-destructive">
+                {content.formFields.email.error.value}
+              </span>
             )}
           </div>
         </div>
 
         {/* Conditional fields based on contact type */}
-        {(watchedType === 'recruitment' || watchedType === 'collaboration') && (
+        {(watchedType === "recruitment" || watchedType === "collaboration") && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="company">{content.formFields.company.label.value}</Label>
+              <Label htmlFor="company">
+                {content.formFields.company.label.value}
+              </Label>
               <Input
                 id="company"
                 placeholder={content.formFields.company.placeholder.value}
@@ -238,7 +262,9 @@ export function ContactForm() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="position">{content.formFields.position.label.value}</Label>
+              <Label htmlFor="position">
+                {content.formFields.position.label.value}
+              </Label>
               <Input
                 id="position"
                 placeholder={content.formFields.position.placeholder.value}
@@ -250,25 +276,34 @@ export function ContactForm() {
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="subject">{content.formFields.subject.label.value}</Label>
+          <Label htmlFor="subject">
+            {content.formFields.subject.label.value}
+          </Label>
           <Input
             id="subject"
             placeholder={
-              watchedType === 'recruitment' ? content.formFields.subject.placeholder.recruitment.value :
-              watchedType === 'collaboration' ? content.formFields.subject.placeholder.collaboration.value :
-              watchedType === 'training' ? content.formFields.subject.placeholder.training.value :
-              content.formFields.subject.placeholder.general.value
+              watchedType === "recruitment"
+                ? content.formFields.subject.placeholder.recruitment.value
+                : watchedType === "collaboration"
+                  ? content.formFields.subject.placeholder.collaboration.value
+                  : watchedType === "training"
+                    ? content.formFields.subject.placeholder.training.value
+                    : content.formFields.subject.placeholder.general.value
             }
             {...register("subject")}
             className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
           />
           {errors.subject && (
-            <span className="text-sm text-destructive">{content.formFields.subject.error.value}</span>
+            <span className="text-sm text-destructive">
+              {content.formFields.subject.error.value}
+            </span>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="message">{content.formFields.message.label.value}</Label>
+          <Label htmlFor="message">
+            {content.formFields.message.label.value}
+          </Label>
           <Textarea
             id="message"
             placeholder={typeInfo.placeholder}
@@ -276,7 +311,9 @@ export function ContactForm() {
             {...register("message")}
           />
           {errors.message && (
-            <span className="text-sm text-destructive">{content.formFields.message.error.value}</span>
+            <span className="text-sm text-destructive">
+              {content.formFields.message.error.value}
+            </span>
           )}
         </div>
 

@@ -24,7 +24,7 @@ export function BlogPreviewClient({ posts }: BlogPreviewClientProps) {
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/8 text-primary text-xs font-medium tracking-wide uppercase">
             {content.badge.value}
           </span>
-          <h2 className="text-3xl lg:text-4xl font-bold tracking-tight">
+          <h2 className="text-3xl lg:text-4xl font-bold tracking-tight text-gradient-heading">
             {content.title.value}
           </h2>
           <p className="text-base text-muted-foreground max-w-xl mx-auto leading-relaxed">

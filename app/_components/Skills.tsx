@@ -53,7 +53,7 @@ export const Skills = () => {
             {content.badge.value}
           </motion.div>
           <motion.h2
-            className="text-4xl lg:text-5xl font-bold mb-4 bg-linear-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent"
+            className="text-4xl lg:text-5xl font-bold mb-4 text-gradient-heading"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.5 }}

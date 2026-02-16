@@ -32,9 +32,7 @@ export const components = {
       )}
       {...props}
     >
-      <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-        {children}
-      </span>
+      <span className="text-gradient-accent">{children}</span>
     </h2>
   ),
 

@@ -12,43 +12,71 @@ import { useIntlayer } from "next-intlayer";
 export const Hero = () => {
   const content = useIntlayer("hero");
   return (
-    <Section className="relative overflow-hidden py-20 lg:py-28">
-      {/* Minimal background — single subtle gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] via-transparent to-secondary/[0.03]" />
+    <Section className="relative overflow-hidden py-16 lg:py-24">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-background to-secondary/5" />
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl opacity-30 animate-pulse" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl opacity-30 animate-pulse delay-1000" />
 
-      <div className="relative container max-w-6xl mx-auto px-4">
-        <div className="flex flex-col lg:flex-row items-center gap-14 lg:gap-20">
+      <div className="relative container max-w-7xl mx-auto px-4 z-10">
+        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
           {/* Text Content */}
           <motion.div
             className="flex-1 w-full text-center lg:text-left"
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
+            transition={{ duration: 0.6 }}
           >
-            <h2 className="font-caption text-4xl lg:text-5xl font-bold tracking-tight text-foreground mb-3">
+            <motion.h2
+              className="font-caption text-5xl lg:text-6xl font-bold text-gradient-primary mb-4"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+            >
               {content.title}
-            </h2>
-            <h3 className="font-caption font-semibold text-2xl lg:text-3xl mb-5 text-muted-foreground">
+            </motion.h2>
+            <motion.h3
+              className="font-caption font-bold text-3xl lg:text-4xl mb-6 text-gradient-heading"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+            >
               {content.subtitle}
-            </h3>
-            <p className="text-base lg:text-lg leading-relaxed text-muted-foreground/80 mb-8 max-w-xl mx-auto lg:mx-0">
+            </motion.h3>
+            <motion.p
+              className="text-lg lg:text-xl leading-relaxed text-muted-foreground mb-8 max-w-2xl mx-auto lg:mx-0"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+            >
               {content.description}
-            </p>
+            </motion.p>
 
             {/* Tech Stack Badges */}
-            <div className="flex flex-wrap justify-center lg:justify-start gap-2 mb-8">
-              {content.techStack.map((tech) => (
+            <motion.div
+              className="flex flex-wrap justify-center lg:justify-start gap-3 mb-8"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+            >
+              {content.techStack.map((tech, index) => (
                 <span
                   key={tech.value}
-                  className="px-3 py-1.5 rounded-full bg-primary/8 text-primary font-medium text-xs tracking-wide hover:bg-primary/15 transition-colors"
+                  className="px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm hover:bg-primary/20 transition-colors"
+                  style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   {tech.value}
                 </span>
               ))}
-            </div>
+            </motion.div>
 
             {/* Contact Links */}
-            <div className="flex flex-wrap justify-center lg:justify-start gap-3 mb-6">
+            <motion.div
+              className="flex flex-wrap justify-center lg:justify-start gap-4 mb-8"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.6 }}
+            >
               <Link
                 href="https://www.linkedin.com/in/fernandsoualo"
                 target="_blank"
@@ -56,15 +84,14 @@ export const Hero = () => {
               >
                 <Button
                   variant="outline"
-                  size="sm"
-                  className="gap-2 group border-border/50 hover:border-primary/30"
+                  className="flex items-center gap-2 group"
                 >
                   <LinkedInIcon
-                    size={14}
+                    size={16}
                     className="group-hover:scale-110 transition-transform"
                   />
                   LinkedIn
-                  <ArrowUpRight className="h-3 w-3 opacity-40 group-hover:opacity-100 transition-opacity" />
+                  <ArrowUpRight className="h-4 w-4 ml-1 opacity-50 group-hover:opacity-100 transition-opacity" />
                 </Button>
               </Link>
               <Link
@@ -74,55 +101,59 @@ export const Hero = () => {
               >
                 <Button
                   variant="outline"
-                  size="sm"
-                  className="gap-2 group border-border/50 hover:border-primary/30"
+                  className="flex items-center gap-2 group"
                 >
                   <GithubIcon
-                    size={14}
+                    size={16}
                     className="group-hover:scale-110 transition-transform"
                   />
                   GitHub
-                  <ArrowUpRight className="h-3 w-3 opacity-40 group-hover:opacity-100 transition-opacity" />
+                  <ArrowUpRight className="h-4 w-4 ml-1 opacity-50 group-hover:opacity-100 transition-opacity" />
                 </Button>
               </Link>
               <Link href="mailto:fygs.dev@gmail.com" rel="noopener noreferrer">
                 <Button
                   variant="outline"
-                  size="sm"
-                  className="gap-2 group border-border/50 hover:border-primary/30"
+                  className="flex items-center gap-2 group"
                 >
-                  <Mail className="h-3.5 w-3.5 group-hover:scale-110 transition-transform" />
+                  <Mail className="h-4 w-4 group-hover:scale-110 transition-transform" />
                   {content.contact}
                 </Button>
               </Link>
-            </div>
+            </motion.div>
 
             {/* Location */}
-            <div className="flex items-center justify-center lg:justify-start gap-1.5 text-muted-foreground/60 text-xs tracking-wide">
-              <MapPin className="h-3 w-3" />
+            <motion.div
+              className="flex items-center justify-center lg:justify-start gap-2 text-muted-foreground text-sm"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7, duration: 0.6 }}
+            >
+              <MapPin className="h-4 w-4" />
               {content.location}
-            </div>
+            </motion.div>
           </motion.div>
 
           {/* Profile Image */}
           <motion.div
-            className="flex-shrink-0"
-            initial={{ opacity: 0, scale: 0.95 }}
+            className="flex-1 flex justify-center"
+            initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.5, ease: "easeOut" }}
+            transition={{ delay: 0.4, duration: 0.6 }}
           >
             <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-500" />
-              <div className="relative rounded-full overflow-hidden border-2 border-border/30 group-hover:border-primary/30 transition-colors duration-500">
+              <div className="absolute -inset-4 bg-primary/20 rounded-full blur-xl opacity-75 group-hover:opacity-100 transition-opacity" />
+              <div className="relative rounded-full overflow-hidden border-4 border-primary/20 group-hover:border-primary/40 transition-colors">
                 <Image
                   src="/linkedin_profile_photo.jpeg"
                   alt="Fernand Soualo"
-                  width={280}
-                  height={280}
-                  className="w-56 h-56 lg:w-64 lg:h-64 object-cover rounded-full"
+                  width={300}
+                  height={300}
+                  className="w-64 h-64 lg:w-72 lg:h-72 object-cover rounded-full transition-transform group-hover:scale-105"
                   priority
                 />
               </div>
+              <div className="absolute inset-0 rounded-full bg-linear-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
           </motion.div>
         </div>

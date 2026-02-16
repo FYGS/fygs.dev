@@ -63,7 +63,7 @@ export function CallToAction() {
               viewport={{ once: true }}
             >
               {content.title.part1.value}{" "}
-              <span className="bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent">
+              <span className="text-gradient-primary">
                 {content.title.highlight.value}
               </span>{" "}
               {content.title.part2.value}
@@ -199,7 +199,9 @@ export function CallToAction() {
                       <Zap className="h-8 w-8 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-xl">{content.quickResults.value}</h3>
+                      <h3 className="font-semibold text-xl">
+                        {content.quickResults.value}
+                      </h3>
                       <p className="text-sm text-muted-foreground">
                         {content.quickResults.description.value}
                       </p>
@@ -223,7 +225,9 @@ export function CallToAction() {
 
                 {/* Benefits List */}
                 <div className="space-y-4 pt-4 border-t border-border/50">
-                  <h4 className="font-semibold text-lg">{content.benefit.title}</h4>
+                  <h4 className="font-semibold text-lg">
+                    {content.benefit.title}
+                  </h4>
                   <div className="space-y-3">
                     {content.benefits.map((benefit, index) => (
                       <div key={index} className="flex items-start gap-3">

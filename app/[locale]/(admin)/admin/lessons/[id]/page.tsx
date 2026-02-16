@@ -4,7 +4,13 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { LessonEditForm } from "./_components/lesson-edit-form";
 import { db } from "@/lib/db";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { ArrowLeft, BookOpen } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -52,7 +58,10 @@ export default async function EditLessonPage({
     redirect("/auth/login?callbackUrl=/admin/lessons/" + resolvedParams.id);
   }
 
-  if (session.user.role !== Role.ADMIN && session.user.role !== Role.INSTRUCTOR) {
+  if (
+    session.user.role !== Role.ADMIN &&
+    session.user.role !== Role.INSTRUCTOR
+  ) {
     redirect("/dashboard");
   }
 
@@ -71,7 +80,7 @@ export default async function EditLessonPage({
 
   if (session.user.role === Role.INSTRUCTOR) {
     coursesQuery.where = {
-      instructorId: session.user.id
+      instructorId: session.user.id,
     };
   }
 
@@ -87,9 +96,9 @@ export default async function EditLessonPage({
             Retour aux leçons
           </Link>
         </Button>
-        
+
         <div className="flex-1">
-          <h1 className="text-3xl font-bold bg-linear-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold text-gradient-heading">
             Modifier la leçon
           </h1>
           <p className="text-muted-foreground mt-1">
@@ -105,10 +114,10 @@ export default async function EditLessonPage({
               Voir la formation
             </Link>
           </Button>
-          
+
           {lesson.published && (
             <Button variant="ghost" size="sm" asChild>
-              <Link 
+              <Link
                 href={`/formations/${lesson.course.slug}/lessons/${lesson.slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -125,7 +134,8 @@ export default async function EditLessonPage({
         <CardHeader>
           <CardTitle>Informations de la leçon</CardTitle>
           <CardDescription>
-            Modifiez les détails de votre leçon. Les modifications seront sauvegardées automatiquement.
+            Modifiez les détails de votre leçon. Les modifications seront
+            sauvegardées automatiquement.
           </CardDescription>
         </CardHeader>
         <CardContent>

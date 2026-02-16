@@ -192,7 +192,7 @@ function ProjectsContent() {
       <FadeIn>
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-gradient-heading">
               {title}
             </h1>
             <div className="flex items-center gap-4 self-end sm:self-auto">

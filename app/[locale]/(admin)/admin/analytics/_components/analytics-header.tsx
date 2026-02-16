@@ -9,13 +9,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { 
-  Download, 
+import {
+  Download,
   Calendar,
   Filter,
   RefreshCw,
   Share,
-  BarChart3
+  BarChart3,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -33,7 +33,7 @@ export function AnalyticsHeader() {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     // Simuler un refresh
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     setIsRefreshing(false);
   };
 
@@ -42,30 +42,32 @@ export function AnalyticsHeader() {
       {/* Title and main actions */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold bg-linear-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold text-gradient-heading">
             Analytics & Rapports
           </h1>
           <p className="text-muted-foreground">
             Analyses détaillées des performances de la plateforme FYGS Learning
           </p>
         </div>
-        
+
         <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             onClick={handleRefresh}
             disabled={isRefreshing}
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
+            />
             Actualiser
           </Button>
-          
+
           <Button variant="outline" size="sm">
             <Share className="h-4 w-4 mr-2" />
             Partager
           </Button>
-          
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
@@ -80,12 +82,8 @@ export function AnalyticsHeader() {
                 <Download className="h-4 w-4 mr-2" />
                 Rapport PDF
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                Données CSV
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                Graphiques PNG
-              </DropdownMenuItem>
+              <DropdownMenuItem>Données CSV</DropdownMenuItem>
+              <DropdownMenuItem>Graphiques PNG</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

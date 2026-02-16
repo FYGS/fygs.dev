@@ -10,7 +10,9 @@ import { motion } from "framer-motion";
 import { useIntlayer } from "next-intlayer";
 
 // Types pour les cours sérialisés
-interface FeaturedCoursesClientProps { courses: FeaturedCourseDTO[] }
+interface FeaturedCoursesClientProps {
+  courses: FeaturedCourseDTO[];
+}
 
 export function FeaturedCoursesClient({ courses }: FeaturedCoursesClientProps) {
   const content = useIntlayer("featured-courses-client");
@@ -42,7 +44,7 @@ export function FeaturedCoursesClient({ courses }: FeaturedCoursesClientProps) {
               {content.premiumCoursesLabel}
             </motion.div>
             <motion.h2
-              className="text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent"
+              className="text-4xl lg:text-5xl font-bold mb-4 text-gradient-heading"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1, duration: 0.5 }}
@@ -65,7 +67,7 @@ export function FeaturedCoursesClient({ courses }: FeaturedCoursesClientProps) {
             <FadeInWhenVisible key={course.id} delay={index * 0.08}>
               <CourseCardShared
                 course={course as any}
-                accessState={course.price === 0 ? 'FREE' : 'LOCKED'}
+                accessState={course.price === 0 ? "FREE" : "LOCKED"}
                 showPreviewCTA
                 size="default"
               />
@@ -81,11 +83,11 @@ export function FeaturedCoursesClient({ courses }: FeaturedCoursesClientProps) {
               asChild
               className="group hover:scale-105 transition-transform"
             >
-                <Link href="/formations">
+              <Link href="/formations">
                 <BookOpen className="h-5 w-5 mr-2" />
                 {content.viewAllCoursesButton}
                 <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Link>
+              </Link>
             </Button>
           </div>
         </FadeInWhenVisible>

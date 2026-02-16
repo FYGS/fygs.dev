@@ -27,7 +27,7 @@ export const OptimizedCard = memo(function OptimizedCard({
     return cn(
       "border-0 shadow-lg transition-all duration-300 hover:shadow-xl",
       gradient && "bg-linear-to-br from-card via-card to-muted/20",
-      className
+      className,
     );
   }, [className, gradient]);
 
@@ -44,20 +44,16 @@ export const OptimizedCard = memo(function OptimizedCard({
       {(title || description) && (
         <CardHeader className={headerClass}>
           {title && (
-            <CardTitle className="text-xl font-bold bg-linear-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+            <CardTitle className="text-xl font-bold text-gradient-heading">
               {title}
             </CardTitle>
           )}
           {description && (
-            <p className="text-sm text-muted-foreground mt-2">
-              {description}
-            </p>
+            <p className="text-sm text-muted-foreground mt-2">{description}</p>
           )}
         </CardHeader>
       )}
-      <CardContent className={contentClass}>
-        {children}
-      </CardContent>
+      <CardContent className={contentClass}>{children}</CardContent>
     </Card>
   );
 });

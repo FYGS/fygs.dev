@@ -262,7 +262,7 @@ export default async function ResumePage({ params }: Props) {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,hsl(var(--primary)/0.08),transparent_50%)]" />
         <div className="relative p-6 sm:p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="space-y-2">
-            <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
+            <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-gradient-heading">
               Fernand SOUALO
             </h1>
             <div className="flex items-center gap-3">
@@ -646,7 +646,7 @@ export default async function ResumePage({ params }: Props) {
       <Card className="bg-linear-to-br from-primary/10 via-primary/5 to-background border-primary/20">
         <div className="p-8 space-y-6">
           <div className="text-center space-y-4">
-            <h2 className="text-3xl font-bold bg-linear-to-r from-primary to-primary/50 bg-clip-text text-transparent">
+            <h2 className="text-3xl font-bold text-gradient-accent">
               {cv.cta.title}
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">

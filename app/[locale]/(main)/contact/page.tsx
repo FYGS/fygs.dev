@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { Section } from "@/app/_components/Section";
 import { Card } from "@/components/ui/card";
@@ -19,7 +19,9 @@ export default function ContactPage() {
   return (
     <Section className="space-y-8">
       <div className="space-y-4">
-        <h1 className="text-4xl font-bold">{content.page.title.value}</h1>
+        <h1 className="text-4xl font-bold text-gradient-heading">
+          {content.page.title.value}
+        </h1>
         <p className="text-muted-foreground max-w-2xl">
           {content.page.description.value}
         </p>

@@ -6,7 +6,11 @@ import { RevenueChart } from "./_components/revenue-chart";
 import { PopularCourses } from "./_components/popular-courses";
 import { UserGrowthChart } from "./_components/user-growth-chart";
 import { QuickActions } from "./_components/quick-actions";
-import { serializeRevenueData, serializeCourse, safeNumber } from "@/lib/serialization-utils";
+import {
+  serializeRevenueData,
+  serializeCourse,
+  safeNumber,
+} from "@/lib/serialization-utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { PaymentStatus } from "@prisma/client";
 
@@ -24,23 +28,23 @@ async function getAdminStats() {
     recentUsers,
     recentEnrollments,
     popularCourses,
-    monthlyRevenue
+    monthlyRevenue,
   ] = await Promise.all([
     // Total des utilisateurs
     db.user.count(),
-    
+
     // Total des cours
     db.course.count({ where: { published: true } }),
-    
+
     // Total des inscriptions
     db.enrollment.count(),
-    
+
     // Revenus totaux
     db.payment.aggregate({
       where: { status: PaymentStatus.COMPLETED },
       _sum: { amount: true },
     }),
-    
+
     // Nouveaux utilisateurs (7 derniers jours)
     db.user.count({
       where: {
@@ -49,7 +53,7 @@ async function getAdminStats() {
         },
       },
     }),
-    
+
     // Nouvelles inscriptions (7 derniers jours)
     db.enrollment.count({
       where: {
@@ -58,7 +62,7 @@ async function getAdminStats() {
         },
       },
     }),
-    
+
     // Cours les plus populaires
     db.course.findMany({
       where: { published: true },
@@ -73,7 +77,7 @@ async function getAdminStats() {
       },
       take: 5,
     }),
-    
+
     // Revenus mensuels (12 derniers mois)
     db.$queryRaw`
       SELECT 
@@ -96,11 +100,13 @@ async function getAdminStats() {
     recentUsers,
     recentEnrollments,
     popularCourses: popularCourses.map(serializeCourse),
-    monthlyRevenue: serializeRevenueData(monthlyRevenue as Array<{
-      month: Date;
-      revenue: any;
-      transactions: any;
-    }>),
+    monthlyRevenue: serializeRevenueData(
+      monthlyRevenue as Array<{
+        month: Date;
+        revenue: any;
+        transactions: any;
+      }>,
+    ),
   };
 }
 
@@ -111,7 +117,7 @@ export default async function AdminDashboardPage() {
     <div className="space-y-8">
       {/* Header */}
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold bg-linear-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+        <h1 className="text-3xl font-bold text-gradient-heading">
           Dashboard Admin
         </h1>
         <p className="text-muted-foreground">
@@ -123,7 +129,7 @@ export default async function AdminDashboardPage() {
       <QuickActions />
 
       {/* Stats Cards */}
-      <AdminDashboardStats 
+      <AdminDashboardStats
         totalUsers={stats.totalUsers}
         totalCourses={stats.totalCourses}
         totalEnrollments={stats.totalEnrollments}
@@ -136,7 +142,7 @@ export default async function AdminDashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Revenue Chart */}
         <RevenueChart data={stats.monthlyRevenue} />
-        
+
         {/* User Growth Chart */}
         <UserGrowthChart />
       </div>
@@ -147,7 +153,7 @@ export default async function AdminDashboardPage() {
         <ScrollArea className="h-[500px] rounded-md border">
           <PopularCourses courses={stats.popularCourses} />
         </ScrollArea>
-        
+
         {/* Recent Activity */}
         <ScrollArea className="h-[500px] rounded-md border">
           <RecentActivity />

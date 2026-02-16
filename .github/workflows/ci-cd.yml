@@ -63,88 +63,56 @@ jobs:
         env:
           SKIP_ENV_VALIDATION: true
 
-  # TODO: Enable tests when ready
-  # test:
-  #   name: Run Tests
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 15
-  #
-  #   services:
-  #     postgres:
-  #       image: postgres:16
-  #       env:
-  #         POSTGRES_PASSWORD: postgres
-  #         POSTGRES_DB: fygs_test
-  #       options: >-
-  #         --health-cmd pg_isready
-  #         --health-interval 10s
-  #         --health-timeout 5s
-  #         --health-retries 5
-  #       ports:
-  #         - 5432:5432
-  #
-  #     redis:
-  #       image: redis:7-alpine
-  #       options: >-
-  #         --health-cmd "redis-cli ping"
-  #         --health-interval 10s
-  #         --health-timeout 5s
-  #         --health-retries 5
-  #       ports:
-  #         - 6379:6379
-  #
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
-  #
-  #     - name: Setup Node.js
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: ${{ env.NODE_VERSION }}
-  #
-  #     - name: Setup pnpm
-  #       uses: pnpm/action-setup@v4
-  #       with:
-  #         run_install: false
-  #
-  #     - name: Get pnpm store directory
-  #       id: pnpm-cache
-  #       shell: bash
-  #       run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-  #
-  #     - name: Setup pnpm cache
-  #       uses: actions/cache@v4
-  #       with:
-  #         path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-  #         key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-pnpm-store-
-  #
-  #     - name: Install dependencies
-  #       run: pnpm install --frozen-lockfile
-  #
-  #     - name: Generate Prisma client
-  #       run: pnpm prisma generate
-  #
-  #     - name: Run database migrations
-  #       run: pnpm db:push:test
-  #       env:
-  #         DATABASE_URL: postgresql://postgres:postgres@localhost:5432/fygs_test
-  #         REDIS_URL: redis://localhost:6379
-  #
-  #     - name: Run tests
-  #       run: pnpm test
-  #       env:
-  #         DATABASE_URL: postgresql://postgres:postgres@localhost:5432/fygs_test
-  #         REDIS_URL: redis://localhost:6379
-  #         NODE_ENV: test
-  #         SKIP_ENV_VALIDATION: true
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [lint-and-typecheck]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm prisma generate
+
+      - name: Run unit tests
+        run: pnpm test:ci
+        env:
+          NODE_ENV: test
+          SKIP_ENV_VALIDATION: "true"
 
   build:
     name: Build Application
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: [lint-and-typecheck]
+    needs: [lint-and-typecheck, test]
 
     steps:
       - name: Checkout code

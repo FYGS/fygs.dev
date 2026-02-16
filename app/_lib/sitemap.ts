@@ -32,6 +32,16 @@ export async function generateSitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
+  // Helper to convert relative multilingual URLs to absolute
+  const toAbsoluteUrls = (path: string) => {
+    const urls = getMultilingualUrls(path);
+    const absoluteUrls: Record<string, string> = {};
+    for (const [locale, localePath] of Object.entries(urls)) {
+      absoluteUrls[locale] = `${SITE_URL}${localePath}`;
+    }
+    return absoluteUrls;
+  };
+
   const sitemapRoutes: MetadataRoute.Sitemap = baseRoutes.map((route) => ({
     url: `${SITE_URL}${route.path}`,
     lastModified: new Date().toISOString(),
@@ -39,8 +49,8 @@ export async function generateSitemap(): Promise<MetadataRoute.Sitemap> {
     priority: route.priority,
     alternates: {
       languages: {
-        ...getMultilingualUrls(route.path),
-        "x-default": route.path,
+        ...toAbsoluteUrls(route.path),
+        "x-default": `${SITE_URL}${route.path}`,
       },
     },
   }));
@@ -53,8 +63,8 @@ export async function generateSitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
     alternates: {
       languages: {
-        ...getMultilingualUrls(`/blog/${post.slug}`),
-        "x-default": `/blog/${post.slug}`,
+        ...toAbsoluteUrls(`/blog/${post.slug}`),
+        "x-default": `${SITE_URL}/blog/${post.slug}`,
       },
     },
   }));

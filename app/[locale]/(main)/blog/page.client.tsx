@@ -70,7 +70,7 @@ export default function BlogClientPage({ postsPromise }: BlogClientPageProps) {
         <div className="space-y-8">
           <div className="space-y-3">
             <h1
-              className="text-3xl sm:text-4xl font-bold tracking-tight"
+              className="text-3xl sm:text-4xl font-bold tracking-tight text-gradient-heading"
               id="blog-title"
             >
               {title}

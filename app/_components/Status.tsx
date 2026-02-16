@@ -5,12 +5,26 @@ import { Section } from "./Section";
 import { SideProject, SideProjectProps } from "./SideProjects";
 import { Work, WorkProps } from "./Work";
 import { motion } from "framer-motion";
-import { Briefcase, Code, Mail, LeafyGreenIcon, Building2, BrainCircuit, Network, Utensils, GraduationCap, LayoutPanelLeft, Fingerprint, Loader, Gift } from "lucide-react";
+import {
+  Briefcase,
+  Code,
+  Mail,
+  LeafyGreenIcon,
+  Building2,
+  BrainCircuit,
+  Network,
+  Utensils,
+  GraduationCap,
+  LayoutPanelLeft,
+  Fingerprint,
+  Loader,
+  Gift,
+} from "lucide-react";
 import { useIntlayer } from "next-intlayer";
 
 // Define icon mapping
 const iconMap = {
- LeafyGreenIcon,
+  LeafyGreenIcon,
   Building2,
   BrainCircuit,
   Network,
@@ -24,7 +38,7 @@ const iconMap = {
 
 export const Status = () => {
   const content = useIntlayer("status");
-  
+
   const WORKS: WorkProps[] = content.works.map((work) => ({
     image: work.image.value,
     title: work.title.value,
@@ -33,13 +47,15 @@ export const Status = () => {
     url: work.url.value,
   }));
 
-  const SIDE_PROJECTS: SideProjectProps[] = content.sideProjects.map((project) => ({
-    id: project.id.value,
-    Logo: iconMap[project.logoId.value as keyof typeof iconMap],
-    title: project.title.value,
-    description: project.description.value,
-    url: project.url.value,
-  }));
+  const SIDE_PROJECTS: SideProjectProps[] = content.sideProjects.map(
+    (project) => ({
+      id: project.id.value,
+      Logo: iconMap[project.logoId.value as keyof typeof iconMap],
+      title: project.title.value,
+      description: project.description.value,
+      url: project.url.value,
+    }),
+  );
 
   return (
     <Section className="py-16 lg:py-24 relative overflow-hidden">
@@ -57,7 +73,7 @@ export const Status = () => {
             {content.title.value}
           </motion.div>
           <motion.h2
-            className="text-4xl lg:text-5xl font-bold mb-4 bg-linear-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent"
+            className="text-4xl lg:text-5xl font-bold mb-4 text-gradient-heading"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.5 }}

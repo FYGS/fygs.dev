@@ -36,14 +36,14 @@ export const ContactSection = () => {
             {content.badge.value}
           </motion.div>
           <motion.h2
-            className="text-4xl lg:text-5xl font-bold bg-linear-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent mb-4"
+            className="text-4xl lg:text-5xl font-bold text-gradient-heading mb-4"
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.6 }}
             viewport={{ once: true }}
           >
             {content.title.part1.value}{" "}
-            <span className="bg-linear-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            <span className="text-gradient-accent">
               {content.title.highlight.value}
             </span>
           </motion.h2>
@@ -102,7 +102,9 @@ export const ContactSection = () => {
                     <MessageCircle className="w-5 h-5 text-green-600" />
                   </div>
                   <div>
-                    <h4 className="font-medium">{content.quickResponse.value}</h4>
+                    <h4 className="font-medium">
+                      {content.quickResponse.value}
+                    </h4>
                     <p className="text-sm text-muted-foreground">
                       {content.quickResponse.description.value}
                     </p>
@@ -114,7 +116,9 @@ export const ContactSection = () => {
                     <Calendar className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
-                    <h4 className="font-medium">{content.scheduledCall.value}</h4>
+                    <h4 className="font-medium">
+                      {content.scheduledCall.value}
+                    </h4>
                     <p className="text-sm text-muted-foreground">
                       {content.scheduledCall.description.value}
                     </p>

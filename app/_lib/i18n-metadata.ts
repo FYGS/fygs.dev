@@ -10,7 +10,7 @@ import {
   type LocalesValues,
   getMultilingualUrls,
 } from "intlayer";
-import { SITE_URL } from "./constants";
+import { SITE_URL, SITE_BASE_URL } from "./constants";
 
 type IConfigLocales<T> = Required<Record<"fr", T>> &
   Partial<Record<LocalesValues, T>>;
@@ -90,6 +90,7 @@ export async function generateI18nMetadata({
   }
 
   const metadata: Metadata = {
+    metadataBase: SITE_BASE_URL,
     title: localizedTitle,
     description: localizedDescription,
     keywords: localizedKeywords,

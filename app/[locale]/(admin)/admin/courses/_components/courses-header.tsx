@@ -11,13 +11,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { 
-  Plus, 
-  Search, 
+import {
+  Plus,
+  Search,
   Filter,
   Download,
   Upload,
-  MoreHorizontal
+  MoreHorizontal,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -38,20 +38,20 @@ export function CoursesHeader() {
       {/* Title and main actions */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold bg-linear-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold text-gradient-heading">
             Gestion des Formations
           </h1>
           <p className="text-muted-foreground">
             Créez, modifiez et gérez vos formations et leurs contenus
           </p>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm">
             <Upload className="h-4 w-4 mr-2" />
             Importer
           </Button>
-          
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
@@ -65,15 +65,11 @@ export function CoursesHeader() {
                 <Download className="h-4 w-4 mr-2" />
                 Exporter la liste
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                Publier sélectionnés
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                Archiver sélectionnés
-              </DropdownMenuItem>
+              <DropdownMenuItem>Publier sélectionnés</DropdownMenuItem>
+              <DropdownMenuItem>Archiver sélectionnés</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          
+
           <Button asChild>
             <Link href="/admin/courses/new">
               <Plus className="h-4 w-4 mr-2" />

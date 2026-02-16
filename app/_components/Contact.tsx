@@ -34,7 +34,7 @@ export const Contact = () => {
             {content.badge.value}
           </motion.div>
           <motion.h2
-            className="text-4xl lg:text-5xl font-bold bg-linear-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent mb-4"
+            className="text-4xl lg:text-5xl font-bold text-gradient-heading mb-4"
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.6 }}

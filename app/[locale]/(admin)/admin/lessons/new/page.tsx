@@ -4,7 +4,13 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { LessonCreateForm } from "./_components/lesson-create-form";
 import { db } from "@/lib/db";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -25,12 +31,12 @@ async function getFormData(session: AuthSession) {
       slug: true,
       instructorId: true,
     },
-    orderBy: { title: 'asc' }
+    orderBy: { title: "asc" },
   };
 
   if (session.user.role === Role.INSTRUCTOR) {
     coursesQuery.where = {
-      instructorId: session.user.id
+      instructorId: session.user.id,
     };
   }
 
@@ -54,7 +60,10 @@ export default async function CreateLessonPage({
     redirect("/auth/login?callbackUrl=/admin/lessons/new");
   }
 
-  if (session.user.role !== Role.ADMIN && session.user.role !== Role.INSTRUCTOR) {
+  if (
+    session.user.role !== Role.ADMIN &&
+    session.user.role !== Role.INSTRUCTOR
+  ) {
     redirect("/dashboard");
   }
 
@@ -64,8 +73,8 @@ export default async function CreateLessonPage({
       id: session.user.id,
       role: session.user.role as Role,
       email: session.user.email,
-      name: session.user.name || 'User'
-    }
+      name: session.user.name || "User",
+    },
   };
 
   const { courses } = await getFormData(authSession);
@@ -80,9 +89,9 @@ export default async function CreateLessonPage({
             Retour aux leçons
           </Link>
         </Button>
-        
+
         <div className="flex-1">
-          <h1 className="text-3xl font-bold bg-linear-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold text-gradient-heading">
             Créer une nouvelle leçon
           </h1>
           <p className="text-muted-foreground mt-1">
@@ -96,11 +105,12 @@ export default async function CreateLessonPage({
         <CardHeader>
           <CardTitle>Informations de la leçon</CardTitle>
           <CardDescription>
-            Configurez les détails de votre leçon. Vous pourrez modifier le contenu après la création.
+            Configurez les détails de votre leçon. Vous pourrez modifier le
+            contenu après la création.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <LessonCreateForm 
+          <LessonCreateForm
             courses={courses}
             selectedCourseId={resolvedSearchParams.courseId}
           />

@@ -51,6 +51,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ? post.coverImage
     : `${baseUrl}${post.coverImage}`;
 
+  // Detect image MIME type from extension
+  const imageExtension = post.coverImage.split(".").pop()?.toLowerCase();
+  const imageMimeType =
+    imageExtension === "webp"
+      ? "image/webp"
+      : imageExtension === "jpg" || imageExtension === "jpeg"
+        ? "image/jpeg"
+        : imageExtension === "svg"
+          ? "image/svg+xml"
+          : "image/png";
+
   // Map locale to OpenGraph locale format
   const ogLocaleMap: Record<string, string> = {
     fr: "fr_FR",
@@ -94,6 +105,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         "x-default": `${baseUrl}/blog/${slug}`,
       },
     },
+    metadataBase: new URL(baseUrl),
     openGraph: {
       type: "article",
       locale: ogLocale,
@@ -112,7 +124,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           width: 1200,
           height: 630,
           alt: post.title,
-          type: "image/webp",
+          type: imageMimeType,
         },
       ],
     },
@@ -188,7 +200,7 @@ export default async function BlogPostPage({ params }: Props) {
               </div>
 
               {/* Title */}
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.1] text-foreground">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.1] text-gradient-heading">
                 {post.title}
               </h1>
 
