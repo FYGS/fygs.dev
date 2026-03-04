@@ -11,7 +11,6 @@
  */
 
 import { z } from "zod";
-import { executeNodeJs } from "./node-executor";
 import { transpileTypeScript } from "./typescript-transpiler";
 
 // Schema for package.json
@@ -45,7 +44,7 @@ export enum CdnProvider {
  * Parse a package.json string into a PackageJson object
  */
 export function parsePackageJson(
-  packageJsonString: string
+  packageJsonString: string,
 ): PackageJson | null {
   try {
     const packageJson = JSON.parse(packageJsonString);
@@ -61,7 +60,7 @@ export function parsePackageJson(
  */
 export function generateImportMap(
   dependencies: Record<string, string>,
-  provider: CdnProvider = CdnProvider.ESM
+  provider: CdnProvider = CdnProvider.ESM,
 ): Record<string, string> {
   const importMap: Record<string, string> = {};
 
@@ -90,9 +89,8 @@ export function generateImportMap(
         importMap[name] = `https://jspm.dev/${name}@${cleanVersion}`;
         break;
       case CdnProvider.JSDELIVR:
-        importMap[
-          name
-        ] = `https://cdn.jsdelivr.net/npm/${name}@${cleanVersion}/+esm`;
+        importMap[name] =
+          `https://cdn.jsdelivr.net/npm/${name}@${cleanVersion}/+esm`;
         break;
       default:
         importMap[name] = `https://esm.sh/${name}@${cleanVersion}`;
@@ -107,7 +105,7 @@ export function generateImportMap(
  */
 export function generateHtmlWithImportMap(
   htmlContent: string,
-  importMap: Record<string, string>
+  importMap: Record<string, string>,
 ): string {
   // Create the import map script
   const importMapScript = `
@@ -127,7 +125,7 @@ export function generateHtmlWithImportMap(
   if (htmlContent.includes("<html>")) {
     return htmlContent.replace(
       "<html>",
-      `<html>\n<head>\n  ${importMapScript}\n</head>`
+      `<html>\n<head>\n  ${importMapScript}\n</head>`,
     );
   }
 
@@ -141,7 +139,7 @@ export function generateHtmlWithImportMap(
 export async function executeScript(
   packageJson: PackageJson,
   scriptName: string,
-  files: Record<string, string>
+  files: Record<string, string>,
 ): Promise<{
   success: boolean;
   output: string;
@@ -229,7 +227,7 @@ async function executeNodeCommand(
   args: string[],
   files: Record<string, string>,
   logs: string[],
-  errors: string[]
+  errors: string[],
 ): Promise<{
   success: boolean;
   output: string;
@@ -264,19 +262,13 @@ async function executeNodeCommand(
       }
     }
 
-    // Execute the Node.js code
-    const result = await executeNodeJs(files, entryPoint, {
-      args: args.slice(1),
-      env: { NODE_ENV: "development" },
-    });
-
-    // Add logs and errors from the execution
-    logs.push(...result.logs);
-    errors.push(...result.errors);
-
+    // Execute the Node.js code (legacy - use WebContainer executor instead)
+    errors.push(
+      "Legacy node executor removed. Use WebContainer for real execution.",
+    );
     return {
-      success: result.success,
-      output: result.output,
+      success: false,
+      output: "",
       logs,
       errors,
     };
@@ -294,7 +286,7 @@ async function executeNpmCommand(
   args: string[],
   files: Record<string, string>,
   logs: string[],
-  errors: string[]
+  errors: string[],
 ): Promise<{
   success: boolean;
   output: string;
@@ -370,7 +362,7 @@ async function executeReactScript(
   args: string[],
   files: Record<string, string>,
   logs: string[],
-  errors: string[]
+  errors: string[],
 ): Promise<{
   success: boolean;
   output: string;
@@ -414,7 +406,7 @@ async function executeTypeScriptCompiler(
   args: string[],
   files: Record<string, string>,
   logs: string[],
-  errors: string[]
+  errors: string[],
 ): Promise<{
   success: boolean;
   output: string;
@@ -455,7 +447,7 @@ async function executeTypeScriptCompiler(
 
     // Find TypeScript files
     const tsFiles = Object.entries(files).filter(
-      ([name]) => name.endsWith(".ts") || name.endsWith(".tsx")
+      ([name]) => name.endsWith(".ts") || name.endsWith(".tsx"),
     );
 
     if (tsFiles.length === 0) {
@@ -486,7 +478,7 @@ async function executeTypeScriptCompiler(
 
     // Find index.html or create one if it doesn't exist
     const indexHtml = Object.entries(files).find(
-      ([name]) => name.endsWith("index.html") || name === "index.html"
+      ([name]) => name.endsWith("index.html") || name === "index.html",
     );
 
     if (!indexHtml) {
@@ -529,7 +521,7 @@ async function executeViteCommand(
   args: string[],
   files: Record<string, string>,
   logs: string[],
-  errors: string[]
+  errors: string[],
 ): Promise<{
   success: boolean;
   output: string;

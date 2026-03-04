@@ -1,12 +1,5 @@
-import { Metadata } from "next";
 import { BestPracticesHero } from "./_components/hero";
 import { PracticesList } from "./_components/practices-list";
-
-export const metadata: Metadata = {
-  title: "Best Practices | TechMastry",
-  description:
-    "Découvrez les meilleures pratiques pour réussir vos entretiens techniques",
-};
 
 export default function BestPracticesPage() {
   return (

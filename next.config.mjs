@@ -132,6 +132,26 @@ const nextConfig = {
   // Performance optimizations
   poweredByHeader: false,
   reactStrictMode: true,
+
+  // WebContainer requires Cross-Origin Isolation headers (COOP/COEP)
+  // Scoped only to the playground route to avoid breaking other pages
+  async headers() {
+    return [
+      {
+        source: "/:locale/tech-mastry/playground",
+        headers: [
+          {
+            key: "Cross-Origin-Embedder-Policy",
+            value: "require-corp",
+          },
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin",
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default withIntlayer(withPWA(nextConfig));

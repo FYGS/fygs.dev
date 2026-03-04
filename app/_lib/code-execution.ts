@@ -1,7 +1,12 @@
 import { z } from "zod";
-import { transpileTypeScript } from "./typescript-transpiler";
-// Import the fixed node executor
-import { executeNodeJs } from "./node-executor";
+import { transpileTypeScript, transpileFile } from "./typescript-transpiler";
+import { executePython } from "./python-executor";
+import {
+  executeInWebContainer,
+  executeQuickRun,
+  isWebContainerSupported,
+  killCurrentProcess,
+} from "./webcontainer-executor";
 
 export const ExecutionResultSchema = z.object({
   output: z.string(),
@@ -26,412 +31,65 @@ export interface ExecuteCodeResult {
   output: string;
   logs: string[];
   errors: string[];
+  serverUrl?: string;
 }
-
-// LEGACY CODE - NO LONGER USED
-// This function has been replaced by executeNodeJs from node-executor.ts
-/*
-async function executeInContext(
-  code: string,
-  isRetry: boolean
-): Promise<ExecuteCodeResult> {
-  const logs: string[] = [];
-  const errors: string[] = [];
-  let output = "";
-
-  // Save original console methods
-  const originalConsole = {
-    log: console.log,
-    error: console.error,
-    warn: console.warn,
-    info: console.info,
-  };
-
-  try {
-    // Helper function to format console arguments
-    const formatArgs = (args: unknown[]) => {
-      return args
-        .map((arg: unknown) => {
-          if (arg === undefined) return "undefined";
-          if (arg === null) return "null";
-          if (typeof arg === "object") {
-            try {
-              return JSON.stringify(arg, null, 2);
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            } catch (error) {
-              // If JSON serialization fails, fall back to string conversion
-              return String(arg);
-            }
-          }
-          return String(arg);
-        })
-        .join(" ");
-    };
-
-    // Override console methods to capture output
-    console.log = (...args) => {
-      const message = formatArgs(args);
-      // Skip internal debug messages
-      if (
-        !message.startsWith("// Executing") &&
-        !message.startsWith("// Code execution")
-      ) {
-        logs.push(message);
-      }
-      originalConsole.log(...args); // Still log to the actual console
-    };
-
-    console.error = (...args) => {
-      const message = formatArgs(args);
-      errors.push(message);
-      originalConsole.error(...args);
-    };
-
-    console.warn = (...args) => {
-      const message = formatArgs(args);
-      logs.push(`[WARN] ${message}`);
-      originalConsole.warn(...args);
-    };
-
-    console.info = (...args) => {
-      const message = formatArgs(args);
-      logs.push(`[INFO] ${message}`);
-      originalConsole.info(...args);
-    };
-
-    // Prepare the code for execution
-    // For JavaScript, we need to handle both expressions and statements
-    const processedCode = code.trim();
-
-    // Check if the code is a single expression (no semicolon, no multiple lines)
-    const isSingleExpression =
-      !processedCode.includes(";") && !processedCode.includes("\n");
-
-    // If it's a single expression, we'll return its value
-    // Otherwise, we'll execute it as a series of statements
-    const wrappedCode = isSingleExpression
-      ? `
-        try {
-          // Execute the expression and return its value
-          const result = ${processedCode};
-          return result;
-        } catch (error) {
-          console.error(error.message);
-          throw error;
-        }
-      `
-      : `
-        try {
-          // Execute the code statements
-          ${processedCode}
-          return undefined;
-        } catch (error) {
-          console.error(error.message);
-          throw error;
-        }
-      `;
-
-    // We'll keep this for internal debugging but not show it to the user
-    // console.log(`// Executing wrapped code:\n${wrappedCode}`);
-
-    // Create a function from the code string
-    const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
-    let fn;
-    try {
-      fn = new AsyncFunction(wrappedCode);
-    } catch (error) {
-      // If we can't create a function, try a simpler approach
-      errors.push(
-        error instanceof Error ? error.message : String(error)
-      );
-      return { output: "", logs, errors };
-    }
-
-    // Execute the function
-    let result;
-    try {
-      result = await fn();
-    } catch (error) {
-      // If execution fails, try a different approach
-      errors.push(
-        error instanceof Error ? error.message : String(error)
-      );
-      return { output: "", logs, errors };
-    }
-
-    // Convert the result to a string if it exists
-    if (result !== undefined) {
-      output =
-        typeof result === "object"
-          ? JSON.stringify(result, null, 2)
-          : String(result);
-    }
-
-    return { output, logs, errors };
-  } catch (error) {
-    errors.push(error instanceof Error ? error.message : String(error));
-    return { output: "", logs, errors };
-  } finally {
-    // Restore console methods
-    console.log = originalConsole.log;
-    console.error = originalConsole.error;
-    console.warn = originalConsole.warn;
-    console.info = originalConsole.info;
-  }
-}
-*/
 
 // Helper function to execute HTML/CSS code
 function executeHtml(
   htmlCode: string,
-  cssCode: string = ""
+  cssCode: string = "",
 ): ExecuteCodeResult {
   try {
-    // Check if the HTML code already contains a full HTML document
     const isFullHtmlDocument =
       htmlCode.trim().toLowerCase().startsWith("<!doctype html>") ||
       htmlCode.trim().toLowerCase().startsWith("<html");
 
-    // Create a data URL that can be displayed in an iframe
-    let html;
+    let html: string;
 
     if (isFullHtmlDocument) {
-      // If it's a full HTML document, we need to inject our console capture script
-      // and any CSS if provided, but preserve the original structure
-
-      // First, let's parse the HTML to find where to inject our CSS and script
       const headEndIndex = htmlCode.toLowerCase().indexOf("</head>");
       const bodyEndIndex = htmlCode.toLowerCase().indexOf("</body>");
 
       if (headEndIndex !== -1 && bodyEndIndex !== -1) {
-        // We can inject our CSS in the head and script before the body closes
-        // Always inject the CSS directly as a style tag, regardless of any link tags
-        const cssToInject = cssCode
-          ? `
-        <style>
-          /* User provided CSS - directly injected */
-          ${cssCode}
-        </style>
-        `
-          : "";
+        const cssToInject = cssCode ? `<style>${cssCode}</style>` : "";
 
-        // Remove any existing link tags that reference styles.css to avoid conflicts
+        // Remove existing link tags to styles.css to avoid conflicts
         let beforeHead = htmlCode.substring(0, headEndIndex);
-        const linkRegex = /<link[^>]*href=["'].*?styles\.css["'][^>]*>/gi;
         beforeHead = beforeHead.replace(
-          linkRegex,
-          "<!-- CSS directly injected -->"
+          /<link[^>]*href=["'].*?styles\.css["'][^>]*>/gi,
+          "",
         );
 
         const afterHead = htmlCode.substring(headEndIndex, bodyEndIndex);
         const afterBody = htmlCode.substring(bodyEndIndex);
 
-        html = `${beforeHead}${cssToInject}</head>${afterHead}<script>
-          // Capture console output
-          (function() {
-            const logs = [];
-            const errors = [];
-            const originalConsole = {
-              log: console.log,
-              error: console.error,
-              warn: console.warn,
-              info: console.info
-            };
-
-            // Helper function to format console arguments
-            const formatArgs = function(args) {
-              return Array.from(args).map(function(arg) {
-                if (arg === undefined) return 'undefined';
-                if (arg === null) return 'null';
-                if (typeof arg === 'object') {
-                  try {
-                    return JSON.stringify(arg, null, 2);
-                  } catch (error) {
-                    return String(arg);
-                  }
-                }
-                return String(arg);
-              }).join(' ');
-            };
-
-            // Override console methods
-            console.log = function() {
-              const message = formatArgs(arguments);
-              logs.push(message);
-              try {
-                window.parent.postMessage({ type: 'console', method: 'log', message: message }, '*');
-              } catch (e) {}
-              originalConsole.log.apply(console, arguments);
-            };
-
-            console.error = function() {
-              const message = formatArgs(arguments);
-              errors.push(message);
-              try {
-                window.parent.postMessage({ type: 'console', method: 'error', message: message }, '*');
-              } catch (e) {}
-              originalConsole.error.apply(console, arguments);
-            };
-
-            console.warn = function() {
-              const message = formatArgs(arguments);
-              logs.push('[WARN] ' + message);
-              try {
-                window.parent.postMessage({ type: 'console', method: 'warn', message: '[WARN] ' + message }, '*');
-              } catch (e) {}
-              originalConsole.warn.apply(console, arguments);
-            };
-
-            console.info = function() {
-              const message = formatArgs(arguments);
-              logs.push('[INFO] ' + message);
-              try {
-                window.parent.postMessage({ type: 'console', method: 'info', message: '[INFO] ' + message }, '*');
-              } catch (e) {}
-              originalConsole.info.apply(console, arguments);
-            };
-
-            // Handle errors
-            window.onerror = function(message, source, lineno, colno, error) {
-              const errorMessage = error ? error.stack || error.message : message;
-              console.error(errorMessage);
-              try {
-                window.parent.postMessage({ type: 'console', method: 'error', message: errorMessage }, '*');
-              } catch (e) {}
-              return true;
-            };
-          })();
-        </script>${afterBody}`;
+        html = `${beforeHead}${cssToInject}</head>${afterHead}${consoleCaptureScipt()}${afterBody}`;
       } else {
-        // If we can't find the head or body tags, just use the HTML as is
         html = htmlCode;
       }
     } else {
-      // If it's not a full HTML document, wrap it in our template
-      html = `
-<!DOCTYPE html>
+      html = `<!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-      /* Reset some basic elements */
-      body, h1, h2, h3, h4, h5, h6, p, ul, ol, li, figure, figcaption, blockquote, dl, dd {
-        margin: 0;
-        padding: 0;
-      }
-
-      /* Set core body defaults */
-      body {
-        min-height: 100vh;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        line-height: 1.6;
-        font-size: 16px;
-        color: #333;
-        background-color: #fff;
-      }
-
-      /* User provided CSS */
-      ${cssCode}
-    </style>
-  </head>
-  <body>
-    ${htmlCode}
-    <script>
-      // Capture console output
-      (function() {
-        const logs = [];
-        const errors = [];
-        const originalConsole = {
-          log: console.log,
-          error: console.error,
-          warn: console.warn,
-          info: console.info
-        };
-
-        // Helper function to format console arguments
-        const formatArgs = function(args) {
-          return Array.from(args).map(function(arg) {
-            if (arg === undefined) return 'undefined';
-            if (arg === null) return 'null';
-            if (typeof arg === 'object') {
-              try {
-                return JSON.stringify(arg, null, 2);
-              } catch (error) {
-                return String(arg);
-              }
-            }
-            return String(arg);
-          }).join(' ');
-        };
-
-        // Override console methods
-        console.log = function() {
-          const message = formatArgs(arguments);
-          logs.push(message);
-          try {
-            window.parent.postMessage({ type: 'console', method: 'log', message: message }, '*');
-          } catch (e) {}
-          originalConsole.log.apply(console, arguments);
-        };
-
-        console.error = function() {
-          const message = formatArgs(arguments);
-          errors.push(message);
-          try {
-            window.parent.postMessage({ type: 'console', method: 'error', message: message }, '*');
-          } catch (e) {}
-          originalConsole.error.apply(console, arguments);
-        };
-
-        console.warn = function() {
-          const message = formatArgs(arguments);
-          logs.push('[WARN] ' + message);
-          try {
-            window.parent.postMessage({ type: 'console', method: 'warn', message: '[WARN] ' + message }, '*');
-          } catch (e) {}
-          originalConsole.warn.apply(console, arguments);
-        };
-
-        console.info = function() {
-          const message = formatArgs(arguments);
-          logs.push('[INFO] ' + message);
-          try {
-            window.parent.postMessage({ type: 'console', method: 'info', message: '[INFO] ' + message }, '*');
-          } catch (e) {}
-          originalConsole.info.apply(console, arguments);
-        };
-
-        // Handle errors
-        window.onerror = function(message, source, lineno, colno, error) {
-          const errorMessage = error ? error.stack || error.message : message;
-          console.error(errorMessage);
-          try {
-            window.parent.postMessage({ type: 'console', method: 'error', message: errorMessage }, '*');
-          } catch (e) {}
-          return true;
-        };
-      })();
-    </script>
-  </body>
-</html>
-      `;
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { min-height: 100vh; font-family: system-ui, sans-serif; line-height: 1.6; font-size: 16px; color: #333; background: #fff; margin: 0; padding: 0; }
+    ${cssCode}
+  </style>
+</head>
+<body>
+  ${htmlCode}
+  ${consoleCaptureScipt()}
+</body>
+</html>`;
     }
 
-    // Create a properly encoded data URL
     const dataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
+    const logs: string[] = [];
+    if (cssCode) logs.push(`CSS (${cssCode.length} chars) injected`);
 
-    // Add debug logs
-    const logs = [];
-    if (cssCode) {
-      logs.push(`CSS content (${cssCode.length} chars) injected into HTML`);
-    }
-
-    return {
-      output: dataUrl,
-      logs,
-      errors: [],
-    };
+    return { output: dataUrl, logs, errors: [] };
   } catch (error) {
     return {
       output: "",
@@ -446,273 +104,31 @@ export async function executeCode({
   code,
   language,
   signal,
-  timeout = 30000,
   files = {},
   entryPoint,
   packageJson,
   runScript,
 }: ExecuteCodeParams): Promise<ExecuteCodeResult> {
-  // Create a promise that rejects after the timeout
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    const id = setTimeout(() => {
-      clearTimeout(id);
-      reject(new Error(`Execution timed out after ${timeout}ms`));
-    }, timeout);
-
-    // Handle abort signal if provided
-    if (signal) {
-      signal.addEventListener("abort", () => {
-        clearTimeout(id);
-        reject(new Error("Execution aborted"));
-      });
-    }
-  });
-
-  // Create the execution promise
-  const executionPromise = new Promise<ExecuteCodeResult>(async (resolve) => {
-    try {
-      // Add a simple test case for debugging
-      if (code.trim() === "test") {
-        return resolve({
-          output: "Test successful!",
-          logs: ["This is a test log"],
-          errors: [],
-        });
-      }
-
-      // Check if we have multiple files
-      if (Object.keys(files).length > 0) {
-        try {
-          // If packageJson is provided but not in files, add it
-          if (packageJson && !files["package.json"]) {
-            files["package.json"] = packageJson;
-          }
-
-          // Special case for HTML + CSS files
-          const htmlFile = Object.entries(files).find(
-            ([name]) => name.endsWith(".html") || name.endsWith(".htm")
-          );
-          const cssFile = Object.entries(files).find(([name]) =>
-            name.endsWith(".css")
-          );
-
-          // If we have both HTML and CSS files, handle them specially
-          if (htmlFile && cssFile) {
-            // Destructure the array, ignoring the first element (filename)
-            const [, htmlContent] = htmlFile;
-            const [cssFileName, cssContent] = cssFile;
-
-            // Always directly inject the CSS content into the HTML
-            // This ensures the styles are applied regardless of link tags
-            console.log(`Executing HTML with CSS content from ${cssFileName}`);
-            resolve(executeHtml(htmlContent, cssContent));
-            return;
-          }
-
-          // Import the bundler service
-          const { bundleFiles } = await import("./bundler-service");
-
-          // If we have a runScript, use the package manager
-          if (runScript && files["package.json"]) {
-            const { parsePackageJson, executeScript } = await import(
-              "./package-manager"
-            );
-            const pkgJson = parsePackageJson(files["package.json"]);
-
-            if (pkgJson) {
-              const result = await executeScript(pkgJson, runScript, files);
-              resolve({
-                output: result.output,
-                logs: result.logs,
-                errors: result.errors,
-              });
-              return;
-            }
-          }
-
-          // Bundle the files
-          const bundlerResult = await bundleFiles(files, {
-            entryPoint: entryPoint || Object.keys(files)[0],
-          });
-
-          resolve({
-            output: bundlerResult.output,
-            logs: bundlerResult.logs,
-            errors: bundlerResult.errors,
-          });
-        } catch (error) {
-          resolve({
-            output: "",
-            logs: [],
-            errors: [
-              "Failed to bundle files: " +
-                (error instanceof Error ? error.message : String(error)),
-            ],
-          });
-        }
-      } else {
-        // Handle single file execution
-        switch (language.toLowerCase()) {
-          case "javascript":
-          case "jsx":
-            // Execute JavaScript directly using the fixed node executor
-            try {
-              // Create a simple index.js file with the code
-              const jsFiles = { "index.js": code };
-              const result = await executeNodeJs(jsFiles, "index.js");
-              resolve({
-                output: result.output,
-                logs: result.logs,
-                errors: result.errors,
-              });
-            } catch (error) {
-              resolve({
-                output: "",
-                logs: [],
-                errors: [
-                  error instanceof Error ? error.message : String(error),
-                ],
-              });
-            }
-            break;
-
-          case "typescript":
-          case "tsx":
-            // For TypeScript, first transpile to JavaScript and then execute with the fixed node executor
-            try {
-              // Transpile TypeScript to JavaScript
-              const transpiledCode = transpileTypeScript(code);
-
-              // Create a simple index.js file with the transpiled code
-              const jsFiles = { "index.js": transpiledCode };
-              const result = await executeNodeJs(jsFiles, "index.js");
-              resolve({
-                output: result.output,
-                logs: result.logs,
-                errors: result.errors,
-              });
-            } catch (error) {
-              resolve({
-                output: "",
-                logs: [],
-                errors: [
-                  "Failed to transpile or execute TypeScript: " +
-                    (error instanceof Error ? error.message : String(error)),
-                ],
-              });
-            }
-            break;
-
-          case "html":
-            // Execute HTML
-            resolve(executeHtml(code));
-            break;
-
-          case "css":
-            // Execute CSS with a comprehensive HTML template that showcases the CSS styles
-            resolve(
-              executeHtml(
-                `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CSS Preview</title>
-</head>
-<body>
-  <div class="container">
-    <header>
-      <h1>CSS Preview</h1>
-      <p>This is a preview of your CSS styles. Edit the styles.css file to see changes reflected here.</p>
-    </header>
-
-    <section class="content">
-      <h2>Style Examples</h2>
-
-      <div class="card-container">
-        <div class="card">
-          <div class="card-header">
-            <h3>Card Title 1</h3>
-          </div>
-          <div class="card-body">
-            <p>This is some sample content for the first card. You can modify the CSS to change how this card looks.</p>
-            <a href="#" class="btn">Learn More</a>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <h3>Card Title 2</h3>
-          </div>
-          <div class="card-body">
-            <p>This is some sample content for the second card. Try changing colors, spacing, or adding animations.</p>
-            <a href="#" class="btn">Learn More</a>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <h3>Card Title 3</h3>
-          </div>
-          <div class="card-body">
-            <p>This is some sample content for the third card. Experiment with different layouts and styles.</p>
-            <a href="#" class="btn">Learn More</a>
-          </div>
-        </div>
-      </div>
-
-      <div class="form-section">
-        <h2>Form Elements</h2>
-        <form>
-          <div class="form-group">
-            <label for="name">Name:</label>
-            <input type="text" id="name" placeholder="Enter your name">
-          </div>
-          <div class="form-group">
-            <label for="email">Email:</label>
-            <input type="email" id="email" placeholder="Enter your email">
-          </div>
-          <div class="form-group">
-            <label for="message">Message:</label>
-            <textarea id="message" placeholder="Enter your message"></textarea>
-          </div>
-          <button type="submit" class="btn">Submit</button>
-        </form>
-      </div>
-    </section>
-
-    <footer>
-      <p>&copy; 2023 CSS Playground. All rights reserved.</p>
-    </footer>
-  </div>
-</body>
-</html>`,
-                code
-              )
-            );
-            break;
-
-          default:
-            // For unsupported languages, return a message
-            resolve({
-              output: `Language '${language}' execution is not supported in the browser environment.\nFor server-side languages like Python, Go, Rust, etc., we would need a backend service.`,
-              logs: [],
-              errors: [],
-            });
-        }
-      }
-    } catch (error) {
-      resolve({
-        output: "",
-        logs: [],
-        errors: [error instanceof Error ? error.message : "Execution failed"],
-      });
-    }
-  });
+  // Kill WebContainer process on abort signal (e.g., user clicks Stop)
+  if (signal) {
+    signal.addEventListener("abort", () => killCurrentProcess(), {
+      once: true,
+    });
+  }
 
   try {
-    // Race the execution against the timeout
-    return await Promise.race([executionPromise, timeoutPromise]);
+    // ── Multi-file project execution ──────────────────────────────────
+    if (Object.keys(files).length > 0) {
+      return await executeMultiFileProject(
+        files,
+        entryPoint,
+        packageJson,
+        runScript,
+      );
+    }
+
+    // ── Single-file execution ─────────────────────────────────────────
+    return await executeSingleFile(code, language);
   } catch (error) {
     return {
       output: "",
@@ -720,4 +136,466 @@ export async function executeCode({
       errors: [error instanceof Error ? error.message : "Execution failed"],
     };
   }
+}
+
+// ── Single-file execution router ─────────────────────────────────────────────
+
+async function executeSingleFile(
+  code: string,
+  language: string,
+): Promise<ExecuteCodeResult> {
+  switch (language.toLowerCase()) {
+    case "javascript":
+    case "js": {
+      // WebContainer: real Node.js execution (instant, no install needed)
+      if (isWebContainerSupported()) {
+        const result = await executeQuickRun(code, "index.js");
+        return {
+          output: result.output,
+          logs: result.logs,
+          errors: result.errors,
+        };
+      }
+      // Fallback: browser-based execution via iframe
+      return executeBrowserJs(code);
+    }
+
+    case "jsx": {
+      // React JSX: always use iframe preview with React UMD (instant)
+      return executeReactCode(code, "index.jsx");
+    }
+
+    case "typescript":
+    case "ts": {
+      // Transpile TS with Sucrase (instant) then run in WebContainer
+      const transpiled = transpileTypeScript(code);
+      if (isWebContainerSupported()) {
+        const result = await executeQuickRun(transpiled, "index.js");
+        return {
+          output: result.output,
+          logs: result.logs,
+          errors: result.errors,
+        };
+      }
+      // Fallback: browser execution
+      return executeBrowserJs(transpiled);
+    }
+
+    case "tsx": {
+      // React TSX: always use iframe preview with React UMD (instant)
+      return executeReactCode(code, "index.tsx");
+    }
+
+    case "html":
+      return executeHtml(code);
+
+    case "css":
+      return executeHtml(generateCssPreviewHtml(code), "");
+
+    case "python": {
+      const result = await executePython(code, 30000);
+      return {
+        output: result.output,
+        logs: result.logs,
+        errors: result.errors,
+      };
+    }
+
+    default:
+      return {
+        output: "",
+        logs: [],
+        errors: [
+          `Language "${language}" is not yet supported.\nSupported: JavaScript, TypeScript, JSX, TSX, HTML, CSS, Python.`,
+        ],
+      };
+  }
+}
+
+/** Fallback browser-based JS execution via sandboxed iframe. */
+function executeBrowserJs(code: string): ExecuteCodeResult {
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"></head>
+<body>
+  ${consoleCaptureScipt()}
+  <script>
+    try {
+      ${code}
+    } catch(e) {
+      console.error(e.stack || e.message);
+    }
+  <\/script>
+</body></html>`;
+
+  return {
+    output: `data:text/html;charset=utf-8,${encodeURIComponent(html)}`,
+    logs: [],
+    errors: [],
+  };
+}
+
+// ── Multi-file project execution ─────────────────────────────────────────────
+
+async function executeMultiFileProject(
+  files: Record<string, string>,
+  entryPoint?: string,
+  packageJson?: string,
+  runScript?: string,
+): Promise<ExecuteCodeResult> {
+  // Add package.json if provided but not in files
+  if (packageJson && !files["package.json"]) {
+    files["package.json"] = packageJson;
+  }
+
+  // Detect project type from files
+  const htmlFile = Object.entries(files).find(
+    ([name]) => name.endsWith(".html") || name.endsWith(".htm"),
+  );
+  const cssFile = Object.entries(files).find(([name]) => name.endsWith(".css"));
+  const hasPythonFiles = Object.keys(files).some((name) =>
+    name.endsWith(".py"),
+  );
+
+  // ── Python project ──
+  if (hasPythonFiles) {
+    const pyEntry =
+      entryPoint && entryPoint.endsWith(".py")
+        ? entryPoint
+        : Object.keys(files).find((f) => f.endsWith(".py")) || "";
+    if (pyEntry && files[pyEntry]) {
+      const result = await executePython(files[pyEntry]);
+      return {
+        output: result.output,
+        logs: result.logs,
+        errors: result.errors,
+      };
+    }
+  }
+
+  // ── HTML + CSS project (no Node.js needed) ──
+  if (htmlFile && !files["package.json"]) {
+    const [, htmlContent] = htmlFile;
+    const cssContent = cssFile ? cssFile[1] : "";
+    return executeHtml(htmlContent, cssContent);
+  }
+
+  // ── HTML-only project (no Node.js needed) ──
+  if (htmlFile && !files["package.json"]) {
+    const [, htmlContent] = htmlFile;
+    return executeHtml(htmlContent);
+  }
+
+  // ── WebContainer execution for JS/TS/React/Node.js projects ──
+  if (isWebContainerSupported()) {
+    // Pre-transpile TS/TSX/JSX files to JS before mounting
+    const transpiledForWc: Record<string, string> = {};
+    for (const [name, content] of Object.entries(files)) {
+      const ext = name.split(".").pop()?.toLowerCase() ?? "";
+      if (["ts", "tsx", "jsx"].includes(ext)) {
+        const jsName = name.replace(/\.(ts|tsx|jsx)$/, ".js");
+        transpiledForWc[jsName] = transpileFile(content, name);
+      } else {
+        transpiledForWc[name] = content;
+      }
+    }
+
+    // Resolve entry point (convert extension if needed)
+    let ep =
+      entryPoint ||
+      Object.keys(files).find(
+        (f) =>
+          f.endsWith(".js") ||
+          f.endsWith(".ts") ||
+          f.endsWith(".jsx") ||
+          f.endsWith(".tsx"),
+      ) ||
+      Object.keys(files)[0];
+    // Update entry point to .js if it was transpiled
+    if (/\.(ts|tsx|jsx)$/.test(ep)) {
+      ep = ep.replace(/\.(ts|tsx|jsx)$/, ".js");
+    }
+
+    const result = await executeInWebContainer(transpiledForWc, ep, {
+      installDeps: true,
+      timeout: 60000,
+      runScript: runScript || undefined,
+    });
+
+    return {
+      output: result.output,
+      logs: result.logs,
+      errors: result.errors,
+      serverUrl: result.serverUrl,
+    };
+  }
+
+  // ── Fallback: React/JSX preview via iframe ──
+  const hasReactFiles = Object.keys(files).some(
+    (name) => name.endsWith(".jsx") || name.endsWith(".tsx"),
+  );
+
+  if (hasReactFiles) {
+    const ep =
+      entryPoint ||
+      Object.keys(files).find(
+        (f) => f.endsWith(".jsx") || f.endsWith(".tsx"),
+      ) ||
+      Object.keys(files)[0];
+    return executeReactProject(files, ep);
+  }
+
+  // ── Fallback: Transpile + browser execution ──
+  const transpiledFiles: Record<string, string> = {};
+  for (const [name, content] of Object.entries(files)) {
+    const ext = name.split(".").pop()?.toLowerCase() ?? "";
+    if (["ts", "tsx", "jsx"].includes(ext)) {
+      transpiledFiles[name.replace(/\.(ts|tsx|jsx)$/, ".js")] = transpileFile(
+        content,
+        name,
+      );
+    } else {
+      transpiledFiles[name] = content;
+    }
+  }
+
+  const allCode = Object.values(transpiledFiles).join("\n");
+  return executeBrowserJs(allCode);
+}
+
+// ── React/JSX execution (renders to iframe preview) ──────────────────────────
+
+function executeReactCode(code: string, filePath: string): ExecuteCodeResult {
+  try {
+    const transpiled = transpileFile(code, filePath);
+    const html = buildReactPreviewHtml(transpiled);
+    return {
+      output: `data:text/html;charset=utf-8,${encodeURIComponent(html)}`,
+      logs: [],
+      errors: [],
+    };
+  } catch (error) {
+    return {
+      output: "",
+      logs: [],
+      errors: [error instanceof Error ? error.message : String(error)],
+    };
+  }
+}
+
+function executeReactProject(
+  files: Record<string, string>,
+  entryPoint: string,
+): ExecuteCodeResult {
+  try {
+    // Transpile all TS/TSX/JSX files
+    const modules: Record<string, string> = {};
+    for (const [name, content] of Object.entries(files)) {
+      const ext = name.split(".").pop()?.toLowerCase() ?? "";
+      if (["ts", "tsx", "jsx", "js"].includes(ext)) {
+        modules[name] = ["ts", "tsx", "jsx"].includes(ext)
+          ? transpileFile(content, name)
+          : content;
+      } else if (ext === "css") {
+        modules[name] = content;
+      }
+    }
+
+    const html = buildReactProjectHtml(modules, entryPoint);
+    return {
+      output: `data:text/html;charset=utf-8,${encodeURIComponent(html)}`,
+      logs: [],
+      errors: [],
+    };
+  } catch (error) {
+    return {
+      output: "",
+      logs: [],
+      errors: [error instanceof Error ? error.message : String(error)],
+    };
+  }
+}
+
+function buildReactPreviewHtml(transpiledCode: string): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>React Preview</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"><\/script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"><\/script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    #root { min-height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  ${consoleCaptureScipt()}
+  <script>
+    try {
+      ${transpiledCode}
+
+      // Auto-render: find the default export or last component
+      const _exports = {};
+      try {
+        // If code defines App or default export, render it
+        if (typeof App !== 'undefined') {
+          ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+        }
+      } catch(e) {
+        // Component might have rendered itself
+      }
+    } catch(error) {
+      document.getElementById('root').innerHTML =
+        '<div style="padding:20px;color:#ef4444;font-family:monospace;white-space:pre-wrap">' +
+        '<h3 style="margin-bottom:8px">Runtime Error</h3>' + error.message + '</div>';
+      window.parent.postMessage({ type: 'console', method: 'error', message: error.stack || error.message }, '*');
+    }
+  <\/script>
+</body>
+</html>`;
+}
+
+function buildReactProjectHtml(
+  modules: Record<string, string>,
+  entryPoint: string,
+): string {
+  // Collect CSS
+  const cssContent = Object.entries(modules)
+    .filter(([name]) => name.endsWith(".css"))
+    .map(([, content]) => content)
+    .join("\n");
+
+  // Build module map for simple require simulation
+  const moduleEntries = Object.entries(modules)
+    .filter(([name]) => !name.endsWith(".css"))
+    .map(
+      ([name, code]) =>
+        `"${name}": function(module, exports, require) {\n${code}\n}`,
+    )
+    .join(",\n");
+
+  const entryJs = entryPoint.replace(/\.(ts|tsx|jsx)$/, ".js");
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>React Preview</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"><\/script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"><\/script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    #root { min-height: 100vh; }
+    ${cssContent}
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  ${consoleCaptureScipt()}
+  <script>
+    try {
+      const __modules = {${moduleEntries}};
+      const __cache = {};
+
+      function require(name) {
+        // Handle React/ReactDOM
+        if (name === 'react') return React;
+        if (name === 'react-dom' || name === 'react-dom/client') return ReactDOM;
+
+        // Normalize path
+        let resolved = name;
+        if (!resolved.startsWith('./') && !resolved.startsWith('/')) resolved = './' + resolved;
+        // Try extensions
+        const tries = [resolved, resolved + '.js', resolved + '.jsx', resolved + '.ts', resolved + '.tsx'];
+        for (const t of tries) {
+          const key = t.replace('./', '');
+          if (__modules[key]) {
+            if (__cache[key]) return __cache[key];
+            const mod = { exports: {} };
+            __cache[key] = mod.exports;
+            __modules[key](mod, mod.exports, require);
+            __cache[key] = mod.exports;
+            return mod.exports;
+          }
+        }
+        console.warn('Module not found:', name);
+        return {};
+      }
+
+      // Execute entry point
+      require('${entryJs}');
+    } catch(error) {
+      document.getElementById('root').innerHTML =
+        '<div style="padding:20px;color:#ef4444;font-family:monospace;white-space:pre-wrap">' +
+        '<h3 style="margin-bottom:8px">Runtime Error</h3>' + error.message + '</div>';
+      window.parent.postMessage({ type: 'console', method: 'error', message: error.stack || error.message }, '*');
+    }
+  <\/script>
+</body>
+</html>`;
+}
+
+function generateCssPreviewHtml(cssCode: string): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS Preview</title>
+  <style>${cssCode}</style>
+</head>
+<body>
+  <div class="container" style="max-width:800px;margin:0 auto;padding:24px">
+    <header><h1>CSS Preview</h1><p>Edit your CSS to see live changes.</p></header>
+    <section class="content" style="margin-top:24px">
+      <div class="card-container" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:16px">
+        <div class="card"><div class="card-header"><h3>Card 1</h3></div><div class="card-body"><p>Sample content for styling.</p><a href="#" class="btn">Action</a></div></div>
+        <div class="card"><div class="card-header"><h3>Card 2</h3></div><div class="card-body"><p>Try changing colors and spacing.</p><a href="#" class="btn">Action</a></div></div>
+        <div class="card"><div class="card-header"><h3>Card 3</h3></div><div class="card-body"><p>Experiment with layouts.</p><a href="#" class="btn">Action</a></div></div>
+      </div>
+      <div class="form-section" style="margin-top:24px">
+        <h2>Form Elements</h2>
+        <form style="margin-top:12px">
+          <div class="form-group" style="margin-bottom:12px"><label>Name:</label><br><input type="text" placeholder="Your name"></div>
+          <div class="form-group" style="margin-bottom:12px"><label>Email:</label><br><input type="email" placeholder="Your email"></div>
+          <div class="form-group" style="margin-bottom:12px"><label>Message:</label><br><textarea placeholder="Your message"></textarea></div>
+          <button type="submit" class="btn">Submit</button>
+        </form>
+      </div>
+    </section>
+  </div>
+</body>
+</html>`;
+}
+
+/** Shared console capture script injected into all iframe previews. */
+function consoleCaptureScipt(): string {
+  return `<script>
+    (function() {
+      var orig = { log: console.log, error: console.error, warn: console.warn, info: console.info };
+      function fmt(args) {
+        return Array.from(args).map(function(a) {
+          if (a === undefined) return 'undefined';
+          if (a === null) return 'null';
+          if (typeof a === 'object') { try { return JSON.stringify(a, null, 2); } catch(e) { return String(a); } }
+          return String(a);
+        }).join(' ');
+      }
+      function send(method, msg) { try { window.parent.postMessage({ type: 'console', method: method, message: msg }, '*'); } catch(e) {} }
+      console.log = function() { var m = fmt(arguments); send('log', m); orig.log.apply(console, arguments); };
+      console.error = function() { var m = fmt(arguments); send('error', m); orig.error.apply(console, arguments); };
+      console.warn = function() { var m = fmt(arguments); send('warn', '[WARN] ' + m); orig.warn.apply(console, arguments); };
+      console.info = function() { var m = fmt(arguments); send('info', '[INFO] ' + m); orig.info.apply(console, arguments); };
+      window.onerror = function(msg, src, line, col, err) {
+        var m = err ? (err.stack || err.message) : msg;
+        send('error', m);
+        return true;
+      };
+    })();
+  <\/script>`;
 }
