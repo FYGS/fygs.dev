@@ -17,8 +17,6 @@ import { useEffect, useState } from "react";
 
 interface SocialInteractionsClientProps {
   slug: string;
-  initialLikes: number;
-  shareCount: number;
   onLike: (userId: string) => Promise<boolean>;
   onShare: () => Promise<number>;
   variant?: "default" | "large";
@@ -26,8 +24,6 @@ interface SocialInteractionsClientProps {
 
 export function SocialInteractionsClient({
   slug,
-  initialLikes,
-  shareCount,
   onLike,
   onShare,
   variant = "default",
@@ -48,8 +44,6 @@ export function SocialInteractionsClient({
   const {
     likes,
     shares,
-    setLikes,
-    setShares,
     incrementLikes,
     decrementLikes,
     incrementShares,
@@ -60,12 +54,6 @@ export function SocialInteractionsClient({
     const liked = localStorage.getItem(`blog-like-${slug}`);
     setHasLiked(liked === "true");
   }, [slug]);
-
-  // Initialize with provided values — no polling
-  useEffect(() => {
-    setLikes(initialLikes);
-    setShares(shareCount);
-  }, [initialLikes, shareCount, setLikes, setShares]);
 
   const handleLike = async () => {
     try {

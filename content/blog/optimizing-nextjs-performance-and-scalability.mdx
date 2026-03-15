@@ -1,4 +1,4 @@
----
+﻿---
 title: "Advanced Next.js Performance Optimization and Scalability Guide"
 excerpt: "Master advanced techniques for optimizing Next.js applications, including server components, streaming, edge runtime, and advanced caching strategies."
 date: "2024-04-20"
@@ -25,6 +25,39 @@ coverImage: "/blog/nextjs-performance.png"
 ## Introduction <a name="introduction"></a>
 
 Next.js 14 introduces powerful features for building high-performance applications. This guide covers advanced optimization techniques and best practices for scaling Next.js applications.
+
+<Mermaid chart={`
+flowchart TB
+    subgraph Build["\ud83d\udee0\ufe0f Build Time"]
+        RSC["Server Components<br/>Zero JS Bundle"]
+        SS["Static Generation<br/>ISR + On-Demand"]
+        BO["Bundle Optimization<br/>Tree Shaking + Splitting"]
+    end
+    
+    subgraph Runtime["\u26a1 Runtime"]
+        Edge["Edge Runtime<br/>Low Latency"]
+        Stream["Streaming SSR<br/>Suspense Boundaries"]
+        Cache["Multi-Layer Cache<br/>Data + Full Route"]
+    end
+    
+    subgraph Client["\ud83c\udf10 Client"]
+        LI["Lazy Loading<br/>Dynamic Imports"]
+        IMG["Image Optimization<br/>next/image"]
+        Pre["Prefetching<br/>Link + Router"]
+    end
+    
+    Build --> Runtime --> Client
+    
+    style RSC fill:#6366f1,stroke:#4f46e5,color:#fff
+    style SS fill:#6366f1,stroke:#4f46e5,color:#fff
+    style BO fill:#6366f1,stroke:#4f46e5,color:#fff
+    style Edge fill:#10b981,stroke:#059669,color:#fff
+    style Stream fill:#10b981,stroke:#059669,color:#fff
+    style Cache fill:#10b981,stroke:#059669,color:#fff
+    style LI fill:#f59e0b,stroke:#d97706,color:#fff
+    style IMG fill:#f59e0b,stroke:#d97706,color:#fff
+    style Pre fill:#f59e0b,stroke:#d97706,color:#fff
+`} caption="Les 3 couches d'optimisation Next.js : Build Time → Runtime → Client" />
 
 ## Server Components & Streaming <a name="server-components"></a>
 

@@ -3,6 +3,11 @@ import { t, type Dictionary } from "intlayer";
 const blogPostContent = {
   key: "blog-post",
   content: {
+    tableOfContents: t({
+      en: "Table of Contents",
+      fr: "Sommaire",
+      es: "Índice",
+    }),
     helpful: t({
       en: "Did you find this article helpful?",
       fr: "Cet article vous a été utile ?",

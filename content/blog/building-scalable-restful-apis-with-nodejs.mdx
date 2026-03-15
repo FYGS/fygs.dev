@@ -27,6 +27,30 @@ coverImage: "/blog/restful-apis.jpg"
 
 Modern web applications require robust, secure, and scalable APIs. This guide will walk you through building a production-ready RESTful API using:
 
+<Mermaid chart={`flowchart TB
+    Client["🖥️ Client"] --> LB["⚖️ Load Balancer"]
+    LB --> API["🚀 Express API"]
+    subgraph API_Layer["API Layer"]
+        direction TB
+        API --> MW["Middleware Stack"]
+        MW --> Auth["🔐 JWT Auth"]
+        MW --> Val["✅ Validation"]
+        MW --> RL["🛡️ Rate Limiting"]
+        MW --> Log["📋 Logging"]
+        Auth --> Routes["📍 Routes"]
+        Val --> Routes
+        Routes --> Controllers["⚙️ Controllers"]
+    end
+    subgraph Data_Layer["Data Layer"]
+        direction TB
+        Controllers --> Prisma["🔧 Prisma ORM"]
+        Prisma --> DB[(PostgreSQL)]
+        Controllers --> Cache["⚡ Redis Cache"]
+    end
+    style API_Layer fill:#1e293b,color:#e2e8f0
+    style Data_Layer fill:#0f172a,color:#e2e8f0
+`} caption="Architecture d'une API RESTful production-ready — Du client au stockage en passant par les middlewares" />
+
 - Node.js & Express for the server
 - TypeScript for type safety
 - Prisma for database operations

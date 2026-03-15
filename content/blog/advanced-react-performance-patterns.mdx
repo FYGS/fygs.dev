@@ -27,6 +27,28 @@ coverImage: "/blog/react-performance.png"
 
 Building high-performance React applications requires deep understanding of React's internals, rendering behavior, and optimization techniques. This guide explores advanced patterns and architectures for building scalable React applications.
 
+<Mermaid chart={`flowchart TB
+    subgraph Problem["⚠️ Render Cascade Problem"]
+        direction TB
+        P1[Parent Re-render] --> C1[Child A Re-render]
+        P1 --> C2[Child B Re-render]
+        C1 --> GC1[Grandchild 1]
+        C1 --> GC2[Grandchild 2]
+        C2 --> GC3[Grandchild 3]
+        C2 --> GC4[Grandchild 4]
+    end
+    subgraph Solution["✅ Optimized Rendering"]
+        direction TB
+        P2[Parent Re-render] --> MC1["Child A (memo) ⏭️"]
+        P2 --> MC2[Child B Re-render]
+        MC2 --> MGC3["Grandchild 3 (useMemo) ⏭️"]
+        MC2 --> MGC4[Grandchild 4]
+    end
+    Problem -->|"memo + useMemo + useCallback"| Solution
+    style Problem fill:#7f1d1d,color:#fecaca
+    style Solution fill:#14532d,color:#bbf7d0
+`} caption="React Rendering — Sans optimisation, chaque re-render cascade dans toute l'arborescence. Avec memo/useMemo, on bloque la propagation." />
+
 ## Rendering Optimization Patterns <a name="rendering"></a>
 
 ### Advanced Memoization Strategies

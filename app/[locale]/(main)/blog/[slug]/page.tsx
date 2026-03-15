@@ -22,6 +22,7 @@ import { Suspense } from "react";
 import { useIntlayer } from "next-intlayer/server";
 import { getPostStats } from "../actions/stats";
 import { ViewCounter } from "./_components/view-counter";
+import { BlogActions } from "./_components/blog-actions";
 
 interface Props {
   params: Promise<{
@@ -239,6 +240,13 @@ export default async function BlogPostPage({ params }: Props) {
                   <span>{post.readingTime}</span>
                 </div>
               </div>
+
+              {/* Share & Bookmark Actions */}
+              <BlogActions
+                slug={slug}
+                title={post.title}
+                url={`${SITE_URL}/${locale}/blog/${slug}`}
+              />
             </header>
 
             {/* Article Body */}

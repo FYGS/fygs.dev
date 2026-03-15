@@ -1,4 +1,4 @@
----
+﻿---
 title: "Building Scalable Microservices with NestJS and AWS"
 excerpt: "Learn how to design and implement scalable microservices architecture using NestJS and AWS serverless services."
 date: "2024-03-20"
@@ -10,6 +10,30 @@ coverImage: "/blog/scalable-microservices.jpg"
 # Building Scalable Microservices with NestJS and AWS
 
 In this comprehensive guide, we'll explore how to build scalable microservices using NestJS and AWS serverless services.
+
+<Mermaid chart={`
+flowchart TB
+    GW["🌐 API Gateway<br/>Amazon API Gateway"]
+    Auth["🔐 Auth Service<br/>Lambda + Cognito"]
+    Users["👤 User Service<br/>Lambda + DynamoDB"]
+    Products["📦 Product Service<br/>Lambda + DynamoDB"]
+    SQS["📨 SQS<br/>Message Queue"]
+    S3["📁 S3<br/>Static Assets"]
+    
+    GW -->|"Auth"| Auth
+    GW -->|"Users"| Users
+    GW -->|"Products"| Products
+    Users -->|"Events"| SQS
+    Products -->|"Events"| SQS
+    Products -->|"Images"| S3
+    
+    style GW fill:#f59e0b,stroke:#d97706,color:#fff
+    style Auth fill:#ef4444,stroke:#dc2626,color:#fff
+    style Users fill:#6366f1,stroke:#4f46e5,color:#fff
+    style Products fill:#10b981,stroke:#059669,color:#fff
+    style SQS fill:#8b5cf6,stroke:#7c3aed,color:#fff
+    style S3 fill:#3b82f6,stroke:#2563eb,color:#fff
+`} caption="Architecture microservices NestJS + AWS Serverless" />
 
 ## Why NestJS?
 

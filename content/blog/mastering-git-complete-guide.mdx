@@ -1,4 +1,4 @@
----
+﻿---
 title: "Comprendre Git de A à Z : Le Guide Complet de l'Expert"
 excerpt: "Du premier commit aux stratégies avancées de branching, maîtrisez Git en profondeur. Rebase interactif, cherry-pick, bisect, worktrees, hooks et workflows d'équipe — le guide qui transforme votre utilisation de Git."
 date: "2025-07-01"
@@ -42,20 +42,26 @@ Maîtriser Git signifie :
 
 Avant les commandes, comprenez le **modèle de données** de Git :
 
-```
-┌──────────────────────────────────────────────────────────────┐
-│                    ZONES DE TRAVAIL GIT                       │
-├──────────────────────────────────────────────────────────────┤
-│                                                              │
-│  Working Directory    Staging Area     Local Repo    Remote  │
-│  (vos fichiers)       (index)          (.git/)       (origin)│
-│                                                              │
-│      ──git add──►      ──git commit──►   ──git push──►       │
-│      ◄──git checkout── ◄──git reset──    ◄──git fetch──      │
-│                                          ◄──git pull──       │
-│                                                              │
-└──────────────────────────────────────────────────────────────┘
-```
+<Mermaid chart={`
+flowchart LR
+    WD["📁 Working Directory<br/>(vos fichiers)"]
+    SA["📋 Staging Area<br/>(index)"]
+    LR["💾 Local Repo<br/>(.git/)"]
+    RM["☁️ Remote<br/>(origin)"]
+    
+    WD -->|"git add"| SA
+    SA -->|"git commit"| LR
+    LR -->|"git push"| RM
+    RM -->|"git fetch"| LR
+    RM -->|"git pull"| WD
+    LR -->|"git reset"| SA
+    SA -->|"git checkout"| WD
+    
+    style WD fill:#6366f1,stroke:#4f46e5,color:#fff
+    style SA fill:#f59e0b,stroke:#d97706,color:#fff
+    style LR fill:#10b981,stroke:#059669,color:#fff
+    style RM fill:#8b5cf6,stroke:#7c3aed,color:#fff
+`} caption="Les 4 zones de travail Git et les commandes pour naviguer entre elles" />
 
 ### Les 3 Objets Fondamentaux
 

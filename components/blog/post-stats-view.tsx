@@ -2,7 +2,7 @@
 
 import { useBlogStats } from "@/stores/use-blog-stats";
 import { PostStatsViewProps } from "@/types/blog";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { ArticleStats } from "./article-stats";
 import { SocialInteractions } from "./social-interactions";
 
@@ -12,21 +12,14 @@ export function PostStatsView({
   className,
   initialStats,
 }: PostStatsViewProps) {
-  const { views, likes, shares, setViews, setLikes, setShares } =
-    useBlogStats();
-  const hasInitialized = useRef(false);
+  const { views, likes, shares, initForSlug } = useBlogStats();
 
-  // Initialize the store with SSR data once — avoid overwriting live updates
+  // Initialize (or reset) the store when slug changes
   useEffect(() => {
-    if (!hasInitialized.current) {
-      hasInitialized.current = true;
-      setViews(initialStats.views);
-      setLikes(initialStats.likes);
-      setShares(initialStats.shares);
-    }
-  }, [slug, initialStats, setViews, setLikes, setShares]);
+    initForSlug(slug, initialStats);
+  }, [slug, initialStats, initForSlug]);
 
-  // Use Zustand store values (updated by ViewCounter & interactions)
+  // Use Zustand store values, fall back to SSR initial props until store is initialized for this slug
   const displayViews = views || initialStats.views;
   const displayLikes = likes || initialStats.likes;
   const displayShares = shares || initialStats.shares;
@@ -39,11 +32,7 @@ export function PostStatsView({
         likes={displayLikes}
         shares={displayShares}
       />
-      <SocialInteractions
-        slug={slug}
-        initialLikes={displayLikes}
-        shareCount={displayShares}
-      />
+      <SocialInteractions slug={slug} />
     </div>
   );
 }

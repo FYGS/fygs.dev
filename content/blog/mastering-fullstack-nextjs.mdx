@@ -35,6 +35,36 @@ coverImage: "/blog/fullstack-nextjs.png"
 
 Next.js n'est pas juste un framework React — c'est un **framework full-stack** qui résout les problèmes que les développeurs rencontrent dans chaque projet :
 
+<Mermaid chart={`flowchart TB
+    subgraph NextJS["⚡ Next.js 15+"]
+        direction TB
+        SC["Server Components<br/>Rendu côté serveur"]
+        CC["Client Components<br/>Interactivité"]
+        SA["Server Actions<br/>Mutations sécurisées"]
+        AR["App Router<br/>File-system routing"]
+        RH["Route Handlers<br/>API endpoints"]
+        MW["Middleware<br/>Auth, redirections"]
+    end
+    subgraph Stack["🛠️ Stack Technique"]
+        direction TB
+        P["Prisma ORM"]
+        TW["Tailwind CSS"]
+        ZOD["Zod Validation"]
+        BA["Better-Auth"]
+    end
+    subgraph Deploy["🚀 Production"]
+        direction TB
+        V["Vercel Edge"]
+        PG[(PostgreSQL)]
+        R[(Redis)]
+    end
+    NextJS --> Stack
+    Stack --> Deploy
+    style NextJS fill:#000,color:#fff
+    style Stack fill:#1e293b,color:#e2e8f0
+    style Deploy fill:#0f172a,color:#e2e8f0
+`} caption="L'écosystème Full-Stack Next.js 15+ — Du framework aux outils, jusqu'au déploiement" />
+
 | Problème | Solution Next.js |
 |----------|-----------------|
 | SEO avec React SPA | Server-Side Rendering + Static Generation |

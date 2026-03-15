@@ -28,6 +28,25 @@ coverImage: "/blog/express-mastery.png"
 
 Express.js stands as the cornerstone of Node.js web development, offering a minimalist yet powerful framework for building scalable web applications and APIs. While its simplicity makes it accessible, mastering Express requires understanding its nuanced architecture, middleware system, and best practices for production deployment.
 
+<Mermaid chart={`flowchart LR
+    REQ["📨 HTTP Request"] --> MW1["Logger"]
+    MW1 --> MW2["CORS"]
+    MW2 --> MW3["Body Parser"]
+    MW3 --> MW4["Auth"]
+    MW4 --> Router["🔀 Router"]
+    Router --> C1["GET /users"]
+    Router --> C2["POST /users"]
+    Router --> C3["PUT /users/:id"]
+    C1 --> RES["📤 Response"]
+    C2 --> RES
+    C3 --> RES
+    MW4 -->|"401"| ERR["Error Handler"]
+    ERR --> RES
+    style REQ fill:#3b82f6,color:#fff
+    style RES fill:#10b981,color:#fff
+    style ERR fill:#ef4444,color:#fff
+`} caption="Express.js Middleware Pipeline — Chaque requête traverse la chaîne de middlewares avant d'atteindre le routeur" />
+
 This comprehensive guide will take you from understanding the core principles to implementing advanced patterns, ensuring you can build robust, secure, and maintainable applications. We'll explore why certain patterns emerge, when to use specific features, and how to avoid common pitfalls that plague many Express applications in production.
 
 ## Why Choose Express.js?

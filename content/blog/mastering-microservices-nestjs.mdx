@@ -53,31 +53,44 @@ Avant de foncer dans le code, posons la question honnêtement : **avez-vous vrai
 
 Nous allons construire un e-commerce avec 5 microservices :
 
-```
-┌─────────────────────────────────────────────────┐
-│                   CLIENTS                        │
-│          (Web App, Mobile App, API)              │
-└──────────────────────┬──────────────────────────┘
-                       │
-                       ▼
-┌──────────────────────────────────────────────────┐
-│               API GATEWAY (NestJS)               │
-│      Auth, Rate Limiting, Request Routing        │
-└──────┬──────┬──────┬──────────┬─────────────────┘
-       │      │      │          │
-       ▼      ▼      ▼          ▼
-┌──────┐ ┌────┐ ┌────┐  ┌──────────────┐
-│ User │ │Prod│ │Ord.│  │ Notification │
-│ Svc  │ │Svc │ │Svc │  │    Service   │
-└──┬───┘ └──┬─┘ └──┬─┘  └──────┬───────┘
-   │        │      │           │
-   ▼        ▼      ▼           ▼
-┌──────┐ ┌────┐ ┌────┐  ┌──────────────┐
-│Postgr│ │Mong│ │Post│  │    Redis      │
-│  DB  │ │oDB │ │ DB │  │   Pub/Sub     │
-└──────┘ └────┘ └────┘  └──────────────┘
-
-       ┌─────────────────────────┐
+<Mermaid chart={`flowchart TB
+    Clients["🖥️ Clients<br/>Web App, Mobile App, API"]
+    Gateway["🚪 API Gateway (NestJS)<br/>Auth, Rate Limiting, Routing"]
+    Clients --> Gateway
+    subgraph Services["Microservices"]
+        direction LR
+        US["👤 User Service<br/>Auth & Profils"]
+        PS["📦 Product Service<br/>Catalogue & Inventaire"]
+        OS["🛒 Order Service<br/>Commandes & Paiements"]
+        NS["🔔 Notification Service<br/>Emails & Push"]
+    end
+    Gateway --> US
+    Gateway --> PS
+    Gateway --> OS
+    Gateway --> NS
+    subgraph Data["Bases de données dédiées"]
+        direction LR
+        PG1[(PostgreSQL)]
+        MG[(MongoDB)]
+        PG2[(PostgreSQL)]
+        RD[(Redis)]
+    end
+    US --> PG1
+    PS --> MG
+    OS --> PG2
+    NS --> RD
+    subgraph Messaging["📡 Message Broker"]
+        RMQ[RabbitMQ]
+    end
+    US -.->|events| RMQ
+    PS -.->|events| RMQ
+    OS -.->|events| RMQ
+    RMQ -.->|consume| NS
+    style Gateway fill:#6366f1,color:#fff
+    style Services fill:#0f172a,color:#e2e8f0
+    style Data fill:#1e293b,color:#e2e8f0
+    style Messaging fill:#1e293b,color:#e2e8f0
+`} caption="Architecture complète ShopScale — 5 microservices avec bases dédiées et communication par événements" />
        │  RabbitMQ (Event Bus)   │
        └─────────────────────────┘
 ```

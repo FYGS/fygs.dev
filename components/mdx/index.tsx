@@ -3,6 +3,9 @@ import { PropsWithChildren } from "react";
 import { Card, CardContent } from "../ui/card";
 import { Separator } from "../ui/separator";
 import { MDXPre } from "./mdx-pre";
+import { MermaidDiagram } from "./mermaid-diagram";
+import { ArchDiagram, DiagramBox } from "./arch-diagram";
+import { HeadingAnchor } from "./heading-anchor";
 
 /* ------------------------------------------------------------------ */
 /*  Custom MDX components for blog posts                              */
@@ -22,6 +25,7 @@ export const components = {
   h2: ({
     className,
     children,
+    id,
     ...props
   }: PropsWithChildren<{ className?: string; id?: string }>) => (
     <h2
@@ -30,15 +34,23 @@ export const components = {
         "border-b-2 border-primary/20",
         className,
       )}
+      id={id}
       {...props}
     >
       <span className="text-gradient-accent">{children}</span>
+      {id && (
+        <HeadingAnchor
+          id={id}
+          className="ml-2 opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity text-muted-foreground"
+        />
+      )}
     </h2>
   ),
 
   h3: ({
     className,
     children,
+    id,
     ...props
   }: PropsWithChildren<{ className?: string; id?: string }>) => (
     <h3
@@ -46,10 +58,17 @@ export const components = {
         "group scroll-m-24 text-xl sm:text-2xl font-semibold tracking-tight mt-12 mb-4 flex items-center gap-3",
         className,
       )}
+      id={id}
       {...props}
     >
       <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary/40 rounded-full shrink-0" />
       <span>{children}</span>
+      {id && (
+        <HeadingAnchor
+          id={id}
+          className="opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity text-muted-foreground text-lg"
+        />
+      )}
     </h3>
   ),
 
@@ -368,4 +387,9 @@ export const components = {
       {children}
     </div>
   ),
+
+  /* ── Diagrams ─────────────────────────────────────────────────── */
+  Mermaid: MermaidDiagram,
+  ArchDiagram,
+  DiagramBox,
 };

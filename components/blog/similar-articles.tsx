@@ -116,16 +116,22 @@ export function SimilarArticles({
             <Link href={`/blog/${post.slug}`}>
               <Card className="p-4 hover:bg-accent/50 transition-all duration-300 group">
                 <div className="space-y-3">
-                  <div className="flex flex-wrap gap-2">
-                    {post.categories.map((category) => (
-                      <Badge
-                        key={category}
-                        variant="secondary"
-                        className="group-hover:bg-primary/10"
-                      >
-                        {category}
-                      </Badge>
-                    ))}
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap gap-2">
+                      {post.categories.map((category) => (
+                        <Badge
+                          key={category}
+                          variant="secondary"
+                          className="group-hover:bg-primary/10"
+                        >
+                          {category}
+                        </Badge>
+                      ))}
+                    </div>
+                    {/* Relevance score */}
+                    <span className="text-xs font-medium text-primary/80 bg-primary/10 rounded-full px-2.5 py-0.5 shrink-0">
+                      {Math.round(post.similarityScore * 100)}% match
+                    </span>
                   </div>
 
                   <h3 className="text-lg font-medium group-hover:text-primary transition-colors">

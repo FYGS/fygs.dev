@@ -13,6 +13,29 @@ coverImage: "/blog/vim-neovim-mastery.png"
 
 Vim n'est pas juste un éditeur de texte — c'est un **langage pour manipuler du texte**. Une fois maîtrisé, vous éditez du code à la vitesse de la pensée.
 
+<Mermaid chart={`
+stateDiagram-v2
+    [*] --> Normal : vim fichier
+    Normal --> Insert : i, a, o, I, A, O
+    Insert --> Normal : Escape
+    Normal --> Visual : v, V, Ctrl-v
+    Visual --> Normal : Escape
+    Normal --> Command : :
+    Command --> Normal : Enter / Escape
+    Normal --> Replace : R
+    Replace --> Normal : Escape
+    
+    state Normal {
+        [*] --> Navigation
+        Navigation : h j k l w b e
+        Navigation : gg G 0 $ f t
+        Navigation --> Opération
+        Opération : d (delete)
+        Opération : c (change)
+        Opération : y (yank)
+    }
+`} caption="Les modes de Vim : Normal, Insert, Visual, Command — et les transitions entre eux" />
+
 ### Les Avantages
 
 | Avantage          | Explication                                               |

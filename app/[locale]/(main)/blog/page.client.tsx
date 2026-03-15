@@ -5,10 +5,11 @@ import { Pagination } from "@/components/ui/pagination";
 import { Search } from "@/components/ui/search";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BlogPostMeta } from "@/lib/types";
-import { parseAsInteger, useQueryState } from "nuqs";
-import { Suspense, use } from "react";
+import { parseAsInteger, parseAsStringLiteral, useQueryState } from "nuqs";
+import { Suspense, use, useMemo } from "react";
 import { BlogPostCard } from "@/components/blog/blog-post-card";
 import { CategoryFilter } from "@/components/blog/category-filter";
+import { SortFilter } from "@/components/blog/sort-filter";
 import { StatsProvider } from "@/providers/blog/stats-provider";
 import { useIntlayer } from "next-intlayer";
 
@@ -18,6 +19,8 @@ interface BlogClientPageProps {
 
 const POSTS_PER_PAGE = 6;
 
+const SORT_OPTIONS = ["recent", "oldest", "reading-time"] as const;
+
 export default function BlogClientPage({ postsPromise }: BlogClientPageProps) {
   const posts = use(postsPromise);
   const { title, description, noResults, noResultsFor } =
@@ -26,6 +29,10 @@ export default function BlogClientPage({ postsPromise }: BlogClientPageProps) {
   const [searchTerm] = useQueryState("q", { defaultValue: "" });
   const [currentPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [selectedCategory] = useQueryState("category", { defaultValue: "" });
+  const [sortBy] = useQueryState(
+    "sort",
+    parseAsStringLiteral(SORT_OPTIONS).withDefault("recent"),
+  );
   const [pageSize] = useQueryState(
     "size",
     parseAsInteger.withDefault(POSTS_PER_PAGE),
@@ -35,6 +42,7 @@ export default function BlogClientPage({ postsPromise }: BlogClientPageProps) {
     q: searchTerm,
     page: currentPage,
     category: selectedCategory,
+    sort: sortBy,
     size: pageSize,
   };
 
@@ -42,27 +50,53 @@ export default function BlogClientPage({ postsPromise }: BlogClientPageProps) {
     new Set(posts.flatMap((post) => post.categories)),
   ).sort();
 
-  let filteredPosts = posts;
+  const filteredAndSortedPosts = useMemo(() => {
+    let result = [...posts];
 
-  if (searchTerm) {
-    const lowerCaseSearchTerm = searchTerm.toLowerCase();
-    filteredPosts = posts.filter(
-      (post) =>
-        post.title.toLowerCase().includes(lowerCaseSearchTerm) ||
-        post.excerpt.toLowerCase().includes(lowerCaseSearchTerm),
-    );
-  }
+    if (searchTerm) {
+      const lowerCaseSearchTerm = searchTerm.toLowerCase();
+      result = result.filter(
+        (post) =>
+          post.title.toLowerCase().includes(lowerCaseSearchTerm) ||
+          post.excerpt.toLowerCase().includes(lowerCaseSearchTerm),
+      );
+    }
 
-  if (selectedCategory) {
-    filteredPosts = filteredPosts.filter((post) =>
-      post.categories.includes(selectedCategory),
-    );
-  }
+    if (selectedCategory) {
+      result = result.filter((post) =>
+        post.categories.includes(selectedCategory),
+      );
+    }
 
-  const totalPosts = filteredPosts.length;
+    // Sort
+    switch (sortBy) {
+      case "oldest":
+        result.sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+        );
+        break;
+      case "reading-time":
+        result.sort((a, b) => {
+          const aMin = parseInt(a.readingTime) || 0;
+          const bMin = parseInt(b.readingTime) || 0;
+          return bMin - aMin;
+        });
+        break;
+      case "recent":
+      default:
+        result.sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+        );
+        break;
+    }
+
+    return result;
+  }, [posts, searchTerm, selectedCategory, sortBy]);
+
+  const totalPosts = filteredAndSortedPosts.length;
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = Math.min(startIndex + pageSize, totalPosts);
-  const paginatedPosts = filteredPosts.slice(startIndex, endIndex);
+  const paginatedPosts = filteredAndSortedPosts.slice(startIndex, endIndex);
 
   return (
     <StatsProvider>
@@ -82,7 +116,10 @@ export default function BlogClientPage({ postsPromise }: BlogClientPageProps) {
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <Search />
-            <CategoryFilter categories={categories} />
+            <div className="flex items-center gap-2">
+              <SortFilter />
+              <CategoryFilter categories={categories} />
+            </div>
           </div>
 
           <div
@@ -105,7 +142,7 @@ export default function BlogClientPage({ postsPromise }: BlogClientPageProps) {
             ))}
           </div>
 
-          {filteredPosts.length > 0 && (
+          {filteredAndSortedPosts.length > 0 && (
             <Pagination
               totalItems={totalPosts}
               pageSize={pageSize}
@@ -114,7 +151,7 @@ export default function BlogClientPage({ postsPromise }: BlogClientPageProps) {
             />
           )}
 
-          {filteredPosts.length === 0 && (
+          {filteredAndSortedPosts.length === 0 && (
             <p className="text-center text-muted-foreground" role="alert">
               {noResults}
               {searchTerm ? ` ${noResultsFor} "${searchTerm}"` : ""}

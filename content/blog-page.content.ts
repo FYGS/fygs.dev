@@ -28,6 +28,26 @@ const blogPageContent = {
       fr: "Toutes les catégories",
       es: "Todas las categorías",
     }),
+    sortLabel: t({
+      en: "Sort by",
+      fr: "Trier par",
+      es: "Ordenar por",
+    }),
+    sortRecent: t({
+      en: "Most Recent",
+      fr: "Plus récents",
+      es: "Más recientes",
+    }),
+    sortOldest: t({
+      en: "Oldest First",
+      fr: "Plus anciens",
+      es: "Más antiguos",
+    }),
+    sortReadingTime: t({
+      en: "Longest Read",
+      fr: "Lecture longue",
+      es: "Lectura larga",
+    }),
   },
 } satisfies Dictionary;
 

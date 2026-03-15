@@ -30,6 +30,42 @@ Hexagonal Architecture (also known as Ports and Adapters) combined with Domain-D
 
 ### Hexagonal Architecture
 
+<Mermaid chart={`flowchart TB
+    subgraph External["🌐 External World"]
+        direction LR
+        REST["REST API"]
+        CLI["CLI"]
+        Events["Events"]
+        DB["Database"]
+        Payment["Payment Gateway"]
+        Shipping["Shipping Service"]
+    end
+    subgraph Ports["🔌 Ports (Interfaces)"]
+        direction LR
+        IP["Input Ports<br/>(Use Cases)"]
+        OP["Output Ports<br/>(Repositories, Services)"]
+    end
+    subgraph Core["💎 Domain Core"]
+        direction TB
+        Entities["Entities"]
+        VO["Value Objects"]
+        DomainServices["Domain Services"]
+        DomainEvents["Domain Events"]
+        Aggregates["Aggregates"]
+    end
+    REST -->|adapter| IP
+    CLI -->|adapter| IP
+    Events -->|adapter| IP
+    IP --> Core
+    Core --> OP
+    OP -->|adapter| DB
+    OP -->|adapter| Payment
+    OP -->|adapter| Shipping
+    style Core fill:#6366f1,color:#fff
+    style Ports fill:#3b82f6,color:#fff
+    style External fill:#1e293b,color:#e2e8f0
+`} caption="Architecture Hexagonale — Le domaine est au centre, isolé par des ports et adapters" />
+
 The hexagonal architecture promotes separation of concerns by dividing the application into three main layers:
 
 1. **Domain Layer**: Core business logic
@@ -37,6 +73,41 @@ The hexagonal architecture promotes separation of concerns by dividing the appli
 3. **Infrastructure Layer**: External concerns (database, external services, etc.)
 
 ### Domain-Driven Design
+
+<Mermaid chart={`classDiagram
+    class Aggregate {
+        <<root>>
+        +id: AggregateId
+        +domainEvents: DomainEvent[]
+        +addEvent(event) void
+    }
+    class Entity {
+        +id: EntityId
+        +equals(other) boolean
+    }
+    class ValueObject {
+        <<immutable>>
+        +equals(other) boolean
+    }
+    class DomainEvent {
+        +occurredAt: Date
+        +aggregateId: string
+    }
+    class Repository {
+        <<interface>>
+        +save(aggregate) void
+        +findById(id) Aggregate
+    }
+    class DomainService {
+        +execute() Result
+    }
+    Aggregate --|> Entity
+    Aggregate *-- Entity : contient
+    Aggregate *-- ValueObject : contient
+    Aggregate ..> DomainEvent : émet
+    Repository ..> Aggregate : persiste
+    DomainService ..> Aggregate : orchestre
+`} caption="Les building blocks du Domain-Driven Design et leurs relations" />
 
 DDD focuses on modeling software to match a domain according to input from domain experts. Key concepts include:
 

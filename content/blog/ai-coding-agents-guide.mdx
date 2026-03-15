@@ -26,6 +26,35 @@ coverImage: "/blog/ai-coding-agents.png"
 
 En 2025, les agents IA codeurs ne sont plus de simples auto-complétion améliorée. Ils planifient, exécutent, itèrent et corrigent du code de manière autonome. Mais la réalité est nuancée : **mal utilisés, ils produisent du code médiocre à grande vitesse**. Bien utilisés, ils multiplient la productivité par 3 à 5x sur les bonnes tâches.
 
+<Mermaid chart={`
+flowchart TB
+    subgraph P1["🧩 Phase 1 (2021-2022)"]
+        AC["Autocomplétion<br/>Prédit la suite"]
+    end
+    subgraph P2["💬 Phase 2 (2023-2024)"]
+        Chat["Chat Assisté<br/>Génère des blocs"]
+    end
+    subgraph P3["🤖 Phase 3 (2024-2025)"]
+        Agent["Agent Autonome<br/>Planifie + Exécute + Itère"]
+    end
+    
+    P1 -->|"Évolution"| P2 -->|"Évolution"| P3
+    
+    Agent --> Plan["📋 Planifier"]
+    Plan --> Exec["⚙️ Exécuter"]
+    Exec --> Verify["✅ Vérifier"]
+    Verify -->|"Erreur"| Plan
+    Verify -->|"Succès"| Done["🎉 Tâche Terminée"]
+    
+    style AC fill:#94a3b8,stroke:#64748b,color:#fff
+    style Chat fill:#6366f1,stroke:#4f46e5,color:#fff
+    style Agent fill:#10b981,stroke:#059669,color:#fff
+    style Plan fill:#f59e0b,stroke:#d97706,color:#fff
+    style Exec fill:#3b82f6,stroke:#2563eb,color:#fff
+    style Verify fill:#8b5cf6,stroke:#7c3aed,color:#fff
+    style Done fill:#10b981,stroke:#059669,color:#fff
+`} caption="Évolution des outils IA : de l'autocomplétion à l'agent autonome avec boucle de rétroaction" />
+
 Cet article est un guide stratégique pour développeurs expérimentés qui veulent **réellement** tirer parti de ces outils — pas juste impressionner avec des démos.
 
 ## Qu'est-ce qu'un agent IA codeur ? <a name="definition"></a>

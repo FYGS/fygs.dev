@@ -10,6 +10,7 @@ import {
   Clock,
   Eye,
   FileEdit,
+  Flame,
   Heart,
   Share2,
 } from "lucide-react";
@@ -65,6 +66,14 @@ export function BlogPostCard({ post, initialStats }: BlogPostCardProps) {
           </div>
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent opacity-0 group-hover:opacity-60 transition-opacity duration-500" />
+
+          {/* Trending badge */}
+          {initialStats && initialStats.views >= 100 && (
+            <div className="absolute top-3 left-3 flex items-center gap-1 text-[10px] font-semibold text-orange-100 bg-gradient-to-r from-orange-500 to-red-500 px-2.5 py-1 rounded-full shadow-lg">
+              <Flame className="h-3 w-3" />
+              <span>Trending</span>
+            </div>
+          )}
 
           {/* Floating read indicator */}
           <div className="absolute bottom-3 right-3 flex items-center gap-1 text-xs font-medium text-white bg-primary/90 backdrop-blur-sm px-3 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0 shadow-lg">

@@ -1,4 +1,4 @@
----
+﻿---
 title: "Maîtriser la Programmation Orientée Objet : Le Guide Ultime Appliqué"
 excerpt: "De l'encapsulation au polymorphisme, maîtrisez tous les concepts de la POO à travers la construction complète d'un système de gestion bancaire en TypeScript. Cas réels, design patterns et bonnes pratiques."
 date: "2025-06-15"
@@ -46,6 +46,26 @@ Chaque concept de POO sera illustré à travers ce projet réel.
 
 Avant de plonger dans le code, comprenons les 4 piliers qui soutiennent toute la POO :
 
+<Mermaid chart={`mindmap
+  root((POO))
+    Encapsulation
+      Données privées
+      Interface publique
+      Validation interne
+    Héritage
+      Spécialisation
+      Réutilisation
+      Hiérarchie
+    Polymorphisme
+      Même interface
+      Comportements différents
+      Substitution
+    Abstraction
+      Contrat pur
+      Interface
+      Classe abstraite
+`} caption="Les 4 piliers de la Programmation Orientée Objet" />
+
 | Pilier | Description | Analogie Réelle |
 |--------|-------------|-----------------|
 | **Encapsulation** | Cacher les détails internes, exposer une interface publique | Un DAB : vous insérez votre carte et entrez un PIN, la mécanique interne est cachée |
@@ -56,6 +76,30 @@ Avant de plonger dans le code, comprenons les 4 piliers qui soutiennent toute la
 ## Encapsulation en Profondeur <a name="encapsulation"></a>
 
 L'encapsulation est le fondement de la POO. Elle consiste à **regrouper les données et les comportements qui les manipulent**, tout en contrôlant l'accès.
+
+<Mermaid chart={`classDiagram
+    class BankAccount {
+        -balance: number
+        -transactions: Transaction[]
+        -accountNumber: string
+        -owner: string
+        +deposit(amount) void
+        +withdraw(amount) void
+        +getBalance() number
+        +getStatement() string
+        -recordTransaction() void
+        -generateAccountNumber() string
+    }
+    class Transaction {
+        +id: string
+        +type: string
+        +amount: number
+        +balanceAfter: number
+        +timestamp: Date
+    }
+    BankAccount "1" *-- "*" Transaction : contient
+    note for BankAccount "Les champs privés (-) sont<br/>inaccessibles de l'extérieur.<br/>Seuls les méthodes publiques (+)<br/>sont exposées."
+`} caption="Schéma UML — L'encapsulation de BankAccount : les données privées sont protégées, seule l'interface publique est exposée" />
 
 ### Le Problème Sans Encapsulation
 
@@ -190,6 +234,49 @@ class Example {
 ## Héritage et Composition <a name="heritage"></a>
 
 L'héritage permet de créer des hiérarchies de classes. Un `SavingsAccount` **est un** `BankAccount` avec des capacités supplémentaires.
+
+<Mermaid chart={`classDiagram
+    class BankAccount {
+        <<abstract>>
+        -balance: number
+        -transactions: Transaction[]
+        #owner: string
+        +deposit(amount) void
+        +withdraw(amount) void
+        +calculateInterest()* number
+        +getAccountType()* string
+        #validateAmount(amount) void
+        #validateWithdrawal(amount) void
+        #adjustBalance(amount) void
+    }
+    class CheckingAccount {
+        -overdraftLimit: number
+        +calculateInterest() number
+        +getAccountType() string
+        #validateWithdrawal(amount) void
+    }
+    class SavingsAccount {
+        -interestRate: number
+        -minimumBalance: number
+        -withdrawalsThisMonth: number
+        +calculateInterest() number
+        +getAccountType() string
+        +resetMonthlyWithdrawals() void
+        #validateWithdrawal(amount) void
+    }
+    class InvestmentAccount {
+        -portfolio: Map
+        -managementFeeRate: number
+        +buyStock() void
+        +sellStock() number
+        +calculateInterest() number
+        +getAccountType() string
+        +getPortfolioValue() number
+    }
+    BankAccount <|-- CheckingAccount
+    BankAccount <|-- SavingsAccount
+    BankAccount <|-- InvestmentAccount
+`} caption="Hiérarchie d'héritage des comptes bancaires — Chaque sous-classe spécialise le comportement de BankAccount" />
 
 ### Héritage : La Hiérarchie des Comptes
 
@@ -397,6 +484,40 @@ class InvestmentAccount extends BankAccount {
 
 L'héritage crée un couplage fort entre parent et enfant. La composition offre plus de flexibilité :
 
+<Mermaid chart={`classDiagram
+    class EnhancedBankAccount {
+        +deposit(amount) void
+        +calculateInterest() number
+    }
+    class NotificationService {
+        <<interface>>
+        +notify(recipient, message) void
+    }
+    class AuditLogger {
+        <<interface>>
+        +log(event) void
+    }
+    class InterestCalculator {
+        <<interface>>
+        +calculate(balance, type) number
+    }
+    class EmailNotification {
+        +notify(recipient, message) void
+    }
+    class SMSNotification {
+        +notify(recipient, message) void
+    }
+    class ConsoleAuditLogger {
+        +log(event) void
+    }
+    EnhancedBankAccount o-- NotificationService : utilise
+    EnhancedBankAccount o-- AuditLogger : utilise
+    EnhancedBankAccount o-- InterestCalculator : utilise
+    NotificationService <|.. EmailNotification
+    NotificationService <|.. SMSNotification
+    AuditLogger <|.. ConsoleAuditLogger
+`} caption="Composition — EnhancedBankAccount utilise des services injectés plutôt que d'hériter de leur comportement" />
+
 ```typescript
 // ── COMPOSITION : Services injectables ─────────────────────────
 
@@ -481,6 +602,21 @@ const account = new EnhancedBankAccount(
 ## Polymorphisme Avancé <a name="polymorphisme"></a>
 
 Le polymorphisme permet de traiter des objets de types différents de manière uniforme.
+
+<Mermaid chart={`sequenceDiagram
+    participant B as Bank
+    participant CA as CheckingAccount
+    participant SA as SavingsAccount
+    participant IA as InvestmentAccount
+    Note over B: applyMonthlyInterest()
+    B->>CA: calculateInterest()
+    CA-->>B: 0€ (pas d'intérêts)
+    B->>SA: calculateInterest()
+    SA-->>B: +300€ (2% × 10000€)
+    B->>IA: calculateInterest()
+    IA-->>B: -750€ (frais de gestion)
+    Note over B: Même appel, résultats différents!
+`} caption="Polymorphisme en action — Le même appel calculateInterest() produit des résultats différents selon le type réel du compte" />
 
 ### Polymorphisme de Sous-type
 
@@ -568,6 +704,37 @@ class TransactionProcessor {
 ## Abstraction et Interfaces <a name="abstraction"></a>
 
 L'abstraction définit un **contrat** que les implémentations doivent respecter.
+
+<Mermaid chart={`classDiagram
+    class PaymentProcessor {
+        <<interface>>
+        +processPayment(amount, currency) PaymentResult
+        +refund(transactionId, amount) RefundResult
+        +getTransactionStatus(transactionId) TransactionStatus
+    }
+    class BasePaymentProcessor {
+        <<abstract>>
+        #apiKey: string
+        +processPayment(amount, currency) PaymentResult
+        #executePayment(amount, currency)* PaymentResult
+        -validateAmount(amount) void
+        -validateCurrency(currency) void
+        #checkFraud(data) FraudAnalysis
+    }
+    class StripeProcessor {
+        #executePayment(amount, currency) PaymentResult
+        +refund(transactionId, amount) RefundResult
+        +getTransactionStatus(transactionId) TransactionStatus
+    }
+    class PayPalProcessor {
+        #executePayment(amount, currency) PaymentResult
+        +refund(transactionId, amount) RefundResult
+        +getTransactionStatus(transactionId) TransactionStatus
+    }
+    PaymentProcessor <|.. BasePaymentProcessor
+    BasePaymentProcessor <|-- StripeProcessor
+    BasePaymentProcessor <|-- PayPalProcessor
+`} caption="Abstraction — L'interface définit le contrat, la classe abstraite fournit le code commun, les classes concrètes implémentent les détails spécifiques" />
 
 ```typescript
 // Interface = contrat pur
@@ -792,6 +959,44 @@ interface TransferResult {
 
 ### Architecture Finale
 
+<Mermaid chart={`flowchart TB
+    subgraph BankingSystem["🏦 BankingSystem"]
+        direction TB
+        BS[BankingSystem] --> AM[Account Manager]
+        BS --> TS[TransferService]
+    end
+    subgraph Accounts["📋 Comptes"]
+        direction LR
+        CA[CheckingAccount]
+        SA[SavingsAccount]
+        IA[InvestmentAccount]
+    end
+    subgraph Services["⚙️ Services Injectés"]
+        direction LR
+        NS[NotificationService]
+        AL[AuditLogger]
+        IS[InterestStrategy]
+    end
+    subgraph Observers["👁️ Observers"]
+        direction LR
+        FD[FraudDetection]
+        AN[Analytics]
+    end
+    AM --> CA
+    AM --> SA
+    AM --> IA
+    TS --> NS
+    TS --> AL
+    SA --> IS
+    CA -.->|events| FD
+    SA -.->|events| AN
+    IA -.->|events| AN
+    style BankingSystem fill:#1e293b,color:#e2e8f0
+    style Accounts fill:#0f172a,color:#e2e8f0
+    style Services fill:#0f172a,color:#e2e8f0
+    style Observers fill:#0f172a,color:#e2e8f0
+`} caption="Architecture complète du système bancaire — Tous les concepts de POO assemblés" />
+
 ```typescript
 // ── Point d'entrée : La Banque ───────────────────────────────────
 class BankingSystem {
@@ -866,6 +1071,20 @@ class BankingSystem {
 
 ### Observer Pattern — Système de Notifications
 
+<Mermaid chart={`flowchart LR
+    A[AccountEventEmitter] -->|notifyAll| B[FraudDetectionObserver]
+    A -->|notifyAll| C[AnalyticsObserver]
+    A -->|notifyAll| D[EmailNotificationObserver]
+    E[Retrait 6000€] -->|event| A
+    B -->|"amount > 5000"| F["🚨 Alerte Fraude"]
+    C -->|log| G["📊 Analytics"]
+    D -->|send| H["📧 Email"]
+    style A fill:#6366f1,color:#fff
+    style F fill:#ef4444,color:#fff
+    style G fill:#3b82f6,color:#fff
+    style H fill:#10b981,color:#fff
+`} caption="Observer Pattern — Un événement est diffusé à tous les observateurs inscrits, chacun réagit à sa manière" />
+
 ```typescript
 interface Observer<T> {
   update(event: T): void;
@@ -912,6 +1131,37 @@ class AnalyticsObserver implements Observer<AccountEvent> {
 ```
 
 ### Strategy Pattern — Calcul d'Intérêts
+
+<Mermaid chart={`classDiagram
+    class InterestStrategy {
+        <<interface>>
+        +calculate(balance) number
+        +getName() string
+    }
+    class SimpleInterest {
+        -rate: number
+        +calculate(balance) number
+    }
+    class CompoundInterest {
+        -annualRate: number
+        -compoundingPeriods: number
+        +calculate(balance) number
+    }
+    class TieredInterest {
+        -tiers: Tier[]
+        +calculate(balance) number
+    }
+    class FlexibleSavingsAccount {
+        -strategy: InterestStrategy
+        +calculateInterest() number
+        +setInterestStrategy(strategy) void
+    }
+    InterestStrategy <|.. SimpleInterest
+    InterestStrategy <|.. CompoundInterest
+    InterestStrategy <|.. TieredInterest
+    FlexibleSavingsAccount o-- InterestStrategy : stratégie injectable
+    note for FlexibleSavingsAccount "La stratégie peut être<br/>changée à l'exécution!"
+`} caption="Strategy Pattern — La stratégie de calcul d'intérêts est interchangeable sans modifier le compte" />
 
 ```typescript
 interface InterestStrategy {
@@ -1003,6 +1253,38 @@ class FlexibleSavingsAccount extends BankAccount {
 ## SOLID en Pratique <a name="solid"></a>
 
 Récapitulons comment notre projet bancaire applique les principes SOLID :
+
+<Mermaid chart={`flowchart TB
+    subgraph S["S — Single Responsibility"]
+        S1[BankAccount → Comptes]
+        S2[TransferService → Virements]
+        S3[NotificationService → Notifications]
+    end
+    subgraph O["O — Open/Closed"]
+        O1[Nouveau compte?] -->|Créer sous-classe| O2[class CryptoAccount extends BankAccount]
+        O3[Nouveau paiement?] -->|Implémenter interface| O4[class CryptoProcessor implements PaymentProcessor]
+    end
+    subgraph L["L — Liskov Substitution"]
+        L1["Bank.applyMonthlyInterest()"]
+        L2[CheckingAccount] -->|substituable| L1
+        L3[SavingsAccount] -->|substituable| L1
+        L4[InvestmentAccount] -->|substituable| L1
+    end
+    subgraph I["I — Interface Segregation"]
+        I1[NotificationService]
+        I2[AuditLogger]
+        I3[InterestCalculator]
+    end
+    subgraph D["D — Dependency Inversion"]
+        D1[EnhancedBankAccount] -->|dépend de| D2[interfaces]
+        D2 -.->|pas de| D3[classes concrètes]
+    end
+    style S fill:#6366f1,color:#fff
+    style O fill:#3b82f6,color:#fff
+    style L fill:#10b981,color:#fff
+    style I fill:#f59e0b,color:#fff
+    style D fill:#ef4444,color:#fff
+`} caption="Les 5 principes SOLID appliqués au système bancaire" />
 
 | Principe | Application dans notre projet |
 |----------|-------------------------------|

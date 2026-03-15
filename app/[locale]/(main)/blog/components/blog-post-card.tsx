@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { BlogPostMeta } from "@/lib/types";
 import { motion } from "framer-motion";
-import { Calendar, Clock, Eye, FileEdit, Heart, Share2 } from "lucide-react";
+import { Calendar, Clock, Eye, FileEdit, Flame, Heart, Share2 } from "lucide-react";
 import Link from "next/link";
 
 interface BlogPostCardProps {
@@ -45,12 +45,19 @@ export function BlogPostCard({ post, initialStats }: BlogPostCardProps) {
   return (
     <Link href={`/blog/${post.slug}`} className="block w-full">
       <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 group">
-        <div className="w-full">
+        <div className="w-full relative">
           <CoverImage
             src={post.coverImage}
             alt={post.title}
             sizes="(max-width: 640px) 100vw, (max-width: 768px) 90vw, (max-width: 1024px) 45vw, 400px"
           />
+          {/* Trending badge */}
+          {initialStats && initialStats.views >= 100 && (
+            <div className="absolute top-3 left-3 flex items-center gap-1 text-[10px] font-semibold text-orange-100 bg-gradient-to-r from-orange-500 to-red-500 px-2.5 py-1 rounded-full shadow-lg">
+              <Flame className="h-3 w-3" />
+              <span>Trending</span>
+            </div>
+          )}
         </div>
 
         <div className="p-4 sm:p-5 md:p-6 space-y-4">

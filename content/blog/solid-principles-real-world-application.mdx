@@ -26,6 +26,31 @@ coverImage: "/blog/solid-principles.webp"
 
 Les principes SOLID ne sont pas des règles abstraites de manuels académiques. Ce sont des **garde-fous concrets** qui séparent le code maintenable du code qui devient une dette technique en quelques mois. Dans cet article, nous allons les appliquer à un cas réel : une application e-commerce TypeScript qui croule sous les problèmes.
 
+<Mermaid chart={`flowchart LR
+    subgraph AVANT["❌ Avant SOLID"]
+        direction TB
+        GOD["OrderService<br/>(God Class)"]
+        GOD --> V[Validation]
+        GOD --> P[Prix]
+        GOD --> DB[(Database)]
+        GOD --> E[Email]
+        GOD --> PAY[Paiement]
+        GOD --> LOG[Logging]
+    end
+    subgraph APRES["✅ Après SOLID"]
+        direction TB
+        OS[OrderService] --> VS[ValidationService]
+        OS --> PS[PricingService]
+        OS --> OR[OrderRepository]
+        OS --> NS[NotificationService]
+        OS --> PP[PaymentProcessor]
+        OS --> LS[Logger]
+    end
+    AVANT -->|"Refactoring SOLID"| APRES
+    style AVANT fill:#7f1d1d,color:#fecaca
+    style APRES fill:#14532d,color:#bbf7d0
+`} caption="Transformation SOLID — D'une God Class monolithique vers des services à responsabilité unique" />
+
 Plutôt que de présenter chaque principe isolément avec des exemples artificiels, nous allons **transformer un vrai projet** — du code monolithique, couplé et fragile vers une architecture propre, testable et extensible.
 
 > **Prérequis** : Bonne connaissance de TypeScript, familiarité avec Node.js et les bases de la programmation orientée objet.

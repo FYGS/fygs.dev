@@ -1,4 +1,4 @@
----
+﻿---
 title: "Advanced Next.js Authentication & Security: Building Enterprise-Grade Auth Systems"
 excerpt: "A comprehensive guide to implementing secure, scalable authentication and authorization in Next.js applications, including OAuth, JWT, Session Management, and Security Best Practices."
 date: "2024-11-10"
@@ -25,6 +25,44 @@ coverImage: "/blog/nextjs-auth-security.png"
 ## Introduction <a name="introduction"></a>
 
 Building secure authentication systems in Next.js requires careful consideration of security best practices, user experience, and scalability. This guide provides a comprehensive approach to implementing enterprise-grade authentication.
+
+<Mermaid chart={`
+flowchart TB
+    Client["🌐 Client Browser"]
+    MW["🛡️ Next.js Middleware"]
+    JWT["🔑 JWT Verification"]
+    OAuth["🔐 OAuth Providers<br/>(Google, GitHub)"]
+    Cred["📧 Credentials<br/>(Email/Password)"]
+    Session["💾 Session Store<br/>(DB + Redis)"]
+    RBAC["👤 RBAC Engine<br/>Roles & Permissions"]
+    API["⚡ Protected API Routes"]
+    Pages["📄 Protected Pages"]
+    
+    Client -->|"Request"| MW
+    MW -->|"Check Token"| JWT
+    JWT -->|"Valid"| RBAC
+    JWT -->|"Expired"| Session
+    Session -->|"Refresh Token"| JWT
+    RBAC -->|"Authorized"| API
+    RBAC -->|"Authorized"| Pages
+    RBAC -->|"Denied"| Client
+    
+    Client -->|"Login"| OAuth
+    Client -->|"Login"| Cred
+    OAuth -->|"Callback"| Session
+    Cred -->|"Verify"| Session
+    Session -->|"Issue JWT"| Client
+    
+    style Client fill:#6366f1,stroke:#4f46e5,color:#fff
+    style MW fill:#8b5cf6,stroke:#7c3aed,color:#fff
+    style JWT fill:#06b6d4,stroke:#0891b2,color:#fff
+    style OAuth fill:#10b981,stroke:#059669,color:#fff
+    style Cred fill:#10b981,stroke:#059669,color:#fff
+    style Session fill:#f59e0b,stroke:#d97706,color:#fff
+    style RBAC fill:#ef4444,stroke:#dc2626,color:#fff
+    style API fill:#3b82f6,stroke:#2563eb,color:#fff
+    style Pages fill:#3b82f6,stroke:#2563eb,color:#fff
+`} caption="Architecture complète d'authentification Next.js : JWT + OAuth + RBAC" />
 
 ## Authentication Architecture <a name="architecture"></a>
 

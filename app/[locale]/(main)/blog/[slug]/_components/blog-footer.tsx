@@ -21,12 +21,5 @@ export function BlogFooter({ slug }: BlogFooterProps) {
 
   if (!postStats) return null;
 
-  return (
-    <SocialInteractions
-      slug={slug}
-      initialLikes={postStats.likes}
-      shareCount={postStats.shares}
-      variant="large"
-    />
-  );
+  return <SocialInteractions slug={slug} variant="large" />;
 }

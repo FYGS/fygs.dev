@@ -26,6 +26,24 @@ coverImage: "/blog/prompting-guide.svg"
 
 Le prompting n'est pas un art mystique. C'est une **compétence d'ingénierie** : structurée, reproductible, et mesurable.
 
+<Mermaid chart={`
+flowchart LR
+    C["🎯 Contexte<br/>Où ? Quel projet ?"]
+    R["🎯 Rôle<br/>Qui est l'IA ?"]
+    A["🎯 Action<br/>Quoi construire ?"]
+    Cr["🎯 Critères<br/>Quand c'est fini ?"]
+    
+    C --> R --> A --> Cr
+    
+    Cr --> Result["✅ Prompt Production-Ready"]
+    
+    style C fill:#6366f1,stroke:#4f46e5,color:#fff
+    style R fill:#8b5cf6,stroke:#7c3aed,color:#fff
+    style A fill:#3b82f6,stroke:#2563eb,color:#fff
+    style Cr fill:#10b981,stroke:#059669,color:#fff
+    style Result fill:#f59e0b,stroke:#d97706,color:#fff
+`} caption="Le modèle CRAC : Contexte → Rôle → Action → Critères" />
+
 Un bon prompt, c'est comme une bonne spécification technique. Il définit :
 
 - **Quoi** construire (l'objectif)

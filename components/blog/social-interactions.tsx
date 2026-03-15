@@ -1,25 +1,23 @@
 "use client";
 
-import { handleLike, handleShare } from "@/app/[locale]/(main)/blog/actions/social-interactions";
+import {
+  handleLike,
+  handleShare,
+} from "@/app/[locale]/(main)/blog/actions/social-interactions";
 import { SocialInteractionsClient } from "./social-interactions-client";
 
 interface SocialInteractionsProps {
   slug: string;
-  initialLikes: number;
-  shareCount: number;
   variant?: "default" | "large";
 }
 
-export function SocialInteractions({
-  variant,
-  ...props
-}: SocialInteractionsProps) {
+export function SocialInteractions({ slug, variant }: SocialInteractionsProps) {
   return (
     <SocialInteractionsClient
-      {...props}
+      slug={slug}
       variant={variant}
-      onLike={(userId) => handleLike(props.slug, userId)}
-      onShare={() => handleShare(props.slug)}
+      onLike={(userId) => handleLike(slug, userId)}
+      onShare={() => handleShare(slug)}
     />
   );
 }

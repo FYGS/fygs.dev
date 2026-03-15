@@ -1,4 +1,4 @@
----
+﻿---
 title: "Mastering Form Management in Next.js: From Basic to Complex Enterprise Forms"
 excerpt: "A comprehensive guide to building high-performance, accessible, and type-safe forms in Next.js using React Hook Form, Zod, and Server Actions with real-world examples."
 date: "2024-11-12"
@@ -25,6 +25,26 @@ coverImage: "/blog/forms-management.jpg"
 ## Introduction <a name="introduction"></a>
 
 Forms are a crucial part of web applications, yet building them correctly with proper validation, error handling, accessibility, and good user experience can be challenging. This guide will show you how to build enterprise-grade forms in Next.js using modern tools and best practices.
+
+<Mermaid chart={`
+flowchart LR
+    UI["🎨 Form UI<br/>React Hook Form"]
+    V["🛡️ Validation<br/>Zod Schema"]
+    SA["⚡ Server Action<br/>Next.js 15"]
+    DB["💾 Database<br/>Prisma"]
+    
+    UI -->|"onChange"| V
+    V -->|"Valid"| SA
+    V -->|"Errors"| UI
+    SA -->|"Persist"| DB
+    SA -->|"revalidatePath"| UI
+    DB -->|"Result"| SA
+    
+    style UI fill:#6366f1,stroke:#4f46e5,color:#fff
+    style V fill:#f59e0b,stroke:#d97706,color:#fff
+    style SA fill:#10b981,stroke:#059669,color:#fff
+    style DB fill:#8b5cf6,stroke:#7c3aed,color:#fff
+`} caption="Form architecture: React Hook Form + Zod validation + Server Actions + Prisma" />
 
 ## Modern Form Architecture <a name="architecture"></a>
 

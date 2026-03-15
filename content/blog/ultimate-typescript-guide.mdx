@@ -31,6 +31,28 @@ coverImage: "/blog/ultimate-typescript.png"
 
 TypeScript is a powerful superset of JavaScript that adds static typing and other features to enhance developer productivity and code quality. This guide will take you from the basics to advanced concepts, providing a comprehensive understanding of TypeScript.
 
+<Mermaid chart={`flowchart LR
+    subgraph JS["JavaScript"]
+        direction TB
+        JS1[Dynamic Types]
+        JS2[Runtime Errors]
+        JS3[No Autocomplete]
+    end
+    subgraph TS["TypeScript"]
+        direction TB
+        TS1[Static Types]
+        TS2[Compile-time Errors]
+        TS3[Full IntelliSense]
+        TS4[Generics]
+        TS5[Interfaces]
+        TS6[Decorators]
+    end
+    JS -->|"superset"| TS
+    TS -->|"compiles to"| JS
+    style JS fill:#f59e0b,color:#000
+    style TS fill:#3178c6,color:#fff
+`} caption="TypeScript est un superset de JavaScript — tout JS valide est du TS valide, mais TS ajoute le typage statique" />
+
 ## Basic Types <a name="basic-types"></a>
 
 TypeScript provides several basic types to help you describe the shape of your data:

@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
+import { useIntlayer } from "next-intlayer";
 
 interface Heading {
   id: string;
@@ -16,6 +17,7 @@ interface TOCProps {
 export function TableOfContents({ className }: TOCProps) {
   const [headings, setHeadings] = useState<Heading[]>([]);
   const [activeId, setActiveId] = useState<string>();
+  const { tableOfContents } = useIntlayer("blog-post");
 
   useEffect(() => {
     // Only grab headings inside the article's mdx-content container
@@ -28,9 +30,12 @@ export function TableOfContents({ className }: TOCProps) {
         if (!element.id) {
           element.id = id;
         }
+        // Strip trailing "#" added by HeadingAnchor component
+        const rawText = element.textContent || "";
+        const cleanText = rawText.replace(/\s*#\s*$/, "").trim();
         return {
           id,
-          text: element.textContent || "",
+          text: cleanText,
           level: Number(element.tagName.charAt(1)),
         };
       })
@@ -61,7 +66,7 @@ export function TableOfContents({ className }: TOCProps) {
 
   return (
     <nav className={cn("relative space-y-2 text-sm", className)}>
-      <p className="font-medium mb-4">Table of Contents</p>
+      <p className="font-medium mb-4">{tableOfContents}</p>
       <ul className="space-y-2 relative">
         {/* Active Section Indicator */}
         {activeId && (
@@ -90,7 +95,7 @@ export function TableOfContents({ className }: TOCProps) {
               )}
               onClick={(e) => {
                 e.preventDefault();
-                document.querySelector(`#${heading.id}`)?.scrollIntoView({
+                document.getElementById(heading.id)?.scrollIntoView({
                   behavior: "smooth",
                 });
               }}

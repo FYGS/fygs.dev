@@ -2,7 +2,6 @@
 
 import { Card } from "@/components/ui/card";
 import { fadeIn } from "@/lib/animations";
-import { useBlogStats } from "@/stores/use-blog-stats";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Clock, Eye, ThumbsUp, Users } from "lucide-react";
 import { useIntlayer } from "next-intlayer";
@@ -17,12 +16,10 @@ interface ArticleStatsProps {
 
 export function ArticleStats({
   readingTime,
-  views: initialViews,
-  likes: initialLikes,
-  shares: initialShares,
+  views,
+  likes,
+  shares,
 }: ArticleStatsProps) {
-  // Use Zustand store values (updated by user actions), fall back to SSR initial props
-  const store = useBlogStats();
   const {
     views: viewsLabel,
     view: viewLabel,
@@ -31,9 +28,6 @@ export function ArticleStats({
     shares: sharesLabel,
     share: shareLabel,
   } = useIntlayer("blog-stats");
-  const views = store.views || initialViews;
-  const likes = store.likes || initialLikes;
-  const shares = store.shares || initialShares;
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
