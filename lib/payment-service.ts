@@ -11,10 +11,6 @@ import {
 import { Analytics } from "./analytics";
 import { createLogger } from "./structured-logger";
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error("STRIPE_SECRET_KEY is required");
-}
-
 export interface PaymentProduct {
   id: string;
   name: string;

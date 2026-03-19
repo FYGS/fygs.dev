@@ -6,6 +6,9 @@ import { emailService } from "./email-service";
 import { Role } from "@prisma/client";
 
 export const auth = betterAuth({
+  secret:
+    process.env.BETTER_AUTH_SECRET ||
+    "build-time-placeholder-secret-not-for-production",
   database: prismaAdapter(db, {
     provider: "postgresql",
   }),
@@ -14,7 +17,10 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: true,
     sendResetPassword: async ({ user, url }) => {
-      const template = emailService.passwordReset(user.name || "Utilisateur", url);
+      const template = emailService.passwordReset(
+        user.name || "Utilisateur",
+        url,
+      );
       await emailService.sendEmail({
         to: user.email,
         subject: template.subject,
@@ -53,7 +59,10 @@ export const auth = betterAuth({
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url }) => {
-      const template = emailService.emailVerification(user.name || "Utilisateur", url);
+      const template = emailService.emailVerification(
+        user.name || "Utilisateur",
+        url,
+      );
       await emailService.sendEmail({
         to: user.email,
         subject: template.subject,
