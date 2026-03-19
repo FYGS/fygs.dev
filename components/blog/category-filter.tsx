@@ -37,12 +37,15 @@ export function CategoryFilter({ categories, selected }: CategoryFilterProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="w-[200px] justify-between">
+        <Button
+          variant="outline"
+          className="w-full sm:w-[200px] justify-between"
+        >
           {selected || allCategories}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-[200px]">
+      <DropdownMenuContent className="w-[200px] max-h-64 overflow-y-auto">
         <DropdownMenuItem onClick={() => handleSelect(null)}>
           <span className="flex items-center">
             {!selected && <CheckIcon className="mr-2 h-4 w-4" />}

@@ -31,7 +31,10 @@ export function ReadingProgress() {
       return {
         id: heading.id,
         title: heading.textContent?.replace("#", "").trim() || "",
-        position: Math.min((absoluteTop / (totalHeight + window.innerHeight)) * 100, 100),
+        position: Math.min(
+          (absoluteTop / (totalHeight + window.innerHeight)) * 100,
+          100,
+        ),
       };
     });
 
@@ -40,7 +43,7 @@ export function ReadingProgress() {
 
   return (
     <>
-      <div className="fixed top-16 left-0 right-0 h-1.5 bg-muted/60 z-50 group">
+      <div className="fixed top-16 left-0 right-0 h-1 sm:h-1.5 bg-muted/60 z-50 group">
         <motion.div
           className="h-full bg-gradient-to-r from-primary to-primary/80"
           initial={{ width: "0%" }}
@@ -48,14 +51,16 @@ export function ReadingProgress() {
           transition={{ type: "spring", damping: 20, stiffness: 100 }}
         />
 
-        {/* Section markers */}
+        {/* Section markers — hidden on small mobile, visible on sm+ */}
         {sections.map((section) => (
           <button
             key={section.id}
-            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 cursor-pointer"
+            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 cursor-pointer hidden sm:block"
             style={{ left: `${section.position}%` }}
             onClick={() => {
-              document.getElementById(section.id)?.scrollIntoView({ behavior: "smooth" });
+              document
+                .getElementById(section.id)
+                ?.scrollIntoView({ behavior: "smooth" });
             }}
             onMouseEnter={() => setHoveredSection(section.id)}
             onMouseLeave={() => setHoveredSection(null)}
@@ -90,7 +95,7 @@ export function ReadingProgress() {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-4 right-4 bg-card/80 backdrop-blur-xs p-4 rounded-lg shadow-lg border border-muted/50"
+            className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-auto bg-card/90 backdrop-blur-sm p-3 sm:p-4 rounded-lg shadow-lg border border-muted/50"
           >
             <div className="flex items-center gap-2 text-sm">
               <Timer className="h-4 w-4 text-primary" />

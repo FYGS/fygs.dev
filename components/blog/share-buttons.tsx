@@ -7,7 +7,16 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { Check, Copy, Facebook, Linkedin, Mail, MessageCircle, Send, Twitter } from "lucide-react";
+import {
+  Check,
+  Copy,
+  Facebook,
+  Linkedin,
+  Mail,
+  MessageCircle,
+  Send,
+  Twitter,
+} from "lucide-react";
 import { useState } from "react";
 
 interface ShareButtonsProps {
@@ -16,7 +25,11 @@ interface ShareButtonsProps {
   compact?: boolean;
 }
 
-export function ShareButtons({ url, title, compact = false }: ShareButtonsProps) {
+export function ShareButtons({
+  url,
+  title,
+  compact = false,
+}: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
 
   const encodedUrl = encodeURIComponent(url);
@@ -62,7 +75,12 @@ export function ShareButtons({ url, title, compact = false }: ShareButtonsProps)
   };
 
   return (
-    <div className={cn("flex items-center gap-1.5", compact ? "gap-1" : "gap-2")}>
+    <div
+      className={cn(
+        "flex items-center flex-wrap gap-1.5",
+        compact ? "gap-1" : "gap-2",
+      )}
+    >
       {shareLinks.map((link) => (
         <Tooltip key={link.name}>
           <TooltipTrigger asChild>
@@ -70,10 +88,12 @@ export function ShareButtons({ url, title, compact = false }: ShareButtonsProps)
               variant="outline"
               size="icon"
               className={cn(
-                "transition-all hover:scale-105",
+                "transition-all hover:scale-105 shrink-0",
                 compact && "h-8 w-8",
               )}
-              onClick={() => window.open(link.href, "_blank", "noopener,noreferrer")}
+              onClick={() =>
+                window.open(link.href, "_blank", "noopener,noreferrer")
+              }
             >
               <link.icon className={cn("h-4 w-4", compact && "h-3.5 w-3.5")} />
             </Button>
@@ -88,7 +108,7 @@ export function ShareButtons({ url, title, compact = false }: ShareButtonsProps)
             variant="outline"
             size="icon"
             className={cn(
-              "transition-all hover:scale-105",
+              "transition-all hover:scale-105 shrink-0",
               copied && "border-emerald-500/50 text-emerald-500",
               compact && "h-8 w-8",
             )}

@@ -103,7 +103,7 @@ export function SimilarArticles({
         <Sparkles className="h-5 w-5 text-primary" />
         {similarArticles}
       </h2>
-      <div className="grid gap-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
         {similarPosts.map((post, index) => (
           <motion.div
             key={post.slug}
@@ -114,27 +114,32 @@ export function SimilarArticles({
             onMouseLeave={handleMouseLeave}
           >
             <Link href={`/blog/${post.slug}`}>
-              <Card className="p-4 hover:bg-accent/50 transition-all duration-300 group">
+              <Card className="p-4 hover:bg-accent/50 transition-all duration-300 group h-full">
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-wrap gap-2">
-                      {post.categories.map((category) => (
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex flex-wrap gap-1.5 min-w-0">
+                      {post.categories.slice(0, 2).map((category) => (
                         <Badge
                           key={category}
                           variant="secondary"
-                          className="group-hover:bg-primary/10"
+                          className="group-hover:bg-primary/10 text-[10px] shrink-0"
                         >
                           {category}
                         </Badge>
                       ))}
+                      {post.categories.length > 2 && (
+                        <Badge variant="secondary" className="text-[10px]">
+                          +{post.categories.length - 2}
+                        </Badge>
+                      )}
                     </div>
                     {/* Relevance score */}
-                    <span className="text-xs font-medium text-primary/80 bg-primary/10 rounded-full px-2.5 py-0.5 shrink-0">
+                    <span className="text-[10px] font-medium text-primary/80 bg-primary/10 rounded-full px-2 py-0.5 shrink-0 whitespace-nowrap">
                       {Math.round(post.similarityScore * 100)}% match
                     </span>
                   </div>
 
-                  <h3 className="text-lg font-medium group-hover:text-primary transition-colors">
+                  <h3 className="text-base sm:text-lg font-medium group-hover:text-primary transition-colors line-clamp-2">
                     {post.title}
                   </h3>
 
@@ -142,22 +147,20 @@ export function SimilarArticles({
                     {post.excerpt}
                   </p>
 
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
-                        <time dateTime={post.date}>
-                          {new Date(post.date).toLocaleDateString(locale, {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </time>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        {post.readingTime}
-                      </div>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-3.5 w-3.5" />
+                      <time dateTime={post.date}>
+                        {new Date(post.date).toLocaleDateString(locale, {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </time>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-3.5 w-3.5" />
+                      {post.readingTime}
                     </div>
                   </div>
                 </div>
@@ -167,11 +170,14 @@ export function SimilarArticles({
         ))}
       </div>
 
-      <ArticlePreview
-        post={previewPost as BlogPostMeta}
-        isVisible={previewPost !== null}
-        position={previewPosition}
-      />
+      {/* Article preview - desktop only */}
+      <div className="hidden lg:block">
+        <ArticlePreview
+          post={previewPost as BlogPostMeta}
+          isVisible={previewPost !== null}
+          position={previewPosition}
+        />
+      </div>
     </div>
   );
 }

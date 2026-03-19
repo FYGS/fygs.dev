@@ -9,7 +9,12 @@ declare global {
 // Improve interface with proper types
 interface IRedisClient {
   get(key: string): Promise<string | null>;
-  set(key: string, value: string, mode?: string, duration?: number): Promise<"OK" | null>;
+  set(
+    key: string,
+    value: string,
+    mode?: string,
+    duration?: number,
+  ): Promise<"OK" | null>;
   setex(key: string, seconds: number, value: string): Promise<"OK">;
   setnx(key: string, value: string): Promise<number>;
   incr(key: string): Promise<number>;
@@ -28,10 +33,13 @@ export class RedisClient implements IRedisClient {
   private readonly client: Redis;
 
   private constructor() {
-    const redisUrl = process.env.REDIS_URL || process.env.blog_stats_KV_REST_API_URL;
+    const redisUrl =
+      process.env.REDIS_URL || process.env.blog_stats_KV_REST_API_URL;
 
     if (!redisUrl) {
-      throw new Error("Missing required Redis environment variables (REDIS_URL)");
+      throw new Error(
+        "Missing required Redis environment variables (REDIS_URL)",
+      );
     }
 
     this.client = new Redis(redisUrl, {
@@ -40,12 +48,12 @@ export class RedisClient implements IRedisClient {
     });
 
     // Error handling
-    this.client.on('error', (err: Error) => {
-      console.error('Redis connection error:', err);
+    this.client.on("error", (err: Error) => {
+      console.error("Redis connection error:", err);
     });
 
-    this.client.on('connect', () => {
-      console.log('Redis connected successfully');
+    this.client.on("connect", () => {
+      console.log("Redis connected successfully");
     });
 
     // Preserve instance in development
@@ -65,9 +73,14 @@ export class RedisClient implements IRedisClient {
     return this.client.get(key);
   }
 
-  async set(key: string, value: string, mode?: string, duration?: number): Promise<"OK" | null> {
-    if (mode === 'EX' && duration) {
-      return this.client.set(key, value, 'EX', duration);
+  async set(
+    key: string,
+    value: string,
+    mode?: string,
+    duration?: number,
+  ): Promise<"OK" | null> {
+    if (mode === "EX" && duration) {
+      return this.client.set(key, value, "EX", duration);
     }
     return this.client.set(key, value);
   }
@@ -125,7 +138,7 @@ export class RedisClient implements IRedisClient {
   async setJSON<T>(key: string, value: T, ttl?: number): Promise<"OK" | null> {
     const serialized = JSON.stringify(value);
     if (ttl) {
-      return this.set(key, serialized, 'EX', ttl);
+      return this.set(key, serialized, "EX", ttl);
     }
     return this.set(key, serialized);
   }
@@ -140,8 +153,28 @@ export class RedisClient implements IRedisClient {
   }
 }
 
-// Create and freeze instance
-const redis = RedisClient.getInstance();
-Object.freeze(redis);
+// Create a lazy proxy — Redis only instantiates when first accessed at runtime,
+// not at module import time. This prevents build-time crashes when REDIS_URL is absent.
+let _instance: RedisClient | undefined;
+
+function getRedisInstance(): RedisClient {
+  if (!_instance) {
+    _instance = RedisClient.getInstance();
+  }
+  return _instance;
+}
+
+const redis = new Proxy({} as RedisClient, {
+  get(_target, prop: string | symbol) {
+    const instance = getRedisInstance();
+    const value = (instance as unknown as Record<string | symbol, unknown>)[
+      prop
+    ];
+    if (typeof value === "function") {
+      return value.bind(instance);
+    }
+    return value;
+  },
+});
 
 export default redis;

@@ -273,7 +273,7 @@ export const components = {
   }: PropsWithChildren<{ className?: string }>) => (
     <th
       className={cn(
-        "px-4 py-3 text-left font-semibold text-foreground text-sm",
+        "px-3 sm:px-4 py-2.5 sm:py-3 text-left font-semibold text-foreground text-xs sm:text-sm whitespace-nowrap",
         className,
       )}
       {...props}
@@ -289,7 +289,7 @@ export const components = {
   }: PropsWithChildren<{ className?: string }>) => (
     <td
       className={cn(
-        "px-4 py-3 text-left text-muted-foreground text-sm",
+        "px-3 sm:px-4 py-2.5 sm:py-3 text-left text-muted-foreground text-xs sm:text-sm",
         className,
       )}
       {...props}

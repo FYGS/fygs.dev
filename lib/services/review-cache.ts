@@ -8,7 +8,9 @@ import { logger } from "@/lib/structured-logger";
  * Provides multi-layer caching for optimal review system performance
  */
 export class ReviewCacheService {
-  private static readonly redis = RedisClient.getInstance();
+  private static get redis() {
+    return RedisClient.getInstance();
+  }
 
   // Cache TTL configurations (in seconds)
   private static readonly CACHE_TTL = {
@@ -116,7 +118,7 @@ export class ReviewCacheService {
         await this.redis.setJSON(
           cacheKey,
           review,
-          this.CACHE_TTL.REVIEW_DETAILS
+          this.CACHE_TTL.REVIEW_DETAILS,
         );
         logger.debug("Review cached", {
           metadata: { reviewId, cacheKey },
@@ -130,7 +132,7 @@ export class ReviewCacheService {
         {
           metadata: { reviewId },
         },
-        error as Error
+        error as Error,
       );
       // Fallback to direct database query
       return db.review.findUnique({
@@ -157,7 +159,7 @@ export class ReviewCacheService {
         verified?: boolean;
         status?: ReviewStatus;
       };
-    } = {}
+    } = {},
   ): Promise<{
     reviews: any[];
     pagination: {
@@ -283,7 +285,7 @@ export class ReviewCacheService {
         {
           metadata: { courseId },
         },
-        error as Error
+        error as Error,
       );
       throw error;
     }
@@ -298,7 +300,7 @@ export class ReviewCacheService {
       page?: number;
       limit?: number;
       status?: ReviewStatus;
-    } = {}
+    } = {},
   ) {
     const { page = 1, limit = 10, status = "APPROVED" } = options;
     const cacheKey = `${this.CACHE_KEYS.USER_REVIEWS}${userId}:${page}:${limit}:${status}`;
@@ -369,7 +371,7 @@ export class ReviewCacheService {
       logger.error(
         "Error getting cached user reviews",
         { metadata: { userId } },
-        error as Error
+        error as Error,
       );
       throw error;
     }
@@ -446,7 +448,7 @@ export class ReviewCacheService {
       logger.error(
         "Error getting cached review stats",
         { metadata: { courseId } },
-        error as Error
+        error as Error,
       );
       throw error;
     }
@@ -469,11 +471,11 @@ export class ReviewCacheService {
     options: {
       page?: number;
       limit?: number;
-    } = {}
+    } = {},
   ) {
     const { page = 1, limit = 10 } = options;
     const cacheKey = `${this.CACHE_KEYS.SEARCH}${query}:${JSON.stringify(
-      filters
+      filters,
     )}:${page}:${limit}`;
 
     try {
@@ -564,7 +566,7 @@ export class ReviewCacheService {
       logger.error(
         "Error getting cached search results",
         { metadata: { query } },
-        error as Error
+        error as Error,
       );
       throw error;
     }
@@ -617,7 +619,7 @@ export class ReviewCacheService {
       await this.redis.setJSON(
         cacheKey,
         reviews,
-        this.CACHE_TTL.POPULAR_REVIEWS
+        this.CACHE_TTL.POPULAR_REVIEWS,
       );
       logger.debug("Popular reviews cached", { metadata: { cacheKey } });
 
@@ -626,7 +628,7 @@ export class ReviewCacheService {
       logger.error(
         "Error getting cached popular reviews",
         { metadata: {} },
-        error as Error
+        error as Error,
       );
       throw error;
     }
@@ -679,7 +681,7 @@ export class ReviewCacheService {
       await this.redis.setJSON(
         cacheKey,
         reviews,
-        this.CACHE_TTL.RECENT_REVIEWS
+        this.CACHE_TTL.RECENT_REVIEWS,
       );
       logger.debug("Recent reviews cached", { metadata: { cacheKey } });
 
@@ -688,7 +690,7 @@ export class ReviewCacheService {
       logger.error(
         "Error getting cached recent reviews",
         { metadata: {} },
-        error as Error
+        error as Error,
       );
       throw error;
     }
@@ -700,7 +702,7 @@ export class ReviewCacheService {
   static async invalidateReviewCache(
     reviewId: string,
     courseId?: string,
-    userId?: string
+    userId?: string,
   ) {
     try {
       const keys = [`${this.CACHE_KEYS.REVIEW}${reviewId}`];
@@ -708,10 +710,10 @@ export class ReviewCacheService {
       if (courseId) {
         // Invalidate all course review caches
         const courseKeys = await this.redis.keys(
-          `${this.CACHE_KEYS.COURSE_REVIEWS}${courseId}:*`
+          `${this.CACHE_KEYS.COURSE_REVIEWS}${courseId}:*`,
         );
         const statsKeys = await this.redis.keys(
-          `${this.CACHE_KEYS.REVIEW_STATS}${courseId}`
+          `${this.CACHE_KEYS.REVIEW_STATS}${courseId}`,
         );
         keys.push(...courseKeys, ...statsKeys);
       }
@@ -719,7 +721,7 @@ export class ReviewCacheService {
       if (userId) {
         // Invalidate user review caches
         const userKeys = await this.redis.keys(
-          `${this.CACHE_KEYS.USER_REVIEWS}${userId}:*`
+          `${this.CACHE_KEYS.USER_REVIEWS}${userId}:*`,
         );
         keys.push(...userKeys);
       }
@@ -752,7 +754,7 @@ export class ReviewCacheService {
       logger.error(
         "Error invalidating review cache",
         { metadata: { reviewId } },
-        error as Error
+        error as Error,
       );
     }
   }
@@ -763,10 +765,10 @@ export class ReviewCacheService {
   static async invalidateCourseCache(courseId: string) {
     try {
       const keys = await this.redis.keys(
-        `${this.CACHE_KEYS.COURSE_REVIEWS}${courseId}:*`
+        `${this.CACHE_KEYS.COURSE_REVIEWS}${courseId}:*`,
       );
       const statsKeys = await this.redis.keys(
-        `${this.CACHE_KEYS.REVIEW_STATS}${courseId}`
+        `${this.CACHE_KEYS.REVIEW_STATS}${courseId}`,
       );
 
       if (keys.length > 0 || statsKeys.length > 0) {
@@ -785,7 +787,7 @@ export class ReviewCacheService {
       logger.error(
         "Error invalidating course cache",
         { metadata: { courseId } },
-        error as Error
+        error as Error,
       );
     }
   }
@@ -815,7 +817,7 @@ export class ReviewCacheService {
       logger.error(
         "Error warming up course cache",
         { metadata: { courseId } },
-        error as Error
+        error as Error,
       );
     }
   }
@@ -836,7 +838,7 @@ export class ReviewCacheService {
       return {
         totalCacheKeys: Object.values(stats).reduce(
           (sum, count) => sum + count,
-          0
+          0,
         ),
         breakdown: stats,
         lastUpdated: new Date().toISOString(),
@@ -845,7 +847,7 @@ export class ReviewCacheService {
       logger.error(
         "Error getting cache stats",
         { metadata: {} },
-        error as Error
+        error as Error,
       );
       return null;
     }
@@ -875,7 +877,7 @@ export class ReviewCacheService {
       logger.error(
         "Error clearing all cache",
         { metadata: {} },
-        error as Error
+        error as Error,
       );
       throw error;
     }

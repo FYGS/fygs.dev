@@ -82,7 +82,7 @@ export function BlogPostCard({ post, initialStats }: BlogPostCardProps) {
           </div>
         </div>
 
-        <div className="p-5 sm:p-6 space-y-3.5 flex-1 flex flex-col">
+        <div className="p-4 sm:p-5 space-y-3 flex-1 flex flex-col">
           {/* Categories */}
           <div className="flex flex-wrap gap-1.5">
             {post.draft && (

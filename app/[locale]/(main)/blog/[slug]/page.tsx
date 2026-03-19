@@ -7,10 +7,12 @@ import {
   generateJsonLdScript,
 } from "@/app/_lib/jsonld-utils";
 import { CoverImage } from "@/components/blog/cover-image";
+import { BackToTop } from "@/components/blog/back-to-top";
 import { PopularArticles } from "@/components/blog/popular-articles";
 import { PostStatsView } from "@/components/blog/post-stats-view";
 import { ReadingProgress } from "@/components/blog/reading-progress";
 import { SimilarArticles } from "@/components/blog/similar-articles";
+import { MobileToc } from "@/components/mdx/mobile-toc";
 import { TableOfContents } from "@/components/mdx/toc";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -165,6 +167,7 @@ export default async function BlogPostPage({ params }: Props) {
     <>
       <ViewCounter slug={slug} />
       <ReadingProgress />
+      <BackToTop />
       <Section>
         <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr_200px] gap-8">
           {/* Table of Contents - Desktop */}
@@ -247,13 +250,18 @@ export default async function BlogPostPage({ params }: Props) {
                 title={post.title}
                 url={`${SITE_URL}/${locale}/blog/${slug}`}
               />
+
+              {/* Mobile Table of Contents */}
+              <div className="lg:hidden">
+                <MobileToc />
+              </div>
             </header>
 
             {/* Article Body */}
             <div className="mdx-content">{post.content}</div>
 
-            {/* Mobile Stats */}
-            <footer className="mt-16 pt-8 border-t border-muted md:hidden">
+            {/* Mobile/Tablet Stats */}
+            <footer className="mt-16 pt-8 border-t border-muted lg:hidden">
               <div className="flex flex-col items-center gap-4">
                 <h3 className="text-lg font-medium text-muted-foreground">
                   {helpful}
