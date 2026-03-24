@@ -1,0 +1,393 @@
+﻿---
+title: "PostgreSQL Mastery : Requêtes Avancées, Indexation et Performance"
+excerpt: "Maîtrisez PostgreSQL au-delà des bases — CTEs récursives, window functions, indexation stratégique, partitionnement, JSONB, et optimisation de requêtes pour des applications haute performance."
+date: "2025-10-26"
+author: "Fernand SOUALO"
+categories: ["PostgreSQL", "Base de données", "Performance", "SQL"]
+coverImage: "/blog/postgresql-mastery.png"
+---
+
+# PostgreSQL Mastery : Requêtes Avancées, Indexation et Performance
+
+## Table of Contents
+
+1. [Pourquoi PostgreSQL ?](#pourquoi-postgresql-)
+2. [CTEs et Requêtes Récursives](#ctes-et-requêtes-récursives)
+3. [Window Functions](#window-functions)
+4. [Indexation Stratégique](#indexation-stratégique)
+5. [JSONB : Le Meilleur des Deux Mondes](#jsonb--le-meilleur-des-deux-mondes)
+6. [Partitionnement de Tables](#partitionnement-de-tables)
+7. [Optimisation avec EXPLAIN ANALYZE](#optimisation-avec-explain-analyze)
+8. [Full-Text Search](#full-text-search)
+9. [Sécurité et Row-Level Security](#sécurité-et-row-level-security)
+10. [Conclusion](#conclusion)
+
+## Pourquoi PostgreSQL ?
+
+PostgreSQL n'est pas qu'une base de données relationnelle — c'est un **moteur de données universel**. Avec le support JSON, la recherche textuelle intégrée, les extensions géospatiales, et la conformité ACID garantie, il surpasse les alternatives dans la majorité des cas d'usage.
+
+<Mermaid
+  chart={`
+mindmap
+  root((PostgreSQL))
+    Relationnel
+      ACID
+      Transactions
+      Contraintes FK
+    NoSQL
+      JSONB
+      Hstore
+      Arrays
+    Recherche
+      Full-Text Search
+      Trigrams
+      Fuzzy matching
+    Extensions
+      PostGIS
+      pgvector
+      TimescaleDB
+    Performance
+      Indexation B-Tree
+      Index GIN/GiST
+      Partitionnement
+      Parallélisme
+`}
+  caption="PostgreSQL : un écosystème complet de gestion de données."
+/>
+
+## CTEs et Requêtes Récursives
+
+### Common Table Expressions (CTEs)
+
+Les CTEs rendent les requêtes complexes lisibles et maintenables :
+
+```sql
+-- Analyse des ventes par catégorie avec classement
+WITH monthly_sales AS (
+  SELECT
+    category_id,
+    DATE_TRUNC('month', created_at) AS month,
+    SUM(amount) AS total_sales,
+    COUNT(*) AS order_count
+  FROM orders
+  WHERE created_at >= NOW() - INTERVAL '12 months'
+  GROUP BY category_id, DATE_TRUNC('month', created_at)
+),
+ranked_categories AS (
+  SELECT
+    ms.*,
+    c.name AS category_name,
+    RANK() OVER (
+      PARTITION BY ms.month
+      ORDER BY ms.total_sales DESC
+    ) AS rank
+  FROM monthly_sales ms
+  JOIN categories c ON c.id = ms.category_id
+)
+SELECT
+  category_name,
+  month,
+  total_sales,
+  order_count,
+  rank
+FROM ranked_categories
+WHERE rank <= 5
+ORDER BY month DESC, rank;
+```
+
+### Requêtes Récursives
+
+Parfaites pour les structures hiérarchiques (arborescences, organigrammes, catégories) :
+
+```sql
+-- Arbre de catégories avec profondeur
+WITH RECURSIVE category_tree AS (
+  -- Cas de base : catégories racines
+  SELECT
+    id,
+    name,
+    parent_id,
+    1 AS depth,
+    ARRAY[name] AS path
+  FROM categories
+  WHERE parent_id IS NULL
+
+  UNION ALL
+
+  -- Cas récursif : enfants
+  SELECT
+    c.id,
+    c.name,
+    c.parent_id,
+    ct.depth + 1,
+    ct.path || c.name
+  FROM categories c
+  INNER JOIN category_tree ct ON c.parent_id = ct.id
+  WHERE ct.depth < 10  -- Garde-fou anti-boucle infinie
+)
+SELECT
+  id,
+  REPEAT('  ', depth - 1) || name AS indented_name,
+  depth,
+  ARRAY_TO_STRING(path, ' > ') AS full_path
+FROM category_tree
+ORDER BY path;
+```
+
+## Window Functions
+
+Les window functions sont la fonctionnalité SQL la plus sous-utilisée :
+
+```sql
+-- Analytics avancées avec window functions
+SELECT
+  user_id,
+  order_date,
+  amount,
+
+  -- Total cumulé par utilisateur
+  SUM(amount) OVER (
+    PARTITION BY user_id
+    ORDER BY order_date
+    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+  ) AS cumulative_total,
+
+  -- Moyenne mobile sur 7 jours
+  AVG(amount) OVER (
+    PARTITION BY user_id
+    ORDER BY order_date
+    RANGE BETWEEN INTERVAL '7 days' PRECEDING AND CURRENT ROW
+  ) AS moving_avg_7d,
+
+  -- Rang par montant (par utilisateur)
+  DENSE_RANK() OVER (
+    PARTITION BY user_id
+    ORDER BY amount DESC
+  ) AS amount_rank,
+
+  -- Écart par rapport à la commande précédente
+  amount - LAG(amount) OVER (
+    PARTITION BY user_id
+    ORDER BY order_date
+  ) AS diff_from_previous,
+
+  -- Pourcentage du total
+  ROUND(
+    amount * 100.0 / SUM(amount) OVER (PARTITION BY user_id),
+    2
+  ) AS pct_of_total
+
+FROM orders
+ORDER BY user_id, order_date;
+```
+
+## Indexation Stratégique
+
+L'indexation est **l'arme la plus puissante** pour la performance. Un index bien placé peut transformer une requête de 30 secondes en 3 millisecondes.
+
+### Types d'Index
+
+| Type       | Cas d'Usage                                  | Opérateurs                            |
+| ---------- | -------------------------------------------- | ------------------------------------- |
+| **B-Tree** | Comparaisons (`=`, `<`, `>`, `BETWEEN`)      | Par défaut, le plus polyvalent        |
+| **Hash**   | Égalité exacte uniquement                    | `=` seulement                         |
+| **GIN**    | Arrays, JSONB, Full-Text                     | `@>`, `?`, `@@`                       |
+| **GiST**   | Géospatial, ranges, nearest-neighbor         | `&&`, `@>`, `<->`                     |
+| **BRIN**   | Données naturellement ordonnées (timestamps) | Très compact, idéal pour gros volumes |
+
+### Index Partiels et Composites
+
+```sql
+-- Index partiel : seulement les commandes actives
+CREATE INDEX idx_orders_active
+ON orders (user_id, created_at)
+WHERE status = 'active';
+
+-- Index composite avec stratégie de colonnes
+-- Règle : colonnes de filtre d'abord, tri ensuite
+CREATE INDEX idx_products_search
+ON products (category_id, is_active, price);
+
+-- Index sur expression
+CREATE INDEX idx_users_email_lower
+ON users (LOWER(email));
+
+-- Utilisation :
+SELECT * FROM users WHERE LOWER(email) = 'john@example.com';
+
+-- Index GIN pour JSONB
+CREATE INDEX idx_products_metadata
+ON products USING GIN (metadata jsonb_path_ops);
+```
+
+## JSONB : Le Meilleur des Deux Mondes
+
+```sql
+-- Créer une table avec colonne JSONB
+CREATE TABLE events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  type TEXT NOT NULL,
+  payload JSONB NOT NULL DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Insérer du JSON
+INSERT INTO events (type, payload)
+VALUES ('user.signup', '{
+  "user": {"name": "Alice", "email": "alice@example.com"},
+  "source": "google",
+  "metadata": {"campaign": "summer2025"}
+}');
+
+-- Requêtes JSONB avancées
+SELECT
+  id,
+  payload->'user'->>'name' AS user_name,
+  payload->'user'->>'email' AS user_email,
+  payload->'metadata'->>'campaign' AS campaign,
+  payload @? '$.metadata.campaign' AS has_campaign
+FROM events
+WHERE
+  type = 'user.signup'
+  AND payload @> '{"source": "google"}'
+  AND payload->'metadata' ? 'campaign';
+
+-- Agréger du JSON
+SELECT
+  payload->'metadata'->>'campaign' AS campaign,
+  COUNT(*) AS signups,
+  jsonb_agg(payload->'user'->>'name') AS user_names
+FROM events
+WHERE type = 'user.signup'
+GROUP BY payload->'metadata'->>'campaign';
+```
+
+## Partitionnement de Tables
+
+Pour les tables avec des millions de lignes, le partitionnement découpe les données en sous-tables gérables :
+
+```sql
+-- Partitionnement par range (date)
+CREATE TABLE logs (
+  id BIGINT GENERATED ALWAYS AS IDENTITY,
+  message TEXT NOT NULL,
+  level TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+) PARTITION BY RANGE (created_at);
+
+-- Créer les partitions mensuelles
+CREATE TABLE logs_2025_01 PARTITION OF logs
+  FOR VALUES FROM ('2025-01-01') TO ('2025-02-01');
+
+CREATE TABLE logs_2025_02 PARTITION OF logs
+  FOR VALUES FROM ('2025-02-01') TO ('2025-03-01');
+
+-- Automatiser avec pg_partman ou un script
+DO $$
+DECLARE
+  month_start DATE;
+BEGIN
+  FOR i IN 1..12 LOOP
+    month_start := DATE '2025-01-01' + (i - 1) * INTERVAL '1 month';
+    EXECUTE format(
+      'CREATE TABLE IF NOT EXISTS logs_%s PARTITION OF logs
+       FOR VALUES FROM (%L) TO (%L)',
+      TO_CHAR(month_start, 'YYYY_MM'),
+      month_start,
+      month_start + INTERVAL '1 month'
+    );
+  END LOOP;
+END $$;
+```
+
+## Optimisation avec EXPLAIN ANALYZE
+
+```sql
+-- Analyser une requête
+EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT)
+SELECT u.name, COUNT(o.id) AS order_count
+FROM users u
+LEFT JOIN orders o ON o.user_id = u.id
+WHERE u.created_at > '2025-01-01'
+GROUP BY u.name
+ORDER BY order_count DESC
+LIMIT 10;
+```
+
+### Lecture d'un plan d'exécution
+
+| Indicateur      | Bon                             | Mauvais                                  |
+| --------------- | ------------------------------- | ---------------------------------------- |
+| **Seq Scan**    | Petites tables (&lt;10K rows)   | Grandes tables sans filtre indexé        |
+| **Index Scan**  | Requêtes sélectives             | —                                        |
+| **Bitmap Scan** | Moyenne sélectivité             | —                                        |
+| **Nested Loop** | Petit nombre de lignes externes | Table externe volumineuse                |
+| **Hash Join**   | Grandes tables en mémoire       | Dépassement mémoire (temp files)         |
+| **Sort**        | En mémoire                      | Sur disque (Sort Method: external merge) |
+
+## Full-Text Search
+
+PostgreSQL propose un moteur de recherche textuelle intégré, souvent suffisant pour éviter Elasticsearch :
+
+```sql
+-- Créer un index de recherche
+ALTER TABLE articles
+ADD COLUMN search_vector tsvector
+GENERATED ALWAYS AS (
+  setweight(to_tsvector('french', coalesce(title, '')), 'A') ||
+  setweight(to_tsvector('french', coalesce(excerpt, '')), 'B') ||
+  setweight(to_tsvector('french', coalesce(content, '')), 'C')
+) STORED;
+
+CREATE INDEX idx_articles_search ON articles USING GIN (search_vector);
+
+-- Rechercher avec ranking
+SELECT
+  title,
+  ts_rank(search_vector, query) AS rank,
+  ts_headline('french', content, query,
+    'StartSel=<mark>, StopSel=</mark>, MaxWords=50'
+  ) AS highlighted
+FROM
+  articles,
+  plainto_tsquery('french', 'performance base données') AS query
+WHERE search_vector @@ query
+ORDER BY rank DESC
+LIMIT 10;
+```
+
+## Sécurité et Row-Level Security
+
+```sql
+-- Activer RLS
+ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
+
+-- Politique : les utilisateurs voient seulement leurs documents
+CREATE POLICY user_documents ON documents
+  FOR ALL
+  USING (user_id = current_setting('app.current_user_id')::UUID);
+
+-- Politique : les admins voient tout
+CREATE POLICY admin_all ON documents
+  FOR ALL
+  TO admin_role
+  USING (true);
+
+-- Utiliser dans l'application
+SET app.current_user_id = 'user-uuid-here';
+SELECT * FROM documents; -- Ne retourne que les documents de l'utilisateur
+```
+
+## Conclusion
+
+PostgreSQL est un écosystème complet :
+
+- **CTEs récursives** pour les hiérarchies et requêtes complexes
+- **Window functions** pour l'analytique avancée
+- **Indexation stratégique** pour des performances optimales
+- **JSONB** pour la flexibilité du schéma-less
+- **Partitionnement** pour les volumes massifs
+- **Full-Text Search** intégré pour éviter les dépendances externes
+- **RLS** pour une sécurité fine au niveau des lignes
+
+Maîtriser ces fonctionnalités vous donne un avantage considérable en tant que développeur fullstack.

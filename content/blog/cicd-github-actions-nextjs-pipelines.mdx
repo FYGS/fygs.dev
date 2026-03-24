@@ -1,0 +1,445 @@
+﻿---
+title: "CI/CD avec GitHub Actions : Pipelines Modernes pour Next.js"
+excerpt: "Construisez des pipelines CI/CD robustes avec GitHub Actions — tests automatisés, preview deployments, releases sémantiques, Docker builds, et monitoring de qualité pour projets Next.js."
+date: "2025-10-24"
+author: "Fernand SOUALO"
+categories: ["CI/CD", "GitHub Actions", "DevOps", "Next.js"]
+coverImage: "/blog/cicd-github-actions.png"
+---
+
+# CI/CD avec GitHub Actions : Pipelines Modernes pour Next.js
+
+## Table of Contents
+
+1. [Pourquoi GitHub Actions ?](#pourquoi-github-actions-)
+2. [Anatomie d'un Workflow](#anatomie-dun-workflow)
+3. [Pipeline CI Complet](#pipeline-ci-complet)
+4. [Tests et Qualité](#tests-et-qualité)
+5. [Preview Deployments](#preview-deployments)
+6. [Déploiement Production](#déploiement-production)
+7. [Docker Build et Registry](#docker-build-et-registry)
+8. [Secrets et Sécurité](#secrets-et-sécurité)
+9. [Optimisations Avancées](#optimisations-avancées)
+10. [Conclusion](#conclusion)
+
+## Pourquoi GitHub Actions ?
+
+GitHub Actions est devenu le standard de facto pour le CI/CD moderne. Intégré nativement à GitHub, il offre un écosystème de workflows réutilisables et une simplicité redoutable.
+
+<Mermaid chart={`
+flowchart LR
+    PUSH["git push"] --> CI["CI Pipeline"]
+    
+    subgraph CI["🔍 Continuous Integration"]
+        LINT["Lint<br/>ESLint + Prettier"]
+        TYPE["TypeCheck<br/>tsc --noEmit"]
+        TEST["Tests<br/>Vitest + Playwright"]
+        BUILD["Build<br/>next build"]
+    end
+    
+    CI --> CD["CD Pipeline"]
+    
+    subgraph CD["🚀 Continuous Deployment"]
+        PREVIEW["Preview<br/>PR Environment"]
+        STAGING["Staging<br/>Pre-production"]
+        PROD["Production<br/>Vercel / Docker"]
+    end
+    
+    LINT --> TYPE --> TEST --> BUILD
+    PREVIEW --> STAGING --> PROD
+
+    style PUSH fill:#6366f1,stroke:#4f46e5,color:#fff
+    style LINT fill:#f59e0b,stroke:#d97706,color:#fff
+    style TYPE fill:#3b82f6,stroke:#2563eb,color:#fff
+    style TEST fill:#10b981,stroke:#059669,color:#fff
+    style BUILD fill:#8b5cf6,stroke:#7c3aed,color:#fff
+    style PREVIEW fill:#ec4899,stroke:#db2777,color:#fff
+    style STAGING fill:#f97316,stroke:#ea580c,color:#fff
+    style PROD fill:#10b981,stroke:#059669,color:#fff
+`} caption="Pipeline CI/CD complet : du push au déploiement production." />
+
+## Anatomie d'un Workflow
+
+Un workflow GitHub Actions est un fichier YAML dans `.github/workflows/` :
+
+```yaml
+# .github/workflows/ci.yml
+name: CI Pipeline
+
+# Quand déclencher
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+# Variables globales
+env:
+  NODE_VERSION: "20"
+  PNPM_VERSION: "9"
+
+# Les jobs
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run checks
+        run: |
+          pnpm lint
+          pnpm typecheck
+          pnpm test
+```
+
+## Pipeline CI Complet
+
+### Stratégie multi-jobs parallèles
+
+```yaml
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Job 1: Lint et TypeCheck (rapide)
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm tsc --noEmit
+
+  # Job 2: Tests unitaires (parallèle)
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test:unit -- --coverage
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  # Job 3: Build (dépend de quality)
+  build:
+    needs: [quality]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nextjs-build
+          path: .next/
+          retention-days: 1
+
+  # Job 4: Tests E2E (dépend de build)
+  e2e-tests:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Download build
+        uses: actions/download-artifact@v4
+        with:
+          name: nextjs-build
+          path: .next/
+      - name: Install Playwright
+        run: npx playwright install --with-deps chromium
+      - name: Run E2E tests
+        run: pnpm test:e2e
+      - name: Upload test report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+```
+
+## Tests et Qualité
+
+### Matrice de tests multi-environnement
+
+```yaml
+test-matrix:
+  strategy:
+    matrix:
+      node-version: [18, 20, 22]
+      os: [ubuntu-latest, windows-latest]
+    fail-fast: false
+  runs-on: ${{ matrix.os }}
+  steps:
+    - uses: actions/checkout@v4
+    - uses: pnpm/action-setup@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: pnpm
+    - run: pnpm install --frozen-lockfile
+    - run: pnpm test
+```
+
+### Gate de qualité obligatoire
+
+```yaml
+# Protéger la branche main
+quality-gate:
+  needs: [quality, unit-tests, build, e2e-tests]
+  runs-on: ubuntu-latest
+  if: always()
+  steps:
+    - name: Check all jobs
+      run: |
+        if [ "${{ needs.quality.result }}" != "success" ] || \
+           [ "${{ needs.unit-tests.result }}" != "success" ] || \
+           [ "${{ needs.build.result }}" != "success" ] || \
+           [ "${{ needs.e2e-tests.result }}" != "success" ]; then
+          echo "One or more jobs failed"
+          exit 1
+        fi
+```
+
+## Preview Deployments
+
+### Déploiement de preview automatique sur PR
+
+```yaml
+preview:
+  if: github.event_name == 'pull_request'
+  needs: [build]
+  runs-on: ubuntu-latest
+  environment:
+    name: preview-${{ github.event.number }}
+    url: ${{ steps.deploy.outputs.url }}
+  steps:
+    - uses: actions/checkout@v4
+
+    - name: Deploy to Vercel Preview
+      id: deploy
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+
+    - name: Comment PR with preview URL
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `## 🚀 Preview Deployment\n\n**URL:** ${{ steps.deploy.outputs.url }}\n**Status:** ✅ Deployed`
+          })
+```
+
+## Déploiement Production
+
+```yaml
+deploy-production:
+  if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+  needs: [quality-gate]
+  runs-on: ubuntu-latest
+  environment:
+    name: production
+    url: https://fygs.dev
+  steps:
+    - uses: actions/checkout@v4
+
+    - name: Deploy to Vercel Production
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        vercel-args: "--prod"
+
+    - name: Notify deployment
+      if: success()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const { data: commit } = await github.rest.repos.getCommit({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: context.sha
+          });
+          console.log(`Deployed: ${commit.commit.message}`);
+```
+
+## Docker Build et Registry
+
+```yaml
+docker:
+  if: github.ref == 'refs/heads/main'
+  needs: [quality-gate]
+  runs-on: ubuntu-latest
+  permissions:
+    contents: read
+    packages: write
+  steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and push
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: |
+          ghcr.io/${{ github.repository }}:latest
+          ghcr.io/${{ github.repository }}:${{ github.sha }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+```
+
+## Secrets et Sécurité
+
+```yaml
+# Utiliser les secrets correctement
+env:
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+# Scanner les dépendances
+security-scan:
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v4
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: "fs"
+        scan-ref: "."
+        severity: "CRITICAL,HIGH"
+        exit-code: "1"
+```
+
+> **Règle d'or** : Ne jamais mettre de secrets dans le code. Utilisez `${{ secrets.* }}` pour toutes les valeurs sensibles.
+
+## Optimisations Avancées
+
+### Cache intelligent
+
+```yaml
+# Cache pnpm store
+- uses: actions/cache@v4
+  with:
+    path: |
+      ~/.pnpm-store
+      .next/cache
+    key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+    restore-keys: |
+      ${{ runner.os }}-pnpm-
+```
+
+### Workflows réutilisables
+
+```yaml
+# .github/workflows/reusable-test.yml
+name: Reusable Test Workflow
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        type: string
+        default: "20"
+    secrets:
+      codecov-token:
+        required: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test -- --coverage
+
+# Utilisation
+# .github/workflows/ci.yml
+jobs:
+  test:
+    uses: ./.github/workflows/reusable-test.yml
+    with:
+      node-version: "20"
+    secrets:
+      codecov-token: ${{ secrets.CODECOV_TOKEN }}
+```
+
+## Conclusion
+
+Un pipeline CI/CD bien conçu est la colonne vertébrale d'un projet professionnel :
+
+- **Jobs parallèles** pour réduire le temps total du pipeline
+- **Concurrency** pour annuler les runs obsolètes
+- **Preview deployments** pour faciliter la revue de code
+- **Quality gates** pour protéger la branche principale
+- **Cache** pour accélérer chaque run
+- **Workflows réutilisables** pour maintenir la cohérence entre projets
+- **Secrets** correctement gérés pour la sécurité
+
+Le CI/CD n'est pas une option — c'est l'infrastructure qui rend le développement rapide **et** fiable.

@@ -1,0 +1,594 @@
+﻿---
+title: "Prisma ORM en Profondeur : Du Schema au Déploiement"
+excerpt: "Maîtrisez Prisma ORM de A à Z — modélisation de schéma, relations complexes, migrations, requêtes avancées, middleware, transactions, et patterns de performance pour PostgreSQL."
+date: "2025-10-20"
+author: "Fernand SOUALO"
+categories: ["Prisma", "ORM", "PostgreSQL", "TypeScript"]
+coverImage: "/blog/prisma-orm-deep-dive.png"
+---
+
+# Prisma ORM en Profondeur : Du Schema au Déploiement
+
+## Table of Contents
+
+1. [Pourquoi Prisma ?](#pourquoi-prisma-)
+2. [Modélisation du Schema](#modélisation-du-schema)
+3. [Relations Avancées](#relations-avancées)
+4. [Requêtes Avancées](#requêtes-avancées)
+5. [Transactions et Concurrence](#transactions-et-concurrence)
+6. [Middleware Prisma](#middleware-prisma)
+7. [Migrations en Production](#migrations-en-production)
+8. [Performance et Optimisation](#performance-et-optimisation)
+9. [Patterns Next.js](#patterns-nextjs)
+10. [Conclusion](#conclusion)
+
+## Pourquoi Prisma ?
+
+Prisma n'est pas un ORM classique — c'est un **toolkit de base de données** avec un schema déclaratif, des types auto-générés, et un query builder type-safe. Fini les requêtes SQL erronées découvertes en production.
+
+<Mermaid chart={`
+flowchart TB
+    SCHEMA["📝 schema.prisma"] --> GENERATE["⚡ prisma generate"]
+    GENERATE --> CLIENT["🔧 Prisma Client<br/>Type-safe"]
+    GENERATE --> TYPES["📦 Types TypeScript<br/>Auto-générés"]
+    SCHEMA --> MIGRATE["🔄 prisma migrate"]
+    MIGRATE --> DB["🗄️ PostgreSQL"]
+    CLIENT --> APP["🚀 Application<br/>Next.js"]
+    TYPES --> APP
+    
+    style SCHEMA fill:#6366f1,stroke:#4f46e5,color:#fff
+    style GENERATE fill:#8b5cf6,stroke:#7c3aed,color:#fff
+    style CLIENT fill:#10b981,stroke:#059669,color:#fff
+    style TYPES fill:#3b82f6,stroke:#2563eb,color:#fff
+    style DB fill:#f59e0b,stroke:#d97706,color:#fff
+    style APP fill:#ec4899,stroke:#db2777,color:#fff
+`} caption="Architecture Prisma : du schema déclaratif au client type-safe." />
+
+## Modélisation du Schema
+
+### Modèles fondamentaux
+
+```prisma
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "views"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Modèle User avec relations
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  avatar    String?
+  role      Role     @default(USER)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  posts     Post[]
+  comments  Comment[]
+  profile   Profile?
+
+  // Index et mapping
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+model Profile {
+  id     String  @id @default(cuid())
+  bio    String? @db.Text
+  website String?
+  github  String?
+
+  // Relation 1-1
+  userId String @unique @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  title     String   @db.VarChar(255)
+  slug      String   @unique
+  content   String   @db.Text
+  excerpt   String?  @db.VarChar(500)
+  published Boolean  @default(false)
+  views     Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  authorId   String     @map("author_id")
+  author     User       @relation(fields: [authorId], references: [id])
+  categories Category[]
+  comments   Comment[]
+  tags       Tag[]
+
+  @@index([authorId])
+  @@index([slug])
+  @@index([published, createdAt])
+  @@map("posts")
+}
+
+enum Role {
+  USER
+  AUTHOR
+  ADMIN
+}
+```
+
+### Types spéciaux et contraintes
+
+```prisma
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  price       Decimal  @db.Decimal(10, 2)
+  metadata    Json?    @db.JsonB
+  tags        String[]
+  status      ProductStatus @default(DRAFT)
+
+  @@unique([name, status])
+  @@map("products")
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+```
+
+## Relations Avancées
+
+### Many-to-Many avec table explicite
+
+```prisma
+// Relation many-to-many explicite avec données supplémentaires
+model Course {
+  id           String        @id @default(cuid())
+  title        String
+  enrollments  Enrollment[]
+
+  @@map("courses")
+}
+
+model Enrollment {
+  id         String   @id @default(cuid())
+  progress   Float    @default(0)
+  enrolledAt DateTime @default(now()) @map("enrolled_at")
+  completedAt DateTime? @map("completed_at")
+
+  userId   String @map("user_id")
+  user     User   @relation(fields: [userId], references: [id])
+  courseId String @map("course_id")
+  course   Course @relation(fields: [courseId], references: [id])
+
+  @@unique([userId, courseId])
+  @@map("enrollments")
+}
+```
+
+### Self-relation (commentaires imbriqués)
+
+```prisma
+model Comment {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  authorId String @map("author_id")
+  author   User   @relation(fields: [authorId], references: [id])
+
+  postId String @map("post_id")
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  // Self-relation pour les réponses
+  parentId String?   @map("parent_id")
+  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies  Comment[] @relation("CommentReplies")
+
+  @@map("comments")
+}
+```
+
+## Requêtes Avancées
+
+### Filtres complexes
+
+```typescript
+// Recherche avec filtres combinés
+const posts = await prisma.post.findMany({
+  where: {
+    AND: [
+      { published: true },
+      {
+        OR: [
+          { title: { contains: query, mode: "insensitive" } },
+          { content: { contains: query, mode: "insensitive" } },
+        ],
+      },
+      {
+        categories: {
+          some: { slug: { in: selectedCategories } },
+        },
+      },
+      {
+        createdAt: {
+          gte: new Date("2025-01-01"),
+        },
+      },
+    ],
+  },
+  include: {
+    author: { select: { name: true, avatar: true } },
+    categories: true,
+    _count: { select: { comments: true } },
+  },
+  orderBy: [
+    { views: "desc" },
+    { createdAt: "desc" },
+  ],
+  take: 20,
+  skip: page * 20,
+});
+```
+
+### Agrégations
+
+```typescript
+// Statistiques par auteur
+const authorStats = await prisma.user.findMany({
+  where: { role: "AUTHOR" },
+  select: {
+    name: true,
+    _count: {
+      select: {
+        posts: { where: { published: true } },
+        comments: true,
+      },
+    },
+    posts: {
+      select: {
+        views: true,
+      },
+      where: { published: true },
+    },
+  },
+});
+
+// Agrégation avancée
+const stats = await prisma.post.aggregate({
+  where: { published: true },
+  _avg: { views: true },
+  _sum: { views: true },
+  _count: true,
+  _max: { views: true },
+});
+
+// Group by
+const postsByMonth = await prisma.post.groupBy({
+  by: ["createdAt"],
+  _count: true,
+  orderBy: { createdAt: "desc" },
+});
+```
+
+### Raw Queries pour cas complexes
+
+```typescript
+// Quand Prisma Query API ne suffit pas
+const trending = await prisma.$queryRaw<Post[]>`
+  SELECT
+    p.*,
+    (p.views * 0.3 + comment_count * 0.7) AS score
+  FROM posts p
+  LEFT JOIN (
+    SELECT post_id, COUNT(*) AS comment_count
+    FROM comments
+    WHERE created_at > NOW() - INTERVAL '7 days'
+    GROUP BY post_id
+  ) c ON c.post_id = p.id
+  WHERE p.published = true
+  ORDER BY score DESC
+  LIMIT 10
+`;
+```
+
+## Transactions et Concurrence
+
+### Transaction interactive
+
+```typescript
+// Transfert de crédits entre utilisateurs
+async function transferCredits(
+  fromId: string,
+  toId: string,
+  amount: number,
+) {
+  return prisma.$transaction(async (tx) => {
+    // Lire le solde avec verrou
+    const sender = await tx.user.findUniqueOrThrow({
+      where: { id: fromId },
+      select: { credits: true },
+    });
+
+    if (sender.credits < amount) {
+      throw new Error("Insufficient credits");
+    }
+
+    // Débiter
+    await tx.user.update({
+      where: { id: fromId },
+      data: { credits: { decrement: amount } },
+    });
+
+    // Créditer
+    await tx.user.update({
+      where: { id: toId },
+      data: { credits: { increment: amount } },
+    });
+
+    // Journaliser
+    await tx.transaction.create({
+      data: {
+        fromUserId: fromId,
+        toUserId: toId,
+        amount,
+        type: "TRANSFER",
+      },
+    });
+  });
+}
+```
+
+### Optimistic Concurrency Control
+
+```typescript
+// Mise à jour avec vérification de version
+async function updatePost(
+  postId: string,
+  data: PostUpdateInput,
+  expectedVersion: number,
+) {
+  const result = await prisma.post.updateMany({
+    where: {
+      id: postId,
+      version: expectedVersion,
+    },
+    data: {
+      ...data,
+      version: { increment: 1 },
+    },
+  });
+
+  if (result.count === 0) {
+    throw new Error(
+      "Conflict: post was modified by another user",
+    );
+  }
+}
+```
+
+## Middleware Prisma
+
+```typescript
+// lib/db.ts
+import { PrismaClient } from "@prisma/client";
+
+function createPrismaClient() {
+  const prisma = new PrismaClient({
+    log:
+      process.env.NODE_ENV === "development"
+        ? ["query", "warn", "error"]
+        : ["error"],
+  });
+
+  // Middleware : soft delete
+  prisma.$use(async (params, next) => {
+    if (params.action === "delete") {
+      params.action = "update";
+      params.args.data = { deletedAt: new Date() };
+    }
+    if (params.action === "deleteMany") {
+      params.action = "updateMany";
+      params.args.data = { deletedAt: new Date() };
+    }
+    return next(params);
+  });
+
+  // Middleware : auto-slug
+  prisma.$use(async (params, next) => {
+    if (
+      params.model === "Post"
+      && (params.action === "create" || params.action === "update")
+    ) {
+      if (params.args.data.title && !params.args.data.slug) {
+        params.args.data.slug = slugify(params.args.data.title);
+      }
+    }
+    return next(params);
+  });
+
+  return prisma;
+}
+
+// Singleton pattern pour Next.js
+const globalForPrisma = globalThis as unknown as {
+  prisma: ReturnType<typeof createPrismaClient> | undefined;
+};
+
+export const prisma =
+  globalForPrisma.prisma ?? createPrismaClient();
+
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma;
+}
+```
+
+## Migrations en Production
+
+```bash
+# Développement : créer une migration
+npx prisma migrate dev --name add_user_credits
+
+# Production : appliquer les migrations
+npx prisma migrate deploy
+
+# Reset complet (DEV uniquement)
+npx prisma migrate reset
+
+# Voir le status
+npx prisma migrate status
+```
+
+### Migration personnalisée
+
+```sql
+-- prisma/migrations/20250101_add_fulltext_index/migration.sql
+-- Migration manuelle pour des features non supportées par Prisma
+
+-- Index full-text
+CREATE INDEX idx_posts_search ON posts
+USING GIN (to_tsvector('french', title || ' ' || content));
+
+-- Fonction trigger
+CREATE OR REPLACE FUNCTION update_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+## Performance et Optimisation
+
+### Éviter le N+1 avec include/select
+
+```typescript
+// ❌ N+1 Problem
+const users = await prisma.user.findMany();
+for (const user of users) {
+  const posts = await prisma.post.findMany({
+    where: { authorId: user.id },
+  });
+}
+
+// ✅ Une seule requête avec include
+const users = await prisma.user.findMany({
+  include: {
+    posts: {
+      where: { published: true },
+      take: 5,
+    },
+  },
+});
+
+// ✅ Encore mieux : sélectionner uniquement les champs nécessaires
+const users = await prisma.user.findMany({
+  select: {
+    id: true,
+    name: true,
+    posts: {
+      select: { title: true, slug: true },
+      where: { published: true },
+      take: 5,
+    },
+  },
+});
+```
+
+### Pagination par curseur
+
+```typescript
+// Pagination par curseur (bien plus performante que skip/take)
+async function getPaginatedPosts(cursor?: string) {
+  const posts = await prisma.post.findMany({
+    take: 20,
+    ...(cursor && {
+      skip: 1,
+      cursor: { id: cursor },
+    }),
+    where: { published: true },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      excerpt: true,
+      createdAt: true,
+    },
+  });
+
+  const nextCursor = posts.length === 20
+    ? posts[posts.length - 1].id
+    : null;
+
+  return { posts, nextCursor };
+}
+```
+
+## Patterns Next.js
+
+### Server Action avec Prisma
+
+```typescript
+// app/actions/posts.ts
+"use server";
+
+import { prisma } from "@/lib/db";
+import { z } from "zod";
+import { revalidatePath } from "next/cache";
+
+const createPostSchema = z.object({
+  title: z.string().min(3).max(255),
+  content: z.string().min(10),
+  categories: z.array(z.string()),
+});
+
+export async function createPost(formData: FormData) {
+  const data = createPostSchema.parse({
+    title: formData.get("title"),
+    content: formData.get("content"),
+    categories: formData.getAll("categories"),
+  });
+
+  const post = await prisma.post.create({
+    data: {
+      title: data.title,
+      content: data.content,
+      slug: slugify(data.title),
+      authorId: await getCurrentUserId(),
+      categories: {
+        connect: data.categories.map((id) => ({ id })),
+      },
+    },
+  });
+
+  revalidatePath("/blog");
+  return { success: true, slug: post.slug };
+}
+```
+
+## Conclusion
+
+Prisma transforme l'accès aux données :
+
+- **Schema déclaratif** pour une source de vérité unique
+- **Types auto-générés** pour une sécurité de type totale
+- **Requêtes type-safe** qui éliminent les erreurs SQL
+- **Migrations** pour une évolution contrôlée du schéma
+- **Middleware** pour la logique transversale
+- **Transactions** pour l'intégrité des données
+- **Patterns de performance** (include, select, cursor) pour la scalabilité
+
+C'est l'outil qui rend le développement backend en TypeScript aussi agréable que le frontend.

@@ -1,0 +1,585 @@
+﻿---
+title: "Maîtriser Docker : Du Conteneur au Déploiement Production"
+excerpt: "Guide complet sur Docker pour développeurs — images, conteneurs, Docker Compose, multi-stage builds, orchestration et bonnes pratiques de production. De zéro à la mise en production de vos applications."
+date: "2025-12-15"
+author: "Fernand SOUALO"
+categories: ["Docker", "DevOps", "Infrastructure", "Déploiement", "Cloud"]
+coverImage: "/blog/docker-mastery.png"
+---
+
+# Maîtriser Docker : Du Conteneur au Déploiement Production
+
+## Table of Contents
+
+1. [Pourquoi Docker ?](#pourquoi-docker-)
+2. [Les Concepts Fondamentaux](#les-concepts-fondamentaux)
+3. [Images et Dockerfiles](#images-et-dockerfiles)
+4. [Docker Compose — Multi-conteneurs](#docker-compose--multi-conteneurs)
+5. [Multi-stage Builds — Images Optimisées](#multi-stage-builds--images-optimisées)
+6. [Réseaux et Volumes](#réseaux-et-volumes)
+7. [Docker en Production](#docker-en-production)
+8. [Sécurité des Conteneurs](#sécurité-des-conteneurs)
+9. [Debugging et Monitoring](#debugging-et-monitoring)
+10. [Cas Pratique : Application Next.js Complète](#cas-pratique--application-nextjs-complète)
+11. [Conclusion](#conclusion)
+
+## Pourquoi Docker ?
+
+Docker a fondamentalement transformé la façon dont nous développons, testons et déployons des applications. Fini le **"ça marche sur ma machine"** — avec Docker, votre application s'exécute de manière identique partout : en dev, en staging, en production.
+
+<Mermaid chart={`
+flowchart TB
+    subgraph Traditional["❌ Sans Docker"]
+        Dev1["💻 Dev Machine<br/>Node 18, npm"]
+        Staging1["🧪 Staging<br/>Node 16, yarn"]
+        Prod1["🔴 Production<br/>Node 20, pnpm"]
+    end
+    
+    subgraph WithDocker["✅ Avec Docker"]
+        Dev2["💻 Dev"]
+        Staging2["🧪 Staging"]
+        Prod2["🟢 Production"]
+        Image["📦 Image Docker<br/>Identique partout"]
+        Image --> Dev2
+        Image --> Staging2
+        Image --> Prod2
+    end
+    
+    style Dev1 fill:#ef4444,stroke:#dc2626,color:#fff
+    style Staging1 fill:#ef4444,stroke:#dc2626,color:#fff
+    style Prod1 fill:#ef4444,stroke:#dc2626,color:#fff
+    style Dev2 fill:#10b981,stroke:#059669,color:#fff
+    style Staging2 fill:#10b981,stroke:#059669,color:#fff
+    style Prod2 fill:#10b981,stroke:#059669,color:#fff
+    style Image fill:#6366f1,stroke:#4f46e5,color:#fff
+`} caption="Docker garantit la parité entre environnements : une seule image, partout identique" />
+
+### Les bénéfices concrets
+
+| Bénéfice | Impact |
+|----------|--------|
+| **Reproductibilité** | Même comportement en dev et prod |
+| **Isolation** | Chaque service dans son conteneur |
+| **Scalabilité** | Multiplication horizontale facile |
+| **CI/CD** | Builds et déploiements automatisés |
+| **Onboarding** | Nouveau dev productif en 5 minutes |
+
+## Les Concepts Fondamentaux
+
+Avant de plonger dans les commandes, comprenez le modèle mental de Docker.
+
+### Image vs Conteneur
+
+Une **image** est un blueprint immuable. Un **conteneur** est une instance en cours d'exécution de cette image.
+
+```bash
+# Construire une image depuis un Dockerfile
+docker build -t mon-app:1.0 .
+
+# Créer et lancer un conteneur depuis cette image
+docker run -d --name mon-app-instance -p 3000:3000 mon-app:1.0
+
+# Lister les conteneurs en cours
+docker ps
+
+# Lister toutes les images
+docker images
+```
+
+### Le système de couches (Layers)
+
+Chaque instruction d'un Dockerfile crée une **couche** (layer). Docker met en cache ces couches pour accélérer les builds.
+
+```dockerfile
+# Chaque ligne = une couche
+FROM node:20-alpine          # Couche 1 : image de base
+WORKDIR /app                  # Couche 2 : répertoire de travail
+COPY package*.json ./         # Couche 3 : fichiers de dépendances
+RUN npm ci                    # Couche 4 : installation (la plus lourde)
+COPY . .                      # Couche 5 : code source
+RUN npm run build             # Couche 6 : build de l'application
+```
+
+> **Conseil pro** : Placez les instructions qui changent le moins souvent en premier. Les dépendances changent rarement → les copier avant le code source optimise le cache.
+
+## Images et Dockerfiles
+
+### Anatomie d'un Dockerfile production-ready
+
+```dockerfile
+# ==================================================
+# Dockerfile pour une application Node.js/Next.js
+# Optimisé pour la production
+# ==================================================
+
+# Utiliser une image alpine (légère, ~5 MB vs ~300MB pour debian)
+FROM node:20-alpine AS base
+
+# Installer les dépendances système nécessaires
+RUN apk add --no-cache libc6-compat
+
+# Créer un utilisateur non-root pour la sécurité
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+WORKDIR /app
+
+# ------- Phase d'installation des dépendances -------
+FROM base AS deps
+COPY package.json pnpm-lock.yaml ./
+RUN corepack enable pnpm && pnpm install --frozen-lockfile
+
+# ------- Phase de build -------
+FROM base AS builder
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Variables d'environnement de build
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+
+RUN corepack enable pnpm && pnpm run build
+
+# ------- Phase de production -------
+FROM base AS runner
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Utiliser l'utilisateur non-root
+USER nextjs
+
+# Copier uniquement les fichiers nécessaires
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+EXPOSE 3000
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["node", "server.js"]
+```
+
+### Commandes essentielles
+
+```bash
+# Build avec tag et context
+docker build -t mon-app:latest -f Dockerfile.prod .
+
+# Build avec arguments
+docker build --build-arg NODE_ENV=production -t mon-app:prod .
+
+# Inspecter les couches d'une image
+docker history mon-app:latest
+
+# Analyser la taille d'une image
+docker images mon-app --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"
+```
+
+## Docker Compose — Multi-conteneurs
+
+Docker Compose orchestre plusieurs conteneurs comme un seul système.
+
+### Configuration complète pour un projet Next.js
+
+```yaml
+# docker-compose.yml
+services:
+  # Application Next.js
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/myapp
+      - REDIS_URL=redis://redis:6379
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+
+  # Base de données PostgreSQL
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: myapp
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+
+  # Redis pour le cache et les sessions
+  redis:
+    image: redis:7-alpine
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+
+  # Adminer pour gérer la BDD (dev uniquement)
+  adminer:
+    image: adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    profiles:
+      - dev
+
+volumes:
+  postgres_data:
+  redis_data:
+```
+
+### Commandes Compose essentielles
+
+```bash
+# Démarrer tous les services
+docker compose up -d
+
+# Voir les logs en temps réel
+docker compose logs -f app
+
+# Rebuild et redémarrer un service
+docker compose up -d --build app
+
+# Arrêter et supprimer tout (y compris les volumes)
+docker compose down -v
+
+# Exécuter une commande dans un conteneur
+docker compose exec app npx prisma migrate deploy
+```
+
+## Multi-stage Builds — Images Optimisées
+
+Le multi-stage build est LA technique pour obtenir des images de production légères.
+
+### Comparaison des tailles
+
+```bash
+# ❌ Image naïve (tout inclus)
+# node:20          → ~1.1 GB
+# avec node_modules → ~1.5 GB
+
+# ✅ Multi-stage avec Alpine
+# node:20-alpine   → ~130 MB  
+# standalone build  → ~80 MB (final)
+```
+
+### Pattern avancé : Builder + Runner
+
+```dockerfile
+# Stage 1: Installer TOUTES les dépendances (dev incluses)
+FROM node:20-alpine AS deps
+WORKDIR /app
+COPY package.json pnpm-lock.yaml ./
+RUN corepack enable pnpm && pnpm install --frozen-lockfile
+
+# Stage 2: Build avec les deps de dev
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN corepack enable pnpm && pnpm run build
+
+# Stage 3: Production — uniquement le strict nécessaire
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+
+# Copier seulement le build output
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
+
+EXPOSE 3000
+CMD ["node", "server.js"]
+```
+
+> **Résultat** : L'image finale ne contient ni les sources, ni les devDependencies, ni les outils de build. Réduction de 95% du poids.
+
+## Réseaux et Volumes
+
+### Réseaux Docker
+
+Docker crée un réseau isolé par défaut pour chaque projet Compose. Les services communiquent par leur nom de service.
+
+```yaml
+# Les services se résolvent par nom
+# app peut accéder à db via "db:5432"
+# app peut accéder à redis via "redis:6379"
+
+services:
+  app:
+    networks:
+      - frontend
+      - backend
+  
+  db:
+    networks:
+      - backend  # Inaccessible depuis le réseau frontend
+  
+  nginx:
+    networks:
+      - frontend
+
+networks:
+  frontend:
+  backend:
+```
+
+### Volumes — Persistance des données
+
+```yaml
+volumes:
+  # Volume nommé (géré par Docker)
+  postgres_data:
+    driver: local
+  
+  # Bind mount (fichier local monté dans le conteneur)
+  # Utile en développement pour le hot-reload
+services:
+  app:
+    volumes:
+      - .:/app              # Code source (dev)
+      - /app/node_modules   # Exclure node_modules du mount
+```
+
+## Docker en Production
+
+### Bonnes pratiques production
+
+```dockerfile
+# 1. Toujours spécifier une version précise
+FROM node:20.11.1-alpine  # ✅ Pas node:latest
+
+# 2. Utiliser un utilisateur non-root
+USER node
+
+# 3. Scanner les vulnérabilités
+# docker scout cves mon-image:latest
+
+# 4. Limiter les ressources
+# docker run --memory=512m --cpus=1 mon-image
+
+# 5. Health checks
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
+```
+
+### Docker avec un reverse proxy (Traefik)
+
+```yaml
+# docker-compose.prod.yml
+services:
+  traefik:
+    image: traefik:v3.0
+    command:
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.email=admin@example.com"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt
+
+  app:
+    build: .
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.app.rule=Host(`monapp.com`)"
+      - "traefik.http.routers.app.tls.certresolver=letsencrypt"
+    restart: unless-stopped
+```
+
+## Sécurité des Conteneurs
+
+### Principes fondamentaux
+
+```dockerfile
+# 1. Image minimale
+FROM node:20-alpine  # Alpine = moins de surface d'attaque
+
+# 2. Utilisateur non-root
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+
+# 3. Fichier .dockerignore strict
+# .dockerignore :
+# node_modules
+# .git
+# .env*
+# *.md
+# .next
+# coverage
+
+# 4. Ne JAMAIS embarquer de secrets dans l'image
+# ❌ COPY .env .
+# ✅ Utiliser des variables d'environnement au runtime
+```
+
+### Scanner les vulnérabilités
+
+```bash
+# Avec Docker Scout (intégré)
+docker scout cves mon-image:latest
+
+# Avec Trivy (open source)
+trivy image mon-image:latest
+
+# Dans votre CI/CD
+- name: Scan Docker image
+  uses: aquasecurity/trivy-action@master
+  with:
+    image-ref: mon-image:latest
+    severity: CRITICAL,HIGH
+```
+
+## Debugging et Monitoring
+
+### Commandes de debug essentielles
+
+```bash
+# Inspecter un conteneur
+docker inspect mon-conteneur
+
+# Voir les logs
+docker logs -f --tail 100 mon-conteneur
+
+# Entrer dans un conteneur en cours d'exécution
+docker exec -it mon-conteneur sh
+
+# Surveiller l'utilisation des ressources
+docker stats
+
+# Voir les processus d'un conteneur
+docker top mon-conteneur
+
+# Analyser le système de fichiers
+docker diff mon-conteneur
+```
+
+### Monitoring avec Prometheus et Grafana
+
+```yaml
+# docker-compose.monitoring.yml
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    ports:
+      - "8081:8080"
+```
+
+## Cas Pratique : Application Next.js Complète
+
+### Structure du projet dockerisé
+
+```
+mon-projet/
+├── Dockerfile
+├── Dockerfile.dev
+├── docker-compose.yml
+├── docker-compose.prod.yml
+├── .dockerignore
+├── nginx/
+│   └── nginx.conf
+├── scripts/
+│   ├── docker-entrypoint.sh
+│   └── wait-for-it.sh
+├── src/
+└── ...
+```
+
+### Script d'entrypoint intelligent
+
+```bash
+#!/bin/sh
+# scripts/docker-entrypoint.sh
+set -e
+
+echo "🚀 Starting application..."
+
+# Attendre que PostgreSQL soit prêt
+echo "⏳ Waiting for database..."
+until pg_isready -h db -p 5432 -U postgres; do
+  sleep 1
+done
+echo "✅ Database is ready"
+
+# Appliquer les migrations Prisma
+echo "📦 Running database migrations..."
+npx prisma migrate deploy
+
+# Lancer l'application
+echo "🎯 Starting Next.js server..."
+exec node server.js
+```
+
+### Workflow de déploiement complet
+
+```bash
+# 1. Build l'image
+docker build -t mon-app:$(git rev-parse --short HEAD) .
+
+# 2. Tagger pour le registry
+docker tag mon-app:$(git rev-parse --short HEAD) registry.example.com/mon-app:latest
+
+# 3. Push vers le registry
+docker push registry.example.com/mon-app:latest
+
+# 4. Déployer sur le serveur
+ssh production "cd /app && docker compose pull && docker compose up -d"
+```
+
+## Conclusion
+
+Docker est devenu un outil indispensable du développeur moderne. Les points clés à retenir :
+
+- **Multi-stage builds** pour des images légères et sécurisées
+- **Docker Compose** pour orchestrer votre stack complète en local
+- **Volumes** pour la persistance, **réseaux** pour l'isolation
+- **Utilisateur non-root** et images minimales pour la sécurité  
+- **Health checks** et monitoring pour la production
+
+La maîtrise de Docker vous donne un avantage compétitif considérable : vous déployez plus vite, avec plus de confiance, et vos environnements sont toujours cohérents.

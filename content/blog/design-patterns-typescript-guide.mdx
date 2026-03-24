@@ -1,0 +1,540 @@
+﻿---
+title: "Design Patterns Essentiels en TypeScript : Guide Pratique et Illustré"
+excerpt: "Maîtrisez les design patterns les plus utiles en TypeScript — Singleton, Factory, Observer, Strategy, Repository, Decorator — avec des cas d'usage concrets, des diagrammes et du code production-ready."
+date: "2025-11-20"
+author: "Fernand SOUALO"
+categories: ["TypeScript", "Design Patterns", "Architecture", "Best Practices", "Software Engineering"]
+coverImage: "/blog/design-patterns-ts.png"
+---
+
+# Design Patterns Essentiels en TypeScript : Guide Pratique et Illustré
+
+## Table of Contents
+
+1. [Pourquoi les Design Patterns ?](#pourquoi-les-design-patterns-)
+2. [Patterns Créationnels](#patterns-créationnels)
+3. [Patterns Structurels](#patterns-structurels)
+4. [Patterns Comportementaux](#patterns-comportementaux)
+5. [Patterns Architecturaux](#patterns-architecturaux)
+6. [Anti-Patterns à Éviter](#anti-patterns-à-éviter)
+7. [Conclusion](#conclusion)
+
+## Pourquoi les Design Patterns ?
+
+Les design patterns ne sont pas des solutions toutes faites à copier-coller. Ce sont des **vocabulaires partagés** et des **stratégies éprouvées** pour résoudre des problèmes récurrents de conception logicielle.
+
+<Mermaid chart={`
+mindmap
+  root(("🧩 Design<br/>Patterns"))
+    🏗️ Créationnels
+      Singleton
+      Factory
+      Builder
+    🔗 Structurels
+      Adapter
+      Decorator
+      Facade
+    🔄 Comportementaux
+      Observer
+      Strategy
+      Command
+    🏛️ Architecturaux
+      Repository
+      Unit of Work
+      CQRS
+`} caption="Taxonomie des design patterns essentiels en TypeScript" />
+
+### Quand utiliser un pattern ?
+
+- ✅ Quand vous reconnaissez un problème récurrent
+- ✅ Quand la complexité justifie l'abstraction
+- ❌ **Jamais** par anticipation (YAGNI)
+- ❌ **Jamais** pour impressionner
+
+## Patterns Créationnels
+
+### Singleton — Instance unique garantie
+
+Le Singleton garantit qu'une classe n'a qu'une seule instance et fournit un point d'accès global.
+
+**Cas d'usage** : connexion base de données, logger, cache, configuration.
+
+```typescript
+// lib/db/prisma-client.ts
+import { PrismaClient } from "@prisma/client";
+
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
+
+export const prisma = globalForPrisma.prisma ?? new PrismaClient({
+  log: process.env.NODE_ENV === "development" 
+    ? ["query", "error", "warn"] 
+    : ["error"],
+});
+
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma;
+}
+```
+
+> **Note Next.js** : Le pattern `globalThis` est nécessaire en dev car le hot-reload crée de nouvelles instances à chaque modification. En production, une seule instance est créée.
+
+### Factory — Création polymorphique
+
+Le Factory pattern délègue la création d'objets à une méthode ou classe dédiée.
+
+```typescript
+// lib/notifications/notification-factory.ts
+interface Notification {
+  send(to: string, message: string): Promise<void>;
+}
+
+class EmailNotification implements Notification {
+  async send(to: string, message: string) {
+    await resend.emails.send({
+      from: "noreply@fygs.dev",
+      to,
+      subject: "Notification",
+      html: message,
+    });
+  }
+}
+
+class SlackNotification implements Notification {
+  async send(to: string, message: string) {
+    await fetch(process.env.SLACK_WEBHOOK_URL!, {
+      method: "POST",
+      body: JSON.stringify({ text: `${to}: ${message}` }),
+    });
+  }
+}
+
+class PushNotification implements Notification {
+  async send(to: string, message: string) {
+    await webPush.sendNotification(to, message);
+  }
+}
+
+// Factory
+type NotificationChannel = "email" | "slack" | "push";
+
+export function createNotification(channel: NotificationChannel): Notification {
+  const notifications: Record<NotificationChannel, () => Notification> = {
+    email: () => new EmailNotification(),
+    slack: () => new SlackNotification(),
+    push: () => new PushNotification(),
+  };
+
+  return notifications[channel]();
+}
+
+// Usage
+const notifier = createNotification("email");
+await notifier.send("user@example.com", "Bienvenue !");
+```
+
+### Builder — Construction étape par étape
+
+Le Builder pattern construit des objets complexes étape par étape.
+
+```typescript
+// lib/query-builder.ts
+interface QueryOptions {
+  table: string;
+  conditions: string[];
+  orderBy?: string;
+  limit?: number;
+  offset?: number;
+  joins: string[];
+}
+
+class QueryBuilder {
+  private options: QueryOptions = {
+    table: "",
+    conditions: [],
+    joins: [],
+  };
+
+  from(table: string): this {
+    this.options.table = table;
+    return this;
+  }
+
+  where(condition: string): this {
+    this.options.conditions.push(condition);
+    return this;
+  }
+
+  join(table: string, on: string): this {
+    this.options.joins.push(`JOIN ${table} ON ${on}`);
+    return this;
+  }
+
+  orderBy(field: string, direction: "ASC" | "DESC" = "ASC"): this {
+    this.options.orderBy = `${field} ${direction}`;
+    return this;
+  }
+
+  limit(n: number): this {
+    this.options.limit = n;
+    return this;
+  }
+
+  offset(n: number): this {
+    this.options.offset = n;
+    return this;
+  }
+
+  build(): string {
+    let query = `SELECT * FROM ${this.options.table}`;
+
+    if (this.options.joins.length) {
+      query += ` ${this.options.joins.join(" ")}`;
+    }
+    if (this.options.conditions.length) {
+      query += ` WHERE ${this.options.conditions.join(" AND ")}`;
+    }
+    if (this.options.orderBy) {
+      query += ` ORDER BY ${this.options.orderBy}`;
+    }
+    if (this.options.limit) {
+      query += ` LIMIT ${this.options.limit}`;
+    }
+    if (this.options.offset) {
+      query += ` OFFSET ${this.options.offset}`;
+    }
+
+    return query;
+  }
+}
+
+// Usage — fluent API
+const query = new QueryBuilder()
+  .from("users")
+  .join("orders", "users.id = orders.user_id")
+  .where("users.active = true")
+  .where("orders.total > 100")
+  .orderBy("users.created_at", "DESC")
+  .limit(10)
+  .build();
+```
+
+## Patterns Structurels
+
+### Adapter — Interface compatible
+
+L'Adapter permet à des interfaces incompatibles de travailler ensemble.
+
+```typescript
+// Adapter pour unifier différents services de paiement
+interface PaymentProvider {
+  charge(amount: number, currency: string): Promise<{ id: string; status: string }>;
+  refund(chargeId: string): Promise<void>;
+}
+
+// Stripe a sa propre API
+class StripeAdapter implements PaymentProvider {
+  constructor(private stripe: Stripe) {}
+
+  async charge(amount: number, currency: string) {
+    const intent = await this.stripe.paymentIntents.create({
+      amount: Math.round(amount * 100), // Stripe utilise les centimes
+      currency,
+    });
+    return { id: intent.id, status: intent.status };
+  }
+
+  async refund(chargeId: string) {
+    await this.stripe.refunds.create({ payment_intent: chargeId });
+  }
+}
+
+// PayPal a une API complètement différente
+class PayPalAdapter implements PaymentProvider {
+  async charge(amount: number, currency: string) {
+    const order = await paypal.orders.create({
+      purchase_units: [{ amount: { value: amount.toString(), currency_code: currency } }],
+    });
+    return { id: order.id, status: order.status };
+  }
+
+  async refund(chargeId: string) {
+    await paypal.orders.refund(chargeId);
+  }
+}
+
+// Usage — le code appelant ne connaît pas l'implémentation
+function processPayment(provider: PaymentProvider, amount: number) {
+  return provider.charge(amount, "EUR");
+}
+```
+
+### Decorator — Extension dynamique
+
+Le Decorator ajoute des responsabilités à un objet dynamiquement.
+
+```typescript
+// Décorateurs TypeScript 5+ (Stage 3)
+function LogExecution<T extends (...args: unknown[]) => unknown>(
+  target: T,
+  context: ClassMethodDecoratorContext,
+) {
+  return function (this: unknown, ...args: unknown[]) {
+    const start = performance.now();
+    console.log(`→ ${String(context.name)}(${JSON.stringify(args)})`);
+
+    const result = target.apply(this, args);
+
+    if (result instanceof Promise) {
+      return result.then((res) => {
+        console.log(`← ${String(context.name)}: ${(performance.now() - start).toFixed(2)}ms`);
+        return res;
+      });
+    }
+
+    console.log(`← ${String(context.name)}: ${(performance.now() - start).toFixed(2)}ms`);
+    return result;
+  } as T;
+}
+
+function CacheResult(ttlMs: number = 60_000) {
+  const cache = new Map<string, { value: unknown; expires: number }>();
+
+  return function <T extends (...args: unknown[]) => unknown>(
+    target: T,
+    context: ClassMethodDecoratorContext,
+  ) {
+    return function (this: unknown, ...args: unknown[]) {
+      const key = JSON.stringify(args);
+      const cached = cache.get(key);
+
+      if (cached && cached.expires > Date.now()) {
+        return cached.value;
+      }
+
+      const result = target.apply(this, args);
+      cache.set(key, { value: result, expires: Date.now() + ttlMs });
+      return result;
+    } as T;
+  };
+}
+
+// Usage
+class UserService {
+  @LogExecution
+  @CacheResult(30_000) // Cache 30 secondes
+  async getUser(id: string) {
+    return prisma.user.findUnique({ where: { id } });
+  }
+}
+```
+
+## Patterns Comportementaux
+
+### Observer — Réactivité événementielle
+
+L'Observer notifie automatiquement les abonnés quand un état change. C'est le fondement de la réactivité.
+
+```typescript
+// lib/events/event-emitter.ts
+type EventHandler<T = unknown> = (data: T) => void | Promise<void>;
+
+class TypedEventEmitter {
+  private handlers = new Map<string, Set<EventHandler>>();
+
+  on<T>(event: string, handler: EventHandler<T>): () => void {
+    if (!this.handlers.has(event)) {
+      this.handlers.set(event, new Set());
+    }
+    this.handlers.get(event)!.add(handler as EventHandler);
+
+    // Retourne une fonction de désabonnement
+    return () => {
+      this.handlers.get(event)?.delete(handler as EventHandler);
+    };
+  }
+
+  async emit<T>(event: string, data: T): Promise<void> {
+    const handlers = this.handlers.get(event);
+    if (!handlers) return;
+
+    await Promise.all(
+      Array.from(handlers).map((handler) => handler(data)),
+    );
+  }
+}
+
+// Utilisation type-safe avec des événements typés
+interface AppEvents {
+  "user:created": { id: string; email: string };
+  "order:completed": { orderId: string; total: number };
+  "course:enrolled": { userId: string; courseId: string };
+}
+
+const events = new TypedEventEmitter();
+
+// S'abonner
+events.on<AppEvents["user:created"]>("user:created", async (user) => {
+  await sendWelcomeEmail(user.email);
+});
+
+events.on<AppEvents["user:created"]>("user:created", async (user) => {
+  await createDefaultProfile(user.id);
+});
+
+// Émettre
+await events.emit<AppEvents["user:created"]>("user:created", {
+  id: "usr_123",
+  email: "nouveau@example.com",
+});
+```
+
+### Strategy — Algorithmes interchangeables
+
+Le Strategy pattern permet de changer d'algorithme à l'exécution.
+
+```typescript
+// lib/pricing/pricing-strategy.ts
+interface PricingStrategy {
+  calculate(basePrice: number, context: PricingContext): number;
+}
+
+interface PricingContext {
+  userTier: "free" | "pro" | "enterprise";
+  couponCode?: string;
+  isAnnual: boolean;
+}
+
+class StandardPricing implements PricingStrategy {
+  calculate(basePrice: number): number {
+    return basePrice;
+  }
+}
+
+class ProDiscountPricing implements PricingStrategy {
+  calculate(basePrice: number, ctx: PricingContext): number {
+    const discount = ctx.isAnnual ? 0.20 : 0.10; // 20% annuel, 10% mensuel
+    return basePrice * (1 - discount);
+  }
+}
+
+class EnterprisePricing implements PricingStrategy {
+  calculate(basePrice: number, ctx: PricingContext): number {
+    const baseDiscount = 0.30;
+    const annualBonus = ctx.isAnnual ? 0.10 : 0;
+    return basePrice * (1 - baseDiscount - annualBonus);
+  }
+}
+
+// Service qui utilise la stratégie
+class PricingService {
+  private strategies: Record<string, PricingStrategy> = {
+    free: new StandardPricing(),
+    pro: new ProDiscountPricing(),
+    enterprise: new EnterprisePricing(),
+  };
+
+  getPrice(basePrice: number, context: PricingContext): number {
+    const strategy = this.strategies[context.userTier];
+    return strategy.calculate(basePrice, context);
+  }
+}
+
+// Usage
+const pricing = new PricingService();
+const price = pricing.getPrice(49.99, {
+  userTier: "pro",
+  isAnnual: true,
+}); // 39.99 (20% de réduction)
+```
+
+## Patterns Architecturaux
+
+### Repository — Abstraction de la couche données
+
+Le Repository pattern isole la logique métier de l'accès aux données.
+
+```typescript
+// lib/repositories/base-repository.ts
+interface Repository<T> {
+  findById(id: string): Promise<T | null>;
+  findMany(filter?: Partial<T>): Promise<T[]>;
+  create(data: Omit<T, "id">): Promise<T>;
+  update(id: string, data: Partial<T>): Promise<T>;
+  delete(id: string): Promise<void>;
+}
+
+// lib/repositories/user-repository.ts
+import { prisma } from "@/lib/db";
+import type { User } from "@prisma/client";
+
+class UserRepository implements Repository<User> {
+  async findById(id: string) {
+    return prisma.user.findUnique({ where: { id } });
+  }
+
+  async findMany(filter?: Partial<User>) {
+    return prisma.user.findMany({ where: filter as never });
+  }
+
+  async create(data: Omit<User, "id">) {
+    return prisma.user.create({ data: data as never });
+  }
+
+  async update(id: string, data: Partial<User>) {
+    return prisma.user.update({
+      where: { id },
+      data: data as never,
+    });
+  }
+
+  async delete(id: string) {
+    await prisma.user.delete({ where: { id } });
+  }
+
+  // Méthodes spécialisées
+  async findByEmail(email: string) {
+    return prisma.user.findUnique({ where: { email } });
+  }
+
+  async findActiveUsers() {
+    return prisma.user.findMany({
+      where: { emailVerified: true },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+}
+
+export const userRepository = new UserRepository();
+```
+
+## Anti-Patterns à Éviter
+
+### Les patterns mal appliqués
+
+```typescript
+// ❌ Singleton partout — couplage global
+// ❌ Observer sans cleanup — fuites mémoire
+// ❌ Strategy pour 2 cas — over-engineering
+// ❌ Factory pour un seul type — complexité inutile
+// ❌ Builder pour un objet simple — verbosité
+
+// ✅ Règle d'or : un pattern résout un PROBLÈME EXISTANT
+// Si le code est simple et lisible sans pattern, ne changez rien.
+```
+
+### Comment choisir le bon pattern
+
+| Problème | Pattern | Signal |
+|----------|---------|--------|
+| Multiple sources de données | Repository | Accès données dispersé |
+| Notifications en cascade | Observer | Plusieurs réactions à un événement |
+| Algorithmes variables | Strategy | if/else ou switch croissant |
+| Interfaces incompatibles | Adapter | Intégration de librairies tierces |
+| Construction complexe | Builder | Constructeur > 4 paramètres |
+| Instance unique | Singleton | Ressource partagée globale |
+
+## Conclusion
+
+Les design patterns sont des **outils**, pas des objectifs. Utilisez-les quand ils simplifient votre code, pas quand ils ajoutent de l'abstraction inutile. Le meilleur pattern est celui que vous ne remarquez pas à la lecture du code — il rend la structure naturelle et évidente.
