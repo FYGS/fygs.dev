@@ -4,6 +4,8 @@ import { Suspense } from "react";
 import BlogClientPage from "./page.client";
 import { getAllPostsStats } from "./actions/stats";
 
+export const dynamic = "force-dynamic";
+
 function LoadingSkeleton() {
   return (
     <div className="space-y-8 container-xl">

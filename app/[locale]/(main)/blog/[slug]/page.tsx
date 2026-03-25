@@ -1,7 +1,7 @@
-"use server";
-
 import { Section } from "@/app/_components/Section";
 import { SITE_URL } from "@/app/_lib/constants";
+
+export const dynamic = "force-dynamic";
 import {
   generateArticleJsonLd,
   generateJsonLdScript,
@@ -31,13 +31,6 @@ interface Props {
     slug: string;
     locale: string;
   }>;
-}
-
-export async function generateStaticParams() {
-  const posts = await getBlogPostsMeta();
-  return posts.map((post) => ({
-    slug: post.slug,
-  }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

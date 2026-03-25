@@ -13,6 +13,7 @@ import { sectionSEO } from "@/app/_lib/seo-config";
 
 import { type NextPageIntlayer, type LocalPromiseParams } from "next-intlayer";
 import { IntlayerServerProvider } from "next-intlayer/server";
+import { Suspense } from "react";
 
 export async function generateMetadata({ params }: LocalPromiseParams) {
   return generateRouteMetadata(params, sectionSEO.home);
@@ -42,7 +43,9 @@ const Home: NextPageIntlayer = async ({ params }) => {
       <Testimonials />
 
       {/* Blog Preview - New Engaging Section */}
-      <BlogPreview />
+      <Suspense>
+        <BlogPreview />
+      </Suspense>
       <Spacing size="md" />
 
       {/* Call to Action - New Conversion Section */}
