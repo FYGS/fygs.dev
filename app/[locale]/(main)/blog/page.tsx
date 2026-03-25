@@ -2,6 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getBlogPostsMeta } from "@/lib/mdx";
 import { Suspense } from "react";
 import BlogClientPage from "./page.client";
+import { getAllPostsStats } from "./actions/stats";
 
 function LoadingSkeleton() {
   return (
@@ -56,12 +57,14 @@ function LoadingSkeleton() {
 }
 
 export default async function BlogPage() {
-  // Move posts fetching to the top level for instant SSR
   const postsPromise = getBlogPostsMeta();
+  const statsPromise = postsPromise.then((posts) =>
+    getAllPostsStats(posts.map((p) => p.slug)),
+  );
 
   return (
     <Suspense fallback={<LoadingSkeleton />}>
-      <BlogClientPage postsPromise={postsPromise} />
+      <BlogClientPage postsPromise={postsPromise} statsPromise={statsPromise} />
     </Suspense>
   );
 }

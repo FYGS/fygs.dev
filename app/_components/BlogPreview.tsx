@@ -1,5 +1,6 @@
 import { getBlogPostsMeta } from "@/lib/mdx";
 import { BlogPreviewClient } from "./BlogPreviewClient";
+import { getAllPostsStats } from "@/app/[locale]/(main)/blog/actions/stats";
 
 interface BlogPreviewProps {
   maxPosts?: number;
@@ -11,5 +12,7 @@ export async function BlogPreview({ maxPosts = 3 }: BlogPreviewProps) {
 
   if (latestPosts.length === 0) return null;
 
-  return <BlogPreviewClient posts={latestPosts} />;
+  const statsMap = await getAllPostsStats(latestPosts.map((p) => p.slug));
+
+  return <BlogPreviewClient posts={latestPosts} statsMap={statsMap} />;
 }

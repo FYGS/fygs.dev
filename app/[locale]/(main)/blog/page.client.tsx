@@ -5,24 +5,29 @@ import { Pagination } from "@/components/ui/pagination";
 import { Search } from "@/components/ui/search";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BlogPostMeta } from "@/lib/types";
+import { PostStats } from "@/types/blog";
 import { parseAsInteger, parseAsStringLiteral, useQueryState } from "nuqs";
 import { Suspense, use, useMemo } from "react";
 import { BlogPostCard } from "@/components/blog/blog-post-card";
 import { CategoryFilter } from "@/components/blog/category-filter";
 import { SortFilter } from "@/components/blog/sort-filter";
-import { StatsProvider } from "@/providers/blog/stats-provider";
 import { useIntlayer } from "next-intlayer";
 
 interface BlogClientPageProps {
   postsPromise: Promise<BlogPostMeta[]>;
+  statsPromise: Promise<Record<string, PostStats>>;
 }
 
 const POSTS_PER_PAGE = 6;
 
-const SORT_OPTIONS = ["recent", "oldest", "reading-time"] as const;
+const SORT_OPTIONS = ["recent", "oldest", "reading-time", "popular"] as const;
 
-export default function BlogClientPage({ postsPromise }: BlogClientPageProps) {
+export default function BlogClientPage({
+  postsPromise,
+  statsPromise,
+}: BlogClientPageProps) {
   const posts = use(postsPromise);
+  const statsMap = use(statsPromise);
   const { title, description, noResults, noResultsFor } =
     useIntlayer("blog-page");
 
@@ -82,6 +87,13 @@ export default function BlogClientPage({ postsPromise }: BlogClientPageProps) {
           return bMin - aMin;
         });
         break;
+      case "popular":
+        result.sort((a, b) => {
+          const aViews = statsMap[a.slug]?.views ?? 0;
+          const bViews = statsMap[b.slug]?.views ?? 0;
+          return bViews - aViews;
+        });
+        break;
       case "recent":
       default:
         result.sort(
@@ -91,7 +103,7 @@ export default function BlogClientPage({ postsPromise }: BlogClientPageProps) {
     }
 
     return result;
-  }, [posts, searchTerm, selectedCategory, sortBy]);
+  }, [posts, searchTerm, selectedCategory, sortBy, statsMap]);
 
   const totalPosts = filteredAndSortedPosts.length;
   const startIndex = (currentPage - 1) * pageSize;
@@ -99,66 +111,64 @@ export default function BlogClientPage({ postsPromise }: BlogClientPageProps) {
   const paginatedPosts = filteredAndSortedPosts.slice(startIndex, endIndex);
 
   return (
-    <StatsProvider>
-      <Section>
-        <div className="space-y-8">
-          <div className="space-y-3">
-            <h1
-              className="text-3xl sm:text-4xl font-bold tracking-tight text-gradient-heading"
-              id="blog-title"
-            >
-              {title}
-            </h1>
-            <p className="text-muted-foreground/80 max-w-2xl text-sm sm:text-base leading-relaxed">
-              {description}
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <Search />
-            <div className="flex items-center gap-2">
-              <SortFilter />
-              <CategoryFilter categories={categories} />
-            </div>
-          </div>
-
-          <div
-            className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
-            role="feed"
-            aria-busy={false}
+    <Section>
+      <div className="space-y-8">
+        <div className="space-y-3">
+          <h1
+            className="text-3xl sm:text-4xl font-bold tracking-tight text-gradient-heading"
+            id="blog-title"
           >
-            {paginatedPosts.map((post) => (
-              <Suspense
-                key={post.slug}
-                fallback={
-                  <div className="space-y-4">
-                    <Skeleton className="h-[200px] w-full" />
-                    <Skeleton className="h-4 w-3/4" />
-                  </div>
-                }
-              >
-                <BlogPostCard post={post} />
-              </Suspense>
-            ))}
-          </div>
-
-          {filteredAndSortedPosts.length > 0 && (
-            <Pagination
-              totalItems={totalPosts}
-              pageSize={pageSize}
-              baseUrl="/blog"
-              searchParams={searchParams}
-            />
-          )}
-
-          {filteredAndSortedPosts.length === 0 && (
-            <p className="text-center text-muted-foreground" role="alert">
-              {noResults}
-              {searchTerm ? ` ${noResultsFor} "${searchTerm}"` : ""}
-            </p>
-          )}
+            {title}
+          </h1>
+          <p className="text-muted-foreground/80 max-w-2xl text-sm sm:text-base leading-relaxed">
+            {description}
+          </p>
         </div>
-      </Section>
-    </StatsProvider>
+
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <Search />
+          <div className="flex items-center gap-2">
+            <SortFilter />
+            <CategoryFilter categories={categories} />
+          </div>
+        </div>
+
+        <div
+          className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+          role="feed"
+          aria-busy={false}
+        >
+          {paginatedPosts.map((post) => (
+            <Suspense
+              key={post.slug}
+              fallback={
+                <div className="space-y-4">
+                  <Skeleton className="h-[200px] w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                </div>
+              }
+            >
+              <BlogPostCard post={post} initialStats={statsMap[post.slug]} />
+            </Suspense>
+          ))}
+        </div>
+
+        {filteredAndSortedPosts.length > 0 && (
+          <Pagination
+            totalItems={totalPosts}
+            pageSize={pageSize}
+            baseUrl="/blog"
+            searchParams={searchParams}
+          />
+        )}
+
+        {filteredAndSortedPosts.length === 0 && (
+          <p className="text-center text-muted-foreground" role="alert">
+            {noResults}
+            {searchTerm ? ` ${noResultsFor} "${searchTerm}"` : ""}
+          </p>
+        )}
+      </div>
+    </Section>
   );
 }

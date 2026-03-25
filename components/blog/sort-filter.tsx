@@ -16,6 +16,7 @@ const SORT_OPTIONS = [
   { value: "recent", labelKey: "sortRecent" as const },
   { value: "oldest", labelKey: "sortOldest" as const },
   { value: "reading-time", labelKey: "sortReadingTime" as const },
+  { value: "popular", labelKey: "sortPopular" as const },
 ] as const;
 
 export function SortFilter() {
@@ -23,12 +24,14 @@ export function SortFilter() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const currentSort = searchParams.get("sort") || "recent";
-  const { sortRecent, sortOldest, sortReadingTime } = useIntlayer("blog-page");
+  const { sortRecent, sortOldest, sortReadingTime, sortPopular } =
+    useIntlayer("blog-page");
 
   const labels: Record<string, string> = {
-    sortRecent: String(sortRecent),
-    sortOldest: String(sortOldest),
-    sortReadingTime: String(sortReadingTime),
+    sortRecent: String(sortRecent.value),
+    sortOldest: String(sortOldest.value),
+    sortReadingTime: String(sortReadingTime.value),
+    sortPopular: String(sortPopular.value),
   };
 
   const handleSelect = (value: string) => {

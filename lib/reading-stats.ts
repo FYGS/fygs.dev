@@ -59,7 +59,7 @@ export async function getLikeCount(slug: string): Promise<number> {
 
 export async function toggleLike(
   slug: string,
-  userId: string
+  userId: string,
 ): Promise<boolean> {
   try {
     const key = `blog:${slug}:likes`;
@@ -90,6 +90,47 @@ export async function incrementShareCount(slug: string): Promise<number> {
   } catch (error) {
     console.error("Error incrementing share count:", error);
     return 0;
+  }
+}
+
+export async function getAllStats(
+  slugs: string[],
+): Promise<Record<string, { views: number; likes: number; shares: number }>> {
+  if (slugs.length === 0) return {};
+
+  try {
+    const pipeline = redis.pipeline();
+    for (const slug of slugs) {
+      pipeline.get(`blog:${slug}:views`);
+      pipeline.get(`blog:${slug}:likes`);
+      pipeline.get(`blog:${slug}:shares`);
+    }
+
+    const results = await pipeline.exec();
+    if (!results) {
+      return Object.fromEntries(
+        slugs.map((s) => [s, { views: 0, likes: 0, shares: 0 }]),
+      );
+    }
+
+    const statsMap: Record<
+      string,
+      { views: number; likes: number; shares: number }
+    > = {};
+    for (let i = 0; i < slugs.length; i++) {
+      const base = i * 3;
+      statsMap[slugs[i]] = {
+        views: parseInt(String(results[base]?.[1] || 0), 10),
+        likes: parseInt(String(results[base + 1]?.[1] || 0), 10),
+        shares: parseInt(String(results[base + 2]?.[1] || 0), 10),
+      };
+    }
+    return statsMap;
+  } catch (error) {
+    console.error("Error fetching all stats:", error);
+    return Object.fromEntries(
+      slugs.map((s) => [s, { views: 0, likes: 0, shares: 0 }]),
+    );
   }
 }
 

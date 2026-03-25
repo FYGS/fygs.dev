@@ -3,14 +3,16 @@
 import { BlogPostCard } from "@/components/blog/blog-post-card";
 import { useIntlayer } from "next-intlayer";
 import type { BlogPostMeta } from "@/lib/types";
+import type { PostStats } from "@/types/blog";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 interface BlogPreviewClientProps {
   posts: BlogPostMeta[];
+  statsMap: Record<string, PostStats>;
 }
 
-export function BlogPreviewClient({ posts }: BlogPreviewClientProps) {
+export function BlogPreviewClient({ posts, statsMap }: BlogPreviewClientProps) {
   const content = useIntlayer("blog-preview");
 
   return (
@@ -35,7 +37,11 @@ export function BlogPreviewClient({ posts }: BlogPreviewClientProps) {
         {/* Blog Posts Grid */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((post) => (
-            <BlogPostCard key={post.slug} post={post} />
+            <BlogPostCard
+              key={post.slug}
+              post={post}
+              initialStats={statsMap[post.slug]}
+            />
           ))}
         </div>
 

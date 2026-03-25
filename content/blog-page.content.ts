@@ -48,6 +48,11 @@ const blogPageContent = {
       fr: "Lecture longue",
       es: "Lectura larga",
     }),
+    sortPopular: t({
+      en: "Most Popular",
+      fr: "Plus populaires",
+      es: "Más populares",
+    }),
   },
 } satisfies Dictionary;
 
