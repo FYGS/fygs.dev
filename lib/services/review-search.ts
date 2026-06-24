@@ -175,6 +175,29 @@ export class ReviewSearchService {
 
       return result;
     } catch (error) {
+      // Graceful compatibility fallback: some environments may not have
+      // the Review.status column migrated yet.
+      if (this.isMissingReviewStatusColumnError(error)) {
+        // If caller explicitly relies on status filtering (e.g. moderation queue),
+        // return an empty result instead of incorrect data.
+        if (filters.status !== undefined) {
+          console.warn(
+            "[ReviewSearchService.searchReviews] Review.status column missing; returning empty status-filtered result.",
+          );
+          return {
+            reviews: [],
+            pagination: {
+              page,
+              limit,
+              totalCount: 0,
+              totalPages: 0,
+              hasNextPage: false,
+              hasPrevPage: false,
+            },
+          };
+        }
+      }
+
       console.error("[ReviewSearchService.searchReviews] Query failed:", error);
       return {
         reviews: [],
@@ -188,6 +211,31 @@ export class ReviewSearchService {
         },
       };
     }
+  }
+
+  private static isMissingReviewStatusColumnError(error: unknown): boolean {
+    if (!error || typeof error !== "object") {
+      return false;
+    }
+
+    const prismaError = error as {
+      code?: string;
+      message?: string;
+      meta?: { column?: string };
+    };
+
+    if (prismaError.code !== "P2022") {
+      return false;
+    }
+
+    const message = prismaError.message || "";
+    const column = prismaError.meta?.column || "";
+
+    return (
+      message.includes("Review.status") ||
+      message.includes("column `Review.status`") ||
+      column.includes("Review.status")
+    );
   }
 
   /**

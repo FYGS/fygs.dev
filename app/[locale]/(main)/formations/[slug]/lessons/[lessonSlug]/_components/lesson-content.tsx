@@ -1,10 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MDXRemote } from "next-mdx-remote/rsc";
 import { Clock, FileText } from "lucide-react";
-import { mdxComponents } from "@/app/_lib/mdx-components";
-import remarkGfm from "remark-gfm";
-import rehypeSlug from "rehype-slug";
+import { LessonContentRenderer } from "@/components/learning/lesson-content-renderer";
 
 interface LessonContentProps {
   lesson: {
@@ -78,16 +75,7 @@ export function LessonContent({ lesson }: LessonContentProps) {
             prose-img:rounded-lg prose-img:shadow-lg
           "
           >
-            <MDXRemote
-              source={lesson.content}
-              components={mdxComponents as any}
-              options={{
-                mdxOptions: {
-                  remarkPlugins: [remarkGfm],
-                  rehypePlugins: [rehypeSlug],
-                },
-              }}
-            />
+            <LessonContentRenderer content={lesson.content} />
           </CardContent>
         </Card>
       )}

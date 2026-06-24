@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,8 +15,13 @@ import {
   ArrowLeft,
   ArrowRight,
   List,
+  Sparkles,
 } from "lucide-react";
 import { submitQuizResult } from "@/app/actions/quiz-actions";
+import {
+  onQuizPassed,
+  onCourseCompleted,
+} from "@/app/[locale]/(learning)/learn/_actions/gamification-actions";
 import { useQuizCompletion } from "@/hooks/use-quiz-completion";
 import { toast } from "sonner";
 
@@ -46,6 +52,7 @@ interface QuizStudentProps {
   courseId: string;
   currentQuizId: string;
   previousLessonSlug?: string | null;
+  basePath?: "formations" | "learn";
 }
 
 export function QuizStudent({
@@ -55,6 +62,7 @@ export function QuizStudent({
   courseId,
   currentQuizId,
   previousLessonSlug,
+  basePath = "formations",
 }: QuizStudentProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<
@@ -66,6 +74,7 @@ export function QuizStudent({
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [hasAnswered, setHasAnswered] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const { checkCertificate } = useQuizCompletion();
 
@@ -97,6 +106,17 @@ export function QuizStudent({
       setShowExplanation(false);
     } else {
       setQuizCompleted(true);
+      // Trigger confetti for passing scores
+      if (
+        (score +
+          (currentQuestion && selectedOption === currentQuestion.correct
+            ? 1
+            : 0)) /
+          totalQuestions >=
+        0.7
+      ) {
+        setShowConfetti(true);
+      }
       // Submit quiz result to database
       await handleQuizCompletion();
     }
@@ -118,8 +138,21 @@ export function QuizStudent({
 
       if (result.success) {
         toast.success("Résultat enregistré avec succès!");
+
+        if (percentage >= 70) {
+          const quizXp = await onQuizPassed(quiz.id);
+          if (quizXp?.xp) {
+            toast.success(`+${quizXp.xp} XP pour le quiz réussi!`);
+          }
+        }
+
         // Check if certificate was earned
         await checkCertificate(courseId);
+
+        const courseXp = await onCourseCompleted(courseId);
+        if (courseXp?.xp) {
+          toast.success(`+${courseXp.xp} XP - Cours complété!`);
+        }
       } else {
         toast.error(result.error || "Erreur lors de l'enregistrement");
       }
@@ -176,7 +209,9 @@ export function QuizStudent({
       {/* Return to Lessons Button */}
       {previousLessonSlug && (
         <div className="flex justify-center">
-          <Link href={`/formations/${courseSlug}/lessons/${previousLessonSlug}`}>
+          <Link
+            href={`/${basePath}/${courseSlug}/lessons/${previousLessonSlug}`}
+          >
             <Button
               variant="outline"
               className="flex items-center gap-2 border-primary/50 hover:border-primary hover:bg-primary/10"
@@ -197,9 +232,7 @@ export function QuizStudent({
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
                   <List className="h-4 w-4 text-white" />
                 </div>
-                <span className="text-slate-100">
-                  Navigation des Quiz
-                </span>
+                <span className="text-slate-100">Navigation des Quiz</span>
               </div>
               <Badge
                 variant="secondary"
@@ -213,7 +246,7 @@ export function QuizStudent({
             <div className="flex items-center justify-between">
               {previousQuiz ? (
                 <Link
-                  href={`/formations/${courseSlug}/quizzes/${previousQuiz.id}`}
+                  href={`/${basePath}/${courseSlug}/quizzes/${previousQuiz.id}`}
                 >
                   <Button
                     variant="outline"
@@ -229,16 +262,14 @@ export function QuizStudent({
               )}
 
               <div className="text-center">
-                <p className="text-sm text-slate-400">
-                  Quiz Actuel
-                </p>
-                <p className="font-semibold text-slate-100">
-                  {quiz.title}
-                </p>
+                <p className="text-sm text-slate-400">Quiz Actuel</p>
+                <p className="font-semibold text-slate-100">{quiz.title}</p>
               </div>
 
               {nextQuiz ? (
-                <Link href={`/formations/${courseSlug}/quizzes/${nextQuiz.id}`}>
+                <Link
+                  href={`/${basePath}/${courseSlug}/quizzes/${nextQuiz.id}`}
+                >
                   <Button
                     variant="outline"
                     size="sm"
@@ -287,163 +318,200 @@ export function QuizStudent({
                     {Math.round(
                       ((currentQuestionIndex + (hasAnswered ? 1 : 0)) /
                         totalQuestions) *
-                        100
+                        100,
                     )}
                     %
                   </span>
                 </div>
-                <Progress
-                  value={
-                    ((currentQuestionIndex + (hasAnswered ? 1 : 0)) /
-                      totalQuestions) *
-                    100
-                  }
-                  className="h-2"
-                />
+                <motion.div
+                  initial={false}
+                  animate={{ scaleX: 1 }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                >
+                  <Progress
+                    value={
+                      ((currentQuestionIndex + (hasAnswered ? 1 : 0)) /
+                        totalQuestions) *
+                      100
+                    }
+                    className="h-2"
+                  />
+                </motion.div>
               </div>
-              <div className="space-y-6">
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold mb-4 text-gray-900">
-                    {currentQuestion.question}
-                  </h3>
-                  <div className="space-y-4">
-                    {currentQuestion.options.map((option, index) => {
-                      let buttonClass =
-                        "w-full text-left p-6 border-2 rounded-xl transition-all duration-300 group relative overflow-hidden ";
-                      if (hasAnswered) {
-                        if (index === currentQuestion.correct) {
-                          buttonClass +=
-                            "border-emerald-400 bg-gradient-to-br from-emerald-50 to-emerald-100 text-emerald-900 shadow-lg shadow-emerald-100/50";
-                        } else if (
-                          index === selectedOption &&
-                          index !== currentQuestion.correct
-                        ) {
-                          buttonClass +=
-                            "border-red-400 bg-gradient-to-br from-red-50 to-red-100 text-red-900 shadow-lg shadow-red-100/50";
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentQuestionIndex}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-6"
+                >
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+                    <h3 className="text-lg font-semibold mb-4 text-gray-900">
+                      {currentQuestion.question}
+                    </h3>
+                    <div className="space-y-4">
+                      {currentQuestion.options.map((option, index) => {
+                        let buttonClass =
+                          "w-full text-left p-6 border-2 rounded-xl transition-all duration-300 group relative overflow-hidden ";
+                        if (hasAnswered) {
+                          if (index === currentQuestion.correct) {
+                            buttonClass +=
+                              "border-emerald-400 bg-gradient-to-br from-emerald-50 to-emerald-100 text-emerald-900 shadow-lg shadow-emerald-100/50";
+                          } else if (
+                            index === selectedOption &&
+                            index !== currentQuestion.correct
+                          ) {
+                            buttonClass +=
+                              "border-red-400 bg-gradient-to-br from-red-50 to-red-100 text-red-900 shadow-lg shadow-red-100/50";
+                          } else {
+                            buttonClass +=
+                              "border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 text-slate-600";
+                          }
                         } else {
-                          buttonClass +=
-                            "border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 text-slate-600";
+                          if (selectedOption === index) {
+                            buttonClass +=
+                              "border-blue-400 bg-gradient-to-br from-blue-50 to-indigo-100 text-blue-900 shadow-lg shadow-blue-100/50 scale-[1.02]";
+                          } else {
+                            buttonClass +=
+                              "border-slate-200 bg-gradient-to-br from-white to-slate-50 text-slate-700 hover:border-blue-300 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 hover:text-blue-800 hover:shadow-md hover:scale-[1.01]";
+                          }
                         }
-                      } else {
-                        if (selectedOption === index) {
-                          buttonClass +=
-                            "border-blue-400 bg-gradient-to-br from-blue-50 to-indigo-100 text-blue-900 shadow-lg shadow-blue-100/50 scale-[1.02]";
-                        } else {
-                          buttonClass +=
-                            "border-slate-200 bg-gradient-to-br from-white to-slate-50 text-slate-700 hover:border-blue-300 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 hover:text-blue-800 hover:shadow-md hover:scale-[1.01]";
-                        }
-                      }
-                      return (
-                        <Button
-                          key={index}
-                          variant="outline"
-                          className={buttonClass}
-                          onClick={() => handleAnswerSelection(index)}
-                          disabled={hasAnswered}
-                        >
-                          <div className="flex items-center justify-between w-full">
-                            <div className="flex items-center gap-4">
-                              <div
-                                className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${
-                                  hasAnswered &&
-                                  index === currentQuestion.correct
-                                    ? "bg-emerald-500 text-white"
-                                    : hasAnswered &&
-                                      index === selectedOption &&
-                                      index !== currentQuestion.correct
-                                    ? "bg-red-500 text-white"
-                                    : selectedOption === index && !hasAnswered
-                                    ? "bg-blue-500 text-white"
-                                    : "bg-slate-200 text-slate-600 group-hover:bg-blue-200 group-hover:text-blue-700"
-                                }`}
-                              >
-                                {String.fromCharCode(65 + index)}
+                        return (
+                          <Button
+                            key={index}
+                            variant="outline"
+                            className={buttonClass}
+                            onClick={() => handleAnswerSelection(index)}
+                            disabled={hasAnswered}
+                          >
+                            <div className="flex items-center justify-between w-full">
+                              <div className="flex items-center gap-4">
+                                <div
+                                  className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${
+                                    hasAnswered &&
+                                    index === currentQuestion.correct
+                                      ? "bg-emerald-500 text-white"
+                                      : hasAnswered &&
+                                          index === selectedOption &&
+                                          index !== currentQuestion.correct
+                                        ? "bg-red-500 text-white"
+                                        : selectedOption === index &&
+                                            !hasAnswered
+                                          ? "bg-blue-500 text-white"
+                                          : "bg-slate-200 text-slate-600 group-hover:bg-blue-200 group-hover:text-blue-700"
+                                  }`}
+                                >
+                                  {String.fromCharCode(65 + index)}
+                                </div>
+                                <span className="font-medium leading-relaxed">
+                                  {option}
+                                </span>
                               </div>
-                              <span className="font-medium leading-relaxed">
-                                {option}
-                              </span>
+                              {hasAnswered && (
+                                <span className="ml-2 transition-transform duration-300">
+                                  {index === currentQuestion.correct ? (
+                                    <div className="flex items-center gap-2">
+                                      <CheckCircle className="h-6 w-6 text-emerald-600" />
+                                      <span className="text-sm font-semibold text-emerald-700">
+                                        Correct
+                                      </span>
+                                    </div>
+                                  ) : index === selectedOption ? (
+                                    <div className="flex items-center gap-2">
+                                      <XCircle className="h-6 w-6 text-red-600" />
+                                      <span className="text-sm font-semibold text-red-700">
+                                        Incorrect
+                                      </span>
+                                    </div>
+                                  ) : null}
+                                </span>
+                              )}
                             </div>
-                            {hasAnswered && (
-                              <span className="ml-2 transition-transform duration-300">
-                                {index === currentQuestion.correct ? (
-                                  <div className="flex items-center gap-2">
-                                    <CheckCircle className="h-6 w-6 text-emerald-600" />
-                                    <span className="text-sm font-semibold text-emerald-700">
-                                      Correct
-                                    </span>
-                                  </div>
-                                ) : index === selectedOption ? (
-                                  <div className="flex items-center gap-2">
-                                    <XCircle className="h-6 w-6 text-red-600" />
-                                    <span className="text-sm font-semibold text-red-700">
-                                      Incorrect
-                                    </span>
-                                  </div>
-                                ) : null}
-                              </span>
-                            )}
-                          </div>
-                        </Button>
-                      );
-                    })}
-                  </div>
-                </div>
-                {showExplanation && (
-                  <div
-                    className={`p-4 rounded-lg border-l-4 ${
-                      selectedOption === currentQuestion.correct
-                        ? "border-green-500 bg-green-50"
-                        : "border-yellow-500 bg-yellow-50"
-                    }`}
-                  >
-                    <div className="flex items-start gap-2">
-                      <div
-                        className={`p-1 rounded-full ${
-                          selectedOption === currentQuestion.correct
-                            ? "bg-green-100"
-                            : "bg-yellow-100"
-                        }`}
-                      >
-                        {selectedOption === currentQuestion.correct ? (
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                        ) : (
-                          <XCircle className="h-4 w-4 text-yellow-600" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-medium mb-1">
-                          {selectedOption === currentQuestion.correct
-                            ? "Correct!"
-                            : "Incorrect"}
-                        </p>
-                        <p className="text-sm text-gray-700">
-                          {currentQuestion.explanation}
-                        </p>
-                      </div>
+                          </Button>
+                        );
+                      })}
                     </div>
                   </div>
-                )}
-                {hasAnswered && (
-                  <div className="flex justify-between items-center pt-4">
-                    <div className="text-sm text-muted-foreground">
-                      Score: {score} / {currentQuestionIndex + 1}
+                  {showExplanation && (
+                    <div
+                      className={`p-4 rounded-lg border-l-4 ${
+                        selectedOption === currentQuestion.correct
+                          ? "border-green-500 bg-green-50"
+                          : "border-yellow-500 bg-yellow-50"
+                      }`}
+                    >
+                      <div className="flex items-start gap-2">
+                        <div
+                          className={`p-1 rounded-full ${
+                            selectedOption === currentQuestion.correct
+                              ? "bg-green-100"
+                              : "bg-yellow-100"
+                          }`}
+                        >
+                          {selectedOption === currentQuestion.correct ? (
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-yellow-600" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium mb-1">
+                            {selectedOption === currentQuestion.correct
+                              ? "Correct!"
+                              : "Incorrect"}
+                          </p>
+                          <p className="text-sm text-gray-700">
+                            {currentQuestion.explanation}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    <Button onClick={nextQuestion}>
-                      {currentQuestionIndex < totalQuestions - 1
-                        ? "Question suivante"
-                        : "Terminer le quiz"}
-                    </Button>
-                  </div>
-                )}
-              </div>
+                  )}
+                  {hasAnswered && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex justify-between items-center pt-4"
+                    >
+                      <div className="text-sm text-muted-foreground">
+                        Score: {score} / {currentQuestionIndex + 1}
+                      </div>
+                      <Button onClick={nextQuestion}>
+                        {currentQuestionIndex < totalQuestions - 1
+                          ? "Question suivante"
+                          : "Terminer le quiz"}
+                      </Button>
+                    </motion.div>
+                  )}
+                </motion.div>
+              </AnimatePresence>
             </>
           ) : (
-            <div className="space-y-8">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4 }}
+              className="space-y-8"
+            >
+              {/* Confetti */}
+              {showConfetti && <QuizConfetti />}
+
               {/* Results Summary */}
               <div className="text-center space-y-6 p-8 bg-gradient-to-br from-emerald-950 to-teal-950 rounded-xl border border-emerald-800">
-                <div className="space-y-3">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                  className="space-y-3"
+                >
                   <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-                    <Target className="h-8 w-8 text-white" />
+                    {getScorePercentage() >= 70 ? (
+                      <Sparkles className="h-8 w-8 text-white" />
+                    ) : (
+                      <Target className="h-8 w-8 text-white" />
+                    )}
                   </div>
                   <div className={`text-5xl font-bold ${getScoreColor()}`}>
                     {score} / {totalQuestions}
@@ -454,7 +522,7 @@ export function QuizStudent({
                   <p className="text-lg text-slate-300 max-w-md mx-auto">
                     {getScoreMessage()}
                   </p>
-                </div>
+                </motion.div>
 
                 <div className="flex gap-4 justify-center">
                   <Button
@@ -491,7 +559,7 @@ export function QuizStudent({
                 <CardContent className="space-y-4">
                   {quiz.questions.map((question, index) => {
                     const userAnswer = userAnswers.find(
-                      (a) => a.questionId === question.id
+                      (a) => a.questionId === question.id,
                     );
                     return (
                       <div
@@ -560,10 +628,55 @@ export function QuizStudent({
                   })}
                 </CardContent>
               </Card>
-            </div>
+            </motion.div>
           )}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+/**
+ * Simple confetti particles animation on quiz pass
+ */
+function QuizConfetti() {
+  const [particles] = useState(() =>
+    Array.from({ length: 30 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      delay: Math.random() * 0.5,
+      color: ["#10b981", "#f59e0b", "#8b5cf6", "#3b82f6", "#ef4444"][
+        Math.floor(Math.random() * 5)
+      ],
+      size: 6 + Math.random() * 8,
+    })),
+  );
+
+  return (
+    <div className="fixed inset-0 pointer-events-none z-[200] overflow-hidden">
+      {particles.map((p) => (
+        <motion.div
+          key={p.id}
+          initial={{ y: -20, x: `${p.x}vw`, opacity: 1, rotate: 0 }}
+          animate={{
+            y: "100vh",
+            opacity: 0,
+            rotate: 360 + Math.random() * 360,
+          }}
+          transition={{
+            duration: 2 + Math.random(),
+            delay: p.delay,
+            ease: "easeIn",
+          }}
+          style={{
+            position: "absolute",
+            width: p.size,
+            height: p.size,
+            backgroundColor: p.color,
+            borderRadius: Math.random() > 0.5 ? "50%" : "2px",
+          }}
+        />
+      ))}
     </div>
   );
 }

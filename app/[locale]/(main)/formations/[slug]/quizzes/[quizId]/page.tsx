@@ -48,8 +48,8 @@ export default async function QuizPage({ params }: QuizPageProps) {
   if (!session) {
     redirect(
       `/auth/login?callbackUrl=${encodeURIComponent(
-        `/formations/${slug}/quizzes/${quizId}`
-      )}`
+        `/formations/${slug}/quizzes/${quizId}`,
+      )}`,
     );
   }
 
@@ -62,7 +62,7 @@ export default async function QuizPage({ params }: QuizPageProps) {
   // Check user access
   const userAccess = await AccessService.checkCourseAccess(
     session.user.id,
-    course.id
+    course.id,
   );
 
   if (!userAccess.canAccessCourse) {
@@ -161,6 +161,7 @@ export default async function QuizPage({ params }: QuizPageProps) {
             courseId={course.id}
             currentQuizId={quizId}
             previousLessonSlug={previousLessonSlug}
+            basePath="formations"
           />
         </div>
       </div>

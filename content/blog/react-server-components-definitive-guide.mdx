@@ -1,0 +1,503 @@
+﻿---
+title: "React Server Components : Le Guide Définitif"
+excerpt: "Comprenez React Server Components en profondeur — architecture mentale, patterns de composition, streaming, data fetching, limites client/serveur, et migration progressive pour Next.js."
+date: "2025-10-18"
+author: "Fernand SOUALO"
+categories: ["React", "Server Components", "Next.js", "Architecture"]
+coverImage: "/blog/react-server-components.png"
+---
+
+# React Server Components : Le Guide Définitif
+
+## Table of Contents
+
+1. [La Révolution RSC](#la-révolution-rsc)
+2. [Modèle Mental](#modèle-mental)
+3. [Server vs Client Components](#server-vs-client-components)
+4. [Patterns de Composition](#patterns-de-composition)
+5. [Data Fetching](#data-fetching)
+6. [Streaming et Suspense](#streaming-et-suspense)
+7. [Server Actions](#server-actions)
+8. [Patterns Avancés](#patterns-avancés)
+9. [Migration Progressive](#migration-progressive)
+10. [Conclusion](#conclusion)
+
+## La Révolution RSC
+
+React Server Components ne sont pas juste une optimisation — ils représentent un **changement de paradigme** dans la façon de construire des applications React. Ils permettent de rendre des composants sur le serveur, d'envoyer zéro JavaScript au client pour les parties statiques, et de garder les données sensibles côté serveur.
+
+<Mermaid chart={`
+flowchart TB
+    subgraph Traditional["Approche Traditionnelle"]
+        direction TB
+        T1["Serveur envoie HTML vide"] --> T2["Client télécharge JS"]
+        T2 --> T3["Client fetch les données"]
+        T3 --> T4["Client rend le composant"]
+    end
+    
+    subgraph RSC["React Server Components"]
+        direction TB
+        R1["Serveur fetch les données"] --> R2["Serveur rend le composant"]
+        R2 --> R3["Serveur envoie HTML + RSC Payload"]
+        R3 --> R4["Client hydrate<br/>seulement l'interactif"]
+    end
+    
+    style Traditional fill:#ef4444,stroke:#dc2626,color:#fff
+    style RSC fill:#10b981,stroke:#059669,color:#fff
+    style T3 fill:#f59e0b,stroke:#d97706,color:#fff
+    style R1 fill:#3b82f6,stroke:#2563eb,color:#fff
+`} caption="RSC élimine le waterfall client en déplaçant le data fetching sur le serveur." />
+
+## Modèle Mental
+
+La règle fondamentale est simple :
+
+| Caractéristique | Server Component | Client Component |
+|----------------|------------------|------------------|
+| **Directive** | Aucune (défaut) | `"use client"` |
+| **Accès aux données** | Direct (DB, API, fichiers) | Via props ou fetch |
+| **JavaScript envoyé** | 0 KB | Tout le composant |
+| **useState/useEffect** | ❌ Non | ✅ Oui |
+| **Event handlers** | ❌ Non | ✅ Oui |
+| **Context** | ❌ Non | ✅ Oui |
+| **Sérialisation** | Props doivent être sérialisables | Props standards |
+
+## Server vs Client Components
+
+### Server Component (défaut)
+
+```tsx
+// app/blog/page.tsx
+// Pas de "use client" = Server Component par défaut
+
+import { prisma } from "@/lib/db";
+import { PostCard } from "@/components/post-card";
+
+export default async function BlogPage() {
+  // Accès direct à la base de données — IMPOSSIBLE côté client
+  const posts = await prisma.post.findMany({
+    where: { published: true },
+    include: { author: true },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return (
+    <section>
+      <h1>Blog</h1>
+      <div className="grid grid-cols-3 gap-6">
+        {posts.map((post) => (
+          <PostCard key={post.id} post={post} />
+        ))}
+      </div>
+    </section>
+  );
+}
+```
+
+### Client Component (quand nécessaire)
+
+```tsx
+// components/search-input.tsx
+"use client";
+
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+
+export function SearchInput() {
+  const [query, setQuery] = useState("");
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+
+  const handleSearch = (value: string) => {
+    setQuery(value);
+    startTransition(() => {
+      router.push(`/blog?q=${encodeURIComponent(value)}`);
+    });
+  };
+
+  return (
+    <input
+      value={query}
+      onChange={(e) => handleSearch(e.target.value)}
+      placeholder="Rechercher..."
+      className={isPending ? "opacity-50" : ""}
+    />
+  );
+}
+```
+
+## Patterns de Composition
+
+### Le pattern "Container/Presenter"
+
+```tsx
+// Pattern : Server Component = Container, Client = Presenter
+
+// app/dashboard/page.tsx (Server)
+import { prisma } from "@/lib/db";
+import { DashboardChart } from "@/components/dashboard-chart";
+
+export default async function DashboardPage() {
+  const stats = await prisma.order.aggregate({
+    _sum: { amount: true },
+    _count: true,
+  });
+
+  const monthlyData = await prisma.$queryRaw`
+    SELECT DATE_TRUNC('month', created_at) as month,
+           SUM(amount) as total
+    FROM orders
+    GROUP BY month
+    ORDER BY month DESC
+    LIMIT 12
+  `;
+
+  // Passer les données calculées côté serveur
+  return <DashboardChart data={monthlyData} stats={stats} />;
+}
+
+// components/dashboard-chart.tsx (Client)
+"use client";
+
+import { LineChart, Line, XAxis, YAxis } from "recharts";
+
+export function DashboardChart({ data, stats }) {
+  // Interactivité côté client avec données du serveur
+  return (
+    <LineChart data={data}>
+      <XAxis dataKey="month" />
+      <YAxis />
+      <Line type="monotone" dataKey="total" />
+    </LineChart>
+  );
+}
+```
+
+### "Slot pattern" pour éviter la frontière client
+
+```tsx
+// ❌ ERREUR : Server Component comme enfant d'un Client Component
+"use client";
+export function ClientLayout() {
+  return (
+    <div>
+      <ServerComponent /> {/* Rendu côté client ! */}
+    </div>
+  );
+}
+
+// ✅ CORRECT : Pattern "children slot"
+// layout.tsx (Server)
+import { ClientLayout } from "./client-layout";
+import { ServerComponent } from "./server-component";
+
+export default function Layout() {
+  return (
+    <ClientLayout>
+      <ServerComponent /> {/* Rendu côté serveur, passé comme slot */}
+    </ClientLayout>
+  );
+}
+
+// client-layout.tsx (Client)
+"use client";
+export function ClientLayout({ children }: { children: React.ReactNode }) {
+  const [isOpen, setIsOpen] = useState(true);
+  return (
+    <div>
+      <button onClick={() => setIsOpen(!isOpen)}>Toggle</button>
+      {isOpen && children} {/* Server Component déjà rendu */}
+    </div>
+  );
+}
+```
+
+## Data Fetching
+
+### Fetch parallèle avec Promise.all
+
+```tsx
+// app/profile/[id]/page.tsx
+export default async function ProfilePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+
+  // Fetch en parallèle — ne pas séquentialiser !
+  const [user, posts, followers] = await Promise.all([
+    prisma.user.findUniqueOrThrow({ where: { id } }),
+    prisma.post.findMany({
+      where: { authorId: id, published: true },
+    }),
+    prisma.follow.count({ where: { followingId: id } }),
+  ]);
+
+  return (
+    <div>
+      <h1>{user.name}</h1>
+      <p>{followers} followers</p>
+      {posts.map((post) => (
+        <article key={post.id}>{post.title}</article>
+      ))}
+    </div>
+  );
+}
+```
+
+### Cache et Revalidation
+
+```tsx
+// lib/data.ts
+import { unstable_cache } from "next/cache";
+import { prisma } from "@/lib/db";
+
+// Cache avec tag pour invalidation ciblée
+export const getPopularPosts = unstable_cache(
+  async () => {
+    return prisma.post.findMany({
+      where: { published: true },
+      orderBy: { views: "desc" },
+      take: 10,
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        views: true,
+      },
+    });
+  },
+  ["popular-posts"],
+  {
+    revalidate: 3600, // 1 heure
+    tags: ["posts"],
+  },
+);
+
+// Invalider le cache après une mutation
+import { revalidateTag } from "next/cache";
+
+export async function createPost(data: PostInput) {
+  const post = await prisma.post.create({ data });
+  revalidateTag("posts"); // Invalide tous les caches avec ce tag
+  return post;
+}
+```
+
+## Streaming et Suspense
+
+### Streaming progressif
+
+```tsx
+// app/dashboard/page.tsx
+import { Suspense } from "react";
+
+export default function DashboardPage() {
+  return (
+    <div>
+      <h1>Dashboard</h1>
+
+      {/* Rendu immédiat */}
+      <div className="grid grid-cols-3 gap-4">
+        {/* Chaque section streame indépendamment */}
+        <Suspense fallback={<CardSkeleton />}>
+          <RevenueCard />
+        </Suspense>
+
+        <Suspense fallback={<CardSkeleton />}>
+          <UsersCard />
+        </Suspense>
+
+        <Suspense fallback={<CardSkeleton />}>
+          <OrdersCard />
+        </Suspense>
+      </div>
+
+      {/* Table longue à charger */}
+      <Suspense fallback={<TableSkeleton />}>
+        <RecentOrders />
+      </Suspense>
+    </div>
+  );
+}
+
+// Chaque composant est un Server Component async
+async function RevenueCard() {
+  const revenue = await getRevenue(); // Prend 2s
+  return (
+    <div className="rounded-lg border p-4">
+      <h3>Revenue</h3>
+      <p className="text-3xl font-bold">${revenue}</p>
+    </div>
+  );
+}
+
+async function RecentOrders() {
+  const orders = await getRecentOrders(); // Prend 5s
+  return (
+    <table>
+      {/* ... */}
+    </table>
+  );
+}
+```
+
+### Loading UI avec loading.tsx
+
+```tsx
+// app/blog/loading.tsx
+export default function Loading() {
+  return (
+    <div className="grid grid-cols-3 gap-6">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="animate-pulse">
+          <div className="h-48 bg-muted rounded-lg" />
+          <div className="h-4 bg-muted rounded mt-4 w-3/4" />
+          <div className="h-3 bg-muted rounded mt-2 w-1/2" />
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+## Server Actions
+
+### Mutations type-safe
+
+```tsx
+// app/actions/posts.ts
+"use server";
+
+import { z } from "zod";
+import { prisma } from "@/lib/db";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+
+const schema = z.object({
+  title: z.string().min(3),
+  content: z.string().min(10),
+});
+
+export async function createPost(
+  prevState: any,
+  formData: FormData,
+) {
+  const data = schema.safeParse({
+    title: formData.get("title"),
+    content: formData.get("content"),
+  });
+
+  if (!data.success) {
+    return {
+      errors: data.error.flatten().fieldErrors,
+    };
+  }
+
+  await prisma.post.create({
+    data: {
+      ...data.data,
+      slug: slugify(data.data.title),
+      authorId: await getCurrentUserId(),
+    },
+  });
+
+  revalidatePath("/blog");
+  redirect("/blog");
+}
+
+// Utilisation dans un composant
+"use client";
+
+import { useActionState } from "react";
+import { createPost } from "./actions";
+
+export function CreatePostForm() {
+  const [state, formAction, isPending] = useActionState(
+    createPost,
+    null,
+  );
+
+  return (
+    <form action={formAction}>
+      <input name="title" />
+      {state?.errors?.title && (
+        <p className="text-red-500">{state.errors.title}</p>
+      )}
+      <textarea name="content" />
+      <button disabled={isPending}>
+        {isPending ? "Création..." : "Créer"}
+      </button>
+    </form>
+  );
+}
+```
+
+## Patterns Avancés
+
+### Composition de Server et Client
+
+```tsx
+// Pattern : "Island Architecture" dans Next.js
+// La page est un Server Component avec des "îlots" interactifs
+
+export default async function ArticlePage({ params }) {
+  const { slug } = await params;
+  const article = await getArticle(slug);
+
+  return (
+    <article>
+      {/* Rendu serveur — 0 KB JS */}
+      <header>
+        <h1>{article.title}</h1>
+        <time>{article.date}</time>
+      </header>
+
+      {/* Rendu serveur — contenu statique */}
+      <div
+        className="prose"
+        dangerouslySetInnerHTML={{ __html: article.html }}
+      />
+
+      {/* Îlot interactif — seul JS envoyé */}
+      <Suspense fallback={null}>
+        <LikeButton articleId={article.id} />
+      </Suspense>
+
+      {/* Autre îlot interactif */}
+      <Suspense fallback={<CommentsSkeleton />}>
+        <CommentsSection articleId={article.id} />
+      </Suspense>
+    </article>
+  );
+}
+```
+
+## Migration Progressive
+
+Pour migrer progressivement depuis le Pages Router :
+
+```
+1. Commencer par les pages statiques (marketing, blog)
+2. Convertir les layouts en app/layout.tsx
+3. Migrer les getServerSideProps → Server Components async
+4. Remplacer getStaticProps → Server Components + cache
+5. Convertir les API routes → Route Handlers ou Server Actions
+6. Déplacer useState/useEffect dans des Client Components dédiés
+```
+
+> **Règle** : par défaut, tout est Server Component. N'ajoutez `"use client"` que quand vous avez besoin d'interactivité (état, événements, hooks du navigateur).
+
+## Conclusion
+
+React Server Components changent la donne :
+
+- **Zéro JS** pour les composants statiques = performance maximale
+- **Data fetching côté serveur** = pas de waterfall client
+- **Streaming avec Suspense** = temps de chargement perçu réduit
+- **Server Actions** = mutations sans API routes
+- **Composition** = Server + Client Components via le pattern slots/children
+- **Sécurité** = données sensibles restent sur le serveur
+
+RSC n'est pas optionnel — c'est l'avenir de React. Adoptez-les maintenant.

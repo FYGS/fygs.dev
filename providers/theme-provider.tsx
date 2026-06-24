@@ -1,59 +1,47 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  ThemeProvider as NextThemesProvider,
+  useTheme as useNextTheme,
+} from "next-themes";
 
 type Theme = "dark" | "light" | "system";
 
 interface ThemeProviderProps {
   children: React.ReactNode;
   defaultTheme?: Theme;
+  storageKey?: string;
 }
 
 interface ThemeProviderState {
   theme: Theme;
+  resolvedTheme: "dark" | "light";
   setTheme: (theme: Theme) => void;
 }
 
-const initialState: ThemeProviderState = {
-  theme: "system",
-  setTheme: () => null,
-};
-
-const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
-
 export function ThemeProvider({
   children,
-  defaultTheme = "system",
+  defaultTheme = "dark",
+  storageKey = "fygs-theme",
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(defaultTheme);
-
-  useEffect(() => {
-    const root = window.document.documentElement;
-    root.classList.remove("light", "dark");
-
-    if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
-        ? "dark"
-        : "light";
-      root.classList.add(systemTheme);
-      return;
-    }
-
-    root.classList.add(theme);
-  }, [theme]);
-
   return (
-    <ThemeProviderContext.Provider value={{ theme, setTheme }}>
+    <NextThemesProvider
+      attribute="class"
+      defaultTheme={defaultTheme}
+      storageKey={storageKey}
+      enableSystem
+      disableTransitionOnChange
+    >
       {children}
-    </ThemeProviderContext.Provider>
+    </NextThemesProvider>
   );
 }
 
-export const useTheme = () => {
-  const context = useContext(ThemeProviderContext);
-  if (!context) {
-    throw new Error("useTheme must be used within a ThemeProvider");
-  }
-  return context;
-};
+export function useTheme(): ThemeProviderState {
+  const { theme, resolvedTheme, setTheme } = useNextTheme();
+  return {
+    theme: (theme as Theme) || "system",
+    resolvedTheme: (resolvedTheme as "dark" | "light") || "dark",
+    setTheme: setTheme as (theme: Theme) => void,
+  };
+}

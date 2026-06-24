@@ -13,7 +13,7 @@ import Editor, { Monaco } from "@monaco-editor/react";
 import confetti from "canvas-confetti";
 import { Code, Play, RefreshCw, Sparkles } from "lucide-react";
 import { editor } from "monaco-editor";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/providers/theme-provider";
 import { useEffect, useRef, useState } from "react";
 
 interface CodeEditorProps {
@@ -75,9 +75,9 @@ export function CodeEditor({
               .map((arg) =>
                 typeof arg === "object"
                   ? JSON.stringify(arg, null, 2)
-                  : String(arg)
+                  : String(arg),
               )
-              .join(" ")
+              .join(" "),
           );
           originalConsoleLog(...args);
         };
@@ -130,7 +130,7 @@ export function CodeEditor({
   // Fonction pour configurer l'éditeur
   const handleEditorDidMount = (
     editor: editor.IStandaloneCodeEditor,
-    monaco: Monaco
+    monaco: Monaco,
   ) => {
     editorRef.current = editor;
     monacoRef.current = monaco;
@@ -162,7 +162,7 @@ export function CodeEditor({
   useEffect(() => {
     if (monacoRef.current) {
       monacoRef.current.editor.setTheme(
-        theme === "dark" ? "darkTheme" : "lightTheme"
+        theme === "dark" ? "darkTheme" : "lightTheme",
       );
     }
   }, [theme]);

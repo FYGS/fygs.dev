@@ -45,7 +45,7 @@ export function LessonNavigation({
                     : "hover:border-blue-500/50"
                 }`}
               >
-                <Link href={previousItem.url}>
+                <Link href={previousItem.url} prefetch={true}>
                   <ChevronLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
                   <div className="text-left">
                     <div className="text-xs text-muted-foreground mb-0.5 flex items-center gap-1">
@@ -99,7 +99,7 @@ export function LessonNavigation({
                     : "hover:border-blue-500/50"
                 }`}
               >
-                <Link href={nextItem.url}>
+                <Link href={nextItem.url} prefetch={true}>
                   <div className="text-right">
                     <div className="text-xs text-muted-foreground mb-0.5 flex items-center gap-1 justify-end">
                       {nextItem.type === "quiz" ? (

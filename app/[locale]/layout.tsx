@@ -73,10 +73,7 @@ const LocaleLayout: NextLayoutIntlayer = async ({ children, params }) => {
   const { locale } = await params;
 
   return (
-    <html
-      lang={locale}
-      dir={getHTMLTextDir(locale)} /*suppressHydrationWarning*/
-    >
+    <html lang={locale} dir={getHTMLTextDir(locale)} suppressHydrationWarning>
       <head>
         {/* PWA - iOS installability */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -89,8 +86,8 @@ const LocaleLayout: NextLayoutIntlayer = async ({ children, params }) => {
         {/* PWA - Android & general */}
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="application-name" content="FYGS" />
-        <meta name="theme-color" content="#29333d" />
-        <meta name="msapplication-TileColor" content="#29333d" />
+        <meta name="theme-color" content="#0F172A" />
+        <meta name="msapplication-TileColor" content="#0F172A" />
         {/* Structured data */}
         <JsonLd />
       </head>

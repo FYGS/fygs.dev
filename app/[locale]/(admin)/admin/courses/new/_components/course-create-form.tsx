@@ -37,12 +37,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Save,
-  Eye,
-  X,
-  Loader2
-} from "lucide-react";
+import { Save, Eye, X, Loader2 } from "lucide-react";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { createCourse } from "../../_actions/create-course";
 import { CourseCategory, CourseLevel, CourseAccessTier } from "@prisma/client";
@@ -51,7 +46,9 @@ import { CourseCategory, CourseLevel, CourseAccessTier } from "@prisma/client";
 const courseSchema = z.object({
   title: z.string().min(3, "Le titre doit contenir au moins 3 caractères"),
   slug: z.string().min(3, "Le slug doit contenir au moins 3 caractères"),
-  description: z.string().min(10, "La description doit contenir au moins 10 caractères"),
+  description: z
+    .string()
+    .min(10, "La description doit contenir au moins 10 caractères"),
   category: z.nativeEnum(CourseCategory),
   level: z.nativeEnum(CourseLevel),
   accessTier: z.nativeEnum(CourseAccessTier),
@@ -66,6 +63,8 @@ const courseSchema = z.object({
   publicResources: z.string().optional(),
   publicEvaluation: z.string().optional(),
   publicPrerequisites: z.string().optional(),
+  trailerUrl: z.string().optional(),
+  faq: z.string().optional(),
 });
 
 type CourseFormData = z.infer<typeof courseSchema>;
@@ -108,6 +107,8 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
       publicResources: "",
       publicEvaluation: "",
       publicPrerequisites: "",
+      trailerUrl: "",
+      faq: "",
     },
   });
 
@@ -115,18 +116,18 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
   const generateSlug = (title: string) => {
     return title
       .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
       .trim();
   };
 
   // Handle tag selection
   const handleTagToggle = (tagId: string) => {
     const newSelectedTags = selectedTags.includes(tagId)
-      ? selectedTags.filter(id => id !== tagId)
+      ? selectedTags.filter((id) => id !== tagId)
       : [...selectedTags, tagId];
-    
+
     setSelectedTags(newSelectedTags);
     form.setValue("tags", newSelectedTags);
   };
@@ -153,7 +154,7 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
 
         if (result.success) {
           toast.success("Formation créée et publiée avec succès!");
-          router.push("/admin/courses");
+          router.push(`/admin/courses/${result.course?.id}`);
         } else {
           toast.error(result.error || "Erreur lors de la création");
         }
@@ -175,10 +176,14 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
         });
 
         if (result.success) {
-          toast.success("Brouillon sauvegardé avec succès!");
-          router.push("/admin/courses");
+          toast.success(
+            "Brouillon sauvegardé — ajoutez maintenant vos modules et leçons",
+          );
+          router.push(`/admin/courses/${result.course?.id}`);
         } else {
-          toast.error(result.error || "Erreur lors de la sauvegarde du brouillon");
+          toast.error(
+            result.error || "Erreur lors de la sauvegarde du brouillon",
+          );
         }
       } catch (error) {
         console.error("Draft saving error:", error);
@@ -231,10 +236,7 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
                     <FormItem>
                       <FormLabel>Slug (URL)</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="introduction-a-react"
-                          {...field}
-                        />
+                        <Input placeholder="introduction-a-react" {...field} />
                       </FormControl>
                       <FormDescription>
                         URL de votre formation (généré automatiquement)
@@ -244,7 +246,7 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
                   )}
                 />
               </div>
-              
+
               <FormField
                 control={form.control}
                 name="description"
@@ -300,7 +302,10 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Catégorie</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Sélectionner une catégorie" />
@@ -313,9 +318,13 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
                           <SelectItem value="BACKEND">Backend</SelectItem>
                           <SelectItem value="FULLSTACK">Fullstack</SelectItem>
                           <SelectItem value="CLOUD">Cloud</SelectItem>
-                          <SelectItem value="AI">Intelligence Artificielle</SelectItem>
+                          <SelectItem value="AI">
+                            Intelligence Artificielle
+                          </SelectItem>
                           <SelectItem value="DEVOPS">DevOps</SelectItem>
-                          <SelectItem value="PRODUCTIVITY">Productivité</SelectItem>
+                          <SelectItem value="PRODUCTIVITY">
+                            Productivité
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -329,7 +338,10 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Niveau</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Sélectionner un niveau" />
@@ -337,7 +349,9 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="BEGINNER">Débutant</SelectItem>
-                          <SelectItem value="INTERMEDIATE">Intermédiaire</SelectItem>
+                          <SelectItem value="INTERMEDIATE">
+                            Intermédiaire
+                          </SelectItem>
                           <SelectItem value="ADVANCED">Avancé</SelectItem>
                           <SelectItem value="EXPERT">Expert</SelectItem>
                         </SelectContent>
@@ -353,7 +367,10 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Niveau d&apos;accès</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Sélectionner l'accès" />
@@ -385,18 +402,24 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
                           : "bg-muted hover:bg-muted/80"
                       }`}
                       style={{
-                        borderColor: selectedTags.includes(tag.id) ? tag.color : undefined,
+                        borderColor: selectedTags.includes(tag.id)
+                          ? tag.color
+                          : undefined,
                       }}
                     >
                       {tag.name}
                     </button>
-                  )) || <p className="text-muted-foreground">Aucun tag disponible</p>}
+                  )) || (
+                    <p className="text-muted-foreground">
+                      Aucun tag disponible
+                    </p>
+                  )}
                 </div>
-                
+
                 {selectedTags.length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {selectedTags.map((tagId) => {
-                      const tag = tags?.find(t => t.id === tagId);
+                      const tag = tags?.find((t) => t.id === tagId);
                       return tag ? (
                         <Badge key={tag.id} variant="secondary">
                           {tag.name}
@@ -421,7 +444,8 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
             <CardHeader>
               <CardTitle>Section publique marketing</CardTitle>
               <CardDescription>
-                Contenu marketing affiché publiquement avant inscription. Utilisez MDX pour un formatage riche.
+                Contenu marketing affiché publiquement avant inscription.
+                Utilisez MDX pour un formatage riche.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -440,7 +464,8 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
                         />
                       </FormControl>
                       <FormDescription>
-                        Format MDX supporté - utilisez **gras**, *italique*, - listes, etc.
+                        Format MDX supporté - utilisez **gras**, *italique*, -
+                        listes, etc.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -509,6 +534,48 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={form.control}
+                  name="trailerUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>URL de la bande-annonce</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="https://.../trailer.mp4"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        URL vidéo affichée dans le hero de la page publique.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="faq"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>FAQ (JSON)</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder='[{"q":"Question ?","a":"Réponse"}]'
+                          rows={6}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Format attendu: tableau JSON d&apos;objets avec `q` et
+                        `a`.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
             </CardContent>
           </Card>
@@ -536,7 +603,13 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
                           step="0.01"
                           placeholder="0.00"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value
+                                ? parseFloat(e.target.value)
+                                : undefined,
+                            )
+                          }
                         />
                       </FormControl>
                       <FormDescription>
@@ -559,7 +632,13 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
                           min="1"
                           placeholder="120"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value
+                                ? parseInt(e.target.value)
+                                : undefined,
+                            )
+                          }
                         />
                       </FormControl>
                       <FormDescription>
@@ -658,15 +737,13 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
           {/* Actions */}
           <div className="flex items-center justify-between pt-6">
             <Button variant="outline" asChild>
-              <Link href="/admin/courses">
-                Annuler
-              </Link>
+              <Link href="/admin/courses">Annuler</Link>
             </Button>
-            
+
             <div className="flex items-center gap-3">
-              <Button 
+              <Button
                 type="button"
-                variant="outline" 
+                variant="outline"
                 onClick={handleSaveAsDraft}
                 disabled={isSavingDraft}
               >
@@ -677,8 +754,8 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
                 )}
                 Sauvegarder comme brouillon
               </Button>
-              
-              <Button 
+
+              <Button
                 type="button"
                 onClick={handlePublishAndSave}
                 disabled={isPublishing}

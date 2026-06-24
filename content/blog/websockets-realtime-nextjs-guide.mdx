@@ -1,0 +1,639 @@
+﻿---
+title: "WebSockets et Temps Réel avec Next.js : Le Guide Complet"
+excerpt: "Implémentez le temps réel dans vos applications Next.js — WebSockets, Server-Sent Events, Socket.io, et patterns de communication bidirectionnelle pour du chat, des notifications, et du live data."
+date: "2025-10-22"
+author: "Fernand SOUALO"
+categories: ["WebSockets", "Real-Time", "Next.js", "Socket.io"]
+coverImage: "/blog/websockets-realtime.png"
+---
+
+# WebSockets et Temps Réel avec Next.js : Le Guide Complet
+
+## Table of Contents
+
+1. [Pourquoi le Temps Réel ?](#pourquoi-le-temps-réel-)
+2. [Protocoles de Communication](#protocoles-de-communication)
+3. [WebSockets Natifs](#websockets-natifs)
+4. [Server-Sent Events (SSE)](#server-sent-events-sse)
+5. [Socket.io avec Next.js](#socketio-avec-nextjs)
+6. [Chat en Temps Réel](#chat-en-temps-réel)
+7. [Notifications Live](#notifications-live)
+8. [Gestion de la Reconnexion](#gestion-de-la-reconnexion)
+9. [Scaling et Production](#scaling-et-production)
+10. [Conclusion](#conclusion)
+
+## Pourquoi le Temps Réel ?
+
+Le web moderne exige de l'instantanéité. Les utilisateurs s'attendent à voir les changements immédiatement — messages, notifications, mises à jour de données — sans rafraîchir la page.
+
+<Mermaid chart={`
+flowchart LR
+    subgraph Polling["⏱️ Polling"]
+        C1["Client"] -->|"Requête toutes<br/>les 5s"| S1["Serveur"]
+        S1 -->|"Réponse<br/>(souvent vide)"| C1
+    end
+    
+    subgraph SSE["📡 Server-Sent Events"]
+        C2["Client"] -->|"Connexion<br/>unique"| S2["Serveur"]
+        S2 -->|"Push<br/>unidirectionnel"| C2
+    end
+    
+    subgraph WS["🔌 WebSockets"]
+        C3["Client"] <-->|"Communication<br/>bidirectionnelle"| S3["Serveur"]
+    end
+    
+    style Polling fill:#ef4444,stroke:#dc2626,color:#fff
+    style SSE fill:#f59e0b,stroke:#d97706,color:#fff
+    style WS fill:#10b981,stroke:#059669,color:#fff
+`} caption="Comparaison des approches temps réel : du polling aux WebSockets." />
+
+## Protocoles de Communication
+
+| Protocole | Direction | Connexion | Use Case |
+|-----------|-----------|-----------|----------|
+| **HTTP Polling** | Client → Serveur | Nouvelle à chaque fois | Legacy, simple |
+| **Long Polling** | Client → Serveur | Maintenue ~30s | Fallback |
+| **SSE** | Serveur → Client | Persistante | Notifications, feeds |
+| **WebSockets** | Bidirectionnel | Persistante | Chat, collaboration |
+
+## WebSockets Natifs
+
+### Serveur WebSocket avec Node.js
+
+```typescript
+// server/websocket.ts
+import { WebSocketServer, WebSocket } from "ws";
+import { IncomingMessage } from "http";
+
+interface Client {
+  ws: WebSocket;
+  userId: string;
+  rooms: Set<string>;
+}
+
+const clients = new Map<string, Client>();
+
+export function createWebSocketServer(port: number) {
+  const wss = new WebSocketServer({ port });
+
+  wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
+    const clientId = crypto.randomUUID();
+
+    const client: Client = {
+      ws,
+      userId: "",
+      rooms: new Set(),
+    };
+    clients.set(clientId, client);
+
+    ws.on("message", (data: Buffer) => {
+      try {
+        const message = JSON.parse(data.toString());
+        handleMessage(clientId, message);
+      } catch {
+        ws.send(JSON.stringify({ error: "Invalid JSON" }));
+      }
+    });
+
+    ws.on("close", () => {
+      clients.delete(clientId);
+    });
+
+    // Heartbeat pour détecter les déconnexions
+    const pingInterval = setInterval(() => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.ping();
+      }
+    }, 30000);
+
+    ws.on("close", () => clearInterval(pingInterval));
+  });
+
+  return wss;
+}
+
+function handleMessage(clientId: string, message: any) {
+  const client = clients.get(clientId);
+  if (!client) return;
+
+  switch (message.type) {
+    case "auth":
+      client.userId = message.userId;
+      break;
+
+    case "join":
+      client.rooms.add(message.room);
+      break;
+
+    case "message":
+      broadcastToRoom(message.room, {
+        type: "message",
+        userId: client.userId,
+        content: message.content,
+        timestamp: Date.now(),
+      });
+      break;
+  }
+}
+
+function broadcastToRoom(room: string, data: any) {
+  const payload = JSON.stringify(data);
+  clients.forEach((client) => {
+    if (
+      client.rooms.has(room)
+      && client.ws.readyState === WebSocket.OPEN
+    ) {
+      client.ws.send(payload);
+    }
+  });
+}
+```
+
+### Client WebSocket React
+
+```typescript
+// hooks/use-websocket.ts
+import { useEffect, useRef, useCallback, useState } from "react";
+
+type WSStatus = "connecting" | "connected" | "disconnected";
+
+interface UseWebSocketOptions {
+  url: string;
+  onMessage?: (data: any) => void;
+  reconnect?: boolean;
+  maxRetries?: number;
+}
+
+export function useWebSocket({
+  url,
+  onMessage,
+  reconnect = true,
+  maxRetries = 5,
+}: UseWebSocketOptions) {
+  const wsRef = useRef<WebSocket | null>(null);
+  const retriesRef = useRef(0);
+  const [status, setStatus] = useState<WSStatus>("disconnected");
+
+  const connect = useCallback(() => {
+    const ws = new WebSocket(url);
+    wsRef.current = ws;
+    setStatus("connecting");
+
+    ws.onopen = () => {
+      setStatus("connected");
+      retriesRef.current = 0;
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        onMessage?.(data);
+      } catch { /* ignore malformed messages */ }
+    };
+
+    ws.onclose = () => {
+      setStatus("disconnected");
+      if (reconnect && retriesRef.current < maxRetries) {
+        retriesRef.current++;
+        const delay = Math.min(
+          1000 * Math.pow(2, retriesRef.current),
+          30000,
+        );
+        setTimeout(connect, delay);
+      }
+    };
+  }, [url, onMessage, reconnect, maxRetries]);
+
+  const send = useCallback((data: any) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify(data));
+    }
+  }, []);
+
+  useEffect(() => {
+    connect();
+    return () => wsRef.current?.close();
+  }, [connect]);
+
+  return { send, status };
+}
+```
+
+## Server-Sent Events (SSE)
+
+### API Route SSE dans Next.js
+
+```typescript
+// app/api/events/route.ts
+export const runtime = "nodejs"; // SSE nécessite Node.js, pas Edge
+
+export async function GET(req: Request) {
+  const encoder = new TextEncoder();
+
+  const stream = new ReadableStream({
+    start(controller) {
+      // Envoyer un événement toutes les secondes
+      const interval = setInterval(() => {
+        const data = JSON.stringify({
+          timestamp: Date.now(),
+          type: "heartbeat",
+        });
+        controller.enqueue(
+          encoder.encode(`data: ${data}\n\n`),
+        );
+      }, 1000);
+
+      // Cleanup quand le client se déconnecte
+      req.signal.addEventListener("abort", () => {
+        clearInterval(interval);
+        controller.close();
+      });
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    },
+  });
+}
+```
+
+### Hook SSE côté client
+
+```typescript
+// hooks/use-sse.ts
+import { useEffect, useCallback, useRef } from "react";
+
+export function useSSE(
+  url: string,
+  onEvent: (data: any) => void,
+) {
+  const sourceRef = useRef<EventSource | null>(null);
+
+  const connect = useCallback(() => {
+    const source = new EventSource(url);
+    sourceRef.current = source;
+
+    source.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        onEvent(data);
+      } catch { /* ignore */ }
+    };
+
+    source.onerror = () => {
+      source.close();
+      // Reconnexion automatique avec EventSource
+      setTimeout(connect, 5000);
+    };
+  }, [url, onEvent]);
+
+  useEffect(() => {
+    connect();
+    return () => sourceRef.current?.close();
+  }, [connect]);
+}
+```
+
+## Socket.io avec Next.js
+
+### Serveur Socket.io
+
+```typescript
+// server/socket.ts
+import { Server as SocketIOServer } from "socket.io";
+import type { Server as HTTPServer } from "http";
+
+export function initSocketIO(httpServer: HTTPServer) {
+  const io = new SocketIOServer(httpServer, {
+    cors: {
+      origin: process.env.NEXT_PUBLIC_URL,
+      methods: ["GET", "POST"],
+    },
+    pingTimeout: 60000,
+    pingInterval: 25000,
+  });
+
+  // Middleware d'authentification
+  io.use(async (socket, next) => {
+    const token = socket.handshake.auth.token;
+    if (!token) return next(new Error("Authentication required"));
+
+    try {
+      const user = await verifyToken(token);
+      socket.data.user = user;
+      next();
+    } catch {
+      next(new Error("Invalid token"));
+    }
+  });
+
+  io.on("connection", (socket) => {
+    const userId = socket.data.user.id;
+    console.log(`User connected: ${userId}`);
+
+    // Rejoindre la room personnelle
+    socket.join(`user:${userId}`);
+
+    // Chat
+    socket.on("chat:join", (roomId: string) => {
+      socket.join(`chat:${roomId}`);
+    });
+
+    socket.on("chat:message", (data) => {
+      io.to(`chat:${data.roomId}`).emit("chat:message", {
+        ...data,
+        userId,
+        timestamp: Date.now(),
+      });
+    });
+
+    // Typing indicator
+    socket.on("chat:typing", (roomId: string) => {
+      socket.to(`chat:${roomId}`).emit("chat:typing", {
+        userId,
+        username: socket.data.user.name,
+      });
+    });
+
+    socket.on("disconnect", () => {
+      console.log(`User disconnected: ${userId}`);
+    });
+  });
+
+  return io;
+}
+```
+
+### Hook Socket.io React
+
+```typescript
+// hooks/use-socket.ts
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { io, Socket } from "socket.io-client";
+
+export function useSocket() {
+  const socketRef = useRef<Socket | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+
+  useEffect(() => {
+    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL!, {
+      auth: { token: getAuthToken() },
+      transports: ["websocket", "polling"],
+    });
+
+    socket.on("connect", () => setIsConnected(true));
+    socket.on("disconnect", () => setIsConnected(false));
+
+    socketRef.current = socket;
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+  return {
+    socket: socketRef.current,
+    isConnected,
+  };
+}
+```
+
+## Chat en Temps Réel
+
+### Composant Chat complet
+
+```tsx
+// components/chat/chat-room.tsx
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import { useSocket } from "@/hooks/use-socket";
+
+interface Message {
+  id: string;
+  userId: string;
+  username: string;
+  content: string;
+  timestamp: number;
+}
+
+export function ChatRoom({ roomId }: { roomId: string }) {
+  const { socket, isConnected } = useSocket();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.emit("chat:join", roomId);
+
+    socket.on("chat:message", (msg: Message) => {
+      setMessages((prev) => [...prev, msg]);
+    });
+
+    socket.on("chat:typing", ({ username }: { username: string }) => {
+      setTypingUsers((prev) =>
+        prev.includes(username) ? prev : [...prev, username],
+      );
+      setTimeout(() => {
+        setTypingUsers((prev) => prev.filter((u) => u !== username));
+      }, 3000);
+    });
+
+    return () => {
+      socket.off("chat:message");
+      socket.off("chat:typing");
+    };
+  }, [socket, roomId]);
+
+  // Auto-scroll
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const sendMessage = () => {
+    if (!input.trim() || !socket) return;
+
+    socket.emit("chat:message", {
+      roomId,
+      content: input.trim(),
+    });
+    setInput("");
+  };
+
+  return (
+    <div className="flex flex-col h-[600px] border rounded-lg">
+      {/* Indicateur de connexion */}
+      <div className="flex items-center gap-2 p-3 border-b">
+        <span className={`h-2 w-2 rounded-full ${
+          isConnected ? "bg-green-500" : "bg-red-500"
+        }`} />
+        <span className="text-sm text-muted-foreground">
+          {isConnected ? "Connecté" : "Déconnecté"}
+        </span>
+      </div>
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        {messages.map((msg) => (
+          <div key={msg.id} className="flex flex-col">
+            <span className="text-xs text-muted-foreground">
+              {msg.username}
+            </span>
+            <p className="bg-muted rounded-lg p-2 inline-block">
+              {msg.content}
+            </p>
+          </div>
+        ))}
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Typing indicator */}
+      {typingUsers.length > 0 && (
+        <p className="px-4 text-xs text-muted-foreground italic">
+          {typingUsers.join(", ")} typing...
+        </p>
+      )}
+
+      {/* Input */}
+      <div className="flex gap-2 p-3 border-t">
+        <input
+          value={input}
+          onChange={(e) => {
+            setInput(e.target.value);
+            socket?.emit("chat:typing", roomId);
+          }}
+          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          placeholder="Votre message..."
+          className="flex-1 border rounded-lg px-3 py-2"
+        />
+        <button
+          onClick={sendMessage}
+          className="bg-primary text-white px-4 py-2 rounded-lg"
+        >
+          Envoyer
+        </button>
+      </div>
+    </div>
+  );
+}
+```
+
+## Notifications Live
+
+```typescript
+// hooks/use-notifications.ts
+"use client";
+
+import { useEffect, useState } from "react";
+import { useSocket } from "./use-socket";
+
+interface Notification {
+  id: string;
+  title: string;
+  body: string;
+  read: boolean;
+  createdAt: number;
+}
+
+export function useNotifications() {
+  const { socket } = useSocket();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("notification", (notif: Notification) => {
+      setNotifications((prev) => [notif, ...prev]);
+
+      // Browser notification
+      if (Notification.permission === "granted") {
+        new Notification(notif.title, { body: notif.body });
+      }
+    });
+
+    return () => {
+      socket.off("notification");
+    };
+  }, [socket]);
+
+  const markAsRead = (id: string) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
+    );
+    socket?.emit("notification:read", id);
+  };
+
+  return { notifications, unreadCount, markAsRead };
+}
+```
+
+## Gestion de la Reconnexion
+
+```typescript
+// lib/resilient-connection.ts
+export class ResilientConnection {
+  private retryCount = 0;
+  private maxRetries = 10;
+  private baseDelay = 1000;
+
+  getDelay(): number {
+    // Exponential backoff avec jitter
+    const exp = Math.min(this.retryCount, 8);
+    const delay = this.baseDelay * Math.pow(2, exp);
+    const jitter = delay * 0.1 * Math.random();
+    return delay + jitter;
+  }
+
+  onSuccess() { this.retryCount = 0; }
+
+  onFailure(): number | null {
+    this.retryCount++;
+    if (this.retryCount > this.maxRetries) return null;
+    return this.getDelay();
+  }
+}
+```
+
+## Scaling et Production
+
+| Stratégie | Description | Quand l'utiliser |
+|-----------|-------------|-----------------|
+| **Redis Pub/Sub** | Broker de messages entre instances | Multi-serveurs |
+| **Sticky Sessions** | Client → même instance | Load balancer |
+| **Redis Adapter** | Socket.io multi-instance | Socket.io en production |
+| **Horizontal Scaling** | Ajouter des instances | Charge croissante |
+
+```typescript
+// Socket.io avec Redis Adapter pour le scaling
+import { createAdapter } from "@socket.io/redis-adapter";
+import { createClient } from "redis";
+
+const pubClient = createClient({ url: process.env.REDIS_URL });
+const subClient = pubClient.duplicate();
+
+await Promise.all([pubClient.connect(), subClient.connect()]);
+
+io.adapter(createAdapter(pubClient, subClient));
+```
+
+## Conclusion
+
+Le temps réel transforme l'expérience utilisateur :
+
+- **WebSockets natifs** pour un contrôle total et des performances maximales
+- **SSE** pour les flux unidirectionnels simples (notifications, feeds)
+- **Socket.io** pour une solution complète avec fallback, rooms, et scaling
+- **Reconnexion résiliente** avec exponential backoff
+- **Redis Adapter** pour le scaling horizontal en production
+
+Choisissez la technologie adaptée à votre cas d'usage et construisez des expériences instantanées.

@@ -7,6 +7,7 @@ import { CourseRepository } from "@/lib/repositories/course-repository";
 import { serializeCourseDetail } from "@/lib/serializers/course-serializer";
 import { logger, createLogger } from "@/lib/structured-logger";
 import { Analytics } from "@/lib/analytics";
+import { db } from "@/lib/db";
 import { CourseHeader } from "./_components/course-header";
 import { CourseCurriculum } from "./_components/course-curriculum";
 import { CourseEnrollment } from "./_components/course-enrollment";
@@ -16,11 +17,20 @@ import { PaymentStatus } from "./_components/payment-status";
 import { CourseResumeBanner } from "./_components/course-resume-banner";
 import { TrainingOverview } from "./_components/training-overview";
 import { CoursePublicContent } from "./_components/course-public-content";
+import { CourseTrailer } from "@/components/marketing/course-trailer";
+import { CourseFaq } from "@/components/marketing/course-faq";
+import { TrustBadges } from "@/components/marketing/trust-badges";
+import { SocialProof } from "@/components/marketing/social-proof";
+import { CertificateReveal } from "@/components/learning/certificate-reveal";
 import { SerializedCourse } from "./types";
 
 interface CoursePageProps {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ success?: string; canceled?: string }>;
+  searchParams: Promise<{
+    success?: string;
+    canceled?: string;
+    preview?: string;
+  }>;
 }
 
 export async function generateMetadata({
@@ -71,7 +81,7 @@ export default async function CoursePage({
   searchParams,
 }: CoursePageProps) {
   const { slug } = await params;
-  const { success, canceled } = await searchParams;
+  const { success, canceled, preview } = await searchParams;
 
   const correlationId = logger.generateCorrelationId();
   const courseLogger = createLogger({
@@ -123,6 +133,7 @@ export default async function CoursePage({
     title: string;
     slug: string;
   } | null = null;
+  let earnedCertificate: { id: string; issuedAt: Date } | null = null;
 
   if (userId && course?.id) {
     userAccess = await AccessService.checkCourseAccess(userId, course.id);
@@ -172,6 +183,19 @@ export default async function CoursePage({
           title: next.title,
         };
     }
+
+    earnedCertificate = await db.certificate.findUnique({
+      where: {
+        userId_courseId: {
+          userId,
+          courseId: course.id,
+        },
+      },
+      select: {
+        id: true,
+        issuedAt: true,
+      },
+    });
   }
 
   const isUnlocked = userAccess.canAccessCourse;
@@ -180,7 +204,18 @@ export default async function CoursePage({
   const hasActiveSubscription = userAccess.hasActiveSubscription;
 
   if (!course || !course.published) {
-    notFound();
+    // Allow preview mode for ADMIN/INSTRUCTOR
+    const isPreviewMode = preview === "true";
+    const canPreviewUnpublished =
+      isPreviewMode &&
+      session?.user &&
+      (session.user.role === "ADMIN" ||
+        (session.user.role === "INSTRUCTOR" &&
+          course?.instructorId === session.user.id));
+
+    if (!course || !canPreviewUnpublished) {
+      notFound();
+    }
   }
 
   const detail = serializeCourseDetail(course);
@@ -301,7 +336,31 @@ export default async function CoursePage({
               nextLesson={nextUncompletedLesson}
               isEnrolled={isUnlocked}
             />
+
+            {/* Hero trailer */}
+            {course.trailerUrl && (
+              <CourseTrailer
+                trailerUrl={course.trailerUrl}
+                thumbnail={course.thumbnail}
+                title={course.title}
+              />
+            )}
+
             <CourseHeader course={serializedCourse} />
+
+            {/* Social proof - enrollment count & ratings */}
+            <SocialProof
+              enrollmentCount={serializedCourse.enrollments?.length || 0}
+              averageRating={
+                serializedCourse.reviews.length > 0
+                  ? serializedCourse.reviews.reduce(
+                      (sum, r) => sum + r.rating,
+                      0,
+                    ) / serializedCourse.reviews.length
+                  : 0
+              }
+              reviewCount={serializedCourse.reviews.length}
+            />
 
             {/* Public Marketing Content - Always visible */}
             <CoursePublicContent
@@ -345,6 +404,23 @@ export default async function CoursePage({
               courseId={serializedCourse.id}
               canReview={isUnlocked}
             />
+
+            {earnedCertificate && session?.user && (
+              <CertificateReveal
+                certificateId={earnedCertificate.id}
+                courseTitle={course.title}
+                userName={session.user.name || "Étudiant"}
+                issuedAt={earnedCertificate.issuedAt.toISOString()}
+              />
+            )}
+
+            {/* FAQ section */}
+            {course.faq && Array.isArray(course.faq) && (
+              <CourseFaq items={course.faq as { q: string; a: string }[]} />
+            )}
+
+            {/* Trust badges */}
+            <TrustBadges />
           </div>
           <div className="lg:col-span-1">
             <div className="sticky top-8">

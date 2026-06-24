@@ -37,6 +37,8 @@ export interface CourseData {
   publicResources?: string | null;
   publicEvaluation?: string | null;
   publicPrerequisites?: string | null;
+  trailerUrl?: string | null;
+  faq?: Array<{ q: string; a: string }> | null;
 }
 
 // Query types for database operations

@@ -1,5 +1,6 @@
 // Shared course formatting utilities
-// Centralizes presentation logic for duration, level labels, and (future) price formatting.
+// Centralizes presentation logic for duration and level labels.
+// Price formatting is handled by lib/price-format.ts
 
 export function formatDuration(minutes: number | null | undefined): string {
   if (minutes === null || minutes === undefined) return "Durée variable";
@@ -21,13 +22,4 @@ const levelMap: Record<string, string> = {
 export function formatLevel(level: string | null | undefined): string {
   if (!level) return "";
   return levelMap[level] || level;
-}
-
-// Placeholder for future currency/locale aware formatting
-export function formatPrice(euros: number, locale: string = "fr-FR", currency: string = "EUR") {
-  try {
-    return new Intl.NumberFormat(locale, { style: "currency", currency, maximumFractionDigits: 0 }).format(euros);
-  } catch {
-    return `${euros}€`;
-  }
 }

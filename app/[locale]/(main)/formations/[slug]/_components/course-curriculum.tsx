@@ -232,10 +232,14 @@ export function CourseCurriculum({
                         isAuthenticated &&
                         (isEnrolled || (overallIndex === 0 && canPreview))
                       ) {
+                        const lessonHref = isEnrolled
+                          ? `/learn/${courseSlug}/lessons/${lesson.slug}`
+                          : `/formations/${courseSlug}/lessons/${lesson.slug}?preview=1`;
+
                         return (
                           <Link
                             key={lesson.id}
-                            href={`/formations/${courseSlug}/lessons/${lesson.slug}${!isEnrolled && canPreview && overallIndex === 0 ? "?preview=1" : ""}`}
+                            href={lessonHref}
                             className="block hover:scale-[1.02] transition-transform"
                           >
                             {LessonContent}
@@ -269,7 +273,7 @@ export function CourseCurriculum({
                               {moduleQuizzes.map((quiz) => (
                                 <Link
                                   key={quiz.id}
-                                  href={`/formations/${courseSlug}/quizzes/${quiz.id}`}
+                                  href={`/learn/${courseSlug}/quizzes/${quiz.id}`}
                                   className="block hover:scale-[1.02] transition-transform"
                                 >
                                   <div className="flex items-center justify-between p-3 rounded-lg border bg-gradient-to-r from-violet-950 to-purple-950 border-violet-700 hover:from-violet-900 hover:to-purple-900 transition-colors">

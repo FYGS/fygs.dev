@@ -14,13 +14,22 @@
 @plugin 'tailwind-scrollbar';
 @plugin '../lib/tailwind-plugins/playground-animations-v4';
 
-/* Disable dark mode variants to prevent browser prefers-color-scheme interference */
-/* We use only static dark theme colors, no light/dark switching */
+/* Theme system: supports dark (default) and light mode via .dark/.light classes */
 
 @theme {
   --font-sans: var(--font-geist-sans), sans-serif;
   --font-mono: var(--font-geist-mono), monospace;
   --font-caption: var(--font-caption), sans-serif;
+
+  /* ─── Motion tokens ─── */
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+  --duration-slower: 600ms;
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 
   --animate-blob: blob 7s infinite;
   --animate-gradient: gradient 15s ease infinite;
@@ -63,9 +72,18 @@
   --color-chart-4: hsl(var(--chart-4));
   --color-chart-5: hsl(var(--chart-5));
 
+  /* Extended semantic colors */
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-info: hsl(var(--info));
+  --color-info-foreground: hsl(var(--info-foreground));
+
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
+  --radius-xl: calc(var(--radius) + 4px);
 
   @keyframes blob {
     0% {
@@ -125,13 +143,90 @@
   }
 }
 
+/* ─── Typography scale utilities ─── */
+
+@utility text-display {
+  font-family: var(--font-caption), sans-serif;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+@utility text-heading-1 {
+  font-size: clamp(1.875rem, 3vw, 2.5rem);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+}
+
+@utility text-heading-2 {
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+@utility text-heading-3 {
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+@utility text-body-lg {
+  font-size: 1.125rem;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+@utility text-body {
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+@utility text-body-sm {
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+@utility text-caption {
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+
+/* ─── Transition utilities using motion tokens ─── */
+
+@utility transition-fast {
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-default);
+}
+
+@utility transition-normal {
+  transition-duration: var(--duration-normal);
+  transition-timing-function: var(--ease-default);
+}
+
+@utility transition-slow {
+  transition-duration: var(--duration-slow);
+  transition-timing-function: var(--ease-default);
+}
+
+@utility transition-bounce {
+  transition-duration: var(--duration-normal);
+  transition-timing-function: var(--ease-bounce);
+}
+
 /* ─── Gradient text utilities (DRY: single class replaces 4-class combos) ─── */
 
 @utility text-gradient-primary {
   background-image: linear-gradient(
-    to right,
+    135deg,
     hsl(var(--primary)),
-    hsl(var(--secondary))
+    hsl(239 84% 80%)
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -357,27 +452,83 @@
 }
 
 @layer base {
-  :root {
-    --background: 220 13% 18%;
-    --foreground: 219 14% 71%;
-    --muted: 220 12% 22%;
-    --muted-foreground: 220 12% 72%;
-    --popover: 220 13% 15%;
-    --popover-foreground: 219 14% 81%;
-    --card: 220 13% 16%;
-    --card-foreground: 219 14% 76%;
-    --border: 220 3% 23%;
-    --input: 220 3% 26%;
-    --primary: 220 13% 86%;
-    --primary-foreground: 220 13% 26%;
-    --secondary: 220 3% 25%;
-    --secondary-foreground: 220 3% 85%;
-    --accent: 220 13% 33%;
-    --accent-foreground: 220 13% 93%;
-    --destructive: 3 89% 50%;
+  /* ─── DARK THEME (default) ─── */
+  :root,
+  .dark {
+    --background: 222 47% 11%; /* #0F172A - Slate 900 */
+    --foreground: 210 40% 98%; /* #F8FAFC - Slate 50 */
+    --muted: 217 33% 17%; /* #1E293B - Slate 800 */
+    --muted-foreground: 215 20% 65%; /* #94A3B8 - Slate 400 */
+    --popover: 222 47% 11%; /* #0F172A */
+    --popover-foreground: 210 40% 98%; /* #F8FAFC */
+    --card: 217 33% 17%; /* #1E293B */
+    --card-foreground: 214 32% 91%; /* #E2E8F0 - Slate 200 */
+    --border: 217 19% 27%; /* #334155 - Slate 700 */
+    --input: 217 19% 27%; /* #334155 */
+    --primary: 239 84% 67%; /* #818CF8 - Indigo 400 */
+    --primary-foreground: 0 0% 100%; /* White */
+    --secondary: 217 19% 27%; /* #334155 - Slate 700 */
+    --secondary-foreground: 210 40% 98%; /* #F8FAFC */
+    --accent: 217 33% 22%; /* Slate 750 */
+    --accent-foreground: 210 40% 98%; /* #F8FAFC */
+    --destructive: 0 84% 60%; /* #EF4444 - Red 500 */
     --destructive-foreground: 0 0% 100%;
-    --ring: 220 13% 86%;
-    --radius: 0.5rem;
+    --ring: 239 84% 67%; /* Indigo 400 */
+    --radius: 0.625rem;
+
+    /* Extended palette for specific use cases */
+    --success: 160 84% 39%; /* #10B981 - Emerald 500 */
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%; /* #F59E0B - Amber 500 */
+    --warning-foreground: 0 0% 0%;
+    --info: 199 89% 48%; /* #0EA5E9 - Sky 500 */
+    --info-foreground: 0 0% 100%;
+
+    /* Chart colors */
+    --chart-1: 239 84% 67%; /* Indigo */
+    --chart-2: 160 84% 39%; /* Emerald */
+    --chart-3: 38 92% 50%; /* Amber */
+    --chart-4: 280 67% 60%; /* Purple */
+    --chart-5: 199 89% 48%; /* Sky */
+  }
+
+  /* ─── LIGHT THEME ─── */
+  .light {
+    --background: 0 0% 100%; /* White */
+    --foreground: 222 47% 11%; /* #0F172A - Slate 900 */
+    --muted: 210 40% 96%; /* #F1F5F9 - Slate 100 */
+    --muted-foreground: 215 16% 47%; /* #64748B - Slate 500 */
+    --popover: 0 0% 100%; /* White */
+    --popover-foreground: 222 47% 11%; /* Slate 900 */
+    --card: 210 40% 98%; /* #F8FAFC - Slate 50 */
+    --card-foreground: 222 47% 11%; /* Slate 900 */
+    --border: 214 32% 91%; /* #E2E8F0 - Slate 200 */
+    --input: 214 32% 91%; /* Slate 200 */
+    --primary: 239 84% 67%; /* #818CF8 - Indigo 400 (same hue) */
+    --primary-foreground: 0 0% 100%; /* White */
+    --secondary: 210 40% 96%; /* #F1F5F9 - Slate 100 */
+    --secondary-foreground: 222 47% 11%; /* Slate 900 */
+    --accent: 210 40% 96%; /* Slate 100 */
+    --accent-foreground: 222 47% 11%; /* Slate 900 */
+    --destructive: 0 84% 60%; /* Red 500 */
+    --destructive-foreground: 0 0% 100%;
+    --ring: 239 84% 67%; /* Indigo 400 */
+    --radius: 0.625rem;
+
+    /* Extended palette */
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 0%;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+
+    /* Chart colors (slightly darker for light bg) */
+    --chart-1: 239 84% 57%; /* Indigo 500 */
+    --chart-2: 160 84% 34%; /* Emerald 600 */
+    --chart-3: 38 92% 44%; /* Amber 600 */
+    --chart-4: 280 67% 50%; /* Purple darker */
+    --chart-5: 199 89% 42%; /* Sky 600 */
   }
 }
 
@@ -424,9 +575,9 @@
 
 @keyframes shimmer {
   0% {
-    background-position: -200% 0;
+    transform: translateX(-100%);
   }
   100% {
-    background-position: 200% 0;
+    transform: translateX(100%);
   }
 }

@@ -8,7 +8,18 @@
  * Individual tests should handle their own data isolation via transactions or cleanup.
  */
 
-import { beforeAll, afterAll } from "vitest";
+import { beforeAll, afterAll, afterEach } from "vitest";
+import "@testing-library/jest-dom/vitest";
+
+// Automatic cleanup for React Testing Library (jsdom environments)
+afterEach(async () => {
+  try {
+    const { cleanup } = await import("@testing-library/react");
+    cleanup();
+  } catch {
+    // Not in a jsdom environment or @testing-library/react not available
+  }
+});
 
 const isIntegrationTest = process.env.TEST_INTEGRATION === "true";
 

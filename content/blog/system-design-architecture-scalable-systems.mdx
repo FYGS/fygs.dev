@@ -1,0 +1,485 @@
+﻿---
+title: "System Design pour Développeurs : Architecture à Grande Échelle"
+excerpt: "Apprenez le system design — load balancing, caching, bases de données distribuées, message queues, microservices, CDN, et patterns d'architecture pour des systèmes scalables et résilients."
+date: "2025-10-14"
+author: "Fernand SOUALO"
+categories: ["System Design", "Architecture", "Scalabilité", "DevOps"]
+coverImage: "/blog/system-design-guide.png"
+---
+
+# System Design pour Développeurs : Architecture à Grande Échelle
+
+## Table of Contents
+
+1. [Pourquoi le System Design ?](#pourquoi-le-system-design-)
+2. [Fondamentaux](#fondamentaux)
+3. [Load Balancing](#load-balancing)
+4. [Caching](#caching)
+5. [Bases de Données Distribuées](#bases-de-données-distribuées)
+6. [Message Queues](#message-queues)
+7. [Microservices vs Monolithe](#microservices-vs-monolithe)
+8. [CDN et Edge Computing](#cdn-et-edge-computing)
+9. [Cas Pratiques](#cas-pratiques)
+10. [Conclusion](#conclusion)
+
+## Pourquoi le System Design ?
+
+Le code parfait ne suffit pas si l'architecture ne tient pas la charge. Le system design est l'art de concevoir des systèmes qui restent **performants, fiables et maintenables** à mesure qu'ils grandissent.
+
+<Mermaid chart={`
+flowchart TB
+    USERS["👥 Millions<br/>d'utilisateurs"] --> CDN["🌍 CDN<br/>Edge Cache"]
+    CDN --> LB["⚖️ Load Balancer"]
+    
+    LB --> APP1["🖥️ App Server 1"]
+    LB --> APP2["🖥️ App Server 2"]
+    LB --> APP3["🖥️ App Server N"]
+    
+    APP1 --> CACHE["⚡ Cache<br/>Redis"]
+    APP2 --> CACHE
+    APP3 --> CACHE
+    
+    CACHE --> DB_PRIMARY["🗄️ DB Primary"]
+    DB_PRIMARY --> DB_REPLICA1["📋 Replica 1"]
+    DB_PRIMARY --> DB_REPLICA2["📋 Replica 2"]
+    
+    APP1 --> QUEUE["📨 Message Queue"]
+    QUEUE --> WORKER["⚙️ Workers"]
+    
+    style USERS fill:#6366f1,stroke:#4f46e5,color:#fff
+    style CDN fill:#10b981,stroke:#059669,color:#fff
+    style LB fill:#f59e0b,stroke:#d97706,color:#fff
+    style CACHE fill:#ef4444,stroke:#dc2626,color:#fff
+    style DB_PRIMARY fill:#3b82f6,stroke:#2563eb,color:#fff
+    style QUEUE fill:#8b5cf6,stroke:#7c3aed,color:#fff
+`} caption="Architecture type haute disponibilité : CDN, Load Balancer, Cache, DB répliquée, Message Queue." />
+
+## Fondamentaux
+
+### Les 3 piliers du system design
+
+| Pilier | Définition | Métriques |
+|--------|-----------|-----------|
+| **Scalabilité** | Capacité à gérer la croissance | Requêtes/seconde, latence p99 |
+| **Disponibilité** | Uptime du système | SLA (99.9% = 8.7h down/an) |
+| **Consistance** | Cohérence des données | Éventuelle vs forte |
+
+### Théorème CAP
+
+Dans un système distribué, vous ne pouvez garantir que **2 sur 3** :
+
+- **Consistency** : Toutes les lectures retournent la dernière écriture
+- **Availability** : Chaque requête reçoit une réponse
+- **Partition Tolerance** : Le système fonctionne malgré des pannes réseau
+
+> En pratique, les partitions réseau arrivent toujours. Le choix est donc entre **CP** (consistance forte, ex: PostgreSQL) et **AP** (haute disponibilité, ex: Cassandra).
+
+### Estimation de capacité
+
+```
+// Exercice : dimensionner un système de messagerie
+
+Utilisateurs actifs quotidiens : 10M
+Messages par utilisateur/jour : 50
+Taille moyenne d'un message : 200 bytes
+
+Calculs :
+- Messages/jour : 10M × 50 = 500M messages/jour
+- Messages/seconde : 500M / 86400 ≈ 5800 msg/s
+- Stockage/jour : 500M × 200B = 100 GB/jour
+- Stockage/an : 100 GB × 365 = 36.5 TB/an
+- Bandwidth : 5800 × 200B = 1.16 MB/s (écriture)
+```
+
+## Load Balancing
+
+### Algorithmes de répartition
+
+```
+Round Robin      : Requêtes distribuées en cercle
+Weighted Round   : Poids basé sur la capacité du serveur
+Least Connections: Vers le serveur le moins chargé
+IP Hash          : Même client → même serveur (stickiness)
+```
+
+### Configuration Nginx
+
+```nginx
+# nginx.conf
+upstream app_servers {
+    least_conn;  # Algorithme least connections
+
+    server app1:3000 weight=3;  # 3x plus de trafic
+    server app2:3000 weight=2;
+    server app3:3000 weight=1;
+
+    # Health checks
+    server app4:3000 backup;  # Utilisé seulement si les autres tombent
+}
+
+server {
+    listen 80;
+
+    location / {
+        proxy_pass http://app_servers;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+        # Timeouts
+        proxy_connect_timeout 5s;
+        proxy_read_timeout 30s;
+    }
+
+    # Health check endpoint
+    location /health {
+        proxy_pass http://app_servers;
+        proxy_connect_timeout 1s;
+        proxy_read_timeout 1s;
+    }
+}
+```
+
+## Caching
+
+### Stratégies de cache
+
+| Stratégie | Description | Quand l'utiliser |
+|-----------|-------------|-----------------|
+| **Cache-Aside** | L'app vérifie le cache, sinon requête DB | Lecture intensive, données rarement modifiées |
+| **Write-Through** | Écriture dans cache + DB simultanément | Consistance forte nécessaire |
+| **Write-Behind** | Écriture dans cache, DB en arrière-plan | Performance d'écriture critique |
+| **Read-Through** | Le cache requête la DB si cache miss | Simplification du code applicatif |
+
+### Implémentation Redis
+
+```typescript
+// lib/cache.ts
+import Redis from "ioredis";
+
+const redis = new Redis(process.env.REDIS_URL!);
+
+// Cache-Aside pattern
+export async function cachedQuery<T>(
+  key: string,
+  queryFn: () => Promise<T>,
+  ttl: number = 3600,
+): Promise<T> {
+  // 1. Vérifier le cache
+  const cached = await redis.get(key);
+  if (cached) {
+    return JSON.parse(cached) as T;
+  }
+
+  // 2. Requête DB
+  const data = await queryFn();
+
+  // 3. Stocker dans le cache
+  await redis.setex(key, ttl, JSON.stringify(data));
+
+  return data;
+}
+
+// Invalidation ciblée
+export async function invalidateCache(pattern: string) {
+  const keys = await redis.keys(pattern);
+  if (keys.length > 0) {
+    await redis.del(...keys);
+  }
+}
+
+// Utilisation
+const posts = await cachedQuery(
+  "posts:published:page:1",
+  () =>
+    prisma.post.findMany({
+      where: { published: true },
+      take: 20,
+    }),
+  1800, // 30 minutes
+);
+```
+
+### Cache multi-couches
+
+```typescript
+// L1: In-Memory (process) → L2: Redis → L3: Database
+
+const memoryCache = new Map<string, { data: any; expires: number }>();
+
+export async function multiLayerCache<T>(
+  key: string,
+  queryFn: () => Promise<T>,
+  ttl: number = 3600,
+): Promise<T> {
+  // L1: Mémoire locale (ultra-rapide, ~1ms)
+  const inMemory = memoryCache.get(key);
+  if (inMemory && inMemory.expires > Date.now()) {
+    return inMemory.data as T;
+  }
+
+  // L2: Redis (rapide, ~5ms)
+  const cached = await redis.get(key);
+  if (cached) {
+    const data = JSON.parse(cached) as T;
+    memoryCache.set(key, {
+      data,
+      expires: Date.now() + 60000, // L1 = 1 min
+    });
+    return data;
+  }
+
+  // L3: Database (lent, ~50-200ms)
+  const data = await queryFn();
+  await redis.setex(key, ttl, JSON.stringify(data));
+  memoryCache.set(key, {
+    data,
+    expires: Date.now() + 60000,
+  });
+
+  return data;
+}
+```
+
+## Bases de Données Distribuées
+
+### Réplication
+
+```
+Primary-Replica Architecture :
+
+┌──────────┐     ┌──────────────┐
+│ Primary  │────→│  Replica 1   │  (Lecture)
+│ (Write)  │     └──────────────┘
+│          │     ┌──────────────┐
+│          │────→│  Replica 2   │  (Lecture)
+│          │     └──────────────┘
+│          │     ┌──────────────┐
+│          │────→│  Replica 3   │  (Lecture)
+└──────────┘     └──────────────┘
+
+Avantages :
+- Lectures distribuées (scalabilité)
+- Haute disponibilité (failover)
+- Backups sans impact
+```
+
+### Sharding
+
+```typescript
+// Sharding par user_id — chaque shard contient un sous-ensemble
+
+function getShardKey(userId: string): number {
+  // Hash consistant pour déterminer le shard
+  const hash = createHash("md5")
+    .update(userId)
+    .digest("hex");
+  const numericHash = parseInt(hash.substring(0, 8), 16);
+  return numericHash % NUM_SHARDS;
+}
+
+// Routing vers le bon shard
+const shardConnections = [
+  new PrismaClient({ datasources: { db: { url: SHARD_0_URL } } }),
+  new PrismaClient({ datasources: { db: { url: SHARD_1_URL } } }),
+  new PrismaClient({ datasources: { db: { url: SHARD_2_URL } } }),
+];
+
+async function getUserData(userId: string) {
+  const shardIndex = getShardKey(userId);
+  const db = shardConnections[shardIndex];
+  return db.user.findUnique({ where: { id: userId } });
+}
+```
+
+## Message Queues
+
+### Pourquoi les queues ?
+
+```
+Sans Queue :
+Client → API → [Opération lente 10s] → Réponse (10s d'attente)
+
+Avec Queue :
+Client → API → Queue → Réponse immédiate (200ms)
+                ↓
+              Worker → [Opération lente 10s] → Résultat asynchrone
+```
+
+### Implémentation avec BullMQ
+
+```typescript
+// lib/queue.ts
+import { Queue, Worker } from "bullmq";
+import Redis from "ioredis";
+
+const connection = new Redis(process.env.REDIS_URL!);
+
+// Créer la queue
+export const emailQueue = new Queue("emails", { connection });
+
+// Ajouter un job
+export async function sendEmail(to: string, template: string) {
+  await emailQueue.add(
+    "send-email",
+    { to, template },
+    {
+      attempts: 3,
+      backoff: { type: "exponential", delay: 1000 },
+      removeOnComplete: true,
+      removeOnFail: false,
+    },
+  );
+}
+
+// Worker qui traite les jobs
+const worker = new Worker(
+  "emails",
+  async (job) => {
+    const { to, template } = job.data;
+    await sendEmailViaProvider(to, template);
+    console.log(`Email sent to ${to}`);
+  },
+  {
+    connection,
+    concurrency: 5,
+    limiter: { max: 100, duration: 60000 }, // 100/minute
+  },
+);
+
+worker.on("failed", (job, err) => {
+  console.error(`Job ${job?.id} failed:`, err);
+});
+```
+
+## Microservices vs Monolithe
+
+| Aspect | Monolithe | Microservices |
+|--------|-----------|---------------|
+| **Déploiement** | Simple, un seul artefact | Complexe, orchestration nécessaire |
+| **Scalabilité** | Verticale principalement | Horizontale par service |
+| **Développement** | Rapide au début | Rapide à grande échelle |
+| **Debugging** | Stack trace unique | Tracing distribué nécessaire |
+| **Consistance** | Transactions DB | Saga pattern, eventual consistency |
+| **Équipe** | ~10 développeurs | Multiple équipes autonomes |
+
+### Quand basculer ?
+
+```
+Monolithe d'abord (< 10 devs, < 1M users)
+    ↓ Quand la douleur dépasse le bénéfice
+Monolithe modulaire (services internes)
+    ↓ Quand il faut scaler différemment certaines parties
+Microservices (> 50 devs, > 10M users)
+```
+
+> **Règle de Martin Fowler** : Si vous ne pouvez pas construire un monolithe correctement, vous ne pouvez pas construire des microservices correctement.
+
+## CDN et Edge Computing
+
+### Architecture CDN
+
+```
+Utilisateur (Paris) → Edge PoP (Paris) → [Hit] → Réponse 20ms
+                           ↓ [Miss]
+                      Origin (US-East) → Réponse 200ms
+```
+
+```typescript
+// next.config.mjs — caching pour CDN
+async headers() {
+  return [
+    {
+      source: "/api/posts",
+      headers: [
+        {
+          key: "Cache-Control",
+          value: "public, s-maxage=3600, stale-while-revalidate=86400",
+        },
+      ],
+    },
+    {
+      source: "/_next/static/(.*)",
+      headers: [
+        {
+          key: "Cache-Control",
+          value: "public, max-age=31536000, immutable",
+        },
+      ],
+    },
+  ];
+}
+```
+
+### Edge Functions
+
+```typescript
+// middleware.ts — exécuté sur l'Edge (< 5ms)
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+export const config = {
+  matcher: "/api/:path*",
+};
+
+export function middleware(req: NextRequest) {
+  // Géo-routing
+  const country = req.geo?.country ?? "US";
+
+  // A/B testing côté Edge
+  const bucket = req.cookies.get("ab-bucket")?.value
+    ?? (Math.random() < 0.5 ? "A" : "B");
+
+  const response = NextResponse.next();
+  response.cookies.set("ab-bucket", bucket);
+  response.headers.set("x-country", country);
+
+  return response;
+}
+```
+
+## Cas Pratiques
+
+### Design d'un URL Shortener
+
+```
+Exigences :
+- 100M URLs créées/mois
+- 10B redirections/mois
+- Latence < 10ms pour les redirections
+
+Architecture :
+1. API Service → Génération de short URL (Base62 encoding)
+2. Redis Cache → Hot URLs (top 20% = 80% du trafic)
+3. PostgreSQL → Stockage persistant
+4. CDN → Redirections cachées en edge
+5. Analytics Queue → Comptage asynchrone des clics
+```
+
+### Design d'un Feed Social
+
+```
+Exigences :
+- 100M utilisateurs actifs
+- Chaque utilisateur suit ~200 personnes
+- Feed personnalisé, ordonné par pertinence
+
+Architecture :
+1. Write Path : Post → Fan-out Queue → Pre-compute feeds
+2. Read Path : User → Cache (pre-computed feed) → Serve
+3. Célébrités : Fan-out on read (hybride)
+4. Ranking : Score = recency × engagement × relationship
+5. Storage : Redis (hot feeds) + Cassandra (cold storage)
+```
+
+## Conclusion
+
+Le system design est un art d'équilibre :
+
+- **Load Balancing** pour distribuer la charge
+- **Caching multi-couches** pour la performance
+- **Réplication et Sharding** pour la scalabilité des données
+- **Message Queues** pour le découplage et la résilience
+- **CDN et Edge** pour la latence minimale
+- **Monolithe d'abord**, microservices ensuite
+
+Chaque décision architecturale est un compromis. Comprenez les trade-offs, mesurez avant d'optimiser, et évoluez l'architecture avec les besoins réels — pas les besoins imaginés.

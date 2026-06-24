@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Clock, Users, Star, Calendar } from "lucide-react";
-import Image from "next/image";
+import { CourseThumbnail } from "@/components/marketing/course-thumbnail";
 import { SerializedCourse } from "../types";
 
 interface CourseHeaderProps {
@@ -43,23 +43,12 @@ export function CourseHeader({ course }: CourseHeaderProps) {
     <div className="space-y-6">
       {/* Video/Thumbnail */}
       <div className="aspect-video relative overflow-hidden rounded-xl border border-border shadow-sm">
-        {course.thumbnail ? (
-          <Image
-            src={course.thumbnail}
-            alt={course.title}
-            fill
-            className="object-cover"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-6xl mb-4">🎓</div>
-              <p className="text-lg text-muted-foreground">
-                Aperçu de la formation
-              </p>
-            </div>
-          </div>
-        )}
+        <CourseThumbnail
+          src={course.thumbnail}
+          alt={course.title}
+          priority
+          className="h-full w-full rounded-none"
+        />
       </div>
 
       {/* Course Info */}

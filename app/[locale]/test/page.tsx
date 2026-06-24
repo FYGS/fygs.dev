@@ -1,10 +1,7 @@
-import { TestComponent } from "@/components/TestComponent";
-
-const Page = async (/*{ params }*/) => {
-  // const { locale } = await params;
-
-  return <TestComponent />;
-
-};
-
-export default Page;
+export default function TestPage() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <h1 className="text-4xl font-bold">Test Page</h1>
+    </div>
+  );
+}

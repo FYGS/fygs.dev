@@ -1,5 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 
 // Centralized DB access for course domain.
 // WARNING: This is an initial scaffold; more methods (updates, stats, recommendations) will be added progressively.
@@ -175,19 +176,26 @@ export class CourseRepository {
       publishedOnly = true,
       limit,
     } = filters;
+    const where: Prisma.CourseWhereInput = {
+      ...(publishedOnly && { published: true }),
+      ...(featuredOnly && { featured: true }),
+      ...(category && { category: category as any }),
+      ...(level && { level: level as any }),
+      ...(search && {
+        OR: [
+          { title: { contains: search, mode: Prisma.QueryMode.insensitive } },
+          {
+            description: {
+              contains: search,
+              mode: Prisma.QueryMode.insensitive,
+            },
+          },
+        ],
+      }),
+    };
+
     return db.course.findMany({
-      where: {
-        ...(publishedOnly && { published: true }),
-        ...(featuredOnly && { featured: true }),
-        ...(category && { category: category as any }),
-        ...(level && { level: level as any }),
-        ...(search && {
-          OR: [
-            { title: { contains: search, mode: "insensitive" } },
-            { description: { contains: search, mode: "insensitive" } },
-          ],
-        }),
-      },
+      where,
       include: {
         ...this.baseIncludes(),
         lessons: {

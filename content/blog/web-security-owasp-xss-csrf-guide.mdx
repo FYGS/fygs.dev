@@ -1,0 +1,412 @@
+﻿---
+title: "Sécurité Web pour Développeurs : OWASP, XSS, CSRF — Le Guide Complet"
+excerpt: "Sécurisez vos applications web — OWASP Top 10, Cross-Site Scripting, injection SQL, CSRF, Content Security Policy, authentification sécurisée, et audit de sécurité pour Next.js."
+date: "2025-10-16"
+author: "Fernand SOUALO"
+categories: ["Sécurité", "OWASP", "Web", "Next.js"]
+coverImage: "/blog/web-security-guide.png"
+---
+
+# Sécurité Web pour Développeurs : OWASP, XSS, CSRF — Le Guide Complet
+
+## Table of Contents
+
+1. [Pourquoi la Sécurité Web ?](#pourquoi-la-sécurité-web-)
+2. [OWASP Top 10](#owasp-top-10)
+3. [Cross-Site Scripting (XSS)](#cross-site-scripting-xss)
+4. [Injection SQL](#injection-sql)
+5. [Cross-Site Request Forgery (CSRF)](#cross-site-request-forgery-csrf)
+6. [Authentification Sécurisée](#authentification-sécurisée)
+7. [Content Security Policy](#content-security-policy)
+8. [Headers de Sécurité](#headers-de-sécurité)
+9. [Audit et Outils](#audit-et-outils)
+10. [Conclusion](#conclusion)
+
+## Pourquoi la Sécurité Web ?
+
+Une faille de sécurité peut détruire la réputation d'un produit en quelques heures. La sécurité n'est pas une fonctionnalité optionnelle — c'est un **prérequis fondamental**.
+
+<Mermaid chart={`
+flowchart TB
+    ATTACKER["🎭 Attaquant"] --> VECTOR["Vecteur d'Attaque"]
+    
+    VECTOR --> XSS["XSS<br/>Injection de script"]
+    VECTOR --> SQLI["SQLi<br/>Injection SQL"]
+    VECTOR --> CSRF["CSRF<br/>Requête forgée"]
+    VECTOR --> AUTH["Auth Bypass<br/>Contournement"]
+    
+    XSS --> IMPACT["💥 Impact"]
+    SQLI --> IMPACT
+    CSRF --> IMPACT
+    AUTH --> IMPACT
+    
+    IMPACT --> DATA["Vol de données"]
+    IMPACT --> SESSION["Hijack de session"]
+    IMPACT --> DEFACE["Défiguration"]
+    IMPACT --> RANSOM["Ransomware"]
+    
+    style ATTACKER fill:#ef4444,stroke:#dc2626,color:#fff
+    style XSS fill:#f59e0b,stroke:#d97706,color:#fff
+    style SQLI fill:#f59e0b,stroke:#d97706,color:#fff
+    style CSRF fill:#f59e0b,stroke:#d97706,color:#fff
+    style AUTH fill:#f59e0b,stroke:#d97706,color:#fff
+    style DATA fill:#ef4444,stroke:#dc2626,color:#fff
+    style SESSION fill:#ef4444,stroke:#dc2626,color:#fff
+    style DEFACE fill:#ef4444,stroke:#dc2626,color:#fff
+    style RANSOM fill:#ef4444,stroke:#dc2626,color:#fff
+`} caption="Anatomie d'une attaque web : du vecteur à l'impact." />
+
+## OWASP Top 10
+
+Le [OWASP Top 10](https://owasp.org/www-project-top-ten/) recense les 10 risques de sécurité les plus critiques :
+
+| Rang | Risque | Exemple |
+|------|--------|---------|
+| A01 | **Broken Access Control** | Accès à des ressources sans autorisation |
+| A02 | **Cryptographic Failures** | Mots de passe en clair, protocoles obsolètes |
+| A03 | **Injection** | SQL, XSS, Command injection |
+| A04 | **Insecure Design** | Absence de validation côté serveur |
+| A05 | **Security Misconfiguration** | Headers manquants, debug en prod |
+| A06 | **Vulnerable Components** | Dépendances avec failles connues |
+| A07 | **Auth Failures** | Sessions faibles, brute force possible |
+| A08 | **Data Integrity Failures** | Désérialisation non fiable |
+| A09 | **Logging Failures** | Pas de trace des tentatives d'intrusion |
+| A10 | **SSRF** | Le serveur requête des URLs internes |
+
+## Cross-Site Scripting (XSS)
+
+### Types de XSS
+
+```typescript
+// ❌ XSS Réfléchi — données de l'URL injectées
+// URL: /search?q=<script>alert('XSS')</script>
+export function SearchResults({ query }: { query: string }) {
+  // DANGEREUX : injection directe dans le DOM
+  return <div dangerouslySetInnerHTML={{ __html: query }} />;
+}
+
+// ✅ SÉCURISÉ : React échappe automatiquement
+export function SearchResults({ query }: { query: string }) {
+  return <div>Résultats pour : {query}</div>;
+}
+```
+
+### Protection contre XSS
+
+```typescript
+// 1. Validation et sanitisation des entrées
+import { z } from "zod";
+
+const commentSchema = z.object({
+  content: z
+    .string()
+    .min(1)
+    .max(5000)
+    .transform((val) => val.trim()),
+  // Pas de HTML autorisé dans les commentaires
+});
+
+// 2. Si HTML nécessaire, utiliser un sanitizer
+import DOMPurify from "isomorphic-dompurify";
+
+export function RichContent({ html }: { html: string }) {
+  const clean = DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ["p", "strong", "em", "a", "ul", "li", "code"],
+    ALLOWED_ATTR: ["href", "target", "rel"],
+  });
+
+  return <div dangerouslySetInnerHTML={{ __html: clean }} />;
+}
+
+// 3. HttpOnly cookies pour les tokens
+// Le JavaScript ne peut pas lire ces cookies
+export function setAuthCookie(token: string) {
+  cookies().set("session", token, {
+    httpOnly: true,    // Pas accessible via JS
+    secure: true,      // HTTPS uniquement
+    sameSite: "lax",   // Protection CSRF
+    maxAge: 60 * 60 * 24 * 7, // 7 jours
+    path: "/",
+  });
+}
+```
+
+## Injection SQL
+
+```typescript
+// ❌ VULNÉRABLE : concaténation de chaînes
+const query = `SELECT * FROM users WHERE email = '${email}'`;
+// Attaque : email = "'; DROP TABLE users; --"
+
+// ✅ SÉCURISÉ avec Prisma (requêtes paramétrées automatiques)
+const user = await prisma.user.findUnique({
+  where: { email }, // Prisma paramétrise automatiquement
+});
+
+// ✅ Si SQL brut nécessaire, utiliser les tagged templates
+const user = await prisma.$queryRaw`
+  SELECT * FROM users WHERE email = ${email}
+`;
+// Prisma paramétrise la valeur via le tagged template
+
+// ❌ JAMAIS utiliser $queryRawUnsafe avec des données utilisateur
+// await prisma.$queryRawUnsafe(`SELECT * FROM users WHERE email = '${email}'`);
+```
+
+### Validation côté serveur
+
+```typescript
+// Server Action sécurisé
+"use server";
+
+import { z } from "zod";
+
+const updateProfileSchema = z.object({
+  name: z.string().min(2).max(100).regex(/^[a-zA-ZÀ-ÿ\s-]+$/),
+  bio: z.string().max(500).optional(),
+  website: z.string().url().optional().or(z.literal("")),
+});
+
+export async function updateProfile(formData: FormData) {
+  // 1. Vérifier l'authentification
+  const session = await getSession();
+  if (!session) throw new Error("Unauthorized");
+
+  // 2. Valider les données
+  const data = updateProfileSchema.parse({
+    name: formData.get("name"),
+    bio: formData.get("bio"),
+    website: formData.get("website"),
+  });
+
+  // 3. Vérifier l'autorisation (l'utilisateur modifie SON profil)
+  await prisma.profile.update({
+    where: { userId: session.user.id }, // Pas d'ID du client
+    data,
+  });
+
+  revalidatePath("/profile");
+}
+```
+
+## Cross-Site Request Forgery (CSRF)
+
+```typescript
+// Protection CSRF dans Next.js
+
+// 1. SameSite cookies (protection principale)
+cookies().set("session", token, {
+  sameSite: "lax", // Bloque les requêtes cross-origin POST
+  httpOnly: true,
+  secure: true,
+});
+
+// 2. Vérification de l'Origin header
+export async function POST(req: Request) {
+  const origin = req.headers.get("origin");
+  const allowedOrigins = [process.env.NEXT_PUBLIC_URL];
+
+  if (!origin || !allowedOrigins.includes(origin)) {
+    return Response.json(
+      { error: "Forbidden" },
+      { status: 403 },
+    );
+  }
+
+  // Traiter la requête...
+}
+
+// 3. Token CSRF pour les formulaires critiques
+import { randomBytes } from "crypto";
+
+export function generateCSRFToken(): string {
+  return randomBytes(32).toString("hex");
+}
+
+export async function validateCSRFToken(
+  token: string,
+): Promise<boolean> {
+  const stored = cookies().get("csrf-token")?.value;
+  return stored === token;
+}
+```
+
+## Authentification Sécurisée
+
+### Mot de passe sécurisé
+
+```typescript
+// Hashing avec bcrypt (coût adaptatif)
+import bcrypt from "bcryptjs";
+
+const SALT_ROUNDS = 12; // Augmenter si le hardware le permet
+
+export async function hashPassword(password: string) {
+  return bcrypt.hash(password, SALT_ROUNDS);
+}
+
+export async function verifyPassword(
+  password: string,
+  hash: string,
+) {
+  return bcrypt.compare(password, hash);
+}
+
+// Validation de la force du mot de passe
+const passwordSchema = z
+  .string()
+  .min(8, "Minimum 8 caractères")
+  .regex(/[A-Z]/, "Au moins une majuscule")
+  .regex(/[a-z]/, "Au moins une minuscule")
+  .regex(/[0-9]/, "Au moins un chiffre")
+  .regex(/[^A-Za-z0-9]/, "Au moins un caractère spécial");
+```
+
+### Rate Limiting
+
+```typescript
+// middleware.ts — Rate limiting basique
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
+const MAX_REQUESTS = 100;
+
+// En production, utiliser Redis au lieu d'une Map en mémoire
+const requestCounts = new Map<string, { count: number; timestamp: number }>();
+
+export function middleware(req: NextRequest) {
+  if (req.nextUrl.pathname.startsWith("/api/")) {
+    const ip = req.headers.get("x-forwarded-for") ?? "unknown";
+    const now = Date.now();
+    const record = requestCounts.get(ip);
+
+    if (!record || now - record.timestamp > RATE_LIMIT_WINDOW) {
+      requestCounts.set(ip, { count: 1, timestamp: now });
+    } else if (record.count >= MAX_REQUESTS) {
+      return NextResponse.json(
+        { error: "Too many requests" },
+        { status: 429 },
+      );
+    } else {
+      record.count++;
+    }
+  }
+
+  return NextResponse.next();
+}
+```
+
+## Content Security Policy
+
+```typescript
+// next.config.mjs
+const cspHeader = `
+  default-src 'self';
+  script-src 'self' 'nonce-{NONCE}';
+  style-src 'self' 'unsafe-inline';
+  img-src 'self' blob: data: https:;
+  font-src 'self';
+  connect-src 'self' https://api.example.com;
+  frame-ancestors 'none';
+  form-action 'self';
+  base-uri 'self';
+  upgrade-insecure-requests;
+`.replace(/\n/g, "");
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value: cspHeader,
+          },
+        ],
+      },
+    ];
+  },
+};
+```
+
+## Headers de Sécurité
+
+```typescript
+// next.config.mjs — headers essentiels
+async headers() {
+  return [
+    {
+      source: "/(.*)",
+      headers: [
+        // Empêche le clickjacking
+        { key: "X-Frame-Options", value: "DENY" },
+        // Empêche le MIME sniffing
+        { key: "X-Content-Type-Options", value: "nosniff" },
+        // Active le mode strict de HTTPS
+        {
+          key: "Strict-Transport-Security",
+          value: "max-age=31536000; includeSubDomains; preload",
+        },
+        // Contrôle le Referrer
+        { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+        // Désactive les APIs inutiles
+        {
+          key: "Permissions-Policy",
+          value: "camera=(), microphone=(), geolocation=()",
+        },
+      ],
+    },
+  ];
+}
+```
+
+## Audit et Outils
+
+### Checklist de sécurité
+
+```markdown
+## Avant chaque déploiement
+
+- [ ] Toutes les entrées utilisateur sont validées (Zod)
+- [ ] Pas de `dangerouslySetInnerHTML` sans sanitisation
+- [ ] Cookies HttpOnly + Secure + SameSite
+- [ ] Headers de sécurité configurés
+- [ ] Rate limiting actif sur les APIs
+- [ ] Pas de secrets dans le code (utiliser .env)
+- [ ] Dépendances à jour (`pnpm audit`)
+- [ ] HTTPS forcé en production
+- [ ] Logs de sécurité activés
+```
+
+### Commandes d'audit
+
+```bash
+# Auditer les dépendances
+pnpm audit
+
+# Scanner avec Trivy
+trivy fs --severity HIGH,CRITICAL .
+
+# Vérifier les headers en production
+curl -I https://votresite.com
+
+# Tester les headers de sécurité
+# Utilisez securityheaders.com
+```
+
+## Conclusion
+
+La sécurité web repose sur une approche en profondeur :
+
+- **Validation** de toutes les entrées avec Zod
+- **Protection XSS** via React's auto-escaping + CSP
+- **Prévention SQLi** via Prisma's parameterized queries
+- **Protection CSRF** via SameSite cookies + Origin check
+- **Authentification** robuste avec bcrypt + rate limiting
+- **Headers de sécurité** configurés dans Next.js
+- **Audit régulier** des dépendances et du code
+
+La sécurité n'est pas un événement, c'est un **processus continu**.

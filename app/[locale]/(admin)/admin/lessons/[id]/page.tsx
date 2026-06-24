@@ -46,7 +46,7 @@ async function getLesson(lessonId: string) {
 export default async function EditLessonPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string; locale: string }>;
 }) {
   const resolvedParams = await params;
   const session = await auth.api.getSession({
@@ -118,7 +118,7 @@ export default async function EditLessonPage({
           {lesson.published && (
             <Button variant="ghost" size="sm" asChild>
               <Link
-                href={`/formations/${lesson.course.slug}/lessons/${lesson.slug}`}
+                href={`/${resolvedParams.locale}/formations/${lesson.course.slug}/lessons/${lesson.slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
               >

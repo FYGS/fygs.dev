@@ -87,6 +87,10 @@ model User {
   // User following relations
   following         UserFollow[]     @relation("UserFollowing")
   followers         UserFollow[]     @relation("UserFollowers")
+  // Gamification
+  streak            UserStreak?
+  xpEvents          XpEvent[]
+  lessonNotes       LessonNote[]
 
   @@map("user")
 }
@@ -136,6 +140,7 @@ model Lesson {
   course      Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
   module      Module?    @relation(fields: [moduleId], references: [id])
   progress    Progress[]
+  notes       LessonNote[]
 
   @@unique([moduleId, order])
   @@unique([courseId, slug])
@@ -704,6 +709,8 @@ model Course {
   publicPrerequisites String?
   publicResources     String?
   publicStructure     String?
+  trailerUrl          String?          // Video trailer for marketing landing
+  faq                 Json?            // FAQ entries as JSON array [{q, a}]
   Certificate         Certificate[]
   instructor          User?            @relation("CourseInstructor", fields: [instructorId], references: [id])
   tags                CourseTag[]
@@ -756,4 +763,54 @@ enum MentorRequestStatus {
   ACCEPTED
   DECLINED
   EXPIRED
+}
+
+// ─── Gamification: Streaks & XP ───────────────────────────────────────────────
+
+model UserStreak {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  currentStreak  Int      @default(0)
+  longestStreak  Int      @default(0)
+  lastActivityAt DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model XpEvent {
+  id        String      @id @default(cuid())
+  userId    String
+  amount    Int
+  reason    XpReason
+  metadata  Json?       // e.g. { lessonId, quizId, courseId }
+  createdAt DateTime    @default(now())
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+enum XpReason {
+  LESSON_COMPLETED
+  QUIZ_PASSED
+  COURSE_COMPLETED
+  STREAK_BONUS
+  FIRST_LESSON
+  DAILY_LOGIN
+}
+
+// ─── Inline Notes ─────────────────────────────────────────────────────────────
+
+model LessonNote {
+  id        String   @id @default(cuid())
+  userId    String
+  lessonId  String
+  content   String
+  timestamp Int?     // Video timestamp in seconds (for timestamped notes)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@index([userId, lessonId])
 }

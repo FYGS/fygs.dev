@@ -5,7 +5,7 @@
  * and complete cleanup to prevent test interference.
  */
 
-import { db } from '@/lib/db'
+import { db } from '../../lib/db'
 import { randomBytes } from 'crypto'
 
 export class TestDatabase {

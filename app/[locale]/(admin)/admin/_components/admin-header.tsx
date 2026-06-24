@@ -27,7 +27,7 @@ import {
   Shield,
   CheckCircle,
 } from "lucide-react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/providers/theme-provider";
 import Link from "next/link";
 import { AdminQuickActions } from "./admin-quick-actions";
 import { Role } from "@prisma/client";
@@ -240,7 +240,7 @@ export function AdminHeader({ user }: AdminHeaderProps) {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 className="text-red-400 cursor-pointer"
                 onClick={handleLogout}
               >

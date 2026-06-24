@@ -7,6 +7,15 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { Role } from "@prisma/client";
 
+const SUPPORTED_LOCALES = ["fr", "en", "es"] as const;
+
+function revalidateLocalized(pathWithoutLocale: string) {
+  revalidatePath(pathWithoutLocale);
+  for (const locale of SUPPORTED_LOCALES) {
+    revalidatePath(`/${locale}${pathWithoutLocale}`);
+  }
+}
+
 // Validation schema for updating lessons
 const updateLessonSchema = z.object({
   id: z.string().cuid("ID de leçon invalide"),
@@ -17,7 +26,11 @@ const updateLessonSchema = z.object({
   slug: z
     .string()
     .min(1, "Le slug est requis")
-    .max(255, "Le slug est trop long"),
+    .max(255, "Le slug est trop long")
+    .regex(
+      /^[a-z0-9-]+$/,
+      "Le slug ne peut contenir que des lettres minuscules, chiffres et tirets",
+    ),
   description: z.string().optional(),
   content: z.string().optional(),
   videoUrl: z.string().url("URL vidéo invalide").optional().or(z.literal("")),
@@ -46,12 +59,17 @@ export async function updateLesson(formData: FormData) {
     }
 
     // Parse and validate form data
+    const rawContent = formData.get("content");
+
     const rawData = {
       id: formData.get("id") as string,
       title: formData.get("title") as string,
       slug: formData.get("slug") as string,
       description: (formData.get("description") as string) || undefined,
-      content: (formData.get("content") as string) || undefined,
+      content:
+        typeof rawContent === "string" && rawContent.trim().length > 0
+          ? rawContent
+          : undefined,
       videoUrl: (formData.get("videoUrl") as string) || undefined,
       duration: formData.get("duration")
         ? parseInt(formData.get("duration") as string)
@@ -76,6 +94,9 @@ export async function updateLesson(formData: FormData) {
     if (!existingLesson) {
       return { success: false, error: "Leçon non trouvée" };
     }
+
+    const previousCourseSlug = existingLesson.course.slug;
+    const previousLessonSlug = existingLesson.slug;
 
     // Check permissions: ADMIN can edit all lessons, INSTRUCTOR can only edit their own courses
     if (session.user.role === Role.INSTRUCTOR) {
@@ -144,9 +165,24 @@ export async function updateLesson(formData: FormData) {
     revalidatePath(`/admin/lessons/${lesson.id}`);
     revalidatePath(`/admin/lessons/${lesson.id}/edit`);
     revalidatePath(`/admin/courses/${lesson.course.id}`);
-    revalidatePath(`/formations/${lesson.course.slug}`);
-    revalidatePath(`/formations/${lesson.course.slug}/lessons/${lesson.slug}`);
-    revalidatePath("/formations");
+
+    revalidateLocalized("/formations");
+    revalidateLocalized(`/formations/${previousCourseSlug}`);
+    revalidateLocalized(`/formations/${lesson.course.slug}`);
+    revalidateLocalized(
+      `/formations/${previousCourseSlug}/lessons/${previousLessonSlug}`,
+    );
+    revalidateLocalized(
+      `/formations/${lesson.course.slug}/lessons/${lesson.slug}`,
+    );
+
+    revalidateLocalized(`/learn/${previousCourseSlug}`);
+    revalidateLocalized(`/learn/${lesson.course.slug}`);
+    revalidateLocalized(
+      `/learn/${previousCourseSlug}/lessons/${previousLessonSlug}`,
+    );
+    revalidateLocalized(`/learn/${lesson.course.slug}/lessons/${lesson.slug}`);
+
     revalidatePath("/sitemap.xml");
 
     // Create analytics event

@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { RichTextEditor } from "@/components/admin/rich-text-editor";
+import { VideoUpload } from "@/components/admin/video-upload";
 import {
   Select,
   SelectContent,
@@ -27,19 +29,19 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { 
-  Save, 
-  Eye, 
-  X,
-  Loader2,
-  BookOpen
-} from "lucide-react";
+import { Save, Eye, X, Loader2, BookOpen } from "lucide-react";
 import { updateLesson } from "../../_actions/update-lesson";
 
 // Validation schema
 const lessonSchema = z.object({
-  title: z.string().min(1, "Le titre est requis").max(255, "Le titre est trop long"),
-  slug: z.string().min(1, "Le slug est requis").max(255, "Le slug est trop long"),
+  title: z
+    .string()
+    .min(1, "Le titre est requis")
+    .max(255, "Le titre est trop long"),
+  slug: z
+    .string()
+    .min(1, "Le slug est requis")
+    .max(255, "Le slug est trop long"),
   description: z.string().optional(),
   content: z.string().optional(),
   videoUrl: z.string().url("URL vidéo invalide").optional().or(z.literal("")),
@@ -113,20 +115,21 @@ export function LessonEditForm({ lesson, courses }: LessonEditFormProps) {
     startTransition(async () => {
       try {
         const formData = new FormData();
-        
+
         formData.append("id", lesson.id);
         formData.append("title", data.title);
         formData.append("slug", data.slug);
         if (data.description) formData.append("description", data.description);
         if (data.content) formData.append("content", data.content);
         if (data.videoUrl) formData.append("videoUrl", data.videoUrl);
-        if (data.duration) formData.append("duration", data.duration.toString());
+        if (data.duration)
+          formData.append("duration", data.duration.toString());
         formData.append("order", data.order.toString());
         formData.append("published", data.published.toString());
         formData.append("courseId", data.courseId);
 
         const result = await updateLesson(formData);
-        
+
         if (result.success) {
           toast.success("Leçon mise à jour avec succès !");
           router.push(`/admin/lessons/${result.lessonId}`);
@@ -135,7 +138,11 @@ export function LessonEditForm({ lesson, courses }: LessonEditFormProps) {
         }
       } catch (error) {
         console.error("Error updating lesson:", error);
-        toast.error(error instanceof Error ? error.message : "Erreur lors de la mise à jour");
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "Erreur lors de la mise à jour",
+        );
       }
     });
   };
@@ -143,7 +150,7 @@ export function LessonEditForm({ lesson, courses }: LessonEditFormProps) {
   const formatDuration = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
   return (
@@ -166,7 +173,10 @@ export function LessonEditForm({ lesson, courses }: LessonEditFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Formation *</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Sélectionnez une formation" />
@@ -221,10 +231,7 @@ export function LessonEditForm({ lesson, courses }: LessonEditFormProps) {
                 <FormItem>
                   <FormLabel>Slug *</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="slug-de-la-lecon"
-                      {...field}
-                    />
+                    <Input placeholder="slug-de-la-lecon" {...field} />
                   </FormControl>
                   <FormDescription>
                     URL de la leçon (généré automatiquement)
@@ -257,23 +264,22 @@ export function LessonEditForm({ lesson, courses }: LessonEditFormProps) {
             )}
           />
 
-          {/* Video URL and Duration */}
+          {/* Video Upload and Duration */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
               control={form.control}
               name="videoUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>URL de la vidéo</FormLabel>
+                  <FormLabel>Vidéo de la leçon</FormLabel>
                   <FormControl>
-                    <Input
-                      type="url"
-                      placeholder="https://example.com/video.mp4"
-                      {...field}
+                    <VideoUpload
+                      value={field.value || ""}
+                      onChange={field.onChange}
                     />
                   </FormControl>
                   <FormDescription>
-                    Lien vers la vidéo de la leçon
+                    Uploadez ou renseignez l&apos;URL de la vidéo
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -285,19 +291,23 @@ export function LessonEditForm({ lesson, courses }: LessonEditFormProps) {
               name="duration"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Durée (minutes)</FormLabel>
+                  <FormLabel>Durée (secondes)</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       min="0"
                       placeholder="300"
                       {...field}
-                      onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                      onChange={(e) =>
+                        field.onChange(
+                          e.target.value ? parseInt(e.target.value) : undefined,
+                        )
+                      }
                     />
                   </FormControl>
                   <FormDescription>
-                    Durée de la vidéo en minutes
-                    {field.value && ` (${formatDuration(field.value)})`}
+                    Durée de la vidéo en secondes
+                    {field.value && ` (${formatDuration(field.value)} min:sec)`}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -329,25 +339,23 @@ export function LessonEditForm({ lesson, courses }: LessonEditFormProps) {
             )}
           />
 
-          {/* Content */}
+          {/* Content - Rich Text Editor */}
           <FormField
             control={form.control}
             name="content"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Contenu (MDX)</FormLabel>
+                <FormLabel>Contenu de la leçon</FormLabel>
                 <FormControl>
-                  <Textarea
-                    placeholder="# Contenu de la leçon
-
-## Introduction
-Votre contenu en Markdown/MDX..."
-                    className="min-h-[300px] font-mono"
-                    {...field}
+                  <RichTextEditor
+                    content={field.value || ""}
+                    onChange={field.onChange}
+                    placeholder="Écrivez le contenu de votre leçon..."
                   />
                 </FormControl>
                 <FormDescription>
-                  Contenu principal de la leçon en format MDX (Markdown avec composants React)
+                  Utilisez la barre d&apos;outils pour formater votre contenu
+                  (titres, listes, code, images...)
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -361,9 +369,7 @@ Votre contenu en Markdown/MDX..."
             render={({ field }) => (
               <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                 <div className="space-y-0.5">
-                  <FormLabel className="text-base">
-                    Publier la leçon
-                  </FormLabel>
+                  <FormLabel className="text-base">Publier la leçon</FormLabel>
                   <FormDescription>
                     La leçon sera visible par les étudiants si elle est publiée
                   </FormDescription>
@@ -409,7 +415,12 @@ Votre contenu en Markdown/MDX..."
                 type="button"
                 variant="ghost"
                 className="flex items-center gap-2"
-                onClick={() => window.open(`/formations/${lesson.course.slug}/lessons/${form.watch("slug")}`, '_blank')}
+                onClick={() =>
+                  window.open(
+                    `/formations/${lesson.course.slug}/lessons/${form.watch("slug")}`,
+                    "_blank",
+                  )
+                }
               >
                 <Eye className="h-4 w-4" />
                 Voir en ligne

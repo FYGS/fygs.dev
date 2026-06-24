@@ -10,6 +10,7 @@ import {
   CourseLevel,
   CourseAccessTier,
   Role,
+  Prisma,
 } from "@prisma/client";
 import { CourseData } from "@/types/admin";
 
@@ -20,7 +21,7 @@ const updateCourseSchema = z.object({
     .min(3, "Le slug doit contenir au moins 3 caractères")
     .regex(
       /^[a-z0-9-]+$/,
-      "Le slug ne peut contenir que des lettres minuscules, chiffres et tirets"
+      "Le slug ne peut contenir que des lettres minuscules, chiffres et tirets",
     ),
   description: z
     .string()
@@ -39,6 +40,8 @@ const updateCourseSchema = z.object({
   publicResources: z.string().optional(),
   publicEvaluation: z.string().optional(),
   publicPrerequisites: z.string().optional(),
+  trailerUrl: z.string().optional(),
+  faq: z.string().optional(),
 });
 
 type UpdateCourseData = z.infer<typeof updateCourseSchema>;
@@ -55,7 +58,7 @@ interface UpdateCourseResult {
 
 export async function updateCourse(
   courseId: string,
-  data: UpdateCourseData
+  data: UpdateCourseData,
 ): Promise<UpdateCourseResult> {
   try {
     // Vérifier l'authentification
@@ -135,6 +138,35 @@ export async function updateCourse(
     }
 
     // Préparer les données pour la mise à jour
+    let parsedFaq: Array<{ q: string; a: string }> | null = null;
+    if (validatedData.faq?.trim()) {
+      try {
+        const rawFaq = JSON.parse(validatedData.faq) as unknown;
+        if (!Array.isArray(rawFaq)) {
+          return {
+            success: false,
+            error: "FAQ invalide: fournissez un tableau JSON de { q, a }.",
+          };
+        }
+
+        parsedFaq = rawFaq
+          .filter(
+            (item): item is { q: string; a: string } =>
+              !!item &&
+              typeof item === "object" &&
+              typeof (item as { q?: unknown }).q === "string" &&
+              typeof (item as { a?: unknown }).a === "string",
+          )
+          .map((item) => ({ q: item.q.trim(), a: item.a.trim() }))
+          .filter((item) => item.q.length > 0 && item.a.length > 0);
+      } catch {
+        return {
+          success: false,
+          error: "FAQ invalide: JSON mal formé.",
+        };
+      }
+    }
+
     const courseData: Partial<CourseData> = {
       title: validatedData.title,
       slug: validatedData.slug,
@@ -151,6 +183,8 @@ export async function updateCourse(
       publicResources: validatedData.publicResources || null,
       publicEvaluation: validatedData.publicEvaluation || null,
       publicPrerequisites: validatedData.publicPrerequisites || null,
+      trailerUrl: validatedData.trailerUrl?.trim() || null,
+      faq: parsedFaq,
     };
 
     // Ajouter la thumbnail si spécifiée
@@ -168,7 +202,7 @@ export async function updateCourse(
       // Mettre à jour la formation
       const updatedCourse = await tx.course.update({
         where: { id: courseId },
-        data: courseData,
+        data: courseData as Prisma.CourseUpdateInput,
       });
 
       // Ajouter les nouvelles associations de tags
@@ -244,7 +278,7 @@ export async function updateCourse(
 }
 
 export async function deleteCourse(
-  courseId: string
+  courseId: string,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // Vérifier l'authentification

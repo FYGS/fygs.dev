@@ -1,0 +1,524 @@
+﻿---
+title: "Testing React et Next.js : Stratégie Complète de Tests Automatisés"
+excerpt: "Stratégie de tests exhaustive pour applications React/Next.js — Vitest, React Testing Library, Playwright, MSW. Du test unitaire au test E2E, avec patterns avancés et pipeline CI/CD."
+date: "2025-10-28"
+author: "Fernand SOUALO"
+categories: ["Testing", "React", "Next.js", "Vitest", "Playwright"]
+coverImage: "/blog/testing-strategy.png"
+---
+
+# Testing React et Next.js : Stratégie Complète de Tests Automatisés
+
+## Table of Contents
+
+1. [Pourquoi tester ?](#pourquoi-tester-)
+2. [La Pyramide des Tests](#la-pyramide-des-tests)
+3. [Tests Unitaires avec Vitest](#tests-unitaires-avec-vitest)
+4. [Tests de Composants avec React Testing Library](#tests-de-composants-avec-react-testing-library)
+5. [Mocking API avec MSW](#mocking-api-avec-msw)
+6. [Tests E2E avec Playwright](#tests-e2e-avec-playwright)
+7. [Tester les Server Actions](#tester-les-server-actions)
+8. [Pipeline CI/CD](#pipeline-cicd)
+9. [Métriques et Couverture](#métriques-et-couverture)
+10. [Conclusion](#conclusion)
+
+## Pourquoi tester ?
+
+Tester n'est pas un luxe — c'est une **assurance qualité**. Sans tests, chaque déploiement est un pari. Avec des tests, chaque déploiement est une certitude.
+
+<Mermaid chart={`
+flowchart TB
+    subgraph Without["❌ Sans Tests"]
+        CODE1["Code"] --> DEPLOY1["Déploiement"]
+        DEPLOY1 --> BUG["🐛 Bugs en prod"]
+        BUG --> HOTFIX["🔥 Hotfix urgent"]
+        HOTFIX --> CODE1
+    end
+    
+    subgraph With["✅ Avec Tests"]
+        CODE2["Code"] --> UNIT["Unit Tests"]
+        UNIT --> INTEG["Integration Tests"]
+        INTEG --> E2E["E2E Tests"]
+        E2E --> DEPLOY2["✅ Déploiement sûr"]
+    end
+    
+    style BUG fill:#ef4444,stroke:#dc2626,color:#fff
+    style HOTFIX fill:#ef4444,stroke:#dc2626,color:#fff
+    style UNIT fill:#10b981,stroke:#059669,color:#fff
+    style INTEG fill:#6366f1,stroke:#4f46e5,color:#fff
+    style E2E fill:#8b5cf6,stroke:#7c3aed,color:#fff
+    style DEPLOY2 fill:#10b981,stroke:#059669,color:#fff
+`} caption="Sans tests = boucle de bugs. Avec tests = déploiements confiants." />
+
+## La Pyramide des Tests
+
+La pyramide des tests définit la proportion idéale entre les types de tests :
+
+| Type | Quantité | Vitesse | Confiance | Coût |
+|------|----------|---------|-----------|------|
+| **Unit** | Beaucoup (~70%) | ⚡ Ultra-rapide | Moyenne | Faible |
+| **Integration** | Modérée (~20%) | 🏃 Rapide | Haute | Moyen |
+| **E2E** | Peu (~10%) | 🐢 Lent | Très haute | Élevé |
+
+## Tests Unitaires avec Vitest
+
+### Configuration de Vitest pour Next.js
+
+```typescript
+// vitest.config.ts
+import { defineConfig } from "vitest/config";
+import react from "@vitejs/plugin-react";
+import { resolve } from "path";
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    environment: "jsdom",
+    globals: true,
+    setupFiles: ["./tests/setup.ts"],
+    include: ["**/*.test.{ts,tsx}"],
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "html", "lcov"],
+      exclude: [
+        "node_modules/",
+        ".next/",
+        "**/*.d.ts",
+        "**/*.config.*",
+      ],
+    },
+  },
+  resolve: {
+    alias: {
+      "@": resolve(__dirname, "./"),
+    },
+  },
+});
+```
+
+### Tester des fonctions utilitaires
+
+```typescript
+// lib/utils.test.ts
+import { describe, it, expect } from "vitest";
+import { calculateReadingTime, slugify, truncate } from "./utils";
+
+describe("calculateReadingTime", () => {
+  it("retourne 1 min pour un texte court", () => {
+    const text = "Hello world ".repeat(50); // ~100 mots
+    expect(calculateReadingTime(text)).toBe("1 min");
+  });
+
+  it("calcule correctement pour un article long", () => {
+    const text = "word ".repeat(2000); // ~2000 mots
+    expect(calculateReadingTime(text)).toBe("10 min");
+  });
+
+  it("gère un texte vide", () => {
+    expect(calculateReadingTime("")).toBe("1 min");
+  });
+});
+
+describe("slugify", () => {
+  it("convertit en minuscules avec tirets", () => {
+    expect(slugify("Hello World")).toBe("hello-world");
+  });
+
+  it("supprime les caractères spéciaux", () => {
+    expect(slugify("L'art du code !")).toBe("lart-du-code");
+  });
+
+  it("gère les accents", () => {
+    expect(slugify("Données résumées")).toBe("donnees-resumees");
+  });
+});
+```
+
+### Tester des hooks personnalisés
+
+```typescript
+// hooks/use-debounce.test.ts
+import { renderHook, act } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import { useDebounce } from "./use-debounce";
+
+describe("useDebounce", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("retourne la valeur initiale immédiatement", () => {
+    const { result } = renderHook(() => useDebounce("hello", 500));
+    expect(result.current).toBe("hello");
+  });
+
+  it("debounce les changements de valeur", () => {
+    const { result, rerender } = renderHook(
+      ({ value }) => useDebounce(value, 500),
+      { initialProps: { value: "hello" } },
+    );
+
+    // Changer la valeur
+    rerender({ value: "world" });
+    expect(result.current).toBe("hello"); // Pas encore changé
+
+    // Avancer le temps
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
+    expect(result.current).toBe("world"); // Maintenant changé
+  });
+});
+```
+
+## Tests de Composants avec React Testing Library
+
+### Principes fondamentaux
+
+```typescript
+// components/blog/blog-post-card.test.tsx
+import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import { BlogPostCard } from "./blog-post-card";
+
+const mockPost = {
+  slug: "test-article",
+  title: "Mon Article de Test",
+  excerpt: "Un résumé de l'article",
+  date: "2025-01-15",
+  author: "Fernand SOUALO",
+  categories: ["React", "Testing"],
+  readingTime: "5 min",
+  coverImage: "/blog/test.png",
+  draft: false,
+};
+
+describe("BlogPostCard", () => {
+  it("affiche le titre et l'extrait", () => {
+    render(<BlogPostCard post={mockPost} />);
+
+    expect(screen.getByText("Mon Article de Test")).toBeInTheDocument();
+    expect(screen.getByText("Un résumé de l'article")).toBeInTheDocument();
+  });
+
+  it("affiche les catégories", () => {
+    render(<BlogPostCard post={mockPost} />);
+
+    expect(screen.getByText("React")).toBeInTheDocument();
+    expect(screen.getByText("Testing")).toBeInTheDocument();
+  });
+
+  it("affiche le temps de lecture", () => {
+    render(<BlogPostCard post={mockPost} />);
+    expect(screen.getByText("5 min")).toBeInTheDocument();
+  });
+
+  it("affiche le badge draft si nécessaire", () => {
+    render(<BlogPostCard post={{ ...mockPost, draft: true }} />);
+    expect(screen.getByText("Draft")).toBeInTheDocument();
+  });
+
+  it("navigue vers l'article au clic", () => {
+    render(<BlogPostCard post={mockPost} />);
+    const link = screen.getByRole("link");
+    expect(link).toHaveAttribute("href", "/blog/test-article");
+  });
+});
+```
+
+### Tester les formulaires
+
+```typescript
+// components/forms/contact-form.test.tsx
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, it, expect, vi } from "vitest";
+import { ContactForm } from "./contact-form";
+
+describe("ContactForm", () => {
+  it("valide les champs requis", async () => {
+    const user = userEvent.setup();
+    render(<ContactForm />);
+
+    // Soumettre sans remplir
+    await user.click(screen.getByRole("button", { name: /envoyer/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/email requis/i)).toBeInTheDocument();
+      expect(screen.getByText(/message requis/i)).toBeInTheDocument();
+    });
+  });
+
+  it("soumet avec des données valides", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(<ContactForm onSubmit={onSubmit} />);
+
+    await user.type(screen.getByLabelText(/email/i), "test@example.com");
+    await user.type(screen.getByLabelText(/message/i), "Mon message");
+    await user.click(screen.getByRole("button", { name: /envoyer/i }));
+
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalledWith({
+        email: "test@example.com",
+        message: "Mon message",
+      });
+    });
+  });
+});
+```
+
+## Mocking API avec MSW
+
+### Configuration de MSW (Mock Service Worker)
+
+```typescript
+// tests/mocks/handlers.ts
+import { http, HttpResponse } from "msw";
+
+export const handlers = [
+  http.get("/api/posts", () => {
+    return HttpResponse.json([
+      {
+        id: "1",
+        title: "Article Mock",
+        content: "Contenu mock",
+      },
+    ]);
+  }),
+
+  http.post("/api/contact", async ({ request }) => {
+    const body = await request.json();
+    return HttpResponse.json({
+      success: true,
+      message: "Message envoyé",
+    });
+  }),
+
+  http.get("/api/posts/:id", ({ params }) => {
+    if (params.id === "not-found") {
+      return HttpResponse.json(
+        { error: "Not found" },
+        { status: 404 },
+      );
+    }
+    return HttpResponse.json({
+      id: params.id,
+      title: "Article détaillé",
+    });
+  }),
+];
+
+// tests/mocks/server.ts
+import { setupServer } from "msw/node";
+import { handlers } from "./handlers";
+
+export const server = setupServer(...handlers);
+
+// tests/setup.ts
+import { beforeAll, afterEach, afterAll } from "vitest";
+import { server } from "./mocks/server";
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+```
+
+## Tests E2E avec Playwright
+
+### Configuration Playwright
+
+```typescript
+// playwright.config.ts
+import { defineConfig, devices } from "@playwright/test";
+
+export default defineConfig({
+  testDir: "./e2e",
+  fullyParallel: true,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 1 : undefined,
+  reporter: [["html", { open: "never" }]],
+  use: {
+    baseURL: "http://localhost:3000",
+    trace: "on-first-retry",
+    screenshot: "only-on-failure",
+  },
+  projects: [
+    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    { name: "mobile", use: { ...devices["Pixel 7"] } },
+  ],
+  webServer: {
+    command: "pnpm dev",
+    url: "http://localhost:3000",
+    reuseExistingServer: !process.env.CI,
+  },
+});
+```
+
+### Tests E2E des parcours utilisateur
+
+```typescript
+// e2e/blog.spec.ts
+import { test, expect } from "@playwright/test";
+
+test.describe("Blog", () => {
+  test("affiche la liste des articles", async ({ page }) => {
+    await page.goto("/blog");
+
+    // Vérifier que les articles sont affichés
+    const articles = page.locator("article");
+    await expect(articles.first()).toBeVisible();
+
+    // Vérifier la recherche
+    await page.fill("[placeholder*='Rechercher']", "Docker");
+    await expect(articles).toHaveCount(1);
+  });
+
+  test("navigue vers un article et revient", async ({ page }) => {
+    await page.goto("/blog");
+
+    // Cliquer sur le premier article
+    const firstTitle = await page.locator("h2").first().textContent();
+    await page.locator("article a").first().click();
+
+    // Vérifier qu'on est sur la page de l'article
+    await expect(page.locator("h1")).toContainText(firstTitle!);
+
+    // Table des matières visible sur desktop
+    await expect(page.locator("nav >> text=Sommaire")).toBeVisible();
+  });
+
+  test("le système de partage fonctionne", async ({ page }) => {
+    await page.goto("/blog/mastering-docker-containerization");
+
+    // Cliquer sur le bouton de partage
+    await page.locator("[aria-label*='share' i]").first().click();
+
+    // Vérifier que les options apparaissent
+    await expect(page.locator("text=Twitter")).toBeVisible();
+  });
+});
+```
+
+## Tester les Server Actions
+
+```typescript
+// app/actions/contact.test.ts
+import { describe, it, expect, vi } from "vitest";
+
+// Mock Prisma
+vi.mock("@/lib/db", () => ({
+  prisma: {
+    contactMessage: {
+      create: vi.fn().mockResolvedValue({ id: "1" }),
+    },
+  },
+}));
+
+// Import après le mock
+const { submitContact } = await import("./contact");
+
+describe("submitContact action", () => {
+  it("sauvegarde un message valide", async () => {
+    const formData = new FormData();
+    formData.set("email", "test@example.com");
+    formData.set("message", "Hello");
+
+    const result = await submitContact(formData);
+
+    expect(result.success).toBe(true);
+  });
+
+  it("rejette un email invalide", async () => {
+    const formData = new FormData();
+    formData.set("email", "invalid");
+    formData.set("message", "Hello");
+
+    const result = await submitContact(formData);
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("email");
+  });
+});
+```
+
+## Pipeline CI/CD
+
+### GitHub Actions pour les tests
+
+```yaml
+# .github/workflows/test.yml
+name: Tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test:unit -- --coverage
+      - uses: codecov/codecov-action@v4
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: npx playwright install --with-deps
+      - run: pnpm test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+```
+
+## Métriques et Couverture
+
+### Objectifs de couverture réalistes
+
+```typescript
+// vitest.config.ts - seuils de couverture
+coverage: {
+  thresholds: {
+    branches: 80,
+    functions: 80,
+    lines: 80,
+    statements: 80,
+  },
+}
+```
+
+> **Rappel** : 100% de couverture ne signifie pas 0 bug. Visez une couverture **significative** — testez la logique métier, les cas limites, les chemins d'erreur. Pas les getters triviaux.
+
+## Conclusion
+
+Une stratégie de tests solide repose sur :
+
+- **Vitest** pour les tests unitaires rapides et le coverage
+- **React Testing Library** pour tester le comportement, pas l'implémentation
+- **MSW** pour mocker les APIs de manière réaliste
+- **Playwright** pour les parcours utilisateurs critiques
+- **CI/CD** pour exécuter les tests automatiquement à chaque commit
+
+Le ROI des tests est cumulatif : plus votre projet grandit, plus ils vous protègent.

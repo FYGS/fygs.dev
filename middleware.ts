@@ -115,7 +115,7 @@ function getPathWithoutLocale(pathname: string): string {
 function buildInternalRedirect(
   base: string,
   target: string | null | undefined,
-  locale?: string
+  locale?: string,
 ): URL | null {
   if (!target) return null;
   try {
@@ -134,9 +134,9 @@ function buildInternalRedirect(
   }
 }
 
-// Match lesson paths: /[locale]/formations/[course]/lessons/[lesson]
+// Match lesson paths: /[locale]/formations/[course]/lessons/[lesson] or /[locale]/learn/[course]/lessons/[lesson]
 const LESSON_PATH_REGEX =
-  /^\/(?:fr|en|es)\/formations\/[^\/]+\/lessons\/[^\/]+$/;
+  /^\/(?:fr|en|es)\/(?:formations|learn)\/[^\/]+\/lessons\/[^\/]+$/;
 
 function isAuthRoute(path: string): boolean {
   const pathWithoutLocale = getPathWithoutLocale(path);
@@ -147,7 +147,7 @@ function isProtectedRoute(path: string): boolean {
   if (LESSON_PATH_REGEX.test(path)) return true; // lesson pages always protected
   const pathWithoutLocale = getPathWithoutLocale(path);
   return PROTECTED_PREFIXES.some(
-    (p) => pathWithoutLocale === p || pathWithoutLocale.startsWith(p + "/")
+    (p) => pathWithoutLocale === p || pathWithoutLocale.startsWith(p + "/"),
   );
 }
 
@@ -274,10 +274,10 @@ export async function middleware(request: NextRequest) {
     const callbackUrl = buildInternalRedirect(
       request.url,
       nextUrl.searchParams.get("callbackUrl"),
-      currentLocale
+      currentLocale,
     );
     return NextResponse.redirect(
-      callbackUrl ?? new URL(`/${currentLocale}/dashboard`, request.url)
+      callbackUrl ?? new URL(`/${currentLocale}/dashboard`, request.url),
     );
   }
 
@@ -285,10 +285,7 @@ export async function middleware(request: NextRequest) {
   if (!isAuthenticated && isProtectedRoute(pathname)) {
     const loginUrl = new URL(`/${currentLocale}/auth/login`, request.url);
     // Preserve original path and query params for post-auth redirect
-    loginUrl.searchParams.set(
-      "callbackUrl",
-      pathname + nextUrl.search
-    );
+    loginUrl.searchParams.set("callbackUrl", pathname + nextUrl.search);
     loginUrl.searchParams.set("reason", "auth_required");
     return NextResponse.redirect(loginUrl);
   }
@@ -304,7 +301,7 @@ export async function middleware(request: NextRequest) {
 
       if (!courseSlug || !lessonSlug) {
         return NextResponse.redirect(
-          new URL(`/${locale}/formations`, request.url)
+          new URL(`/${locale}/formations`, request.url),
         );
       }
 
@@ -337,7 +334,7 @@ export async function middleware(request: NextRequest) {
         // Lesson or course not found/published → redirect to formations
         const locale = pathSegments[1];
         return NextResponse.redirect(
-          new URL(`/${locale}/formations`, request.url)
+          new URL(`/${locale}/formations`, request.url),
         );
       }
 
@@ -345,7 +342,7 @@ export async function middleware(request: NextRequest) {
       if (userId) {
         const accessResult = await AccessService.checkCourseAccess(
           userId,
-          lesson.courseId
+          lesson.courseId,
         );
 
         if (!accessResult.canAccessLessons) {
@@ -377,7 +374,7 @@ export async function middleware(request: NextRequest) {
             const locale = pathSegments[1];
             const courseUrl = new URL(
               `/${locale}/formations/${courseSlug}`,
-              request.url
+              request.url,
             );
             courseUrl.searchParams.set("locked", "1");
             if (!isFirstLesson) {
@@ -392,7 +389,7 @@ export async function middleware(request: NextRequest) {
       // On error, redirect to course catalog to prevent access issues
       const locale = extractLocaleFromPath(pathname) || DEFAULT_LOCALE;
       return NextResponse.redirect(
-        new URL(`/${locale}/formations`, request.url)
+        new URL(`/${locale}/formations`, request.url),
       );
     }
   }

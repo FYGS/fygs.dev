@@ -3,13 +3,14 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { headers } from "next/headers";
 import { CourseEditForm } from "./_components/course-edit-form";
-import { ModuleCreateForm } from "./_components/module-create-form";
+import { CurriculumTab } from "./_components/curriculum-tab";
 import { QuizManagement } from "./_components/quizzes/quiz-management";
 import { VisualSupportsManagement } from "./_components/visual-supports/visual-supports-management";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Role } from "@prisma/client";
+import { BookOpen, Layers, Brain, Image, Eye, Settings } from "lucide-react";
 
 interface CourseEditPageProps {
   params: Promise<{
@@ -123,6 +124,7 @@ export default async function CourseEditPage({ params }: CourseEditPageProps) {
     createdAt: course.createdAt.toISOString(),
     updatedAt: course.updatedAt.toISOString(),
     modules: course.modules || [],
+    faq: (course.faq as { q: string; a: string }[] | null) ?? null,
   };
 
   // Serialize quizzes for client components
@@ -191,54 +193,40 @@ export default async function CourseEditPage({ params }: CourseEditPageProps) {
 
       {/* Form */}
       <Tabs defaultValue="course" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="course">Informations</TabsTrigger>
-          <TabsTrigger value="modules">Modules</TabsTrigger>
-          <TabsTrigger value="quiz">Quiz</TabsTrigger>
-          <TabsTrigger value="visual-supports">Supports Visuels</TabsTrigger>
-          <TabsTrigger value="settings">Paramètres</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="course" className="gap-1.5">
+            <BookOpen className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Infos</span>
+          </TabsTrigger>
+          <TabsTrigger value="curriculum" className="gap-1.5">
+            <Layers className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Curriculum</span>
+          </TabsTrigger>
+          <TabsTrigger value="quiz" className="gap-1.5">
+            <Brain className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Quiz</span>
+          </TabsTrigger>
+          <TabsTrigger value="visual-supports" className="gap-1.5">
+            {/* eslint-disable-next-line jsx-a11y/alt-text */}
+            <Image className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Supports</span>
+          </TabsTrigger>
+          <TabsTrigger value="preview" className="gap-1.5">
+            <Eye className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Preview</span>
+          </TabsTrigger>
+          <TabsTrigger value="settings" className="gap-1.5">
+            <Settings className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Paramètres</span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="course" className="space-y-6">
           <CourseEditForm course={courseForForm} tags={tags} />
         </TabsContent>
 
-        <TabsContent value="modules" className="space-y-6">
-          <ModuleCreateForm courseId={course.id} />
-
-          {/* Existing modules display */}
-          {course.modules && course.modules.length > 0 && (
-            <div className="bg-card rounded-lg border p-6">
-              <h3 className="text-lg font-semibold mb-4">Modules existants</h3>
-              <div className="space-y-3">
-                {course.modules.map((module) => (
-                  <div
-                    key={module.id}
-                    className="flex items-center justify-between p-3 border rounded-lg"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="bg-primary text-primary-foreground w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium">
-                        {module.order}
-                      </span>
-                      <div>
-                        <h4 className="font-medium">{module.title}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {module.lessons.length} leçons
-                        </p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" asChild>
-                      <Link
-                        href={`/admin/courses/${course.id}/modules/${module.id}`}
-                      >
-                        Modifier
-                      </Link>
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+        <TabsContent value="curriculum" className="space-y-6">
+          <CurriculumTab courseId={course.id} modules={course.modules || []} />
         </TabsContent>
 
         <TabsContent value="quiz" className="space-y-6">
@@ -257,11 +245,81 @@ export default async function CourseEditPage({ params }: CourseEditPageProps) {
           />
         </TabsContent>
 
+        <TabsContent value="preview" className="space-y-6">
+          <div className="bg-card rounded-lg border p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-heading-3 text-foreground">
+                  Aperçu de la formation
+                </h3>
+                <p className="text-body-sm text-muted-foreground">
+                  Visualisez votre formation comme un apprenant la verrait
+                </p>
+              </div>
+              {course.published && (
+                <Button variant="outline" size="sm" asChild>
+                  <Link href={`/formations/${course.slug}`} target="_blank">
+                    <Eye className="h-4 w-4 mr-2" />
+                    Voir la page publique
+                  </Link>
+                </Button>
+              )}
+              {!course.published && (
+                <Button variant="outline" size="sm" asChild>
+                  <Link
+                    href={`/formations/${course.slug}?preview=true`}
+                    target="_blank"
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    Prévisualiser
+                  </Link>
+                </Button>
+              )}
+            </div>
+            <div className="rounded-lg border bg-muted/20 p-8">
+              <div className="max-w-2xl mx-auto space-y-6">
+                <div>
+                  <h2 className="text-heading-1 text-foreground">
+                    {course.title}
+                  </h2>
+                  <p className="text-body text-muted-foreground mt-2">
+                    {course.description}
+                  </p>
+                </div>
+                {course.modules && course.modules.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="text-heading-3 text-foreground">
+                      Programme
+                    </h4>
+                    {course.modules.map((mod) => (
+                      <div
+                        key={mod.id}
+                        className="p-3 rounded-md bg-card border"
+                      >
+                        <div className="font-medium text-foreground">
+                          Module {mod.order}: {mod.title}
+                        </div>
+                        <div className="text-caption text-muted-foreground mt-1">
+                          {mod.lessons.length} leçon
+                          {mod.lessons.length !== 1 ? "s" : ""}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+
         <TabsContent value="settings" className="space-y-6">
           <div className="bg-card rounded-lg border p-6">
-            <h3 className="text-lg font-semibold mb-4">Paramètres avancés</h3>
-            <p className="text-muted-foreground">
-              Configuration avancée de la formation (à venir)
+            <h3 className="text-heading-3 text-foreground mb-4">
+              Paramètres avancés
+            </h3>
+            <p className="text-body-sm text-muted-foreground">
+              Gérez ici les options avancées de publication et
+              d&apos;organisation de la formation.
             </p>
           </div>
         </TabsContent>
