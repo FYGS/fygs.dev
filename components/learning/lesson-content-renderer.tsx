@@ -1,5 +1,6 @@
 import { EnhancedCodeViewer } from "@/components/mdx/enhanced-code-viewer";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import ReactMarkdown from "react-markdown";
@@ -170,15 +171,28 @@ export function LessonContentRenderer({
             </Link>
           );
         },
-        img: ({ src = "", alt = "", className, ...props }) => (
-          <img
-            src={typeof src === "string" ? src : ""}
-            alt={alt}
-            className={cn("rounded-lg shadow-lg", className)}
-            loading="lazy"
-            {...props}
-          />
-        ),
+        img: ({ src = "", alt = "", className, ...props }) => {
+          const safeSrc = typeof src === "string" ? src : "";
+          const width =
+            typeof props.width === "number"
+              ? props.width
+              : Number.parseInt(String(props.width ?? ""), 10) || 1200;
+          const height =
+            typeof props.height === "number"
+              ? props.height
+              : Number.parseInt(String(props.height ?? ""), 10) || 675;
+
+          return (
+            <Image
+              src={safeSrc}
+              alt={alt}
+              width={width}
+              height={height}
+              className={cn("h-auto w-full rounded-lg shadow-lg", className)}
+              loading="lazy"
+            />
+          );
+        },
       }}
     >
       {content}

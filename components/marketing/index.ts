@@ -1,5 +1,5 @@
-export { SectionHero } from "./section-hero";
-export { FeatureGrid } from "./feature-grid";
-export { TestimonialCarousel } from "./testimonial-carousel";
-export { PricingTable } from "./pricing-table";
-export { FAQSection } from "./faq-section";
+export { CourseFaq } from "./course-faq";
+export { CourseThumbnail } from "./course-thumbnail";
+export { CourseTrailer } from "./course-trailer";
+export { SocialProof } from "./social-proof";
+export { TrustBadges } from "./trust-badges";
