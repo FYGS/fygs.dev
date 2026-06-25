@@ -12,7 +12,7 @@ import { Monitor, Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export function ThemeToggle() {
-  const { setTheme } = useTheme();
+  const { theme, resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   // Éviter l'hydration mismatch
@@ -24,23 +24,20 @@ export function ThemeToggle() {
     return (
       <Button variant="ghost" size="icon" className="w-9 h-9">
         <span className="sr-only">Toggle theme</span>
-        <Sun className="h-4 w-4 transition-all -rotate-90 scale-0" />
-        <Moon className="absolute h-4 w-4 transition-all rotate-0 scale-100" />
+        <Moon className="h-4 w-4" />
       </Button>
     );
   }
 
+  const ActiveIcon =
+    theme === "system" ? Monitor : resolvedTheme === "dark" ? Moon : Sun;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="w-9 h-9 relative overflow-hidden"
-        >
+        <Button variant="ghost" size="icon" className="w-9 h-9">
           <span className="sr-only">Toggle theme</span>
-          <Sun className="h-4 w-4 transition-all -rotate-90 scale-0" />
-          <Moon className="absolute h-4 w-4 transition-all rotate-0 scale-100" />
+          <ActiveIcon className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

@@ -13,6 +13,9 @@ import { JsonLd } from "../_components/JsonLd";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { NotificationProvider } from "@/components/providers/notification-provider";
+import { KeyboardShortcutsProvider } from "@/providers/keyboard-shortcuts-provider";
+import { ShortcutsGuideProvider } from "@/providers/shortcuts-guide-provider";
+import { ShortcutsToolbar } from "@/components/shortcuts-toolbar";
 
 import { type NextLayoutIntlayer, IntlayerClientProvider } from "next-intlayer";
 import { getHTMLTextDir } from "intlayer";
@@ -69,7 +72,8 @@ export async function generateMetadata({
   });
 }
 
-const LocaleLayout: NextLayoutIntlayer = async ({ children, params }) => {
+const LocaleLayout: NextLayoutIntlayer = async (props) => {
+  const { children, params } = props;
   const { locale } = await params;
 
   return (
@@ -103,24 +107,29 @@ const LocaleLayout: NextLayoutIntlayer = async ({ children, params }) => {
           : {})}
         suppressHydrationWarning
       >
-        <ThemeProvider defaultTheme="system">
-          <PageMemoryProvider>
-            <NavigationProgress />
-            <TransitionProvider>
-              <TooltipProvider>
-                <IntlayerClientProvider locale={locale}>
-                  <LocaleSelectorModal />
-                  <PageTransition>
-                    <main>
-                      <NuqsAdapter>{children}</NuqsAdapter>
-                      <Toaster richColors closeButton />
-                    </main>
-                  </PageTransition>
-                  <NotificationProvider />
-                </IntlayerClientProvider>
-              </TooltipProvider>
-            </TransitionProvider>
-          </PageMemoryProvider>
+        <ThemeProvider defaultTheme="dark">
+          <ShortcutsGuideProvider>
+            <KeyboardShortcutsProvider>
+              <PageMemoryProvider>
+                <NavigationProgress />
+                <TransitionProvider>
+                  <TooltipProvider>
+                    <IntlayerClientProvider locale={locale}>
+                      <ShortcutsToolbar />
+                      <LocaleSelectorModal />
+                      <PageTransition>
+                        <main>
+                          <NuqsAdapter>{children}</NuqsAdapter>
+                          <Toaster richColors closeButton />
+                        </main>
+                      </PageTransition>
+                      <NotificationProvider />
+                    </IntlayerClientProvider>
+                  </TooltipProvider>
+                </TransitionProvider>
+              </PageMemoryProvider>
+            </KeyboardShortcutsProvider>
+          </ShortcutsGuideProvider>
         </ThemeProvider>
         <script
           dangerouslySetInnerHTML={{

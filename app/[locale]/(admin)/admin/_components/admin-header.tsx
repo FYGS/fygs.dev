@@ -19,15 +19,10 @@ import {
   Settings,
   User,
   LogOut,
-  Moon,
-  Sun,
-  Monitor,
   Command,
   Zap,
   Shield,
-  CheckCircle,
 } from "lucide-react";
-import { useTheme } from "@/providers/theme-provider";
 import Link from "next/link";
 import { AdminQuickActions } from "./admin-quick-actions";
 import { Role } from "@prisma/client";
@@ -47,7 +42,6 @@ interface AdminHeaderProps {
 
 export function AdminHeader({ user }: AdminHeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const { theme, setTheme } = useTheme();
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -58,7 +52,7 @@ export function AdminHeader({ user }: AdminHeaderProps) {
             toast.success("Déconnexion réussie");
             router.push("/auth/login");
           },
-          onError: (ctx) => {
+          onError: (ctx: { error?: unknown }) => {
             toast.error("Erreur lors de la déconnexion");
             console.error("Logout error:", ctx.error);
           },
@@ -151,39 +145,6 @@ export function AdminHeader({ user }: AdminHeaderProps) {
                   </p>
                 </div>
               </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Theme Toggle */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm">
-                <Sun className="h-4 w-4 transition-all -rotate-90 scale-0" />
-                <Moon className="absolute h-4 w-4 transition-all rotate-0 scale-100" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setTheme("light")}>
-                <Sun className="mr-2 h-4 w-4" />
-                Clair
-                {theme === "light" && (
-                  <CheckCircle className="ml-auto h-4 w-4" />
-                )}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme("dark")}>
-                <Moon className="mr-2 h-4 w-4" />
-                Sombre
-                {theme === "dark" && (
-                  <CheckCircle className="ml-auto h-4 w-4" />
-                )}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme("system")}>
-                <Monitor className="mr-2 h-4 w-4" />
-                Système
-                {theme === "system" && (
-                  <CheckCircle className="ml-auto h-4 w-4" />
-                )}
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 

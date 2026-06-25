@@ -38,14 +38,14 @@ export function KeyboardShortcutsProvider({
       command: true,
       shift: true,
       action: () => setTheme("light"),
-      description: "Toggle light theme",
+      description: "Switch to light theme",
     },
     {
       key: "d",
       command: true,
       shift: true,
       action: () => setTheme("dark"),
-      description: "Toggle dark theme",
+      description: "Switch to dark theme",
     },
   ]);
 
