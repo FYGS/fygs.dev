@@ -400,9 +400,9 @@ const cvDataContent = {
     experiences: {
       allianz: {
         title: t({
-          en: "Backend Developer | Node.js, NestJS, TypeScript, AWS Cloud",
-          fr: "Développeur Backend | Node.js, NestJS, TypeScript, AWS Cloud",
-          es: "Desarrollador Backend | Node.js, NestJS, TypeScript, AWS Cloud",
+          en: "Backend Developer | Node.js • NestJS • Python • FastAPI • TypeScript • AWS Cloud",
+          fr: "Développeur Backend | Node.js • NestJS • Python • FastAPI • TypeScript • AWS Cloud",
+          es: "Desarrollador Backend | Node.js • NestJS • Python • FastAPI • TypeScript • AWS Cloud",
         }),
         description: {
           d1: t({
@@ -434,6 +434,11 @@ const cvDataContent = {
             en: "Leveraging AWS services (Lambda, S3, DynamoDB, SQS, CloudWatch) to build robust cloud-native solutions",
             fr: "Exploitation des services AWS (Lambda, S3, DynamoDB, SQS, CloudWatch) pour construire des solutions cloud-native robustes",
             es: "Aprovechamiento de servicios AWS (Lambda, S3, DynamoDB, SQS, CloudWatch) para construir soluciones cloud-native robustas",
+          }),
+          d7: t({
+            en: "Development of high-performance APIs using Python and FastAPI, enabling rapid prototyping and scalable API solutions",
+            fr: "Développement d'API haute performance utilisant Python et FastAPI, permettant un prototypage rapide et des solutions API scalables",
+            es: "Desarrollo de API de alto rendimiento usando Python y FastAPI, permitiendo prototipado rápido y soluciones API escalables",
           }),
         },
         achievements: {

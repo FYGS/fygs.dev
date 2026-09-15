@@ -1,6 +1,6 @@
 import { CVPreview } from "@/app/_components/CVPreview";
 import { Section } from "@/app/_components/Section";
-import { Timeline } from "@/app/_components/Timeline";
+import { Timeline, type TimelineItemProps } from "@/app/_components/Timeline";
 import { AvailabilityIndicator } from "@/components/ui/availability-indicator";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -181,25 +181,37 @@ export default async function ResumePage({ params }: Props) {
     cvData.experiences.schneider,
     cvData.experiences.atlanSpace,
   ];
-  const contractTypeMap: Record<string, unknown> = {
-    "Full-time": cvData.contractTypes.fullTime,
-    Entrepreneurship: cvData.contractTypes.entrepreneurship,
-    Internship: cvData.contractTypes.internship,
+  // Localized "Present" label based on locale
+  const presentLabel =
+    {
+      en: "Present",
+      fr: "Présent",
+      es: "Presente",
+    }[locale as "en" | "fr" | "es"] || "Present";
+
+  const contractTypeMap: Record<string, string> = {
+    "Full-time": cvData.contractTypes.fullTime as unknown as string,
+    Entrepreneurship: cvData.contractTypes
+      .entrepreneurship as unknown as string,
+    Internship: cvData.contractTypes.internship as unknown as string,
   };
+
   const localizedExperiences = EXPERIENCE_ITEMS.map((item, i) => {
     const exp = expEntries[i];
+    const translatedType =
+      (contractTypeMap[item.type || ""] as string) || (item.type as string);
+
+    // Use descriptions from EXPERIENCE_ITEMS which are already well-structured
+    // Only translate title, type, and context from cvData
     return {
       ...item,
       title: exp.title as unknown as string,
-      type: (contractTypeMap[item.type || ""] ??
-        item.type) as unknown as string,
-      description: Object.values(exp.description) as unknown as string[],
-      achievements: Object.values(exp.achievements) as unknown as string[],
+      type: translatedType,
       context: exp.context as unknown as string,
       date: item.current
-        ? item.date.replace("Present", String(cvData.present))
+        ? item.date.replace("Present", presentLabel)
         : item.date,
-    };
+    } as TimelineItemProps;
   });
 
   // Build localized education items
@@ -211,12 +223,12 @@ export default async function ResumePage({ params }: Props) {
   ];
   const localizedEducation = EDUCATION_ITEMS.map((item, i) => {
     const edu = eduEntries[i];
+    // Use descriptions/achievements from EDUCATION_ITEMS (already well-structured)
+    // Only translate the title from cvData
     return {
       ...item,
       title: edu.title as unknown as string,
-      description: Object.values(edu.description) as unknown as string[],
-      achievements: Object.values(edu.achievements) as unknown as string[],
-    };
+    } as TimelineItemProps;
   });
 
   // Build localized technical skills

@@ -12,7 +12,7 @@ import { motion } from "framer-motion";
 import { ChevronDown, ChevronUp, Info } from "lucide-react";
 import { useState } from "react";
 
-interface TimelineItemProps {
+export interface TimelineItemProps {
   date: string;
   title: string;
   company?: string;
@@ -77,18 +77,18 @@ export const TimelineItem = ({
           </div>
           {context && (
             <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => setShowContext(!showContext)}
-                    className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110"
-                  >
-                    <Info className="h-4 w-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="top">
-                  {showContext ? "Hide context" : "Show context"}
-                </TooltipContent>
-              </Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setShowContext(!showContext)}
+                  className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110"
+                >
+                  <Info className="h-4 w-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                {showContext ? "Hide context" : "Show context"}
+              </TooltipContent>
+            </Tooltip>
           )}
         </div>
 
@@ -126,8 +126,8 @@ export const TimelineItem = ({
             height: isExpanded
               ? "auto"
               : descriptions.length > 2
-              ? "5.5rem"
-              : "auto",
+                ? "5.5rem"
+                : "auto",
           }}
           className="overflow-hidden"
         >
