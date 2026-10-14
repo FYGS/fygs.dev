@@ -11,6 +11,18 @@
 import { beforeAll, afterAll, afterEach } from "vitest";
 import "@testing-library/jest-dom/vitest";
 
+// Node >= 25 ships a global `localStorage` that is undefined without
+// --localstorage-file and shadows the jsdom one. Restore jsdom's Storage.
+const jsdomStorage = (
+  globalThis as { jsdom?: { window: { localStorage: Storage } } }
+).jsdom?.window.localStorage;
+if (jsdomStorage && typeof globalThis.localStorage === "undefined") {
+  Object.defineProperty(globalThis, "localStorage", {
+    value: jsdomStorage,
+    configurable: true,
+  });
+}
+
 // Automatic cleanup for React Testing Library (jsdom environments)
 afterEach(async () => {
   try {
