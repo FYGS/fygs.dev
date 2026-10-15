@@ -243,19 +243,73 @@ class PaymentService {
     }
   }
 
-  // Process refund for a one-time course purchase (within 15-day grace period)
-  async refundPayment(stripePaymentIntentId: string, amountCents?: number) {
+  /**
+   * Refund a PaymentIntent. Pass an idempotency key so that retrying the same
+   * logical refund (double click, retry after a later step failed) returns the
+   * original refund instead of creating or failing a second one.
+   * Returns the Stripe refund id.
+   */
+  async refundPayment(
+    stripePaymentIntentId: string,
+    amountCents?: number,
+    options: { idempotencyKey?: string } = {},
+  ): Promise<string> {
     try {
-      await stripe.refunds.create({
-        payment_intent: stripePaymentIntentId,
-        amount: amountCents,
-      });
-      // We could log a refund audit if needed in InvoiceAudit (type REFUND_RECORD)
-      return true;
+      const refund = await stripe.refunds.create(
+        {
+          payment_intent: stripePaymentIntentId,
+          amount: amountCents,
+        },
+        options.idempotencyKey
+          ? { idempotencyKey: options.idempotencyKey }
+          : undefined,
+      );
+      return refund.id;
     } catch (error) {
       console.error("Refund failed", error);
       throw new Error("REFUND_FAILED");
     }
+  }
+
+  /**
+   * PaymentIntent behind the most recent paid invoice of a subscription, with
+   * the amount actually paid. A subscription id (sub_...) is not a PaymentIntent
+   * id, so refunds must go through the invoice.
+   */
+  async getLatestSubscriptionPayment(
+    stripeSubscriptionId: string,
+  ): Promise<{
+    paymentIntentId: string;
+    amountPaidCents: number;
+    currency: string;
+  } | null> {
+    const invoices = await stripe.invoices.list({
+      subscription: stripeSubscriptionId,
+      status: "paid",
+      limit: 1,
+    });
+    const invoice = invoices.data[0];
+    if (!invoice?.id) return null;
+
+    const payments = await stripe.invoicePayments.list({
+      invoice: invoice.id,
+      status: "paid",
+      limit: 1,
+    });
+    const payment = payments.data[0]?.payment;
+    if (!payment || payment.type !== "payment_intent" || !payment.payment_intent) {
+      return null;
+    }
+    const paymentIntentId =
+      typeof payment.payment_intent === "string"
+        ? payment.payment_intent
+        : payment.payment_intent.id;
+
+    return {
+      paymentIntentId,
+      amountPaidCents: invoice.amount_paid,
+      currency: invoice.currency,
+    };
   }
 
   // Create Stripe customer
