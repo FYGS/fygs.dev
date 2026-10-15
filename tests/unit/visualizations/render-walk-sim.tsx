@@ -3,6 +3,7 @@ import type { ComponentType } from "react";
 import { act } from "react";
 import { vi } from "vitest";
 import { render, fireEvent, cleanup } from "@testing-library/react";
+import { withNeutralMatchMedia } from "./match-media";
 
 /**
  * Like renderWalk, for simulations driven by timers, requestAnimationFrame and
@@ -11,6 +12,10 @@ import { render, fireEvent, cleanup } from "@testing-library/react";
  * simulations render several frames.
  */
 export function renderWalkSim(Component: ComponentType, opts: { passes?: number; stepMs?: number } = {}) {
+  return withNeutralMatchMedia(() => walkSim(Component, opts));
+}
+
+function walkSim(Component: ComponentType, opts: { passes?: number; stepMs?: number }) {
   const { passes = 2, stepMs = 700 } = opts;
   vi.useFakeTimers({ now: new Date("2025-01-01T00:00:00Z") });
   let seed = 123456789;

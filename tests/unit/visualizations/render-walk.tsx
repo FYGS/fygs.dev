@@ -1,6 +1,7 @@
 import { createHash } from "crypto";
 import type { ComponentType } from "react";
 import { render, fireEvent, cleanup } from "@testing-library/react";
+import { withNeutralMatchMedia } from "./match-media";
 
 /**
  * Render a component, then click every button over several passes, hashing the
@@ -11,6 +12,10 @@ import { render, fireEvent, cleanup } from "@testing-library/react";
  * component into sub-components changes nothing visible.
  */
 export function renderWalk(Component: ComponentType, passes = 3) {
+  return withNeutralMatchMedia(() => walk(Component, passes));
+}
+
+function walk(Component: ComponentType, passes: number) {
   const { container } = render(<Component />);
   // Radix generates ids from a global counter (_r_0_, _r_1_ ...): normalise them.
   const normalised = () => container.innerHTML.replace(/_r_[0-9a-z]+_/g, "_r_X_");
