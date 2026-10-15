@@ -136,6 +136,45 @@ describe("rateLimit (Redis unavailable)", () => {
   });
 });
 
+describe("circuit breaker", () => {
+  it("stops waiting on Redis for 10 seconds after a failure", async () => {
+    redisMock.evalFn.mockRejectedValue(new Error("ECONNREFUSED"));
+    for (let i = 0; i < 5; i++) await rateLimit(`k${i}`, 3, 60);
+    expect(redisMock.evalFn).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps enforcing limits while the breaker is open", async () => {
+    redisMock.evalFn.mockRejectedValue(new Error("ECONNREFUSED"));
+    const results = [];
+    for (let i = 0; i < 4; i++) results.push(await rateLimit("same", 3, 60));
+    expect(results.map((r) => r.allowed)).toEqual([true, true, true, false]);
+  });
+
+  it("failMode 'closed' also refuses without calling Redis while open", async () => {
+    redisMock.evalFn.mockRejectedValue(new Error("down"));
+    await rateLimit("a", 3, 60);
+    const result = await rateLimit("b", 3, 60, { failMode: "closed" });
+    expect(result).toMatchObject({ allowed: false, degraded: true });
+    expect(redisMock.evalFn).toHaveBeenCalledTimes(1);
+  });
+
+  it("tries Redis again after the pause and recovers", async () => {
+    redisMock.evalFn.mockRejectedValueOnce(new Error("blip"));
+    expect((await rateLimit("k", 3, 60)).degraded).toBe(true);
+    vi.advanceTimersByTime(11_000);
+    const back = await rateLimit("k2", 3, 60);
+    expect(back.degraded).toBe(false);
+    expect(redisMock.evalFn).toHaveBeenCalledTimes(2);
+  });
+
+  it("applies to idempotency checks too", async () => {
+    redisMock.setNxEx.mockRejectedValue(new Error("down"));
+    await ensureIdempotent("a");
+    await ensureIdempotent("b");
+    expect(redisMock.setNxEx).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("getClientIp", () => {
   const h = (init: Record<string, string>) => new Headers(init);
 

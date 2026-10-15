@@ -5,6 +5,14 @@ import { NextRequest } from "next/server";
 // fallback, which is exactly what protects the app when Redis is down.
 const m = vi.hoisted(() => ({ sendContactFormEmails: vi.fn() }));
 
+// Redis is unreachable: the limiter runs on its in-process fallback, whatever the environment
+vi.mock("@/lib/redis", () => ({
+  default: {
+    eval: () => Promise.reject(new Error("redis unavailable")),
+    setNxEx: () => Promise.reject(new Error("redis unavailable")),
+  },
+}));
+
 vi.mock("@/lib/email-service", () => ({
   emailService: { sendContactFormEmails: m.sendContactFormEmails },
 }));

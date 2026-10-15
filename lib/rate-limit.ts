@@ -34,6 +34,10 @@ export interface RateLimitOptions {
 }
 
 const REDIS_TIMEOUT_MS = 500;
+// Circuit breaker: once Redis has failed, stop waiting on it for a few seconds.
+// Without this every request would pay the timeout while Redis is down.
+const REDIS_RETRY_AFTER_MS = 10_000;
+let redisDownUntilMs = 0;
 
 const SLIDING_WINDOW_SCRIPT = `
 local current = redis.call('INCR', KEYS[1])
@@ -129,6 +133,7 @@ function memoryCheck(
 export function __resetRateLimitMemory() {
   memory.clear();
   lastDegradedLogMs = 0;
+  redisDownUntilMs = 0;
 }
 
 // ─── Redis path ──────────────────────────────────────────────────────────────
@@ -159,6 +164,17 @@ function logDegraded(error: unknown, nowMs: number) {
   );
 }
 
+function refuse(limit: number, nowMs: number): RateLimitResult {
+  return {
+    allowed: false,
+    limit,
+    remaining: 0,
+    reset: Math.ceil((nowMs + 1000) / 1000),
+    retryAfter: 1,
+    degraded: true,
+  };
+}
+
 /**
  * Count one request against `key` and say whether it is within `limit`
  * requests per `windowSeconds`.
@@ -174,6 +190,12 @@ export async function rateLimit(
   const currentKey = `rl:${key}:${windowIndex}`;
   const previousKey = `rl:${key}:${windowIndex - 1}`;
 
+  if (nowMs < redisDownUntilMs) {
+    return options.failMode === "closed"
+      ? refuse(limit, nowMs)
+      : memoryCheck(key, limit, windowSeconds, nowMs, true);
+  }
+
   try {
     const raw = await withTimeout(
       redis.eval(
@@ -188,17 +210,9 @@ export async function rateLimit(
     if (!Array.isArray(raw) || raw.length < 2) throw new Error("Unexpected reply");
     return decide(limit, windowSeconds, nowMs, Number(raw[0]), Number(raw[1]), false);
   } catch (error) {
+    redisDownUntilMs = nowMs + REDIS_RETRY_AFTER_MS;
     logDegraded(error, nowMs);
-    if (options.failMode === "closed") {
-      return {
-        allowed: false,
-        limit,
-        remaining: 0,
-        reset: Math.ceil((nowMs + 1000) / 1000),
-        retryAfter: 1,
-        degraded: true,
-      };
-    }
+    if (options.failMode === "closed") return refuse(limit, nowMs);
     return memoryCheck(key, limit, windowSeconds, nowMs, true);
   }
 }
@@ -292,10 +306,13 @@ export async function enforceRateLimit(
  * callers of this helper must be safe to run twice.
  */
 export async function ensureIdempotent(id: string, ttlSeconds = 60): Promise<boolean> {
+  const nowMs = Date.now();
+  if (nowMs < redisDownUntilMs) return true;
   try {
     return await withTimeout(redis.setNxEx(`idem:${id}`, "1", ttlSeconds), REDIS_TIMEOUT_MS);
   } catch (error) {
-    logDegraded(error, Date.now());
+    redisDownUntilMs = nowMs + REDIS_RETRY_AFTER_MS;
+    logDegraded(error, nowMs);
     return true;
   }
 }

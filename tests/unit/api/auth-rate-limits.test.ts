@@ -3,6 +3,14 @@ import { NextRequest } from "next/server";
 
 const m = vi.hoisted(() => ({ authPost: vi.fn() }));
 
+// Redis is unreachable: the limiter runs on its in-process fallback, whatever the environment
+vi.mock("@/lib/redis", () => ({
+  default: {
+    eval: () => Promise.reject(new Error("redis unavailable")),
+    setNxEx: () => Promise.reject(new Error("redis unavailable")),
+  },
+}));
+
 vi.mock("@/lib/auth", () => ({ auth: {} }));
 vi.mock("better-auth/next-js", () => ({
   toNextJsHandler: () => ({

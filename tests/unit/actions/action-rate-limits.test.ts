@@ -3,6 +3,14 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // The real limiter runs (no REDIS_URL -> in-process fallback).
 const m = vi.hoisted(() => ({ getSession: vi.fn(), toggleLike: vi.fn() }));
 
+// Redis is unreachable: the limiter runs on its in-process fallback, whatever the environment
+vi.mock("@/lib/redis", () => ({
+  default: {
+    eval: () => Promise.reject(new Error("redis unavailable")),
+    setNxEx: () => Promise.reject(new Error("redis unavailable")),
+  },
+}));
+
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: m.getSession } } }));
 vi.mock("next/headers", () => ({
   headers: vi.fn(() => Promise.resolve(new Headers({ "x-forwarded-for": "203.0.113.9" }))),
