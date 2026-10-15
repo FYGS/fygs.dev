@@ -5,8 +5,7 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { db } from '@/lib/db';
 import { AccessService } from '@/lib/access-service';
-import { enrollInCourseSchema, toggleLessonProgressSchema, submitReviewSchema } from '@/lib/validators/course';
-import { Analytics } from '@/lib/analytics-helper';
+import { toggleLessonProgressSchema, submitReviewSchema } from '@/lib/validators/course';
 import { COURSE_TAG_FEATURED, COURSE_TAG_LIST, COURSE_TAG_RECOMMENDATIONS } from '@/lib/repositories/course-repository';
 
 // Helpers
@@ -21,28 +20,6 @@ function revalidateCourseRelated(slug?: string) {
   revalidateTag(COURSE_TAG_LIST);
   revalidateTag(COURSE_TAG_RECOMMENDATIONS);
   if (slug) revalidateTag(`course:${slug}`);
-}
-
-// Enroll in a course (one-time purchase simulation for now)
-export async function enrollInCourse(formData: FormData) {
-  const user = await getUserOrThrow();
-  const parsed = enrollInCourseSchema.safeParse({ courseId: formData.get('courseId') });
-  if (!parsed.success) {
-    return { ok: false, error: 'INVALID_INPUT' };
-  }
-  const { courseId } = parsed.data;
-
-  const course = await db.course.findUnique({ where: { id: courseId }, select: { id: true, slug: true, published: true } });
-  if (!course || !course.published) return { ok: false, error: 'COURSE_NOT_FOUND' };
-
-  // Check existing
-  const existing = await db.enrollment.findUnique({ where: { userId_courseId: { userId: user.id, courseId } }, select: { id: true } });
-  if (existing) return { ok: true, alreadyEnrolled: true };
-
-  await db.enrollment.create({ data: { userId: user.id, courseId } });
-  Analytics.courseEnrollmentExplicit(user.id, { courseId });
-  revalidateCourseRelated(course.slug);
-  return { ok: true };
 }
 
 // Toggle lesson progress
