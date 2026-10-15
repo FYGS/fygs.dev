@@ -379,7 +379,7 @@ ${report.pages.map(page => `
 
 ## Accessibility Requirements (WCAG 2.1 AA)
 
-${Object.entries(report.requirements).map(([key, req]) => `
+${Object.entries(report.requirements).map(([, req]) => `
 ### ${req.name}
 - **Level**: WCAG ${req.level}
 - **Priority**: ${req.priority.toUpperCase()}

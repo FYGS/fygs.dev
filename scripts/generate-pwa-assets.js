@@ -101,7 +101,7 @@ async function generateAssets() {
 try {
   require.resolve("sharp");
   generateAssets();
-} catch (e) {
+} catch {
   console.error("❌ Sharp is not installed. Installing now...");
   console.log("Run: pnpm add -D sharp");
   console.log(
