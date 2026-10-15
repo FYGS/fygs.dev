@@ -57,7 +57,7 @@ const _listeners: Set<WebContainerListener> = new Set();
  * npm/node produce colored output, progress bars, and cursor movements
  * that appear as garbled characters in a plain text console.
  */
-function stripAnsi(text: string): string {
+export function stripAnsi(text: string): string {
   // Remove ANSI CSI sequences (colors, cursor commands, etc.)
   // eslint-disable-next-line no-control-regex
   let clean = text.replace(
@@ -66,13 +66,18 @@ function stripAnsi(text: string): string {
   );
   // Remove OSC sequences (title setting, etc.)
   clean = clean.replace(/\x1b\][^\x07]*\x07/g, "");
-  // Handle carriage return overwrites (npm progress bars)
+  // Windows-style line endings are plain newlines, not overwrites. Programs in
+  // the container write "\r\n"; treating the trailing "\r" as an overwrite kept
+  // the (empty) text after it and erased every line of program output.
+  clean = clean.replace(/\r\n/g, "\n");
+  // A bare "\r" moves the cursor to the start of the line (npm progress bars):
+  // the visible text is the last non-empty segment.
   clean = clean
     .split("\n")
     .map((line) => {
       if (line.includes("\r")) {
-        const parts = line.split("\r");
-        return parts[parts.length - 1];
+        const parts = line.split("\r").filter((part) => part.length > 0);
+        return parts.length > 0 ? parts[parts.length - 1] : "";
       }
       return line;
     })
