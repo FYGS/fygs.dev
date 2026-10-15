@@ -9,7 +9,16 @@ import { CoursesTable } from "./_components/courses-table";
 import { CoursesStats } from "./_components/courses-stats";
 import { PaginationService, extractPaginationParams } from "@/lib/pagination-utils";
 import { serializeCourse } from "@/lib/serialization-utils";
-import { Role } from "@prisma/client";
+import { Prisma, Role } from "@prisma/client";
+
+type AdminCourseRow = Prisma.CourseGetPayload<{
+  include: {
+    lessons: { select: { id: true; published: true } };
+    enrollments: { select: { id: true } };
+    reviews: { select: { rating: true } };
+    tags: { include: { tag: { select: { name: true; color: true } } } };
+  };
+}>;
 
 export const metadata: Metadata = {
   title: "Gestion des Formations | Admin FYGS",
@@ -45,7 +54,7 @@ async function getCoursesData(searchParams: URLSearchParams, session: { user: { 
   
   const [coursesResult, stats] = await Promise.all([
     // Récupérer les cours avec pagination
-    PaginationService.paginateWithIncludes(
+    PaginationService.paginateWithIncludes<AdminCourseRow>(
       db.course,
       {
         ...paginationParams,
@@ -105,8 +114,14 @@ async function getCoursesData(searchParams: URLSearchParams, session: { user: { 
     })),
   ]);
 
-  // Sérialiser les cours
-  const serializedCourses = coursesResult.data.map(serializeCourse);
+  // Sérialiser les cours et fournir les champs que CoursesTable affiche
+  const serializedCourses = coursesResult.data.map((course) => ({
+    ...serializeCourse(course),
+    lessonsCount: course.lessons.length,
+    publishedLessonsCount: course.lessons.filter((l) => l.published).length,
+    enrollmentsCount: course.enrollments.length,
+    tags: course.tags.map(({ tag }) => ({ name: tag.name, color: tag.color })),
+  }));
 
   return {
     courses: serializedCourses,

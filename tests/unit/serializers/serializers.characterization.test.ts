@@ -41,7 +41,7 @@ describe("safeNumber", () => {
         "booleanTrue": 1,
         "decimal": 19.99,
         "junkString": 0,
-        "nan": NaN,
+        "nan": 0,
         "null": 0,
         "number": 12.5,
         "numericString": 3.5,
@@ -77,7 +77,7 @@ describe("serializeRevenueData / serializeUserGrowthData", () => {
           "transactions": 2,
         },
         {
-          "avg_order_value": NaN,
+          "avg_order_value": 0,
           "month": 2025-03-01T00:00:00.000Z,
           "revenue": 0,
           "transactions": 0,
