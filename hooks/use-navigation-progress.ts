@@ -1,11 +1,8 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 export function useNavigationProgress() {
-  const router = useRouter();
-  const pathname = usePathname();
   const [isNavigating, setIsNavigating] = useState(false);
   const [progress, setProgress] = useState(0);
 

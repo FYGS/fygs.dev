@@ -57,12 +57,13 @@ export function useContextualCommands(commands: ContextualCommand[]) {
       registeredCommandsRef.current.add(command.id);
     });
 
-    // Nettoyage lors du démontage
+    // Nettoyage lors du démontage (le Set n'est jamais réassigné)
+    const registered = registeredCommandsRef.current;
     return () => {
-      registeredCommandsRef.current.forEach((id) => {
+      registered.forEach((id) => {
         unregisterCommand(id);
       });
-      registeredCommandsRef.current.clear();
+      registered.clear();
     };
   }, [commands, pathname, registerCommand, unregisterCommand]);
 }

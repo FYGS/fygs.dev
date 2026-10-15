@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect } from "react";
 
 interface ShortcutMap {
@@ -12,8 +11,6 @@ interface ShortcutMap {
 }
 
 export function useKeyboardShortcuts(shortcuts: ShortcutMap[]) {
-  const router = useRouter();
-
   const handleKeyPress = useCallback(
     (event: KeyboardEvent) => {
       // Ignorer les raccourcis si l'utilisateur tape dans un champ de texte

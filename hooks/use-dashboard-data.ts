@@ -36,7 +36,7 @@ export function useDashboardData(userId: string): DashboardData {
         setData(prev => ({ ...prev, isLoading: true, error: null }));
 
         // Simulate API calls - replace with real API endpoints
-        const [coursesRes, progressRes, activityRes] = await Promise.all([
+        await Promise.all([
           fetch(`/api/dashboard/courses?userId=${userId}`).catch(() => null),
           fetch(`/api/dashboard/progress?userId=${userId}`).catch(() => null),
           fetch(`/api/dashboard/activity?userId=${userId}`).catch(() => null),
@@ -73,7 +73,7 @@ export function useDashboardData(userId: string): DashboardData {
         if (!isCancelled) {
           setData(mockData);
         }
-      } catch (error) {
+      } catch {
         if (!isCancelled) {
           const errorMessage = "Erreur lors du chargement des données";
           setData(prev => ({

@@ -1,8 +1,7 @@
 "use client";
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
 import { logger, createLogger } from '@/lib/structured-logger';
-import { Analytics } from '@/lib/analytics';
 import { updateLessonProgress } from '@/app/[locale]/(main)/dashboard/actions/updateLessonProgress';
 
 interface UseLessonProgressOptions {
@@ -17,13 +16,16 @@ export function useLessonProgress({ lessonId, enabled = true, onCompleted, inter
   const completedRef = useRef(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const correlationId = logger.generateCorrelationId();
-  const progressLogger = createLogger({
-    operation: 'lesson-progress',
-    correlationId,
-    resourceType: 'lesson',
-    resourceId: lessonId
-  });
+  const progressLogger = useMemo(
+    () =>
+      createLogger({
+        operation: 'lesson-progress',
+        correlationId: logger.generateCorrelationId(),
+        resourceType: 'lesson',
+        resourceId: lessonId
+      }),
+    [lessonId]
+  );
 
   const sendIncrement = useCallback(async (delta: number) => {
     if (!enabled || !lessonId || delta <= 0) return;
@@ -54,9 +56,7 @@ export function useLessonProgress({ lessonId, enabled = true, onCompleted, inter
         metadata: { delta, error: error instanceof Error ? error.message : String(error) }
       }, error instanceof Error ? error : new Error(String(error)));
     }
-  }, [lessonId, enabled]);
-
-  const lastPercentRef = useRef<number | null>(null);
+  }, [lessonId, enabled, progressLogger]);
 
   const markCompleted = useCallback(async () => {
     if (completedRef.current || !enabled) return;
@@ -120,7 +120,7 @@ export function useLessonProgress({ lessonId, enabled = true, onCompleted, inter
         metadata: { error: error instanceof Error ? error.message : String(error) }
       }, error instanceof Error ? error : new Error(String(error)));
     }
-  }, [lessonId, enabled, onCompleted]);
+  }, [lessonId, enabled, onCompleted, progressLogger]);
 
   const start = useCallback((getCurrentTime: () => number) => {
     if (!enabled) return;
