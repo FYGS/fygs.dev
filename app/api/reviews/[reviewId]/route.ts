@@ -9,6 +9,7 @@ import { db } from "@/lib/db";
 import { ReviewStatus } from "@prisma/client";
 import { logger } from "@/lib/structured-logger";
 import { ReviewAnalyticsService } from "@/lib/services/review-analytics";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -123,6 +124,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
  * PUT /api/reviews/[reviewId]
  */
 export async function PUT(request: NextRequest, { params }: RouteParams) {
+  const limited = await enforceRateLimit(request, "review-write", {
+    limit: 20,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   try {
     const { reviewId } = await params;
 
@@ -304,6 +311,12 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
  * DELETE /api/reviews/[reviewId]
  */
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
+  const limited = await enforceRateLimit(request, "review-write", {
+    limit: 20,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   try {
     const { reviewId } = await params;
 

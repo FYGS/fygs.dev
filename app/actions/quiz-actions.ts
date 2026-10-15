@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { AccessService } from "@/lib/access-service";
 import { headers } from "next/headers";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { logger } from "@/lib/structured-logger";
 
 /**
@@ -59,6 +60,15 @@ async function getCurrentUserId(): Promise<string | null> {
   return session?.user?.id ?? null;
 }
 
+async function isLimited(userId: string, name: string, limit: number): Promise<boolean> {
+  const result = await checkRateLimit(await headers(), name, {
+    subject: `user:${userId}`,
+    limit,
+    windowSeconds: 60,
+  });
+  return !result.allowed;
+}
+
 /**
  * Feedback for one answer. Also verifies that the caller can access the course
  * the quiz belongs to.
@@ -73,6 +83,9 @@ export async function checkQuizAnswer(
 
     const userId = await getCurrentUserId();
     if (!userId) return { success: false, error: "Non authentifié" };
+    if (await isLimited(userId, "quiz-check", 120)) {
+      return { success: false, error: "Trop de requêtes, réessayez dans un instant" };
+    }
 
     const question = await db.quizQuestion.findFirst({
       where: { id: questionId, quizId },
@@ -125,6 +138,9 @@ export async function submitQuizAnswers(
 
     const userId = await getCurrentUserId();
     if (!userId) return { success: false, error: "Non authentifié" };
+    if (await isLimited(userId, "quiz-submit", 30)) {
+      return { success: false, error: "Trop de requêtes, réessayez dans un instant" };
+    }
 
     const quiz = await db.quiz.findUnique({
       where: { id: quizId },

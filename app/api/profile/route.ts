@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { z } from "zod";
 import { createLogger } from "@/lib/structured-logger";
 import { SubscriptionStatus } from "@prisma/client";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 const updateProfileSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
@@ -12,6 +13,12 @@ const updateProfileSchema = z.object({
 });
 
 export async function PATCH(req: NextRequest) {
+  const limited = await enforceRateLimit(req, "profile-write", {
+    limit: 20,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   try {
     const session = await auth.api.getSession({
       headers: await headers(),

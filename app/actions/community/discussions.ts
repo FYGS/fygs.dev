@@ -14,6 +14,7 @@ import type {
   ActionResult,
 } from "@/types/community";
 import { checkAndAwardBadges } from "./_badges";
+import { isCommunityWriteLimited } from "./_rate-limit";
 
 /**
  * Create a new discussion
@@ -28,6 +29,10 @@ export async function createDiscussion(
     if (!session?.user) {
       return { success: false, error: "Authentication required" };
     }
+    if (await isCommunityWriteLimited(session.user.id)) {
+      return { success: false, error: "Too many requests" };
+    }
+
 
     const rawData = {
       title: formData.get("title") as string,
@@ -141,6 +146,10 @@ export async function updateDiscussion(
     if (!session?.user) {
       return { success: false, error: "Authentication required" };
     }
+    if (await isCommunityWriteLimited(session.user.id)) {
+      return { success: false, error: "Too many requests" };
+    }
+
 
     const discussion = await db.discussion.findUnique({
       where: { id: discussionId },
@@ -246,6 +255,10 @@ export async function deleteDiscussion(
     if (!session?.user) {
       return { success: false, error: "Authentication required" };
     }
+    if (await isCommunityWriteLimited(session.user.id)) {
+      return { success: false, error: "Too many requests" };
+    }
+
 
     const discussion = await db.discussion.findUnique({
       where: { id: discussionId },

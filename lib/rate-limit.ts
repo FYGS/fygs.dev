@@ -1,3 +1,4 @@
+import { NextResponse } from "next/server";
 import redis from "./redis";
 
 /**
@@ -249,7 +250,23 @@ export function rateLimitHeaders(result: RateLimitResult): Record<string, string
 }
 
 /**
- * For route handlers: returns a 429 Response when the caller is over the limit,
+ * Count one request for `name` + subject (client IP by default) and return the
+ * decision. Use it where a Response cannot be returned, e.g. server actions.
+ */
+export async function checkRateLimit(
+  source: Request | Headers,
+  name: string,
+  options: EnforceOptions,
+): Promise<RateLimitResult> {
+  const headers = source instanceof Headers ? source : source.headers;
+  const subject = options.subject ?? `ip:${getClientIp(headers)}`;
+  return rateLimit(`${name}:${subject}`, options.limit, options.windowSeconds, {
+    failMode: options.failMode,
+  });
+}
+
+/**
+ * For route handlers: returns a 429 NextResponse when the caller is over the limit,
  * otherwise null.
  *
  *   const limited = await enforceRateLimit(req, "contact", { limit: 5, windowSeconds: 3600 });
@@ -259,22 +276,12 @@ export async function enforceRateLimit(
   source: Request | Headers,
   name: string,
   options: EnforceOptions,
-): Promise<Response | null> {
-  const headers = source instanceof Headers ? source : source.headers;
-  const subject = options.subject ?? `ip:${getClientIp(headers)}`;
-  const result = await rateLimit(
-    `${name}:${subject}`,
-    options.limit,
-    options.windowSeconds,
-    { failMode: options.failMode },
-  );
+): Promise<NextResponse | null> {
+  const result = await checkRateLimit(source, name, options);
   if (result.allowed) return null;
-  return new Response(
-    JSON.stringify({ error: "Too many requests", retryAfter: result.retryAfter }),
-    {
-      status: 429,
-      headers: { "Content-Type": "application/json", ...rateLimitHeaders(result) },
-    },
+  return NextResponse.json(
+    { error: "Too many requests", retryAfter: result.retryAfter },
+    { status: 429, headers: rateLimitHeaders(result) },
   );
 }
 

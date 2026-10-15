@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ReviewSearchService } from "@/lib/services/review-search";
 import { logger } from "@/lib/structured-logger";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 /**
  * Get trending reviews (high engagement)
  * GET /api/reviews/trending?courseId=xxx&period=week&limit=10
  */
 export async function GET(request: NextRequest) {
+  const limited = await enforceRateLimit(request, "review-read", {
+    limit: 120,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   try {
     const { searchParams } = new URL(request.url);
 

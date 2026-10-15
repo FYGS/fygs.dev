@@ -14,6 +14,7 @@ import {
   PaymentStatus,
 } from "@prisma/client";
 import { createLogger } from "@/lib/structured-logger";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 const checkoutLogger = createLogger({
   operation: "stripe-checkout",
@@ -21,6 +22,12 @@ const checkoutLogger = createLogger({
 });
 
 export async function POST(req: NextRequest) {
+  const limited = await enforceRateLimit(req, "checkout", {
+    limit: 10,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   try {
     const session = await auth.api.getSession({
       headers: await headers(),

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { maintenanceConfig } from "@/config/maintenance";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 // GET /api/maintenance - Obtenir l'état de maintenance
 export async function GET() {
@@ -12,6 +13,12 @@ export async function GET() {
 
 // POST /api/maintenance - Mettre à jour l'état de maintenance
 export async function POST(request: Request) {
+  const limited = await enforceRateLimit(request, "maintenance-admin", {
+    limit: 10,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   const adminKey = process.env.ADMIN_API_KEY;
   const authHeader = request.headers.get("authorization");
 

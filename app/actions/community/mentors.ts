@@ -9,6 +9,7 @@ import {
 import type {
   ActionResult,
 } from "@/types/community";
+import { isCommunityWriteLimited } from "./_rate-limit";
 
 /**
  * Create a mentor request
@@ -21,6 +22,10 @@ export async function createMentorRequest(
     if (!session?.user) {
       return { success: false, error: "Authentication required" };
     }
+    if (await isCommunityWriteLimited(session.user.id)) {
+      return { success: false, error: "Too many requests" };
+    }
+
 
     const rawData = {
       mentorId: formData.get("mentorId") as string,
@@ -215,6 +220,10 @@ export async function respondToMentorRequest(
     if (!session?.user) {
       return { success: false, error: "Authentication required" };
     }
+    if (await isCommunityWriteLimited(session.user.id)) {
+      return { success: false, error: "Too many requests" };
+    }
+
 
     const request = await db.mentorRequest.findUnique({
       where: { id: requestId },

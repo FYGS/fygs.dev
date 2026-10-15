@@ -24,6 +24,10 @@ export const auth = betterAuth({
     provider: "postgresql",
   }),
   plugins: [nextCookies()],
+  // Defence in depth only: this limiter reads the leftmost X-Forwarded-For entry,
+  // so the real protection for sign-in and password flows is in
+  // app/api/auth/[...all]/route.ts (trusted-proxy IP + per-email limits).
+  rateLimit: { enabled: true, window: 60, max: 100 },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,

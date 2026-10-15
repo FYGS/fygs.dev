@@ -11,6 +11,7 @@ import { logger } from "@/lib/structured-logger";
 import { ReviewAnalyticsService } from "@/lib/services/review-analytics";
 import { ReviewNotificationService } from "@/lib/services/review-notification";
 import { ReviewSearchService } from "@/lib/services/review-search";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 // Use Node.js runtime for email services
 export const runtime = "nodejs";
@@ -20,6 +21,12 @@ export const runtime = "nodejs";
  * POST /api/reviews
  */
 export async function POST(request: NextRequest) {
+  const limited = await enforceRateLimit(request, "review-write", {
+    limit: 20,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   try {
     // Get user session
     const session = await auth.api.getSession({
@@ -210,6 +217,12 @@ export async function POST(request: NextRequest) {
  * GET /api/reviews?courseId=xxx&search=xxx&rating=5&verified=true&page=1&limit=20&sortBy=newest
  */
 export async function GET(request: NextRequest) {
+  const limited = await enforceRateLimit(request, "review-read", {
+    limit: 120,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   try {
     const { searchParams } = new URL(request.url);
 

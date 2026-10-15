@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { minioService, MinIOService } from "@/lib/minio-service";
 import { logger } from "@/lib/structured-logger";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -15,6 +16,12 @@ interface UploadResponse {
 export async function POST(
   request: NextRequest
 ): Promise<NextResponse<UploadResponse>> {
+  const limited = await enforceRateLimit(request, "upload", {
+    limit: 20,
+    windowSeconds: 600,
+  });
+  if (limited) return limited as NextResponse<UploadResponse>;
+
   const correlationId = logger.generateCorrelationId();
   const uploadLogger = logger.withContext({
     operation: "image-upload",
@@ -180,6 +187,12 @@ function validateImageFile(file: File): { valid: boolean; error?: string } {
 }
 
 export async function DELETE(request: NextRequest): Promise<NextResponse> {
+  const limited = await enforceRateLimit(request, "upload", {
+    limit: 20,
+    windowSeconds: 600,
+  });
+  if (limited) return limited as NextResponse<UploadResponse>;
+
   const correlationId = logger.generateCorrelationId();
   const deleteLogger = logger.withContext({
     operation: "image-delete",

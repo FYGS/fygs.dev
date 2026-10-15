@@ -6,6 +6,7 @@ import { createReportSchema } from "@/lib/validators/review-validators";
 import { db } from "@/lib/db";
 import { ReportStatus } from "@prisma/client";
 import { logger } from "@/lib/structured-logger";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -20,6 +21,12 @@ interface RouteParams {
  * POST /api/reviews/[reviewId]/report
  */
 export async function POST(request: NextRequest, { params }: RouteParams) {
+  const limited = await enforceRateLimit(request, "review-write", {
+    limit: 20,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   try {
     const { reviewId } = await params;
 

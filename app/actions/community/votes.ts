@@ -10,6 +10,7 @@ import {
 import type {
   VoteActionResult,
 } from "@/types/community";
+import { isCommunityWriteLimited } from "./_rate-limit";
 
 /**
  * Vote on a discussion or reply
@@ -20,6 +21,10 @@ export async function vote(formData: FormData): Promise<VoteActionResult> {
     if (!session?.user) {
       return { success: false, error: "Authentication required" };
     }
+    if (await isCommunityWriteLimited(session.user.id)) {
+      return { success: false, error: "Too many requests" };
+    }
+
 
     const rawData = {
       voteType: formData.get("voteType") as string,

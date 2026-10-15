@@ -7,6 +7,7 @@ import { auth } from "@/lib/auth";
 import type {
   ActionResult,
 } from "@/types/community";
+import { isCommunityWriteLimited } from "./_rate-limit";
 
 /**
  * Toggle bookmark on a discussion
@@ -19,6 +20,10 @@ export async function toggleBookmark(
     if (!session?.user) {
       return { success: false, error: "Authentication required" };
     }
+    if (await isCommunityWriteLimited(session.user.id)) {
+      return { success: false, error: "Too many requests" };
+    }
+
 
     const existingBookmark = await db.discussionBookmark.findUnique({
       where: {

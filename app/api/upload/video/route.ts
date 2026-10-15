@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { z } from "zod";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 const uploadSchema = z.object({
   filename: z.string().min(1).max(255),
@@ -34,6 +35,12 @@ const BUCKET = process.env.S3_BUCKET || "fygs-videos";
 const PUBLIC_URL_BASE = process.env.S3_PUBLIC_URL || "";
 
 export async function POST(req: NextRequest) {
+  const limited = await enforceRateLimit(req, "upload", {
+    limit: 20,
+    windowSeconds: 600,
+  });
+  if (limited) return limited;
+
   const session = await auth.api.getSession({
     headers: await headers(),
   });

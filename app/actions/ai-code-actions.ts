@@ -1,5 +1,7 @@
 "use server";
 
+import { headers } from "next/headers";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { 
   AICodeAssistRequest, 
   CodeAnalysis, 
@@ -39,6 +41,12 @@ export async function analyzeCode(
   ) {
     throw new Error("Invalid request");
   }
+
+  const limit = await checkRateLimit(await headers(), "ai-action", {
+    limit: 20,
+    windowSeconds: 60,
+  });
+  if (!limit.allowed) throw new Error("Too many requests");
 
   // Add a small delay to simulate network request
   await new Promise(resolve => setTimeout(resolve, 800));

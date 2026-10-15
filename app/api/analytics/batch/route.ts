@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { auth } from '@/lib/auth';
 import { AnalyticsHelper, type AnalyticsEventType } from '@/lib/analytics-helper';
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 interface IncomingBatchEvent {
   type: string;
@@ -11,6 +12,12 @@ interface IncomingBatchEvent {
 }
 
 export async function POST(req: NextRequest) {
+  const limited = await enforceRateLimit(req, "analytics-batch", {
+    limit: 30,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   try {
     // Events are attributed to the signed-in user only; a userId sent by the
     // client is ignored so nobody can write events on behalf of someone else.

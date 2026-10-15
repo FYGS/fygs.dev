@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "edge";
 
@@ -7,6 +8,12 @@ export const runtime = "edge";
  * GET /api/og/course-reviews?title=Course&rating=4.5&count=25
  */
 export async function GET(request: NextRequest) {
+  const limited = await enforceRateLimit(request, "og", {
+    limit: 60,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   try {
     const { searchParams } = new URL(request.url);
 

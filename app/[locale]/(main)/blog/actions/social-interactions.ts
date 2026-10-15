@@ -3,11 +3,20 @@
 import { randomUUID } from "crypto";
 import { cookies, headers } from "next/headers";
 import { auth } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { incrementShareCount, toggleLike } from "@/lib/reading-stats";
 
 const SLUG_PATTERN = /^[a-z0-9-]{1,200}$/;
 const VISITOR_COOKIE = "blog_vid";
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
+
+async function assertWithinLimit() {
+  const result = await checkRateLimit(await headers(), "blog-interaction", {
+    limit: 30,
+    windowSeconds: 60,
+  });
+  if (!result.allowed) throw new Error("Too many requests");
+}
 
 function assertValidSlug(slug: string) {
   if (typeof slug !== "string" || !SLUG_PATTERN.test(slug)) {
@@ -40,10 +49,12 @@ async function resolveLikerId(): Promise<string> {
 
 export async function handleLike(slug: string) {
   assertValidSlug(slug);
+  await assertWithinLimit();
   return toggleLike(slug, await resolveLikerId());
 }
 
 export async function handleShare(slug: string) {
   assertValidSlug(slug);
+  await assertWithinLimit();
   return incrementShareCount(slug);
 }

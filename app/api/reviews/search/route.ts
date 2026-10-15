@@ -2,12 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { ReviewSearchService } from "@/lib/services/review-search";
 import { ReviewStatus } from "@prisma/client";
 import { logger } from "@/lib/structured-logger";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 /**
  * Advanced review search with full-text search and complex filtering
  * GET /api/reviews/search?q=excellent&courseId=xxx&rating=5&verified=true
  */
 export async function GET(request: NextRequest) {
+  const limited = await enforceRateLimit(request, "review-read", {
+    limit: 120,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   try {
     const { searchParams } = new URL(request.url);
 
@@ -94,6 +101,12 @@ export async function GET(request: NextRequest) {
  * GET /api/reviews/search/suggestions?q=exc&courseId=xxx
  */
 export async function POST(request: NextRequest) {
+  const limited = await enforceRateLimit(request, "review-read", {
+    limit: 120,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   try {
     const body = await request.json();
     const { query, courseId, limit = 10 } = body;

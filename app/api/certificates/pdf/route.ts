@@ -3,11 +3,18 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { db } from '@/lib/db';
 import jsPDF from 'jspdf';
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 // Needs Node runtime because auth/email service transitively pulls in nodemailer (depends on 'stream').
 export const runtime = 'nodejs';
 
 export async function GET(request: Request) {
+  const limited = await enforceRateLimit(request, "pdf", {
+    limit: 20,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   const url = new URL(request.url);
   let courseId = url.searchParams.get('courseId');
   if (!courseId) {

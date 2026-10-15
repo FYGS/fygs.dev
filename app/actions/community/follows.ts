@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth";
 import type {
   ActionResult,
 } from "@/types/community";
+import { isCommunityWriteLimited } from "./_rate-limit";
 
 /**
  * Follow/unfollow a topic
@@ -18,6 +19,10 @@ export async function toggleTopicFollow(
     if (!session?.user) {
       return { success: false, error: "Authentication required" };
     }
+    if (await isCommunityWriteLimited(session.user.id)) {
+      return { success: false, error: "Too many requests" };
+    }
+
 
     const existingFollow = await db.topicFollow.findUnique({
       where: {
@@ -59,6 +64,10 @@ export async function toggleUserFollow(
     if (!session?.user) {
       return { success: false, error: "Authentication required" };
     }
+    if (await isCommunityWriteLimited(session.user.id)) {
+      return { success: false, error: "Too many requests" };
+    }
+
 
     if (session.user.id === targetUserId) {
       return { success: false, error: "You cannot follow yourself" };

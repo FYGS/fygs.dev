@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { emailService, ContactFormData } from "@/lib/email-service";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 const contactSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères").max(100),
@@ -13,6 +14,12 @@ const contactSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const limited = await enforceRateLimit(request, "contact", {
+    limit: 5,
+    windowSeconds: 3600,
+  });
+  if (limited) return limited;
+
   try {
     const body = await request.json();
     

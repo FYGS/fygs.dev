@@ -4,8 +4,15 @@ import { headers } from "next/headers";
 import { stripe } from "@/lib/stripe";
 import { db } from "@/lib/db";
 import { SITE_BASE_URL } from "@/app/_lib/constants";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export async function POST() {
+  const limited = await enforceRateLimit(await headers(), "checkout", {
+    limit: 10,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   try {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session) {
@@ -49,6 +56,12 @@ export async function POST() {
 }
 
 export async function GET() {
+  const limited = await enforceRateLimit(await headers(), "checkout", {
+    limit: 10,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   try {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session) {

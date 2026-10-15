@@ -4,8 +4,15 @@ import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { AccessService } from "@/lib/access-service";
 import { createLogger } from "@/lib/structured-logger";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export async function GET(req: NextRequest) {
+  const limited = await enforceRateLimit(req, "read", {
+    limit: 120,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   try {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session) {

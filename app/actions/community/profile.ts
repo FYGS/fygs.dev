@@ -10,6 +10,7 @@ import {
 import type {
   ActionResult,
 } from "@/types/community";
+import { isCommunityWriteLimited } from "./_rate-limit";
 
 /**
  * Update user community profile
@@ -22,6 +23,10 @@ export async function updateCommunityProfile(
     if (!session?.user) {
       return { success: false, error: "Authentication required" };
     }
+    if (await isCommunityWriteLimited(session.user.id)) {
+      return { success: false, error: "Too many requests" };
+    }
+
 
     const rawData = {
       bio: (formData.get("bio") as string) || undefined,

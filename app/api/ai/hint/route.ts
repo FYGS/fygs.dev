@@ -1,7 +1,14 @@
 import { analyzeCode } from "@/app/actions/ai-code-actions";
 import { NextRequest, NextResponse } from "next/server";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
+  const limited = await enforceRateLimit(request, "ai", {
+    limit: 20,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   try {
     const { challengeId, code, language } = await request.json();
 

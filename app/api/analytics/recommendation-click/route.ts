@@ -2,10 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { Analytics } from '@/lib/analytics-helper';
 import { db } from '@/lib/db';
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
+  const limited = await enforceRateLimit(req, "analytics-click", {
+    limit: 60,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   try {
     const session = await auth.api.getSession({ headers: req.headers });
     const body = await req.json().catch(() => ({}));

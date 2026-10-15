@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { CourseCompletionService } from "@/lib/course-completion.service";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 // Nodemailer (indirect via auth/email) requires Node.js runtime (stream module)
 export const runtime = "nodejs";
@@ -13,6 +14,12 @@ export const runtime = "nodejs";
  * - With courseId: Returns detailed completion breakdown for specific course
  */
 export async function GET(request: Request) {
+  const limited = await enforceRateLimit(request, "read", {
+    limit: 120,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   const ifNoneMatch = new Headers(request.headers).get("if-none-match");
   const session = await auth.api.getSession({ headers: await headers() });
   const userId = session?.user?.id;

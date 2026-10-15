@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ReviewNotificationService } from "@/lib/services/review-notification";
 import { logger } from "@/lib/structured-logger";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -10,6 +11,12 @@ export const runtime = "nodejs";
  * GET /api/cron/weekly-review-summaries
  */
 export async function GET(request: NextRequest) {
+  const limited = await enforceRateLimit(request, "cron", {
+    limit: 30,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   try {
     // Verify the request is from a cron service
     const authHeader = request.headers.get("authorization");

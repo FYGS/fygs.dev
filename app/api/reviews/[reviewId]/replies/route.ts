@@ -5,6 +5,7 @@ import { ReviewNotificationService } from "@/lib/services/review-notification";
 import { createReplySchema } from "@/lib/validators/review-validators";
 import { db } from "@/lib/db";
 import { logger } from "@/lib/structured-logger";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -19,6 +20,12 @@ interface RouteParams {
  * POST /api/reviews/[reviewId]/replies
  */
 export async function POST(request: NextRequest, { params }: RouteParams) {
+  const limited = await enforceRateLimit(request, "review-write", {
+    limit: 20,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   try {
     const { reviewId } = await params;
 
