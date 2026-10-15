@@ -187,6 +187,23 @@ console.log(greet(user));
 
 // ─── Store ───────────────────────────────────────────────────────────────────
 
+/**
+ * Whether a run goes through Node.js in the WebContainer. HTML pages, React
+ * components and Python render in the preview or Pyodide instead, so the
+ * "Running in WebContainer" notice would be wrong for them.
+ */
+function runsInNode(
+  files: { name: string; language?: string }[],
+  language: string,
+): boolean {
+  const names = files.map((f) => f.name.toLowerCase());
+  if (names.includes("package.json")) return true;
+  if (names.some((n) => n.endsWith(".html") || n.endsWith(".htm"))) return false;
+  if (names.some((n) => n.endsWith(".jsx") || n.endsWith(".tsx"))) return false;
+  if (names.some((n) => n.endsWith(".py"))) return false;
+  return ["javascript", "typescript", "js", "ts"].includes(language);
+}
+
 export const usePlaygroundStore = create<PlaygroundStore>()(
   persist(
     (set, get) => ({
@@ -483,7 +500,7 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
             type: "info",
             content: "Loading Python runtime (Pyodide)...",
           });
-        } else if (isWebContainerSupported()) {
+        } else if (isWebContainerSupported() && runsInNode(get().files, lang)) {
           get().addConsoleEntry({
             type: "info",
             content: "Running in WebContainer (real Node.js)...",
@@ -546,7 +563,6 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
             code: activeFile?.content ?? "",
             language: lang,
             signal: controller.signal,
-            timeout: 60000,
             files: fileMap,
             entryPoint,
             packageJson: packageJsonContent || undefined,

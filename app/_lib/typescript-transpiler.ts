@@ -17,6 +17,8 @@ export interface TypeScriptCompilerOptions {
   jsx?: "react" | "react-jsx" | "preserve";
   transforms?: Transform[];
   jsxRuntime?: "classic" | "automatic";
+  /** Also convert ES module import/export to require/exports. */
+  commonjs?: boolean;
   [key: string]: unknown;
 }
 
@@ -70,6 +72,86 @@ export function transpileTypeScript(
     const msg = error instanceof Error ? error.message : String(error);
     console.error("Transpilation error:", msg);
     return `// Transpilation error: ${msg.replace(/\n/g, "\n// ")}\nthrow new Error(${JSON.stringify("Transpilation failed: " + msg)});`;
+  }
+}
+
+/**
+ * A syntax error found while transpiling, with the location when Sucrase gave one.
+ * Lets callers show "index.ts:3:7 - Unexpected token" instead of running broken code.
+ */
+export class TranspileError extends Error {
+  constructor(
+    public readonly filePath: string,
+    public readonly detail: string,
+    public readonly line: number | null,
+    public readonly column: number | null,
+  ) {
+    super(
+      `${filePath}${line !== null ? `:${line}${column !== null ? `:${column}` : ""}` : ""} - ${detail}`,
+    );
+    this.name = "TranspileError";
+  }
+}
+
+/** Sucrase reports errors as "Error transforming x.ts: Unexpected token (1:7)". */
+function toTranspileError(filePath: string, error: unknown): TranspileError {
+  const raw = error instanceof Error ? error.message : String(error);
+  const location = raw.match(/\((\d+):(\d+)\)\s*$/);
+  const detail = raw
+    .replace(/^Error transforming [^:]*:\s*/, "")
+    .replace(/\s*\(\d+:\d+\)\s*$/, "")
+    .trim();
+  return new TranspileError(
+    filePath,
+    detail || raw,
+    location ? Number(location[1]) : null,
+    location ? Number(location[2]) : null,
+  );
+}
+
+/**
+ * Like transpileFile, but throws a TranspileError on a syntax error instead of
+ * returning code that throws when executed.
+ */
+export function transpileFileStrict(
+  code: string,
+  filePath: string,
+  options?: TypeScriptCompilerOptions,
+): string {
+  if (!code || code.trim() === "") return "";
+
+  const ext = filePath.split(".").pop()?.toLowerCase() ?? "";
+  const transforms: Transform[] = [];
+  switch (ext) {
+    case "ts":
+      transforms.push("typescript");
+      break;
+    case "tsx":
+      transforms.push("typescript", "jsx");
+      break;
+    case "jsx":
+      transforms.push("jsx");
+      break;
+    case "js":
+    case "mjs":
+      // Plain JS only needs work when ES modules must become CommonJS
+      if (!options?.commonjs) return code;
+      break;
+    default:
+      return code;
+  }
+  if (options?.commonjs) transforms.push("imports");
+
+  try {
+    return transform(code, {
+      transforms,
+      jsxRuntime: options?.jsxRuntime ?? "classic",
+      production: false,
+      disableESTransforms: true,
+      filePath,
+    }).code;
+  } catch (error) {
+    throw toTranspileError(filePath, error);
   }
 }
 

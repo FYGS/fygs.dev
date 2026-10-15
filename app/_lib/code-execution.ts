@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { transpileTypeScript, transpileFile } from "./typescript-transpiler";
+import { TranspileError, transpileFileStrict } from "./typescript-transpiler";
+import { buildPreviewHtml } from "./preview-html";
 import { executePython } from "./python-executor";
 import {
   executeInWebContainer,
@@ -99,11 +100,38 @@ function executeHtml(
   }
 }
 
+/** The page to preview: the entry point if it is HTML, else index.html, else the first HTML file. */
+function pickHtmlEntry(files: Record<string, string>, entryPoint?: string): string {
+  const isHtml = (name: string) => /\.html?$/i.test(name);
+  if (entryPoint && isHtml(entryPoint) && entryPoint in files) return entryPoint;
+  if ("index.html" in files) return "index.html";
+  return Object.keys(files).find(isHtml) ?? "index.html";
+}
+
+/** Preview of an HTML project: local CSS/JS files are inlined so they actually run. */
+function executeHtmlProject(
+  files: Record<string, string>,
+  entry: string,
+): ExecuteCodeResult {
+  const { html, unresolved, errors } = buildPreviewHtml(files, entry, {
+    bridge: consoleCaptureScipt(),
+  });
+  const logs = unresolved.map(
+    (ref) => `Warning: ${entry} references "${ref}" but no such file is in the project`,
+  );
+  return {
+    output: `data:text/html;charset=utf-8,${encodeURIComponent(html)}`,
+    logs,
+    errors,
+  };
+}
+
 // Main execution function
 export async function executeCode({
   code,
   language,
   signal,
+  timeout,
   files = {},
   entryPoint,
   packageJson,
@@ -124,18 +152,24 @@ export async function executeCode({
         entryPoint,
         packageJson,
         runScript,
+        timeout,
       );
     }
 
     // ── Single-file execution ─────────────────────────────────────────
-    return await executeSingleFile(code, language);
+    return await executeSingleFile(code, language, timeout);
   } catch (error) {
-    return {
-      output: "",
-      logs: [],
-      errors: [error instanceof Error ? error.message : "Execution failed"],
-    };
+    return failure(error);
   }
+}
+
+/** A failed run, with a syntax error reported as "file:line:col - message". */
+function failure(error: unknown): ExecuteCodeResult {
+  const message =
+    error instanceof TranspileError || error instanceof Error
+      ? error.message
+      : "Execution failed";
+  return { output: "", logs: [], errors: [message] };
 }
 
 // ── Single-file execution router ─────────────────────────────────────────────
@@ -143,13 +177,14 @@ export async function executeCode({
 async function executeSingleFile(
   code: string,
   language: string,
+  timeout?: number,
 ): Promise<ExecuteCodeResult> {
   switch (language.toLowerCase()) {
     case "javascript":
     case "js": {
       // WebContainer: real Node.js execution (instant, no install needed)
       if (isWebContainerSupported()) {
-        const result = await executeQuickRun(code, "index.js");
+        const result = await executeQuickRun(code, "index.js", { timeout });
         return {
           output: result.output,
           logs: result.logs,
@@ -162,15 +197,18 @@ async function executeSingleFile(
 
     case "jsx": {
       // React JSX: always use iframe preview with React UMD (instant)
-      return executeReactCode(code, "index.jsx");
+      return executeReactProject({ "index.jsx": code }, "index.jsx");
     }
 
     case "typescript":
     case "ts": {
       // Transpile TS with Sucrase (instant) then run in WebContainer
-      const transpiled = transpileTypeScript(code);
+      const transpiled = transpileFileStrict(code, "index.ts");
       if (isWebContainerSupported()) {
-        const result = await executeQuickRun(transpiled, "index.js");
+        const result = await executeQuickRun(transpiled, "index.js", {
+          timeout,
+          displayNames: { "index.js": "index.ts" },
+        });
         return {
           output: result.output,
           logs: result.logs,
@@ -183,7 +221,7 @@ async function executeSingleFile(
 
     case "tsx": {
       // React TSX: always use iframe preview with React UMD (instant)
-      return executeReactCode(code, "index.tsx");
+      return executeReactProject({ "index.tsx": code }, "index.tsx");
     }
 
     case "html":
@@ -241,6 +279,7 @@ async function executeMultiFileProject(
   entryPoint?: string,
   packageJson?: string,
   runScript?: string,
+  timeout?: number,
 ): Promise<ExecuteCodeResult> {
   // Add package.json if provided but not in files
   if (packageJson && !files["package.json"]) {
@@ -251,7 +290,6 @@ async function executeMultiFileProject(
   const htmlFile = Object.entries(files).find(
     ([name]) => name.endsWith(".html") || name.endsWith(".htm"),
   );
-  const cssFile = Object.entries(files).find(([name]) => name.endsWith(".css"));
   const hasPythonFiles = Object.keys(files).some((name) =>
     name.endsWith(".py"),
   );
@@ -272,31 +310,47 @@ async function executeMultiFileProject(
     }
   }
 
-  // ── HTML + CSS project (no Node.js needed) ──
+  // ── HTML project (no Node.js needed): inline the CSS/JS files it references ──
   if (htmlFile && !files["package.json"]) {
-    const [, htmlContent] = htmlFile;
-    const cssContent = cssFile ? cssFile[1] : "";
-    return executeHtml(htmlContent, cssContent);
+    return executeHtmlProject(files, pickHtmlEntry(files, entryPoint));
   }
 
-  // ── HTML-only project (no Node.js needed) ──
-  if (htmlFile && !files["package.json"]) {
-    const [, htmlContent] = htmlFile;
-    return executeHtml(htmlContent);
+  // ── React/JSX without a bundler: render in the iframe with React UMD ──
+  // (A Node script cannot render a component: "ReactDOM is not defined".)
+  const jsxEntry = Object.keys(files).find(
+    (name) => name.endsWith(".jsx") || name.endsWith(".tsx"),
+  );
+  if (jsxEntry && !files["package.json"]) {
+    const ep =
+      entryPoint && /\.(jsx|tsx)$/.test(entryPoint) && entryPoint in files
+        ? entryPoint
+        : jsxEntry;
+    return executeReactProject(files, ep);
   }
 
   // ── WebContainer execution for JS/TS/React/Node.js projects ──
   if (isWebContainerSupported()) {
     // Pre-transpile TS/TSX/JSX files to JS before mounting
     const transpiledForWc: Record<string, string> = {};
+    const displayNames: Record<string, string> = {};
+    const syntaxErrors: string[] = [];
     for (const [name, content] of Object.entries(files)) {
       const ext = name.split(".").pop()?.toLowerCase() ?? "";
       if (["ts", "tsx", "jsx"].includes(ext)) {
         const jsName = name.replace(/\.(ts|tsx|jsx)$/, ".js");
-        transpiledForWc[jsName] = transpileFile(content, name);
+        displayNames[jsName] = name;
+        try {
+          transpiledForWc[jsName] = transpileFileStrict(content, name);
+        } catch (error) {
+          syntaxErrors.push(error instanceof Error ? error.message : String(error));
+        }
       } else {
         transpiledForWc[name] = content;
       }
+    }
+    // Report a syntax error as such instead of launching node on broken code
+    if (syntaxErrors.length > 0) {
+      return { output: "", logs: [], errors: syntaxErrors };
     }
 
     // Resolve entry point (convert extension if needed)
@@ -317,8 +371,12 @@ async function executeMultiFileProject(
 
     const result = await executeInWebContainer(transpiledForWc, ep, {
       installDeps: true,
-      timeout: 60000,
+      // plain `node file`: stop a runaway program quickly (default 30s)
+      timeout,
+      // npm scripts (install + start): a server is left running once it is up
+      scriptTimeout: 60000,
       runScript: runScript || undefined,
+      displayNames,
     });
 
     return {
@@ -349,10 +407,12 @@ async function executeMultiFileProject(
   for (const [name, content] of Object.entries(files)) {
     const ext = name.split(".").pop()?.toLowerCase() ?? "";
     if (["ts", "tsx", "jsx"].includes(ext)) {
-      transpiledFiles[name.replace(/\.(ts|tsx|jsx)$/, ".js")] = transpileFile(
-        content,
-        name,
-      );
+      try {
+        transpiledFiles[name.replace(/\.(ts|tsx|jsx)$/, ".js")] =
+          transpileFileStrict(content, name);
+      } catch (error) {
+        return failure(error);
+      }
     } else {
       transpiledFiles[name] = content;
     }
@@ -364,37 +424,23 @@ async function executeMultiFileProject(
 
 // ── React/JSX execution (renders to iframe preview) ──────────────────────────
 
-function executeReactCode(code: string, filePath: string): ExecuteCodeResult {
-  try {
-    const transpiled = transpileFile(code, filePath);
-    const html = buildReactPreviewHtml(transpiled);
-    return {
-      output: `data:text/html;charset=utf-8,${encodeURIComponent(html)}`,
-      logs: [],
-      errors: [],
-    };
-  } catch (error) {
-    return {
-      output: "",
-      logs: [],
-      errors: [error instanceof Error ? error.message : String(error)],
-    };
-  }
-}
-
 function executeReactProject(
   files: Record<string, string>,
   entryPoint: string,
 ): ExecuteCodeResult {
   try {
     // Transpile all TS/TSX/JSX files
+    // Modules are registered under the name they are required by at runtime
+    // (App.jsx -> App.js) and converted to CommonJS so that `import` / `export`
+    // work inside the require() shim of the preview page.
     const modules: Record<string, string> = {};
     for (const [name, content] of Object.entries(files)) {
       const ext = name.split(".").pop()?.toLowerCase() ?? "";
-      if (["ts", "tsx", "jsx", "js"].includes(ext)) {
-        modules[name] = ["ts", "tsx", "jsx"].includes(ext)
-          ? transpileFile(content, name)
-          : content;
+      if (["ts", "tsx", "jsx", "js", "mjs"].includes(ext)) {
+        const runtimeName = name.replace(/\.(ts|tsx|jsx|mjs)$/, ".js");
+        modules[runtimeName] = transpileFileStrict(content, name, {
+          commonjs: true,
+        });
       } else if (ext === "css") {
         modules[name] = content;
       }
@@ -413,49 +459,6 @@ function executeReactProject(
       errors: [error instanceof Error ? error.message : String(error)],
     };
   }
-}
-
-function buildReactPreviewHtml(transpiledCode: string): string {
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>React Preview</title>
-  <script src="https://unpkg.com/react@18/umd/react.development.js"><\/script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"><\/script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: system-ui, -apple-system, sans-serif; }
-    #root { min-height: 100vh; }
-  </style>
-</head>
-<body>
-  <div id="root"></div>
-  ${consoleCaptureScipt()}
-  <script>
-    try {
-      ${transpiledCode}
-
-      // Auto-render: find the default export or last component
-      const _exports = {};
-      try {
-        // If code defines App or default export, render it
-        if (typeof App !== 'undefined') {
-          ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
-        }
-      } catch(e) {
-        // Component might have rendered itself
-      }
-    } catch(error) {
-      document.getElementById('root').innerHTML =
-        '<div style="padding:20px;color:#ef4444;font-family:monospace;white-space:pre-wrap">' +
-        '<h3 style="margin-bottom:8px">Runtime Error</h3>' + error.message + '</div>';
-      window.parent.postMessage({ type: 'console', method: 'error', message: error.stack || error.message }, '*');
-    }
-  <\/script>
-</body>
-</html>`;
 }
 
 function buildReactProjectHtml(
@@ -503,6 +506,8 @@ function buildReactProjectHtml(
       const __cache = {};
 
       function require(name) {
+        // Stylesheets are inlined in <style>; importing one is a no-op
+        if (/\.css$/.test(name)) return {};
         // Handle React/ReactDOM
         if (name === 'react') return React;
         if (name === 'react-dom' || name === 'react-dom/client') return ReactDOM;
@@ -527,8 +532,25 @@ function buildReactProjectHtml(
         return {};
       }
 
+      // A component file that only exports (no createRoot call) still gets rendered
+      let __rendered = false;
+      const __createRoot = ReactDOM.createRoot;
+      if (__createRoot) {
+        ReactDOM.createRoot = function () { __rendered = true; return __createRoot.apply(this, arguments); };
+      }
+      const __legacyRender = ReactDOM.render;
+      if (__legacyRender) {
+        ReactDOM.render = function () { __rendered = true; return __legacyRender.apply(this, arguments); };
+      }
+
       // Execute entry point
-      require('${entryJs}');
+      const __entry = require('${entryJs}');
+      if (!__rendered) {
+        const Component = __entry && (__entry.default || __entry.App);
+        if (typeof Component === 'function') {
+          ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(Component));
+        }
+      }
     } catch(error) {
       document.getElementById('root').innerHTML =
         '<div style="padding:20px;color:#ef4444;font-family:monospace;white-space:pre-wrap">' +
