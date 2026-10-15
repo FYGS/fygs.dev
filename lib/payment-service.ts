@@ -11,6 +11,14 @@ import {
 import { Analytics } from "./analytics";
 import { createLogger } from "./structured-logger";
 
+/** Thrown when a webhook payload does not carry a valid Stripe signature. */
+export class WebhookSignatureError extends Error {
+  constructor(message = "Invalid webhook signature") {
+    super(message);
+    this.name = "WebhookSignatureError";
+  }
+}
+
 export interface PaymentProduct {
   id: string;
   name: string;
@@ -348,7 +356,7 @@ class PaymentService {
       return stripe.webhooks.constructEvent(payload, signature, webhookSecret);
     } catch (error) {
       console.error("Webhook signature verification failed:", error);
-      throw new Error("Invalid webhook signature");
+      throw new WebhookSignatureError();
     }
   }
 

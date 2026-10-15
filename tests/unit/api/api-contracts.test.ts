@@ -9,14 +9,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 
-const m = vi.hoisted(() => ({
+const m = vi.hoisted(() => {
+  class WebhookSignatureError extends Error {}
+  return {
+  WebhookSignatureError,
   getSession: vi.fn(),
   headersFn: vi.fn(),
   userFindUnique: vi.fn(),
   userUpdate: vi.fn(),
   sendContactFormEmails: vi.fn(),
   verifyWebhookSignature: vi.fn(),
-}));
+  };
+});
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: m.getSession } } }));
 vi.mock("next/headers", () => ({ headers: m.headersFn }));
@@ -33,6 +37,7 @@ vi.mock("@/lib/email-service", () => ({
 }));
 vi.mock("@/lib/payment-service", () => ({
   paymentService: { verifyWebhookSignature: m.verifyWebhookSignature },
+  WebhookSignatureError: m.WebhookSignatureError,
 }));
 vi.mock("@/lib/analytics", () => ({ Analytics: {} }));
 
@@ -276,10 +281,20 @@ describe("POST /api/stripe/webhook", () => {
     expect(m.verifyWebhookSignature).not.toHaveBeenCalled();
   });
 
-  it("an INVALID signature currently answers 500, not 400 (Stripe will retry)", async () => {
+  it("400 { error: 'Invalid signature' } when the signature is invalid", async () => {
     m.headersFn.mockResolvedValue(new Headers({ "stripe-signature": "bad" }));
     m.verifyWebhookSignature.mockImplementation(() => {
-      throw new Error("Invalid webhook signature");
+      throw new m.WebhookSignatureError("Invalid webhook signature");
+    });
+    const res = await post();
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "Invalid signature" });
+  });
+
+  it("500 when verification fails for a server reason (e.g. missing secret)", async () => {
+    m.headersFn.mockResolvedValue(new Headers({ "stripe-signature": "ok" }));
+    m.verifyWebhookSignature.mockImplementation(() => {
+      throw new Error("STRIPE_WEBHOOK_SECRET is required");
     });
     const res = await post();
     expect(res.status).toBe(500);

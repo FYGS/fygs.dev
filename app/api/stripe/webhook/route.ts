@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { paymentService } from "@/lib/payment-service";
+import { paymentService, WebhookSignatureError } from "@/lib/payment-service";
 import { db } from "@/lib/db";
 import {
   Prisma,
@@ -46,8 +46,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
+  let event: ReturnType<typeof paymentService.verifyWebhookSignature>;
   try {
-    const event = paymentService.verifyWebhookSignature(body, signature);
+    event = paymentService.verifyWebhookSignature(body, signature);
+  } catch (error) {
+    if (error instanceof WebhookSignatureError) {
+      // The sender is not Stripe (or the payload was altered): client error, no retry value.
+      logger.error("Invalid Stripe webhook signature", {
+        eventType: "webhook.signature_invalid",
+      });
+      return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+    }
+    // Anything else (e.g. missing STRIPE_WEBHOOK_SECRET) is a server problem.
+    logger.error("Webhook signature verification failed", {
+      eventType: "webhook.verification_error",
+      metadata: { error: error instanceof Error ? error.message : String(error) },
+    });
+    return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
+  }
+
+  try {
     logger.info("Processing Stripe webhook event", {
       eventType: "webhook.event_received",
       resourceType: "stripe_event",
