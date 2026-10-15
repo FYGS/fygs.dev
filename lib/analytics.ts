@@ -1,11 +1,13 @@
 import { AnalyticsHelper, type AnalyticsEventType } from "./analytics-helper";
 
+export type AnalyticsContext = Record<string, unknown>;
+
 export interface TrackEventInput {
   type: string;
   userId?: string;
   sessionId?: string;
   source?: "server" | "client" | "webhook";
-  context?: Record<string, any>;
+  context?: AnalyticsContext;
 }
 
 /**
@@ -41,104 +43,104 @@ export async function trackEvent(evt: TrackEventInput): Promise<void> {
 
 // Convenience helpers
 export const Analytics = {
-  subscriptionStarted: (userId: string, context?: any) =>
+  subscriptionStarted: (userId: string, context?: AnalyticsContext) =>
     trackEvent({
       type: "SUBSCRIPTION_STARTED",
       userId,
       source: "webhook",
       context,
     }),
-  subscriptionPlanSwitched: (userId: string, context?: any) =>
+  subscriptionPlanSwitched: (userId: string, context?: AnalyticsContext) =>
     trackEvent({
       type: "SUBSCRIPTION_PLAN_SWITCHED",
       userId,
       source: "server",
       context,
     }),
-  subscriptionUpdated: (userId: string, context?: any) =>
+  subscriptionUpdated: (userId: string, context?: AnalyticsContext) =>
     trackEvent({
       type: "SUBSCRIPTION_UPDATED",
       userId,
       source: "webhook",
       context,
     }),
-  subscriptionRenewed: (userId: string, context?: any) =>
+  subscriptionRenewed: (userId: string, context?: AnalyticsContext) =>
     trackEvent({
       type: "SUBSCRIPTION_RENEWED",
       userId,
       source: "webhook",
       context,
     }),
-  subscriptionCanceledSoft: (userId: string, context?: any) =>
+  subscriptionCanceledSoft: (userId: string, context?: AnalyticsContext) =>
     trackEvent({
       type: "SUBSCRIPTION_CANCELED_SOFT",
       userId,
       source: "server",
       context,
     }),
-  subscriptionCanceledImmediate: (userId: string, context?: any) =>
+  subscriptionCanceledImmediate: (userId: string, context?: AnalyticsContext) =>
     trackEvent({
       type: "SUBSCRIPTION_CANCELED_IMMEDIATE",
       userId,
       source: "server",
       context,
     }),
-  coursePurchased: (userId: string, context?: any) =>
+  coursePurchased: (userId: string, context?: AnalyticsContext) =>
     trackEvent({
       type: "COURSE_PURCHASED",
       userId,
       source: "webhook",
       context,
     }),
-  courseEnrollmentExplicit: (userId: string, context?: any) =>
+  courseEnrollmentExplicit: (userId: string, context?: AnalyticsContext) =>
     trackEvent({
       type: "COURSE_ENROLLMENT_EXPLICIT",
       userId,
       source: "server",
       context,
     }),
-  courseRefunded: (userId: string, context?: any) =>
+  courseRefunded: (userId: string, context?: AnalyticsContext) =>
     trackEvent({ type: "COURSE_REFUNDED", userId, source: "server", context }),
-  lessonCompleted: (userId: string, context?: any) =>
+  lessonCompleted: (userId: string, context?: AnalyticsContext) =>
     trackEvent({ type: "LESSON_COMPLETED", userId, source: "server", context }),
-  certificateIssued: (userId: string, context?: any) =>
+  certificateIssued: (userId: string, context?: AnalyticsContext) =>
     trackEvent({
       type: "CERTIFICATE_ISSUED",
       userId,
       source: "server",
       context,
     }),
-  previewViewed: (userId: string | undefined, context?: any) =>
+  previewViewed: (userId: string | undefined, context?: AnalyticsContext) =>
     trackEvent({ type: "PREVIEW_VIEWED", userId, source: "server", context }),
-  recommendationShown: (userId: string, context?: any) =>
+  recommendationShown: (userId: string, context?: AnalyticsContext) =>
     trackEvent({
       type: "RECOMMENDATION_SHOWN",
       userId,
       source: "server",
       context,
     }),
-  recommendationClicked: (userId: string, context?: any) =>
+  recommendationClicked: (userId: string, context?: AnalyticsContext) =>
     trackEvent({
       type: "RECOMMENDATION_CLICKED",
       userId,
       source: "client",
       context,
     }),
-  subscriptionPaymentFailed: (userId: string, context?: any) =>
+  subscriptionPaymentFailed: (userId: string, context?: AnalyticsContext) =>
     trackEvent({
       type: "SUBSCRIPTION_PAYMENT_FAILED",
       userId,
       source: "webhook",
       context,
     }),
-  courseCardViewed: (userId: string | undefined, context?: any) =>
+  courseCardViewed: (userId: string | undefined, context?: AnalyticsContext) =>
     trackEvent({
       type: "COURSE_CARD_VIEWED",
       userId,
       source: "client",
       context,
     }),
-  courseCardCtaClicked: (userId: string | undefined, context?: any) =>
+  courseCardCtaClicked: (userId: string | undefined, context?: AnalyticsContext) =>
     trackEvent({
       type: "COURSE_CARD_CTA_CLICKED",
       userId,
