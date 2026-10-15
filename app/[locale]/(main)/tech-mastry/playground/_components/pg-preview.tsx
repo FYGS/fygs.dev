@@ -36,11 +36,18 @@ export function PgPreview() {
   // Listen for console messages from the iframe
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
+      // Only the preview iframe may write to the console: any other window that
+      // can post a message to this page (opener, parent frame) is ignored.
+      if (event.source !== iframeRef.current?.contentWindow) return;
       if (event.data?.type === "console") {
         const method = event.data.method as string;
         const type =
           method === "error" ? "error" : method === "warn" ? "warn" : "log";
-        addConsoleEntry({ type, content: event.data.message });
+        // The previewed page is user code: bound what it can push into the console
+        addConsoleEntry({
+          type,
+          content: String(event.data.message ?? "").slice(0, 5000),
+        });
       }
     };
 

@@ -121,7 +121,7 @@ const nextConfig = {
     if (!isServer) {
       config.plugins.push(
         new MonacoWebpackPlugin({
-          languages: ["typescript", "javascript", "html", "css"],
+          languages: ["typescript", "javascript", "html", "css", "json"],
           filename: "static/monaco/[name].worker.js",
           publicPath: "/_next/",
         }),
@@ -154,6 +154,17 @@ const nextConfig = {
             key: "Strict-Transport-Security",
             value: "max-age=31536000; includeSubDomains",
           },
+        ],
+      },
+      // The playground page is cross-origin isolated (COEP require-corp, needed by
+      // WebContainer). A worker whose script response lacks COEP is then blocked
+      // (ERR_BLOCKED_BY_RESPONSE), and Monaco silently falls back to running its
+      // language services on the main thread, freezing the UI.
+      {
+        source: "/_next/static/monaco/:path*",
+        headers: [
+          { key: "Cross-Origin-Embedder-Policy", value: "require-corp" },
+          { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
         ],
       },
       {
