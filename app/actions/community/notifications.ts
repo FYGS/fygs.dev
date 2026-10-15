@@ -17,6 +17,11 @@ export async function getNotifications(
   } = { filter: "all" }
 ) {
   try {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session?.user || session.user.id !== userId) {
+      return { success: false, error: "Unauthorized" };
+    }
+
     const { filter, page = 1, limit = 20 } = options;
     const skip = (page - 1) * limit;
 

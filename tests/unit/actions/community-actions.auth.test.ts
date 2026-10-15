@@ -137,6 +137,9 @@ describe("unauthenticated callers", () => {
     ["banUser", () => actions.banUser(formData()), "Insufficient permissions"],
     ["unbanUser", () => actions.unbanUser(formData()), "Insufficient permissions"],
     ["toggleUserFollow", () => actions.toggleUserFollow("user-2"), AUTH_REQUIRED],
+    ["getNotifications", () => actions.getNotifications("user-1", { filter: "all" }), "Unauthorized"],
+    ["getUserFollowers", () => actions.getUserFollowers("user-2"), AUTH_REQUIRED],
+    ["getUserFollowing", () => actions.getUserFollowing("user-2"), AUTH_REQUIRED],
   ];
 
   it.each(cases)("%s rejects without a session and touches no data", async (_name, call, error) => {
@@ -234,45 +237,44 @@ describe("ownership checks", () => {
   });
 });
 
-/**
- * KNOWN ISSUES - current behaviour, frozen on purpose and NOT fixed by the
- * refactor. These actions perform no session check, and because the file is a
- * "use server" module they are callable from the browser with any argument.
- * Fixing them changes behaviour and needs an explicit decision.
- */
-describe("known gaps: actions without a session check (current behaviour)", () => {
-  it("getNotifications returns notifications for ANY userId, no session needed", async () => {
-    getSession.mockResolvedValue(null);
-    dbResults.set("notification.findMany", [{ id: "n1", recipientId: "victim" }]);
-    const result = (await actions.getNotifications("victim", { filter: "all" })) as {
+describe("session required for notifications and follow lists", () => {
+  it("getNotifications rejects a signed-in user asking for someone else's notifications", async () => {
+    sessionFor("USER", "user-1");
+    const result = await actions.getNotifications("victim", { filter: "all" });
+    expect(result).toEqual({ success: false, error: "Unauthorized" });
+    expect(dbCalls).toEqual([]);
+  });
+
+  it("getNotifications returns the caller's own notifications", async () => {
+    sessionFor("USER", "user-1");
+    dbResults.set("notification.findMany", [{ id: "n1", recipientId: "user-1" }]);
+    const result = (await actions.getNotifications("user-1", { filter: "unread" })) as {
       success: boolean;
       data: unknown[];
     };
     expect(result.success).toBe(true);
     expect(result.data).toHaveLength(1);
     const call = dbCalls.find((c) => c.key === "notification.findMany");
-    expect((call?.args[0] as { where: { recipientId: string } }).where.recipientId).toBe("victim");
-    expect(getSession).not.toHaveBeenCalled();
+    expect((call?.args[0] as { where: { recipientId: string; isRead: boolean } }).where).toEqual({
+      recipientId: "user-1",
+      isRead: false,
+    });
   });
 
-  it("getUserFollowers reads any user's followers without a session", async () => {
-    getSession.mockResolvedValue(null);
+  it("getUserFollowers and getUserFollowing work for a signed-in user", async () => {
+    sessionFor("USER", "user-1");
     dbResults.set("userFollow.findMany", []);
     dbResults.set("userFollow.count", 0);
-    const result = (await actions.getUserFollowers("victim")) as { success: boolean };
-    expect(result.success).toBe(true);
-    expect(getSession).not.toHaveBeenCalled();
+    expect(((await actions.getUserFollowers("user-2")) as { success: boolean }).success).toBe(true);
+    expect(((await actions.getUserFollowing("user-2")) as { success: boolean }).success).toBe(true);
   });
+});
 
-  it("getUserFollowing reads any user's following list without a session", async () => {
-    getSession.mockResolvedValue(null);
-    dbResults.set("userFollow.findMany", []);
-    dbResults.set("userFollow.count", 0);
-    const result = (await actions.getUserFollowing("victim")) as { success: boolean };
-    expect(result.success).toBe(true);
-    expect(getSession).not.toHaveBeenCalled();
-  });
-
+/**
+ * Still public on purpose: these only expose data meant to be shown to any
+ * visitor (instructor directory) or answer "false" without a session.
+ */
+describe("actions that stay readable without a session", () => {
   it("getAvailableMentors lists instructors without a session", async () => {
     getSession.mockResolvedValue(null);
     dbResults.set("user.findMany", []);

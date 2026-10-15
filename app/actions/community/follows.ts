@@ -137,6 +137,11 @@ export async function getUserFollowers(
   limit = 20
 ): Promise<ActionResult> {
   try {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session?.user) {
+      return { success: false, error: "Authentication required" };
+    }
+
     const skip = (page - 1) * limit;
 
     const [followers, total] = await Promise.all([
@@ -190,6 +195,11 @@ export async function getUserFollowing(
   limit = 20
 ): Promise<ActionResult> {
   try {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session?.user) {
+      return { success: false, error: "Authentication required" };
+    }
+
     const skip = (page - 1) * limit;
 
     const [following, total] = await Promise.all([
