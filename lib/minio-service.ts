@@ -317,8 +317,14 @@ const minioConfig: MinIOConfig = {
     "localhost",
   port: process.env.MINIO_USE_SSL === "true" ? 443 : 80,
   useSSL: process.env.MINIO_USE_SSL === "true",
-  accessKey: process.env.MINIO_ACCESS_KEY || "minioadmin",
-  secretKey: process.env.MINIO_SECRET_KEY || "minioadmin",
+  // The well-known minioadmin defaults are for local development only; in
+  // production a missing key must fail authentication rather than fall back.
+  accessKey:
+    process.env.MINIO_ACCESS_KEY ??
+    (process.env.NODE_ENV === "production" ? "" : "minioadmin"),
+  secretKey:
+    process.env.MINIO_SECRET_KEY ??
+    (process.env.NODE_ENV === "production" ? "" : "minioadmin"),
   bucketName: process.env.MINIO_BUCKET_NAME || "fygs-dev",
 };
 

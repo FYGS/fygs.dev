@@ -137,6 +137,25 @@ const nextConfig = {
   // Scoped only to the playground route to avoid breaking other pages
   async headers() {
     return [
+      // Baseline security headers for every route. A Content-Security-Policy is
+      // intentionally not set here: it needs a nonce-based policy tested against
+      // the MDX/Monaco/WebContainer pages first.
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=()",
+          },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=31536000; includeSubDomains",
+          },
+        ],
+      },
       {
         source: "/:locale/tech-mastry/playground",
         headers: [

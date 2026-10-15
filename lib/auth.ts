@@ -5,6 +5,17 @@ import { db } from "./db";
 import { emailService } from "./email-service";
 import { Role } from "@prisma/client";
 
+// The placeholder only exists so "next build" can import this module without
+// the runtime secret. A running production server must never use it: anyone
+// could forge session cookies signed with a publicly known secret.
+const isProductionRuntime =
+  process.env.NODE_ENV === "production" &&
+  process.env.NEXT_PHASE !== "phase-production-build";
+
+if (isProductionRuntime && !process.env.BETTER_AUTH_SECRET) {
+  throw new Error("BETTER_AUTH_SECRET must be set in production");
+}
+
 export const auth = betterAuth({
   secret:
     process.env.BETTER_AUTH_SECRET ||
