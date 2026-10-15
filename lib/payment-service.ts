@@ -9,6 +9,7 @@ import {
   SubscriptionStatus,
 } from "@prisma/client";
 import { Analytics } from "./analytics";
+import { mapStripeSubscriptionStatus } from "./stripe-subscription-status";
 import { createLogger } from "./structured-logger";
 
 /** Thrown when a webhook payload does not carry a valid Stripe signature. */
@@ -787,18 +788,10 @@ class PaymentService {
         });
       }
 
-      // Map Stripe status to our enum
-      const statusMap: Record<string, SubscriptionStatus> = {
-        active: SubscriptionStatus.ACTIVE,
-        canceled: SubscriptionStatus.CANCELED,
-        past_due: SubscriptionStatus.PAST_DUE,
-        incomplete: SubscriptionStatus.INCOMPLETE,
-        trialing: SubscriptionStatus.TRIALING,
-      };
-
-      // Map Stripe status to our enum, defaulting to ACTIVE for successful subscription
-      const mappedStatus =
-        statusMap[stripeSubscription.status] || SubscriptionStatus.ACTIVE;
+      // Map Stripe status to our enum (fails closed: unknown never grants access)
+      const { status: mappedStatus } = mapStripeSubscriptionStatus(
+        stripeSubscription.status,
+      );
 
       // For subscription created via checkout, always ensure it's set to ACTIVE if Stripe says "active"
       const finalStatus =

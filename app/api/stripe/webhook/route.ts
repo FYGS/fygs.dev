@@ -12,6 +12,7 @@ import {
 import { emailService } from "@/lib/email-service";
 import { Analytics } from "@/lib/analytics";
 import { classifyBillingCycle } from "@/lib/subscription-pricing";
+import { mapStripeSubscriptionStatus } from "@/lib/stripe-subscription-status";
 import { createLogger } from "@/lib/structured-logger";
 
 // Disable body parsing for webhooks
@@ -288,15 +289,6 @@ export async function POST(req: NextRequest) {
           });
 
           if (userId) {
-            // Map Stripe status to our enum
-            const statusMap: Record<string, SubscriptionStatus> = {
-              active: SubscriptionStatus.ACTIVE,
-              canceled: SubscriptionStatus.CANCELED,
-              past_due: SubscriptionStatus.PAST_DUE,
-              incomplete: SubscriptionStatus.INCOMPLETE,
-              trialing: SubscriptionStatus.TRIALING,
-            };
-
             const priceItem = subscription.items?.data?.[0];
             const priceId: string | undefined = priceItem?.price?.id;
             // Use metadata.billingCycle as primary source if available
@@ -310,8 +302,16 @@ export async function POST(req: NextRequest) {
                 ? "yearly"
                 : "monthly");
 
-            const mappedStatus =
-              statusMap[subscription.status] || SubscriptionStatus.ACTIVE; // Default to ACTIVE for unknown statuses to ensure access
+            // Fails closed: only Stripe "active" grants access (ACTIVE)
+            const { status: mappedStatus, known } = mapStripeSubscriptionStatus(
+              subscription.status,
+            );
+            if (!known) {
+              logger.warn("Unknown Stripe subscription status", {
+                resourceId: subscription.id,
+                metadata: { stripeStatus: subscription.status },
+              });
+            }
 
             // Cast subscription to any to safely access properties that might not be in the type definition
             const subData = subscription as any;
