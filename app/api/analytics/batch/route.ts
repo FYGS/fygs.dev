@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { headers } from 'next/headers';
+import { auth } from '@/lib/auth';
 import { AnalyticsHelper, type AnalyticsEventType } from '@/lib/analytics-helper';
 
 interface IncomingBatchEvent {
@@ -10,6 +12,14 @@ interface IncomingBatchEvent {
 
 export async function POST(req: NextRequest) {
   try {
+    // Events are attributed to the signed-in user only; a userId sent by the
+    // client is ignored so nobody can write events on behalf of someone else.
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session?.user) {
+      return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 });
+    }
+    const sessionUserId = session.user.id;
+
     const body = await req.json();
     if (!body || !Array.isArray(body.events)) {
       return NextResponse.json({ error: 'INVALID_PAYLOAD' }, { status: 400 });
@@ -19,10 +29,10 @@ export async function POST(req: NextRequest) {
 
     // Prepare data for AnalyticsHelper
     const payloads = events
-      .filter(e => e.userId) // Only process events with userId
+      .filter(e => typeof e.type === 'string' && e.type.length > 0 && e.type.length <= 64)
       .map(e => ({
         type: e.type as AnalyticsEventType,
-        userId: e.userId!,
+        userId: sessionUserId,
         source: 'web' as const,
         properties: {
           ...e.context,

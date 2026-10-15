@@ -3,13 +3,13 @@ import { z } from "zod";
 import { emailService, ContactFormData } from "@/lib/email-service";
 
 const contactSchema = z.object({
-  name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  email: z.string().email("Adresse email invalide"),
-  subject: z.string().min(5, "Le sujet doit contenir au moins 5 caractères"),
-  message: z.string().min(10, "Le message doit contenir au moins 10 caractères"),
+  name: z.string().min(2, "Le nom doit contenir au moins 2 caractères").max(100),
+  email: z.string().email("Adresse email invalide").max(254),
+  subject: z.string().min(5, "Le sujet doit contenir au moins 5 caractères").max(200),
+  message: z.string().min(10, "Le message doit contenir au moins 10 caractères").max(5000),
   type: z.enum(['recruitment', 'collaboration', 'training', 'general']).optional(),
-  company: z.string().optional(),
-  position: z.string().optional(),
+  company: z.string().max(200).optional(),
+  position: z.string().max(200).optional(),
 });
 
 export async function POST(request: NextRequest) {
