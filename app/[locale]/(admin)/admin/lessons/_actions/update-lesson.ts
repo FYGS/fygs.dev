@@ -132,11 +132,19 @@ export async function updateLesson(formData: FormData) {
     // Verify the target course exists
     const course = await db.course.findUnique({
       where: { id: validatedData.courseId },
-      select: { id: true, title: true, slug: true },
+      select: { id: true, title: true, slug: true, instructorId: true },
     });
 
     if (!course) {
       return { success: false, error: "Formation non trouvée" };
+    }
+
+    // An instructor may only move a lesson into a course they own
+    if (
+      session.user.role === Role.INSTRUCTOR &&
+      course.instructorId !== session.user.id
+    ) {
+      return { success: false, error: "Vous n'avez pas accès à cette formation" };
     }
 
     // Update the lesson

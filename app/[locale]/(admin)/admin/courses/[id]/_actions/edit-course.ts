@@ -320,6 +320,17 @@ export async function deleteCourse(
       };
     }
 
+    // Un instructeur ne peut supprimer que ses propres formations
+    if (
+      session.user.role === Role.INSTRUCTOR &&
+      existingCourse.instructorId !== session.user.id
+    ) {
+      return {
+        success: false,
+        error: "Vous n'avez pas accès à cette formation",
+      };
+    }
+
     // Vérifier s'il y a des inscriptions (optionnel - peut être permis selon la logique métier)
     if (existingCourse.enrollments.length > 0) {
       return {
