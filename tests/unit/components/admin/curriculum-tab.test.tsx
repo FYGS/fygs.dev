@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
@@ -189,13 +189,9 @@ describe("CurriculumTab", () => {
   });
 
   it("renders modules inside sortable context", () => {
-    const { container } = render(
-      <CurriculumTab courseId="course-1" modules={mockModules} />,
-    );
+    render(<CurriculumTab courseId="course-1" modules={mockModules} />);
 
-    // Modules are wrapped with sortable transform divs
-    const moduleCards = container.querySelectorAll("[data-testid]");
-    // Even without data-testid, the modules render in a list
+    // Modules render in a list even without data-testid
     expect(screen.getByText("Introduction")).toBeTruthy();
     expect(screen.getByText("Fondamentaux")).toBeTruthy();
   });

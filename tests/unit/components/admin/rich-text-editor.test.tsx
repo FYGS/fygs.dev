@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
 
 // Mock tiptap to avoid JSDOM issues with contentEditable

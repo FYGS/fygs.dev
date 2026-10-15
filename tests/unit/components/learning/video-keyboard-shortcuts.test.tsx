@@ -124,7 +124,7 @@ describe("VideoPlayer keyboard shortcuts", () => {
   });
 
   it("does not intercept keys when typing in input", () => {
-    const { container } = render(
+    render(
       <div>
         <input data-testid="text-input" />
         <VideoPlayer
