@@ -1,4 +1,4 @@
-import { analyzeCode } from "@/app/_services/ai-code-actions";
+import { analyzeCode } from "@/app/actions/ai-code-actions";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {

@@ -1,4 +1,4 @@
-import { analyzeCode } from "@/app/_services/ai-code-actions";
+import { analyzeCode } from "@/app/actions/ai-code-actions";
 import { RequestType } from "@/app/_services/ai-code-service";
 import { NextRequest, NextResponse } from "next/server";
 

@@ -10,7 +10,7 @@ import {
   generateDebugSuggestions,
   generateHint,
   generateChatResponse
-} from "./ai-code-service";
+} from "@/app/_services/ai-code-service";
 
 /**
  * Server action to analyze code based on the request type

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeAll } from "vitest";
-import { markLessonProgress } from "@/lib/actions/lesson-progress";
+import { markLessonProgress } from "@/app/actions/lesson-progress";
 import { db } from "@/lib/db";
 
 vi.mock("@/lib/auth", () => ({

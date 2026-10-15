@@ -64,7 +64,7 @@ export function ReviewForm({
           formData.append('comment', comment.trim());
           
           // Import the action dynamically to avoid build issues
-          const { submitCourseReview } = await import('@/lib/actions/learning');
+          const { submitCourseReview } = await import('@/app/actions/learning');
           const result = await submitCourseReview(formData);
           
           if (result?.ok) {

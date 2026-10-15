@@ -14,8 +14,8 @@ import {
 } from "lucide-react";
 import { SerializedReview } from "../types";
 import { useState, useMemo, useEffect } from "react";
-import { submitCourseReview } from "@/lib/actions/learning";
-import { reportReview, getReviewReplies, getReviewVotes } from "@/lib/actions/reviews";
+import { submitCourseReview } from "@/app/actions/learning";
+import { reportReview, getReviewReplies, getReviewVotes } from "@/app/actions/reviews";
 import { ReviewForm } from "@/components/reviews/review-form";
 import { ReviewList, ReviewData } from "@/components/reviews/review-display";
 import { useTrendingReviews } from "@/hooks/use-review-search";
