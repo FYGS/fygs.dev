@@ -30,12 +30,27 @@ export async function submitQuizResult(data: {
     // Verify quiz belongs to course
     const quiz = await db.quiz.findUnique({
       where: { id: data.quizId },
-      select: { courseId: true },
+      select: { courseId: true, _count: { select: { questions: true } } },
     });
 
     if (!quiz || quiz.courseId !== data.courseId) {
       return { success: false, error: "Quiz invalide" };
     }
+
+    // The score is still reported by the client, but it must be coherent with the
+    // quiz: integer, within the real number of questions. The percentage is
+    // recomputed here and the client-sent one is ignored.
+    const { score, total } = data;
+    if (
+      !Number.isInteger(score) ||
+      !Number.isInteger(total) ||
+      total !== quiz._count.questions ||
+      score < 0 ||
+      score > total
+    ) {
+      return { success: false, error: "Résultat invalide" };
+    }
+    const percentage = total === 0 ? 0 : Math.round((score / total) * 100);
 
     // Upsert quiz result (allows retaking quizzes)
     const result = await db.quizResult.upsert({
@@ -48,14 +63,14 @@ export async function submitQuizResult(data: {
       create: {
         userId,
         quizId: data.quizId,
-        score: data.score,
-        total: data.total,
-        percentage: data.percentage,
+        score,
+        total,
+        percentage,
       },
       update: {
-        score: data.score,
-        total: data.total,
-        percentage: data.percentage,
+        score,
+        total,
+        percentage,
         completedAt: new Date(),
       },
     });

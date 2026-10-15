@@ -15,6 +15,13 @@ export async function onLessonCompleted(lessonId: string) {
 
   const userId = session.user.id;
 
+  // Only reward a lesson this user has really completed (server-side progress)
+  const completed = await db.progress.findFirst({
+    where: { userId, lessonId, completed: true },
+    select: { id: true },
+  });
+  if (!completed) return null;
+
   // Check if already rewarded (idempotent)
   const existing = await db.xpEvent.findFirst({
     where: {
@@ -56,6 +63,13 @@ export async function onQuizPassed(quizId: string) {
   if (!session) return null;
 
   const userId = session.user.id;
+
+  // Only reward a quiz this user has really passed (>= 70%)
+  const passed = await db.quizResult.findFirst({
+    where: { userId, quizId, percentage: { gte: 70 } },
+    select: { id: true },
+  });
+  if (!passed) return null;
 
   const existing = await db.xpEvent.findFirst({
     where: {
