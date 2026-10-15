@@ -3,6 +3,8 @@ import MonacoWebpackPlugin from "monaco-editor-webpack-plugin";
 import { withIntlayer } from "next-intlayer/server";
 import withPWAInit from "next-pwa";
 
+import { buildGlobalCsp, buildPlaygroundCsp, CSP_HEADER as cspHeader, NON_PLAYGROUND_SOURCE } from "./lib/csp.mjs";
+
 const withPWA = withPWAInit({
   dest: "public",
   disable: process.env.NODE_ENV === "development",
@@ -137,9 +139,7 @@ const nextConfig = {
   // Scoped only to the playground route to avoid breaking other pages
   async headers() {
     return [
-      // Baseline security headers for every route. A Content-Security-Policy is
-      // intentionally not set here: it needs a nonce-based policy tested against
-      // the MDX/Monaco/WebContainer pages first.
+      // Baseline security headers for every route (CSP: see lib/csp.ts).
       {
         source: "/:path*",
         headers: [
@@ -156,6 +156,10 @@ const nextConfig = {
           },
         ],
       },
+      {
+        source: NON_PLAYGROUND_SOURCE,
+        headers: [{ key: cspHeader, value: buildGlobalCsp() }],
+      },
       // The playground page is cross-origin isolated (COEP require-corp, needed by
       // WebContainer). A worker whose script response lacks COEP is then blocked
       // (ERR_BLOCKED_BY_RESPONSE), and Monaco silently falls back to running its
@@ -170,6 +174,7 @@ const nextConfig = {
       {
         source: "/:locale/tech-mastry/playground",
         headers: [
+          { key: cspHeader, value: buildPlaygroundCsp() },
           {
             key: "Cross-Origin-Embedder-Policy",
             value: "require-corp",

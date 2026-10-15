@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { enforceRateLimit } from "@/lib/rate-limit";
 
-export const runtime = "edge";
+export const runtime = "nodejs"; // the rate limiter uses Redis (TCP), unavailable on the edge runtime
 
 /**
  * Generate Open Graph image for individual review
