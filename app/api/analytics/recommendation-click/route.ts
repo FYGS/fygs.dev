@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { Analytics } from '@/lib/analytics';
+import { Analytics } from '@/lib/analytics-helper';
 import { db } from '@/lib/db';
 
 export const runtime = 'nodejs';

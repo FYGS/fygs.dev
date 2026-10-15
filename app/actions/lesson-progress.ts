@@ -3,7 +3,7 @@
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { Analytics } from "@/lib/analytics";
+import { Analytics } from "@/lib/analytics-helper";
 import { AccessService } from "@/lib/access-service";
 import { emailService } from "@/lib/email-service";
 import { SITE_URL } from "@/app/_lib/constants";

@@ -10,7 +10,7 @@ import {
   SubscriptionStatus,
 } from "@prisma/client";
 import { emailService } from "@/lib/email-service";
-import { Analytics } from "@/lib/analytics";
+import { Analytics } from "@/lib/analytics-helper";
 import { classifyBillingCycle } from "@/lib/subscription-pricing";
 import { mapStripeSubscriptionStatus } from "@/lib/stripe-subscription-status";
 import { createLogger } from "@/lib/structured-logger";

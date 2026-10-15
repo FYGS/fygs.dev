@@ -1,5 +1,5 @@
 /**
- * Characterization tests: lib/analytics.ts (trackEvent + Analytics.*)
+ * Characterization tests: trackEvent + Analytics.* (lib/analytics-helper.ts)
  *
  * Freezes (1) the set of event names and sources each convenience helper
  * emits and (2) the fire-and-forget contract of trackEvent, before the
@@ -9,13 +9,11 @@
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { emit } = vi.hoisted(() => ({ emit: vi.fn() }));
+vi.mock("@/lib/db", () => ({ db: {} }));
 
-vi.mock("@/lib/analytics-helper", () => ({
-  AnalyticsHelper: { emit },
-}));
+import { Analytics, AnalyticsHelper, trackEvent } from "@/lib/analytics-helper";
 
-import { Analytics, trackEvent } from "@/lib/analytics";
+const emit = vi.spyOn(AnalyticsHelper, "emit");
 
 beforeEach(() => {
   emit.mockReset();

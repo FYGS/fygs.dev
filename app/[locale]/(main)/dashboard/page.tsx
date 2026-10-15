@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { AccessService } from "@/lib/access-service";
 import { logger, createLogger } from "@/lib/structured-logger";
-import { Analytics } from "@/lib/analytics";
+import { Analytics } from "@/lib/analytics-helper";
 import { RouteGuard } from "@/components/auth/route-guard";
 import { FadeIn, FadeInWhenVisible } from "@/components/ui/fade-in";
 import { ErrorBoundary } from "@/components/ui/error-boundary";

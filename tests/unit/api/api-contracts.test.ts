@@ -39,7 +39,7 @@ vi.mock("@/lib/payment-service", () => ({
   paymentService: { verifyWebhookSignature: m.verifyWebhookSignature },
   WebhookSignatureError: m.WebhookSignatureError,
 }));
-vi.mock("@/lib/analytics", () => ({ Analytics: {} }));
+vi.mock("@/lib/analytics-helper", () => ({ Analytics: {}, AnalyticsHelper: {} }));
 
 import { PATCH, GET } from "@/app/api/profile/route";
 import { POST as contactPOST } from "@/app/api/contact/route";

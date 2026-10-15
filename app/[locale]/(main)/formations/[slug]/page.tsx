@@ -6,7 +6,7 @@ import { AccessService, UserAccess } from "@/lib/access-service";
 import { CourseRepository } from "@/lib/repositories/course-repository";
 import { serializeCourseDetail } from "@/lib/serializers/course-serializer";
 import { logger, createLogger } from "@/lib/structured-logger";
-import { Analytics } from "@/lib/analytics";
+import { Analytics } from "@/lib/analytics-helper";
 import { db } from "@/lib/db";
 import { CourseHeader } from "./_components/course-header";
 import { CourseCurriculum } from "./_components/course-curriculum";

@@ -6,7 +6,7 @@ import { headers } from 'next/headers';
 import { db } from '@/lib/db';
 import { AccessService } from '@/lib/access-service';
 import { enrollInCourseSchema, toggleLessonProgressSchema, submitReviewSchema } from '@/lib/validators/course';
-import { Analytics } from '@/lib/analytics';
+import { Analytics } from '@/lib/analytics-helper';
 import { COURSE_TAG_FEATURED, COURSE_TAG_LIST, COURSE_TAG_RECOMMENDATIONS } from '@/lib/repositories/course-repository';
 
 // Helpers

@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { RecommendationService } from "@/lib/services/recommendation-service";
-import { Analytics } from "@/lib/analytics";
+import { Analytics } from "@/lib/analytics-helper";
 import { RecommendedCoursesClient } from './recommended-courses-wrapper';
 // Note: File contains both server and client components; the client wrapper is isolated below with a 'use client' pragma.
 import { 

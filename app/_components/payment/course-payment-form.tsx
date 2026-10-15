@@ -19,7 +19,7 @@ import {
 import { useSession } from "@/lib/auth-client";
 import { formatPrice as formatPriceCentral } from "@/lib/price-format";
 import { logger, createLogger } from "@/lib/structured-logger";
-import { Analytics } from "@/lib/analytics";
+import { Analytics } from "@/lib/analytics-helper";
 import { toast } from "sonner";
 import { enrollCourse } from "@/app/[locale]/(main)/dashboard/actions/enrollCourse";
 

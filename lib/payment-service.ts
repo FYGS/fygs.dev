@@ -8,7 +8,7 @@ import {
   PaymentKind,
   SubscriptionStatus,
 } from "@prisma/client";
-import { Analytics } from "./analytics";
+import { Analytics } from "./analytics-helper";
 import { mapStripeSubscriptionStatus } from "./stripe-subscription-status";
 import { createLogger } from "./structured-logger";
 
