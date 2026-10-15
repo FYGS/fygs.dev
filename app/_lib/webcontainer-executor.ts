@@ -94,6 +94,9 @@ export function stripAnsi(text: string): string {
   return clean.trim();
 }
 
+/** How long a killed process may take to exit before it is considered stuck. */
+const KILL_GRACE_MS = 2000;
+
 const NODE_INTERNAL_FRAME = /^\s+at\s.*(?:node:|internal\/)/;
 const NODE_VERSION_FOOTER = /^Node\.js v\d+\.\d+\.\d+\s*$/;
 
@@ -403,9 +406,15 @@ export async function runCommand(
     _currentProcess = process;
 
     let timedOut = false;
+    let abandon: () => void = () => {};
+    const abandoned = new Promise<"stuck">((resolve) => {
+      abandon = () => resolve("stuck");
+    });
     const timeoutId = setTimeout(() => {
       timedOut = true;
       process.kill();
+      // A busy loop never handles the signal: do not wait for it forever
+      setTimeout(abandon, KILL_GRACE_MS);
     }, timeout);
 
     const reader = process.output.getReader();
@@ -421,8 +430,24 @@ export async function runCommand(
       }
     })();
 
-    const first = await Promise.race([drain.then(() => "ended" as const), serverReady]);
+    const first = await Promise.race([
+      drain.then(() => "ended" as const),
+      serverReady,
+      abandoned,
+    ]);
     stopWatching();
+
+    if (first === "stuck") {
+      clearTimeout(timeoutId);
+      if (_currentProcess === process) _currentProcess = null;
+      const errMsg = `Execution stopped after ${timeout / 1000}s: the program did not finish (infinite loop, or waiting for input?)`;
+      errors.push(errMsg);
+      emit({ type: "error", message: errMsg });
+      emit({ type: "status", status: "error" });
+      // The process survived kill(): rebuild the container so the next run is clean
+      void teardown().catch(() => {});
+      return { success: false, output: logs.join("\n"), logs, errors };
+    }
 
     if (first === "server") {
       clearTimeout(timeoutId);
@@ -534,10 +559,21 @@ export async function startDevServer(
  */
 export function killCurrentProcess(): void {
   if (_currentProcess) {
-    _currentProcess.kill();
+    const process = _currentProcess;
+    process.kill();
     _currentProcess = null;
     _serverUrl = null;
     emit({ type: "status", status: "ready", message: "Process killed" });
+
+    // kill() cannot interrupt a busy loop. If the process is still alive a moment
+    // later, rebuild the container so it stops burning CPU and the next run is clean.
+    let exited = false;
+    void process.exit.then(() => {
+      exited = true;
+    });
+    setTimeout(() => {
+      if (!exited) void teardown().catch(() => {});
+    }, KILL_GRACE_MS);
   }
 }
 

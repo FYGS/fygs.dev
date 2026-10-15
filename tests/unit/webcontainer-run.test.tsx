@@ -14,6 +14,7 @@ const fake = vi.hoisted(() => ({
   serverReadyHandlers: [] as ((port: number, url: string) => void)[],
   next: null as null | (() => FakeProcess),
   spawn: vi.fn(),
+  teardown: vi.fn(),
 }));
 
 function finishingProcess(chunks: string[], exitCode = 0): FakeProcess {
@@ -57,6 +58,7 @@ vi.mock("@webcontainer/api", () => ({
       },
       spawn: fake.spawn,
       mount: vi.fn(),
+      teardown: fake.teardown,
     })),
   },
 }));
@@ -68,6 +70,7 @@ beforeEach(async () => {
   vi.resetModules();
   fake.serverReadyHandlers.length = 0;
   fake.spawn.mockReset();
+  fake.teardown.mockReset();
   executor = await import("@/app/_lib/webcontainer-executor");
 });
 
@@ -158,6 +161,64 @@ describe("runCommand", () => {
     expect(shown).not.toContain("/home/");
     expect(shown).not.toContain("node:internal");
     expect(shown).not.toContain("Node.js v22");
+  });
+});
+
+/** A busy loop: kill() is a no-op, the output never ends and the process never exits. */
+function stuckProcess(chunks: string[] = []): FakeProcess {
+  return {
+    output: new ReadableStream<string>({
+      start(controller) {
+        chunks.forEach((c) => controller.enqueue(c));
+      },
+    }),
+    exit: new Promise<number>(() => {}),
+    kill: vi.fn(),
+  };
+}
+
+describe("a process that ignores kill (while(true) {})", () => {
+  it("does not hang the run: it is abandoned after the grace period and the container is rebuilt", async () => {
+    vi.useFakeTimers();
+    const process = stuckProcess(["start\r\n"]);
+    fake.spawn.mockResolvedValue(process);
+    const pending = executor.runCommand("node", ["index.js"], { timeout: 5000 });
+
+    await vi.advanceTimersByTimeAsync(5001);
+    expect(process.kill).toHaveBeenCalledTimes(1);
+    expect(fake.teardown).not.toHaveBeenCalled(); // still inside the grace period
+
+    await vi.advanceTimersByTimeAsync(2001);
+    const result = await pending;
+    expect(result.success).toBe(false);
+    expect(result.logs).toEqual(["start"]);
+    expect(result.errors[0]).toMatch(/stopped after 5s/);
+    expect(fake.teardown).toHaveBeenCalledTimes(1);
+  });
+
+  it("Stop rebuilds the container when the process survives kill()", async () => {
+    vi.useFakeTimers();
+    const process = stuckProcess();
+    fake.spawn.mockResolvedValue(process);
+    void executor.runCommand("node", ["index.js"], { timeout: 60_000 });
+    await vi.advanceTimersByTimeAsync(10);
+
+    executor.killCurrentProcess();
+    expect(process.kill).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(2001);
+    expect(fake.teardown).toHaveBeenCalledTimes(1);
+  });
+
+  it("Stop leaves the container alone when the process exits normally", async () => {
+    vi.useFakeTimers();
+    const process = endlessProcess();
+    fake.spawn.mockResolvedValue(process);
+    void executor.runCommand("node", ["index.js"], { timeout: 60_000 });
+    await vi.advanceTimersByTimeAsync(10);
+
+    executor.killCurrentProcess();
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(fake.teardown).not.toHaveBeenCalled();
   });
 });
 
