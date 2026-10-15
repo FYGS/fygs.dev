@@ -26,6 +26,8 @@ interface IRedisClient {
   sismember(key: string, member: string): Promise<number>;
   expire(key: string, seconds: number): Promise<number>;
   multi(): ChainableCommander;
+  eval(script: string, numKeys: number, ...args: (string | number)[]): Promise<unknown>;
+  setNxEx(key: string, value: string, seconds: number): Promise<boolean>;
 }
 
 export class RedisClient implements IRedisClient {
@@ -45,6 +47,9 @@ export class RedisClient implements IRedisClient {
     this.client = new Redis(redisUrl, {
       maxRetriesPerRequest: 3,
       lazyConnect: true,
+      // Never let an unreachable Redis hold a request open
+      commandTimeout: 1500,
+      connectTimeout: 3000,
     });
 
     // Error handling
@@ -127,6 +132,21 @@ export class RedisClient implements IRedisClient {
 
   multi(): ChainableCommander {
     return this.client.multi();
+  }
+
+  /** Run a Lua script atomically on the server. */
+  async eval(
+    script: string,
+    numKeys: number,
+    ...args: (string | number)[]
+  ): Promise<unknown> {
+    return this.client.eval(script, numKeys, ...args);
+  }
+
+  /** SET key value EX seconds NX in one command: true when the key was created. */
+  async setNxEx(key: string, value: string, seconds: number): Promise<boolean> {
+    const result = await this.client.set(key, value, "EX", seconds, "NX");
+    return result === "OK";
   }
 
   // Add utility methods for JSON handling
