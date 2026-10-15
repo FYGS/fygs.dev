@@ -92,15 +92,3 @@ export async function markLessonProgress(input: MarkProgressInput) {
 
   return { ok: true, progress } as const;
 }
-
-export async function getCourseProgressSummary(userId: string, courseId: string) {
-  const lessons = await db.lesson.findMany({ where: { courseId, published: true }, select: { id: true, duration: true } });
-  const progresses = await db.progress.findMany({ where: { userId, lesson: { courseId } }, select: { lessonId: true, completed: true, watchTime: true } });
-  const completedSet = new Set(progresses.filter(p => p.completed).map(p => p.lessonId));
-  const totalLessons = lessons.length;
-  const completedLessons = completedSet.size;
-  const percent = totalLessons === 0 ? 0 : Math.round((completedLessons / totalLessons) * 100);
-  const totalDurationSec = lessons.reduce((acc,l)=> acc + (l.duration || 0), 0);
-  const consumedDurationSec = progresses.reduce((acc,p)=> acc + p.watchTime, 0);
-  return { totalLessons, completedLessons, percent, totalDurationSec, consumedDurationSec };
-}
