@@ -63,8 +63,6 @@ interface QuizQuestionInput {
   id: string;
   question: string;
   options: string[];
-  correct: number;
-  explanation?: string | null;
   order: number;
 }
 
@@ -237,8 +235,6 @@ export function serializeCourseDetail(
       id: question.id,
       question: question.question,
       options: question.options,
-      correct: question.correct,
-      explanation: question.explanation || null,
       order: question.order,
     })),
   }));

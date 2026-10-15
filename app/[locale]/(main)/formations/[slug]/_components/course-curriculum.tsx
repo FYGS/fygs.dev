@@ -291,7 +291,7 @@ export function CourseCurriculum({
                                       </div>
                                       <div className="flex items-center gap-2 text-sm text-violet-400">
                                         <span>
-                                          {quiz.questions.length} questions
+                                          {quiz.questionCount} questions
                                         </span>
                                         <Play className="h-4 w-4" />
                                       </div>

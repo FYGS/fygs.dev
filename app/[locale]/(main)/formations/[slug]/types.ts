@@ -1,17 +1,11 @@
-export interface SerializedQuizQuestion {
-  id: string;
-  question: string;
-  options: string[];
-  correct: number;
-  explanation: string;
-  order: number;
-}
-
+// Quiz content (questions, options, correct answers) is deliberately not sent to
+// the course page: only what the curriculum lists. The quiz page loads the
+// questions and the server grades the answers (see app/actions/quiz-actions.ts).
 export interface SerializedQuiz {
   id: string;
   moduleId: number;
   title: string;
-  questions: SerializedQuizQuestion[];
+  questionCount: number;
 }
 
 export interface SerializedVisualSupport {

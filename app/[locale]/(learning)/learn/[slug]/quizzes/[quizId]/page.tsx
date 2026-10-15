@@ -122,8 +122,7 @@ export default async function LearningQuizPage({ params }: QuizPageProps) {
       id: q.id,
       question: q.question,
       options: q.options,
-      correct: q.correct,
-      explanation: q.explanation || "",
+      // correct option and explanation stay on the server: see checkQuizAnswer
       order: q.order,
     })),
   };

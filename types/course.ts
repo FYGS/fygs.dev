@@ -65,12 +65,12 @@ export interface CourseSummaryDTO {
   unlockedLabel?: string;
 }
 
+// The correct option and the explanation are never part of this DTO: they stay
+// on the server and are returned by checkQuizAnswer once the user has answered.
 export interface CourseQuizQuestionDTO {
   id: string;
   question: string;
   options: string[];
-  correct: number;
-  explanation: string | null;
   order: number;
 }
 

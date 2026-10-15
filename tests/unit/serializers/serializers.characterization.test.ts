@@ -410,8 +410,6 @@ describe("serializeCourseDetail", () => {
             "moduleId": "m1",
             "questions": [
               {
-                "correct": 0,
-                "explanation": null,
                 "id": "qq1",
                 "options": [
                   "a",

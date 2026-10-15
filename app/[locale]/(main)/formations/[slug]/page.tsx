@@ -265,14 +265,7 @@ export default async function CoursePage({
         id: q.id,
         moduleId: q.moduleId,
         title: q.title,
-        questions: q.questions.map((question) => ({
-          id: question.id,
-          question: question.question,
-          options: question.options,
-          correct: question.correct,
-          explanation: question.explanation || "",
-          order: question.order,
-        })),
+        questionCount: q.questions.length,
       })) || [],
     visualSupports:
       detail.visualSupports?.map((vs) => ({

@@ -17,7 +17,11 @@ import {
   List,
   Sparkles,
 } from "lucide-react";
-import { submitQuizResult } from "@/app/actions/quiz-actions";
+import {
+  checkQuizAnswer,
+  submitQuizAnswers,
+  type QuizFeedback,
+} from "@/app/actions/quiz-actions";
 import {
   onQuizPassed,
   onCourseCompleted,
@@ -29,8 +33,6 @@ interface QuizQuestion {
   id: string;
   question: string;
   options: string[];
-  correct: number;
-  explanation: string;
   order: number;
 }
 
@@ -75,27 +77,56 @@ export function QuizStudent({
   const [hasAnswered, setHasAnswered] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  // Feedback comes from the server after each answer: the correct option and the
+  // explanation are never shipped with the questions.
+  const [feedback, setFeedback] = useState<QuizFeedback | null>(null);
+  const [answerFeedback, setAnswerFeedback] = useState<
+    Record<string, QuizFeedback>
+  >({});
+  const [isChecking, setIsChecking] = useState(false);
+  const correctOption = feedback?.correctOption ?? -1;
+  const isCurrentCorrect = feedback?.isCorrect ?? false;
 
   const { checkCertificate } = useQuizCompletion();
 
   const currentQuestion = quiz.questions[currentQuestionIndex];
   const totalQuestions = quiz.questions.length;
 
-  const handleAnswerSelection = (optionIndex: number) => {
-    if (hasAnswered) return;
+  const handleAnswerSelection = async (optionIndex: number) => {
+    if (hasAnswered || isChecking || !currentQuestion) return;
     setSelectedOption(optionIndex);
-    const isCorrect = optionIndex === currentQuestion?.correct;
-    setUserAnswers((prev) => [
-      ...prev,
-      {
+    setIsChecking(true);
+    try {
+      const result = await checkQuizAnswer({
+        quizId: quiz.id,
         questionId: currentQuestion.id,
         selectedOption: optionIndex,
-        isCorrect,
-      },
-    ]);
-    setHasAnswered(true);
-    setShowExplanation(true);
-    if (isCorrect) setScore((prev) => prev + 1);
+      });
+      if (!result.success) {
+        toast.error(result.error);
+        setSelectedOption(null);
+        return;
+      }
+      setFeedback(result);
+      setAnswerFeedback((prev) => ({ ...prev, [result.questionId]: result }));
+      setUserAnswers((prev) => [
+        ...prev,
+        {
+          questionId: currentQuestion.id,
+          selectedOption: optionIndex,
+          isCorrect: result.isCorrect,
+        },
+      ]);
+      setHasAnswered(true);
+      setShowExplanation(true);
+      if (result.isCorrect) setScore((prev) => prev + 1);
+    } catch (error) {
+      console.error("Error checking answer:", error);
+      toast.error("Erreur lors de la vérification de la réponse");
+      setSelectedOption(null);
+    } finally {
+      setIsChecking(false);
+    }
   };
 
   const nextQuestion = async () => {
@@ -104,20 +135,10 @@ export function QuizStudent({
       setSelectedOption(null);
       setHasAnswered(false);
       setShowExplanation(false);
+      setFeedback(null);
     } else {
       setQuizCompleted(true);
-      // Trigger confetti for passing scores
-      if (
-        (score +
-          (currentQuestion && selectedOption === currentQuestion.correct
-            ? 1
-            : 0)) /
-          totalQuestions >=
-        0.7
-      ) {
-        setShowConfetti(true);
-      }
-      // Submit quiz result to database
+      // The server grades the attempt; confetti and XP follow its percentage
       await handleQuizCompletion();
     }
   };
@@ -127,19 +148,25 @@ export function QuizStudent({
 
     setIsSubmitting(true);
     try {
-      const percentage = getScorePercentage();
-      const result = await submitQuizResult({
+      const result = await submitQuizAnswers({
         quizId: quiz.id,
         courseId,
-        score,
-        total: totalQuestions,
-        percentage,
+        answers: userAnswers.map(({ questionId, selectedOption }) => ({
+          questionId,
+          selectedOption,
+        })),
       });
 
       if (result.success) {
+        // The server's grading is authoritative for what is shown and stored
+        setScore(result.score);
+        setAnswerFeedback(
+          Object.fromEntries(result.review.map((r) => [r.questionId, r])),
+        );
         toast.success("Résultat enregistré avec succès!");
 
-        if (percentage >= 70) {
+        if (result.percentage >= 70) {
+          setShowConfetti(true);
           const quizXp = await onQuizPassed(quiz.id);
           if (quizXp?.xp) {
             toast.success(`+${quizXp.xp} XP pour le quiz réussi!`);
@@ -172,6 +199,9 @@ export function QuizStudent({
     setShowExplanation(false);
     setQuizCompleted(false);
     setScore(0);
+    setFeedback(null);
+    setAnswerFeedback({});
+    setShowConfetti(false);
   };
 
   const getScorePercentage = () => {
@@ -356,12 +386,12 @@ export function QuizStudent({
                         let buttonClass =
                           "w-full text-left p-6 border-2 rounded-xl transition-all duration-300 group relative overflow-hidden ";
                         if (hasAnswered) {
-                          if (index === currentQuestion.correct) {
+                          if (index === correctOption) {
                             buttonClass +=
                               "border-emerald-400 bg-gradient-to-br from-emerald-50 to-emerald-100 text-emerald-900 shadow-lg shadow-emerald-100/50";
                           } else if (
                             index === selectedOption &&
-                            index !== currentQuestion.correct
+                            index !== correctOption
                           ) {
                             buttonClass +=
                               "border-red-400 bg-gradient-to-br from-red-50 to-red-100 text-red-900 shadow-lg shadow-red-100/50";
@@ -384,18 +414,18 @@ export function QuizStudent({
                             variant="outline"
                             className={buttonClass}
                             onClick={() => handleAnswerSelection(index)}
-                            disabled={hasAnswered}
+                            disabled={hasAnswered || isChecking}
                           >
                             <div className="flex items-center justify-between w-full">
                               <div className="flex items-center gap-4">
                                 <div
                                   className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${
                                     hasAnswered &&
-                                    index === currentQuestion.correct
+                                    index === correctOption
                                       ? "bg-emerald-500 text-white"
                                       : hasAnswered &&
                                           index === selectedOption &&
-                                          index !== currentQuestion.correct
+                                          index !== correctOption
                                         ? "bg-red-500 text-white"
                                         : selectedOption === index &&
                                             !hasAnswered
@@ -411,7 +441,7 @@ export function QuizStudent({
                               </div>
                               {hasAnswered && (
                                 <span className="ml-2 transition-transform duration-300">
-                                  {index === currentQuestion.correct ? (
+                                  {index === correctOption ? (
                                     <div className="flex items-center gap-2">
                                       <CheckCircle className="h-6 w-6 text-emerald-600" />
                                       <span className="text-sm font-semibold text-emerald-700">
@@ -437,7 +467,7 @@ export function QuizStudent({
                   {showExplanation && (
                     <div
                       className={`p-4 rounded-lg border-l-4 ${
-                        selectedOption === currentQuestion.correct
+                        isCurrentCorrect
                           ? "border-green-500 bg-green-50"
                           : "border-yellow-500 bg-yellow-50"
                       }`}
@@ -445,12 +475,12 @@ export function QuizStudent({
                       <div className="flex items-start gap-2">
                         <div
                           className={`p-1 rounded-full ${
-                            selectedOption === currentQuestion.correct
+                            isCurrentCorrect
                               ? "bg-green-100"
                               : "bg-yellow-100"
                           }`}
                         >
-                          {selectedOption === currentQuestion.correct ? (
+                          {isCurrentCorrect ? (
                             <CheckCircle className="h-4 w-4 text-green-600" />
                           ) : (
                             <XCircle className="h-4 w-4 text-yellow-600" />
@@ -458,12 +488,12 @@ export function QuizStudent({
                         </div>
                         <div>
                           <p className="font-medium mb-1">
-                            {selectedOption === currentQuestion.correct
+                            {isCurrentCorrect
                               ? "Correct!"
                               : "Incorrect"}
                           </p>
                           <p className="text-sm text-gray-700">
-                            {currentQuestion.explanation}
+                            {feedback?.explanation}
                           </p>
                         </div>
                       </div>
@@ -606,17 +636,17 @@ export function QuizStudent({
                                     Réponse correcte:{" "}
                                   </span>
                                   <span className="text-emerald-600 font-medium">
-                                    {question.options[question.correct]}
+                                    {question.options[answerFeedback[question.id]?.correctOption ?? 0]}
                                   </span>
                                 </div>
                               )}
-                              {question.explanation && (
+                              {answerFeedback[question.id]?.explanation && (
                                 <div className="mt-3 p-3 bg-blue-950 border border-blue-800 rounded-lg">
                                   <p className="text-sm text-blue-200">
                                     <span className="font-semibold">
                                       Explication:{" "}
                                     </span>
-                                    {question.explanation}
+                                    {answerFeedback[question.id]?.explanation}
                                   </p>
                                 </div>
                               )}
