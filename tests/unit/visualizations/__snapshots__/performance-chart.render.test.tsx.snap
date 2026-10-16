@@ -1,0 +1,53 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`PerformanceChart rendering > draws the same chart: memory 1`] = `
+{
+  "hoverIn": "8ffc28a9",
+  "hovered": "3125c681",
+  "initial": "aaeb1667",
+  "settled": "33c4ba76",
+  "textCount": 22,
+  "texts": "65f52ebd",
+  "titleCount": 7,
+  "titles": "687e53e5",
+}
+`;
+
+exports[`PerformanceChart rendering > draws the same chart: performance / bar 1`] = `
+{
+  "hoverIn": "7e618b8d",
+  "hovered": "45760d55",
+  "initial": "a02970c6",
+  "settled": "74015807",
+  "textCount": 53,
+  "texts": "54d5164a",
+  "titleCount": 7,
+  "titles": "a82a775d",
+}
+`;
+
+exports[`PerformanceChart rendering > draws the same chart: performance / line 1`] = `
+{
+  "hoverIn": "c84f9307",
+  "hovered": "19ba09b9",
+  "initial": "e4da9259",
+  "settled": "19ba09b9",
+  "textCount": 52,
+  "texts": "c55127c7",
+  "titleCount": 35,
+  "titles": "7a5b8ed6",
+}
+`;
+
+exports[`PerformanceChart rendering > draws the same chart: usage 1`] = `
+{
+  "hoverIn": "3768fe90",
+  "hovered": "3768fe90",
+  "initial": "9ff2d9df",
+  "settled": "3768fe90",
+  "textCount": 12,
+  "texts": "0dc0c419",
+  "titleCount": 35,
+  "titles": "75c4fa64",
+}
+`;
