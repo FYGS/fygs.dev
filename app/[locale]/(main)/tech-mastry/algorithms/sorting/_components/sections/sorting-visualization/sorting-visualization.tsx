@@ -1,0 +1,195 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BarChart3, Settings } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import { AlgorithmTabs } from "./algorithm-tabs";
+import { PlaybackControls } from "./playback-controls";
+import { SettingsPanel } from "./settings-panel";
+import { SortingBars } from "./sorting-bars";
+import { generateSortingSteps } from "./steps";
+import { ProgressBar, StepInfo } from "./step-info";
+import type { SortingAlgorithm, SortingStep } from "./types";
+
+export function SortingVisualization() {
+  // État pour la configuration
+  const [arraySize, setArraySize] = useState(15);
+  const [algorithm, setAlgorithm] = useState<SortingAlgorithm>("bubble");
+  const [array, setArray] = useState<number[]>([]);
+  const [speed, setSpeed] = useState(1.5);
+  const [showSettings, setShowSettings] = useState(false);
+
+  // État pour la visualisation
+  const [steps, setSteps] = useState<SortingStep[]>([]);
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  // Référence pour le timer
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Générer un tableau aléatoire
+  const generateArray = useCallback(() => {
+    const newArray = Array.from(
+      { length: arraySize },
+      () => Math.floor(Math.random() * 100) + 1
+    );
+    setArray(newArray);
+
+    // Réinitialiser les étapes et l'index
+    setCurrentStepIndex(0);
+    setIsPlaying(false);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  }, [arraySize]);
+
+  // Générer les étapes en fonction de l'algorithme sélectionné
+  const generateSteps = useCallback(
+    () => generateSortingSteps(algorithm, array),
+    [algorithm, array]
+  );
+
+  // Initialiser le tableau
+  useEffect(() => {
+    generateArray();
+  }, [generateArray]);
+
+  // Générer les étapes lorsque l'algorithme ou le tableau change
+  useEffect(() => {
+    const newSteps = generateSteps();
+    setSteps(newSteps);
+    setCurrentStepIndex(0);
+  }, [algorithm, array, generateSteps]);
+
+  // Nettoyer le timer lors du démontage du composant
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, []);
+
+  // Obtenir l'étape actuelle
+  const currentStep = steps[currentStepIndex] || {
+    array: array,
+    activeIndices: [],
+    comparisons: 0,
+    swaps: 0,
+    message: "Cliquez sur 'Démarrer' pour lancer la visualisation.",
+    sortedIndices: [],
+  };
+
+  // Contrôles de lecture
+  const handlePrevious = () => {
+    if (currentStepIndex > 0) {
+      setCurrentStepIndex(currentStepIndex - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentStepIndex < steps.length - 1) {
+      setCurrentStepIndex(currentStepIndex + 1);
+    }
+  };
+
+  const handlePause = () => {
+    setIsPlaying(false);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  const handlePlay = () => {
+    setIsPlaying(true);
+
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+
+    timerRef.current = setInterval(() => {
+      setCurrentStepIndex((prevIndex) => {
+        if (prevIndex < steps.length - 1) {
+          return prevIndex + 1;
+        } else {
+          setIsPlaying(false);
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+          return prevIndex;
+        }
+      });
+    }, 1000 / speed);
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-xl flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-primary" />
+              Visualisation Interactive
+            </CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowSettings(!showSettings)}
+              className="gap-2"
+            >
+              <Settings className="w-4 h-4" />
+              <span className="hidden sm:inline">Paramètres</span>
+            </Button>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-6">
+          {/* Sélection d'algorithme */}
+          <AlgorithmTabs algorithm={algorithm} onAlgorithmChange={setAlgorithm} />
+
+          {/* Panneau de configuration */}
+          <SettingsPanel
+            showSettings={showSettings}
+            arraySize={arraySize}
+            speed={speed}
+            onGenerateArray={generateArray}
+            onArraySizeChange={setArraySize}
+            onSpeedChange={setSpeed}
+          />
+
+          {/* Zone de visualisation */}
+          <SortingBars currentStep={currentStep} />
+
+          {/* Contrôles de lecture */}
+          <PlaybackControls
+            currentStepIndex={currentStepIndex}
+            stepCount={steps.length}
+            isPlaying={isPlaying}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+            onPause={handlePause}
+            onPlay={handlePlay}
+          />
+
+          {/* Barre de progression */}
+          <ProgressBar
+            currentStepIndex={currentStepIndex}
+            stepCount={steps.length}
+          />
+
+          {/* Informations sur l'étape actuelle */}
+          <StepInfo
+            currentStep={currentStep}
+            currentStepIndex={currentStepIndex}
+          />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
