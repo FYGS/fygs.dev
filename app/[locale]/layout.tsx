@@ -16,6 +16,7 @@ import { NotificationProvider } from "@/components/providers/notification-provid
 import { KeyboardShortcutsProvider } from "@/providers/keyboard-shortcuts-provider";
 import { ShortcutsGuideProvider } from "@/providers/shortcuts-guide-provider";
 import { ShortcutsToolbar } from "@/components/shortcuts-toolbar";
+import { ServiceWorkerRegistration } from "@/components/pwa/service-worker-registration";
 
 import { type NextLayoutIntlayer, IntlayerClientProvider } from "next-intlayer";
 import { getHTMLTextDir } from "intlayer";
@@ -131,30 +132,7 @@ const LocaleLayout: NextLayoutIntlayer = async (props) => {
             </KeyboardShortcutsProvider>
           </ShortcutsGuideProvider>
         </ThemeProvider>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  var registerSW = function() {
-                    navigator.serviceWorker.register('/sw.js', { scope: '/' })
-                      .then(function(reg) {
-                        // Check for updates periodically
-                        reg.update();
-                        setInterval(function() { reg.update(); }, 60 * 60 * 1000);
-                      })
-                      .catch(function() {});
-                  };
-                  if ('requestIdleCallback' in window) {
-                    requestIdleCallback(registerSW);
-                  } else {
-                    setTimeout(registerSW, 1000);
-                  }
-                });
-              }
-            `,
-          }}
-        />
+        <ServiceWorkerRegistration locale={locale} />
       </body>
     </html>
   );

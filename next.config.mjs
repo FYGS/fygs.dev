@@ -5,17 +5,35 @@ import withPWAInit from "next-pwa";
 
 import { buildGlobalCsp, buildPlaygroundCsp, CSP_HEADER as cspHeader, NON_PLAYGROUND_SOURCE } from "./lib/csp.mjs";
 
+// Service worker (next-pwa/workbox): runtime caching only, no precache. Never caches /api, personalised
+// areas (keep the deny list in sync with app/[locale]/(admin), (learning) and the personal parts of (main)).
+// NB: the functions below are serialised into public/sw.js by workbox: they must stay self-contained.
 const withPWA = withPWAInit({
   dest: "public",
   disable: process.env.NODE_ENV === "development",
-  register: true,
+  // Registration (and the update/refresh flow) lives in components/pwa/service-worker-registration.tsx;
+  // letting next-pwa inject its own register script as well made the worker register twice.
+  register: false,
   skipWaiting: true,
   // Fluid PWA: rely on runtime caching, not aggressive precaching
   dynamicStartUrl: false,
   runtimeCaching: [
     {
-      // Pages — network first, fall back to cache
-      urlPattern: /^https?:\/\/[^/]+\/(fr|en|es)(\/.*)?$/,
+      // Never cache the API (auth/session, AI, Stripe, uploads, ...): always hit the network.
+      urlPattern: ({ url }) => url.pathname.startsWith("/api/"),
+      handler: "NetworkOnly",
+    },
+    {
+      // Public pages (full document navigations only) — network first, fall back to cache.
+      // RSC/prefetch requests and personalised areas are excluded, and responses Next marks as
+      // private/no-store (anything reading cookies or the session) are never written to the cache.
+      urlPattern: ({ url, request, sameOrigin }) => {
+        if (!sameOrigin || request.mode !== "navigate") return false;
+        if (!/^[/](fr|en|es)([/]|$)/.test(url.pathname)) return false;
+        return !/^[/](fr|en|es)[/](admin|dashboard|profile|me|auth|learn|certificates|offline|community[/](notifications|bookmarks|following|new|mentorship))([/]|$)/.test(
+          url.pathname,
+        );
+      },
       handler: "NetworkFirst",
       options: {
         cacheName: "pages-cache",
@@ -23,25 +41,31 @@ const withPWA = withPWAInit({
           maxEntries: 64,
           maxAgeSeconds: 24 * 60 * 60, // 24h
         },
-        networkTimeoutSeconds: 10,
+        networkTimeoutSeconds: 4,
+        plugins: [
+          {
+            cacheWillUpdate: async ({ response }) => {
+              const cacheControl = response.headers.get("cache-control") || "";
+              return /no-store|private/i.test(cacheControl) ? null : response;
+            },
+            // Offline and nothing cached for this page: show the offline page (pre-cached by the
+            // registration component in the "offline-fallback" cache).
+            handlerDidError: async ({ request }) => {
+              const match = request.url.match(/^https?:[/][/][^/]+[/](fr|en|es)([/]|$)/);
+              const locale = match ? match[1] : "fr";
+              const offline =
+                (await caches.match("/" + locale + "/offline", { cacheName: "offline-fallback" })) ||
+                (await caches.match("/fr/offline", { cacheName: "offline-fallback" }));
+              return offline || Response.error();
+            },
+          },
+        ],
       },
     },
     {
-      // API calls — network first with shorter TTL
-      urlPattern: /\/api\/.*/,
-      handler: "NetworkFirst",
-      options: {
-        cacheName: "api-cache",
-        expiration: {
-          maxEntries: 32,
-          maxAgeSeconds: 5 * 60, // 5 min
-        },
-        networkTimeoutSeconds: 10,
-      },
-    },
-    {
-      // Static assets (images, fonts, etc.) — cache first
-      urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|avif|ico|woff2?|ttf|eot)$/i,
+      // Static assets (images, fonts, etc.) — cache first, same-origin only
+      urlPattern: ({ url, sameOrigin }) =>
+        sameOrigin && /[.](?:png|jpg|jpeg|svg|gif|webp|avif|ico|woff2?|ttf|eot)$/i.test(url.pathname),
       handler: "CacheFirst",
       options: {
         cacheName: "static-assets",
@@ -53,7 +77,7 @@ const withPWA = withPWAInit({
     },
     {
       // JS/CSS bundles — stale while revalidate
-      urlPattern: /\/_next\/static\/.*/,
+      urlPattern: /[/]_next[/]static[/]/,
       handler: "StaleWhileRevalidate",
       options: {
         cacheName: "next-static",
