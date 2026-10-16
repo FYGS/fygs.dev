@@ -18,9 +18,9 @@ const practiceData = {
 
 export default function ProblemSolvingPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <PracticeHeader {...practiceData} />
       <ProblemSolvingGuide />
-    </main>
+    </div>
   );
 }

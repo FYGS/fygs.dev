@@ -16,6 +16,8 @@ import { NotificationProvider } from "@/components/providers/notification-provid
 import { KeyboardShortcutsProvider } from "@/providers/keyboard-shortcuts-provider";
 import { ShortcutsGuideProvider } from "@/providers/shortcuts-guide-provider";
 import { ShortcutsToolbar } from "@/components/shortcuts-toolbar";
+import { SkipLink } from "@/components/a11y/skip-link";
+import { MotionProvider } from "@/providers/motion-provider";
 import { ServiceWorkerRegistration } from "@/components/pwa/service-worker-registration";
 
 import { type NextLayoutIntlayer, IntlayerClientProvider } from "next-intlayer";
@@ -108,7 +110,9 @@ const LocaleLayout: NextLayoutIntlayer = async (props) => {
           : {})}
         suppressHydrationWarning
       >
+        <SkipLink locale={locale} />
         <ThemeProvider defaultTheme="dark">
+          <MotionProvider>
           <ShortcutsGuideProvider>
             <KeyboardShortcutsProvider>
               <PageMemoryProvider>
@@ -119,10 +123,8 @@ const LocaleLayout: NextLayoutIntlayer = async (props) => {
                       <ShortcutsToolbar />
                       <LocaleSelectorModal />
                       <PageTransition>
-                        <main>
-                          <NuqsAdapter>{children}</NuqsAdapter>
-                          <Toaster richColors closeButton />
-                        </main>
+                        <NuqsAdapter>{children}</NuqsAdapter>
+                        <Toaster richColors closeButton />
                       </PageTransition>
                       <NotificationProvider />
                     </IntlayerClientProvider>
@@ -131,6 +133,7 @@ const LocaleLayout: NextLayoutIntlayer = async (props) => {
               </PageMemoryProvider>
             </KeyboardShortcutsProvider>
           </ShortcutsGuideProvider>
+          </MotionProvider>
         </ThemeProvider>
         <ServiceWorkerRegistration locale={locale} />
       </body>

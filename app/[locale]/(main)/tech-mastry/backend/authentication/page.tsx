@@ -203,7 +203,7 @@ function AuthComparison() {
 
 export default function AuthenticationPage() {
   return (
-    <main className="container py-8 space-y-16 animate-fadeIn">
+    <div className="container py-8 space-y-16 animate-fadeIn">
       <section className="text-center space-y-6">
         <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-teal-500/10 text-teal-500"><Users className="w-8 h-8" /></div>
         <div className="space-y-4">
@@ -215,6 +215,6 @@ export default function AuthenticationPage() {
       <Card className="p-8 border-border/40"><OAuthFlow /></Card>
       <Card className="p-8 border-border/40"><RbacDemo /></Card>
       <Card className="p-8 border-border/40"><AuthComparison /></Card>
-    </main>
+    </div>
   );
 }

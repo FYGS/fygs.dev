@@ -458,7 +458,7 @@ async function destroySession(sessionId: string) {
 
 export default function BackendPerformancePage() {
   return (
-    <main className="container py-8 space-y-16 animate-fadeIn">
+    <div className="container py-8 space-y-16 animate-fadeIn">
       <section className="text-center space-y-6">
         <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-yellow-500/10 text-yellow-500">
           <Zap className="w-8 h-8" />
@@ -486,6 +486,6 @@ export default function BackendPerformancePage() {
       <Card className="p-8 border-border/40">
         <RedisPatterns />
       </Card>
-    </main>
+    </div>
   );
 }

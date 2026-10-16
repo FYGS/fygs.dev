@@ -3,9 +3,9 @@ import { ChallengesHero } from "./_components/hero";
 
 export default function CodingChallengesPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <ChallengesHero />
       <ChallengesList />
-    </main>
+    </div>
   );
 }

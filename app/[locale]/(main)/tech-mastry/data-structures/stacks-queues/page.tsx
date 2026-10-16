@@ -280,7 +280,7 @@ const advancedVariants = [
 
 export default function StacksQueuesPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <section className="text-center space-y-6">
         <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-teal-500/10 text-teal-500">
           <Layers className="w-8 h-8" />
@@ -437,6 +437,6 @@ class CircularQueue<T> {
           </pre>
         </Card>
       </section>
-    </main>
+    </div>
   );
 }

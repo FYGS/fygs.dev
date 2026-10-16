@@ -47,11 +47,14 @@ export function FrontendHero() {
           return (
             <button
               key={c.label}
+              type="button"
+              aria-label={c.label}
+              aria-pressed={i === active}
               onClick={() => setActive(i)}
               className={`absolute w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${i === active ? "bg-primary/20 scale-125 shadow-lg" : "bg-muted/50 hover:bg-muted"}`}
               style={{
-                left: `calc(50% + ${Math.cos(angle) * r}px - 16px)`,
-                top: `calc(50% + ${Math.sin(angle) * r}px - 16px)`,
+                left: `calc(50% + ${(Math.cos(angle) * r).toFixed(2)}px - 16px)`,
+                top: `calc(50% + ${(Math.sin(angle) * r).toFixed(2)}px - 16px)`,
               }}
             >
               <Icon

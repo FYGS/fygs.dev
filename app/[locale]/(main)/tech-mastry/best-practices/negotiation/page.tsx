@@ -18,9 +18,9 @@ const practiceData = {
 
 export default function NegotiationPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <PracticeHeader {...practiceData} />
       <NegotiationGuide />
-    </main>
+    </div>
   );
 }

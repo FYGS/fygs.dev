@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function DashboardPage() {
   return (
-    <main className="space-y-6 animate-fadeIn">
+    <div className="space-y-6 animate-fadeIn">
       <div>
         <h1 className="text-3xl font-bold tracking-tight mb-2">
           Learning Dashboard
@@ -21,6 +21,6 @@ export default function DashboardPage() {
       </div>
 
       <ProgressDashboard />
-    </main>
+    </div>
   );
 }

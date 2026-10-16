@@ -413,7 +413,7 @@ LIMIT 20;
 
 export default function DatabasesPage() {
   return (
-    <main className="container py-8 space-y-16 animate-fadeIn">
+    <div className="container py-8 space-y-16 animate-fadeIn">
       <section className="text-center space-y-6">
         <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-orange-500/10 text-orange-500">
           <Database className="w-8 h-8" />
@@ -439,6 +439,6 @@ export default function DatabasesPage() {
       <Card className="p-8 border-border/40">
         <QueryOptimizer />
       </Card>
-    </main>
+    </div>
   );
 }

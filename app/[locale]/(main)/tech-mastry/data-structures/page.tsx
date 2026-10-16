@@ -4,10 +4,10 @@ import { DataStructuresGuide } from "./_components/data-structures-guide";
 
 export default function DataStructuresPage() {
   return (
-    <main className="container py-8 space-y-16 animate-fadeIn">
+    <div className="container py-8 space-y-16 animate-fadeIn">
       <DataStructuresHero />
       <DataStructuresTopics />
       <DataStructuresGuide />
-    </main>
+    </div>
   );
 }

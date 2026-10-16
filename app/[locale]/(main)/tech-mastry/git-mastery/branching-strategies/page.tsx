@@ -202,7 +202,7 @@ export default function BranchingStrategiesPage() {
   const [selected, setSelected] = useState("git-flow");
 
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <section className="text-center space-y-4">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500/10 border border-orange-500/20">
           <GitBranch className="w-4 h-4 text-orange-500" />
@@ -295,6 +295,6 @@ export default function BranchingStrategiesPage() {
           <ComparisonTable />
         </Card>
       </section>
-    </main>
+    </div>
   );
 }

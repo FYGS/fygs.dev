@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function ProgressionPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <section className="text-center space-y-6">
         <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-blue-500/10 text-blue-500">
           <TrendingUp className="w-8 h-8" />
@@ -23,6 +23,6 @@ export default function ProgressionPage() {
         </div>
       </section>
       <CareerLadder />
-    </main>
+    </div>
   );
 }

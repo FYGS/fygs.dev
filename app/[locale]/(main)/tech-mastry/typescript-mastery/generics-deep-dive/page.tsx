@@ -152,7 +152,7 @@ export default function GenericsDeepDivePage() {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
 
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <section className="text-center space-y-4">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20">
           <Puzzle className="w-4 h-4 text-purple-500" />
@@ -197,6 +197,6 @@ export default function GenericsDeepDivePage() {
           </Card>
         ))}
       </div>
-    </main>
+    </div>
   );
 }

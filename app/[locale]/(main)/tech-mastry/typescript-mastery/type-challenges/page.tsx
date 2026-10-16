@@ -186,7 +186,7 @@ export default function TypeChallengesPage() {
   const [showHint, setShowHint] = useState<Record<number, boolean>>({});
 
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <section className="text-center space-y-4">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/20">
           <Trophy className="w-4 h-4 text-amber-500" />
@@ -280,6 +280,6 @@ export default function TypeChallengesPage() {
           </Card>
         ))}
       </div>
-    </main>
+    </div>
   );
 }

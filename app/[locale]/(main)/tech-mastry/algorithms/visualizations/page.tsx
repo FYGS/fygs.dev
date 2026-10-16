@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function AlgorithmVisualizationsPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold tracking-tight">Algorithm Visualizations</h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -18,6 +18,6 @@ export default function AlgorithmVisualizationsPage() {
       </div>
       
       <SortingVisualizations />
-    </main>
+    </div>
   );
 }

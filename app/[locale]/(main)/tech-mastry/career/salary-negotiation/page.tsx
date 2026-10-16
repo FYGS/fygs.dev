@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function SalaryNegotiationPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <section className="text-center space-y-6">
         <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-emerald-500/10 text-emerald-500">
           <DollarSign className="w-8 h-8" />
@@ -23,6 +23,6 @@ export default function SalaryNegotiationPage() {
         </div>
       </section>
       <NegotiationGuide />
-    </main>
+    </div>
   );
 }

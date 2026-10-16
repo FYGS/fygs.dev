@@ -14,7 +14,9 @@ export default function MainLayout({
     <>
       <Header />
       <Spacing size="md" />
-      {children}
+      <main id="main-content" tabIndex={-1} className="outline-hidden">
+        {children}
+      </main>
       <Spacing size="md" />
       <Footer />
 

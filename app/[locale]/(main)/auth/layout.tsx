@@ -33,7 +33,7 @@ const AuthLayout = async ({
   children: React.ReactNode;
   params: Promise<{ locale: LocalesValues }>;
 }) => {
-  return <main>{children}</main>;
+  return <div>{children}</div>;
 };
 
 export default AuthLayout;

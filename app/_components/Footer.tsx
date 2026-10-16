@@ -170,7 +170,7 @@ export function Footer() {
         <div className="mt-12 pt-6 border-t">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
             <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground" suppressHydrationWarning>
                 © {new Date().getFullYear()} Fernand Soualo.{" "}
                 {content.copyright.text.value}
               </p>

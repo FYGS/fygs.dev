@@ -69,9 +69,9 @@ export default async function AdminLayout({
 
           {/* Page Content */}
           <ScrollArea className="flex-1 p-6" type="auto" scrollHideDelay={300}>
-            <div className="max-w-7xl mx-auto space-y-6 h-full">
+            <main id="main-content" tabIndex={-1} className="max-w-7xl mx-auto space-y-6 h-full outline-hidden">
               <ErrorBoundary>{children}</ErrorBoundary>
-            </div>
+            </main>
           </ScrollArea>
         </div>
       </div>

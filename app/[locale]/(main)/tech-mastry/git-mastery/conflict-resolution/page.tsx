@@ -111,7 +111,7 @@ function ConflictSimulator({ scenario }: { scenario: ConflictScenario }) {
 
 export default function ConflictResolutionPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <section className="text-center space-y-4">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 border border-red-500/20">
           <AlertTriangle className="w-4 h-4 text-red-500" />
@@ -170,6 +170,6 @@ export default function ConflictResolutionPage() {
           </div>
         </Card>
       </section>
-    </main>
+    </div>
   );
 }

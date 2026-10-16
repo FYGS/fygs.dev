@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordToggle } from "@/components/ui/password-toggle";
+import { FieldError, fieldErrorProps } from "@/components/ui/field-error";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { authService } from "@/lib/auth-service";
 import { toast } from "sonner";
-import { Mail, Eye, EyeOff } from "lucide-react";
+import { Mail } from "lucide-react";
 import { Github } from "@/components/icons/brand-icons";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -157,11 +159,11 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
             type="text"
             placeholder={content.form.name.placeholder.value}
             {...register("name")}
+              {...fieldErrorProps("name", errors.name)}
+              autoComplete="name"
             disabled={isLoading}
           />
-          {errors.name && (
-            <p className="text-sm text-destructive">{errors.name.message}</p>
-          )}
+          <FieldError id="name" message={errors.name?.message} />
         </div>
 
         <div className="space-y-2">
@@ -171,11 +173,11 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
             type="email"
             placeholder={content.form.email.placeholder.value}
             {...register("email")}
+              {...fieldErrorProps("email", errors.email)}
+              autoComplete="email"
             disabled={isLoading}
           />
-          {errors.email && (
-            <p className="text-sm text-destructive">{errors.email.message}</p>
-          )}
+          <FieldError id="email" message={errors.email?.message} />
         </div>
 
         <div className="space-y-2">
@@ -186,28 +188,17 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
               type={showPassword ? "text" : "password"}
               placeholder={content.form.password.placeholder.value}
               {...register("password")}
+              {...fieldErrorProps("password", errors.password)}
+              autoComplete="new-password"
               disabled={isLoading}
             />
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-              onClick={() => setShowPassword(!showPassword)}
+            <PasswordToggle
+              visible={showPassword}
+              onToggle={() => setShowPassword(!showPassword)}
               disabled={isLoading}
-            >
-              {showPassword ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
-            </Button>
+            />
           </div>
-          {errors.password && (
-            <p className="text-sm text-destructive">
-              {errors.password.message}
-            </p>
-          )}
+          <FieldError id="password" message={errors.password?.message} />
         </div>
 
         <div className="space-y-2">
@@ -220,28 +211,17 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
               type={showConfirmPassword ? "text" : "password"}
               placeholder={content.form.confirmPassword.placeholder.value}
               {...register("confirmPassword")}
+              {...fieldErrorProps("confirmPassword", errors.confirmPassword)}
+              autoComplete="new-password"
               disabled={isLoading}
             />
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            <PasswordToggle
+              visible={showConfirmPassword}
+              onToggle={() => setShowConfirmPassword(!showConfirmPassword)}
               disabled={isLoading}
-            >
-              {showConfirmPassword ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
-            </Button>
+            />
           </div>
-          {errors.confirmPassword && (
-            <p className="text-sm text-destructive">
-              {errors.confirmPassword.message}
-            </p>
-          )}
+          <FieldError id="confirmPassword" message={errors.confirmPassword?.message} />
         </div>
 
         <div className="flex items-center space-x-2">
@@ -254,6 +234,7 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
                 checked={field.value === true}
                 onCheckedChange={field.onChange}
                 disabled={isLoading}
+                {...fieldErrorProps("acceptTerms", errors.acceptTerms)}
               />
             )}
           />
@@ -271,14 +252,10 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
             </a>
           </Label>
         </div>
-        {errors.acceptTerms && (
-          <p className="text-sm text-destructive">
-            {errors.acceptTerms.message}
-          </p>
-        )}
+        <FieldError id="acceptTerms" message={errors.acceptTerms?.message} />
 
         {errors.root && (
-          <p className="text-sm text-destructive">{errors.root.message}</p>
+          <p role="alert" className="text-sm text-destructive">{errors.root.message}</p>
         )}
 
         <Button

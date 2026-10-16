@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function TestingPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <div className="text-center space-y-4">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-linear-to-br from-green-500/20 to-emerald-500/20 mb-2">
           <span className="text-3xl">🧪</span>
@@ -20,6 +20,6 @@ export default function TestingPage() {
         </p>
       </div>
       <TestingGuide />
-    </main>
+    </div>
   );
 }

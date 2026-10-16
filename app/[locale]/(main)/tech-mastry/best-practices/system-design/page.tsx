@@ -139,7 +139,7 @@ export default function SystemDesignPage() {
   const [selectedConcept, setSelectedConcept] = useState(concepts[0]);
 
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <section className="text-center space-y-6">
         <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-blue-500/10 text-blue-500">
           <Server className="w-8 h-8" />
@@ -253,6 +253,6 @@ const bandwidth = QPS * avgResponseSize;   // ~1.1 MB/s
           </pre>
         </Card>
       </section>
-    </main>
+    </div>
   );
 }
