@@ -1,0 +1,21 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`BinaryTreeVisualization rendering > renders the same markup in every state reachable by clicking 1`] = `
+[
+  "97aa61e4",
+  "418b2135",
+  "913d6a10",
+  "8883d009",
+  "eef33c70",
+  "f57cb861",
+  "418b2135",
+  "a98a7dca",
+  "8883d009",
+  "8e1ee96c",
+  "f57cb861",
+  "418b2135",
+  "a98a7dca",
+  "8883d009",
+  "eef33c70",
+]
+`;
