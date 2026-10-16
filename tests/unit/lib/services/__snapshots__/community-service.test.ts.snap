@@ -1,0 +1,971 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CommunityService (pinned queries and results) > exposes the same static API 1`] = `
+[
+  "getAvailableMentors",
+  "getCommunityStats",
+  "getDiscussion",
+  "getDiscussionById",
+  "getDiscussions",
+  "getFollowedTopics",
+  "getMentorshipStats",
+  "getRecommendations",
+  "getReplies",
+  "getTopics",
+  "getTrendingDiscussions",
+  "getUnreadNotificationsCount",
+  "getUserBookmarks",
+  "getUserProfile",
+  "getUserReplies",
+  "isFollowingTopic",
+  "searchDiscussions",
+]
+`;
+
+exports[`CommunityService (pinned queries and results) > getAvailableMentors [empty] 1`] = `
+{
+  "callCount": 1,
+  "calls": "102f5222e9c3426defee1706e9f2823f900aadc8e457df7e603e24b17174b281",
+  "error": undefined,
+  "order": [
+    "user.findMany",
+  ],
+  "outcome": "99bcfca61a865fe7ac5bb675250de956e8e0fb175d59adac80bb2fb177154a2c",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getAvailableMentors [rich] 1`] = `
+{
+  "callCount": 1,
+  "calls": "102f5222e9c3426defee1706e9f2823f900aadc8e457df7e603e24b17174b281",
+  "error": undefined,
+  "order": [
+    "user.findMany",
+  ],
+  "outcome": "45c6ee951f538f5620ccd326fc4e5df2df89c34624f41346083a1604ccadf28f",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getCommunityStats [empty] 1`] = `
+{
+  "callCount": 7,
+  "calls": "8acbf8a3301ae67919249232d4049abb65e549c6617d6a1e089d58824a9fac38",
+  "error": undefined,
+  "order": [
+    "user.count",
+    "discussion.count",
+    "discussionReply.count",
+    "user.count",
+    "user.findMany",
+    "topic.findMany",
+    "discussion.findMany",
+  ],
+  "outcome": "178462bfefc37eb1a4752b7a2fb5acee96ae7c65543d992c50d3703b776d6b1d",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getCommunityStats [rich] 1`] = `
+{
+  "callCount": 7,
+  "calls": "8acbf8a3301ae67919249232d4049abb65e549c6617d6a1e089d58824a9fac38",
+  "error": undefined,
+  "order": [
+    "user.count",
+    "discussion.count",
+    "discussionReply.count",
+    "user.count",
+    "user.findMany",
+    "topic.findMany",
+    "discussion.findMany",
+  ],
+  "outcome": "4a0861390ad05e9ab846224bce0562629b6a35073786b42e9161d8cbb844ec35",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussion [empty] 1`] = `
+{
+  "callCount": 2,
+  "calls": "28348f1682b20a94c582c43167c829b3840b4b11120c8d9452da46056ec69429",
+  "error": undefined,
+  "order": [
+    "discussion.updateMany",
+    "discussion.findFirst",
+  ],
+  "outcome": "1c197daef20de3f47eec5e2f735ec6669869d3180cc29f35be4788511e0af0f8",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussion [rich] 1`] = `
+{
+  "callCount": 2,
+  "calls": "28348f1682b20a94c582c43167c829b3840b4b11120c8d9452da46056ec69429",
+  "error": undefined,
+  "order": [
+    "discussion.updateMany",
+    "discussion.findFirst",
+  ],
+  "outcome": "51e6bfdd42de3f23eaed48779d7958275ad673dc8d2106116992425bf5526f5c",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussionAnon [empty] 1`] = `
+{
+  "callCount": 2,
+  "calls": "af3a8a29fd605dec846eb6b24b45bb4fe1c92509e7a6e037caeff7e80e6199b6",
+  "error": undefined,
+  "order": [
+    "discussion.updateMany",
+    "discussion.findFirst",
+  ],
+  "outcome": "1c197daef20de3f47eec5e2f735ec6669869d3180cc29f35be4788511e0af0f8",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussionAnon [rich] 1`] = `
+{
+  "callCount": 2,
+  "calls": "af3a8a29fd605dec846eb6b24b45bb4fe1c92509e7a6e037caeff7e80e6199b6",
+  "error": undefined,
+  "order": [
+    "discussion.updateMany",
+    "discussion.findFirst",
+  ],
+  "outcome": "9e46c5be2b3a56b03f9fe0aec25d1fa136e22f5d7b784e24030150fdec61fe52",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussionById [empty] 1`] = `
+{
+  "callCount": 2,
+  "calls": "b907749c12f7c61e41c35f48434f85be9295613428c8c45719a842275203e4dc",
+  "error": undefined,
+  "order": [
+    "discussion.updateMany",
+    "discussion.findFirst",
+  ],
+  "outcome": "1c197daef20de3f47eec5e2f735ec6669869d3180cc29f35be4788511e0af0f8",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussionById [rich] 1`] = `
+{
+  "callCount": 2,
+  "calls": "b907749c12f7c61e41c35f48434f85be9295613428c8c45719a842275203e4dc",
+  "error": undefined,
+  "order": [
+    "discussion.updateMany",
+    "discussion.findFirst",
+  ],
+  "outcome": "51e6bfdd42de3f23eaed48779d7958275ad673dc8d2106116992425bf5526f5c",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussionByIdReplies [empty] 1`] = `
+{
+  "callCount": 2,
+  "calls": "c69517b8cf95e8ce940088df96383dced3edce6629751cc36a27c10b4a2f90d0",
+  "error": undefined,
+  "order": [
+    "discussion.updateMany",
+    "discussion.findFirst",
+  ],
+  "outcome": "1c197daef20de3f47eec5e2f735ec6669869d3180cc29f35be4788511e0af0f8",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussionByIdReplies [rich] 1`] = `
+{
+  "callCount": 2,
+  "calls": "c69517b8cf95e8ce940088df96383dced3edce6629751cc36a27c10b4a2f90d0",
+  "error": undefined,
+  "order": [
+    "discussion.updateMany",
+    "discussion.findFirst",
+  ],
+  "outcome": "51e6bfdd42de3f23eaed48779d7958275ad673dc8d2106116992425bf5526f5c",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussions [empty] 1`] = `
+{
+  "callCount": 2,
+  "calls": "dc756f679030cdb6b241bb86d66d79a1c29d662d4687551f11b5cbc54c75479c",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "97abc64e72e75b24cd804bccbd216d487fc79b19e1a922c30a9f94bb1aecd282",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussions [rich] 1`] = `
+{
+  "callCount": 2,
+  "calls": "dc756f679030cdb6b241bb86d66d79a1c29d662d4687551f11b5cbc54c75479c",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "1645b99d271b6f6a5cd0541d2be8c44953ce4f84db3df3f88dbb2bf72179fa43",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussions-sort-latest [empty] 1`] = `
+{
+  "callCount": 2,
+  "calls": "23fe8b02dbeca915df4db883bbecebc5391775706c48d18a6b95ffd9ea269458",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "97abc64e72e75b24cd804bccbd216d487fc79b19e1a922c30a9f94bb1aecd282",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussions-sort-latest [rich] 1`] = `
+{
+  "callCount": 2,
+  "calls": "23fe8b02dbeca915df4db883bbecebc5391775706c48d18a6b95ffd9ea269458",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "949ff2cf63c4dd26e74ca8a16a393ba84b86d67d4443f9e36af0740e64feb5f3",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussions-sort-most_replies [empty] 1`] = `
+{
+  "callCount": 2,
+  "calls": "6b43bd55e8529ce07ae9d9762d1e6a28cf249d5de327368f415dac13adca0fb4",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "4cb125334a1c810b2c7e8c3e7ed9dfa169018b6a9e7fd725f38cdcf05d02966a",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussions-sort-most_replies [rich] 1`] = `
+{
+  "callCount": 2,
+  "calls": "6b43bd55e8529ce07ae9d9762d1e6a28cf249d5de327368f415dac13adca0fb4",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "2919af9ea453cda9da7b0f18edec836ad52911957030f9f0476c2711d1dced2a",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussions-sort-most_votes [empty] 1`] = `
+{
+  "callCount": 2,
+  "calls": "eee8f4e59581398d055d0766082ba33ad4a1b0abde425af3fb4dd8d2e46f7c31",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "701faa0156990718cc86f6a789eab0fc9d8e323a363c5abcdaac0b7418f18f2a",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussions-sort-most_votes [rich] 1`] = `
+{
+  "callCount": 2,
+  "calls": "eee8f4e59581398d055d0766082ba33ad4a1b0abde425af3fb4dd8d2e46f7c31",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "070f980a500323cde3819f35018f03fe66760dd27956ca193ee116ce54540860",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussions-sort-oldest [empty] 1`] = `
+{
+  "callCount": 2,
+  "calls": "9f8a60eeb3ad063bd8c5e36eb012c05d9c5054cd076720068efb039e005594f0",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "13077f8c84a2eff80e402d4b825ec0c47c5071fdef7244d13b9069e2bc778d06",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussions-sort-oldest [rich] 1`] = `
+{
+  "callCount": 2,
+  "calls": "9f8a60eeb3ad063bd8c5e36eb012c05d9c5054cd076720068efb039e005594f0",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "34f17fb31ff2ffd4154b48e71efc46b4525e4ff2d57149350de3794c2d23fe8d",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussions-sort-recent [empty] 1`] = `
+{
+  "callCount": 2,
+  "calls": "23fe8b02dbeca915df4db883bbecebc5391775706c48d18a6b95ffd9ea269458",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "66f1d49d4659dd5aa888e76cc94300a47bb319f670075e68469e8f7c7867d4f7",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussions-sort-recent [rich] 1`] = `
+{
+  "callCount": 2,
+  "calls": "23fe8b02dbeca915df4db883bbecebc5391775706c48d18a6b95ffd9ea269458",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "aca401092d7af9de64f8303fa6201dc6dda7e844941600731c5579e2d4e678f7",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussions-sort-solved [empty] 1`] = `
+{
+  "callCount": 2,
+  "calls": "29254c46ec290dc7c57c6c26d5ddf9cbc2dfac952844be0e0f83d37be5ccc0a2",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "b7a898dcfabc94e92726f707e44a900791cf89972d721ee3c2fae3949e45ddad",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussions-sort-solved [rich] 1`] = `
+{
+  "callCount": 2,
+  "calls": "29254c46ec290dc7c57c6c26d5ddf9cbc2dfac952844be0e0f83d37be5ccc0a2",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "4f961cda058c9a63ecdc38a19bf3befbebf620bcdc71127550ca9786e005f159",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussions-sort-top [empty] 1`] = `
+{
+  "callCount": 2,
+  "calls": "23fe8b02dbeca915df4db883bbecebc5391775706c48d18a6b95ffd9ea269458",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "200b270ba016e15b0f57ea32a54caf58c6d110036f5585f98df2208a11b9308d",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussions-sort-top [rich] 1`] = `
+{
+  "callCount": 2,
+  "calls": "23fe8b02dbeca915df4db883bbecebc5391775706c48d18a6b95ffd9ea269458",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "72b297bc3bf3646c7d0079509f27e8c830e2b3b9d238bb78b513f702293f97df",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussions-sort-trending [empty] 1`] = `
+{
+  "callCount": 2,
+  "calls": "fcc96ab4494575bb33ccce4b49a3bae72eef4e325e142f0a2006df90cf14b09c",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "3a903c87b0d7bb29a9e4d4ff5cb05f419b23eaa34447a1cdfc10097fb2a94fa8",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussions-sort-trending [rich] 1`] = `
+{
+  "callCount": 2,
+  "calls": "fcc96ab4494575bb33ccce4b49a3bae72eef4e325e142f0a2006df90cf14b09c",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "66da2903c89c937f98285a41bf2c0493d54cbb99cd594b4bc219e9e36e263434",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussions-sort-unsolved [empty] 1`] = `
+{
+  "callCount": 2,
+  "calls": "0df30bd6598af14f3e8762516ed102f11854fde895feba9f9c5a9e921e87307a",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "ade9e8ef3575978eb61a0383128a8422b1d329965206f0d251a99c9e9ef1f5d7",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussions-sort-unsolved [rich] 1`] = `
+{
+  "callCount": 2,
+  "calls": "0df30bd6598af14f3e8762516ed102f11854fde895feba9f9c5a9e921e87307a",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "7e489c817f4776a45055bbf6118237096f24fb47f975b6c3380451c3cdfe4283",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussionsFull [empty] 1`] = `
+{
+  "callCount": 2,
+  "calls": "3229d60dfa9d23c28855e4d24c50f91d721c5306cf38c61fe41fed3347d24061",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "3d18ba1d42200abbe60a8fd827c9e071d30a08316b65bed14b4f3c3f12f2e8f8",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussionsFull [rich] 1`] = `
+{
+  "callCount": 2,
+  "calls": "3229d60dfa9d23c28855e4d24c50f91d721c5306cf38c61fe41fed3347d24061",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "01813f674d872bd4dd7d316822db8fe6568e431883e83aa82e10a244b7d7b1cd",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussionsPinned [empty] 1`] = `
+{
+  "callCount": 2,
+  "calls": "82ec2e21bbd9d447dea07d1f8bc7114c4c13a993453f87301d2aed69fea78545",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "36137be54f6b1b87b5e2d0164168bebfb255a11a0042627cd380187ad33a9341",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussionsPinned [rich] 1`] = `
+{
+  "callCount": 2,
+  "calls": "82ec2e21bbd9d447dea07d1f8bc7114c4c13a993453f87301d2aed69fea78545",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "9722417222f3fe12428b5067f0dbb510a272a25acf3099fca432cb7d6e3e742b",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussionsUnsolved [empty] 1`] = `
+{
+  "callCount": 2,
+  "calls": "6358fb3fa5618f5d58f6e5c820994193c3906c621867e9fd06233f83563f2358",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "97abc64e72e75b24cd804bccbd216d487fc79b19e1a922c30a9f94bb1aecd282",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getDiscussionsUnsolved [rich] 1`] = `
+{
+  "callCount": 2,
+  "calls": "6358fb3fa5618f5d58f6e5c820994193c3906c621867e9fd06233f83563f2358",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "1645b99d271b6f6a5cd0541d2be8c44953ce4f84db3df3f88dbb2bf72179fa43",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getFollowedTopics [empty] 1`] = `
+{
+  "callCount": 1,
+  "calls": "4e66262fb6b6256b89013efdcf840136c4612be5a5d8e4dd2bb6a82709d16b65",
+  "error": undefined,
+  "order": [
+    "topicFollow.findMany",
+  ],
+  "outcome": "99bcfca61a865fe7ac5bb675250de956e8e0fb175d59adac80bb2fb177154a2c",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getFollowedTopics [rich] 1`] = `
+{
+  "callCount": 1,
+  "calls": "4e66262fb6b6256b89013efdcf840136c4612be5a5d8e4dd2bb6a82709d16b65",
+  "error": undefined,
+  "order": [
+    "topicFollow.findMany",
+  ],
+  "outcome": "fa89b2af1b5834dbd7a64c4205a0b80133d348cddb0a817cddb19f2d853a7c98",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getMentorshipStats [empty] 1`] = `
+{
+  "callCount": 3,
+  "calls": "179528fb37e390b0510e5d6b485ca710945dcc6adc9877c828428ac6e9567916",
+  "error": undefined,
+  "order": [
+    "user.count",
+    "mentorRequest.count",
+    "mentorRequest.count",
+  ],
+  "outcome": "98df40c68441579226f7c6009e3c216200b8dfed09b66de8e0a00a02371f247e",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getMentorshipStats [rich] 1`] = `
+{
+  "callCount": 3,
+  "calls": "179528fb37e390b0510e5d6b485ca710945dcc6adc9877c828428ac6e9567916",
+  "error": undefined,
+  "order": [
+    "user.count",
+    "mentorRequest.count",
+    "mentorRequest.count",
+  ],
+  "outcome": "e158c70fa95a638a75d2508f423ca09799cc9d0015ced89af02b963cbd179262",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getRecommendations [empty] 1`] = `
+{
+  "callCount": 1,
+  "calls": "8bb93fe22b7b4bfc0468f1ab2f4de4a9416ec76027f9f99f4819c3c5f9537583",
+  "error": undefined,
+  "order": [
+    "user.findUnique",
+  ],
+  "outcome": "cd59f7b750c69cc3c7b30b0fa48af2d06fd0275faf7e76b69f2461ca8b628897",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getRecommendations [rich] 1`] = `
+{
+  "callCount": 1,
+  "calls": "8bb93fe22b7b4bfc0468f1ab2f4de4a9416ec76027f9f99f4819c3c5f9537583",
+  "error": "Cannot read properties of undefined (reading 'map')",
+  "order": [
+    "user.findUnique",
+  ],
+  "outcome": "38faf1d02bcc4e30aef834db1f316bc7736f455ea06c7c87cdf55acc62cf43ac",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getReplies [empty] 1`] = `
+{
+  "callCount": 1,
+  "calls": "1bc22aee13585cf7bf322faa04a94415684dca8ac14c58726ea7ad846a26975d",
+  "error": undefined,
+  "order": [
+    "discussionReply.findMany",
+  ],
+  "outcome": "99bcfca61a865fe7ac5bb675250de956e8e0fb175d59adac80bb2fb177154a2c",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getReplies [rich] 1`] = `
+{
+  "callCount": 1,
+  "calls": "1bc22aee13585cf7bf322faa04a94415684dca8ac14c58726ea7ad846a26975d",
+  "error": undefined,
+  "order": [
+    "discussionReply.findMany",
+  ],
+  "outcome": "e2aa71840b3ccfb47b5d5e1f0e9bd186b9e98c6531b70d5007b7b5c5fe80b4ff",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getRepliesAnon [empty] 1`] = `
+{
+  "callCount": 1,
+  "calls": "a0b6f70f59cd872f39b06dc03024a95e77f6bb08202bf617b97c44cb6d07512b",
+  "error": undefined,
+  "order": [
+    "discussionReply.findMany",
+  ],
+  "outcome": "99bcfca61a865fe7ac5bb675250de956e8e0fb175d59adac80bb2fb177154a2c",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getRepliesAnon [rich] 1`] = `
+{
+  "callCount": 1,
+  "calls": "a0b6f70f59cd872f39b06dc03024a95e77f6bb08202bf617b97c44cb6d07512b",
+  "error": undefined,
+  "order": [
+    "discussionReply.findMany",
+  ],
+  "outcome": "e2aa71840b3ccfb47b5d5e1f0e9bd186b9e98c6531b70d5007b7b5c5fe80b4ff",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getTopics [empty] 1`] = `
+{
+  "callCount": 1,
+  "calls": "680faf2612d8d868ea5a03454d2722b47ff70a84f343b78e838aeb51c0965ae9",
+  "error": undefined,
+  "order": [
+    "topic.findMany",
+  ],
+  "outcome": "99bcfca61a865fe7ac5bb675250de956e8e0fb175d59adac80bb2fb177154a2c",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getTopics [rich] 1`] = `
+{
+  "callCount": 1,
+  "calls": "680faf2612d8d868ea5a03454d2722b47ff70a84f343b78e838aeb51c0965ae9",
+  "error": undefined,
+  "order": [
+    "topic.findMany",
+  ],
+  "outcome": "045a03e1528d744559e8d385b3e2e46cafeb594d42d19b24d67152e330871189",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getTopicsUser [empty] 1`] = `
+{
+  "callCount": 1,
+  "calls": "eb9bef16b725a4907bf65f0224ea661e696543362d7eb4cded5e6e6847d4c7d7",
+  "error": undefined,
+  "order": [
+    "topic.findMany",
+  ],
+  "outcome": "99bcfca61a865fe7ac5bb675250de956e8e0fb175d59adac80bb2fb177154a2c",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getTopicsUser [rich] 1`] = `
+{
+  "callCount": 1,
+  "calls": "eb9bef16b725a4907bf65f0224ea661e696543362d7eb4cded5e6e6847d4c7d7",
+  "error": undefined,
+  "order": [
+    "topic.findMany",
+  ],
+  "outcome": "7ed5f249e332824a213cce9ffaca803b58955dc86f093ccf6bb5fb1cfd65c2c1",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getTrendingDiscussions [empty] 1`] = `
+{
+  "callCount": 1,
+  "calls": "0d725974f4b8781f217e4c498be0ea725264f73ef964f8751ad3a2d15e692638",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+  ],
+  "outcome": "99bcfca61a865fe7ac5bb675250de956e8e0fb175d59adac80bb2fb177154a2c",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getTrendingDiscussions [rich] 1`] = `
+{
+  "callCount": 1,
+  "calls": "0d725974f4b8781f217e4c498be0ea725264f73ef964f8751ad3a2d15e692638",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+  ],
+  "outcome": "ddaf5e7404e8d3415305b5ed8954d7fcce3ed1b083185a103b0a674dc5ee6173",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getTrendingDiscussionsLimit [empty] 1`] = `
+{
+  "callCount": 1,
+  "calls": "de766310a4323828011216bba00c8e24c663989b83e5def4debe64bb1f28e011",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+  ],
+  "outcome": "99bcfca61a865fe7ac5bb675250de956e8e0fb175d59adac80bb2fb177154a2c",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getTrendingDiscussionsLimit [rich] 1`] = `
+{
+  "callCount": 1,
+  "calls": "de766310a4323828011216bba00c8e24c663989b83e5def4debe64bb1f28e011",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+  ],
+  "outcome": "d5edfaec44aee552b3cd890fe48a2a2066e62b28323fb8868c95d6756f3edee3",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getUnreadNotificationsCount [empty] 1`] = `
+{
+  "callCount": 1,
+  "calls": "742c7140fd588b3e76d8cdf693447140644bdf648dd682f929ac83a6a764f762",
+  "error": undefined,
+  "order": [
+    "notification.count",
+  ],
+  "outcome": "23d7b286bd429460b92a2a1c21b6afc34110446c5034c17363fda363aa0a7c5d",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getUnreadNotificationsCount [rich] 1`] = `
+{
+  "callCount": 1,
+  "calls": "742c7140fd588b3e76d8cdf693447140644bdf648dd682f929ac83a6a764f762",
+  "error": undefined,
+  "order": [
+    "notification.count",
+  ],
+  "outcome": "9d709bba0358da8fdf5600bb3692fa32d0aa2a19a08152cf4307e0b4240e71ac",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getUserBookmarks [empty] 1`] = `
+{
+  "callCount": 1,
+  "calls": "1662c4667779925e99a6e1c80e3980245926804792887830d985608d1228d582",
+  "error": undefined,
+  "order": [
+    "discussionBookmark.findMany",
+  ],
+  "outcome": "99bcfca61a865fe7ac5bb675250de956e8e0fb175d59adac80bb2fb177154a2c",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getUserBookmarks [rich] 1`] = `
+{
+  "callCount": 1,
+  "calls": "1662c4667779925e99a6e1c80e3980245926804792887830d985608d1228d582",
+  "error": undefined,
+  "order": [
+    "discussionBookmark.findMany",
+  ],
+  "outcome": "45c6ee951f538f5620ccd326fc4e5df2df89c34624f41346083a1604ccadf28f",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getUserBookmarksPage [empty] 1`] = `
+{
+  "callCount": 1,
+  "calls": "b0523d4612e0cdae96e6a3fde19354d954b30a67339d375544c64dc6198c5147",
+  "error": undefined,
+  "order": [
+    "discussionBookmark.findMany",
+  ],
+  "outcome": "99bcfca61a865fe7ac5bb675250de956e8e0fb175d59adac80bb2fb177154a2c",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getUserBookmarksPage [rich] 1`] = `
+{
+  "callCount": 1,
+  "calls": "b0523d4612e0cdae96e6a3fde19354d954b30a67339d375544c64dc6198c5147",
+  "error": undefined,
+  "order": [
+    "discussionBookmark.findMany",
+  ],
+  "outcome": "45c6ee951f538f5620ccd326fc4e5df2df89c34624f41346083a1604ccadf28f",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getUserProfile [empty] 1`] = `
+{
+  "callCount": 4,
+  "calls": "8d37147055d90525c21b09593722b4cd1aa500f74a2de6c8dd84faa3f64617c1",
+  "error": undefined,
+  "order": [
+    "user.findUnique",
+    "discussion.findMany",
+    "discussionReply.count",
+    "discussionVote.count",
+  ],
+  "outcome": "1c197daef20de3f47eec5e2f735ec6669869d3180cc29f35be4788511e0af0f8",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getUserProfile [rich] 1`] = `
+{
+  "callCount": 4,
+  "calls": "8d37147055d90525c21b09593722b4cd1aa500f74a2de6c8dd84faa3f64617c1",
+  "error": undefined,
+  "order": [
+    "user.findUnique",
+    "discussion.findMany",
+    "discussionReply.count",
+    "discussionVote.count",
+  ],
+  "outcome": "b98f2faf7c5d11f8b9ddc154ab3082e7809fe36f56db3d3ddec6aac4ec0d1411",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getUserReplies [empty] 1`] = `
+{
+  "callCount": 1,
+  "calls": "d556f041002a55e6306a725d94e654373dceaba01bea70fefe17b7edd64833a4",
+  "error": undefined,
+  "order": [
+    "discussionReply.findMany",
+  ],
+  "outcome": "99bcfca61a865fe7ac5bb675250de956e8e0fb175d59adac80bb2fb177154a2c",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getUserReplies [rich] 1`] = `
+{
+  "callCount": 1,
+  "calls": "d556f041002a55e6306a725d94e654373dceaba01bea70fefe17b7edd64833a4",
+  "error": undefined,
+  "order": [
+    "discussionReply.findMany",
+  ],
+  "outcome": "45c6ee951f538f5620ccd326fc4e5df2df89c34624f41346083a1604ccadf28f",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getUserRepliesPage [empty] 1`] = `
+{
+  "callCount": 1,
+  "calls": "399d47ca06e814cff5a88d4b8614fb384a47daec1dcf2fb67e4a7caf84f02e59",
+  "error": undefined,
+  "order": [
+    "discussionReply.findMany",
+  ],
+  "outcome": "99bcfca61a865fe7ac5bb675250de956e8e0fb175d59adac80bb2fb177154a2c",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > getUserRepliesPage [rich] 1`] = `
+{
+  "callCount": 1,
+  "calls": "399d47ca06e814cff5a88d4b8614fb384a47daec1dcf2fb67e4a7caf84f02e59",
+  "error": undefined,
+  "order": [
+    "discussionReply.findMany",
+  ],
+  "outcome": "45c6ee951f538f5620ccd326fc4e5df2df89c34624f41346083a1604ccadf28f",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > isFollowingTopic [empty] 1`] = `
+{
+  "callCount": 1,
+  "calls": "941326db765201b8ceda9269c84fdb03b26a85f8a65ef78eb6557990c0e77634",
+  "error": undefined,
+  "order": [
+    "topicFollow.findUnique",
+  ],
+  "outcome": "1e544d43b574a8e36402bd746d6a6260b4e1169718052ad5354a5b58c6ad01c5",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > isFollowingTopic [rich] 1`] = `
+{
+  "callCount": 1,
+  "calls": "941326db765201b8ceda9269c84fdb03b26a85f8a65ef78eb6557990c0e77634",
+  "error": undefined,
+  "order": [
+    "topicFollow.findUnique",
+  ],
+  "outcome": "8c5aaab6e1efdec7f7f9f65cc0de77461c36a46e6b7c9ee7a35299dd6e8449ee",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > searchDiscussions [empty] 1`] = `
+{
+  "callCount": 2,
+  "calls": "043eabda4f4f97f07fb095875919aea9196e7b89cefad04f7387873fa39c9244",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "77e0bebf33bf09be6b7f0a13df788f0f25061a5b666f6d17bd568307984adcf6",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > searchDiscussions [rich] 1`] = `
+{
+  "callCount": 2,
+  "calls": "043eabda4f4f97f07fb095875919aea9196e7b89cefad04f7387873fa39c9244",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "77a307e75ec2ad130815ebff2e418c03fe32d1687336ad813ecd4933879d25d7",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > searchDiscussionsFiltered [empty] 1`] = `
+{
+  "callCount": 2,
+  "calls": "4cb6be7566acc5eea840b66c67e0bce3c06006f0a3a0c2471bc51b7a46c5d4b3",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "564fc0d0effea6bfe72fcdd4db7d16a392232890a06df258b2ebf38852e1a6e6",
+}
+`;
+
+exports[`CommunityService (pinned queries and results) > searchDiscussionsFiltered [rich] 1`] = `
+{
+  "callCount": 2,
+  "calls": "4cb6be7566acc5eea840b66c67e0bce3c06006f0a3a0c2471bc51b7a46c5d4b3",
+  "error": undefined,
+  "order": [
+    "discussion.findMany",
+    "discussion.count",
+  ],
+  "outcome": "10db4579287ca418d9dce1dc549c44408966aeb0313dcf3fa5fa1740dd86125d",
+}
+`;

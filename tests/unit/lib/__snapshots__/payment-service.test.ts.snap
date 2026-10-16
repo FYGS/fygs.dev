@@ -1,0 +1,5446 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`paymentService (pinned behaviour) > cancelImmediatelyFail 1`] = `
+{
+  "log": [
+    [
+      "stripe.subscriptions.cancel",
+      [
+        "sub_1",
+      ],
+    ],
+    [
+      "console.error",
+      [
+        "Immediate cancellation failed",
+        "x",
+      ],
+    ],
+  ],
+  "outcome": {
+    "instanceOfWebhook": false,
+    "name": "Error",
+    "thrown": "CANCEL_IMMEDIATE_FAILED",
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > cancelImmediatelyOk 1`] = `
+{
+  "log": [
+    [
+      "stripe.subscriptions.cancel",
+      [
+        "sub_1",
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": true,
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > cancelSubFail 1`] = `
+{
+  "log": [
+    [
+      "stripe.subscriptions.update",
+      [
+        "sub_1",
+        {
+          "cancel_at_period_end": true,
+        },
+      ],
+    ],
+    [
+      "console.error",
+      [
+        "Failed to cancel subscription:",
+        "x",
+      ],
+    ],
+  ],
+  "outcome": {
+    "instanceOfWebhook": false,
+    "name": "Error",
+    "thrown": "Failed to cancel subscription",
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > cancelSubOk 1`] = `
+{
+  "log": [
+    [
+      "stripe.subscriptions.update",
+      [
+        "sub_1",
+        {
+          "cancel_at_period_end": true,
+        },
+      ],
+    ],
+  ],
+  "outcome": {},
+}
+`;
+
+exports[`paymentService (pinned behaviour) > checkoutNoUrl 1`] = `
+{
+  "log": [
+    [
+      "course.findUnique",
+      {
+        "select": {
+          "price": true,
+          "published": true,
+          "slug": true,
+          "title": true,
+        },
+        "where": {
+          "id": "c1",
+        },
+      },
+    ],
+    [
+      "stripe.checkout.sessions.create",
+      [
+        {
+          "allow_promotion_codes": true,
+          "cancel_url": "c",
+          "line_items": [
+            {
+              "price_data": {
+                "currency": "eur",
+                "product_data": {
+                  "description": "Accès à vie à la formation",
+                  "name": "Formation - React",
+                },
+                "unit_amount": 0,
+              },
+              "quantity": 1,
+            },
+          ],
+          "metadata": {
+            "courseSlug": "react",
+            "productId": "c1",
+            "type": "course_purchase",
+            "userId": "u1",
+          },
+          "mode": "payment",
+          "success_url": "s",
+        },
+      ],
+    ],
+    [
+      "console.error",
+      [
+        "Stripe checkout session creation failed:",
+        "Failed to create checkout session",
+      ],
+    ],
+  ],
+  "outcome": {
+    "instanceOfWebhook": false,
+    "name": "Error",
+    "thrown": "Failed to create payment session",
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > checkoutOk 1`] = `
+{
+  "log": [
+    [
+      "course.findUnique",
+      {
+        "select": {
+          "price": true,
+          "published": true,
+          "slug": true,
+          "title": true,
+        },
+        "where": {
+          "id": "c1",
+        },
+      },
+    ],
+    [
+      "stripe.checkout.sessions.create",
+      [
+        {
+          "allow_promotion_codes": true,
+          "cancel_url": "c",
+          "customer_email": "a@b.c",
+          "line_items": [
+            {
+              "price_data": {
+                "currency": "eur",
+                "product_data": {
+                  "description": "Accès à vie à la formation",
+                  "name": "Formation - React",
+                },
+                "unit_amount": 4990,
+              },
+              "quantity": 1,
+            },
+          ],
+          "metadata": {
+            "courseSlug": "react",
+            "productId": "c1",
+            "type": "course_purchase",
+            "userId": "u1",
+          },
+          "mode": "payment",
+          "success_url": "s",
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": {
+      "sessionId": "cs_1",
+      "url": "https://stripe.test/pay",
+    },
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > checkoutPlainNumberPrice 1`] = `
+{
+  "log": [
+    [
+      "course.findUnique",
+      {
+        "select": {
+          "price": true,
+          "published": true,
+          "slug": true,
+          "title": true,
+        },
+        "where": {
+          "id": "c1",
+        },
+      },
+    ],
+    [
+      "stripe.checkout.sessions.create",
+      [
+        {
+          "allow_promotion_codes": true,
+          "cancel_url": "c",
+          "line_items": [
+            {
+              "price_data": {
+                "currency": "eur",
+                "product_data": {
+                  "description": "Accès à vie à la formation",
+                  "name": "Formation - React",
+                },
+                "unit_amount": 1000,
+              },
+              "quantity": 1,
+            },
+          ],
+          "metadata": {
+            "courseSlug": "react",
+            "productId": "c1",
+            "type": "course_purchase",
+            "userId": "u1",
+          },
+          "mode": "payment",
+          "success_url": "s",
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": {
+      "sessionId": "cs_1",
+      "url": "https://stripe.test/pay",
+    },
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > checkoutUnpublished 1`] = `
+{
+  "log": [
+    [
+      "course.findUnique",
+      {
+        "select": {
+          "price": true,
+          "published": true,
+          "slug": true,
+          "title": true,
+        },
+        "where": {
+          "id": "c1",
+        },
+      },
+    ],
+    [
+      "console.error",
+      [
+        "Stripe checkout session creation failed:",
+        "Course not found or unpublished",
+      ],
+    ],
+  ],
+  "outcome": {
+    "instanceOfWebhook": false,
+    "name": "Error",
+    "thrown": "Failed to create payment session",
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > createCustomerFail 1`] = `
+{
+  "log": [
+    [
+      "stripe.customers.create",
+      [
+        {
+          "email": "a@b.c",
+          "metadata": {},
+        },
+      ],
+    ],
+    [
+      "console.error",
+      [
+        "Failed to create Stripe customer:",
+        "x",
+      ],
+    ],
+  ],
+  "outcome": {
+    "instanceOfWebhook": false,
+    "name": "Error",
+    "thrown": "Failed to create customer",
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > createCustomerMin 1`] = `
+{
+  "log": [
+    [
+      "stripe.customers.create",
+      [
+        {
+          "email": "a@b.c",
+          "metadata": {},
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": "cus_new",
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > createCustomerOk 1`] = `
+{
+  "log": [
+    [
+      "stripe.customers.create",
+      [
+        {
+          "email": "a@b.c",
+          "metadata": {
+            "userId": "u1",
+          },
+          "name": "Al",
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": "cus_new",
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > createProductFail 1`] = `
+{
+  "log": [
+    [
+      "stripe.products.create",
+      [
+        {
+          "description": "D",
+          "id": "p1",
+          "metadata": {},
+          "name": "N",
+        },
+      ],
+    ],
+    [
+      "stripe.prices.create",
+      [
+        {
+          "currency": "eur",
+          "metadata": {
+            "type": "bundle",
+          },
+          "product": "prod_1",
+          "unit_amount": 1000,
+        },
+      ],
+    ],
+    [
+      "console.error",
+      [
+        "Failed to create Stripe product:",
+        "x",
+      ],
+    ],
+  ],
+  "outcome": {
+    "instanceOfWebhook": false,
+    "name": "Error",
+    "thrown": "Failed to create product",
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > createProductOk 1`] = `
+{
+  "log": [
+    [
+      "stripe.products.create",
+      [
+        {
+          "description": "D",
+          "id": "p1",
+          "metadata": {
+            "a": "b",
+          },
+          "name": "N",
+        },
+      ],
+    ],
+    [
+      "stripe.prices.create",
+      [
+        {
+          "currency": "eur",
+          "metadata": {
+            "type": "course",
+          },
+          "product": "prod_1",
+          "unit_amount": 1000,
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": "prod_1",
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > createSubPriceFail 1`] = `
+{
+  "log": [
+    [
+      "stripe.prices.create",
+      [
+        {
+          "currency": "eur",
+          "metadata": {
+            "type": "subscription",
+          },
+          "product": "prod_1",
+          "recurring": {
+            "interval": "month",
+          },
+          "unit_amount": 900,
+        },
+      ],
+    ],
+    [
+      "console.error",
+      [
+        "Failed to create subscription price:",
+        "x",
+      ],
+    ],
+  ],
+  "outcome": {
+    "instanceOfWebhook": false,
+    "name": "Error",
+    "thrown": "Failed to create subscription price",
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > createSubPriceMonth 1`] = `
+{
+  "log": [
+    [
+      "stripe.prices.create",
+      [
+        {
+          "currency": "eur",
+          "metadata": {
+            "type": "subscription",
+          },
+          "product": "prod_1",
+          "recurring": {
+            "interval": "month",
+          },
+          "unit_amount": 900,
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": "price_new",
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > createSubPriceYear 1`] = `
+{
+  "log": [
+    [
+      "stripe.prices.create",
+      [
+        {
+          "currency": "eur",
+          "metadata": {
+            "type": "subscription",
+          },
+          "product": "prod_1",
+          "recurring": {
+            "interval": "year",
+          },
+          "unit_amount": 9000,
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": "price_new",
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > customerByEmailFail 1`] = `
+{
+  "log": [
+    [
+      "stripe.customers.list",
+      [
+        {
+          "email": "a@b.c",
+          "limit": 1,
+        },
+      ],
+    ],
+    [
+      "console.error",
+      [
+        "Failed to get customer:",
+        "x",
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": null,
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > customerByEmailFound 1`] = `
+{
+  "log": [
+    [
+      "stripe.customers.list",
+      [
+        {
+          "email": "a@b.c",
+          "limit": 1,
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": {
+      "email": "a@b.c",
+      "id": "cus_1",
+    },
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > customerByEmailNone 1`] = `
+{
+  "log": [
+    [
+      "stripe.customers.list",
+      [
+        {
+          "email": "a@b.c",
+          "limit": 1,
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": null,
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > getSubEmpty 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "get-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+        {
+          "expand": [
+            "items.data.price",
+            "latest_invoice",
+          ],
+        },
+      ],
+    ],
+    [
+      "log.error",
+      [
+        "Subscription not found",
+        {
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.error",
+      [
+        "Failed to get subscription",
+        {
+          "metadata": {
+            "error": "Subscription with ID sub_1 not found",
+            "errorStack": "Error: Subscription with ID sub_1 not found <stack>",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "instanceOfWebhook": false,
+    "name": "Error",
+    "thrown": "Failed to get subscription: Subscription with ID sub_1 not found",
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > getSubFail 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "get-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+        {
+          "expand": [
+            "items.data.price",
+            "latest_invoice",
+          ],
+        },
+      ],
+    ],
+    [
+      "log.error",
+      [
+        "Failed to get subscription",
+        {
+          "metadata": {
+            "error": "nope",
+            "errorStack": "Error: nope <stack>",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "instanceOfWebhook": false,
+    "name": "Error",
+    "thrown": "Failed to get subscription: nope",
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > getSubOk 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "get-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+        {
+          "expand": [
+            "items.data.price",
+            "latest_invoice",
+          ],
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Successfully retrieved subscription",
+        {
+          "metadata": {
+            "hasItems": true,
+            "status": "active",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": {
+      "cancel_at_period_end": false,
+      "customer": "cus_1",
+      "id": "sub_1",
+      "items": {
+        "data": [
+          {
+            "current_period_end": 1702600000,
+            "current_period_start": 1700000000,
+            "id": "si_1",
+            "price": {
+              "id": "price_m",
+              "recurring": {
+                "interval": "month",
+              },
+            },
+          },
+        ],
+      },
+      "metadata": {
+        "userId": "u1",
+      },
+      "status": "active",
+    },
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > grantCourseExisting 1`] = `
+{
+  "log": [
+    [
+      "console.log",
+      [
+        "Granting course access: User u1 -> Course c1",
+      ],
+    ],
+    [
+      "enrollment.findUnique",
+      {
+        "where": {
+          "userId_courseId": {
+            "courseId": "c1",
+            "userId": "u1",
+          },
+        },
+      },
+    ],
+    [
+      "console.log",
+      [
+        "Course access already exists: User u1 -> Course c1",
+      ],
+    ],
+  ],
+  "outcome": {},
+}
+`;
+
+exports[`paymentService (pinned behaviour) > grantCourseMissing 1`] = `
+{
+  "log": [
+    [
+      "console.log",
+      [
+        "Granting course access: User u1 -> Course c1",
+      ],
+    ],
+    [
+      "enrollment.findUnique",
+      {
+        "where": {
+          "userId_courseId": {
+            "courseId": "c1",
+            "userId": "u1",
+          },
+        },
+      },
+    ],
+    [
+      "course.findFirst",
+      {
+        "select": {
+          "id": true,
+          "title": true,
+        },
+        "where": {
+          "id": "c1",
+          "published": true,
+        },
+      },
+    ],
+    [
+      "console.error",
+      [
+        "Failed to grant course access: Error: Course c1 not found or not published",
+      ],
+    ],
+  ],
+  "outcome": {
+    "instanceOfWebhook": false,
+    "name": "Error",
+    "thrown": "Course c1 not found or not published",
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > grantCourseOk 1`] = `
+{
+  "log": [
+    [
+      "console.log",
+      [
+        "Granting course access: User u1 -> Course c1",
+      ],
+    ],
+    [
+      "enrollment.findUnique",
+      {
+        "where": {
+          "userId_courseId": {
+            "courseId": "c1",
+            "userId": "u1",
+          },
+        },
+      },
+    ],
+    [
+      "course.findFirst",
+      {
+        "select": {
+          "id": true,
+          "title": true,
+        },
+        "where": {
+          "id": "c1",
+          "published": true,
+        },
+      },
+    ],
+    [
+      "enrollment.create",
+      {
+        "data": {
+          "courseId": "c1",
+          "enrolledAt": "2030-06-15T10:20:30.000Z",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "console.log",
+      [
+        "Course access granted: User u1 -> Course c1 (React)",
+      ],
+    ],
+  ],
+  "outcome": {},
+}
+`;
+
+exports[`paymentService (pinned behaviour) > grantSub-canceled 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "payment-webhook",
+        "resourceId": "cs_1",
+        "resourceType": "payment",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Processing payment success",
+        {
+          "metadata": {
+            "hasPaymentIntent": true,
+            "hasProduct": false,
+            "hasSubscription": true,
+            "hasUser": true,
+            "mode": "subscription",
+            "paymentStatus": "paid",
+            "type": "subscription",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "grant-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Granting subscription access",
+        {
+          "metadata": {
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "get-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+        {
+          "expand": [
+            "items.data.price",
+            "latest_invoice",
+          ],
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Successfully retrieved subscription",
+        {
+          "metadata": {
+            "hasItems": true,
+            "status": "canceled",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Subscription period from Stripe",
+        {
+          "metadata": {
+            "billingInterval": "month",
+            "currentPeriodEndDate": "2023-12-15T00:26:40.000Z",
+            "currentPeriodEndRaw": 1702600000,
+            "currentPeriodStartDate": "2023-11-14T22:13:20.000Z",
+            "currentPeriodStartRaw": 1700000000,
+            "status": "canceled",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "subscription.upsert",
+      {
+        "create": {
+          "cancelAtPeriodEnd": true,
+          "currentPeriodEnd": "2023-12-15T00:26:40.000Z",
+          "currentPeriodStart": "2023-11-14T22:13:20.000Z",
+          "plan": "PREMIUM",
+          "priceId": "price_m",
+          "status": "CANCELED",
+          "stripeCustomerId": "cus_1",
+          "stripeSubscriptionId": "sub_1",
+          "userId": "u1",
+        },
+        "update": {
+          "cancelAtPeriodEnd": true,
+          "currentPeriodEnd": "2023-12-15T00:26:40.000Z",
+          "currentPeriodStart": "2023-11-14T22:13:20.000Z",
+          "plan": "PREMIUM",
+          "priceId": "price_m",
+          "status": "CANCELED",
+          "stripeCustomerId": "cus_1",
+          "stripeSubscriptionId": "sub_1",
+        },
+        "where": {
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Subscription access granted successfully",
+        {
+          "metadata": {
+            "periodEnd": "2023-12-15T00:26:40.000Z",
+            "status": "CANCELED",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription access granted for user u1",
+        {
+          "metadata": {
+            "subscriptionId": "sub_1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "payment.findFirst",
+      {
+        "where": {
+          "kind": "SUBSCRIPTION",
+          "status": "PENDING",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "payment.create",
+      {
+        "data": {
+          "amount": "49.9",
+          "currency": "eur",
+          "description": "Abonnement Premium",
+          "kind": "SUBSCRIPTION",
+          "status": "COMPLETED",
+          "stripePaymentIntentId": "sub_1",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription payment created for user u1",
+        {
+          "metadata": {
+            "subscriptionId": "sub_1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "analytics.subscriptionStarted",
+      [
+        "u1",
+        {
+          "amount": 49.9,
+          "billingCycle": "unknown",
+          "priceId": "unknown",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription analytics tracked",
+        {
+          "metadata": {
+            "billingCycle": "unknown",
+            "priceId": "unknown",
+            "userId": "u1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {},
+}
+`;
+
+exports[`paymentService (pinned behaviour) > grantSub-customerMissing 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "payment-webhook",
+        "resourceId": "cs_1",
+        "resourceType": "payment",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Processing payment success",
+        {
+          "metadata": {
+            "hasPaymentIntent": true,
+            "hasProduct": false,
+            "hasSubscription": true,
+            "hasUser": true,
+            "mode": "subscription",
+            "paymentStatus": "paid",
+            "type": "subscription",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "grant-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Granting subscription access",
+        {
+          "metadata": {
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "get-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+        {
+          "expand": [
+            "items.data.price",
+            "latest_invoice",
+          ],
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Successfully retrieved subscription",
+        {
+          "metadata": {
+            "hasItems": true,
+            "status": "active",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.warn",
+      [
+        "Missing customer ID in subscription",
+        {
+          "metadata": {
+            "status": "active",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Subscription period from Stripe",
+        {
+          "metadata": {
+            "billingInterval": "month",
+            "currentPeriodEndDate": "2023-12-15T00:26:40.000Z",
+            "currentPeriodEndRaw": 1702600000,
+            "currentPeriodStartDate": "2023-11-14T22:13:20.000Z",
+            "currentPeriodStartRaw": 1700000000,
+            "status": "active",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "subscription.upsert",
+      {
+        "create": {
+          "cancelAtPeriodEnd": false,
+          "currentPeriodEnd": "2023-12-15T00:26:40.000Z",
+          "currentPeriodStart": "2023-11-14T22:13:20.000Z",
+          "plan": "PREMIUM",
+          "priceId": "price_m",
+          "status": "ACTIVE",
+          "stripeCustomerId": "unknown",
+          "stripeSubscriptionId": "sub_1",
+          "userId": "u1",
+        },
+        "update": {
+          "cancelAtPeriodEnd": false,
+          "currentPeriodEnd": "2023-12-15T00:26:40.000Z",
+          "currentPeriodStart": "2023-11-14T22:13:20.000Z",
+          "plan": "PREMIUM",
+          "priceId": "price_m",
+          "status": "ACTIVE",
+          "stripeCustomerId": "unknown",
+          "stripeSubscriptionId": "sub_1",
+        },
+        "where": {
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Subscription access granted successfully",
+        {
+          "metadata": {
+            "periodEnd": "2023-12-15T00:26:40.000Z",
+            "status": "ACTIVE",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription access granted for user u1",
+        {
+          "metadata": {
+            "subscriptionId": "sub_1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "payment.findFirst",
+      {
+        "where": {
+          "kind": "SUBSCRIPTION",
+          "status": "PENDING",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "payment.create",
+      {
+        "data": {
+          "amount": "49.9",
+          "currency": "eur",
+          "description": "Abonnement Premium",
+          "kind": "SUBSCRIPTION",
+          "status": "COMPLETED",
+          "stripePaymentIntentId": "sub_1",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription payment created for user u1",
+        {
+          "metadata": {
+            "subscriptionId": "sub_1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "analytics.subscriptionStarted",
+      [
+        "u1",
+        {
+          "amount": 49.9,
+          "billingCycle": "unknown",
+          "priceId": "unknown",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription analytics tracked",
+        {
+          "metadata": {
+            "billingCycle": "unknown",
+            "priceId": "unknown",
+            "userId": "u1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {},
+}
+`;
+
+exports[`paymentService (pinned behaviour) > grantSub-customerObject 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "payment-webhook",
+        "resourceId": "cs_1",
+        "resourceType": "payment",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Processing payment success",
+        {
+          "metadata": {
+            "hasPaymentIntent": true,
+            "hasProduct": false,
+            "hasSubscription": true,
+            "hasUser": true,
+            "mode": "subscription",
+            "paymentStatus": "paid",
+            "type": "subscription",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "grant-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Granting subscription access",
+        {
+          "metadata": {
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "get-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+        {
+          "expand": [
+            "items.data.price",
+            "latest_invoice",
+          ],
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Successfully retrieved subscription",
+        {
+          "metadata": {
+            "hasItems": true,
+            "status": "active",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Subscription period from Stripe",
+        {
+          "metadata": {
+            "billingInterval": "month",
+            "currentPeriodEndDate": "2023-12-15T00:26:40.000Z",
+            "currentPeriodEndRaw": 1702600000,
+            "currentPeriodStartDate": "2023-11-14T22:13:20.000Z",
+            "currentPeriodStartRaw": 1700000000,
+            "status": "active",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "subscription.upsert",
+      {
+        "create": {
+          "cancelAtPeriodEnd": false,
+          "currentPeriodEnd": "2023-12-15T00:26:40.000Z",
+          "currentPeriodStart": "2023-11-14T22:13:20.000Z",
+          "plan": "PREMIUM",
+          "priceId": "price_m",
+          "status": "ACTIVE",
+          "stripeCustomerId": "cus_obj",
+          "stripeSubscriptionId": "sub_1",
+          "userId": "u1",
+        },
+        "update": {
+          "cancelAtPeriodEnd": false,
+          "currentPeriodEnd": "2023-12-15T00:26:40.000Z",
+          "currentPeriodStart": "2023-11-14T22:13:20.000Z",
+          "plan": "PREMIUM",
+          "priceId": "price_m",
+          "status": "ACTIVE",
+          "stripeCustomerId": "cus_obj",
+          "stripeSubscriptionId": "sub_1",
+        },
+        "where": {
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Subscription access granted successfully",
+        {
+          "metadata": {
+            "periodEnd": "2023-12-15T00:26:40.000Z",
+            "status": "ACTIVE",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription access granted for user u1",
+        {
+          "metadata": {
+            "subscriptionId": "sub_1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "payment.findFirst",
+      {
+        "where": {
+          "kind": "SUBSCRIPTION",
+          "status": "PENDING",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "payment.create",
+      {
+        "data": {
+          "amount": "49.9",
+          "currency": "eur",
+          "description": "Abonnement Premium",
+          "kind": "SUBSCRIPTION",
+          "status": "COMPLETED",
+          "stripePaymentIntentId": "sub_1",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription payment created for user u1",
+        {
+          "metadata": {
+            "subscriptionId": "sub_1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "analytics.subscriptionStarted",
+      [
+        "u1",
+        {
+          "amount": 49.9,
+          "billingCycle": "unknown",
+          "priceId": "unknown",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription analytics tracked",
+        {
+          "metadata": {
+            "billingCycle": "unknown",
+            "priceId": "unknown",
+            "userId": "u1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {},
+}
+`;
+
+exports[`paymentService (pinned behaviour) > grantSub-emptyItemsNoPrice 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "payment-webhook",
+        "resourceId": "cs_1",
+        "resourceType": "payment",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Processing payment success",
+        {
+          "metadata": {
+            "hasPaymentIntent": true,
+            "hasProduct": false,
+            "hasSubscription": true,
+            "hasUser": true,
+            "mode": "subscription",
+            "paymentStatus": "paid",
+            "type": "subscription",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "grant-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Granting subscription access",
+        {
+          "metadata": {
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "get-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+        {
+          "expand": [
+            "items.data.price",
+            "latest_invoice",
+          ],
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Successfully retrieved subscription",
+        {
+          "metadata": {
+            "hasItems": false,
+            "status": "active",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Subscription period from Stripe",
+        {
+          "metadata": {
+            "billingInterval": "month",
+            "currentPeriodEndDate": "2030-07-15T10:20:30.000Z",
+            "currentPeriodStartDate": "2030-06-15T10:20:30.000Z",
+            "status": "active",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.warn",
+      [
+        "No price ID found in subscription",
+        {
+          "metadata": {
+            "hasItems": true,
+            "status": "active",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "subscription.upsert",
+      {
+        "create": {
+          "cancelAtPeriodEnd": false,
+          "currentPeriodEnd": "2030-07-15T10:20:30.000Z",
+          "currentPeriodStart": "2030-06-15T10:20:30.000Z",
+          "plan": "PREMIUM",
+          "priceId": null,
+          "status": "ACTIVE",
+          "stripeCustomerId": "cus_1",
+          "stripeSubscriptionId": "sub_1",
+          "userId": "u1",
+        },
+        "update": {
+          "cancelAtPeriodEnd": false,
+          "currentPeriodEnd": "2030-07-15T10:20:30.000Z",
+          "currentPeriodStart": "2030-06-15T10:20:30.000Z",
+          "plan": "PREMIUM",
+          "priceId": null,
+          "status": "ACTIVE",
+          "stripeCustomerId": "cus_1",
+          "stripeSubscriptionId": "sub_1",
+        },
+        "where": {
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Subscription access granted successfully",
+        {
+          "metadata": {
+            "periodEnd": "2030-07-15T10:20:30.000Z",
+            "status": "ACTIVE",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription access granted for user u1",
+        {
+          "metadata": {
+            "subscriptionId": "sub_1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "payment.findFirst",
+      {
+        "where": {
+          "kind": "SUBSCRIPTION",
+          "status": "PENDING",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "payment.create",
+      {
+        "data": {
+          "amount": "49.9",
+          "currency": "eur",
+          "description": "Abonnement Premium",
+          "kind": "SUBSCRIPTION",
+          "status": "COMPLETED",
+          "stripePaymentIntentId": "sub_1",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription payment created for user u1",
+        {
+          "metadata": {
+            "subscriptionId": "sub_1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "analytics.subscriptionStarted",
+      [
+        "u1",
+        {
+          "amount": 49.9,
+          "billingCycle": "unknown",
+          "priceId": "unknown",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription analytics tracked",
+        {
+          "metadata": {
+            "billingCycle": "unknown",
+            "priceId": "unknown",
+            "userId": "u1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {},
+}
+`;
+
+exports[`paymentService (pinned behaviour) > grantSub-noItems 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "payment-webhook",
+        "resourceId": "cs_1",
+        "resourceType": "payment",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Processing payment success",
+        {
+          "metadata": {
+            "hasPaymentIntent": true,
+            "hasProduct": false,
+            "hasSubscription": true,
+            "hasUser": true,
+            "mode": "subscription",
+            "paymentStatus": "paid",
+            "type": "subscription",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "grant-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Granting subscription access",
+        {
+          "metadata": {
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "get-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+        {
+          "expand": [
+            "items.data.price",
+            "latest_invoice",
+          ],
+        },
+      ],
+    ],
+    [
+      "log.error",
+      [
+        "Failed to get subscription",
+        {
+          "metadata": {
+            "error": "Cannot read properties of undefined (reading 'data')",
+            "errorStack": "TypeError: Cannot read properties of undefined (reading 'data') <stack>",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.error",
+      [
+        "Failed to grant subscription access",
+        {
+          "metadata": {
+            "error": "Failed to get subscription: Cannot read properties of undefined (reading 'data')",
+            "errorStack": "Error: Failed to get subscription: Cannot read properties of undefined (reading 'data') <stack>",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.error",
+      [
+        "❌ Failed to grant subscription access:",
+        {
+          "metadata": {
+            "error": "Failed to get subscription: Cannot read properties of undefined (reading 'data')",
+            "errorStack": "Error: Failed to get subscription: Cannot read properties of undefined (reading 'data') <stack>",
+            "subscriptionId": "sub_1",
+            "userId": "u1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "log.error",
+      [
+        "Failed to handle payment success:",
+        {
+          "metadata": {
+            "error": "Failed to get subscription: Cannot read properties of undefined (reading 'data')",
+            "errorStack": "Error: Failed to get subscription: Cannot read properties of undefined (reading 'data') <stack>",
+            "type": "subscription",
+            "userId": "u1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "instanceOfWebhook": false,
+    "name": "Error",
+    "thrown": "Failed to get subscription: Cannot read properties of undefined (reading 'data')",
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > grantSub-pastDue 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "payment-webhook",
+        "resourceId": "cs_1",
+        "resourceType": "payment",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Processing payment success",
+        {
+          "metadata": {
+            "hasPaymentIntent": true,
+            "hasProduct": false,
+            "hasSubscription": true,
+            "hasUser": true,
+            "mode": "subscription",
+            "paymentStatus": "paid",
+            "type": "subscription",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "grant-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Granting subscription access",
+        {
+          "metadata": {
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "get-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+        {
+          "expand": [
+            "items.data.price",
+            "latest_invoice",
+          ],
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Successfully retrieved subscription",
+        {
+          "metadata": {
+            "hasItems": true,
+            "status": "past_due",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Subscription period from Stripe",
+        {
+          "metadata": {
+            "billingInterval": "month",
+            "currentPeriodEndDate": "2023-12-15T00:26:40.000Z",
+            "currentPeriodEndRaw": 1702600000,
+            "currentPeriodStartDate": "2023-11-14T22:13:20.000Z",
+            "currentPeriodStartRaw": 1700000000,
+            "status": "past_due",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "subscription.upsert",
+      {
+        "create": {
+          "cancelAtPeriodEnd": false,
+          "currentPeriodEnd": "2023-12-15T00:26:40.000Z",
+          "currentPeriodStart": "2023-11-14T22:13:20.000Z",
+          "plan": "PREMIUM",
+          "priceId": "price_m",
+          "status": "PAST_DUE",
+          "stripeCustomerId": "cus_1",
+          "stripeSubscriptionId": "sub_1",
+          "userId": "u1",
+        },
+        "update": {
+          "cancelAtPeriodEnd": false,
+          "currentPeriodEnd": "2023-12-15T00:26:40.000Z",
+          "currentPeriodStart": "2023-11-14T22:13:20.000Z",
+          "plan": "PREMIUM",
+          "priceId": "price_m",
+          "status": "PAST_DUE",
+          "stripeCustomerId": "cus_1",
+          "stripeSubscriptionId": "sub_1",
+        },
+        "where": {
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Subscription access granted successfully",
+        {
+          "metadata": {
+            "periodEnd": "2023-12-15T00:26:40.000Z",
+            "status": "PAST_DUE",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription access granted for user u1",
+        {
+          "metadata": {
+            "subscriptionId": "sub_1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "payment.findFirst",
+      {
+        "where": {
+          "kind": "SUBSCRIPTION",
+          "status": "PENDING",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "payment.create",
+      {
+        "data": {
+          "amount": "49.9",
+          "currency": "eur",
+          "description": "Abonnement Premium",
+          "kind": "SUBSCRIPTION",
+          "status": "COMPLETED",
+          "stripePaymentIntentId": "sub_1",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription payment created for user u1",
+        {
+          "metadata": {
+            "subscriptionId": "sub_1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "analytics.subscriptionStarted",
+      [
+        "u1",
+        {
+          "amount": 49.9,
+          "billingCycle": "unknown",
+          "priceId": "unknown",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription analytics tracked",
+        {
+          "metadata": {
+            "billingCycle": "unknown",
+            "priceId": "unknown",
+            "userId": "u1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {},
+}
+`;
+
+exports[`paymentService (pinned behaviour) > grantSub-unknownStatus 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "payment-webhook",
+        "resourceId": "cs_1",
+        "resourceType": "payment",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Processing payment success",
+        {
+          "metadata": {
+            "hasPaymentIntent": true,
+            "hasProduct": false,
+            "hasSubscription": true,
+            "hasUser": true,
+            "mode": "subscription",
+            "paymentStatus": "paid",
+            "type": "subscription",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "grant-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Granting subscription access",
+        {
+          "metadata": {
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "get-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+        {
+          "expand": [
+            "items.data.price",
+            "latest_invoice",
+          ],
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Successfully retrieved subscription",
+        {
+          "metadata": {
+            "hasItems": true,
+            "status": "something_new",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Subscription period from Stripe",
+        {
+          "metadata": {
+            "billingInterval": "month",
+            "currentPeriodEndDate": "2023-12-15T00:26:40.000Z",
+            "currentPeriodEndRaw": 1702600000,
+            "currentPeriodStartDate": "2023-11-14T22:13:20.000Z",
+            "currentPeriodStartRaw": 1700000000,
+            "status": "something_new",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "subscription.upsert",
+      {
+        "create": {
+          "cancelAtPeriodEnd": false,
+          "currentPeriodEnd": "2023-12-15T00:26:40.000Z",
+          "currentPeriodStart": "2023-11-14T22:13:20.000Z",
+          "plan": "PREMIUM",
+          "priceId": "price_m",
+          "status": "PAST_DUE",
+          "stripeCustomerId": "cus_1",
+          "stripeSubscriptionId": "sub_1",
+          "userId": "u1",
+        },
+        "update": {
+          "cancelAtPeriodEnd": false,
+          "currentPeriodEnd": "2023-12-15T00:26:40.000Z",
+          "currentPeriodStart": "2023-11-14T22:13:20.000Z",
+          "plan": "PREMIUM",
+          "priceId": "price_m",
+          "status": "PAST_DUE",
+          "stripeCustomerId": "cus_1",
+          "stripeSubscriptionId": "sub_1",
+        },
+        "where": {
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Subscription access granted successfully",
+        {
+          "metadata": {
+            "periodEnd": "2023-12-15T00:26:40.000Z",
+            "status": "PAST_DUE",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription access granted for user u1",
+        {
+          "metadata": {
+            "subscriptionId": "sub_1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "payment.findFirst",
+      {
+        "where": {
+          "kind": "SUBSCRIPTION",
+          "status": "PENDING",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "payment.create",
+      {
+        "data": {
+          "amount": "49.9",
+          "currency": "eur",
+          "description": "Abonnement Premium",
+          "kind": "SUBSCRIPTION",
+          "status": "COMPLETED",
+          "stripePaymentIntentId": "sub_1",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription payment created for user u1",
+        {
+          "metadata": {
+            "subscriptionId": "sub_1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "analytics.subscriptionStarted",
+      [
+        "u1",
+        {
+          "amount": 49.9,
+          "billingCycle": "unknown",
+          "priceId": "unknown",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription analytics tracked",
+        {
+          "metadata": {
+            "billingCycle": "unknown",
+            "priceId": "unknown",
+            "userId": "u1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {},
+}
+`;
+
+exports[`paymentService (pinned behaviour) > grantSub-yearlyNoPeriod 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "payment-webhook",
+        "resourceId": "cs_1",
+        "resourceType": "payment",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Processing payment success",
+        {
+          "metadata": {
+            "hasPaymentIntent": true,
+            "hasProduct": false,
+            "hasSubscription": true,
+            "hasUser": true,
+            "mode": "subscription",
+            "paymentStatus": "paid",
+            "type": "subscription",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "grant-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Granting subscription access",
+        {
+          "metadata": {
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "get-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+        {
+          "expand": [
+            "items.data.price",
+            "latest_invoice",
+          ],
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Successfully retrieved subscription",
+        {
+          "metadata": {
+            "hasItems": true,
+            "status": "active",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Subscription period from Stripe",
+        {
+          "metadata": {
+            "billingInterval": "year",
+            "currentPeriodEndDate": "2031-06-15T10:20:30.000Z",
+            "currentPeriodStartDate": "2023-07-22T04:26:41.000Z",
+            "status": "active",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "subscription.upsert",
+      {
+        "create": {
+          "cancelAtPeriodEnd": false,
+          "currentPeriodEnd": "2031-06-15T10:20:30.000Z",
+          "currentPeriodStart": "2023-07-22T04:26:41.000Z",
+          "plan": "PREMIUM",
+          "priceId": "price_y",
+          "status": "ACTIVE",
+          "stripeCustomerId": "cus_1",
+          "stripeSubscriptionId": "sub_1",
+          "userId": "u1",
+        },
+        "update": {
+          "cancelAtPeriodEnd": false,
+          "currentPeriodEnd": "2031-06-15T10:20:30.000Z",
+          "currentPeriodStart": "2023-07-22T04:26:41.000Z",
+          "plan": "PREMIUM",
+          "priceId": "price_y",
+          "status": "ACTIVE",
+          "stripeCustomerId": "cus_1",
+          "stripeSubscriptionId": "sub_1",
+        },
+        "where": {
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Subscription access granted successfully",
+        {
+          "metadata": {
+            "periodEnd": "2031-06-15T10:20:30.000Z",
+            "status": "ACTIVE",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription access granted for user u1",
+        {
+          "metadata": {
+            "subscriptionId": "sub_1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "payment.findFirst",
+      {
+        "where": {
+          "kind": "SUBSCRIPTION",
+          "status": "PENDING",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "payment.create",
+      {
+        "data": {
+          "amount": "49.9",
+          "currency": "eur",
+          "description": "Abonnement Premium",
+          "kind": "SUBSCRIPTION",
+          "status": "COMPLETED",
+          "stripePaymentIntentId": "sub_1",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription payment created for user u1",
+        {
+          "metadata": {
+            "subscriptionId": "sub_1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "analytics.subscriptionStarted",
+      [
+        "u1",
+        {
+          "amount": 49.9,
+          "billingCycle": "unknown",
+          "priceId": "unknown",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription analytics tracked",
+        {
+          "metadata": {
+            "billingCycle": "unknown",
+            "priceId": "unknown",
+            "userId": "u1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {},
+}
+`;
+
+exports[`paymentService (pinned behaviour) > hpsCourseAnalyticsFails 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "payment-webhook",
+        "resourceId": "cs_1",
+        "resourceType": "payment",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Processing payment success",
+        {
+          "metadata": {
+            "hasPaymentIntent": true,
+            "hasProduct": true,
+            "hasSubscription": false,
+            "hasUser": true,
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "type": "course_purchase",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "payment.findFirst",
+      {
+        "where": {
+          "courseId": "c1",
+          "kind": "COURSE",
+          "status": "PENDING",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "payment.create",
+      {
+        "data": {
+          "amount": "49.9",
+          "courseId": "c1",
+          "currency": "eur",
+          "description": "Achat formation c1",
+          "kind": "COURSE",
+          "status": "COMPLETED",
+          "stripePaymentIntentId": "pi_1",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "✅ Payment created for user u1, course c1",
+      ],
+    ],
+    [
+      "console.log",
+      [
+        "Granting course access: User u1 -> Course c1",
+      ],
+    ],
+    [
+      "enrollment.findUnique",
+      {
+        "where": {
+          "userId_courseId": {
+            "courseId": "c1",
+            "userId": "u1",
+          },
+        },
+      },
+    ],
+    [
+      "console.log",
+      [
+        "Course access already exists: User u1 -> Course c1",
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "✅ User u1 auto-enrolled in course c1",
+      ],
+    ],
+    [
+      "analytics.coursePurchased",
+      [
+        "u1",
+        {
+          "amount": 49.9,
+          "courseId": "c1",
+        },
+      ],
+    ],
+    [
+      "log.error",
+      [
+        "❌ Failed to track analytics:",
+        {
+          "metadata": {
+            "error": "an",
+            "userId": "u1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {},
+}
+`;
+
+exports[`paymentService (pinned behaviour) > hpsCourseEnrollFails 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "payment-webhook",
+        "resourceId": "cs_1",
+        "resourceType": "payment",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Processing payment success",
+        {
+          "metadata": {
+            "hasPaymentIntent": true,
+            "hasProduct": true,
+            "hasSubscription": false,
+            "hasUser": true,
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "type": "course_purchase",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "payment.findFirst",
+      {
+        "where": {
+          "courseId": "c1",
+          "kind": "COURSE",
+          "status": "PENDING",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "payment.create",
+      {
+        "data": {
+          "amount": "49.9",
+          "courseId": "c1",
+          "currency": "eur",
+          "description": "Achat formation c1",
+          "kind": "COURSE",
+          "status": "COMPLETED",
+          "stripePaymentIntentId": "pi_1",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "✅ Payment created for user u1, course c1",
+      ],
+    ],
+    [
+      "console.log",
+      [
+        "Granting course access: User u1 -> Course c1",
+      ],
+    ],
+    [
+      "enrollment.findUnique",
+      {
+        "where": {
+          "userId_courseId": {
+            "courseId": "c1",
+            "userId": "u1",
+          },
+        },
+      },
+    ],
+    [
+      "course.findFirst",
+      {
+        "select": {
+          "id": true,
+          "title": true,
+        },
+        "where": {
+          "id": "c1",
+          "published": true,
+        },
+      },
+    ],
+    [
+      "console.error",
+      [
+        "Failed to grant course access: Error: Course c1 not found or not published",
+      ],
+    ],
+    [
+      "log.error",
+      [
+        "❌ Failed to auto-enroll user:",
+        {
+          "metadata": {
+            "error": "Course c1 not found or not published",
+            "errorStack": "Error: Course c1 not found or not published <stack>",
+            "productId": "c1",
+            "userId": "u1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "analytics.coursePurchased",
+      [
+        "u1",
+        {
+          "amount": 49.9,
+          "courseId": "c1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {},
+}
+`;
+
+exports[`paymentService (pinned behaviour) > hpsCourseNew 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "payment-webhook",
+        "resourceId": "cs_1",
+        "resourceType": "payment",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Processing payment success",
+        {
+          "metadata": {
+            "hasPaymentIntent": true,
+            "hasProduct": true,
+            "hasSubscription": false,
+            "hasUser": true,
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "type": "course_purchase",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "payment.findFirst",
+      {
+        "where": {
+          "courseId": "c1",
+          "kind": "COURSE",
+          "status": "PENDING",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "payment.create",
+      {
+        "data": {
+          "amount": "49.9",
+          "courseId": "c1",
+          "currency": "eur",
+          "description": "Achat formation c1",
+          "kind": "COURSE",
+          "status": "COMPLETED",
+          "stripePaymentIntentId": "pi_1",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "✅ Payment created for user u1, course c1",
+      ],
+    ],
+    [
+      "console.log",
+      [
+        "Granting course access: User u1 -> Course c1",
+      ],
+    ],
+    [
+      "enrollment.findUnique",
+      {
+        "where": {
+          "userId_courseId": {
+            "courseId": "c1",
+            "userId": "u1",
+          },
+        },
+      },
+    ],
+    [
+      "course.findFirst",
+      {
+        "select": {
+          "id": true,
+          "title": true,
+        },
+        "where": {
+          "id": "c1",
+          "published": true,
+        },
+      },
+    ],
+    [
+      "enrollment.create",
+      {
+        "data": {
+          "courseId": "c1",
+          "enrolledAt": "2030-06-15T10:20:30.000Z",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "console.log",
+      [
+        "Course access granted: User u1 -> Course c1 (React)",
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "✅ User u1 auto-enrolled in course c1",
+      ],
+    ],
+    [
+      "analytics.coursePurchased",
+      [
+        "u1",
+        {
+          "amount": 49.9,
+          "courseId": "c1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {},
+}
+`;
+
+exports[`paymentService (pinned behaviour) > hpsCourseNoIntent 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "payment-webhook",
+        "resourceId": "cs_1",
+        "resourceType": "payment",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Processing payment success",
+        {
+          "metadata": {
+            "hasPaymentIntent": false,
+            "hasProduct": true,
+            "hasSubscription": false,
+            "hasUser": true,
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "type": "course_purchase",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "log.warn",
+      [
+        "No payment intent found for course purchase",
+        {
+          "metadata": {
+            "productId": "c1",
+            "userId": "u1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {},
+}
+`;
+
+exports[`paymentService (pinned behaviour) > hpsCourseNoProduct 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "payment-webhook",
+        "resourceId": "cs_1",
+        "resourceType": "payment",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Processing payment success",
+        {
+          "metadata": {
+            "hasPaymentIntent": true,
+            "hasProduct": false,
+            "hasSubscription": false,
+            "hasUser": true,
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "type": "course_purchase",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "log.warn",
+      [
+        "Unhandled payment type: course_purchase",
+        {
+          "metadata": {
+            "availableMetadata": [
+              "userId",
+              "type",
+            ],
+            "mode": "payment",
+            "userId": "u1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {},
+}
+`;
+
+exports[`paymentService (pinned behaviour) > hpsCoursePaymentFails 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "payment-webhook",
+        "resourceId": "cs_1",
+        "resourceType": "payment",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Processing payment success",
+        {
+          "metadata": {
+            "hasPaymentIntent": true,
+            "hasProduct": true,
+            "hasSubscription": false,
+            "hasUser": true,
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "type": "course_purchase",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "payment.findFirst",
+      {
+        "where": {
+          "courseId": "c1",
+          "kind": "COURSE",
+          "status": "PENDING",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.error",
+      [
+        "❌ Failed to record payment:",
+        {
+          "metadata": {
+            "error": "db down",
+            "errorStack": "Error: db down <stack>",
+            "productId": "c1",
+            "userId": "u1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "log.error",
+      [
+        "Failed to handle payment success:",
+        {
+          "metadata": {
+            "error": "db down",
+            "errorStack": "Error: db down <stack>",
+            "type": "course_purchase",
+            "userId": "u1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "instanceOfWebhook": false,
+    "name": "Error",
+    "thrown": "db down",
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > hpsCoursePending 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "payment-webhook",
+        "resourceId": "cs_1",
+        "resourceType": "payment",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Processing payment success",
+        {
+          "metadata": {
+            "hasPaymentIntent": true,
+            "hasProduct": true,
+            "hasSubscription": false,
+            "hasUser": true,
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "type": "course_purchase",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "payment.findFirst",
+      {
+        "where": {
+          "courseId": "c1",
+          "kind": "COURSE",
+          "status": "PENDING",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "payment.update",
+      {
+        "data": {
+          "amount": "49.9",
+          "currency": "eur",
+          "description": "Achat formation c1",
+          "status": "COMPLETED",
+          "stripePaymentIntentId": "pi_1",
+        },
+        "where": {
+          "id": "pay1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "✅ Payment updated to COMPLETED for user u1, course c1",
+      ],
+    ],
+    [
+      "console.log",
+      [
+        "Granting course access: User u1 -> Course c1",
+      ],
+    ],
+    [
+      "enrollment.findUnique",
+      {
+        "where": {
+          "userId_courseId": {
+            "courseId": "c1",
+            "userId": "u1",
+          },
+        },
+      },
+    ],
+    [
+      "console.log",
+      [
+        "Course access already exists: User u1 -> Course c1",
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "✅ User u1 auto-enrolled in course c1",
+      ],
+    ],
+    [
+      "analytics.coursePurchased",
+      [
+        "u1",
+        {
+          "amount": 49.9,
+          "courseId": "c1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {},
+}
+`;
+
+exports[`paymentService (pinned behaviour) > hpsNoMetadata 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "payment-webhook",
+        "resourceId": "cs_1",
+        "resourceType": "payment",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Processing payment success",
+        {
+          "metadata": {
+            "hasPaymentIntent": false,
+            "hasProduct": false,
+            "hasSubscription": false,
+            "hasUser": false,
+            "mode": "unknown",
+            "paymentStatus": "unknown",
+            "type": "unknown",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "log.error",
+      [
+        "No userId in session metadata",
+        {
+          "metadata": {
+            "availableMetadata": [],
+            "sessionId": "cs_1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {},
+}
+`;
+
+exports[`paymentService (pinned behaviour) > hpsNoUser 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "payment-webhook",
+        "resourceId": "cs_1",
+        "resourceType": "payment",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Processing payment success",
+        {
+          "metadata": {
+            "hasPaymentIntent": false,
+            "hasProduct": false,
+            "hasSubscription": false,
+            "hasUser": false,
+            "mode": "payment",
+            "paymentStatus": "unknown",
+            "type": "unknown",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "log.error",
+      [
+        "No userId in session metadata",
+        {
+          "metadata": {
+            "availableMetadata": [],
+            "sessionId": "cs_1",
+            "sessionMode": "payment",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {},
+}
+`;
+
+exports[`paymentService (pinned behaviour) > hpsSubAnalyticsFails 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "payment-webhook",
+        "resourceId": "cs_1",
+        "resourceType": "payment",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Processing payment success",
+        {
+          "metadata": {
+            "hasPaymentIntent": true,
+            "hasProduct": false,
+            "hasSubscription": true,
+            "hasUser": true,
+            "mode": "subscription",
+            "paymentStatus": "paid",
+            "type": "subscription",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "grant-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Granting subscription access",
+        {
+          "metadata": {
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "get-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+        {
+          "expand": [
+            "items.data.price",
+            "latest_invoice",
+          ],
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Successfully retrieved subscription",
+        {
+          "metadata": {
+            "hasItems": true,
+            "status": "active",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Subscription period from Stripe",
+        {
+          "metadata": {
+            "billingInterval": "month",
+            "currentPeriodEndDate": "2023-12-15T00:26:40.000Z",
+            "currentPeriodEndRaw": 1702600000,
+            "currentPeriodStartDate": "2023-11-14T22:13:20.000Z",
+            "currentPeriodStartRaw": 1700000000,
+            "status": "active",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "subscription.upsert",
+      {
+        "create": {
+          "cancelAtPeriodEnd": false,
+          "currentPeriodEnd": "2023-12-15T00:26:40.000Z",
+          "currentPeriodStart": "2023-11-14T22:13:20.000Z",
+          "plan": "PREMIUM",
+          "priceId": "price_m",
+          "status": "ACTIVE",
+          "stripeCustomerId": "cus_1",
+          "stripeSubscriptionId": "sub_1",
+          "userId": "u1",
+        },
+        "update": {
+          "cancelAtPeriodEnd": false,
+          "currentPeriodEnd": "2023-12-15T00:26:40.000Z",
+          "currentPeriodStart": "2023-11-14T22:13:20.000Z",
+          "plan": "PREMIUM",
+          "priceId": "price_m",
+          "status": "ACTIVE",
+          "stripeCustomerId": "cus_1",
+          "stripeSubscriptionId": "sub_1",
+        },
+        "where": {
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Subscription access granted successfully",
+        {
+          "metadata": {
+            "periodEnd": "2023-12-15T00:26:40.000Z",
+            "status": "ACTIVE",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription access granted for user u1",
+        {
+          "metadata": {
+            "subscriptionId": "sub_1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "payment.findFirst",
+      {
+        "where": {
+          "kind": "SUBSCRIPTION",
+          "status": "PENDING",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "payment.create",
+      {
+        "data": {
+          "amount": "49.9",
+          "currency": "eur",
+          "description": "Abonnement Premium",
+          "kind": "SUBSCRIPTION",
+          "status": "COMPLETED",
+          "stripePaymentIntentId": "sub_1",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription payment created for user u1",
+        {
+          "metadata": {
+            "subscriptionId": "sub_1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "analytics.subscriptionStarted",
+      [
+        "u1",
+        {
+          "amount": 49.9,
+          "billingCycle": "unknown",
+          "priceId": "unknown",
+        },
+      ],
+    ],
+    [
+      "log.error",
+      [
+        "❌ Failed to track subscription analytics:",
+        {
+          "metadata": {
+            "error": "an",
+            "userId": "u1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {},
+}
+`;
+
+exports[`paymentService (pinned behaviour) > hpsSubExplicitCycle 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "payment-webhook",
+        "resourceId": "cs_1",
+        "resourceType": "payment",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Processing payment success",
+        {
+          "metadata": {
+            "hasPaymentIntent": true,
+            "hasProduct": false,
+            "hasSubscription": true,
+            "hasUser": true,
+            "mode": "subscription",
+            "paymentStatus": "paid",
+            "type": "subscription",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "grant-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Granting subscription access",
+        {
+          "metadata": {
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "get-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+        {
+          "expand": [
+            "items.data.price",
+            "latest_invoice",
+          ],
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Successfully retrieved subscription",
+        {
+          "metadata": {
+            "hasItems": true,
+            "status": "active",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Subscription period from Stripe",
+        {
+          "metadata": {
+            "billingInterval": "month",
+            "currentPeriodEndDate": "2023-12-15T00:26:40.000Z",
+            "currentPeriodEndRaw": 1702600000,
+            "currentPeriodStartDate": "2023-11-14T22:13:20.000Z",
+            "currentPeriodStartRaw": 1700000000,
+            "status": "active",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "subscription.upsert",
+      {
+        "create": {
+          "cancelAtPeriodEnd": false,
+          "currentPeriodEnd": "2023-12-15T00:26:40.000Z",
+          "currentPeriodStart": "2023-11-14T22:13:20.000Z",
+          "plan": "PREMIUM",
+          "priceId": "price_m",
+          "status": "ACTIVE",
+          "stripeCustomerId": "cus_1",
+          "stripeSubscriptionId": "sub_1",
+          "userId": "u1",
+        },
+        "update": {
+          "cancelAtPeriodEnd": false,
+          "currentPeriodEnd": "2023-12-15T00:26:40.000Z",
+          "currentPeriodStart": "2023-11-14T22:13:20.000Z",
+          "plan": "PREMIUM",
+          "priceId": "price_m",
+          "status": "ACTIVE",
+          "stripeCustomerId": "cus_1",
+          "stripeSubscriptionId": "sub_1",
+        },
+        "where": {
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Subscription access granted successfully",
+        {
+          "metadata": {
+            "periodEnd": "2023-12-15T00:26:40.000Z",
+            "status": "ACTIVE",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription access granted for user u1",
+        {
+          "metadata": {
+            "subscriptionId": "sub_1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "payment.findFirst",
+      {
+        "where": {
+          "kind": "SUBSCRIPTION",
+          "status": "PENDING",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "payment.create",
+      {
+        "data": {
+          "amount": "49.9",
+          "currency": "eur",
+          "description": "Abonnement Premium",
+          "kind": "SUBSCRIPTION",
+          "status": "COMPLETED",
+          "stripePaymentIntentId": "sub_1",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription payment created for user u1",
+        {
+          "metadata": {
+            "subscriptionId": "sub_1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "analytics.subscriptionStarted",
+      [
+        "u1",
+        {
+          "amount": 49.9,
+          "billingCycle": "yearly",
+          "priceId": "zzz",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription analytics tracked",
+        {
+          "metadata": {
+            "billingCycle": "yearly",
+            "priceId": "zzz",
+            "userId": "u1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {},
+}
+`;
+
+exports[`paymentService (pinned behaviour) > hpsSubGrantFails 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "payment-webhook",
+        "resourceId": "cs_1",
+        "resourceType": "payment",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Processing payment success",
+        {
+          "metadata": {
+            "hasPaymentIntent": true,
+            "hasProduct": false,
+            "hasSubscription": true,
+            "hasUser": true,
+            "mode": "subscription",
+            "paymentStatus": "paid",
+            "type": "subscription",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "grant-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Granting subscription access",
+        {
+          "metadata": {
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "get-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+        {
+          "expand": [
+            "items.data.price",
+            "latest_invoice",
+          ],
+        },
+      ],
+    ],
+    [
+      "log.error",
+      [
+        "Failed to get subscription",
+        {
+          "metadata": {
+            "error": "stripe down",
+            "errorStack": "Error: stripe down <stack>",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.error",
+      [
+        "Failed to grant subscription access",
+        {
+          "metadata": {
+            "error": "Failed to get subscription: stripe down",
+            "errorStack": "Error: Failed to get subscription: stripe down <stack>",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.error",
+      [
+        "❌ Failed to grant subscription access:",
+        {
+          "metadata": {
+            "error": "Failed to get subscription: stripe down",
+            "errorStack": "Error: Failed to get subscription: stripe down <stack>",
+            "subscriptionId": "sub_1",
+            "userId": "u1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "log.error",
+      [
+        "Failed to handle payment success:",
+        {
+          "metadata": {
+            "error": "Failed to get subscription: stripe down",
+            "errorStack": "Error: Failed to get subscription: stripe down <stack>",
+            "type": "subscription",
+            "userId": "u1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "instanceOfWebhook": false,
+    "name": "Error",
+    "thrown": "Failed to get subscription: stripe down",
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > hpsSubNew 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "payment-webhook",
+        "resourceId": "cs_1",
+        "resourceType": "payment",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Processing payment success",
+        {
+          "metadata": {
+            "hasPaymentIntent": false,
+            "hasProduct": false,
+            "hasSubscription": true,
+            "hasUser": true,
+            "mode": "subscription",
+            "paymentStatus": "paid",
+            "type": "subscription",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "grant-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Granting subscription access",
+        {
+          "metadata": {
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "get-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+        {
+          "expand": [
+            "items.data.price",
+            "latest_invoice",
+          ],
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Successfully retrieved subscription",
+        {
+          "metadata": {
+            "hasItems": true,
+            "status": "active",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Subscription period from Stripe",
+        {
+          "metadata": {
+            "billingInterval": "month",
+            "currentPeriodEndDate": "2023-12-15T00:26:40.000Z",
+            "currentPeriodEndRaw": 1702600000,
+            "currentPeriodStartDate": "2023-11-14T22:13:20.000Z",
+            "currentPeriodStartRaw": 1700000000,
+            "status": "active",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "subscription.upsert",
+      {
+        "create": {
+          "cancelAtPeriodEnd": false,
+          "currentPeriodEnd": "2023-12-15T00:26:40.000Z",
+          "currentPeriodStart": "2023-11-14T22:13:20.000Z",
+          "plan": "PREMIUM",
+          "priceId": "price_m",
+          "status": "ACTIVE",
+          "stripeCustomerId": "cus_1",
+          "stripeSubscriptionId": "sub_1",
+          "userId": "u1",
+        },
+        "update": {
+          "cancelAtPeriodEnd": false,
+          "currentPeriodEnd": "2023-12-15T00:26:40.000Z",
+          "currentPeriodStart": "2023-11-14T22:13:20.000Z",
+          "plan": "PREMIUM",
+          "priceId": "price_m",
+          "status": "ACTIVE",
+          "stripeCustomerId": "cus_1",
+          "stripeSubscriptionId": "sub_1",
+        },
+        "where": {
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Subscription access granted successfully",
+        {
+          "metadata": {
+            "periodEnd": "2023-12-15T00:26:40.000Z",
+            "status": "ACTIVE",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription access granted for user u1",
+        {
+          "metadata": {
+            "subscriptionId": "sub_1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "payment.findFirst",
+      {
+        "where": {
+          "kind": "SUBSCRIPTION",
+          "status": "PENDING",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "payment.create",
+      {
+        "data": {
+          "amount": "49.9",
+          "currency": "eur",
+          "description": "Abonnement Premium",
+          "kind": "SUBSCRIPTION",
+          "status": "COMPLETED",
+          "stripePaymentIntentId": "sub_1",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription payment created for user u1",
+        {
+          "metadata": {
+            "subscriptionId": "sub_1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "analytics.subscriptionStarted",
+      [
+        "u1",
+        {
+          "amount": 49.9,
+          "billingCycle": "monthly",
+          "priceId": "price_monthly_x",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription analytics tracked",
+        {
+          "metadata": {
+            "billingCycle": "monthly",
+            "priceId": "price_monthly_x",
+            "userId": "u1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {},
+}
+`;
+
+exports[`paymentService (pinned behaviour) > hpsSubNoId 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "payment-webhook",
+        "resourceId": "cs_1",
+        "resourceType": "payment",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Processing payment success",
+        {
+          "metadata": {
+            "hasPaymentIntent": true,
+            "hasProduct": false,
+            "hasSubscription": false,
+            "hasUser": true,
+            "mode": "subscription",
+            "paymentStatus": "paid",
+            "type": "subscription",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "log.error",
+      [
+        "Missing subscription ID in checkout session",
+        {
+          "metadata": {
+            "type": "subscription",
+            "userId": "u1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {},
+}
+`;
+
+exports[`paymentService (pinned behaviour) > hpsSubPaymentRecordFails 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "payment-webhook",
+        "resourceId": "cs_1",
+        "resourceType": "payment",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Processing payment success",
+        {
+          "metadata": {
+            "hasPaymentIntent": true,
+            "hasProduct": false,
+            "hasSubscription": true,
+            "hasUser": true,
+            "mode": "subscription",
+            "paymentStatus": "paid",
+            "type": "subscription",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "grant-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Granting subscription access",
+        {
+          "metadata": {
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "get-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+        {
+          "expand": [
+            "items.data.price",
+            "latest_invoice",
+          ],
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Successfully retrieved subscription",
+        {
+          "metadata": {
+            "hasItems": true,
+            "status": "active",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Subscription period from Stripe",
+        {
+          "metadata": {
+            "billingInterval": "month",
+            "currentPeriodEndDate": "2023-12-15T00:26:40.000Z",
+            "currentPeriodEndRaw": 1702600000,
+            "currentPeriodStartDate": "2023-11-14T22:13:20.000Z",
+            "currentPeriodStartRaw": 1700000000,
+            "status": "active",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "subscription.upsert",
+      {
+        "create": {
+          "cancelAtPeriodEnd": false,
+          "currentPeriodEnd": "2023-12-15T00:26:40.000Z",
+          "currentPeriodStart": "2023-11-14T22:13:20.000Z",
+          "plan": "PREMIUM",
+          "priceId": "price_m",
+          "status": "ACTIVE",
+          "stripeCustomerId": "cus_1",
+          "stripeSubscriptionId": "sub_1",
+          "userId": "u1",
+        },
+        "update": {
+          "cancelAtPeriodEnd": false,
+          "currentPeriodEnd": "2023-12-15T00:26:40.000Z",
+          "currentPeriodStart": "2023-11-14T22:13:20.000Z",
+          "plan": "PREMIUM",
+          "priceId": "price_m",
+          "status": "ACTIVE",
+          "stripeCustomerId": "cus_1",
+          "stripeSubscriptionId": "sub_1",
+        },
+        "where": {
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Subscription access granted successfully",
+        {
+          "metadata": {
+            "periodEnd": "2023-12-15T00:26:40.000Z",
+            "status": "ACTIVE",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription access granted for user u1",
+        {
+          "metadata": {
+            "subscriptionId": "sub_1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "payment.findFirst",
+      {
+        "where": {
+          "kind": "SUBSCRIPTION",
+          "status": "PENDING",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.error",
+      [
+        "❌ Failed to record subscription payment:",
+        {
+          "metadata": {
+            "error": "db",
+            "errorStack": "Error: db <stack>",
+            "subscriptionId": "sub_1",
+            "userId": "u1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "analytics.subscriptionStarted",
+      [
+        "u1",
+        {
+          "amount": 49.9,
+          "billingCycle": "unknown",
+          "priceId": "unknown",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription analytics tracked",
+        {
+          "metadata": {
+            "billingCycle": "unknown",
+            "priceId": "unknown",
+            "userId": "u1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {},
+}
+`;
+
+exports[`paymentService (pinned behaviour) > hpsSubPendingYearly 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "payment-webhook",
+        "resourceId": "cs_1",
+        "resourceType": "payment",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Processing payment success",
+        {
+          "metadata": {
+            "hasPaymentIntent": true,
+            "hasProduct": false,
+            "hasSubscription": true,
+            "hasUser": true,
+            "mode": "subscription",
+            "paymentStatus": "paid",
+            "type": "subscription",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "grant-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Granting subscription access",
+        {
+          "metadata": {
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "createLogger",
+      {
+        "operation": "get-subscription",
+        "resourceId": "sub_1",
+        "resourceType": "subscription",
+      },
+    ],
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+        {
+          "expand": [
+            "items.data.price",
+            "latest_invoice",
+          ],
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Successfully retrieved subscription",
+        {
+          "metadata": {
+            "hasItems": true,
+            "status": "active",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Subscription period from Stripe",
+        {
+          "metadata": {
+            "billingInterval": "month",
+            "currentPeriodEndDate": "2023-12-15T00:26:40.000Z",
+            "currentPeriodEndRaw": 1702600000,
+            "currentPeriodStartDate": "2023-11-14T22:13:20.000Z",
+            "currentPeriodStartRaw": 1700000000,
+            "status": "active",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "subscription.upsert",
+      {
+        "create": {
+          "cancelAtPeriodEnd": false,
+          "currentPeriodEnd": "2023-12-15T00:26:40.000Z",
+          "currentPeriodStart": "2023-11-14T22:13:20.000Z",
+          "plan": "PREMIUM",
+          "priceId": "price_m",
+          "status": "ACTIVE",
+          "stripeCustomerId": "cus_1",
+          "stripeSubscriptionId": "sub_1",
+          "userId": "u1",
+        },
+        "update": {
+          "cancelAtPeriodEnd": false,
+          "currentPeriodEnd": "2023-12-15T00:26:40.000Z",
+          "currentPeriodStart": "2023-11-14T22:13:20.000Z",
+          "plan": "PREMIUM",
+          "priceId": "price_m",
+          "status": "ACTIVE",
+          "stripeCustomerId": "cus_1",
+          "stripeSubscriptionId": "sub_1",
+        },
+        "where": {
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Subscription access granted successfully",
+        {
+          "metadata": {
+            "periodEnd": "2023-12-15T00:26:40.000Z",
+            "status": "ACTIVE",
+            "userId": "u1",
+          },
+          "resourceId": "sub_1",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription access granted for user u1",
+        {
+          "metadata": {
+            "subscriptionId": "sub_1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "payment.findFirst",
+      {
+        "where": {
+          "kind": "SUBSCRIPTION",
+          "status": "PENDING",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "payment.update",
+      {
+        "data": {
+          "amount": "49.9",
+          "currency": "eur",
+          "status": "COMPLETED",
+          "stripePaymentIntentId": "sub_1",
+        },
+        "where": {
+          "id": "pay1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription payment updated to COMPLETED for user u1",
+        {
+          "metadata": {
+            "subscriptionId": "sub_1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "analytics.subscriptionStarted",
+      [
+        "u1",
+        {
+          "amount": 49.9,
+          "billingCycle": "yearly",
+          "priceId": "price_yearly_x",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "✅ Subscription analytics tracked",
+        {
+          "metadata": {
+            "billingCycle": "yearly",
+            "priceId": "price_yearly_x",
+            "userId": "u1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {},
+}
+`;
+
+exports[`paymentService (pinned behaviour) > hpsUnknownType 1`] = `
+{
+  "log": [
+    [
+      "createLogger",
+      {
+        "operation": "payment-webhook",
+        "resourceId": "cs_1",
+        "resourceType": "payment",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Processing payment success",
+        {
+          "metadata": {
+            "hasPaymentIntent": true,
+            "hasProduct": false,
+            "hasSubscription": false,
+            "hasUser": true,
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "type": "weird",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+    [
+      "log.warn",
+      [
+        "Unhandled payment type: weird",
+        {
+          "metadata": {
+            "availableMetadata": [
+              "userId",
+              "type",
+            ],
+            "mode": "payment",
+            "userId": "u1",
+          },
+          "resourceId": "cs_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {},
+}
+`;
+
+exports[`paymentService (pinned behaviour) > is a singleton with the expected API 1`] = `
+[
+  "cancelImmediately",
+  "cancelSubscription",
+  "createCheckoutSession",
+  "createCustomer",
+  "createProduct",
+  "createSubscriptionPrice",
+  "createSubscriptionSession",
+  "getCustomerByEmail",
+  "getLatestSubscriptionPayment",
+  "getSubscription",
+  "grantCourseAccess",
+  "grantSubscriptionAccess",
+  "handlePaymentSuccess",
+  "refundPayment",
+  "switchSubscriptionPrice",
+  "verifyWebhookSignature",
+]
+`;
+
+exports[`paymentService (pinned behaviour) > latestPaymentNoInvoice 1`] = `
+{
+  "log": [
+    [
+      "stripe.invoices.list",
+      [
+        {
+          "limit": 1,
+          "status": "paid",
+          "subscription": "sub_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": null,
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > latestPaymentNone 1`] = `
+{
+  "log": [
+    [
+      "stripe.invoices.list",
+      [
+        {
+          "limit": 1,
+          "status": "paid",
+          "subscription": "sub_1",
+        },
+      ],
+    ],
+    [
+      "stripe.invoicePayments.list",
+      [
+        {
+          "invoice": "in_1",
+          "limit": 1,
+          "status": "paid",
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": null,
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > latestPaymentNotPi 1`] = `
+{
+  "log": [
+    [
+      "stripe.invoices.list",
+      [
+        {
+          "limit": 1,
+          "status": "paid",
+          "subscription": "sub_1",
+        },
+      ],
+    ],
+    [
+      "stripe.invoicePayments.list",
+      [
+        {
+          "invoice": "in_1",
+          "limit": 1,
+          "status": "paid",
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": null,
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > latestPaymentObjectPi 1`] = `
+{
+  "log": [
+    [
+      "stripe.invoices.list",
+      [
+        {
+          "limit": 1,
+          "status": "paid",
+          "subscription": "sub_1",
+        },
+      ],
+    ],
+    [
+      "stripe.invoicePayments.list",
+      [
+        {
+          "invoice": "in_1",
+          "limit": 1,
+          "status": "paid",
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": {
+      "amountPaidCents": 999,
+      "currency": "eur",
+      "paymentIntentId": "pi_obj",
+    },
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > latestPaymentOk 1`] = `
+{
+  "log": [
+    [
+      "stripe.invoices.list",
+      [
+        {
+          "limit": 1,
+          "status": "paid",
+          "subscription": "sub_1",
+        },
+      ],
+    ],
+    [
+      "stripe.invoicePayments.list",
+      [
+        {
+          "invoice": "in_1",
+          "limit": 1,
+          "status": "paid",
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": {
+      "amountPaidCents": 999,
+      "currency": "eur",
+      "paymentIntentId": "pi_1",
+    },
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > refundFail 1`] = `
+{
+  "log": [
+    [
+      "stripe.refunds.create",
+      [
+        {
+          "amount": 5,
+          "payment_intent": "pi_1",
+        },
+        null,
+      ],
+    ],
+    [
+      "console.error",
+      [
+        "Refund failed",
+        "x",
+      ],
+    ],
+  ],
+  "outcome": {
+    "instanceOfWebhook": false,
+    "name": "Error",
+    "thrown": "REFUND_FAILED",
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > refundFull 1`] = `
+{
+  "log": [
+    [
+      "stripe.refunds.create",
+      [
+        {
+          "payment_intent": "pi_1",
+        },
+        null,
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": "re_1",
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > refundPartialKey 1`] = `
+{
+  "log": [
+    [
+      "stripe.refunds.create",
+      [
+        {
+          "amount": 500,
+          "payment_intent": "pi_1",
+        },
+        {
+          "idempotencyKey": "k1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": "re_1",
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > subSessionMonthly 1`] = `
+{
+  "log": [
+    [
+      "stripe.checkout.sessions.create",
+      [
+        {
+          "allow_promotion_codes": true,
+          "cancel_url": "c",
+          "customer_email": "a@b.c",
+          "line_items": [
+            {
+              "price": "price_m",
+              "quantity": 1,
+            },
+          ],
+          "metadata": {
+            "billingCycle": "monthly",
+            "priceId": "price_m",
+            "type": "subscription",
+            "userId": "u1",
+          },
+          "mode": "subscription",
+          "subscription_data": {
+            "metadata": {
+              "billingCycle": "monthly",
+              "priceId": "price_m",
+              "userId": "u1",
+            },
+          },
+          "success_url": "s",
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": {
+      "sessionId": "cs_1",
+      "url": "https://stripe.test/pay",
+    },
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > subSessionNoUrl 1`] = `
+{
+  "log": [
+    [
+      "stripe.checkout.sessions.create",
+      [
+        {
+          "allow_promotion_codes": true,
+          "cancel_url": "c",
+          "customer_email": "a@b.c",
+          "line_items": [
+            {
+              "price": "price_z",
+              "quantity": 1,
+            },
+          ],
+          "metadata": {
+            "billingCycle": "unknown",
+            "priceId": "price_z",
+            "type": "subscription",
+            "userId": "u1",
+          },
+          "mode": "subscription",
+          "subscription_data": {
+            "metadata": {
+              "billingCycle": "unknown",
+              "priceId": "price_z",
+              "userId": "u1",
+            },
+          },
+          "success_url": "s",
+        },
+      ],
+    ],
+    [
+      "console.error",
+      [
+        "Stripe subscription session creation failed:",
+        "Failed to create subscription session",
+      ],
+    ],
+  ],
+  "outcome": {
+    "instanceOfWebhook": false,
+    "name": "Error",
+    "thrown": "Failed to create subscription session",
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > subSessionUnknown 1`] = `
+{
+  "log": [
+    [
+      "stripe.checkout.sessions.create",
+      [
+        {
+          "allow_promotion_codes": true,
+          "cancel_url": "c",
+          "customer_email": "a@b.c",
+          "line_items": [
+            {
+              "price": "price_z",
+              "quantity": 1,
+            },
+          ],
+          "metadata": {
+            "billingCycle": "unknown",
+            "priceId": "price_z",
+            "type": "subscription",
+            "userId": "u1",
+          },
+          "mode": "subscription",
+          "subscription_data": {
+            "metadata": {
+              "billingCycle": "unknown",
+              "priceId": "price_z",
+              "userId": "u1",
+            },
+          },
+          "success_url": "s",
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": {
+      "sessionId": "cs_1",
+      "url": "https://stripe.test/pay",
+    },
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > subSessionYearly 1`] = `
+{
+  "log": [
+    [
+      "stripe.checkout.sessions.create",
+      [
+        {
+          "allow_promotion_codes": true,
+          "cancel_url": "c",
+          "customer_email": "a@b.c",
+          "line_items": [
+            {
+              "price": "price_y",
+              "quantity": 1,
+            },
+          ],
+          "metadata": {
+            "billingCycle": "yearly",
+            "priceId": "price_y",
+            "type": "subscription",
+            "userId": "u1",
+          },
+          "mode": "subscription",
+          "subscription_data": {
+            "metadata": {
+              "billingCycle": "yearly",
+              "priceId": "price_y",
+              "userId": "u1",
+            },
+          },
+          "success_url": "s",
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": {
+      "sessionId": "cs_1",
+      "url": "https://stripe.test/pay",
+    },
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > switchAuditCreateFails 1`] = `
+{
+  "log": [
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+      ],
+    ],
+    [
+      "stripe.subscriptions.update",
+      [
+        "sub_1",
+        {
+          "cancel_at_period_end": false,
+          "items": [
+            {
+              "id": "si_1",
+              "price": "price_y",
+            },
+          ],
+          "proration_behavior": "create_prorations",
+        },
+      ],
+    ],
+    [
+      "stripe.invoices.retrieveUpcoming",
+      [
+        {
+          "subscription": "sub_1",
+        },
+      ],
+    ],
+    [
+      "invoiceAudit.findFirst",
+      {
+        "where": {
+          "stripeInvoiceId": "in_up",
+        },
+      },
+    ],
+    [
+      "invoiceAudit.create",
+      {
+        "data": {
+          "amount": "12.34",
+          "stripeInvoiceId": "in_up",
+          "type": "PRORATION",
+          "userId": "u1",
+        },
+      },
+    ],
+  ],
+  "outcome": {
+    "value": true,
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > switchNoUpcoming 1`] = `
+{
+  "log": [
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+      ],
+    ],
+    [
+      "stripe.subscriptions.update",
+      [
+        "sub_1",
+        {
+          "cancel_at_period_end": false,
+          "items": [
+            {
+              "id": "si_1",
+              "price": "price_y",
+            },
+          ],
+          "proration_behavior": "create_prorations",
+        },
+      ],
+    ],
+    [
+      "stripe.invoices.retrieveUpcoming",
+      [
+        {
+          "subscription": "sub_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": true,
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > switchOkExistingAudit 1`] = `
+{
+  "log": [
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+      ],
+    ],
+    [
+      "stripe.subscriptions.update",
+      [
+        "sub_1",
+        {
+          "cancel_at_period_end": false,
+          "items": [
+            {
+              "id": "si_1",
+              "price": "price_y",
+            },
+          ],
+          "proration_behavior": "create_prorations",
+        },
+      ],
+    ],
+    [
+      "stripe.invoices.retrieveUpcoming",
+      [
+        {
+          "subscription": "sub_1",
+        },
+      ],
+    ],
+    [
+      "invoiceAudit.findFirst",
+      {
+        "where": {
+          "stripeInvoiceId": "in_up",
+        },
+      },
+    ],
+  ],
+  "outcome": {
+    "value": true,
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > switchOkNoAudit 1`] = `
+{
+  "log": [
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+      ],
+    ],
+    [
+      "stripe.subscriptions.update",
+      [
+        "sub_1",
+        {
+          "cancel_at_period_end": false,
+          "items": [
+            {
+              "id": "si_1",
+              "price": "price_y",
+            },
+          ],
+          "proration_behavior": "create_prorations",
+        },
+      ],
+    ],
+    [
+      "stripe.invoices.retrieveUpcoming",
+      [
+        {
+          "subscription": "sub_1",
+        },
+      ],
+    ],
+    [
+      "invoiceAudit.findFirst",
+      {
+        "where": {
+          "stripeInvoiceId": "in_up",
+        },
+      },
+    ],
+    [
+      "invoiceAudit.create",
+      {
+        "data": {
+          "amount": "12.34",
+          "stripeInvoiceId": "in_up",
+          "type": "PRORATION",
+          "userId": "u1",
+        },
+      },
+    ],
+  ],
+  "outcome": {
+    "value": true,
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > switchUpcomingFails 1`] = `
+{
+  "log": [
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+      ],
+    ],
+    [
+      "stripe.subscriptions.update",
+      [
+        "sub_1",
+        {
+          "cancel_at_period_end": false,
+          "items": [
+            {
+              "id": "si_1",
+              "price": "price_y",
+            },
+          ],
+          "proration_behavior": "create_prorations",
+        },
+      ],
+    ],
+    [
+      "stripe.invoices.retrieveUpcoming",
+      [
+        {
+          "subscription": "sub_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": true,
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > switchUpdateFails 1`] = `
+{
+  "log": [
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+      ],
+    ],
+    [
+      "stripe.subscriptions.update",
+      [
+        "sub_1",
+        {
+          "cancel_at_period_end": false,
+          "items": [
+            {
+              "id": "si_1",
+              "price": "price_y",
+            },
+          ],
+          "proration_behavior": "create_prorations",
+        },
+      ],
+    ],
+    [
+      "console.error",
+      [
+        "Failed to switch subscription price",
+        "stripe",
+      ],
+    ],
+  ],
+  "outcome": {
+    "instanceOfWebhook": false,
+    "name": "Error",
+    "thrown": "PRICE_SWITCH_FAILED",
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > verifyBadSig 1`] = `
+{
+  "log": [
+    [
+      "stripe.webhooks.constructEvent",
+      [
+        "{}",
+        "sig",
+        "whsec",
+      ],
+    ],
+    [
+      "console.error",
+      [
+        "Webhook signature verification failed:",
+        "bad",
+      ],
+    ],
+  ],
+  "outcome": {
+    "instanceOfWebhook": true,
+    "name": "WebhookSignatureError",
+    "thrown": "Invalid webhook signature",
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > verifyNoSecret 1`] = `
+{
+  "log": [],
+  "outcome": {
+    "instanceOfWebhook": false,
+    "name": "Error",
+    "thrown": "STRIPE_WEBHOOK_SECRET is required",
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > verifyOk 1`] = `
+{
+  "log": [
+    [
+      "stripe.webhooks.constructEvent",
+      [
+        "{}",
+        "sig",
+        "whsec",
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": {
+      "id": "evt_1",
+      "type": "checkout.session.completed",
+    },
+  },
+}
+`;

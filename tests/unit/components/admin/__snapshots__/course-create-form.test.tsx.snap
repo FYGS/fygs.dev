@@ -1,0 +1,146 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CourseCreateForm (pinned DOM + behaviour) > initial markup is stable 1`] = `"5cc1d89b73e55ecbc20798c0b95980fd"`;
+
+exports[`CourseCreateForm (pinned DOM + behaviour) > initial markup is stable 2`] = `22247`;
+
+exports[`CourseCreateForm (pinned DOM + behaviour) > renders the same DOM through a click walk 1`] = `
+{
+  "hashes": [
+    "5cc1d89b",
+    "5cc1d89b",
+    "2303b148",
+    "1e6adf4e",
+    "ebf33c0a",
+    "e61daa34",
+    "4ba52b26",
+    "6d4013aa",
+    "758aef3a",
+    "a15add6b",
+    "617e492d",
+    "4e862ba0",
+    "4e862ba0",
+    "4e862ba0",
+    "4e862ba0",
+    "4e862ba0",
+    "4098ceaa",
+    "bca0d0ba",
+    "fddd5323",
+    "b1f5e559",
+    "a0c8ba6e",
+    "a0c8ba6e",
+    "9117a46e",
+    "9117a46e",
+    "9117a46e",
+    "9117a46e",
+    "9117a46e",
+    "51dcee33",
+    "677f28b8",
+    "166b226a",
+    "9c038bea",
+    "25571529",
+    "24e5b455",
+    "24e5b455",
+  ],
+  "states": 23,
+}
+`;
+
+exports[`CourseCreateForm (pinned DOM + behaviour) > renders without tags 1`] = `
+{
+  "hashes": [
+    "a80bffc3",
+    "a80bffc3",
+    "d7734353",
+    "ab516aca",
+    "a9bd5881",
+    "898c4809",
+    "1f890f07",
+    "8f15b433",
+    "49c421b7",
+    "6a9af09f",
+  ],
+  "states": 9,
+}
+`;
+
+exports[`CourseCreateForm (pinned DOM + behaviour) > reports server errors and exceptions 1`] = `
+[
+  [
+    "Slug pris",
+  ],
+  [
+    "Une erreur inattendue s'est produite",
+  ],
+]
+`;
+
+exports[`CourseCreateForm (pinned DOM + behaviour) > title typing generates the slug; tags toggle; draft/publish send the payload 1`] = `"mon-cours-react-co"`;
+
+exports[`CourseCreateForm (pinned DOM + behaviour) > title typing generates the slug; tags toggle; draft/publish send the payload 2`] = `"06987d7db81aba9ebd15d07fd29d54a3"`;
+
+exports[`CourseCreateForm (pinned DOM + behaviour) > title typing generates the slug; tags toggle; draft/publish send the payload 3`] = `
+{
+  "accessTier": "FREE",
+  "category": "JAVASCRIPT",
+  "description": "Une description assez longue",
+  "duration": undefined,
+  "faq": "",
+  "featured": false,
+  "level": "BEGINNER",
+  "previewEnabled": true,
+  "price": undefined,
+  "publicEvaluation": "",
+  "publicPrerequisites": "",
+  "publicResources": "",
+  "publicStructure": "",
+  "published": false,
+  "slug": "mon-cours-react-co",
+  "tags": [
+    "t2",
+  ],
+  "thumbnail": undefined,
+  "title": "Mon Cours  React & Co",
+  "trailerUrl": "",
+}
+`;
+
+exports[`CourseCreateForm (pinned DOM + behaviour) > title typing generates the slug; tags toggle; draft/publish send the payload 4`] = `
+[
+  [
+    "Brouillon sauvegardé — ajoutez maintenant vos modules et leçons",
+  ],
+]
+`;
+
+exports[`CourseCreateForm (pinned DOM + behaviour) > title typing generates the slug; tags toggle; draft/publish send the payload 5`] = `
+{
+  "accessTier": "FREE",
+  "category": "JAVASCRIPT",
+  "description": "Une description assez longue",
+  "duration": undefined,
+  "faq": "",
+  "featured": false,
+  "level": "BEGINNER",
+  "previewEnabled": true,
+  "price": undefined,
+  "publicEvaluation": "",
+  "publicPrerequisites": "",
+  "publicResources": "",
+  "publicStructure": "",
+  "published": true,
+  "slug": "mon-cours-react-co",
+  "tags": [
+    "t2",
+  ],
+  "thumbnail": undefined,
+  "title": "Mon Cours  React & Co",
+  "trailerUrl": "",
+}
+`;
+
+exports[`CourseCreateForm (pinned DOM + behaviour) > title typing generates the slug; tags toggle; draft/publish send the payload 6`] = `
+[
+  "Formation créée et publiée avec succès!",
+]
+`;
