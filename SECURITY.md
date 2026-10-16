@@ -43,3 +43,11 @@ When we receive a security bug report, we will:
 ## Comments on this Policy
 
 If you have suggestions on how this process could be improved, please submit a pull request.
+
+## Logging and personal data
+
+Logs carry opaque ids (user id, course id, Stripe object ids), counts and timings, never emails, names, IPs,
+payment data, credentials, message bodies, prompts or user code. The structured logger and `console.*` redact
+these centrally (`lib/log-redaction.ts`, installed from `instrumentation.ts`), and a unit test scans the sources for
+risky logging calls. Details, the CSP decision, the Redis degradation alert and the AI cost guard rails are in
+[docs/security-ops-2026-10.md](docs/security-ops-2026-10.md).
