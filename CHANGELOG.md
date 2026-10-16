@@ -5,6 +5,24 @@
 [![Keep a Changelog](https://img.shields.io/badge/Keep%20a%20Changelog-1.0.0-orange?style=flat-square)](https://keepachangelog.com/en/1.0.0/)
 [![Semantic Versioning](https://img.shields.io/badge/Semantic%20Versioning-2.0.0-blue?style=flat-square)](https://semver.org/spec/v2.0.0.html)
 
+## [Unreleased] - 2026-10
+
+### Security
+- Access control: community notifications and follower lists require the owner; lesson/course writes check ownership; the blog like endpoints use a server-side visitor id.
+- Quiz answers are graded on the server; the browser never receives the correct answers.
+- Rate limiting on 32 API routes and the auth endpoints (atomic Redis sliding window, in-process fallback, trusted-proxy IP).
+- Content-Security-Policy and baseline security headers; Stripe webhook invalid signature now answers 400; refunds use the real PaymentIntent and an idempotency key.
+- `BETTER_AUTH_SECRET` is required in production.
+
+### Changed
+- Dependencies moved to the latest stable majors (Next 16, zod 4, Stripe SDK 23, better-auth 1.7, vitest 5…); see docs/modernization-2026-10.md. Build and dev run on webpack; `middleware.ts` is now `proxy.ts`; CI runs on Node 22.
+- Large files split into focused modules (community actions, visualizations, services, templates, forms).
+- i18n dictionaries unified; analytics calls go through `AnalyticsHelper`.
+
+### Fixed
+- Playground: program output was erased (CRLF), real execution for every template, runaway programs can be stopped, preview isolation.
+- Spacing tokens collapsed `max-w-*` utilities.
+
 ## [1.3.1] - 2025-10-08 🚀
 
 ### 🏗️ Major Infrastructure Upgrades

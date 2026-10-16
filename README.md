@@ -107,7 +107,7 @@ src/
 ## Démarrage rapide
 
 ```bash
-# Prérequis : Node.js 20+, pnpm, PostgreSQL, Redis
+# Prérequis : Node.js 22+, pnpm, PostgreSQL, Redis
 
 git clone https://github.com/fygs/fygs.dev.git
 cd fygs.dev
@@ -120,7 +120,7 @@ cp .env.example .env.local
 # Générer le client Prisma
 pnpm db:push
 
-# Lancer le serveur dev (Turbopack)
+# Lancer le serveur dev (webpack)
 pnpm dev
 ```
 
@@ -128,8 +128,8 @@ pnpm dev
 
 | Commande | Description |
 |----------|-------------|
-| `pnpm dev` | Dev server avec Turbopack |
-| `pnpm build` | Build production |
+| `pnpm dev` | Dev server (webpack) |
+| `pnpm build` | Build production (webpack) |
 | `pnpm test` | Tests unitaires (Vitest) |
 | `pnpm test:watch` | Tests en mode watch |
 | `pnpm lint` | ESLint |
