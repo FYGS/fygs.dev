@@ -1,0 +1,209 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CourseEditForm (pinned DOM + behaviour) > delete flow: confirm dialog, success, failure 1`] = `
+[
+  [
+    "c1",
+  ],
+  [
+    "c1",
+  ],
+  [
+    "c1",
+  ],
+]
+`;
+
+exports[`CourseEditForm (pinned DOM + behaviour) > delete flow: confirm dialog, success, failure 2`] = `
+[
+  [
+    "/admin/courses",
+  ],
+]
+`;
+
+exports[`CourseEditForm (pinned DOM + behaviour) > delete flow: confirm dialog, success, failure 3`] = `
+[
+  [
+    [
+      "Formation supprimée avec succès!",
+    ],
+  ],
+  [
+    [
+      "Impossible",
+    ],
+    [
+      "Une erreur inattendue s'est produite",
+    ],
+  ],
+]
+`;
+
+exports[`CourseEditForm (pinned DOM + behaviour) > renders the auto-save indicator states 1`] = `
+{
+  "error": "4680fffb4602d1b34bb22db74699e28b",
+  "idle": "5c13fed728fa53eeac51a6996934a380",
+  "saved": "b72c0439ed07f98ce603d6294fc0324a",
+  "saving": "cb479829c20d33644cc834ccbdd71f41",
+}
+`;
+
+exports[`CourseEditForm (pinned DOM + behaviour) > renders the same DOM through a click walk (draft) 1`] = `
+{
+  "hashes": [
+    "5c13fed7",
+    "5c13fed7",
+    "846998d1",
+    "13a6039e",
+    "b8a804f7",
+    "c92b4163",
+    "9996b9f6",
+    "40150773",
+    "cb61947c",
+    "59dbc3dd",
+    "74bd41ff",
+    "edcdf546",
+    "36d0f779",
+    "36d0f779",
+    "36d0f779",
+    "1056cd9e",
+    "1056cd9e",
+    "1056cd9e",
+    "320faab9",
+    "30908d74",
+    "98f19b01",
+    "2163ce44",
+    "1abdcc53",
+    "c152e8f0",
+    "81cc02e3",
+    "d48f9c0b",
+    "d48f9c0b",
+    "d48f9c0b",
+    "d48f9c0b",
+    "d48f9c0b",
+    "d48f9c0b",
+    "d963c597",
+    "2fa19792",
+    "287a89b4",
+    "0e38a1ae",
+    "37eaf1b2",
+    "ad59439d",
+    "2b4cfad5",
+    "1056cd9e",
+    "1056cd9e",
+  ],
+  "states": 28,
+}
+`;
+
+exports[`CourseEditForm (pinned DOM + behaviour) > renders the same DOM through a click walk (published, minimal course) 1`] = `
+{
+  "hashes": [
+    "ed5b0d8f",
+    "ed5b0d8f",
+    "a67075a6",
+    "039f7c9f",
+    "4364ab14",
+    "fdba3c12",
+    "ad6f4480",
+    "aa535c9e",
+    "32c3407f",
+    "8d485862",
+    "e28fb476",
+    "36fb4828",
+    "d69fc3bc",
+  ],
+  "states": 12,
+}
+`;
+
+exports[`CourseEditForm (pinned DOM + behaviour) > reports update errors 1`] = `
+[
+  [
+    "Slug pris",
+  ],
+  [
+    "Une erreur inattendue s'est produite",
+  ],
+]
+`;
+
+exports[`CourseEditForm (pinned DOM + behaviour) > slug follows the title, tags toggle, submit sends the payload 1`] = `"nouveau-titre-gnial"`;
+
+exports[`CourseEditForm (pinned DOM + behaviour) > slug follows the title, tags toggle, submit sends the payload 2`] = `"f8b7b20471b2a41f31ceace66e62e154"`;
+
+exports[`CourseEditForm (pinned DOM + behaviour) > slug follows the title, tags toggle, submit sends the payload 3`] = `
+[
+  "c1",
+  {
+    "accessTier": "FREE",
+    "category": "JAVASCRIPT",
+    "description": "Une description suffisamment longue",
+    "duration": 90,
+    "faq": "[
+  {
+    "q": "Q?",
+    "a": "A"
+  }
+]",
+    "featured": true,
+    "level": "BEGINNER",
+    "previewEnabled": true,
+    "price": 19.5,
+    "publicEvaluation": "Quiz",
+    "publicPrerequisites": "",
+    "publicResources": "",
+    "publicStructure": "# Structure",
+    "published": false,
+    "slug": "nouveau-titre-gnial",
+    "tags": [
+      "t2",
+    ],
+    "thumbnail": "https://img.test/c.png",
+    "title": "Nouveau Titre  Génial!",
+    "trailerUrl": "https://v.test/t.mp4",
+  },
+]
+`;
+
+exports[`CourseEditForm (pinned DOM + behaviour) > slug follows the title, tags toggle, submit sends the payload 4`] = `
+[
+  [
+    "Formation mise à jour avec succès!",
+  ],
+]
+`;
+
+exports[`CourseEditForm (pinned DOM + behaviour) > slug follows the title, tags toggle, submit sends the payload 5`] = `
+[
+  {
+    "error": "nope",
+    "success": false,
+  },
+  {
+    "error": "Erreur réseau",
+    "success": false,
+  },
+  [
+    [
+      "c1",
+      {
+        "tags": [
+          "t2",
+        ],
+        "title": "x",
+      },
+    ],
+    [
+      "c1",
+      {
+        "tags": [
+          "t2",
+        ],
+        "title": "y",
+      },
+    ],
+  ],
+]
+`;
