@@ -42,7 +42,7 @@ export async function POST() {
 
     const portal = await stripe.billingPortal.sessions.create({
       customer: stripeCustomerId,
-      return_url: `${SITE_BASE_URL}/dashboard/billing`,
+      return_url: `${SITE_BASE_URL.origin}/dashboard/billing`,
     });
 
     return NextResponse.json({ url: portal.url });
@@ -65,7 +65,7 @@ export async function GET() {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session) {
-      return NextResponse.redirect(`${SITE_BASE_URL}/auth/login`);
+      return NextResponse.redirect(`${SITE_BASE_URL.origin}/auth/login`);
     }
 
     const user = await db.user.findUnique({
@@ -79,27 +79,27 @@ export async function GET() {
 
     if (!user) {
       return NextResponse.redirect(
-        `${SITE_BASE_URL}/dashboard/billing?error=user-not-found`
+        `${SITE_BASE_URL.origin}/dashboard/billing?error=user-not-found`
       );
     }
 
     const stripeCustomerId = user.subscriptions?.stripeCustomerId;
     if (!stripeCustomerId) {
       return NextResponse.redirect(
-        `${SITE_BASE_URL}/dashboard/billing?error=no-subscription`
+        `${SITE_BASE_URL.origin}/dashboard/billing?error=no-subscription`
       );
     }
 
     const portal = await stripe.billingPortal.sessions.create({
       customer: stripeCustomerId,
-      return_url: `${SITE_BASE_URL}/dashboard/billing`,
+      return_url: `${SITE_BASE_URL.origin}/dashboard/billing`,
     });
 
     return NextResponse.redirect(portal.url);
   } catch (error) {
     console.error("Create portal session error:", error);
     return NextResponse.redirect(
-      `${SITE_BASE_URL}/dashboard/billing?error=portal-error`
+      `${SITE_BASE_URL.origin}/dashboard/billing?error=portal-error`
     );
   }
 }
