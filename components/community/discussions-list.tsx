@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { DiscussionCard } from "@/components/community/discussion-card";
@@ -126,7 +127,7 @@ export function DiscussionsList({
               Be the first to start a conversation in this community!
             </p>
             <Button asChild>
-              <a href="/community/new">Start Discussion</a>
+              <Link href="/community/new">Start Discussion</Link>
             </Button>
           </div>
         </CardContent>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -262,13 +263,13 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
             className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
           >
             {content.form.acceptTerms.text}{" "}
-            <a href="/terms" className="text-primary hover:underline">
+            <Link href="/terms" className="text-primary hover:underline">
               {content.form.acceptTerms.terms}
-            </a>{" "}
+            </Link>{" "}
             {content.form.acceptTerms.and}{" "}
-            <a href="/privacy" className="text-primary hover:underline">
+            <Link href="/privacy" className="text-primary hover:underline">
               {content.form.acceptTerms.privacy}
-            </a>
+            </Link>
           </Label>
         </div>
         {errors.acceptTerms && (
