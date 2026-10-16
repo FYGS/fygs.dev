@@ -281,6 +281,11 @@ export interface ParsedError {
   location?: { file: string; line: number; column?: number };
 }
 
+/** The playground prefixes console lines with their level: "[error] TypeError: ...". */
+function stripLevel(line: string): string {
+  return line.replace(/^\s*\[(?:error|warn)\]\s*/i, "");
+}
+
 export function parseConsoleError(output: string): ParsedError | null {
   if (!output.trim()) return null;
   const lines = output.split(/\r?\n/);
@@ -288,7 +293,7 @@ export function parseConsoleError(output: string): ParsedError | null {
   let message = "";
   // The last "XxxError: message" line (Python prints it last, Node near the top)
   for (let i = lines.length - 1; i >= 0; i--) {
-    const m = /^\s*(?:\[ERROR\]\s*)?(?:Uncaught\s+)?((?:[A-Z][A-Za-z]*)?(?:Error|Exception))\s*:\s*(.+)$/.exec(lines[i]);
+    const m = /^\s*(?:Uncaught\s+)?((?:[A-Z][A-Za-z]*)?(?:Error|Exception))\s*:\s*(.+)$/.exec(stripLevel(lines[i]));
     if (m) {
       name = m[1];
       message = m[2].trim();
@@ -298,7 +303,7 @@ export function parseConsoleError(output: string): ParsedError | null {
   if (!name) {
     const fallback = lines.find((l) => /\berror\b|\bexception\b|traceback/i.test(l));
     if (!fallback) return null;
-    message = fallback.replace(/^\s*\[ERROR\]\s*/, "").trim();
+    message = stripLevel(fallback).trim();
   }
   let location: ParsedError["location"];
   const loc =

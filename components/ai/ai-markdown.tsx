@@ -121,12 +121,12 @@ function CodeBlock({ code, language, light }: { code: string; language: string; 
             type="button"
             variant="ghost"
             size="sm"
-            className="h-6 gap-1 px-1.5 text-[11px]"
+            className="h-6 w-6 px-0"
             onClick={copy}
-            aria-label={`${t.code.copy.value}${copied ? ` (${t.code.copied.value})` : ""}`}
+            title={copied ? t.code.copied.value : t.code.copy.value}
+            aria-label={copied ? t.code.copied.value : t.code.copy.value}
           >
             {copied ? <Check className="h-3 w-3 text-green-500" /> : <ClipboardCopy className="h-3 w-3" />}
-            {copied ? t.code.copied.value : t.code.copy.value}
           </Button>
           {actions?.insert && (
             <Button

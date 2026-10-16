@@ -101,9 +101,10 @@ export function LessonAiTutor(props: LessonAiTutorProps) {
       </div>
 
       <Sheet open={open} onOpenChange={setOpen}>
+        {/* z-[80]: above the site's fixed theme/help buttons (z-70), which would cover the send button */}
         <SheetContent
           side={narrow ? "bottom" : "right"}
-          className="flex h-[85vh] flex-col gap-0 p-0 sm:h-full sm:max-w-md md:max-w-md [&>button.absolute]:hidden max-md:rounded-t-xl"
+          className="z-[80] flex h-[85vh] flex-col gap-0 p-0 sm:h-full sm:max-w-md md:max-w-md [&>button.absolute]:hidden max-md:rounded-t-xl"
         >
           <SheetTitle className="sr-only">{t.lesson.title.value}</SheetTitle>
           <SheetDescription className="sr-only">{props.title}</SheetDescription>

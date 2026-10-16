@@ -171,3 +171,39 @@ describe("generateOfflineAnswer", () => {
     expect(generateOfflineAnswer(req({ mode: "review" }))).toMatch(/no code to analyze/);
   });
 });
+
+describe("offline debug with the playground's console format", () => {
+  it("reads '[error] Name: message' lines, explains the error type, and offers no code block to apply", () => {
+    const out = generateOfflineAnswer({
+      ...req({ mode: "debug", code: "console.log(undefinedVar);" }),
+      context: {
+        surface: "playground",
+        language: "typescript",
+        activeFile: { name: "index.ts", content: "console.log(undefinedVar);" },
+        console: { status: "error", output: "[error] ReferenceError: undefinedVar is not defined" },
+      },
+    });
+    expect(out).toContain("`ReferenceError: undefinedVar is not defined`");
+    expect(out).toMatch(/not declared|without being declared/);
+    expect(out).not.toContain("```");
+  });
+
+  it("parseConsoleError accepts either case for the level prefix", () => {
+    expect(parseConsoleError("[ERROR] TypeError: x")).toMatchObject({ name: "TypeError" });
+    expect(parseConsoleError("[warn] something Error happened")?.message).toBe("something Error happened");
+  });
+});
+
+describe("offline answers on a lesson", () => {
+  it("do not point at code actions a lesson does not have", () => {
+    const out = generateOfflineAnswer({
+      mode: "chat",
+      locale: "en",
+      messages: [{ role: "user", content: "Give me an example" }],
+      context: { surface: "lesson", lesson: { title: "Closures" } },
+    });
+    expect(out).toMatch(/Offline mode/);
+    expect(out).toMatch(/about this lesson/);
+    expect(out).not.toMatch(/Explain, Debug/);
+  });
+});

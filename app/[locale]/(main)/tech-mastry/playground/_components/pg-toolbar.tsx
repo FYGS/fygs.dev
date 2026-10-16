@@ -352,7 +352,7 @@ export function PgToolbar() {
               onClick={() => setAiPanelOpen(!aiPanelOpen)}
             >
               <Sparkles className="h-3.5 w-3.5" />
-              <span className="hidden md:inline">IA</span>
+              <span className="hidden md:inline">{aiText.shortLabel.value}</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>{aiText.openTooltip.value}</TooltipContent>

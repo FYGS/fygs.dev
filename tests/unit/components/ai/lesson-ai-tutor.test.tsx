@@ -92,7 +92,7 @@ describe("LessonAiTutor", () => {
     render(<LessonAiTutor {...props} />);
     fireEvent.click(screen.getByTestId("lesson-ai-trigger"));
     fireEvent.click(await screen.findByRole("button", { name: "Summarize this lesson in 5 points" }));
-    await screen.findByRole("button", { name: /Copy/ });
+    await screen.findByRole("button", { name: "Copy" });
     expect(screen.queryByRole("button", { name: "Insert" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Run" })).not.toBeInTheDocument();
   });

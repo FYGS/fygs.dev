@@ -76,7 +76,8 @@ const T = {
     hint1: "Reformulez le problème avec vos mots : quelles sont les entrées, quelle est la sortie attendue ? Quel est le plus petit exemple que vous savez résoudre à la main ?",
     hint2: "Découpez en étapes : que doit faire chaque itération ? Quelle donnée mémoriser d'une étape à l'autre ?",
     hint3: "Écrivez d'abord les commentaires des étapes, puis remplissez-les une par une en testant après chaque étape.",
-    chat: "L'assistant complet n'est pas configuré : je ne peux pas répondre aux questions libres. Utilisez les actions Expliquer, Déboguer, Revoir, Optimiser ou Tests pour obtenir une analyse statique.",
+    chat: "L'assistant complet n'est pas configuré : je ne peux pas répondre aux questions libres. Utilisez les actions Expliquer, Déboguer, Relire, Optimiser ou Tests pour obtenir une analyse statique.",
+    lessonChat: "Pour répondre à vos questions sur cette leçon, l'assistant complet doit être configuré sur ce serveur. En attendant, relisez le contenu de la leçon ou testez vos idées dans le Playground.",
   },
   en: {
     banner: "_Offline mode: local static analysis, not an AI model. For full explanations, the assistant must be configured on this server._",
@@ -137,8 +138,11 @@ const T = {
     hint2: "Break it into steps: what must each iteration do? What data do you need to remember from one step to the next?",
     hint3: "Write the steps as comments first, then fill them in one by one, testing after each step.",
     chat: "The full assistant is not configured, so I cannot answer open questions. Use the Explain, Debug, Review, Optimize or Tests actions to get a static analysis.",
+    lessonChat: "To answer your questions about this lesson, the full assistant must be configured on this server. In the meantime, re-read the lesson content or try your ideas in the Playground.",
   },
 } as const;
+
+const inline = (text: string) => `\`${text.replace(/`/g, "'").slice(0, 300)}\``;
 
 function pickLang(locale: AssistantLocale): Lang {
   return locale === "fr" ? "fr" : "en";
@@ -182,7 +186,7 @@ export function generateOfflineAnswer(request: AssistantRequest): string {
   const out: string[] = [t.banner];
 
   if (request.mode === "chat" && !code.trim()) {
-    out.push(t.chat);
+    out.push(context.surface === "lesson" ? t.lessonChat : t.chat);
     return out.join("\n\n");
   }
   if (request.mode === "hint") {
@@ -220,12 +224,13 @@ export function generateOfflineAnswer(request: AssistantRequest): string {
       if (!parsed) {
         out.push(t.debugNone);
       } else {
-        const parts = [`${t.debugTitle}\n\`\`\`\n${parsed.name ? `${parsed.name}: ` : ""}${parsed.message}\n\`\`\``];
+        // Inline code, not a fenced block: an error message is not code to insert or run
+        const parts = [`${t.debugTitle} : ${inline(`${parsed.name ? `${parsed.name}: ` : ""}${parsed.message}`)}`];
         if (parsed.name && t.errorHelp[parsed.name]) parts.push(t.errorHelp[parsed.name]);
         if (parsed.location) {
           parts.push(t.debugAt(parsed.location.file, parsed.location.line));
           const source = context.activeFile?.content.split("\n")[parsed.location.line - 1];
-          if (source?.trim()) parts.push(`${t.debugLine} :\n\`\`\`\n${source}\n\`\`\``);
+          if (source?.trim()) parts.push(`${t.debugLine} : ${inline(source.trim())}`);
         }
         out.push(parts.join("\n\n"));
       }

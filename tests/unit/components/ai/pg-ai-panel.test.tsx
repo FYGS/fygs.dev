@@ -162,6 +162,15 @@ describe("PgAiPanel", () => {
     expect(usePlaygroundStore.getState().files[0].content).toBe("console.log('hello');");
   });
 
+  it("offers Run for a JavaScript block in a TypeScript file (valid TypeScript)", async () => {
+    setStore({ files: [file({ language: "typescript", path: "index.ts", name: "index.ts" })] });
+    fetchMock.mockImplementation(async () => sseResponse(answer));
+    render(<PgAiPanel />);
+    fireEvent.change(input(), { target: { value: "q" } });
+    fireEvent.keyDown(input(), { key: "Enter" });
+    expect(await screen.findByRole("button", { name: "Run" })).toBeEnabled();
+  });
+
   it("hides Run for code that is not what the active file runs", async () => {
     setStore({ files: [file({ language: "python", path: "main.py" })] });
     fetchMock.mockImplementation(async () => sseResponse(answer)); // a js block

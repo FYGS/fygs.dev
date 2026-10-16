@@ -61,13 +61,18 @@ export interface AiChatProps {
   className?: string;
   /** DOM id prefix, for aria wiring when several chats exist on a page. */
   idPrefix?: string;
+  /**
+   * Keep the bottom-right corner free: the site pins its theme/help buttons there,
+   * and they would sit on the send button of a panel that touches the viewport bottom.
+   */
+  reserveCorner?: boolean;
 }
 
 function OfflineBadge({ detailed = false }: { detailed?: boolean }) {
   const t = useIntlayer("ai-assistant");
   return (
     <span
-      className="inline-flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-600 dark:text-amber-400"
+      className="inline-flex items-center gap-1 rounded-full border border-warning/40 bg-warning/10 px-2 py-0.5 text-[10px] font-medium text-warning"
       title={t.badge.offlineHint.value}
       data-testid="ai-offline-badge"
     >
@@ -76,6 +81,11 @@ function OfflineBadge({ detailed = false }: { detailed?: boolean }) {
       {detailed && <span className="sr-only">. {t.badge.offlineHint.value}</span>}
     </span>
   );
+}
+
+/** "45s" up to two minutes, then whole minutes (an hourly quota can mean a long wait). */
+export function formatWait(seconds: number, secondsUnit: string, minutesUnit: string): string {
+  return seconds >= 120 ? `${Math.ceil(seconds / 60)} ${minutesUnit}` : `${seconds}${secondsUnit}`;
 }
 
 function Typing() {
@@ -105,6 +115,7 @@ export function AiChat({
   inputRef,
   className,
   idPrefix = "ai",
+  reserveCorner = false,
 }: AiChatProps) {
   const t = useIntlayer("ai-assistant");
   const { messages, status, error, cooldown, send, regenerate, stop, clear } = chat;
@@ -165,7 +176,13 @@ export function AiChat({
   const lastAssistantIndex = messages.reduce((acc, m, i) => (m.role === "assistant" ? i : acc), -1);
   const lastMessage = messages[messages.length - 1];
   const showFollowUps =
-    !streaming && !error && lastMessage?.role === "assistant" && lastMessage.content.length > 0 && !lastMessage.stopped;
+    !streaming &&
+    !error &&
+    lastMessage?.role === "assistant" &&
+    lastMessage.content.length > 0 &&
+    !lastMessage.stopped &&
+    // follow-ups need the model: the offline analyzer cannot answer them
+    !lastMessage.offline;
   const followUps = showFollowUps ? t.modes[(lastMessage.mode as AssistantMode) ?? "chat"].followUps : [];
 
   const errorText = error ? (t.errors[error.code]?.value ?? t.errors.internal.value) : "";
@@ -208,7 +225,7 @@ export function AiChat({
             {m.offline && <OfflineBadge />}
             {m.stopped && <span className="text-[11px] text-muted-foreground">{t.stopped.value}</span>}
             {m.truncated && (
-              <span className="flex items-center gap-2 text-[11px] text-amber-600 dark:text-amber-400">
+              <span className="flex items-center gap-2 text-[11px] text-warning">
                 {t.truncated.value}
                 {isLast && !streaming && (
                   <Button
@@ -267,8 +284,8 @@ export function AiChat({
         <div className="flex shrink-0 items-center gap-1">
           {backend === "offline" && <OfflineBadge detailed />}
           {backend === "online" && (
-            <span className="hidden items-center gap-1 text-[10px] text-green-600 dark:text-green-400 sm:inline-flex">
-              <span className="h-1.5 w-1.5 rounded-full bg-green-500" aria-hidden />
+            <span className="hidden items-center gap-1 text-[10px] text-success sm:inline-flex">
+              <span className="h-1.5 w-1.5 rounded-full bg-success" aria-hidden />
               {t.badge.online.value}
             </span>
           )}
@@ -345,7 +362,9 @@ export function AiChat({
               <Bot className="h-6 w-6" aria-hidden />
             </div>
             <div>
-              <h3 className="text-sm font-semibold">{t.empty.title.value}</h3>
+              <h3 className="text-sm font-semibold">
+                {variant === "lesson" ? t.empty.lessonTitle.value : t.empty.title.value}
+              </h3>
               <p className="mx-auto mt-1 max-w-xs text-xs text-muted-foreground">
                 {variant === "lesson" ? t.empty.lessonDescription.value : t.empty.description.value}
               </p>
@@ -362,7 +381,7 @@ export function AiChat({
                     onClick={() => runMode(mode)}
                     className={cn(
                       "flex items-center gap-2 rounded-lg border border-border bg-card px-2.5 py-2 text-left text-xs transition-colors hover:border-primary/50 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50",
-                      highlightMode === mode && "border-red-500/60 bg-red-500/10",
+                      highlightMode === mode && "border-destructive/60 bg-destructive/10",
                     )}
                   >
                     <Icon className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
@@ -390,8 +409,8 @@ export function AiChat({
         {streaming && messages[messages.length - 1]?.role === "user" && <Typing />}
 
         {error && (
-          <div role="alert" className="rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-xs" data-testid="ai-error">
-            <p className="text-red-600 dark:text-red-300">{errorText}</p>
+          <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-xs" data-testid="ai-error">
+            <p className="text-destructive">{errorText}</p>
             <Button
               type="button"
               variant="outline"
@@ -401,7 +420,7 @@ export function AiChat({
               onClick={() => void regenerate()}
             >
               <RotateCcw className="h-3 w-3" aria-hidden />
-              {cooldown > 0 ? `${t.errors.retryIn.value} ${cooldown}${t.errors.seconds.value}` : t.errors.retry.value}
+              {cooldown > 0 ? `${t.errors.retryIn.value} ${formatWait(cooldown, t.errors.seconds.value, t.errors.minutes.value)}` : t.errors.retry.value}
             </Button>
           </div>
         )}
@@ -428,10 +447,10 @@ export function AiChat({
       </div>
 
       {/* Composer */}
-      <div className="border-t border-border bg-background px-3 pb-2 pt-2">
+      <div className={cn("border-t border-border bg-background px-3 pb-2 pt-2", reserveCorner && "pb-14")}>
         {messages.length > 0 && quickModes.length > 0 && (
           <div
-            className="-mx-1 mb-2 flex gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:thin]"
+            className="-mx-1 mb-2 flex gap-1.5 overflow-x-auto px-1 pb-1 pr-6 [mask-image:linear-gradient(to_right,black_calc(100%-28px),transparent)] [scrollbar-width:none]"
             role="toolbar"
             aria-label={t.title.value}
           >
@@ -445,7 +464,7 @@ export function AiChat({
                   onClick={() => runMode(mode)}
                   className={cn(
                     "inline-flex shrink-0 items-center gap-1 rounded-full border border-border bg-card px-2.5 py-1 text-[11px] transition-colors hover:border-primary/50 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50",
-                    highlightMode === mode && "border-red-500/60 bg-red-500/10",
+                    highlightMode === mode && "border-destructive/60 bg-destructive/10",
                   )}
                 >
                   <Icon className="h-3 w-3 text-primary" aria-hidden />
@@ -495,7 +514,7 @@ export function AiChat({
             </Button>
           )}
         </div>
-        <p id={`${idPrefix}-hint`} className="mt-1.5 text-[10px] leading-tight text-muted-foreground">
+        <p id={`${idPrefix}-hint`} className={cn("mt-1.5 text-[10px] leading-tight text-muted-foreground", reserveCorner && "pr-24")}>
           {t.composerHint.value} · {t.disclaimer.value} {t.storedNote.value}
         </p>
       </div>

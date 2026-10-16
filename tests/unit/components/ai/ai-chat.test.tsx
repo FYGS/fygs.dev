@@ -10,7 +10,7 @@ vi.mock("next-intlayer", async () => {
   return { useIntlayer: () => aiText, useLocale: () => ({ locale: "en" }) };
 });
 
-import { AiChat, type Backend } from "@/components/ai/ai-chat";
+import { AiChat, formatWait, type Backend } from "@/components/ai/ai-chat";
 import { useAiChat } from "@/components/ai/use-ai-chat";
 import { CHAT_STORAGE_KEY } from "@/components/ai/chat-storage";
 
@@ -176,7 +176,7 @@ describe("AiChat - code blocks", () => {
     render(<Harness />);
     await ask("show me");
     await screen.findByText(/answer/);
-    expect(screen.getByRole("button", { name: /Copy/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Copy" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Insert" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "Replace" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "Run" })).toBeEnabled();
@@ -214,7 +214,7 @@ describe("AiChat - code blocks", () => {
     fetchMock.mockImplementation(async () => sseResponse(answer));
     render(<Harness withCodeActions={false} />);
     await ask("show me");
-    await screen.findByRole("button", { name: /Copy/ });
+    await screen.findByRole("button", { name: "Copy" });
     expect(screen.queryByRole("button", { name: "Insert" })).not.toBeInTheDocument();
   });
 
@@ -224,9 +224,9 @@ describe("AiChat - code blocks", () => {
     fetchMock.mockImplementation(async () => sseResponse(answer));
     render(<Harness />);
     await ask("show me");
-    fireEvent.click(await screen.findByRole("button", { name: /Copy/ }));
+    fireEvent.click(await screen.findByRole("button", { name: "Copy" }));
     expect(writeText).toHaveBeenCalledWith("const answer: number = 42;");
-    await screen.findByText("Copied");
+    await screen.findByRole("button", { name: "Copied" });
   });
 });
 
@@ -390,3 +390,22 @@ function cleanupAndRender(scopeKey: string) {
   document.body.innerHTML = "";
   return render(<Harness scopeKey={scopeKey} />);
 }
+
+describe("formatWait", () => {
+  it("counts seconds up to two minutes, then minutes", () => {
+    expect(formatWait(45, "s", "min")).toBe("45s");
+    expect(formatWait(119, " s", "min")).toBe("119 s");
+    expect(formatWait(120, "s", "min")).toBe("2 min");
+    expect(formatWait(1171, "s", "min")).toBe("20 min");
+  });
+});
+
+describe("AiChat - offline follow-ups", () => {
+  it("does not suggest follow-ups the offline analyzer could not answer", async () => {
+    fetchMock.mockImplementation(async () => sseResponse("static answer", "offline"));
+    render(<Harness backend="offline" />);
+    await ask("q");
+    await screen.findByText("static answer");
+    expect(screen.queryByTestId("ai-followups")).not.toBeInTheDocument();
+  });
+});

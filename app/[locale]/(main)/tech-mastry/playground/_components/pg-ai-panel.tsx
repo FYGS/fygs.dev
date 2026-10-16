@@ -72,7 +72,7 @@ export function PgAiPanel() {
 
   // Ctrl+I, the command palette and the toolbar all end up here
   useEffect(() => {
-    const focus = () => requestAnimationFrame(() => inputRef.current?.focus());
+    const focus = () => requestAnimationFrame(() => inputRef.current?.focus({ preventScroll: true }));
     focus();
     window.addEventListener("pg-focus-ai-assistant", focus);
     return () => window.removeEventListener("pg-focus-ai-assistant", focus);
@@ -113,7 +113,11 @@ export function PgAiPanel() {
       if (!activeFile) return false;
       if (entryId && entryId !== activeFile.id) return false;
       const family = languageFamily(activeFile.language);
-      return RUNNABLE.has(family) && (!language || languageFamily(language) === family);
+      if (!RUNNABLE.has(family)) return false;
+      if (!language) return true;
+      const block = languageFamily(language);
+      // plain JavaScript is valid TypeScript
+      return block === family || (block === "js" && family === "ts");
     },
   };
 
@@ -143,7 +147,7 @@ export function PgAiPanel() {
         "relative z-10 flex shrink-0 flex-col overflow-hidden border-l border-border bg-background text-foreground",
         "animate-in fade-in slide-in-from-right-4 duration-200",
         // Wide screens: docked next to the preview. Narrow: a bottom sheet.
-        "md:w-[clamp(340px,28vw,440px)]",
+        "md:w-[clamp(320px,26vw,400px)]",
         "max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-50 max-md:h-[70vh] max-md:rounded-t-xl max-md:border-t max-md:shadow-2xl",
       )}
     >
@@ -160,6 +164,7 @@ export function PgAiPanel() {
         onEscape={focusEditor}
         inputRef={inputRef}
         idPrefix="pg-ai"
+        reserveCorner
       />
     </aside>
   );

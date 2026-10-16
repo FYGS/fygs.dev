@@ -19,6 +19,7 @@ const aiAssistantContent = {
       fr: "Votre tuteur de programmation",
       es: "Tu tutor de programación",
     }),
+    shortLabel: t({ en: "AI", fr: "IA", es: "IA" }),
     close: t({ en: "Close the assistant", fr: "Fermer l'assistant", es: "Cerrar el asistente" }),
     openTooltip: t({
       en: "AI assistant (Ctrl+I)",
@@ -39,6 +40,11 @@ const aiAssistantContent = {
         en: "Ask me anything about your code",
         fr: "Posez-moi vos questions sur votre code",
         es: "Pregúntame lo que quieras sobre tu código",
+      }),
+      lessonTitle: t({
+        en: "Ask me about this lesson",
+        fr: "Posez-moi vos questions sur cette leçon",
+        es: "Pregúntame sobre esta lección",
       }),
       description: t({
         en: "I can explain, debug, review and test your code. I only see your active file, your selection and the console output.",
@@ -289,6 +295,7 @@ const aiAssistantContent = {
       retryIn: t({ en: "Retry in", fr: "Réessayer dans", es: "Reintentar en" }),
       retry: t({ en: "Try again", fr: "Réessayer", es: "Reintentar" }),
       seconds: t({ en: "s", fr: " s", es: " s" }),
+      minutes: t({ en: "min", fr: "min", es: "min" }),
     },
     lesson: {
       trigger: t({ en: "Ask the AI tutor", fr: "Demander au tuteur IA", es: "Preguntar al tutor IA" }),
