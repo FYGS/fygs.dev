@@ -3,14 +3,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import {
-  Award,
-  Download,
-  Share2,
-  Linkedin,
-  Twitter,
-  Link2,
-} from "lucide-react";
+import { Award, Download, Share2, Link2 } from "lucide-react";
+import { Linkedin, Twitter } from "@/components/icons/brand-icons";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 

@@ -12,26 +12,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import {
-  Award,
-  Briefcase,
-  Building2,
-  Calendar,
-  Clock,
-  Code2,
-  ExternalLink,
-  Globe2,
-  GraduationCap,
-  Linkedin,
-  Mail,
-  MapPin,
-  Phone,
-  Rocket,
-  Target,
-  Train,
-  Users,
-  Workflow,
-} from "lucide-react";
+import { Award, Briefcase, Building2, Calendar, Clock, Code2, ExternalLink, Globe2, GraduationCap, Mail, MapPin, Phone, Rocket, Target, Train, Users, Workflow } from "lucide-react";
+import { Linkedin } from "@/components/icons/brand-icons";
 import Link from "next/link";
 import { useIntlayer } from "next-intlayer/server";
 import {

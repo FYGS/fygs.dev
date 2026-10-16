@@ -481,7 +481,7 @@ export function ReviewFilterPanel({
                       updateFilter('dateFrom', date);
                       setDateFromOpen(false);
                     }}
-                    initialFocus
+                    autoFocus
                   />
                 </PopoverContent>
               </Popover>
@@ -511,7 +511,7 @@ export function ReviewFilterPanel({
                       updateFilter('dateTo', date);
                       setDateToOpen(false);
                     }}
-                    initialFocus
+                    autoFocus
                   />
                 </PopoverContent>
               </Popover>

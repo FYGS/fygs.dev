@@ -2,7 +2,8 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import Link from "next/link";
-import { ArrowLeft, Crown, Users, MessageCircle, Clock, Github, Linkedin, Globe } from "lucide-react";
+import { ArrowLeft, Crown, Users, MessageCircle, Clock, Globe } from "lucide-react";
+import { Github, Linkedin } from "@/components/icons/brand-icons";
 
 import { auth } from "@/lib/auth";
 import { CommunityService } from "@/lib/services/community-service";

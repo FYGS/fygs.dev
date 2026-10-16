@@ -19,7 +19,7 @@ import {
   Clock,
   HardDrive,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 // Données des algorithmes de tri
@@ -346,7 +346,7 @@ export function SortingAlgorithmsOverview() {
   };
 
   // Animation pour les transitions
-  const contentVariants = {
+  const contentVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,

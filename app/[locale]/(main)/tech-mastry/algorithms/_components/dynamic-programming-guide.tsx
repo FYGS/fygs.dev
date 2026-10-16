@@ -199,37 +199,37 @@ export function DynamicProgrammingGuide() {
           <TabsList className="grid grid-cols-2 md:grid-cols-6 w-full bg-background/50 backdrop-blur-xs">
             <TabsTrigger
               value="introduction"
-              className="relative z-10 transition-all duration-300 data-[state=active]:bg-linear-to-r data-[state=active]:from-indigo-500/20 data-[state=active]:to-purple-500/20 data-[state=active]:text-foreground"
+              className="relative z-10 transition-all duration-300 data-[state=active]:bg-transparent data-[state=active]:bg-linear-to-r data-[state=active]:from-indigo-500/20 data-[state=active]:to-purple-500/20 data-[state=active]:text-foreground"
             >
               Introduction
             </TabsTrigger>
             <TabsTrigger
               value="visualizations"
-              className="relative z-10 transition-all duration-300 data-[state=active]:bg-linear-to-r data-[state=active]:from-indigo-500/20 data-[state=active]:to-purple-500/20 data-[state=active]:text-foreground"
+              className="relative z-10 transition-all duration-300 data-[state=active]:bg-transparent data-[state=active]:bg-linear-to-r data-[state=active]:from-indigo-500/20 data-[state=active]:to-purple-500/20 data-[state=active]:text-foreground"
             >
               Visualisations
             </TabsTrigger>
             <TabsTrigger
               value="comparison"
-              className="relative z-10 transition-all duration-300 data-[state=active]:bg-linear-to-r data-[state=active]:from-indigo-500/20 data-[state=active]:to-purple-500/20 data-[state=active]:text-foreground"
+              className="relative z-10 transition-all duration-300 data-[state=active]:bg-transparent data-[state=active]:bg-linear-to-r data-[state=active]:from-indigo-500/20 data-[state=active]:to-purple-500/20 data-[state=active]:text-foreground"
             >
               Mémoïsation vs Tabulation
             </TabsTrigger>
             <TabsTrigger
               value="problems"
-              className="relative z-10 transition-all duration-300 data-[state=active]:bg-linear-to-r data-[state=active]:from-indigo-500/20 data-[state=active]:to-purple-500/20 data-[state=active]:text-foreground"
+              className="relative z-10 transition-all duration-300 data-[state=active]:bg-transparent data-[state=active]:bg-linear-to-r data-[state=active]:from-indigo-500/20 data-[state=active]:to-purple-500/20 data-[state=active]:text-foreground"
             >
               Problèmes Classiques
             </TabsTrigger>
             <TabsTrigger
               value="real-world"
-              className="relative z-10 transition-all duration-300 data-[state=active]:bg-linear-to-r data-[state=active]:from-indigo-500/20 data-[state=active]:to-purple-500/20 data-[state=active]:text-foreground"
+              className="relative z-10 transition-all duration-300 data-[state=active]:bg-transparent data-[state=active]:bg-linear-to-r data-[state=active]:from-indigo-500/20 data-[state=active]:to-purple-500/20 data-[state=active]:text-foreground"
             >
               Applications Réelles
             </TabsTrigger>
             <TabsTrigger
               value="practice"
-              className="relative z-10 transition-all duration-300 data-[state=active]:bg-linear-to-r data-[state=active]:from-indigo-500/20 data-[state=active]:to-purple-500/20 data-[state=active]:text-foreground"
+              className="relative z-10 transition-all duration-300 data-[state=active]:bg-transparent data-[state=active]:bg-linear-to-r data-[state=active]:from-indigo-500/20 data-[state=active]:to-purple-500/20 data-[state=active]:text-foreground"
             >
               Exercices Pratiques
             </TabsTrigger>

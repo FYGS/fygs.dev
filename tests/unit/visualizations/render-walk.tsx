@@ -1,4 +1,6 @@
 import { createHash } from "crypto";
+import { mkdirSync, writeFileSync } from "fs";
+import { expect } from "vitest";
 import type { ComponentType } from "react";
 import { render, fireEvent, cleanup } from "@testing-library/react";
 import { withNeutralMatchMedia } from "./match-media";
@@ -18,7 +20,7 @@ export function renderWalk(Component: ComponentType, passes = 3) {
 function walk(Component: ComponentType, passes: number) {
   const { container } = render(<Component />);
   // Radix generates ids from a global counter (_r_0_, _r_1_ ...): normalise them.
-  const normalised = () => container.innerHTML.replace(/_r_[0-9a-z]+_/g, "_r_X_");
+  const normalised = () => container.innerHTML.replace(/_r_[0-9a-z]+_/g, "_r_X_").replace(/<svg[\s\S]*?<\/svg>/g, "<svg/>") // icon markup changes between lucide releases;
   const hash = () => createHash("md5").update(normalised()).digest("hex").slice(0, 8);
   const isTab = (el: Element) => el.getAttribute("role") === "tab";
   const click = (el: Element) => {
@@ -26,7 +28,9 @@ function walk(Component: ComponentType, passes: number) {
     fireEvent.click(el);
   };
 
+  const dump: string[] = [];
   const hashes = [hash()];
+  dump.push(normalised());
   for (let pass = 0; pass < passes; pass++) {
     const count = container.querySelectorAll("button").length;
     for (let i = 0; i < count; i++) {
@@ -34,6 +38,7 @@ function walk(Component: ComponentType, passes: number) {
       if (!button || isTab(button)) continue;
       click(button);
       hashes.push(hash());
+      dump.push(normalised());
     }
   }
 
@@ -41,8 +46,14 @@ function walk(Component: ComponentType, passes: number) {
   tabs.forEach((_, i) => {
     click([...container.querySelectorAll("button")].filter(isTab)[i]);
     hashes.push(hash());
+      dump.push(normalised());
   });
 
+  if (process.env.DUMP_WALK) {
+    mkdirSync(process.env.DUMP_WALK, { recursive: true });
+    const name = (expect.getState().currentTestName ?? "walk").replace(/[^a-z0-9]+/gi, "_");
+    writeFileSync(`${process.env.DUMP_WALK}/${name}.json`, JSON.stringify(dump));
+  }
   const result = { hashes, states: new Set(hashes).size };
   cleanup();
   return result;

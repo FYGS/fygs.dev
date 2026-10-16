@@ -7,16 +7,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import {
-  Check,
-  Copy,
-  Facebook,
-  Linkedin,
-  Mail,
-  MessageCircle,
-  Send,
-  Twitter,
-} from "lucide-react";
+import { Check, Copy, Mail, MessageCircle, Send } from "lucide-react";
+import { Facebook, Linkedin, Twitter } from "@/components/icons/brand-icons";
 import { useState } from "react";
 
 interface ShareButtonsProps {

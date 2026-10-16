@@ -1,17 +1,8 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import {
-  BookOpen,
-  Filter,
-  GraduationCap,
-  Headphones,
-  Monitor,
-  Star,
-  Trophy,
-  Users,
-  Youtube,
-} from "lucide-react";
+import { BookOpen, Filter, GraduationCap, Headphones, Monitor, Star, Trophy, Users } from "lucide-react";
+import { Youtube } from "@/components/icons/brand-icons";
 import { useState } from "react";
 import { ResourceCard, type Resource } from "./resource-card";
 

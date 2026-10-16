@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import {
   ArrowUpDown,
   BarChart3,
@@ -37,7 +37,7 @@ export function ModernSortingGuide() {
   const [activeTab, setActiveTab] = useState<TabType>("overview");
 
   // Animation pour les transitions entre onglets
-  const tabVariants = {
+  const tabVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,

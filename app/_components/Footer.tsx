@@ -1,14 +1,6 @@
 "use client";
-import {
-  BrainCircuitIcon,
-  Code2Icon,
-  GithubIcon,
-  LinkedinIcon,
-  MailIcon,
-  PhoneIcon,
-  RocketIcon,
-  Leaf,
-} from "lucide-react";
+import { BrainCircuitIcon, Code2Icon, MailIcon, PhoneIcon, RocketIcon, Leaf } from "lucide-react";
+import { Github as GithubIcon, Linkedin as LinkedinIcon } from "@/components/icons/brand-icons";
 import { LocaleAwareLink } from "@/components/ui/locale-aware-nav";
 import { Section } from "./Section";
 import { useIntlayer } from "next-intlayer";

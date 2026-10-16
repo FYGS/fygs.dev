@@ -8,13 +8,13 @@ describe("DistributedCaseStudies rendering", () => {
     expect(states).toBeGreaterThanOrEqual(6);
     expect(hashes).toMatchInlineSnapshot(`
       [
-        "9f698975",
-        "a5aa91e2",
-        "ba343059",
-        "2c80857d",
-        "15d9cf02",
-        "da0d56ef",
-        "d59eb8e7",
+        "aa60cfdf",
+        "98777d18",
+        "9ce51667",
+        "2aca3d1f",
+        "627ddb36",
+        "0540cdcf",
+        "52a277e9",
       ]
     `);
   });
