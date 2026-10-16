@@ -14,6 +14,10 @@ interface LearningStreakProps {
   userId: string;
 }
 
+function daysAgo(days: number): Date {
+  return new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+}
+
 export async function LearningStreak({ userId }: LearningStreakProps) {
   // Get user's learning activity for streak calculation
   const recentProgress = await db.progress.findMany({
@@ -21,7 +25,7 @@ export async function LearningStreak({ userId }: LearningStreakProps) {
       userId,
       completed: true,
       completedAt: {
-        gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
+        gte: daysAgo(30) // Last 30 days
       }
     },
     orderBy: { completedAt: 'desc' },
@@ -67,7 +71,7 @@ export async function LearningStreak({ userId }: LearningStreakProps) {
   const thisWeekProgress = recentProgress
     .filter(p => {
       if (!p.completedAt) return false;
-      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const weekAgo = daysAgo(7);
       return new Date(p.completedAt) >= weekAgo;
     })
     .reduce((acc, p) => acc + (p.watchTime || 0), 0);

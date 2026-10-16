@@ -17,6 +17,10 @@ import {
 import { ReviewAnalyticsService } from "@/lib/services/review-analytics";
 import { StarRatingDisplay } from "@/components/reviews/star-rating";
 
+function mockRatingCount(): number {
+  return Math.floor(Math.random() * 100);
+}
+
 async function getAnalyticsData() {
   const [globalStats, sentimentData] = await Promise.all([
     ReviewAnalyticsService.getGlobalReviewStats(),
@@ -160,7 +164,7 @@ export default async function AdminReviewsAnalyticsPage() {
           <CardContent>
             <div className="space-y-4">
               {[5, 4, 3, 2, 1].map((rating) => {
-                const count = Math.floor(Math.random() * 100); // Mock data
+                const count = mockRatingCount(); // Mock data
                 const percentage = (count / globalStats.totalReviews) * 100;
                 
                 return (

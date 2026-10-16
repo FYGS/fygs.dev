@@ -13,6 +13,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { formatDistanceToNow } from "date-fns";
 
+// Evaluated per request (server component); kept out of the render bodies so that
+// the current time is read in a plain helper.
+function oneWeekAgo(): Date {
+  return new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+}
+
 async function getCommunityUsers() {
   try {
     const users = await db.user.findMany({
@@ -175,7 +181,7 @@ async function UsersContent() {
               <div>
                 <div className="text-xl font-bold">
                   {users.filter(u => {
-                    const lastWeek = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+                    const lastWeek = oneWeekAgo();
                     return new Date(u.lastActivity) > lastWeek;
                   }).length}
                 </div>
@@ -235,7 +241,7 @@ async function UsersContent() {
 
 function UserItem({ user }: { user: any }) {
   const totalActivity = user._count.discussions + user._count.discussionReplies;
-  const isActive = new Date(user.lastActivity) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const isActive = new Date(user.lastActivity) > oneWeekAgo();
 
   const getRoleColor = (role: string) => {
     switch (role) {

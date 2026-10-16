@@ -12,7 +12,7 @@ import { authService } from "@/lib/auth-service";
 import { toast } from "sonner";
 import { Mail, Eye, EyeOff } from "lucide-react";
 import { Github } from "@/components/icons/brand-icons";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useIntlayer } from "next-intlayer";
@@ -54,7 +54,6 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
     handleSubmit,
     formState: { errors },
     setError,
-    watch,
     control,
   } = useForm<z.input<typeof registerSchema>, unknown, RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -63,7 +62,7 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
     },
   });
 
-  const acceptTerms = watch("acceptTerms");
+  const acceptTerms = useWatch({ control, name: "acceptTerms" });
 
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);

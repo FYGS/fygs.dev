@@ -4,7 +4,7 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { z } from "zod";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/components/ui/button";
@@ -62,6 +62,9 @@ export function QuizCreateForm({ course }: QuizCreateFormProps) {
       ],
     },
   });
+
+  const watchedModuleId = useWatch({ control: form.control, name: "moduleId" });
+  const watchedQuestions = useWatch({ control: form.control, name: "questions" });
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -121,7 +124,7 @@ export function QuizCreateForm({ course }: QuizCreateFormProps) {
               <div className="space-y-2">
                 <Label htmlFor="moduleId">Module</Label>
                 <Select
-                  value={form.watch("moduleId")?.toString() || ""}
+                  value={watchedModuleId?.toString() || ""}
                   onValueChange={(value) => form.setValue("moduleId", parseInt(value))}
                 >
                   <SelectTrigger>
@@ -209,7 +212,7 @@ export function QuizCreateForm({ course }: QuizCreateFormProps) {
                       <input
                         type="radio"
                         name={`correct-${questionIndex}`}
-                        checked={form.watch(`questions.${questionIndex}.correct`) === optionIndex}
+                        checked={watchedQuestions?.[questionIndex]?.correct === optionIndex}
                         onChange={() => form.setValue(`questions.${questionIndex}.correct`, optionIndex)}
                         className="w-4 h-4"
                       />

@@ -22,7 +22,7 @@ import {
   GraduationCap,
   MessageCircle,
 } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { useIntlayer } from "next-intlayer";
 
@@ -48,7 +48,7 @@ export function ContactForm() {
     handleSubmit,
     reset,
     setValue,
-    watch,
+    control,
     formState: { errors },
   } = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema),
@@ -57,7 +57,7 @@ export function ContactForm() {
     },
   });
 
-  const watchedType = watch("type");
+  const watchedType = useWatch({ control, name: "type" });
 
   // Sync watchedType with form value management
   useEffect(() => {
