@@ -1,5 +1,5 @@
 import { SITE_BASE_URL } from "@/app/_lib/constants";
-import nodemailer from "nodemailer";
+import { createTransport, type Transporter } from "nodemailer";
 
 export interface EmailOptions {
   to: string;
@@ -41,7 +41,7 @@ import { ModernEmailTemplates } from "./email-templates";
 
 class EmailService {
   private static instance: EmailService;
-  private transporter: nodemailer.Transporter | null = null;
+  private transporter: Transporter | null = null;
 
   static getInstance(): EmailService {
     if (!EmailService.instance) {
@@ -52,7 +52,7 @@ class EmailService {
 
   private getTransporter() {
     if (!this.transporter) {
-      this.transporter = nodemailer.createTransport({
+      this.transporter = createTransport({
         host: process.env.EMAIL_SERVER_HOST,
         port: parseInt(process.env.EMAIL_SERVER_PORT || "587"),
         secure: process.env.EMAIL_SERVER_PORT === "465",
