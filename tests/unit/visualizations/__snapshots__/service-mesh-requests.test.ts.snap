@@ -1,0 +1,166 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`service mesh request generation > creates a request travelling service -> proxy -> proxy -> service 1`] = `
+{
+  "currentPathIndex": 0,
+  "headers": {
+    "Content-Type": "application/json",
+    "User-Agent": "ServiceMesh-Demo/1.0",
+    "X-Request-ID": "req-926981",
+    "x-b3-spanid": "d0ee7",
+    "x-b3-traceid": "18bcfe56800c0bd",
+  },
+  "id": 9,
+  "method": "POST",
+  "path": [
+    {
+      "x": 150,
+      "y": 150,
+    },
+    {
+      "x": 190,
+      "y": 150,
+    },
+    {
+      "x": 440,
+      "y": 100,
+    },
+    {
+      "x": 400,
+      "y": 100,
+    },
+  ],
+  "payload": {
+    "password": "********",
+    "rememberMe": false,
+    "username": "user360",
+  },
+  "position": {
+    "x": 150,
+    "y": 150,
+  },
+  "priority": "medium",
+  "protocol": "HTTP/2",
+  "secured": true,
+  "size": 987,
+  "source": "frontend",
+  "status": "pending",
+  "target": "auth",
+  "timestamp": 1700000000000,
+  "traceId": "trace-18bcfe56800-10cb0",
+  "type": "regular",
+}
+`;
+
+exports[`service mesh request generation > selects mesh specific request paths deterministically 1`] = `
+[
+  [
+    {
+      "source": "frontend",
+      "target": "auth",
+    },
+    {
+      "source": "frontend",
+      "target": "users",
+    },
+    {
+      "source": "frontend",
+      "target": "auth",
+    },
+    {
+      "source": "frontend",
+      "target": "auth",
+    },
+    {
+      "source": "products",
+      "target": "orders",
+    },
+    {
+      "source": "auth",
+      "target": "users",
+    },
+  ],
+  [
+    {
+      "source": "users",
+      "target": "products",
+    },
+    {
+      "autoRetry": true,
+      "source": "users",
+      "target": "products",
+    },
+    {
+      "source": "frontend",
+      "target": "auth",
+    },
+    {
+      "source": "products",
+      "target": "orders",
+    },
+    {
+      "autoRetry": true,
+      "source": "auth",
+      "target": "users",
+    },
+    {
+      "autoRetry": true,
+      "source": "auth",
+      "target": "users",
+    },
+  ],
+  [
+    {
+      "source": "products",
+      "target": "orders",
+    },
+    {
+      "source": "frontend",
+      "target": "users",
+    },
+    {
+      "dynamicDiscovery": true,
+      "source": "auth",
+      "target": "users",
+    },
+    {
+      "source": "frontend",
+      "target": "auth",
+    },
+    {
+      "source": "users",
+      "target": "orders",
+    },
+    {
+      "source": "users",
+      "target": "products",
+    },
+  ],
+  [
+    {
+      "source": "frontend",
+      "target": "users",
+    },
+    {
+      "source": "frontend",
+      "target": "products",
+    },
+    {
+      "source": "frontend",
+      "target": "products",
+    },
+    {
+      "source": "frontend",
+      "target": "products",
+    },
+    {
+      "source": "frontend",
+      "target": "products",
+    },
+    {
+      "source": "frontend",
+      "target": "users",
+    },
+  ],
+]
+`;
