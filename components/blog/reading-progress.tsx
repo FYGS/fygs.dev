@@ -38,7 +38,8 @@ export function ReadingProgress() {
       };
     });
 
-    setSections(markers);
+    const frame = requestAnimationFrame(() => setSections(markers));
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   return (

@@ -135,7 +135,9 @@ export function LessonCreateForm({ courses, selectedCourseId }: LessonCreateForm
   const selectedCourse = useWatch({ control: form.control, name: "courseId" });
   useEffect(() => {
     if (selectedCourse) {
-      fetchModules(selectedCourse);
+      queueMicrotask(() => {
+        void fetchModules(selectedCourse);
+      });
       // Reset module selection when course changes
       form.setValue("moduleId", undefined);
     }

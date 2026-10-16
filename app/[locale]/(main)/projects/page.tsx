@@ -79,20 +79,22 @@ function ProjectsContent() {
   const { title, description, noResults } = useIntlayer("projects-page");
 
   const [selectedTechnologies, setSelectedTechnologies] = useState<string[]>(
-    [],
+    () => dynamicSearchParams.get("technologies")?.split(",") || [],
   );
-  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [viewMode, setViewMode] = useState<ViewMode>(
+    () => (dynamicSearchParams.get("view") as ViewMode) || "grid",
+  );
   const hasScrolled = useRef(false);
 
-  // Initialize state from URL parameters using useEffect
-  useEffect(() => {
-    const technologies =
-      dynamicSearchParams.get("technologies")?.split(",") || [];
-    const view = (dynamicSearchParams.get("view") as ViewMode) || "grid";
-
-    setSelectedTechnologies(technologies);
-    setViewMode(view);
-  }, [dynamicSearchParams]);
+  // Keep state in sync with the URL parameters (derived during render, not in an effect)
+  const [syncedParams, setSyncedParams] = useState(dynamicSearchParams);
+  if (syncedParams !== dynamicSearchParams) {
+    setSyncedParams(dynamicSearchParams);
+    setSelectedTechnologies(
+      dynamicSearchParams.get("technologies")?.split(",") || [],
+    );
+    setViewMode((dynamicSearchParams.get("view") as ViewMode) || "grid");
+  }
 
   const currentPage = Number(dynamicSearchParams.get("page")) || 1;
   const pageSize = Number(dynamicSearchParams.get("size")) || ITEMS_PER_PAGE;

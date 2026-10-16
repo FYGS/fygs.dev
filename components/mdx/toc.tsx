@@ -41,7 +41,7 @@ export function TableOfContents({ className }: TOCProps) {
       })
       .filter((heading) => heading.text); // Filter out empty headings
 
-    setHeadings(elements);
+    const frame = requestAnimationFrame(() => setHeadings(elements));
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -61,7 +61,10 @@ export function TableOfContents({ className }: TOCProps) {
       }
     });
 
-    return () => observer.disconnect();
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
   }, []);
 
   return (

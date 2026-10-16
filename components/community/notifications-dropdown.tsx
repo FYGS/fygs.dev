@@ -78,7 +78,9 @@ export function NotificationsDropdown({
     if (!userId) return;
 
     // Initial load
-    loadNotifications();
+    queueMicrotask(() => {
+      void loadNotifications();
+    });
 
     // Poll for new notifications
     const interval = setInterval(() => {

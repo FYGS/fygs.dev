@@ -27,9 +27,13 @@ export function LoaderContent() {
   }, []);
 
   useEffect(() => {
-    setLoading(true);
-    const timer = setTimeout(() => setLoading(false), 500);
-    return () => clearTimeout(timer);
+    // Show the loader right after the route change, hide it after 500ms.
+    const show = setTimeout(() => setLoading(true), 0);
+    const hide = setTimeout(() => setLoading(false), 500);
+    return () => {
+      clearTimeout(show);
+      clearTimeout(hide);
+    };
   }, [pathname, searchParams]);
 
   return <AnimatePresence>{loading && <LoaderAnimation />}</AnimatePresence>;

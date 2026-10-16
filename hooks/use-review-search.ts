@@ -157,7 +157,9 @@ export function useReviewSearch({
   // Auto-search on filter changes
   useEffect(() => {
     if (autoSearch) {
-      performSearch(filters, 1, false);
+      queueMicrotask(() => {
+        void performSearch(filters, 1, false);
+      });
     }
   }, [filters, autoSearch, performSearch]);
 
@@ -263,7 +265,9 @@ export function useTrendingReviews(courseId?: string, period: string = "week") {
   }, [courseId, period]);
 
   useEffect(() => {
-    fetchTrending();
+    queueMicrotask(() => {
+      void fetchTrending();
+    });
   }, [fetchTrending]);
 
   return {
@@ -324,7 +328,9 @@ export function useModerationQueue() {
   );
 
   useEffect(() => {
-    fetchModerationQueue();
+    queueMicrotask(() => {
+      void fetchModerationQueue();
+    });
   }, [fetchModerationQueue]);
 
   const loadPage = useCallback(

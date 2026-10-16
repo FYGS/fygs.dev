@@ -28,10 +28,17 @@ export function MermaidDiagram({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const uniqueId = useId().replace(/:/g, "mermaid");
 
+  // Clear the previous result whenever a new render is requested (derived during render)
+  const renderKey = `${chart}|${retryCount}`;
+  const [lastRenderKey, setLastRenderKey] = useState(renderKey);
+  if (lastRenderKey !== renderKey) {
+    setLastRenderKey(renderKey);
+    setSvg("");
+    setError(null);
+  }
+
   const renderChart = useCallback(async () => {
     try {
-      setSvg("");
-      setError(null);
       const mermaid = (await import("mermaid")).default;
       mermaid.initialize({
         startOnLoad: false,
@@ -65,7 +72,9 @@ export function MermaidDiagram({
   }, [chart, uniqueId, retryCount]);
 
   useEffect(() => {
-    renderChart();
+    queueMicrotask(() => {
+      void renderChart();
+    });
   }, [renderChart]);
 
   const handleZoomIn = () => setScale((s) => Math.min(s + 0.25, 2.5));

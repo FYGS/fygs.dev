@@ -92,16 +92,19 @@ export function CourseProgressGrid({ initialData, refreshIntervalMs = 60000, ini
     }
   }, [etag, res, refreshIntervalMs]);
 
-  useEffect(() => { 
-    if (!initialData) {
-      setLoading(true);
-      load();
-    } else {
-      // Evaluate adaptive interval immediately from hydrated data
-      const anyNearCompletion = (initialData.summaries || []).some(s => s.percent >= 95 && s.percent < 100);
-      const allComplete = (initialData.summaries || []).length > 0 && (initialData.summaries || []).every(s => s.percent === 100);
-      setIntervalMs(anyNearCompletion ? 15000 : allComplete ? 300000 : refreshIntervalMs);
-    }
+  useEffect(() => {
+    // State updates are scheduled in a microtask (not synchronously in the effect body)
+    queueMicrotask(() => {
+      if (!initialData) {
+        setLoading(true);
+        load();
+      } else {
+        // Evaluate adaptive interval immediately from hydrated data
+        const anyNearCompletion = (initialData.summaries || []).some(s => s.percent >= 95 && s.percent < 100);
+        const allComplete = (initialData.summaries || []).length > 0 && (initialData.summaries || []).every(s => s.percent === 100);
+        setIntervalMs(anyNearCompletion ? 15000 : allComplete ? 300000 : refreshIntervalMs);
+      }
+    });
   }, [initialData, load, refreshIntervalMs]); // run once
 
   useEffect(() => {

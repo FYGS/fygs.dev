@@ -52,7 +52,7 @@ export function SocialInteractionsClient({
 
   useEffect(() => {
     const liked = localStorage.getItem(`blog-like-${slug}`);
-    setHasLiked(liked === "true");
+    queueMicrotask(() => setHasLiked(liked === "true"));
   }, [slug]);
 
   const handleLike = async () => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useSyncExternalStore } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -21,6 +21,8 @@ import { updateLessonProgress } from "@/app/[locale]/(main)/dashboard/actions/up
 import { LessonProgressButton } from "@/components/learning/lesson-progress-button";
 import { onLessonCompleted } from "@/app/[locale]/(learning)/learn/_actions/gamification-actions";
 import { XpNotification } from "@/components/learning/xp-notification";
+
+const subscribeNoop = () => () => {};
 
 interface VideoPlayerProps {
   lesson: {
@@ -60,7 +62,11 @@ export function VideoPlayer({
   const [showControls, setShowControls] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
-  const [isPiPSupported, setIsPiPSupported] = useState(false);
+  const isPiPSupported = useSyncExternalStore(
+    subscribeNoop,
+    () => document.pictureInPictureEnabled,
+    () => false,
+  );
   const [isBuffering, setIsBuffering] = useState(false);
   const [isLessonCompleted, setIsLessonCompleted] = useState(
     initialProgress?.completed || false,
@@ -223,11 +229,6 @@ export function VideoPlayer({
       }
     }, 3000);
   }, [isPlaying]);
-
-  // Check PiP support
-  useEffect(() => {
-    setIsPiPSupported(document.pictureInPictureEnabled);
-  }, []);
 
   useEffect(() => {
     const video = videoRef.current;
