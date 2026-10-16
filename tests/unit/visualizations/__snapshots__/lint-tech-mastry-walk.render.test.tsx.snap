@@ -1,0 +1,237 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`tech-mastry components rewritten for the lint rules > exponential-search renders the same markup in every state reachable by clicking 1`] = `
+[
+  "34cde947",
+  "34cde947",
+  "939b222f",
+  "c56a4e5b",
+  "7bede3cb",
+  "2fbc5fac",
+  "d43d64ee",
+  "97e842d1",
+  "13b0a12b",
+]
+`;
+
+exports[`tech-mastry components rewritten for the lint rules > fibonacci renders the same markup in every state reachable by clicking 1`] = `
+[
+  "b0931371",
+  "b0931371",
+  "b0931371",
+  "4d080352",
+  "01963cca",
+  "5cd2e830",
+  "5cd2e830",
+  "4d080352",
+  "01963cca",
+  "7e74de38",
+  "b46be94f",
+]
+`;
+
+exports[`tech-mastry components rewritten for the lint rules > git-hero renders the same markup in every state reachable by clicking 1`] = `
+[
+  "622f9842",
+  "622f9842",
+  "2ef8794e",
+  "2ef8794e",
+  "d44a9674",
+  "d44a9674",
+  "d7e7de18",
+  "ebf4e210",
+  "ebf4e210",
+  "184b1e6d",
+  "184b1e6d",
+  "0c1f79b5",
+  "d44a9674",
+  "d44a9674",
+  "d7e7de18",
+  "d7e7de18",
+  "622f9842",
+  "184b1e6d",
+  "184b1e6d",
+  "0c1f79b5",
+  "0c1f79b5",
+  "02600053",
+  "d7e7de18",
+  "d7e7de18",
+  "622f9842",
+  "622f9842",
+  "2ef8794e",
+  "2ef8794e",
+  "d44a9674",
+  "02600053",
+  "02600053",
+  "ebf4e210",
+  "ebf4e210",
+]
+`;
+
+exports[`tech-mastry components rewritten for the lint rules > knapsack renders the same markup in every state reachable by clicking 1`] = `
+[
+  "019c04b4",
+  "9d44c947",
+  "ac6d46de",
+  "b057289d",
+  "b057289d",
+  "b057289d",
+  "95a2264b",
+  "159b8ca2",
+  "67f76ba9",
+  "8826a539",
+  "b9f3c66b",
+  "b9f3c66b",
+  "6ef9224b",
+  "7a1b7953",
+]
+`;
+
+exports[`tech-mastry components rewritten for the lint rules > lcs renders the same markup in every state reachable by clicking 1`] = `
+[
+  "3908100d",
+  "3908100d",
+  "3908100d",
+  "9d7cc463",
+  "d5b5ce2a",
+  "29e90f94",
+  "29e90f94",
+  "9d7cc463",
+  "d5b5ce2a",
+]
+`;
+
+exports[`tech-mastry components rewritten for the lint rules > messaging renders the same markup in every state reachable by clicking 1`] = `
+[
+  "3f68168b",
+  "0f8ba3fa",
+  "3f68168b",
+  "88b30484",
+  "19de3d44",
+  "cd7a72f2",
+  "3f68168b",
+  "24db81c9",
+  "a53a9475",
+  "a0e960e6",
+  "a0e960e6",
+  "274aa7a8",
+  "5654efce",
+  "463916b1",
+  "e212a39d",
+  "463916b1",
+  "d281c9b0",
+  "ecb8af40",
+  "9676ac35",
+  "bf3e35ae",
+  "8da0a74c",
+  "bc4be560",
+  "463916b1",
+  "a0e960e6",
+  "274aa7a8",
+  "5654efce",
+  "463916b1",
+]
+`;
+
+exports[`tech-mastry components rewritten for the lint rules > quiz renders the same markup in every state reachable by clicking 1`] = `
+[
+  "1f99f4cd",
+  "2b373a9c",
+  "07942113",
+  "039cf75e",
+  "4d4adb4d",
+  "f205f27b",
+  "47b5993f",
+  "31ec4b04",
+]
+`;
+
+exports[`tech-mastry components rewritten for the lint rules > realtime-performance renders the same markup in every state reachable by clicking 1`] = `
+[
+  "751ab025",
+  "eb1109a7",
+  "eb1109a7",
+  "58084d8c",
+  "1e72e33e",
+  "751ab025",
+  "1e72e33e",
+]
+`;
+
+exports[`tech-mastry components rewritten for the lint rules > search-algorithms renders the same markup in every state reachable by clicking 1`] = `
+[
+  "a4722651",
+  "55f088c0",
+  "7f6478bc",
+  "7f6478bc",
+  "378233e2",
+  "5b4e52ab",
+  "617d8f0c",
+  "617d8f0c",
+  "617d8f0c",
+  "1b8ec54e",
+  "cd41f9f7",
+  "ec32b398",
+  "ed502da8",
+]
+`;
+
+exports[`tech-mastry components rewritten for the lint rules > sorting-algorithms-sized renders the same markup in every state reachable by clicking 1`] = `
+[
+  "a2ea006f",
+  "a2ea006f",
+  "872de663",
+  "0bb8e533",
+  "0bb8e533",
+  "3332b7e8",
+  "5e330347",
+  "0bb8e533",
+  "28df3283",
+  "281a1d59",
+  "63d130e7",
+  "28df3283",
+  "28df3283",
+  "5abf8dc9",
+  "6f716979",
+  "28df3283",
+  "a3b2ca28",
+]
+`;
+
+exports[`tech-mastry components rewritten for the lint rules > sorting-exercises renders the same markup in every state reachable by clicking 1`] = `
+[
+  "3af3d197",
+  "3af3d197",
+  "984edbcb",
+  "d7363a52",
+  "c9e40a30",
+  "37ad2cae",
+  "c9e40a30",
+  "984edbcb",
+  "e030a4b2",
+  "e030a4b2",
+  "b41847f0",
+  "b82a3da3",
+  "de82aeb5",
+]
+`;
+
+exports[`tech-mastry components rewritten for the lint rules > streak-calendar renders the same markup in every state reachable by clicking 1`] = `
+[
+  "6e9d5e8a",
+]
+`;
+
+exports[`tech-mastry components rewritten for the lint rules > ternary-search renders the same markup in every state reachable by clicking 1`] = `
+[
+  "cec48abc",
+  "cec48abc",
+  "e5c26b3f",
+  "92a6c139",
+  "ac182ace",
+  "cf49fcc3",
+  "2dd6f960",
+  "261f0839",
+  "6c7da5d2",
+]
+`;
