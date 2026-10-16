@@ -190,3 +190,31 @@ message or form bodies, source code submitted by users, or prompts. Use the user
 Redaction is pattern based: free text that contains a person's name without an email or a sensitive key is not
 detected. Do not log free text. Third parties (Stripe dashboard, SMTP provider, analytics) keep their own data
 and are outside this policy.
+
+## Real Chrome run (CSP)
+
+Chrome (`channel: "chrome"`, Playwright) against a minimal page that has the site's script mix and the real
+headers from `lib/csp.mjs` (inline Next-style flight scripts, a `type="application/ld+json"` block, the external
+`/sw-register.js`, an inline style, an `onclick` attribute, an `eval` call):
+
+| Check | Enforced policy | Playground policy |
+| --- | --- | --- |
+| inline `self.__next_f.push(...)` script runs | yes | yes |
+| external `/sw-register.js` loads | yes | yes |
+| JSON-LD block | not subject to CSP | same |
+| `onclick="..."` attribute | **blocked** (`script-src-attr`) | allowed |
+| `eval()` (production policy) | blocked | allowed |
+| report-only policy | reports `script-src-elem inline` x2, `style-src-elem inline`, `script-src-attr`, `eval` | none sent |
+
+So the report-only baseline on any page is "Next's inline scripts and styles", as predicted, and the enforced
+policy changes nothing for the page except inline event-handler attributes.
+
+Not verified here: full pages of the site in Chrome. A `next dev --webpack` compile of the home page took 30
+minutes on this machine (memory pressure) and was stopped, no production build is available in this worktree, and
+the 540 static pages could not be measured (the estimate above comes from counting routes and content files).
+Headless Chrome also did not deliver the violation reports to `/api/csp-report` within 75 s (Playwright's Chrome
+profile may disable the reporting service), so end-to-end delivery is covered by unit tests of the endpoint only.
+After deployment: open any page in a normal Chrome and watch for `csp.violation` in the logs, and check in
+DevTools (Network, response headers) that `Content-Security-Policy`, `Content-Security-Policy-Report-Only` and
+`Reporting-Endpoints` are present on a blog post, `/auth/login`, a system-design page, and that the playground
+still has only its own policy with COOP/COEP.
