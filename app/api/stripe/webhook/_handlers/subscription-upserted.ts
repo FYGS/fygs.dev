@@ -135,7 +135,7 @@ export async function handleSubscriptionUpserted(event: Stripe.CustomerSubscript
                 userId,
                 resourceType: "subscription",
                 resourceId: subscription.id,
-                metadata: { userEmail: user.email, interval },
+                metadata: { interval },
               });
             } else {
               // Record generic subscription update (status change, price, cycle)

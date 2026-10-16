@@ -47,7 +47,6 @@ export async function handleInvoicePaymentFailed(event: Stripe.InvoicePaymentFai
             resourceType: "invoice",
             resourceId: invoice.id,
             metadata: {
-              userEmail: user.email,
               subscriptionId,
             },
           });

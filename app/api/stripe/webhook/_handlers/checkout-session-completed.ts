@@ -146,7 +146,6 @@ export async function handleCheckoutSessionCompleted(event: Stripe.CheckoutSessi
                   resourceId: productId,
                   metadata: {
                     courseTitle: course.title,
-                    userEmail: user.email,
                   },
                 });
               }
@@ -163,7 +162,7 @@ export async function handleCheckoutSessionCompleted(event: Stripe.CheckoutSessi
                 eventType: "email.subscription_welcome_sent",
                 userId,
                 resourceType: "subscription",
-                metadata: { userEmail: user.email },
+                metadata: {},
               });
             }
           }

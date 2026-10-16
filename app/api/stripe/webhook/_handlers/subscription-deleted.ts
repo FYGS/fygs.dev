@@ -41,7 +41,7 @@ export async function handleSubscriptionDeleted(event: Stripe.CustomerSubscripti
             userId,
             resourceType: "subscription",
             resourceId: subscription.id,
-            metadata: { userEmail: user.email },
+            metadata: {},
           });
         }
       } catch (emailError) {

@@ -45,7 +45,7 @@ export function createAuth(database: AuthDatabase) {
         });
       },
       onPasswordReset: async ({ user }) => {
-        console.log(`Password for user ${user.email} has been reset.`);
+        console.log(`Password for user ${user.id} has been reset.`);
       },
     },
     socialProviders: {
