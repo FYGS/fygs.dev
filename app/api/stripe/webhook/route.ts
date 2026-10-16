@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { paymentService, WebhookSignatureError } from "@/lib/payment-service";
+import { ensureIdempotent, releaseIdempotent } from "@/lib/rate-limit";
 import { logger } from "./_lib/logger";
 import { handleCheckoutSessionCompleted } from "./_handlers/checkout-session-completed";
 import { handleSubscriptionUpserted } from "./_handlers/subscription-upserted";
@@ -10,6 +11,9 @@ import { handleInvoicePaymentFailed } from "./_handlers/invoice-payment-failed";
 
 // Disable body parsing for webhooks
 export const runtime = "nodejs";
+
+// Stripe retries a failing event for up to 3 days.
+const EVENT_CLAIM_TTL_SECONDS = 3 * 24 * 60 * 60;
 
 export async function POST(req: NextRequest) {
   let body: string;
@@ -54,6 +58,19 @@ export async function POST(req: NextRequest) {
       metadata: { error: error instanceof Error ? error.message : String(error) },
     });
     return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
+  }
+
+  // Stripe delivers at least once and retries on any non-2xx: process each event
+  // id once. The claim is released when the handler fails so the retry can run.
+  const idempotencyKey = `stripe-event:${event.id}`;
+  const firstDelivery = await ensureIdempotent(idempotencyKey, EVENT_CLAIM_TTL_SECONDS);
+  if (!firstDelivery) {
+    logger.info("Duplicate Stripe webhook event ignored", {
+      eventType: "webhook.duplicate_event",
+      resourceType: "stripe_event",
+      resourceId: event.id,
+    });
+    return NextResponse.json({ received: true, duplicate: true });
   }
 
   try {
@@ -102,6 +119,7 @@ export async function POST(req: NextRequest) {
         });
     }
   } catch (error) {
+    await releaseIdempotent(idempotencyKey);
     // Log the full error details with stack trace
     logger.error("Webhook handler failed", {
       eventType: "webhook.handler_error",

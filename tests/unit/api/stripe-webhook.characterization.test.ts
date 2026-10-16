@@ -18,6 +18,12 @@ const h = vi.hoisted(() => ({
 
 const SigError = h.SigError;
 
+// Duplicate-delivery handling has its own test (stripe-webhook.idempotency.test.ts).
+vi.mock("@/lib/rate-limit", () => ({
+  ensureIdempotent: async () => true,
+  releaseIdempotent: async () => {},
+}));
+
 vi.mock("next/headers", () => ({
   headers: async () => {
     if (h.headers.mode === "throw") throw new Error("headers boom");

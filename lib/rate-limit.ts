@@ -316,3 +316,17 @@ export async function ensureIdempotent(id: string, ttlSeconds = 60): Promise<boo
     return true;
   }
 }
+
+/**
+ * Give back a claim made with ensureIdempotent, so that a retry may run the work
+ * again (used when the work failed). Best effort: if Redis is down the claim
+ * simply expires with its TTL.
+ */
+export async function releaseIdempotent(id: string): Promise<void> {
+  if (Date.now() < redisDownUntilMs) return;
+  try {
+    await withTimeout(redis.del(`idem:${id}`), REDIS_TIMEOUT_MS);
+  } catch {
+    /* the claim expires on its own */
+  }
+}

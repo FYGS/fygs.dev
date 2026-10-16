@@ -28,6 +28,7 @@ interface IRedisClient {
   multi(): ChainableCommander;
   eval(script: string, numKeys: number, ...args: (string | number)[]): Promise<unknown>;
   setNxEx(key: string, value: string, seconds: number): Promise<boolean>;
+  del(key: string): Promise<number>;
 }
 
 export class RedisClient implements IRedisClient {
@@ -147,6 +148,10 @@ export class RedisClient implements IRedisClient {
   async setNxEx(key: string, value: string, seconds: number): Promise<boolean> {
     const result = await this.client.set(key, value, "EX", seconds, "NX");
     return result === "OK";
+  }
+
+  async del(key: string): Promise<number> {
+    return this.client.del(key);
   }
 
   // Add utility methods for JSON handling
