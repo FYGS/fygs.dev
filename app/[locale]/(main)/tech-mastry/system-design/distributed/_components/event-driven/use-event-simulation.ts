@@ -18,6 +18,7 @@ import type {
 
 interface UseEventSimulationParams {
   isRunning: boolean;
+  events: Event[];
   scenario: EventScenario;
   services: Service[];
   eventBroker: EventBroker;
@@ -30,6 +31,7 @@ interface UseEventSimulationParams {
 // Drives the event animation loop and the scenario-dependent service status
 export function useEventSimulation({
   isRunning,
+  events,
   scenario,
   services,
   eventBroker,
@@ -43,6 +45,24 @@ export function useEventSimulation({
   const animationFrameRef = useRef<number | null>(null);
   const lastEventTimeRef = useRef(0);
   const processingTimesRef = useRef<number[]>([]);
+
+  // The animation loop reads and writes the event list through a ref, so that the
+  // state updater stays pure: updaters run twice in StrictMode, while the stats /
+  // broker side effects must run once per frame.
+  const eventsRef = useRef<Event[]>(events);
+  const ownEventLists = useRef(new WeakSet<Event[]>());
+  useEffect(() => {
+    // A list that did not come from the loop (e.g. "Reset") replaces the ref
+    if (!ownEventLists.current.has(events)) eventsRef.current = events;
+  }, [events]);
+  const commitEvents = useCallback(
+    (next: Event[]) => {
+      ownEventLists.current.add(next);
+      eventsRef.current = next;
+      setEvents(next);
+    },
+    [setEvents],
+  );
 
   // Wrap functions in useCallback to prevent recreation on every render
   const generateEvent = useCallback(() => {
@@ -65,7 +85,7 @@ export function useEventSimulation({
     });
 
     // Add the event to the list
-    setEvents((prev) => [...prev, newEvent]);
+    commitEvents([...eventsRef.current, newEvent]);
 
     // Update producer service events count
     setServices((prev) =>
@@ -81,14 +101,16 @@ export function useEventSimulation({
       ...prev,
       totalEvents: prev.totalEvents + 1,
     }));
-  }, [services, eventBroker, scenario, setEvents, setServices, setStats]);
+  }, [services, eventBroker, scenario, commitEvents, setServices, setStats]);
 
   // Process existing events
   const processEvents = useCallback(
     (timestamp: number) => {
-      setEvents((prev) => {
+      const nextEvents = ((prev: Event[]) => {
         // Process each event
-        const updatedEvents = prev.map((event) => {
+        const updatedEvents = prev.map((stateEvent) => {
+          // Work on a copy: the list held in state is never mutated
+          const event = { ...stateEvent };
           // Get the current service if at a service point
           let currentService: Service | undefined;
           if (
@@ -354,9 +376,10 @@ export function useEventSimulation({
           }
           return true;
         });
-      });
+      })(eventsRef.current);
+      commitEvents(nextEvents);
     },
-    [services, eventBroker, setEvents, setEventBroker, setServices, setStats]
+    [services, eventBroker, commitEvents, setEventBroker, setServices, setStats]
   );
 
   // Animation logic

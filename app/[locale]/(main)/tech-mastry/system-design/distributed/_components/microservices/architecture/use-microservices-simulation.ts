@@ -18,6 +18,13 @@ export function useMicroservicesSimulation(scenario: Scenario) {
   const animationFrameRef = useRef<number | null>(null);
   const lastRequestTimeRef = useRef(0);
   const responseTimes = useRef<number[]>([]);
+  // The loop reads and writes the list through a ref so the state updater stays
+  // pure (updaters run twice in StrictMode; the stats must be counted once).
+  const requestsRef = useRef<Request[]>([]);
+  const commitRequests = (next: Request[]) => {
+    requestsRef.current = next;
+    setRequests(next);
+  };
 
   // Set up the animation loop
   useEffect(() => {
@@ -30,7 +37,7 @@ export function useMicroservicesSimulation(scenario: Scenario) {
       const newRequest = createMicroserviceRequest(requestIdRef.current++, scenario);
 
       // Add the request to the list
-      setRequests((prev) => [...prev, newRequest]);
+      commitRequests([...requestsRef.current, newRequest]);
 
       // Update stats
       setStats((prev) => ({
@@ -41,7 +48,7 @@ export function useMicroservicesSimulation(scenario: Scenario) {
 
     // Process existing requests
     const processRequests = (timestamp: number) => {
-      setRequests((prev) => {
+      const nextRequests = ((prev: Request[]) => {
         // Process each request
         const updatedRequests = prev.map((request) =>
           advanceRequest(request, timestamp, isFailed, isOverloaded)
@@ -89,7 +96,8 @@ export function useMicroservicesSimulation(scenario: Scenario) {
           }
           return true;
         });
-      });
+      })(requestsRef.current);
+      commitRequests(nextRequests);
     };
 
     const animate = (timestamp: number) => {

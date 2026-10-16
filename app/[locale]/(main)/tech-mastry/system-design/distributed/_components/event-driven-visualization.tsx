@@ -56,6 +56,7 @@ export function EventDrivenVisualization() {
   useEventSimulation({
     isRunning,
     scenario,
+    events,
     services,
     eventBroker,
     setEvents,
