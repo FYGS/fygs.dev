@@ -1,0 +1,176 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`tech-mastry search-index (pinned) > derived helpers are stable 1`] = `460`;
+
+exports[`tech-mastry search-index (pinned) > derived helpers are stable 2`] = `"55688f2324b93494837a39b1871321e5b82287c3c64b761fc0c7af1f4b161924"`;
+
+exports[`tech-mastry search-index (pinned) > derived helpers are stable 3`] = `
+{
+  "categories": [
+    "Algorithmes",
+    "System Design",
+    "Frontend",
+    "Backend",
+    "Architecture",
+    "Outils",
+    "Préparation",
+    "Carrière",
+    "Sécurité & DevOps",
+    "Ressources",
+    "Structures de Données",
+    "Best Practices",
+    "Pratique",
+  ],
+  "subcategories": {
+    "Algorithmes": [
+      "Fondamentaux",
+      "Intermédiaire",
+      "Avancé",
+      "Greedy",
+      "Backtracking",
+      "Graphes",
+    ],
+    "Architecture": [
+      "Avancé",
+      "Intermédiaire",
+      "Fondamentaux",
+      "Expert",
+    ],
+    "Backend": [
+      "Fondamentaux",
+      "Intermédiaire",
+      "Architecture",
+      "Performance",
+      "DevOps",
+    ],
+    "Best Practices": [
+      "Exercices",
+    ],
+    "Carrière": [
+      "Négociation",
+      "Développement",
+      "Entretiens",
+    ],
+    "Frontend": [
+      "Fondamentaux",
+      "Avancé",
+      "Intermédiaire",
+      "CSS",
+      "Testing",
+      "Next.js",
+    ],
+    "Outils": [
+      "Pratique",
+    ],
+    "Pratique": [
+      "Interview",
+      "Solutions",
+    ],
+    "Préparation": [
+      "Stratégie",
+      "Pratique",
+      "Soft Skills",
+    ],
+    "Ressources": [
+      "Documentation",
+    ],
+    "Structures de Données": [
+      "Avancé",
+      "Fondamentaux",
+    ],
+    "System Design": [
+      "Fondamentaux",
+      "Avancé",
+      "Intermédiaire",
+      "Expert",
+      "Sécurité",
+      "Opérations",
+      "Whiteboard",
+    ],
+    "Sécurité & DevOps": [
+      "Sécurité",
+      "DevOps",
+      "Cloud",
+    ],
+  },
+}
+`;
+
+exports[`tech-mastry search-index (pinned) > has the same size, content hash and order 1`] = `52`;
+
+exports[`tech-mastry search-index (pinned) > has the same size, content hash and order 2`] = `"a2eceb88ea4a30197e8b71074b2b9564faa457f1ba2c8ad04ed4e791c15f29c3"`;
+
+exports[`tech-mastry search-index (pinned) > has the same size, content hash and order 3`] = `
+[
+  "/tech-mastry/algorithms/complexity",
+  "/tech-mastry/algorithms/data-structures",
+  "/tech-mastry/algorithms/sorting",
+  "/tech-mastry/algorithms/searching",
+  "/tech-mastry/algorithms/dynamic-programming",
+  "/tech-mastry/system-design/scalability",
+  "/tech-mastry/system-design/distributed",
+  "/tech-mastry/system-design/storage",
+  "/tech-mastry/system-design/case-studies",
+  "/tech-mastry/frontend/react-basics",
+  "/tech-mastry/frontend/performance",
+  "/tech-mastry/frontend/state-management",
+  "/tech-mastry/frontend/component-patterns",
+  "/tech-mastry/frontend/accessibility",
+  "/tech-mastry/backend/api-design",
+  "/tech-mastry/backend/databases",
+  "/tech-mastry/backend/security",
+  "/tech-mastry/architecture/clean-architecture",
+  "/tech-mastry/architecture/design-patterns",
+  "/tech-mastry/architecture/solid",
+  "/tech-mastry/architecture/ddd",
+  "/tech-mastry/playground",
+  "/tech-mastry/preparation",
+  "/tech-mastry/preparation/mock-interviews",
+  "/tech-mastry/preparation/stress-management",
+  "/tech-mastry/career/salary-negotiation",
+  "/tech-mastry/career/progression",
+  "/tech-mastry/career/interview-tips",
+  "/tech-mastry/security-devops/owasp-top-10",
+  "/tech-mastry/security-devops/cicd",
+  "/tech-mastry/security-devops/docker-kubernetes",
+  "/tech-mastry/security-devops/cloud-native",
+  "/tech-mastry/system-design/security",
+  "/tech-mastry/system-design/monitoring",
+  "/tech-mastry/resources",
+  "/tech-mastry/data-structures/hash-maps",
+  "/tech-mastry/data-structures/graphs",
+  "/tech-mastry/data-structures/heaps",
+  "/tech-mastry/data-structures/stacks-queues",
+  "/tech-mastry/backend/architecture",
+  "/tech-mastry/backend/performance",
+  "/tech-mastry/backend/devops",
+  "/tech-mastry/algorithms/greedy",
+  "/tech-mastry/algorithms/backtracking",
+  "/tech-mastry/algorithms/graph-algorithms",
+  "/tech-mastry/frontend/css-advanced",
+  "/tech-mastry/frontend/testing",
+  "/tech-mastry/frontend/nextjs-patterns",
+  "/tech-mastry/best-practices/exercises",
+  "/tech-mastry/system-design/whiteboard",
+  "/tech-mastry/interview-simulation/question-bank",
+  "/tech-mastry/challenges/solutions",
+]
+`;
+
+exports[`tech-mastry search-index (pinned) > keeps the per-category counts 1`] = `
+{
+  "Algorithmes": 8,
+  "Architecture": 4,
+  "Backend": 6,
+  "Best Practices": 1,
+  "Carrière": 3,
+  "Frontend": 8,
+  "Outils": 1,
+  "Pratique": 2,
+  "Préparation": 3,
+  "Ressources": 1,
+  "Structures de Données": 4,
+  "System Design": 7,
+  "Sécurité & DevOps": 4,
+}
+`;
