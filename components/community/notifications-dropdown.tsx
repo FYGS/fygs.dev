@@ -56,21 +56,6 @@ export function NotificationsDropdown({
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  // Real-time polling for new notifications every 30 seconds
-  useEffect(() => {
-    if (!userId) return;
-
-    // Initial load
-    loadNotifications();
-
-    // Poll for new notifications
-    const interval = setInterval(() => {
-      loadNotifications();
-    }, 30000); // 30 seconds
-
-    return () => clearInterval(interval);
-  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const loadNotifications = async () => {
     if (!userId || isLoading) return;
     
@@ -87,6 +72,21 @@ export function NotificationsDropdown({
       setIsLoading(false);
     }
   };
+
+  // Real-time polling for new notifications every 30 seconds
+  useEffect(() => {
+    if (!userId) return;
+
+    // Initial load
+    loadNotifications();
+
+    // Poll for new notifications
+    const interval = setInterval(() => {
+      loadNotifications();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const markAsRead = async (notificationIds?: string[]) => {
     if (!userId) return;

@@ -30,8 +30,10 @@ export function useAutoSave<T>({
   const initialDataRef = useRef(data);
   const isFirstRender = useRef(true);
 
-  // Keep dataRef in sync
-  dataRef.current = data;
+  // Keep dataRef in sync (declared before the scheduling effect so it runs first)
+  useEffect(() => {
+    dataRef.current = data;
+  });
 
   const save = useCallback(async () => {
     if (!enabled) return;
