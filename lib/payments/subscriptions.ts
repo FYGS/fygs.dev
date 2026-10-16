@@ -5,6 +5,7 @@ import {
   Prisma,
 } from "@prisma/client";
 import { createLogger } from "../structured-logger";
+import { stripeRefId } from "../stripe-shapes";
 import { StripeBilling } from "./billing";
 
 /** Subscription lifecycle on Stripe: price switch, cancellation, refunds, retrieval. */
@@ -23,40 +24,40 @@ export class SubscriptionManagement extends StripeBilling {
         proration_behavior: "create_prorations",
         items: [{ id: currentItemId, price: newPriceId }],
       });
-      // Attempt to capture upcoming invoice for audit (proration)
+      // Capture the upcoming invoice for audit (proration). `invoices.retrieveUpcoming`
+      // was removed from the API in 2025-03-31 (basil); `createPreview` replaces it.
+      // A preview is not a stored invoice: its id (`upcoming_in_...`) is the same for
+      // every preview of the subscription, so it is kept in metadata, not in
+      // `stripeInvoiceId`, and every plan switch gets its own audit row.
       try {
-        // Type casting because Stripe types may not include retrieveUpcoming in current version
-        const invoicesAny: any = stripe.invoices as any;
-        const upcoming = await invoicesAny
-          .retrieveUpcoming({ subscription: stripeSubscriptionId })
-          .catch(() => null);
-        if (upcoming && upcoming.id && db.invoiceAudit) {
-          const amountDue = new Prisma.Decimal(
-            ((upcoming.amount_due || 0) / 100).toFixed(2),
-          );
-
-          // Check if audit already exists
-          const existingAudit = await db.invoiceAudit
-            .findFirst({
-              where: { stripeInvoiceId: upcoming.id },
-            })
-            .catch(() => null);
-
-          if (!existingAudit) {
-            await db.invoiceAudit
-              .create({
-                data: {
-                  userId:
-                    (subscription as any).metadata?.userId ||
-                    (subscription.customer as string) ||
-                    "unknown",
-                  stripeInvoiceId: upcoming.id,
-                  type: "PRORATION",
-                  amount: amountDue,
+        const preview = await stripe.invoices.createPreview({
+          subscription: stripeSubscriptionId,
+        });
+        if (db.invoiceAudit) {
+          const prorationCents = preview.lines.data
+            .filter((line) => line.parent?.subscription_item_details?.proration)
+            .reduce((sum, line) => sum + line.amount, 0);
+          await db.invoiceAudit
+            .create({
+              data: {
+                userId:
+                  subscription.metadata?.userId ||
+                  stripeRefId(subscription.customer) ||
+                  "unknown",
+                type: "PRORATION",
+                amount: new Prisma.Decimal(
+                  ((preview.amount_due || 0) / 100).toFixed(2),
+                ),
+                currency: preview.currency,
+                metadata: {
+                  previewInvoiceId: preview.id ?? null,
+                  prorationCents,
+                  stripeSubscriptionId,
+                  newPriceId,
                 },
-              })
-              .catch(() => {});
-          }
+              },
+            })
+            .catch(() => {});
         }
       } catch (e) {
         console.warn("Could not log proration invoice", e);
