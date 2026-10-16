@@ -23,6 +23,7 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
       // ── File System State ──
       files: defaultFiles,
       activeFileId: defaultFiles[0].id,
+      projectId: "default",
       openTabs: [
         { fileId: defaultFiles[0].id, isPinned: false, isPreview: false },
       ],
@@ -40,6 +41,14 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
 
       // ── Layout State ──
       layout: defaultLayout,
+
+      // ── AI assistant ──
+      aiPanelOpen: false,
+      aiAsk: null,
+      setAiPanelOpen: (open) => set({ aiPanelOpen: open }),
+      askAi: (mode, prompt) =>
+        set({ aiPanelOpen: true, aiAsk: { id: Date.now(), mode, prompt } }),
+      clearAiAsk: () => set({ aiAsk: null }),
 
       // ── History ──
       history: { snapshots: [], maxSnapshots: 50 } as EditorHistory,
@@ -86,6 +95,7 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
       partialize: (state) => ({
         files: state.files,
         activeFileId: state.activeFileId,
+        projectId: state.projectId,
         openTabs: state.openTabs,
         settings: state.settings,
         theme: state.theme,

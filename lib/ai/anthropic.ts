@@ -1,0 +1,217 @@
+import { readSseStream } from "./sse";
+
+/**
+ * Server-only client for the Anthropic Messages API (streaming), over plain
+ * `fetch`. The API key never leaves the server.
+ */
+
+export const DEFAULT_AI_MODEL = "claude-sonnet-5-5";
+const DEFAULT_BASE_URL = "https://api.anthropic.com";
+const ANTHROPIC_VERSION = "2023-06-01";
+
+export interface AiConfig {
+  apiKey: string;
+  model: string;
+  baseUrl: string;
+}
+
+/** Read the configuration from the environment; null when no key is set (offline mode). */
+export function getAiConfig(env: NodeJS.ProcessEnv = process.env): AiConfig | null {
+  const apiKey = env.ANTHROPIC_API_KEY?.trim();
+  if (!apiKey) return null;
+  return {
+    apiKey,
+    model: env.AI_MODEL?.trim() || DEFAULT_AI_MODEL,
+    baseUrl: (env.ANTHROPIC_BASE_URL?.trim() || DEFAULT_BASE_URL).replace(/\/+$/, ""),
+  };
+}
+
+export type AiErrorCode = "busy" | "unavailable" | "timeout" | "upstream_error";
+
+/**
+ * A failure of the model provider, already translated to something safe to show:
+ * the message never contains the upstream body, status text or key.
+ */
+export class AiUpstreamError extends Error {
+  constructor(
+    readonly code: AiErrorCode,
+    readonly httpStatus: number,
+    message: string,
+    readonly retryAfter?: number,
+  ) {
+    super(message);
+    this.name = "AiUpstreamError";
+  }
+}
+
+export function mapUpstreamStatus(status: number, retryAfterHeader?: string | null): AiUpstreamError {
+  const parsed = Number(retryAfterHeader);
+  const retryAfter = Number.isFinite(parsed) && parsed > 0 ? Math.min(Math.ceil(parsed), 600) : undefined;
+  if (status === 429 || status === 529) {
+    return new AiUpstreamError("busy", 503, "The AI service is busy, please retry shortly.", retryAfter ?? 30);
+  }
+  if (status === 401 || status === 403) {
+    // A bad key is an operator problem, not something the learner can act on
+    return new AiUpstreamError("unavailable", 503, "The AI service is not available right now.");
+  }
+  if (status === 408 || status === 504) {
+    return new AiUpstreamError("timeout", 504, "The AI service took too long to answer.");
+  }
+  return new AiUpstreamError("upstream_error", 502, "The AI service returned an error.");
+}
+
+export interface CompletionMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface CompletionOptions {
+  config: AiConfig;
+  system: string;
+  messages: CompletionMessage[];
+  maxTokens: number;
+  /** Aborts the upstream call, e.g. when the browser disconnects. */
+  signal?: AbortSignal;
+  /** Time allowed to receive the response headers. */
+  connectTimeoutMs?: number;
+  /** Longest silence tolerated between two chunks. */
+  idleTimeoutMs?: number;
+  /** Ceiling for the whole answer. */
+  totalTimeoutMs?: number;
+  fetchImpl?: typeof fetch;
+}
+
+export interface CompletionStream {
+  /** Text deltas, in order. Throws AiUpstreamError if the stream fails midway. */
+  text: AsyncGenerator<string, void>;
+  /** Available once `text` is exhausted: whether the answer hit max_tokens. */
+  readonly truncated: boolean;
+}
+
+/**
+ * Start a streaming completion. Resolves once the provider has accepted the
+ * request (so HTTP-level failures surface as an AiUpstreamError before any byte
+ * is sent to the browser); text then arrives through `text`.
+ */
+export async function openCompletion(opts: CompletionOptions): Promise<CompletionStream> {
+  const {
+    config,
+    connectTimeoutMs = 30_000,
+    idleTimeoutMs = 30_000,
+    totalTimeoutMs = 120_000,
+    fetchImpl = fetch,
+  } = opts;
+
+  const controller = new AbortController();
+  let timedOut = false;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const startedAt = Date.now();
+
+  const arm = (ms: number) => {
+    clearTimeout(timer);
+    const remaining = totalTimeoutMs - (Date.now() - startedAt);
+    timer = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, Math.max(1, Math.min(ms, remaining)));
+  };
+  const onAbort = () => controller.abort();
+  const cleanup = () => {
+    clearTimeout(timer);
+    opts.signal?.removeEventListener("abort", onAbort);
+  };
+
+  if (opts.signal?.aborted) controller.abort();
+  else opts.signal?.addEventListener("abort", onAbort, { once: true });
+  arm(connectTimeoutMs);
+
+  let response: Response;
+  try {
+    response = await fetchImpl(`${config.baseUrl}/v1/messages`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": config.apiKey,
+        "anthropic-version": ANTHROPIC_VERSION,
+      },
+      body: JSON.stringify({
+        model: config.model,
+        max_tokens: opts.maxTokens,
+        system: opts.system,
+        messages: opts.messages,
+        stream: true,
+      }),
+      cache: "no-store",
+      signal: controller.signal,
+    });
+  } catch (error) {
+    cleanup();
+    if (opts.signal?.aborted) throw error; // the caller went away: not an upstream failure
+    if (timedOut) throw new AiUpstreamError("timeout", 504, "The AI service took too long to answer.");
+    throw new AiUpstreamError("upstream_error", 502, "The AI service could not be reached.");
+  }
+
+  if (!response.ok || !response.body) {
+    cleanup();
+    const retryAfter = response.headers.get("retry-after");
+    await response.body?.cancel().catch(() => {});
+    throw mapUpstreamStatus(response.ok ? 502 : response.status, retryAfter);
+  }
+
+  const body = response.body;
+  const stream: { truncated: boolean } = { truncated: false };
+
+  async function* generate(): AsyncGenerator<string, void> {
+    let finished = false;
+    try {
+      arm(idleTimeoutMs);
+      for await (const sse of readSseStream(body)) {
+        arm(idleTimeoutMs);
+        let payload: Record<string, unknown>;
+        try {
+          payload = JSON.parse(sse.data);
+        } catch {
+          continue; // not JSON (e.g. a keep-alive): nothing to act on
+        }
+        const type = (payload.type as string | undefined) ?? sse.event;
+
+        if (type === "content_block_delta") {
+          const delta = payload.delta as { type?: string; text?: string } | undefined;
+          if (delta?.type === "text_delta" && typeof delta.text === "string" && delta.text) {
+            yield delta.text;
+          }
+        } else if (type === "message_delta") {
+          const delta = payload.delta as { stop_reason?: string } | undefined;
+          if (delta?.stop_reason === "max_tokens") stream.truncated = true;
+        } else if (type === "message_stop") {
+          finished = true;
+          return;
+        } else if (type === "error") {
+          const err = payload.error as { type?: string } | undefined;
+          const busy = err?.type === "overloaded_error" || err?.type === "rate_limit_error";
+          throw busy
+            ? new AiUpstreamError("busy", 503, "The AI service is busy, please retry shortly.", 30)
+            : new AiUpstreamError("upstream_error", 502, "The AI service returned an error.");
+        }
+      }
+      if (!finished) {
+        throw new AiUpstreamError("upstream_error", 502, "The AI service closed the stream unexpectedly.");
+      }
+    } catch (error) {
+      if (error instanceof AiUpstreamError) throw error;
+      if (opts.signal?.aborted) throw error;
+      if (timedOut) throw new AiUpstreamError("timeout", 504, "The AI service took too long to answer.");
+      throw new AiUpstreamError("upstream_error", 502, "The AI service stream failed.");
+    } finally {
+      cleanup();
+      controller.abort(); // release the connection if we stopped early
+    }
+  }
+
+  return {
+    text: generate(),
+    get truncated() {
+      return stream.truncated;
+    },
+  };
+}

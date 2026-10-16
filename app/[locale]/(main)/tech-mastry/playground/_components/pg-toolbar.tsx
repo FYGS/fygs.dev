@@ -29,10 +29,12 @@ import {
   Search,
   Settings,
   Share2,
+  Sparkles,
   StopCircle,
   Terminal,
   Wand2,
 } from "lucide-react";
+import { useIntlayer } from "next-intlayer";
 import { toast } from "sonner";
 import { usePlaygroundStore } from "../_stores/playground-store";
 
@@ -68,6 +70,9 @@ export function PgToolbar() {
   const toggleConsole = usePlaygroundStore((s) => s.toggleConsole);
   const togglePreview = usePlaygroundStore((s) => s.togglePreview);
   const layout = usePlaygroundStore((s) => s.layout);
+  const aiPanelOpen = usePlaygroundStore((s) => s.aiPanelOpen);
+  const setAiPanelOpen = usePlaygroundStore((s) => s.setAiPanelOpen);
+  const aiText = useIntlayer("ai-assistant");
   const getPackageJson = usePlaygroundStore((s) => {
     const file = s.files.find((f) => f.name === "package.json");
     return file?.content ?? null;
@@ -330,6 +335,28 @@ export function PgToolbar() {
           <Code2 className="h-3 w-3" />
           <span className="capitalize">{language}</span>
         </div>
+
+        {/* AI assistant */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-pressed={aiPanelOpen}
+              aria-label={aiText.openTooltip.value}
+              data-testid="pg-ai-toggle"
+              className={cn(
+                "h-7 gap-1.5 px-2 text-xs",
+                aiPanelOpen ? "bg-primary/15 text-primary" : "text-muted-foreground",
+              )}
+              onClick={() => setAiPanelOpen(!aiPanelOpen)}
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              <span className="hidden md:inline">{aiText.shortLabel.value}</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{aiText.openTooltip.value}</TooltipContent>
+        </Tooltip>
 
         {/* Command Palette */}
         <ToolbarButton

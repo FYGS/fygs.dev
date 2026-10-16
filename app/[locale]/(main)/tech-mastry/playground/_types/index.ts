@@ -134,6 +134,8 @@ export interface PlaygroundStore {
   files: EditorFile[];
   activeFileId: string | null;
   openTabs: EditorTab[];
+  /** Identifies the current project (template id, "default", "shared"); keys the AI conversation. */
+  projectId: string;
 
   // ── Editor State ──
   settings: EditorSettings;
@@ -148,6 +150,14 @@ export interface PlaygroundStore {
 
   // ── Layout State ──
   layout: LayoutState;
+
+  // ── AI assistant (not persisted) ──
+  aiPanelOpen: boolean;
+  /** A question queued for the assistant panel (e.g. "Explain this error"). */
+  aiAsk: { id: number; mode: string; prompt: string } | null;
+  setAiPanelOpen: (open: boolean) => void;
+  askAi: (mode: string, prompt: string) => void;
+  clearAiAsk: () => void;
 
   // ── History ──
   history: EditorHistory;
@@ -182,7 +192,11 @@ export interface PlaygroundStore {
   formatCode: () => void;
 
   // ── Execution Actions ──
-  executeCode: (options?: { runScript?: string }) => Promise<void>;
+  executeCode: (options?: {
+    runScript?: string;
+    /** Run this code in place of the active file, without changing the file. */
+    snippet?: string;
+  }) => Promise<void>;
   stopExecution: () => void;
   clearConsole: () => void;
   addConsoleEntry: (entry: Omit<ConsoleEntry, "id" | "timestamp">) => void;

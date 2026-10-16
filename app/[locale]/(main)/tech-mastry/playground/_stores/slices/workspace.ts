@@ -30,6 +30,7 @@ export const createWorkspaceSlice = (
       files.find((f) => f.path === template.mainFile) || files[0];
 
     set({
+      projectId: template.id,
       files,
       activeFileId: mainFile?.id || null,
       openTabs: mainFile
@@ -49,6 +50,7 @@ export const createWorkspaceSlice = (
     }));
 
     set({
+      projectId: "default",
       files: freshFiles,
       activeFileId: freshFiles[0].id,
       openTabs: [
@@ -98,6 +100,7 @@ export const createWorkspaceSlice = (
       if (files.length === 0) return;
 
       set({
+        projectId: "shared",
         files,
         activeFileId: files[0].id,
         openTabs: [

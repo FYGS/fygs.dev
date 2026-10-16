@@ -34,6 +34,16 @@ The application implements a comprehensive keyboard shortcuts system for theme s
 - **Escape** → Close Guide
 - Implemented via: `providers/shortcuts-guide-provider.tsx`
 
+### 4. **Playground Shortcuts** (`/tech-mastry/playground`)
+- **Ctrl/Cmd + Enter** → Run code
+- **Ctrl/Cmd + S** → Save a snapshot
+- **Ctrl/Cmd + Shift + F** → Format
+- **Ctrl/Cmd + B** → Toggle the file explorer
+- **Ctrl/Cmd + J** → Toggle the console
+- **Ctrl/Cmd + K** → Command palette
+- **Ctrl/Cmd + I** → Open the AI assistant (or focus its input when already open). Inside the editor this replaces Monaco's "expand line selection"; **Escape** in the assistant's input gives the focus back to the editor.
+- Implemented via: `app/[locale]/(main)/tech-mastry/playground/_hooks/use-playground-shortcuts.ts` (and an editor command in `pg-code-editor.tsx`, since Monaco swallows the key)
+
 ## User Interface
 
 ### Shortcuts Toolbar

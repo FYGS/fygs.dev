@@ -55,7 +55,10 @@ export const createExecutionSlice = (
       let packageJsonContent = "";
 
       files.forEach((file) => {
-        fileMap[file.path] = file.content;
+        fileMap[file.path] =
+          options?.snippet !== undefined && file.id === activeFileId
+            ? options.snippet
+            : file.content;
         if (file.isEntryPoint) entryPoint = file.path;
         if (file.name === "package.json") packageJsonContent = file.content;
       });
@@ -95,7 +98,7 @@ export const createExecutionSlice = (
       }
 
       const params: ExecuteCodeParams = {
-        code: activeFile?.content ?? "",
+        code: options?.snippet ?? activeFile?.content ?? "",
         language: lang,
         signal: controller.signal,
         files: fileMap,

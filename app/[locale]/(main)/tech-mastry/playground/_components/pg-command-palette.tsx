@@ -217,6 +217,7 @@ export function PgCommandPalette() {
       label: "AI Learning Assistant",
       icon: <Bot className="h-4 w-4" />,
       group: "Features",
+      shortcut: "Ctrl+I",
       execute: () => {
         close();
         setTimeout(

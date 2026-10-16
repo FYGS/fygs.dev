@@ -11,16 +11,20 @@ import {
   ChevronRight,
   Copy,
   Info,
+  Sparkles,
   Terminal,
   Trash2,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useIntlayer } from "next-intlayer";
 import { toast } from "sonner";
 import type { ConsoleEntry } from "../_types";
 import { usePlaygroundStore } from "../_stores/playground-store";
 
 function ConsoleEntryRow({ entry }: { entry: ConsoleEntry }) {
   const [expanded, setExpanded] = useState(false);
+  const aiText = useIntlayer("ai-assistant");
+  const askAi = usePlaygroundStore((s) => s.askAi);
 
   const isMultiLine = entry.content.includes("\n");
   const isJson = entry.content.startsWith("{") || entry.content.startsWith("[");
@@ -99,6 +103,17 @@ function ConsoleEntryRow({ entry }: { entry: ConsoleEntry }) {
         </span>
       )}
 
+      {entry.type === "error" && (
+        <button
+          type="button"
+          onClick={() => askAi("debug", aiText.explainError.prompt.value)}
+          title={aiText.explainError.title.value}
+          className="shrink-0 rounded px-1.5 py-0.5 text-[10px] text-primary opacity-0 transition-opacity hover:bg-primary/10 focus-visible:opacity-100 group-hover:opacity-100"
+        >
+          {aiText.explainError.button.value}
+        </button>
+      )}
+
       <span className="shrink-0 text-[10px] text-muted-foreground/50 pt-0.5 opacity-0 group-hover:opacity-100">
         {new Date(entry.timestamp).toLocaleTimeString([], {
           hour: "2-digit",
@@ -114,6 +129,8 @@ export function PgConsole() {
   const consoleEntries = usePlaygroundStore((s) => s.consoleEntries);
   const clearConsole = usePlaygroundStore((s) => s.clearConsole);
   const status = usePlaygroundStore((s) => s.status);
+  const askAi = usePlaygroundStore((s) => s.askAi);
+  const aiText = useIntlayer("ai-assistant");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new entries arrive
@@ -161,6 +178,20 @@ export function PgConsole() {
               <AlertTriangle className="h-3 w-3" />
               {warnCount}
             </span>
+          )}
+
+          {errorCount > 0 && status !== "running" && (
+            <Button
+              variant="ghost"
+              size="sm"
+              data-testid="pg-explain-error"
+              className="h-5 gap-1 px-1.5 text-[10px] text-primary hover:text-primary"
+              title={aiText.explainError.title.value}
+              onClick={() => askAi("debug", aiText.explainError.prompt.value)}
+            >
+              <Sparkles className="h-3 w-3" />
+              {aiText.explainError.button.value}
+            </Button>
           )}
 
           {status === "running" && (
