@@ -75,6 +75,7 @@ export function ServiceMeshVisualization() {
     scenario,
     activeFeature,
     serviceMeshType,
+    requests,
     services,
     proxies,
     setRequests,

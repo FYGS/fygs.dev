@@ -270,6 +270,10 @@ export function createRequest({
     payload,
     size,
     traceId,
+    // Mesh-specific routing flags chosen by selectRequestPath
+    ...(requestPath.canary && { canary: true }),
+    ...(requestPath.autoRetry && { autoRetry: true }),
+    ...(requestPath.dynamicDiscovery && { dynamicDiscovery: true }),
   };
 
   return newRequest;

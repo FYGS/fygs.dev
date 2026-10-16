@@ -16,6 +16,7 @@ import type {
 
 interface UseMeshSimulationParams {
   isRunning: boolean;
+  requests: Request[];
   scenario: MeshScenario;
   activeFeature: MeshFeature;
   serviceMeshType: ServiceMeshType;
@@ -29,6 +30,7 @@ interface UseMeshSimulationParams {
 // Drives the request animation loop and the scenario-dependent service status
 export function useMeshSimulation({
   isRunning,
+  requests,
   scenario,
   activeFeature,
   serviceMeshType,
@@ -43,6 +45,24 @@ export function useMeshSimulation({
   const animationFrameRef = useRef<number | null>(null);
   const lastRequestTimeRef = useRef(0);
   const latenciesRef = useRef<number[]>([]);
+
+  // The animation loop reads and writes the request list through a ref, so that
+  // the state updater stays pure: updaters run twice in StrictMode, and the
+  // stats / service / retry side effects must run once per frame.
+  const requestsRef = useRef<Request[]>(requests);
+  const ownRequestLists = useRef(new WeakSet<Request[]>());
+  useEffect(() => {
+    // A list that did not come from the loop (e.g. "Reset") replaces the ref
+    if (!ownRequestLists.current.has(requests)) requestsRef.current = requests;
+  }, [requests]);
+  const commitRequests = useCallback(
+    (next: Request[]) => {
+      ownRequestLists.current.add(next);
+      requestsRef.current = next;
+      setRequests(next);
+    },
+    [setRequests],
+  );
 
   // Helper function to get a service by ID wrapped in useCallback
   const getServiceById = useCallback(
@@ -96,7 +116,7 @@ export function useMeshSimulation({
       });
 
       // Add the request to the list
-      setRequests((prev) => [...prev, newRequest]);
+      commitRequests([...requestsRef.current, newRequest]);
 
       // Update source service requests count
       setServices((prev) =>
@@ -116,7 +136,7 @@ export function useMeshSimulation({
 
     // Process existing requests - moved inside useEffect
     const processRequests = (timestamp: number) => {
-      setRequests((prev) => {
+      const nextRequests = ((prev: Request[]) => {
         // Process each request
         const updatedRequests = prev.map((request) => {
           // Get the current service if at a service point
@@ -178,8 +198,8 @@ export function useMeshSimulation({
             if (shouldRetry && Math.random() < 0.7) {
               // Create a retry request
               setTimeout(() => {
-                setRequests((prevRequests) => [
-                  ...prevRequests,
+                commitRequests([
+                  ...requestsRef.current,
                   {
                     ...request,
                     id: requestIdRef.current++,
@@ -367,7 +387,8 @@ export function useMeshSimulation({
           }
           return true;
         });
-      });
+      })(requestsRef.current);
+      commitRequests(nextRequests);
     };
 
     const animate = (timestamp: number) => {
@@ -401,7 +422,7 @@ export function useMeshSimulation({
     serviceMeshType,
     getServiceById,
     getProxyByServiceId,
-    setRequests,
+    commitRequests,
     setServices,
     setStats,
   ]);
