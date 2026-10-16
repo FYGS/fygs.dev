@@ -4,16 +4,17 @@ import { db } from "@/lib/db";
 import { Prisma, PaymentStatus, PaymentKind, SubscriptionStatus } from "@prisma/client";
 import { Analytics } from "@/lib/analytics-helper";
 import { logger } from "../_lib/logger";
+import { getInvoiceSubscriptionId } from "../_lib/invoice";
 
 export async function handleInvoicePaymentSucceeded(event: Stripe.InvoicePaymentSucceededEvent): Promise<void> {
   try {
     const invoice = event.data.object as any;
 
+    const subscriptionId = getInvoiceSubscriptionId(invoice);
+
     // Webhook is the single source of truth for successful subscription payments
-    if (invoice.subscription) {
-      const subscription = await paymentService.getSubscription(
-        invoice.subscription as string,
-      );
+    if (subscriptionId) {
+      const subscription = await paymentService.getSubscription(subscriptionId);
       const userId = subscription.metadata?.userId;
 
       if (userId) {
@@ -21,7 +22,7 @@ export async function handleInvoicePaymentSucceeded(event: Stripe.InvoicePayment
         await db.subscription.updateMany({
           where: {
             userId,
-            stripeSubscriptionId: invoice.subscription as string,
+            stripeSubscriptionId: subscriptionId,
           },
           data: {
             status: SubscriptionStatus.ACTIVE,
@@ -30,17 +31,19 @@ export async function handleInvoicePaymentSucceeded(event: Stripe.InvoicePayment
 
         // Update/Create payment record for this invoice
         try {
+          // One payment row per invoice (the reference column holds the invoice id):
+          // keying on the subscription id made every renewal overwrite the same row.
           const existingPayment = await db.payment.findFirst({
             where: {
               userId,
-              stripePaymentIntentId: invoice.subscription,
+              stripePaymentIntentId: invoice.id,
               kind: PaymentKind.SUBSCRIPTION,
             },
           });
 
           const paymentData = {
             userId,
-            stripePaymentIntentId: invoice.subscription,
+            stripePaymentIntentId: invoice.id,
             amount: new Prisma.Decimal(
               ((invoice.amount_paid || 0) / 100).toFixed(2),
             ),
@@ -77,14 +80,14 @@ export async function handleInvoicePaymentSucceeded(event: Stripe.InvoicePayment
           eventType: "payment.succeeded",
           userId,
           resourceType: "subscription",
-          resourceId: invoice.subscription,
+          resourceId: subscriptionId,
           metadata: { invoiceId: invoice.id },
         });
 
         // Track analytics for renewal
         Analytics.subscriptionRenewed(userId, {
           invoiceId: invoice.id,
-          subscriptionId: invoice.subscription,
+          subscriptionId,
           amount: (invoice.amount_paid || 0) / 100,
         });
       }

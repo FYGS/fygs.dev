@@ -5,16 +5,17 @@ import { SubscriptionStatus } from "@prisma/client";
 import { emailService } from "@/lib/email-service";
 import { Analytics } from "@/lib/analytics-helper";
 import { logger } from "../_lib/logger";
+import { getInvoiceSubscriptionId } from "../_lib/invoice";
 
 export async function handleInvoicePaymentFailed(event: Stripe.InvoicePaymentFailedEvent): Promise<void> {
   try {
     const invoice = event.data.object as any;
 
+    const subscriptionId = getInvoiceSubscriptionId(invoice);
+
     // Webhook is the single source of truth for payment failures
-    if (invoice.subscription) {
-      const subscription = await paymentService.getSubscription(
-        invoice.subscription as string,
-      );
+    if (subscriptionId) {
+      const subscription = await paymentService.getSubscription(subscriptionId);
       const userId = subscription.metadata?.userId;
 
       if (userId) {
@@ -22,7 +23,7 @@ export async function handleInvoicePaymentFailed(event: Stripe.InvoicePaymentFai
         await db.subscription.updateMany({
           where: {
             userId,
-            stripeSubscriptionId: invoice.subscription as string,
+            stripeSubscriptionId: subscriptionId,
           },
           data: {
             status: SubscriptionStatus.PAST_DUE,
@@ -47,12 +48,12 @@ export async function handleInvoicePaymentFailed(event: Stripe.InvoicePaymentFai
             resourceId: invoice.id,
             metadata: {
               userEmail: user.email,
-              subscriptionId: invoice.subscription,
+              subscriptionId,
             },
           });
           Analytics.subscriptionPaymentFailed(userId, {
             invoiceId: invoice.id,
-            subscriptionId: invoice.subscription,
+            subscriptionId,
           });
         }
 
@@ -60,7 +61,7 @@ export async function handleInvoicePaymentFailed(event: Stripe.InvoicePaymentFai
           eventType: "payment.failed",
           userId,
           resourceType: "subscription",
-          resourceId: invoice.subscription,
+          resourceId: subscriptionId,
           fromState: SubscriptionStatus.ACTIVE,
           toState: SubscriptionStatus.PAST_DUE,
           metadata: { invoiceId: invoice.id },

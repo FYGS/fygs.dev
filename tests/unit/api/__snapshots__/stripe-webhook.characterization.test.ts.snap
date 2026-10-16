@@ -2514,7 +2514,7 @@ exports[`POST /api/stripe/webhook (pinned behaviour) > invoicePaidExisting 1`] =
       {
         "where": {
           "kind": "SUBSCRIPTION",
-          "stripePaymentIntentId": "sub_1",
+          "stripePaymentIntentId": "in_1",
           "userId": "u1",
         },
       },
@@ -2528,7 +2528,7 @@ exports[`POST /api/stripe/webhook (pinned behaviour) > invoicePaidExisting 1`] =
           "description": "Renouvellement abonnement Premium",
           "kind": "SUBSCRIPTION",
           "status": "COMPLETED",
-          "stripePaymentIntentId": "sub_1",
+          "stripePaymentIntentId": "in_1",
           "userId": "u1",
         },
         "where": {
@@ -2682,7 +2682,7 @@ exports[`POST /api/stripe/webhook (pinned behaviour) > invoicePaidNew 1`] = `
       {
         "where": {
           "kind": "SUBSCRIPTION",
-          "stripePaymentIntentId": "sub_1",
+          "stripePaymentIntentId": "in_1",
           "userId": "u1",
         },
       },
@@ -2696,7 +2696,7 @@ exports[`POST /api/stripe/webhook (pinned behaviour) > invoicePaidNew 1`] = `
           "description": "Renouvellement abonnement Premium",
           "kind": "SUBSCRIPTION",
           "status": "COMPLETED",
-          "stripePaymentIntentId": "sub_1",
+          "stripePaymentIntentId": "in_1",
           "userId": "u1",
         },
       },
@@ -2872,7 +2872,7 @@ exports[`POST /api/stripe/webhook (pinned behaviour) > invoicePaidRecordFails 1`
       {
         "where": {
           "kind": "SUBSCRIPTION",
-          "stripePaymentIntentId": "sub_1",
+          "stripePaymentIntentId": "in_1",
           "userId": "u1",
         },
       },
@@ -2886,7 +2886,7 @@ exports[`POST /api/stripe/webhook (pinned behaviour) > invoicePaidRecordFails 1`
           "description": "Renouvellement abonnement Premium",
           "kind": "SUBSCRIPTION",
           "status": "COMPLETED",
-          "stripePaymentIntentId": "sub_1",
+          "stripePaymentIntentId": "in_1",
           "userId": "u1",
         },
       },
@@ -2992,7 +2992,7 @@ exports[`POST /api/stripe/webhook (pinned behaviour) > invoicePaidRecordFailsNon
       {
         "where": {
           "kind": "SUBSCRIPTION",
-          "stripePaymentIntentId": "sub_1",
+          "stripePaymentIntentId": "in_1",
           "userId": "u1",
         },
       },
@@ -3006,7 +3006,7 @@ exports[`POST /api/stripe/webhook (pinned behaviour) > invoicePaidRecordFailsNon
           "description": "Renouvellement abonnement Premium",
           "kind": "SUBSCRIPTION",
           "status": "COMPLETED",
-          "stripePaymentIntentId": "sub_1",
+          "stripePaymentIntentId": "in_1",
           "userId": "u1",
         },
         "where": {},
