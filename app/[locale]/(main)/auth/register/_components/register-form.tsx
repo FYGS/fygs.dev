@@ -54,7 +54,7 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
     setError,
     watch,
     control,
-  } = useForm<RegisterFormData>({
+  } = useForm<z.input<typeof registerSchema>, unknown, RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       acceptTerms: false,
@@ -250,7 +250,7 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
             render={({ field }) => (
               <Checkbox
                 id="acceptTerms"
-                checked={field.value}
+                checked={field.value === true}
                 onCheckedChange={field.onChange}
                 disabled={isLoading}
               />

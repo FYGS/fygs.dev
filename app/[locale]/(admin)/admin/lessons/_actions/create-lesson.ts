@@ -168,7 +168,7 @@ export async function createLesson(formData: FormData) {
     console.error("Error creating lesson:", error);
     if (error instanceof z.ZodError) {
       throw new Error(
-        `Erreur de validation: ${error.errors.map((e) => e.message).join(", ")}`
+        `Erreur de validation: ${error.issues.map((e) => e.message).join(", ")}`
       );
     }
     throw new Error(

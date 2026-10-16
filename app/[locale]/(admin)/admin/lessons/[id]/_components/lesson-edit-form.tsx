@@ -85,7 +85,7 @@ export function LessonEditForm({ lesson, courses }: LessonEditFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
-  const form = useForm<LessonFormData>({
+  const form = useForm<z.input<typeof lessonSchema>, unknown, LessonFormData>({
     resolver: zodResolver(lessonSchema),
     defaultValues: {
       title: lesson.title,

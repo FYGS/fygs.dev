@@ -87,7 +87,7 @@ export function CourseCreateForm({ tags }: CourseCreateFormProps) {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [thumbnailUrl, setThumbnailUrl] = useState<string>("");
 
-  const form = useForm<CourseFormData>({
+  const form = useForm<z.input<typeof courseSchema>, unknown, CourseFormData>({
     resolver: zodResolver(courseSchema),
     defaultValues: {
       title: "",

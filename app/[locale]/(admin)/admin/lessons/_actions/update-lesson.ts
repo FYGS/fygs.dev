@@ -215,7 +215,7 @@ export async function updateLesson(formData: FormData) {
     if (error instanceof z.ZodError) {
       return {
         success: false,
-        error: `Erreur de validation: ${error.errors
+        error: `Erreur de validation: ${error.issues
           .map((e) => e.message)
           .join(", ")}`,
       };

@@ -266,7 +266,7 @@ export async function updateCourse(
       return {
         success: false,
         error:
-          "Données invalides: " + error.errors.map((e) => e.message).join(", "),
+          "Données invalides: " + error.issues.map((e) => e.message).join(", "),
       };
     }
 

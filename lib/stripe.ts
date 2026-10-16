@@ -1,5 +1,8 @@
 import Stripe from "stripe";
 
+const PINNED_API_VERSION =
+  "2025-08-27.basil" as unknown as Stripe.LatestApiVersion;
+
 let _stripe: Stripe | undefined;
 
 export function getStripeServer(): Stripe {
@@ -8,7 +11,10 @@ export function getStripeServer(): Stripe {
       throw new Error("STRIPE_SECRET_KEY is required");
     }
     _stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: "2025-08-27.basil",
+      // Pinned on purpose: requests and webhook payloads keep the shapes the
+      // billing code was written against. Moving to the SDK default is a
+      // separate, tested migration (the SDK types follow its own default).
+      apiVersion: PINNED_API_VERSION,
       typescript: true,
     });
   }

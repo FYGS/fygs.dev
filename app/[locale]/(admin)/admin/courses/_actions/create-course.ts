@@ -44,7 +44,7 @@ const createCourseSchema = z.object({
   faq: z.string().optional(),
 });
 
-type CreateCourseData = z.infer<typeof createCourseSchema>;
+type CreateCourseData = z.input<typeof createCourseSchema>;
 
 interface CreateCourseResult {
   success: boolean;
@@ -230,7 +230,7 @@ export async function createCourse(
       return {
         success: false,
         error:
-          "Données invalides: " + error.errors.map((e) => e.message).join(", "),
+          "Données invalides: " + error.issues.map((e) => e.message).join(", "),
       };
     }
 

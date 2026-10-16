@@ -78,7 +78,7 @@ export function LessonCreateForm({ courses, selectedCourseId }: LessonCreateForm
   const [modules, setModules] = useState<Module[]>([]);
   const [loadingModules, setLoadingModules] = useState(false);
 
-  const form = useForm<LessonFormData>({
+  const form = useForm<z.input<typeof lessonSchema>, unknown, LessonFormData>({
     resolver: zodResolver(lessonSchema),
     defaultValues: {
       title: "",

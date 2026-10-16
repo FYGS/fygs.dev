@@ -123,7 +123,7 @@ export async function createTag(data: CreateTagData): Promise<TagActionResult> {
       return {
         success: false,
         error:
-          "Données invalides: " + error.errors.map((e) => e.message).join(", "),
+          "Données invalides: " + error.issues.map((e) => e.message).join(", "),
       };
     }
 
@@ -232,7 +232,7 @@ export async function updateTag(
       return {
         success: false,
         error:
-          "Données invalides: " + error.errors.map((e) => e.message).join(", "),
+          "Données invalides: " + error.issues.map((e) => e.message).join(", "),
       };
     }
 
