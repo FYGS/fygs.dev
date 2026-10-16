@@ -3,7 +3,16 @@ import MonacoWebpackPlugin from "monaco-editor-webpack-plugin";
 import { withIntlayer } from "next-intlayer/server";
 import withPWAInit from "next-pwa";
 
-import { buildGlobalCsp, buildPlaygroundCsp, CSP_HEADER as cspHeader, NON_PLAYGROUND_SOURCE } from "./lib/csp.mjs";
+import {
+  buildGlobalCsp,
+  buildPlaygroundCsp,
+  buildReportOnlyCsp,
+  CSP_HEADER as cspHeader,
+  NON_PLAYGROUND_SOURCE,
+  REPORT_ONLY_HEADER,
+  REPORTING_ENDPOINTS_HEADER,
+  REPORTING_ENDPOINTS_VALUE,
+} from "./lib/csp.mjs";
 
 const withPWA = withPWAInit({
   dest: "public",
@@ -158,7 +167,11 @@ const nextConfig = {
       },
       {
         source: NON_PLAYGROUND_SOURCE,
-        headers: [{ key: cspHeader, value: buildGlobalCsp() }],
+        headers: [
+          { key: cspHeader, value: buildGlobalCsp() },
+          { key: REPORT_ONLY_HEADER, value: buildReportOnlyCsp() },
+          { key: REPORTING_ENDPOINTS_HEADER, value: REPORTING_ENDPOINTS_VALUE },
+        ],
       },
       // The playground page is cross-origin isolated (COEP require-corp, needed by
       // WebContainer). A worker whose script response lacks COEP is then blocked
