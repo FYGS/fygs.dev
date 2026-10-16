@@ -16,7 +16,7 @@ const m = vi.hoisted(() => ({
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: m.getSession } } }));
 vi.mock("@/lib/analytics-helper", () => ({ AnalyticsHelper: { emit: m.emit } }));
 
-import { POST } from "@/app/api/ai/assistant/route";
+import { GET, POST } from "@/app/api/ai/assistant/route";
 import { __resetRateLimitMemory } from "@/lib/rate-limit";
 import { SseParser, type SseEvent } from "@/lib/ai/sse";
 
@@ -358,5 +358,14 @@ describe("POST /api/ai/assistant - analytics", () => {
     const res = await call(body());
     expect(res.status).toBe(200);
     expect(res.headers.get("x-ratelimit-limit")).toBe("8");
+  });
+});
+
+describe("GET /api/ai/assistant", () => {
+  it("tells the UI which mode is active, without exposing the key or model", async () => {
+    const online = await GET();
+    expect(await online.json()).toEqual({ mode: "online" });
+    vi.stubEnv("ANTHROPIC_API_KEY", "");
+    expect(await (await GET()).json()).toEqual({ mode: "offline" });
   });
 });

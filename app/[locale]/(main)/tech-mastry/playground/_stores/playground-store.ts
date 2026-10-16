@@ -210,6 +210,7 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
       // ── File System State ──
       files: defaultFiles,
       activeFileId: defaultFiles[0].id,
+      projectId: "default",
       openTabs: [
         { fileId: defaultFiles[0].id, isPinned: false, isPreview: false },
       ],
@@ -227,6 +228,14 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
 
       // ── Layout State ──
       layout: defaultLayout,
+
+      // ── AI assistant ──
+      aiPanelOpen: false,
+      aiAsk: null,
+      setAiPanelOpen: (open) => set({ aiPanelOpen: open }),
+      askAi: (mode, prompt) =>
+        set({ aiPanelOpen: true, aiAsk: { id: Date.now(), mode, prompt } }),
+      clearAiAsk: () => set({ aiAsk: null }),
 
       // ── History ──
       history: { snapshots: [], maxSnapshots: 50 } as EditorHistory,
@@ -520,7 +529,10 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
           let packageJsonContent = "";
 
           files.forEach((file) => {
-            fileMap[file.path] = file.content;
+            fileMap[file.path] =
+              options?.snippet !== undefined && file.id === activeFileId
+                ? options.snippet
+                : file.content;
             if (file.isEntryPoint) entryPoint = file.path;
             if (file.name === "package.json") packageJsonContent = file.content;
           });
@@ -560,7 +572,7 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
           }
 
           const params: ExecuteCodeParams = {
-            code: activeFile?.content ?? "",
+            code: options?.snippet ?? activeFile?.content ?? "",
             language: lang,
             signal: controller.signal,
             files: fileMap,
@@ -862,6 +874,7 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
           files.find((f) => f.path === template.mainFile) || files[0];
 
         set({
+          projectId: template.id,
           files,
           activeFileId: mainFile?.id || null,
           openTabs: mainFile
@@ -881,6 +894,7 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
         }));
 
         set({
+          projectId: "default",
           files: freshFiles,
           activeFileId: freshFiles[0].id,
           openTabs: [
@@ -930,6 +944,7 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
           if (files.length === 0) return;
 
           set({
+            projectId: "shared",
             files,
             activeFileId: files[0].id,
             openTabs: [
@@ -969,6 +984,7 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
       partialize: (state) => ({
         files: state.files,
         activeFileId: state.activeFileId,
+        projectId: state.projectId,
         openTabs: state.openTabs,
         settings: state.settings,
         theme: state.theme,

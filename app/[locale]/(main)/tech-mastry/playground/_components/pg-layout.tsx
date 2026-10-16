@@ -6,6 +6,7 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import dynamic from "next/dynamic";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import {
   usePanelRef,
@@ -23,6 +24,11 @@ import { PgStatusBar } from "./pg-status-bar";
 import { PgTabBar } from "./pg-tab-bar";
 import { PgTemplateDialog } from "./pg-template-dialog";
 import { PgToolbar } from "./pg-toolbar";
+
+// Markdown + syntax highlighting are only needed once the assistant is opened
+const PgAiPanel = dynamic(() => import("./pg-ai-panel").then((m) => m.PgAiPanel), {
+  ssr: false,
+});
 
 // ── Mobile Breakpoint Guard ──────────────────────────────────────────────────
 
@@ -81,6 +87,7 @@ export function PgLayout() {
   const setLayout = usePlaygroundStore((s) => s.setLayout);
   const importFromUrl = usePlaygroundStore((s) => s.importFromUrl);
   const bootWebContainer = usePlaygroundStore((s) => s.bootWebContainer);
+  const aiPanelOpen = usePlaygroundStore((s) => s.aiPanelOpen);
 
   // Panel refs for programmatic collapse / expand
   const fileExplorerRef = usePanelRef();
@@ -112,6 +119,17 @@ export function PgLayout() {
   useEffect(() => {
     syncPanel(previewRef, layout.showPreview);
   }, [layout.showPreview, syncPanel, previewRef]);
+
+  // Command palette, toolbar and Ctrl+I: open the AI assistant, or focus it when already open
+  useEffect(() => {
+    const onOpen = () => {
+      const state = usePlaygroundStore.getState();
+      if (state.aiPanelOpen) window.dispatchEvent(new Event("pg-focus-ai-assistant"));
+      else state.setAiPanelOpen(true);
+    };
+    window.addEventListener("pg-open-ai-assistant", onOpen);
+    return () => window.removeEventListener("pg-open-ai-assistant", onOpen);
+  }, []);
 
   // On mount, check for ?code= query param
   useEffect(() => {
@@ -172,7 +190,8 @@ export function PgLayout() {
           <PgToolbar />
 
           {/* Main Area */}
-          <div className="flex-1 overflow-hidden">
+          <div className="flex min-h-0 flex-1 overflow-hidden">
+            <div className="h-full min-w-0 flex-1">
             <ResizablePanelGroup direction="horizontal" className="h-full">
               {/* ─── File Explorer Sidebar ─── */}
               <ResizablePanel
@@ -255,6 +274,10 @@ export function PgLayout() {
                 <PgPreview />
               </ResizablePanel>
             </ResizablePanelGroup>
+            </div>
+
+            {/* AI assistant: docked on the right (bottom sheet on narrow screens) */}
+            {aiPanelOpen && <PgAiPanel />}
           </div>
 
           {/* Status Bar */}

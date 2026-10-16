@@ -9,6 +9,7 @@ import { VideoPlayer } from "./_components/video-player";
 import { LessonContent as LessonContentComponent } from "./_components/lesson-content";
 import { LessonNavigation } from "./_components/lesson-navigation";
 import { LessonProgress } from "./_components/lesson-progress";
+import { LessonAiTutor } from "@/components/ai/lesson-ai-tutor";
 
 interface LessonPageProps {
   params: Promise<{ slug: string; lessonSlug: string }>;
@@ -298,6 +299,13 @@ export default async function LessonPage({ params }: LessonPageProps) {
               initialProgress={serializedProgress}
             />
             <LessonContentComponent lesson={serializedLesson} />
+            <LessonAiTutor
+              lessonId={lesson.id}
+              title={lesson.title}
+              course={lesson.course.title}
+              description={lesson.description}
+              content={lesson.content?.slice(0, 2400)}
+            />
             <LessonNavigation
               lessons={linearItems}
               currentLessonIndex={currentItemIndex}

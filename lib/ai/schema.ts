@@ -129,3 +129,9 @@ export type AssistantStreamEvent =
 
 /** Request as the client builds it (defaults not applied yet). */
 export type AssistantRequestInput = z.input<typeof assistantRequestSchema>;
+
+/** Map any UI locale ("fr", "en-US", ...) to one the assistant answers in. */
+export function toAssistantLocale(locale: string | undefined): AssistantLocale {
+  const short = (locale ?? "").slice(0, 2).toLowerCase();
+  return short === "en" || short === "es" ? short : "fr";
+}

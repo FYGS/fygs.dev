@@ -79,11 +79,18 @@ export class SseParser {
   }
 }
 
-/** Decode a byte stream into SSE events. Releases the reader when done or abandoned. */
+/**
+ * Decode a byte stream into SSE events. Releases the reader when done or
+ * abandoned; aborting `signal` ends the iteration early.
+ */
 export async function* readSseStream(
   body: ReadableStream<Uint8Array>,
+  signal?: AbortSignal,
 ): AsyncGenerator<SseEvent> {
   const reader = body.getReader();
+  const onAbort = () => void reader.cancel().catch(() => {});
+  if (signal?.aborted) onAbort();
+  else signal?.addEventListener("abort", onAbort, { once: true });
   const decoder = new TextDecoder();
   const parser = new SseParser();
   try {
@@ -95,6 +102,7 @@ export async function* readSseStream(
     for (const event of parser.push(decoder.decode())) yield event;
     for (const event of parser.flush()) yield event;
   } finally {
+    signal?.removeEventListener("abort", onAbort);
     reader.cancel().catch(() => {});
     reader.releaseLock();
   }

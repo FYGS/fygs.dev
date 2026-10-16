@@ -219,3 +219,9 @@ export async function POST(request: NextRequest) {
 
   return new Response(stream, { headers });
 }
+
+/** Which backend is active, so the UI can label offline mode before the first question. */
+export async function GET() {
+  const config = getAiConfig();
+  return NextResponse.json({ mode: config ? "online" : "offline" }, { headers: NO_STORE });
+}

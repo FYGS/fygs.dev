@@ -99,6 +99,11 @@ export function PgCodeEditor() {
           usePlaygroundStore.getState().createSnapshot("Manual save");
         });
 
+        // Ctrl/Cmd+I: Monaco would use it to expand the line selection
+        instance.addCommand(mon.KeyMod.CtrlCmd | mon.KeyCode.KeyI, () => {
+          window.dispatchEvent(new Event("pg-open-ai-assistant"));
+        });
+
         setReady(true);
       } catch (error) {
         console.error("Failed to initialize Monaco:", error);
