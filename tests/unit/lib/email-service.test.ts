@@ -25,6 +25,9 @@ const contact = {
   position: "CTO",
 };
 
+// The contact template prints the local time: pin the zone so the snapshot does not depend on the machine.
+process.env.TZ = "Europe/Paris";
+
 describe("emailService (pinned behaviour)", () => {
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ["Date"] });
