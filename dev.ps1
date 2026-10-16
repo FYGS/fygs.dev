@@ -8,4 +8,4 @@ $env:NODE_ENV = "development"
 Write-Host "Starting Next.js development server with optimized settings..." -ForegroundColor Green
 Write-Host "NODE_OPTIONS: $env:NODE_OPTIONS" -ForegroundColor Gray
 
-pnpm exec next dev --turbopack
+pnpm exec next dev --webpack

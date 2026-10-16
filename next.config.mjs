@@ -189,4 +189,6 @@ const nextConfig = {
   },
 };
 
-export default withIntlayer(withPWA(nextConfig));
+// The build runs on webpack (next-pwa and the Monaco plugin need it): say so explicitly
+// instead of letting intlayer guess from the npm script.
+export default withIntlayer(withPWA(nextConfig), { enableTurbopack: false });

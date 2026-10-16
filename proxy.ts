@@ -6,8 +6,6 @@ import { AccessService } from "@/lib/access-service";
 import { AnalyticsHelper } from "@/lib/analytics-helper";
 import { auth } from "@/lib/auth";
 
-// Use Node.js runtime for DB + auth session lookup
-export const runtime = "nodejs";
 
 // Available locales from intlayer config
 const AVAILABLE_LOCALES = ["fr", "en", "es"] as const;
@@ -182,7 +180,7 @@ function checkMaintenance(request: NextRequest): NextResponse | null {
   return NextResponse.rewrite(new URL("/maintenance", request.url));
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { nextUrl } = request;
   const pathname = nextUrl.pathname;
   const hostname = request.headers.get("host") || "";

@@ -16,10 +16,10 @@ async function getUserOrThrow() {
 }
 
 function revalidateCourseRelated(slug?: string) {
-  revalidateTag(COURSE_TAG_FEATURED);
-  revalidateTag(COURSE_TAG_LIST);
-  revalidateTag(COURSE_TAG_RECOMMENDATIONS);
-  if (slug) revalidateTag(`course:${slug}`);
+  revalidateTag(COURSE_TAG_FEATURED, { expire: 0 });
+  revalidateTag(COURSE_TAG_LIST, { expire: 0 });
+  revalidateTag(COURSE_TAG_RECOMMENDATIONS, { expire: 0 });
+  if (slug) revalidateTag(`course:${slug}`, { expire: 0 });
 }
 
 // Toggle lesson progress
