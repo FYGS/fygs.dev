@@ -1,0 +1,15 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`SearchingVisualization rendering > renders the same markup in every state reachable by clicking 1`] = `
+[
+  "d4d34e83",
+  "1bff4b66",
+  "abc231c5",
+  "1f232da8",
+  "0f043960",
+  "f11397d3",
+  "b5f34390",
+  "963f8bbe",
+  "b557aff8",
+]
+`;

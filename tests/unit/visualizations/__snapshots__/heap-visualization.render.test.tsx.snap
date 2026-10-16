@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`HeapVisualization rendering > renders the same markup in every state reachable by clicking 1`] = `
+[
+  "b823097a",
+  "3a866fcb",
+  "1a5961bb",
+  "df357a40",
+  "2dbde4f0",
+  "2b01a72d",
+  "13ef9fcb",
+  "1a5961bb",
+  "01d718ff",
+  "2dbde4f0",
+  "2b01a72d",
+  "aa192dda",
+  "1a5961bb",
+  "01d718ff",
+  "2dbde4f0",
+  "2b01a72d",
+  "13ef9fcb",
+]
+`;

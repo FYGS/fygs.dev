@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`GraphVisualization rendering > renders the same markup in every state reachable by clicking 1`] = `
+[
+  "660cf111",
+  "c02f1d9f",
+  "a5c32ca9",
+  "845c9d73",
+  "927cd2d4",
+  "3ecf0019",
+  "6a055d2e",
+  "a5c32ca9",
+  "cea6c46f",
+  "bacbbcf9",
+  "3ecf0019",
+  "d4a1cb05",
+  "927cd2d4",
+  "cea6c46f",
+  "bacbbcf9",
+  "3ecf0019",
+  "6a055d2e",
+]
+`;

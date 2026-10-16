@@ -1,0 +1,43 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`sorting step generators > bubble sort produces a stable, pinned step list 1`] = `
+{
+  "count": 69,
+  "digest": "fc64df64",
+}
+`;
+
+exports[`sorting step generators > heap sort produces a stable, pinned step list 1`] = `
+{
+  "count": 106,
+  "digest": "e4c6324e",
+}
+`;
+
+exports[`sorting step generators > insertion sort produces a stable, pinned step list 1`] = `
+{
+  "count": 74,
+  "digest": "1e472101",
+}
+`;
+
+exports[`sorting step generators > merge sort produces a stable, pinned step list 1`] = `
+{
+  "count": 75,
+  "digest": "329eb2b9",
+}
+`;
+
+exports[`sorting step generators > quick sort produces a stable, pinned step list 1`] = `
+{
+  "count": 69,
+  "digest": "22009729",
+}
+`;
+
+exports[`sorting step generators > selection sort produces a stable, pinned step list 1`] = `
+{
+  "count": 78,
+  "digest": "68f692b8",
+}
+`;
