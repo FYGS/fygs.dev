@@ -96,46 +96,70 @@ interface VisualSupportData {
   };
 }
 
+// Stable default so the "props changed" check below never fires spuriously.
+const NO_VISUAL_SUPPORTS: VisualSupport[] = [];
+
+// Load visual supports data - prefer real data over samples
+function loadVisualSupportData(
+  title: string,
+  slug: string,
+  initialVisualSupports: VisualSupport[],
+): VisualSupportData[] {
+  if (initialVisualSupports.length > 0) {
+    // Convert real database data to component format
+    return initialVisualSupports.map(vs => ({
+      id: vs.id,
+      moduleId: vs.moduleId,
+      title: vs.title,
+      order: vs.order,
+      content: vs.content as { slides: Array<{ title: string; content: string }> }
+    }));
+  }
+  // Fallback to sample data for demonstration
+  return generateSampleVisualSupports(title, slug);
+}
+
 export function VisualSupportsManagement({ 
   course,
   modules = [],
-  initialVisualSupports = []
+  initialVisualSupports = NO_VISUAL_SUPPORTS
 }: Pick<VisualSupportsManagementProps, 'course'> & { 
   modules?: VisualSupportModule[];
   initialVisualSupports?: VisualSupport[];
 }) {
-  const [visualSupports, setVisualSupports] = useState<VisualSupportData[]>([]);
+  const [visualSupports, setVisualSupports] = useState<VisualSupportData[]>(() =>
+    loadVisualSupportData(course.title, course.slug, initialVisualSupports),
+  );
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [selectedModule, setSelectedModule] = useState<number | null>(null);
+  const [selectedModule, setSelectedModule] = useState<number | null>(
+    () =>
+      loadVisualSupportData(course.title, course.slug, initialVisualSupports)[0]?.moduleId ??
+      null,
+  );
   const [isPlaying, setIsPlaying] = useState(false);
   const [showContent, setShowContent] = useState(true);
   const [showEditor, setShowEditor] = useState(false);
   const [editingSupport, setEditingSupport] = useState<VisualSupportData | null>(null);
 
-  // Load visual supports data - prefer real data over samples
-  useEffect(() => {
-    if (initialVisualSupports.length > 0) {
-      // Convert real database data to component format
-      const realData = initialVisualSupports.map(vs => ({
-        id: vs.id,
-        moduleId: vs.moduleId,
-        title: vs.title,
-        order: vs.order,
-        content: vs.content as { slides: Array<{ title: string; content: string }> }
-      }));
-      setVisualSupports(realData);
-      if (realData.length > 0) {
-        setSelectedModule(realData[0].moduleId);
-      }
-    } else {
-      // Fallback to sample data for demonstration
-      const sampleData = generateSampleVisualSupports(course.title, course.slug);
-      setVisualSupports(sampleData);
-      if (sampleData.length > 0) {
-        setSelectedModule(sampleData[0].moduleId);
-      }
+  // Reload data when the course or the server data changes (derived during render
+  // rather than in an effect).
+  const [loadedFrom, setLoadedFrom] = useState({
+    title: course.title,
+    slug: course.slug,
+    initialVisualSupports,
+  });
+  if (
+    loadedFrom.title !== course.title ||
+    loadedFrom.slug !== course.slug ||
+    loadedFrom.initialVisualSupports !== initialVisualSupports
+  ) {
+    setLoadedFrom({ title: course.title, slug: course.slug, initialVisualSupports });
+    const loaded = loadVisualSupportData(course.title, course.slug, initialVisualSupports);
+    setVisualSupports(loaded);
+    if (loaded.length > 0) {
+      setSelectedModule(loaded[0].moduleId);
     }
-  }, [course.title, course.slug, initialVisualSupports]);
+  }
 
   const currentModule = visualSupports.find(vs => vs.moduleId === selectedModule);
   const totalSlides = currentModule?.content.slides.length || 0;
@@ -258,11 +282,13 @@ export function VisualSupportsManagement({
     }
   }, [isPlaying, totalSlides]);
 
-  // Reset slide when changing modules
-  useEffect(() => {
+  // Reset slide when changing modules (derived during render, not in an effect)
+  const [slideModule, setSlideModule] = useState(selectedModule);
+  if (slideModule !== selectedModule) {
+    setSlideModule(selectedModule);
     setCurrentSlide(0);
     setIsPlaying(false);
-  }, [selectedModule]);
+  }
 
   if (showEditor) {
     return (
