@@ -45,6 +45,25 @@ const eslintConfig = [
       "@typescript-eslint/no-require-imports": "off",
     },
   },
+  // --- lint-app overrides ---
+  // Everything outside tech-mastry is clean for the React Compiler / Next link rules: keep it that way.
+  {
+    files: ["**/*.{js,jsx,mjs,ts,tsx}"],
+    ignores: ["app/**/tech-mastry/**"],
+    rules: {
+      "react-hooks/error-boundaries": "error",
+      "react-hooks/set-state-in-effect": "error",
+      "react-hooks/purity": "error",
+      "react-hooks/immutability": "error",
+      "react-hooks/refs": "error",
+      "react-hooks/static-components": "error",
+      "react-hooks/globals": "error",
+      "react-hooks/incompatible-library": "error",
+      "@next/next/no-html-link-for-pages": "error",
+      "@next/next/no-location-assign-relative-destination": "error",
+    },
+  },
+  // --- end lint-app overrides ---
 ];
 
 export default eslintConfig;
