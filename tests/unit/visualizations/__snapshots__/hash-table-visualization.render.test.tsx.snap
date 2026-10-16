@@ -1,0 +1,21 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`HashTableVisualization rendering > renders the same markup in every state reachable by clicking 1`] = `
+[
+  "676b2975",
+  "7af36fac",
+  "5c3fe6ce",
+  "8e79ccc6",
+  "8447c257",
+  "27c4df2b",
+  "7af36fac",
+  "11f1f2c8",
+  "8e79ccc6",
+  "0eabb5ef",
+  "27c4df2b",
+  "7af36fac",
+  "11f1f2c8",
+  "8e79ccc6",
+  "8447c257",
+]
+`;
