@@ -17,6 +17,7 @@ import {
   ensureIdempotent,
   rateLimitHeaders,
   __resetRateLimitMemory,
+  getRateLimitStatus,
 } from "@/lib/rate-limit";
 
 /** Behaves like the Lua script: INCR current, GET previous. */
@@ -266,5 +267,92 @@ describe("ensureIdempotent", () => {
   it("lets the work run when Redis is down (callers must be safe to repeat)", async () => {
     redisMock.setNxEx.mockRejectedValue(new Error("down"));
     expect(await ensureIdempotent("evt_2")).toBe(true);
+  });
+});
+
+describe("degraded-mode alerting", () => {
+  const events = (spy: { mock: { calls: unknown[][] } }) =>
+    spy.mock.calls.map((c) => (c[1] as { message: string } | undefined)?.message);
+
+  it("starts with an unknown, non-degraded status", () => {
+    expect(getRateLimitStatus()).toEqual({
+      mode: "unknown",
+      degraded: false,
+      degradedSince: null,
+      degradedTransitions: 0,
+      fallbackDecisions: 0,
+    });
+  });
+
+  it("reports redis mode after a successful check", async () => {
+    await rateLimit("k", 3, 60);
+    expect(getRateLimitStatus()).toMatchObject({ mode: "redis", degraded: false });
+  });
+
+  it("logs rate_limit.degraded once at error level when the breaker opens, with no error text", async () => {
+    redisMock.evalFn.mockRejectedValue(new Error("connect ECONNREFUSED 10.0.0.5:6379"));
+    for (let i = 0; i < 20; i++) await rateLimit(`k${i}`, 3, 60);
+    const spy = console.error as unknown as { mock: { calls: unknown[][] } };
+    expect(events(spy)).toEqual(["rate_limit.degraded"]);
+    const ctx = spy.mock.calls[0][1] as { context?: unknown; eventType?: string; metadata: Record<string, unknown> };
+    expect(ctx.eventType).toBe("rate_limit.degraded");
+    expect(JSON.stringify(spy.mock.calls[0])).not.toContain("10.0.0.5");
+    expect(ctx.metadata.reason).toBe("Error");
+    expect(getRateLimitStatus()).toMatchObject({
+      mode: "memory-fallback",
+      degraded: true,
+      degradedTransitions: 1,
+      degradedSince: "2025-01-01T00:00:10.000Z",
+    });
+    // the first call hit Redis and failed; the other 19 were served by the open breaker
+    expect(getRateLimitStatus().fallbackDecisions).toBe(20);
+  });
+
+  it("repeats a reminder at most once a minute while the outage lasts", async () => {
+    redisMock.evalFn.mockRejectedValue(new Error("down"));
+    await rateLimit("a", 3, 60);
+    for (let i = 0; i < 6; i++) {
+      vi.advanceTimersByTime(11_000); // breaker closes, Redis tried (and fails) again
+      await rateLimit(`b${i}`, 3, 60);
+    }
+    const spy = console.error as unknown as { mock: { calls: unknown[][] } };
+    // 66 s elapsed: the first line plus one reminder, not seven
+    expect(events(spy)).toHaveLength(2);
+    expect((spy.mock.calls[1][1] as { metadata: { ongoing: boolean } }).metadata.ongoing).toBe(true);
+    expect(getRateLimitStatus().degradedTransitions).toBe(1);
+  });
+
+  it("logs rate_limit.recovered when Redis comes back and clears the degraded flag", async () => {
+    const info = vi.spyOn(console, "info").mockImplementation(() => {});
+    redisMock.evalFn.mockRejectedValueOnce(new Error("blip"));
+    await rateLimit("k", 3, 60);
+    vi.advanceTimersByTime(30_000);
+    await rateLimit("k2", 3, 60);
+    expect(events(info)).toEqual(["rate_limit.recovered"]);
+    const ctx = info.mock.calls[0][1] as { duration: number };
+    expect(ctx.duration).toBe(30_000);
+    expect(getRateLimitStatus()).toMatchObject({ mode: "redis", degraded: false, degradedSince: null, degradedTransitions: 1 });
+    info.mockRestore();
+  });
+
+  it("counts a new transition when Redis fails again after recovering", async () => {
+    redisMock.evalFn.mockRejectedValueOnce(new Error("one"));
+    await rateLimit("a", 3, 60);
+    vi.advanceTimersByTime(11_000);
+    await rateLimit("b", 3, 60); // recovers
+    redisMock.evalFn.mockRejectedValueOnce(new Error("two"));
+    vi.advanceTimersByTime(11_000);
+    await rateLimit("c", 3, 60);
+    expect(getRateLimitStatus()).toMatchObject({ degraded: true, degradedTransitions: 2 });
+  });
+
+  it("idempotency checks also drive the status", async () => {
+    redisMock.setNxEx.mockRejectedValueOnce(new Error("down"));
+    await ensureIdempotent("x");
+    expect(getRateLimitStatus().degraded).toBe(true);
+    vi.advanceTimersByTime(11_000);
+    redisMock.setNxEx.mockResolvedValueOnce(true);
+    await ensureIdempotent("y");
+    expect(getRateLimitStatus().degraded).toBe(false);
   });
 });
