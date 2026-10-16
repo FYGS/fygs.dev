@@ -14,6 +14,10 @@
 - Content-Security-Policy and baseline security headers; Stripe webhook invalid signature now answers 400; refunds use the real PaymentIntent and an idempotency key.
 - `BETTER_AUTH_SECRET` is required in production.
 
+### Added
+- AI tutor: streaming assistant in the playground (explain, debug, review, optimize, tests, refactor, hint, chat; insert/replace in the editor; "Explain this error") and on course lessons. Needs `ANTHROPIC_API_KEY`; works in a labelled offline mode without it. Rate limited (visitors 8/h, accounts 60/h).
+- Stripe webhook events are processed once per event id (duplicate deliveries are acknowledged, failed handlers can be retried).
+
 ### Changed
 - Dependencies moved to the latest stable majors (Next 16, zod 4, Stripe SDK 23, better-auth 1.7, vitest 5…); see docs/modernization-2026-10.md. Build and dev run on webpack; `middleware.ts` is now `proxy.ts`; CI runs on Node 22.
 - Large files split into focused modules (community actions, visualizations, services, templates, forms).
