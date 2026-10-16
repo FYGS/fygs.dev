@@ -20,7 +20,8 @@ export async function generateRouteMetadata(
   params: Promise<{ locale?: string }>,
   config: SectionSEOConfig,
 ) {
-  const { locale } = await params;
+  // The default locale (intlayer.config.ts) when the segment is absent.
+  const { locale = Locales.FRENCH } = await params;
   return generateI18nMetadata({
     ...config,
     locale: locale as LocalesValues,
