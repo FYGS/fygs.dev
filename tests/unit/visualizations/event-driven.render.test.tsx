@@ -9,8 +9,8 @@ describe("EventDrivenVisualization rendering", () => {
     expect(hashes).toMatchInlineSnapshot(`
       [
         "948f644a",
-        "33f7cf2d",
-        "17b398b3",
+        "5addeea8",
+        "26267531",
         "26267531",
         "26267531",
         "61711835",
@@ -19,8 +19,8 @@ describe("EventDrivenVisualization rendering", () => {
         "7bbbf1da",
         "23a92a74",
         "bf6e1343",
-        "27fc9c80",
-        "bf6e1343",
+        "e52e66a3",
+        "32107180",
         "bf6e1343",
         "93f076a1",
         "b2c6c11a",

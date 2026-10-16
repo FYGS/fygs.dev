@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '20.x'
+  NODE_VERSION: '22.x'
   NODE_OPTIONS: '--max_old_space_size=4096'
 
 jobs:

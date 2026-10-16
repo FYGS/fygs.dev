@@ -9,17 +9,17 @@ describe("MicroservicesVisualization rendering", () => {
     expect(hashes).toMatchInlineSnapshot(`
       [
         "8ec3d401",
-        "b6169850",
-        "a7558070",
-        "b7db7a46",
-        "12269ae5",
-        "2ce67c46",
-        "2a3c6bb9",
-        "d9e5f816",
-        "fb70947f",
-        "202a5aea",
-        "2393f52a",
-        "deb0f814",
+        "8ec3d401",
+        "52dde19d",
+        "5f481826",
+        "99027e34",
+        "bc14c7f1",
+        "4bd04754",
+        "e52b9b9e",
+        "87c5515b",
+        "06d08628",
+        "c624f039",
+        "0e962f59",
         "acbb4b4d",
       ]
     `);
