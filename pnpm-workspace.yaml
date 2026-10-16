@@ -1,2 +1,5 @@
 onlyBuiltDependencies:
   - puppeteer
+overrides:
+  # next-pwa -> workbox-build -> rollup-plugin-terser pins serialize-javascript 4 (RCE advisory)
+  serialize-javascript: ">=7.1.2"
