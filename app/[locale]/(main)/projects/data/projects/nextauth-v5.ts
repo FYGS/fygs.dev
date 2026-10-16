@@ -1,0 +1,97 @@
+import type { Project } from "../../types";
+
+export const nextauthV5: Project = {
+  id: "nextauth-v5",
+  title: "Next Auth v5 App",
+  description:
+    "A Next.js application that implements authentication using NextAuth v5, featuring user registration, login, logout functionalities, and Multi-Factor Authentication (MFA) with email code verification.",
+  image: "/projects/nextauth-v5.png",
+  detailImages: [
+    {
+      url: "/projects/nextauth-v5-logged-in-admin-only-dashboard.png",
+      alt: "Next Auth v5 App Admin Only dashboard",
+    },
+    {
+      url: "/projects/nextauth-v5-logged-in-client-component-dashboard.png",
+      alt: "Next Auth v5 App Client Component dashboard",
+    },
+    {
+      url: "/projects/nextauth-v5-logged-in-server-component-dashboard.png",
+      alt: "Next Auth v5 App Server Component dashboard",
+    },
+    {
+      url: "/projects/nextauth-v5-logged-in-settings-dashboard.png",
+      alt: "Next Auth v5 App Settings dashboard",
+    },
+    {
+      url: "/projects/nextauth-v5-login.png",
+      alt: "Next Auth v5 App Login page",
+    },
+    {
+      url: "/projects/nextauth-v5-register-confirmation-email-sent.png",
+      alt: "Next Auth v5 App Register Confirmation Email Sent",
+    },
+    {
+      url: "/projects/nextauth-v5-register.png",
+      alt: "Next Auth v5 App Register page",
+    },
+  ],
+  technologies: [
+    "Next.js 14",
+    "NextAuth v5 (Auth.js)",
+    "Resend (Email service)",
+    "Google Auth",
+    "GitHub Auth",
+    "Node.js",
+    "Shadcn UI",
+    "Prisma",
+    "PostgreSQL",
+    "TailwindCSS",
+  ],
+  link: "https://gitlab.com/js-framework-projects/nextjs-projects/nextauth-v5-app",
+  // githubUrl: "https://github.com/fygs/nextauth-v5-app",
+  stats: {
+    stars: 300,
+    forks: 20,
+    contributors: 1,
+    linesOfCode: 3000,
+  },
+  features: [
+    "🔐 Next-auth v5 (Auth.js)",
+    "🚀 Next.js 14 with server actions",
+    "🔑 Credentials Provider",
+    "🌐 OAuth Provider (Social login with Google & GitHub)",
+    "🔒 Forgot password functionality",
+    "✉️ Email verification",
+    "📱 Two factor verification (2FA)",
+    "👥 User roles (Admin & User)",
+    "🔓 Login component (Opens in redirect or modal)",
+    "📝 Register component",
+    "🤔 Forgot password component",
+    "✅ Verification component",
+    "⚠️ Error component",
+    "🔘 Login button",
+    "🚪 Logout button",
+    "🚧 Role Gate",
+    "🔍 Exploring next.js middleware",
+    "📈 Extending & Exploring next-auth session",
+    "🔄 Exploring next-auth callbacks",
+    "👤 useCurrentUser hook",
+    "🛂 useRole hook",
+    "🧑 currentUser utility",
+    "👮 currentRole utility",
+    "🖥️ Example with server component",
+    "💻 Example with client component",
+    "👑 Render content for admins using RoleGate component",
+    "🛡️ Protect API Routes for admins only",
+    "🔐 Protect Server Actions for admins only",
+    "📧 Change email with new verification in Settings page",
+    "🔑 Change password with old password confirmation in Settings page",
+    "🔔 Enable/disable two-factor auth in Settings page",
+    "🔄 Change user role in Settings page (for development purposes only)",
+  ],
+  technicalDetails:
+    "Implements NextAuth v5 with custom authentication flows, including email verification and MFA. Uses Prisma with PostgreSQL for user data management.",
+  challenges:
+    "Implementing secure authentication flows while maintaining a smooth user experience, especially for the MFA implementation.",
+};
