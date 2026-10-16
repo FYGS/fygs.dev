@@ -59,7 +59,6 @@ const _listeners: Set<WebContainerListener> = new Set();
  */
 export function stripAnsi(text: string): string {
   // Remove ANSI CSI sequences (colors, cursor commands, etc.)
-  // eslint-disable-next-line no-control-regex
   let clean = text.replace(
     /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><~]/g,
     "",
@@ -83,7 +82,6 @@ export function stripAnsi(text: string): string {
     })
     .join("\n");
   // Remove remaining control characters (keep \n, \t)
-  // eslint-disable-next-line no-control-regex
   clean = clean.replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g, "");
   // Remove spinner characters that remain after stripping ANSI (npx progress)
   clean = clean.replace(/^[\\|/\-]\s*$/gm, "");

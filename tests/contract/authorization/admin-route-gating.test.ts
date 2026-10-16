@@ -34,7 +34,6 @@ const RouteProtectionService = {
     return { allowed: true };
   },
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async simulateAdminRouteAccess(
     userId: string,
     _route: string

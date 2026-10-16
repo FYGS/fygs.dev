@@ -45,7 +45,7 @@ export function SubscriptionPlans({
     if (!session) {
       // Redirect to login with callback to return to pricing page
       const callbackUrl = encodeURIComponent(window.location.pathname);
-      window.location.href = `/auth/login?callbackUrl=${callbackUrl}`;
+      window.location.href = new URL(`/auth/login?callbackUrl=${callbackUrl}`, window.location.origin).href;
       return;
     }
 
