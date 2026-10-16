@@ -7,6 +7,8 @@ import { generateOfflineAnswer } from "@/lib/ai/offline";
 import { buildModelPrompt } from "@/lib/ai/prompts";
 import { AI_LIMITS, assistantRequestSchema, type AssistantErrorCode } from "@/lib/ai/schema";
 import { formatSse } from "@/lib/ai/sse";
+import { getBudgetConfig, recordOutputTokens, reserveModelRequest, shouldLogExhaustion } from "@/lib/ai/budget";
+import { createLogger } from "@/lib/structured-logger";
 
 /**
  * POST /api/ai/assistant: the AI tutor. JSON in, Server-Sent Events out.
@@ -23,13 +25,23 @@ import { formatSse } from "@/lib/ai/sse";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+// Logs carry ids, counts and timings only: never the prompt, the code or the answer
+const log = createLogger({ operation: "ai-assistant" });
+
 const GUEST_PER_HOUR = 8;
 const USER_PER_HOUR = 60;
 const BURST = { limit: 5, windowSeconds: 10 };
 const HOUR = 3600;
+const DAY = 24 * HOUR;
 /** UTF-8 can take 4 bytes per character; this is only the cheap pre-check. */
 const MAX_BODY_BYTES = AI_LIMITS.maxBodyChars * 4;
 const OFFLINE_CHUNK = 400;
+
+const BUDGET_NOTICE: Record<string, string> = {
+  fr: "_Le tuteur IA a atteint sa capacité quotidienne : voici une analyse locale à la place. Le modèle sera de nouveau disponible demain._\n\n",
+  en: "_The AI tutor has reached its daily capacity, so this is a local analysis instead. The model will be available again tomorrow._\n\n",
+  es: "_El tutor de IA ha alcanzado su capacidad diaria, así que esto es un análisis local. El modelo volverá a estar disponible mañana._\n\n",
+};
 
 const NO_STORE = { "Cache-Control": "no-store, no-transform" } as const;
 
@@ -106,6 +118,7 @@ export async function POST(request: NextRequest) {
   // 3. Quota: visitors by IP, signed-in users by account
   const userId = await getUserId(request.headers);
   const config = getAiConfig();
+  const budget = getBudgetConfig();
   // The offline analyzer costs next to nothing: only the burst limit applies to it
   let quotaHeaders: Record<string, string> = {};
   if (config) {
@@ -120,6 +133,26 @@ export async function POST(request: NextRequest) {
         retryAfter: quota.retryAfter,
         headers: quotaHeaders,
       });
+    }
+    // Daily ceiling on top of the hourly one, per account or per visitor IP
+    const dailyLimit = userId ? budget.userDailyRequests : budget.guestDailyRequests;
+    if (dailyLimit > 0) {
+      const daily = await checkRateLimit(request, "ai-assistant-day", {
+        limit: dailyLimit,
+        windowSeconds: DAY,
+        subject: userId ? `user:${userId}` : undefined,
+      });
+      if (!daily.allowed) {
+        log.warn("ai.assistant.daily_cap_reached", {
+          eventType: "ai.assistant.daily_cap_reached",
+          userId: userId ?? undefined,
+          metadata: { signedIn: !!userId, limit: dailyLimit },
+        });
+        return fail(429, "rate_limited", "Daily limit reached, please come back tomorrow", {
+          retryAfter: daily.retryAfter,
+          headers: { ...quotaHeaders, ...rateLimitHeaders(daily) },
+        });
+      }
     }
   }
 
@@ -151,12 +184,13 @@ export async function POST(request: NextRequest) {
     "X-Accel-Buffering": "no",
   };
 
-  // 5a. Offline mode
-  if (!config) {
-    const answer = generateOfflineAnswer(body);
+  // 5a. Offline mode (no key configured, or the daily budget is spent)
+  const respondOffline = (reason?: "budget") => {
+    const notice = reason === "budget" ? (BUDGET_NOTICE[body.locale] ?? BUDGET_NOTICE.en) : "";
+    const answer = notice + generateOfflineAnswer(body);
     const stream = new ReadableStream<Uint8Array>({
       start(controller) {
-        controller.enqueue(encoder.encode(formatSse("meta", { mode: "offline" })));
+        controller.enqueue(encoder.encode(formatSse("meta", { mode: "offline", ...(reason ? { reason } : {}) })));
         for (let i = 0; i < answer.length; i += OFFLINE_CHUNK) {
           controller.enqueue(encoder.encode(formatSse("delta", { text: answer.slice(i, i + OFFLINE_CHUNK) })));
         }
@@ -165,10 +199,25 @@ export async function POST(request: NextRequest) {
       },
     });
     return new Response(stream, { headers });
+  };
+  if (!config) return respondOffline();
+
+  // 5b-0. Global daily budget: degrade to offline instead of spending more
+  const reservation = await reserveModelRequest(budget);
+  if (!reservation.allowed) {
+    if (shouldLogExhaustion()) {
+      log.error("ai.assistant.budget_exhausted", {
+        eventType: "ai.assistant.budget_exhausted",
+        metadata: { exhausted: reservation.reason, budgetStore: reservation.degraded ? "memory" : "redis" },
+      });
+    }
+    return respondOffline("budget");
   }
 
   // 5b. Model-backed answer
   const prompt = buildModelPrompt(body);
+  const startedAt = Date.now();
+  const base = { userId: userId ?? undefined, eventType: "ai.assistant" };
   let completion;
   try {
     completion = await openCompletion({
@@ -181,30 +230,66 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (abort.signal.aborted) return new Response(null, { status: 499 });
     if (error instanceof AiUpstreamError) {
-      console.error(`[ai] upstream failure: ${error.code}`);
+      log.error("ai.assistant.upstream_error", {
+        ...base,
+        duration: Date.now() - startedAt,
+        metadata: { phase: "open", code: error.code, upstreamStatus: error.upstreamStatus, model: config.model, mode: body.mode },
+      });
       return fail(error.httpStatus, error.code, error.message, { retryAfter: error.retryAfter });
     }
-    console.error("[ai] unexpected failure opening the stream");
+    log.error("ai.assistant.internal_error", { ...base, duration: Date.now() - startedAt, metadata: { phase: "open", model: config.model } });
     return fail(500, "internal", "Unexpected error");
   }
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       const send = (event: string, data: unknown) => controller.enqueue(encoder.encode(formatSse(event, data)));
+      let outcome: "ok" | "error" | "aborted" = "ok";
+      let errorCode: string | undefined;
+      let firstTokenAt = 0;
       try {
         send("meta", { mode: "online", model: config.model });
-        for await (const text of completion.text) send("delta", { text });
+        for await (const text of completion.text) {
+          if (!firstTokenAt) firstTokenAt = Date.now();
+          send("delta", { text });
+        }
         send("done", { truncated: completion.truncated });
       } catch (error) {
-        if (!abort.signal.aborted) {
+        if (abort.signal.aborted) {
+          outcome = "aborted";
+        } else {
+          outcome = "error";
           const known = error instanceof AiUpstreamError;
-          console.error(`[ai] stream failure: ${known ? error.code : "unexpected"}`);
+          errorCode = known ? error.code : "internal";
           send("error", {
             code: known ? error.code : "internal",
             message: known ? error.message : "Unexpected error",
           });
         }
       } finally {
+        // Account what was produced even when the stream was cut: the provider bills it
+        const usage = completion.usage;
+        const outputTokens = Math.max(usage.outputTokens, Math.ceil(completion.outputChars / 4));
+        void recordOutputTokens(outputTokens);
+        const entry = {
+          ...base,
+          duration: Date.now() - startedAt,
+          metadata: {
+            outcome,
+            errorCode,
+            model: config.model,
+            mode: body.mode,
+            surface: body.context.surface,
+            inputTokens: usage.inputTokens,
+            outputTokens,
+            cacheReadTokens: usage.cacheReadTokens,
+            stopReason: completion.stopReason ?? undefined,
+            truncated: completion.truncated,
+            timeToFirstTokenMs: firstTokenAt ? firstTokenAt - startedAt : undefined,
+          },
+        };
+        if (outcome === "error") log.error("ai.assistant.stream_error", entry);
+        else log.info("ai.assistant.completed", entry);
         try {
           controller.close();
         } catch {

@@ -19,11 +19,13 @@ export interface AiConfig {
 export function getAiConfig(env: NodeJS.ProcessEnv = process.env): AiConfig | null {
   const apiKey = env.ANTHROPIC_API_KEY?.trim();
   if (!apiKey) return null;
-  return {
-    apiKey,
+  const config = {
     model: env.AI_MODEL?.trim() || DEFAULT_AI_MODEL,
     baseUrl: (env.ANTHROPIC_BASE_URL?.trim() || DEFAULT_BASE_URL).replace(/\/+$/, ""),
-  };
+  } as AiConfig;
+  // Not enumerable: JSON.stringify(config), spreads and logger context never carry the key
+  Object.defineProperty(config, "apiKey", { value: apiKey, enumerable: false, writable: false });
+  return config;
 }
 
 export type AiErrorCode = "busy" | "unavailable" | "timeout" | "upstream_error";
@@ -38,6 +40,8 @@ export class AiUpstreamError extends Error {
     readonly httpStatus: number,
     message: string,
     readonly retryAfter?: number,
+    /** HTTP status returned by the provider, when there was one (for logs only). */
+    readonly upstreamStatus?: number,
   ) {
     super(message);
     this.name = "AiUpstreamError";
@@ -45,6 +49,11 @@ export class AiUpstreamError extends Error {
 }
 
 export function mapUpstreamStatus(status: number, retryAfterHeader?: string | null): AiUpstreamError {
+  const mapped = mapStatus(status, retryAfterHeader);
+  return new AiUpstreamError(mapped.code, mapped.httpStatus, mapped.message, mapped.retryAfter, status);
+}
+
+function mapStatus(status: number, retryAfterHeader?: string | null): AiUpstreamError {
   const parsed = Number(retryAfterHeader);
   const retryAfter = Number.isFinite(parsed) && parsed > 0 ? Math.min(Math.ceil(parsed), 600) : undefined;
   if (status === 429 || status === 529) {
@@ -81,11 +90,25 @@ export interface CompletionOptions {
   fetchImpl?: typeof fetch;
 }
 
+/** Token accounting reported by the provider (message_start / message_delta). */
+export interface AiUsage {
+  inputTokens: number;
+  outputTokens: number;
+  cacheReadTokens: number;
+  cacheCreationTokens: number;
+}
+
 export interface CompletionStream {
   /** Text deltas, in order. Throws AiUpstreamError if the stream fails midway. */
   text: AsyncGenerator<string, void>;
   /** Available once `text` is exhausted: whether the answer hit max_tokens. */
   readonly truncated: boolean;
+  /** Latest usage numbers seen so far (final once `text` is exhausted). */
+  readonly usage: AiUsage;
+  /** stop_reason from message_delta, when seen. */
+  readonly stopReason: string | null;
+  /** Characters of answer streamed so far (lets callers estimate tokens if the stream is cut). */
+  readonly outputChars: number;
 }
 
 /**
@@ -159,7 +182,22 @@ export async function openCompletion(opts: CompletionOptions): Promise<Completio
   }
 
   const body = response.body;
-  const stream: { truncated: boolean } = { truncated: false };
+  const stream = {
+    truncated: false,
+    stopReason: null as string | null,
+    outputChars: 0,
+    usage: { inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheCreationTokens: 0 } as AiUsage,
+  };
+  const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) && v >= 0 ? v : undefined);
+  const absorbUsage = (u: unknown) => {
+    if (!u || typeof u !== "object") return;
+    const r = u as Record<string, unknown>;
+    // Counts only ever grow; message_delta repeats input fields on some API versions
+    stream.usage.inputTokens = num(r.input_tokens) ?? stream.usage.inputTokens;
+    stream.usage.outputTokens = Math.max(stream.usage.outputTokens, num(r.output_tokens) ?? 0);
+    stream.usage.cacheReadTokens = num(r.cache_read_input_tokens) ?? stream.usage.cacheReadTokens;
+    stream.usage.cacheCreationTokens = num(r.cache_creation_input_tokens) ?? stream.usage.cacheCreationTokens;
+  };
 
   async function* generate(): AsyncGenerator<string, void> {
     let finished = false;
@@ -178,11 +216,16 @@ export async function openCompletion(opts: CompletionOptions): Promise<Completio
         if (type === "content_block_delta") {
           const delta = payload.delta as { type?: string; text?: string } | undefined;
           if (delta?.type === "text_delta" && typeof delta.text === "string" && delta.text) {
+            stream.outputChars += delta.text.length;
             yield delta.text;
           }
+        } else if (type === "message_start") {
+          absorbUsage((payload.message as { usage?: unknown } | undefined)?.usage);
         } else if (type === "message_delta") {
           const delta = payload.delta as { stop_reason?: string } | undefined;
           if (delta?.stop_reason === "max_tokens") stream.truncated = true;
+          if (typeof delta?.stop_reason === "string") stream.stopReason = delta.stop_reason;
+          absorbUsage(payload.usage);
         } else if (type === "message_stop") {
           finished = true;
           return;
@@ -212,6 +255,15 @@ export async function openCompletion(opts: CompletionOptions): Promise<Completio
     text: generate(),
     get truncated() {
       return stream.truncated;
+    },
+    get usage() {
+      return { ...stream.usage };
+    },
+    get stopReason() {
+      return stream.stopReason;
+    },
+    get outputChars() {
+      return stream.outputChars;
     },
   };
 }
