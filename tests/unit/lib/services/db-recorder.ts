@@ -5,9 +5,12 @@
  */
 export type RecorderMode = "empty" | "rich";
 
-export function createDbRecorder() {
-  const calls: unknown[] = [];
-  const state = { mode: "empty" as RecorderMode };
+export function createDbRecorder(calls: unknown[] = []) {
+  const state = {
+    mode: "empty" as RecorderMode,
+    /** `model.method` -> value, Error (thrown) or function(args) */
+    overrides: {} as Record<string, unknown>,
+  };
 
   const when = new Date("2030-01-01T00:00:00.000Z");
   const user = {
@@ -108,6 +111,12 @@ export function createDbRecorder() {
               (_m, method: string) =>
               async (args?: unknown) => {
                 calls.push([`${model}.${method}`, args]);
+                const key = `${model}.${method}`;
+                if (key in state.overrides) {
+                  const o = state.overrides[key];
+                  if (o instanceof Error) throw o;
+                  return typeof o === "function" ? (o as (a: unknown) => unknown)(args) : o;
+                }
                 return answer(method);
               },
           },
