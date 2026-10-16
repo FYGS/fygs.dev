@@ -22,6 +22,7 @@ export type AnalyticsEventType =
   | 'RECOMMENDATION_CLICK'
   | 'UPGRADE_CTA_SHOWN'
   | 'UPGRADE_CTA_CLICKED'
+  | 'AI_ASSISTANT_REQUEST'
 
 export interface AnalyticsEventPayload {
   userId: string

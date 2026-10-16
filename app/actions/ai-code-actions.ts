@@ -20,8 +20,11 @@ const MAX_QUERY_LENGTH = 2_000;
 const MAX_CHALLENGE_ID_LENGTH = 100;
 
 /**
- * Server action to analyze code based on the request type
- * This is the main entry point for AI code assistance
+ * Server action for the OFFLINE analyzer (static checks, no language model).
+ *
+ * The AI tutor itself lives behind POST /api/ai/assistant (streaming, model
+ * backed). This action is the fallback used when no model is configured and by
+ * the legacy /api/ai/* routes; its answers come from app/_services/ai-code-service.ts.
  */
 export async function analyzeCode(
   request: AICodeAssistRequest
@@ -48,9 +51,6 @@ export async function analyzeCode(
   });
   if (!limit.allowed) throw new Error("Too many requests");
 
-  // Add a small delay to simulate network request
-  await new Promise(resolve => setTimeout(resolve, 800));
-  
   switch (requestType) {
     case "analyze":
       return generateCodeAnalysis(code, language);
@@ -59,7 +59,7 @@ export async function analyzeCode(
     case "optimize":
       return generateOptimizationSuggestions(code, language);
     case "debug":
-      return generateDebugSuggestions(code, language);
+      return generateDebugSuggestions(code, language, request.context);
     case "hint":
       return generateHint(challengeId || "", code);
     case "chat":
