@@ -5,6 +5,7 @@ import {
 } from "@prisma/client";
 import { mapStripeSubscriptionStatus } from "../stripe-subscription-status";
 import { createLogger } from "../structured-logger";
+import { getSubscriptionPeriod } from "../stripe-shapes";
 import { SubscriptionManagement } from "./subscriptions";
 
 /** Database-side access grants (course enrollment, subscription record). */
@@ -111,14 +112,15 @@ export class AccessGrants extends SubscriptionManagement {
       // Cast to access properties potentially missing in the type definition
       const subAny = stripeSubscription as any;
 
-      // Get period dates from subscription_item (items.data[0]) as they are not at root level
+      // Period dates: on the subscription item since API 2025-03-31 (basil), on
+      // the subscription itself before (getSubscriptionPeriod reads both)
       const subscriptionItem = stripeSubscription.items?.data?.[0];
-      const itemData = subscriptionItem as any;
+      const period = getSubscriptionPeriod(stripeSubscription);
 
       // Safe access to period timestamps with fallbacks to current time
       const now = Date.now();
       const currentPeriodStart = new Date(
-        (itemData?.current_period_start ||
+        (period.start ||
           subAny.billing_cycle_anchor ||
           subAny.start_date ||
           Math.floor(now / 1000)) * 1000,
@@ -131,7 +133,7 @@ export class AccessGrants extends SubscriptionManagement {
         billingInterval === "year" ? 365 * 24 * 60 * 60 : 30 * 24 * 60 * 60;
 
       const currentPeriodEnd = new Date(
-        (itemData?.current_period_end ||
+        (period.end ||
           Math.floor(now / 1000) + fallbackPeriodSeconds) * 1000,
       );
 
@@ -140,8 +142,8 @@ export class AccessGrants extends SubscriptionManagement {
         resourceId: subscriptionId,
         metadata: {
           userId,
-          currentPeriodStartRaw: itemData?.current_period_start,
-          currentPeriodEndRaw: itemData?.current_period_end,
+          currentPeriodStartRaw: period.start,
+          currentPeriodEndRaw: period.end,
           currentPeriodStartDate: currentPeriodStart.toISOString(),
           currentPeriodEndDate: currentPeriodEnd.toISOString(),
           billingInterval,
