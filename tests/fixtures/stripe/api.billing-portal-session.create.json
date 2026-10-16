@@ -1,0 +1,14 @@
+{
+  "id": "bps_fixture1",
+  "object": "billing_portal.session",
+  "configuration": "bpc_fixture1",
+  "created": 1792192319,
+  "customer": "cus_fixture1",
+  "customer_account": null,
+  "flow": null,
+  "livemode": false,
+  "locale": null,
+  "on_behalf_of": null,
+  "return_url": "https://example.test/redacted",
+  "url": "https://billing.example.test/session/redacted"
+}
