@@ -61,7 +61,7 @@ Plateforme fullstack combinant portfolio professionnel, cours interactifs et sys
 ### Paiement & Abonnement
 
 - Abonnements mensuels/annuels avec changement de plan
-- Période de remboursement 15 jours (calcul automatique)
+- Période de remboursement 14 jours (calcul automatique)
 - Accès à vie aux cours achetés même après résiliation
 - Portail Stripe pour gestion autonome
 - Idempotency keys + rate limiting (10 actions/5min)
