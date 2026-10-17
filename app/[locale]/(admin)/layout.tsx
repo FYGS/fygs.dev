@@ -9,7 +9,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { defaultMetadata } from "../../_lib/metadata";
-import { Role } from "@prisma/client";
+import { Role } from "@/lib/generated/prisma/browser";
 
 export const metadata: Metadata = {
   ...defaultMetadata,

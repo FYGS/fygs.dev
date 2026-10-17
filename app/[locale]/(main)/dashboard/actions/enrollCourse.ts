@@ -8,7 +8,7 @@ import { AccessService } from '@/lib/access-service'
 import { AnalyticsHelper } from '@/lib/analytics-helper'
 import { createLogger } from '@/lib/structured-logger'
 import { auth } from '@/lib/auth'
-import { CourseAccessTier, PaymentKind, PaymentStatus } from '@prisma/client'
+import { CourseAccessTier, PaymentKind, PaymentStatus } from '@/lib/generated/prisma/browser'
 
 const enrollCourseSchema = z.object({
   courseId: z.string().cuid(),

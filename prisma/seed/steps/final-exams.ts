@@ -1,6 +1,6 @@
 import {
   type PrismaClient,
-} from "@prisma/client";
+} from "../../../lib/generated/prisma/client";
 
 /** Final exams for premium courses. */
 export async function seedFinalExams(

@@ -4,7 +4,7 @@ import {
   type PrismaClient,
   type Review,
   type User,
-} from "@prisma/client";
+} from "../../../lib/generated/prisma/client";
 import { randomDate, randomBetween, randomChoice } from "../utils";
 
 /** Review votes, instructor replies and reports. */

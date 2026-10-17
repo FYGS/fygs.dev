@@ -14,7 +14,7 @@ import { FadeIn, FadeInWhenVisible } from "@/components/ui/fade-in";
 import Link from "next/link";
 import { BillingActions } from "@/components/billing/billing-actions";
 import { RefundButton } from "@/components/billing/refund-button";
-import { SubscriptionStatus } from "@prisma/client";
+import { SubscriptionStatus } from "@/lib/generated/prisma/browser";
 import { classifyBillingCycle, getSubscriptionPrices } from "@/lib";
 
 export const metadata: Metadata = {

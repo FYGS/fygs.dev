@@ -6,7 +6,7 @@ import { UsersTable } from "./_components/users-table";
 import { UsersStats } from "./_components/users-stats";
 import { PaginationService, extractPaginationParams } from "@/lib/pagination-utils";
 import { safeNumber } from "@/lib/serialization-utils";
-import { PaymentStatus, Role, SubscriptionStatus } from "@prisma/client";
+import { PaymentStatus, Role, SubscriptionStatus } from "@/lib/generated/prisma/browser";
 
 export const metadata: Metadata = {
   title: "Gestion des Utilisateurs | Admin FYGS",

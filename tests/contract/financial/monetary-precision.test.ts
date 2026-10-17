@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { Decimal } from '@prisma/client/runtime/library'
+import { Decimal } from '@prisma/client/runtime/client'
 
 // Monetary precision service for handling currency calculations
 class MonetaryPrecisionService {

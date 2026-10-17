@@ -15,7 +15,7 @@ import type {
   DiscussionVote,
   User,
   Course,
-} from "@prisma/client";
+} from "@/lib/generated/prisma/browser";
 
 // Base Community Types
 export type CommunityUser = User & {

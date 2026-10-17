@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { Role, ReviewStatus } from "@prisma/client";
+import { Role, ReviewStatus } from "@/lib/generated/prisma/browser";
 import { logger } from "@/lib/structured-logger";
 
 /**

@@ -8,7 +8,7 @@ import { auth } from "@/lib/auth";
 import { paymentService } from "@/lib/payment-service";
 import { isRefundEligible } from "@/lib/refund-policy";
 import { AnalyticsHelper } from "@/lib/analytics-helper";
-import { SubscriptionStatus } from "@prisma/client";
+import { SubscriptionStatus } from "@/lib/generated/prisma/browser";
 
 const requestRefundSchema = z.object({
   subscriptionId: z.string().min(1, "Subscription ID is required"),

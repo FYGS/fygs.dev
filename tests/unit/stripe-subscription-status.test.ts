@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { SubscriptionStatus } from "@prisma/client";
+import { SubscriptionStatus } from "@/lib/generated/prisma/browser";
 import { mapStripeSubscriptionStatus } from "@/lib/stripe-subscription-status";
 
 describe("mapStripeSubscriptionStatus", () => {

@@ -15,7 +15,7 @@ import { Plus, Tag } from "lucide-react";
 import Link from "next/link";
 import { TagsHeader } from "./_components/tags-header";
 import { TagCard } from "./_components/tag-card";
-import { Role } from "@prisma/client";
+import { Role } from "@/lib/generated/prisma/browser";
 
 async function getTagsWithStats() {
   const tags = await db.tag.findMany({

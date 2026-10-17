@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { ReviewSearchService } from "@/lib/services/review-search";
-import { ReviewStatus } from "@prisma/client";
+import { ReviewStatus } from "@/lib/generated/prisma/browser";
 import { logger } from "@/lib/structured-logger";
 
 export const runtime = "nodejs";

@@ -8,7 +8,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { Form } from "@/components/ui/form";
 import { createCourse } from "../../_actions/create-course";
-import { CourseCategory, CourseLevel, CourseAccessTier } from "@prisma/client";
+import { CourseCategory, CourseLevel, CourseAccessTier } from "@/lib/generated/prisma/browser";
 import { BasicInfoSection } from "./course-form/basic-info-section";
 import { CategorizationSection } from "./course-form/categorization-section";
 import { FormActions } from "./course-form/form-actions";

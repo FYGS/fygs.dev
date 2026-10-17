@@ -8,7 +8,7 @@ import {
   ReviewReply,
   ReviewReport,
   ReportReason,
-} from "@prisma/client";
+} from "@/lib/generated/prisma/browser";
 
 type ReviewWithRelations = Review & {
   user: User;

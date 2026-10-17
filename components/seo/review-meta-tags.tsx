@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { Review, User, Course } from "@prisma/client";
+import { Review, User, Course } from "@/lib/generated/prisma/browser";
 import { ReviewSEOService } from "@/lib/services/review-seo";
 
 type ReviewWithAuthor = Review & {

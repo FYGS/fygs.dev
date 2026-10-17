@@ -11,7 +11,7 @@ import {
   CourseAccessTier,
   Role,
   Prisma,
-} from "@prisma/client";
+} from "@/lib/generated/prisma/browser";
 import { CourseData } from "@/types/admin";
 
 const createCourseSchema = z.object({

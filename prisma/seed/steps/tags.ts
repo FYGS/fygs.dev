@@ -1,7 +1,7 @@
 import {
   type PrismaClient,
   type Tag,
-} from "@prisma/client";
+} from "../../../lib/generated/prisma/client";
 
 /** Tag ecosystem. */
 export async function seedTags(

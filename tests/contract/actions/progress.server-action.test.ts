@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { db } from "@/lib/db";
-import { updateLessonProgress } from "@/app/(main)/dashboard/actions/updateLessonProgress";
+import { updateLessonProgress } from "@/app/[locale]/(main)/dashboard/actions/updateLessonProgress";
 import { auth } from "@/lib/auth";
 
 // Mock auth for testing

@@ -1,6 +1,6 @@
 import {
   type PrismaClient,
-} from "@prisma/client";
+} from "../../../lib/generated/prisma/client";
 import type { EnrollmentWithRelations } from "../types";
 
 /** Certificates for completed courses. */

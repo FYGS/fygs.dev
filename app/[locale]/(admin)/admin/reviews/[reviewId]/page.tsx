@@ -24,7 +24,7 @@ import { StarRatingDisplay } from "@/components/reviews/star-rating";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { Role } from "@prisma/client";
+import { Role } from "@/lib/generated/prisma/browser";
 
 interface ReviewDetailsPageProps {
   params: Promise<{

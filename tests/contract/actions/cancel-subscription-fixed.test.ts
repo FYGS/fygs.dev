@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { db } from "@/lib/db";
-import { cancelSubscription } from "@/app/(main)/dashboard/actions/cancelSubscription";
+import { cancelSubscription } from "@/app/[locale]/(main)/dashboard/actions/cancelSubscription";
 import { createTestEnvironment } from "../../utils/test-database";
 import { mockAuthenticatedUser, AuthMock } from "../../utils/auth-mock";
 

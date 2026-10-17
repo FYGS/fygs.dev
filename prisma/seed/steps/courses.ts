@@ -1,7 +1,7 @@
 import {
   type PrismaClient,
   type User,
-} from "@prisma/client";
+} from "../../../lib/generated/prisma/client";
 import { randomDate } from "../utils";
 import { comprehensiveCourses } from "../data/courses";
 

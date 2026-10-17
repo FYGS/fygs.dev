@@ -6,7 +6,7 @@ import {
   type PrismaClient,
   type Topic,
   type User,
-} from "@prisma/client";
+} from "../../../lib/generated/prisma/client";
 import { randomBetween } from "../utils";
 
 /** Votes, topic follows, bookmarks and badge awards. */

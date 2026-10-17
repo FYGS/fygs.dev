@@ -4,7 +4,7 @@ import {
   Prisma,
   PaymentStatus,
   PaymentKind,
-} from "@prisma/client";
+} from "@/lib/generated/prisma/browser";
 import { Analytics } from "../analytics-helper";
 import { createLogger } from "../structured-logger";
 import { stripeRefId } from "../stripe-shapes";

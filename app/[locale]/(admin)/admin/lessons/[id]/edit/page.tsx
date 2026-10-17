@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { LessonEditForm } from "../_components/lesson-edit-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CourseQueryOptions } from "@/types/admin";
-import { Role } from "@prisma/client";
+import { Role } from "@/lib/generated/prisma/browser";
 
 interface EditLessonPageProps {
   params: Promise<{ id: string }>;

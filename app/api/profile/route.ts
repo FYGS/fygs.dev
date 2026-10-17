@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { z } from "zod";
 import { createLogger } from "@/lib/structured-logger";
-import { SubscriptionStatus } from "@prisma/client";
+import { SubscriptionStatus } from "@/lib/generated/prisma/browser";
 import { enforceRateLimit } from "@/lib/rate-limit";
 
 const updateProfileSchema = z.object({

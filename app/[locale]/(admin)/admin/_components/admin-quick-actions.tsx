@@ -15,7 +15,7 @@ import {
   Eye,
   Download
 } from "lucide-react";
-import { Role } from "@prisma/client";
+import { Role } from "@/lib/generated/prisma/browser";
 
 interface AdminQuickActionsProps {
   userRole: string;

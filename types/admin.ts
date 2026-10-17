@@ -4,7 +4,7 @@ import {
   CourseLevel,
   CourseAccessTier,
   Role,
-} from "@prisma/client";
+} from "@/lib/generated/prisma/browser";
 
 // Session types
 export interface SessionUser {

@@ -11,7 +11,7 @@ import {
   Flag
 } from "lucide-react";
 import { ReviewSearchService } from "@/lib/services/review-search";
-import { ReviewStatus } from "@prisma/client";
+import { ReviewStatus } from "@/lib/generated/prisma/browser";
 import { StarRatingDisplay } from "@/components/reviews/star-rating";
 
 export const metadata: Metadata = {

@@ -1,7 +1,7 @@
 import {
   type PrismaClient,
   type Topic,
-} from "@prisma/client";
+} from "../../../lib/generated/prisma/client";
 
 /** Community topics. */
 export async function seedCommunityTopics(

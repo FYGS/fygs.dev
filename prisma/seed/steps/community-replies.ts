@@ -3,7 +3,7 @@ import {
   type DiscussionReply,
   type PrismaClient,
   type User,
-} from "@prisma/client";
+} from "../../../lib/generated/prisma/client";
 import { randomBetween } from "../utils";
 
 /** Discussion replies. */

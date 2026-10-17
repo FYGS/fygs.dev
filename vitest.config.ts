@@ -16,6 +16,8 @@ export default defineConfig({
     env: {
       NODE_ENV: "test",
       SKIP_ENV_VALIDATION: "true",
+      // better-auth builds absolute links (verification, reset) from this
+      BETTER_AUTH_URL: "http://localhost:3000",
     },
     // jsdom for .tsx tests, node for .ts tests
     projects: [

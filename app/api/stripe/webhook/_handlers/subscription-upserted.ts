@@ -1,6 +1,6 @@
 import type Stripe from "stripe";
 import { db } from "@/lib/db";
-import { SubscriptionPlan } from "@prisma/client";
+import { SubscriptionPlan } from "@/lib/generated/prisma/browser";
 import { emailService } from "@/lib/email-service";
 import { Analytics } from "@/lib/analytics-helper";
 import { classifyBillingCycle } from "@/lib/subscription-pricing";

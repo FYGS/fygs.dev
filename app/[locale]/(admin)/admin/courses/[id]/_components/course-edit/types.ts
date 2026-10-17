@@ -1,4 +1,4 @@
-import { CourseCategory, CourseLevel, CourseAccessTier } from "@prisma/client";
+import { CourseCategory, CourseLevel, CourseAccessTier } from "@/lib/generated/prisma/browser";
 
 // Types for the props
 export type TagType = {

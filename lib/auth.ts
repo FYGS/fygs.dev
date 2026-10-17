@@ -3,7 +3,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { db } from "./db";
 import { emailService } from "./email-service";
-import { Role } from "@prisma/client";
+import { Role } from "@/lib/generated/prisma/browser";
 
 // The placeholder only exists so "next build" can import this module without
 // the runtime secret. A running production server must never use it: anyone

@@ -8,7 +8,7 @@ import { paymentService } from "@/lib/payment-service";
 import { isRefundEligible } from "@/lib/refund-policy";
 import { AnalyticsHelper } from "@/lib/analytics-helper";
 import { auth } from "@/lib/auth";
-import { SubscriptionStatus } from "@prisma/client";
+import { SubscriptionStatus } from "@/lib/generated/prisma/browser";
 
 const cancelSubscriptionSchema = z.object({
   reason: z.string().optional(),

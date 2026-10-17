@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
-import { Role } from "@prisma/client";
+import { Role } from "@/lib/generated/prisma/browser";
 import { QuizCreateForm } from "./_components/quiz-create-form";
 
 interface QuizCreatePageProps {

@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { AdminQuickActions } from "./admin-quick-actions";
-import { Role } from "@prisma/client";
+import { Role } from "@/lib/generated/prisma/browser";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";

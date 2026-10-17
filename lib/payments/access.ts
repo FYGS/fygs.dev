@@ -2,7 +2,7 @@ import { db } from "../db";
 import {
   SubscriptionPlan,
   SubscriptionStatus,
-} from "@prisma/client";
+} from "@/lib/generated/prisma/browser";
 import { mapStripeSubscriptionStatus } from "../stripe-subscription-status";
 import { createLogger } from "../structured-logger";
 import { getSubscriptionPeriod } from "../stripe-shapes";

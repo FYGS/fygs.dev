@@ -6,7 +6,7 @@ import {
   ReviewContentValidator,
 } from "@/lib/validators/review-validators";
 import { db } from "@/lib/db";
-import { ReviewStatus } from "@prisma/client";
+import { ReviewStatus } from "@/lib/generated/prisma/browser";
 import { logger } from "@/lib/structured-logger";
 import { ReviewAnalyticsService } from "@/lib/services/review-analytics";
 import { ReviewNotificationService } from "@/lib/services/review-notification";

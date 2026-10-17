@@ -1,6 +1,6 @@
 import {
   type PrismaClient,
-} from "@prisma/client";
+} from "../../../lib/generated/prisma/client";
 import { visualSupportsData } from "../data/visual-supports";
 
 /** Visual supports and quizzes. */

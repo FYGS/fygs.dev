@@ -3,7 +3,7 @@ import { stripe } from "../stripe";
 import { db } from "../db";
 import {
   Prisma,
-} from "@prisma/client";
+} from "@/lib/generated/prisma/browser";
 import { createLogger } from "../structured-logger";
 import { stripeRefId } from "../stripe-shapes";
 import { StripeBilling } from "./billing";

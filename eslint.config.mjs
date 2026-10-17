@@ -13,6 +13,7 @@ const eslintConfig = [
       "public/workbox-*.js",
       "playwright-report/**",
       "next-env.d.ts",
+      "lib/generated/**",
     ],
   },
   {

@@ -12,7 +12,7 @@ import {
   SubscriptionPlan,
   SubscriptionStatus,
   PaymentStatus,
-} from "@prisma/client";
+} from "@/lib/generated/prisma/browser";
 import { createLogger } from "@/lib/structured-logger";
 import { enforceRateLimit } from "@/lib/rate-limit";
 

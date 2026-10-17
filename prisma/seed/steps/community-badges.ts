@@ -1,7 +1,7 @@
 import {
   type Badge,
   type PrismaClient,
-} from "@prisma/client";
+} from "../../../lib/generated/prisma/client";
 
 /** Community badges. */
 export async function seedCommunityBadges(

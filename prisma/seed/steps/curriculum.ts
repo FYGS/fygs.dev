@@ -1,6 +1,6 @@
 import {
   type PrismaClient,
-} from "@prisma/client";
+} from "../../../lib/generated/prisma/client";
 
 /** Course modules and lessons. */
 export async function seedCurriculum(

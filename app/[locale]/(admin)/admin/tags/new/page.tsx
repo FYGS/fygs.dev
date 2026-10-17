@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { Role } from "@prisma/client";
+import { Role } from "@/lib/generated/prisma/browser";
 import { TagCreateForm } from "./_components/tag-create-form";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";

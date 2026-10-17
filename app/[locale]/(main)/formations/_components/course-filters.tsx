@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CourseCategory, CourseLevel } from "@prisma/client";
+import { CourseCategory, CourseLevel } from "@/lib/generated/prisma/browser";
 import { Search } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";

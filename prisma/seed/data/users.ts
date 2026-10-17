@@ -1,4 +1,4 @@
-import { Role } from "@prisma/client";
+import { Role } from "../../../lib/generated/prisma/browser";
 
 // Realistic seed data
 export const realisticUsers = [

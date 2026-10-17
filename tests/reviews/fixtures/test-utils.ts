@@ -4,7 +4,8 @@
  */
 
 import { beforeEach, afterEach, vi, expect } from "vitest";
-import { PrismaClient } from "@prisma/client";
+import type { PrismaClient } from "@/lib/generated/prisma/client";
+import { createTestClient } from "../../support/test-db";
 import type { User } from "../../../lib/auth";
 import { seedData, mockUsers } from "./review-fixtures";
 
@@ -103,13 +104,7 @@ export class DatabaseTestUtils {
   private static prisma: PrismaClient;
 
   static async setup() {
-    this.prisma = new PrismaClient({
-      datasources: {
-        db: {
-          url: process.env.TEST_DATABASE_URL || process.env.DATABASE_URL,
-        },
-      },
-    });
+    this.prisma = createTestClient();
 
     // Clean database
     await this.cleanup();
