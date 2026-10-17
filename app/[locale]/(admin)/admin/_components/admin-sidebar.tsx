@@ -1,5 +1,6 @@
 "use client";
 
+import { isAdminHrefAvailable } from "@/lib/admin-routes";
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -190,7 +191,9 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
   const pathname = usePathname();
 
   const filteredNavigation = navigation.filter(
-    (item) => !item.adminOnly || userRole === "ADMIN",
+    (item) =>
+      isAdminHrefAvailable(item.href) &&
+      (!item.adminOnly || userRole === "ADMIN"),
   );
 
   return (

@@ -1,5 +1,6 @@
 "use client";
 
+import { isAdminHrefAvailable } from "@/lib/admin-routes";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -157,7 +158,9 @@ export function AdminQuickActions({ userRole }: AdminQuickActionsProps) {
     return actions;
   };
   
-  const quickActions = getQuickActions();
+  const quickActions = getQuickActions().filter((action) =>
+    isAdminHrefAvailable(action.href),
+  );
   
   if (quickActions.length === 0) {
     return null;

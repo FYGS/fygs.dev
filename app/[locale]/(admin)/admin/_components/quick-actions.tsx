@@ -1,5 +1,6 @@
 "use client";
 
+import { isAdminHrefAvailable } from "@/lib/admin-routes";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,6 +59,10 @@ const quickActions = [
   },
 ];
 
+const availableQuickActions = quickActions.filter((action) =>
+  isAdminHrefAvailable(action.href),
+);
+
 export function QuickActions() {
   return (
     <Card>
@@ -69,7 +74,7 @@ export function QuickActions() {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {quickActions.map((action) => (
+          {availableQuickActions.map((action) => (
             <Link key={action.href} href={action.href}>
               <Button
                 variant="ghost"
