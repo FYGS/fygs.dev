@@ -1,253 +1,176 @@
-import {
-  describe,
-  test,
-  expect,
-  beforeEach,
-  beforeAll,
-  afterAll,
-} from "vitest";
+import { describe, test, expect, beforeEach, vi } from "vitest";
 import { db } from "@/lib/db";
-import {
-  createAnalyticsTestData,
-  cleanupAnalyticsTestData,
-  type TestData,
-} from "../fixtures/analytics-test-utils";
+import { AnalyticsHelper } from "@/lib/analytics-helper";
+import { createCourse, createUser } from "../support/factories";
+import { resetDatabase } from "../support/test-db";
 
 /**
  * T060: Analytics Event Integration Test
  *
- * Tests that analytics events are properly emitted during major user actions
- * and stored correctly in the database.
+ * Tests that analytics events are properly emitted by the real user actions
+ * (enrollment, lesson completion, certificate issuance) and stored correctly in
+ * the database.
  */
 
+// Better Auth: the session is the user of the current test
+const session = vi.hoisted(() => ({ userId: "" }));
+vi.mock("@/lib/auth", () => ({
+  auth: {
+    api: {
+      getSession: vi.fn(async () => ({ user: { id: session.userId } })),
+    },
+  },
+}));
+
+import { enrollCourse } from "@/app/[locale]/(main)/dashboard/actions/enrollCourse";
+import { updateLessonProgress } from "@/app/[locale]/(main)/dashboard/actions/updateLessonProgress";
+import { issueCertificate } from "@/app/[locale]/(main)/dashboard/actions/issueCertificate";
+
+type Props = Record<string, any>;
+
 describe("Analytics Event Integration", () => {
-  let testData: TestData;
+  let user: Awaited<ReturnType<typeof createUser>>;
+  let course: Awaited<ReturnType<typeof createCourse>>;
+  let lessons: { id: string; order: number }[];
 
-  beforeAll(async () => {
-    testData = await createAnalyticsTestData();
-  });
-
-  afterAll(async () => {
-    await cleanupAnalyticsTestData();
-  });
+  const eventsOf = (type: string) =>
+    db.analyticsEvent.findMany({
+      where: { userId: user.id, type },
+      orderBy: { createdAt: "asc" },
+    });
 
   beforeEach(async () => {
-    // Clear event data between tests
-    await db.analyticsEvent.deleteMany({
-      where: {
-        userId: { in: ["test-analytics-user", "test-analytics-user-2"] },
-      },
-    });
+    await resetDatabase(db);
+    user = await createUser();
+    session.userId = user.id;
+    course = await createCourse({ title: "Analytics Test Course" });
+    lessons = await Promise.all(
+      [1, 2].map((order) =>
+        db.lesson.create({
+          data: {
+            title: `Analytics Test Lesson ${order}`,
+            slug: `analytics-test-lesson-${order}`,
+            order,
+            courseId: course.id,
+            published: true,
+            content: `Test lesson content ${order}`,
+          },
+          select: { id: true, order: true },
+        })
+      )
+    );
   });
 
   describe("Enrollment analytics", () => {
     test("records enrollment event with correct properties", async () => {
-      // Perform enrollment
-      try {
-        // In actual implementation, this would use server action
-        // For testing, we simulate the result
-        console.log("Simulating enrollment action for", testData.course.id);
-      } catch {
-        // Expected to fail due to missing authentication context
-        // In real app, this would be handled by auth middleware
-      }
+      const result = await enrollCourse({ courseId: course.id });
+      expect(result.success).toBe(true);
 
-      // Manually create enrollment for testing analytics
-      await db.enrollment.create({
-        data: {
-          userId: testData.user.id,
-          courseId: testData.course.id,
-        },
-      });
-
-      // Manually trigger analytics event (simulating what would happen in real action)
-      await db.analyticsEvent.create({
-        data: {
-          userId: "test-analytics-user",
-          type: "ENROLLMENT_CREATED",
-          source: "server",
-          properties: {
-            courseId: testCourse.id,
-            courseTitle: testCourse.title,
-            courseTier: testCourse.tier,
-            enrollmentSource: "dashboard",
-            hasActiveSubscription: false,
-            timestamp: new Date().toISOString(),
-            correlationId: `corr_${Date.now()}_test`,
-          },
-        },
-      });
-
-      // Verify analytics event was created
-      const analyticsEvents = await db.analyticsEvent.findMany({
-        where: {
-          userId: "test-analytics-user",
-          type: "ENROLLMENT_CREATED",
-        },
-      });
-
+      const analyticsEvents = await eventsOf("ENROLLMENT_CREATED");
       expect(analyticsEvents).toHaveLength(1);
 
       const event = analyticsEvents[0];
-      expect(event.userId).toBe("test-analytics-user");
+      expect(event.userId).toBe(user.id);
       expect(event.type).toBe("ENROLLMENT_CREATED");
       expect(event.source).toBe("server");
 
-      const properties = event.properties as Record<string, any>;
-      expect(properties.courseId).toBe(testCourse.id);
-      expect(properties.courseTitle).toBe(testCourse.title);
+      const properties = event.properties as Props;
+      expect(properties.courseId).toBe(course.id);
+      expect(properties.courseTitle).toBe(course.title);
       expect(properties.courseTier).toBe("FREE");
-      expect(properties.enrollmentSource).toBe("dashboard");
+      expect(properties.enrollmentSource).toBe("direct_link");
       expect(properties.hasActiveSubscription).toBe(false);
-      expect(properties.correlationId).toMatch(/^corr_\d+_test$/);
+      expect(properties.correlationId).toMatch(/^corr_\d+_[a-z0-9]+$/);
+      expect(new Date(properties.timestamp).getTime()).not.toBeNaN();
+    });
+
+    test("a repeated enrollment request does not record a second event", async () => {
+      await enrollCourse({ courseId: course.id });
+      const again = await enrollCourse({ courseId: course.id });
+
+      expect(again.alreadyEnrolled).toBe(true);
+      expect(await eventsOf("ENROLLMENT_CREATED")).toHaveLength(1);
+    });
+
+    test("a refused enrollment records nothing", async () => {
+      const premium = await createCourse({ accessTier: "PREMIUM" });
+
+      const result = await enrollCourse({ courseId: premium.id });
+
+      expect(result.success).toBe(false);
+      expect(await db.analyticsEvent.count({ where: { userId: user.id } })).toBe(
+        0
+      );
     });
   });
 
   describe("Lesson completion analytics", () => {
     test("records lesson completion event with progress tracking", async () => {
-      // Setup: Create enrollment first
-      await db.enrollment.create({
-        data: {
-          userId: "test-analytics-user",
-          courseId: testCourse.id,
-        },
-      });
+      await enrollCourse({ courseId: course.id });
 
-      // Simulate lesson completion
-      await db.progress.create({
-        data: {
-          userId: "test-analytics-user",
-          lessonId: testLessons[0].id,
-          completed: true,
-          watchTime: 300,
-        },
+      const result = await updateLessonProgress({
+        lessonId: lessons[0].id,
+        completed: true,
+        watchTimeDelta: 300,
       });
+      expect(result.success).toBe(true);
 
-      // Manually trigger analytics event
-      await db.analyticsEvent.create({
-        data: {
-          userId: "test-analytics-user",
-          type: "LESSON_COMPLETED",
-          source: "server",
-          properties: {
-            lessonId: testLessons[0].id,
-            courseId: testCourse.id,
-            lessonOrder: 1,
-            watchTime: 300,
-            completionPercentage: 100,
-            isFirstCompletion: true,
-            timestamp: new Date().toISOString(),
-            correlationId: `corr_${Date.now()}_lesson`,
-          },
-        },
-      });
-
-      // Verify analytics event
-      const analyticsEvents = await db.analyticsEvent.findMany({
-        where: {
-          userId: "test-analytics-user",
-          type: "LESSON_COMPLETED",
-        },
-      });
-
+      const analyticsEvents = await eventsOf("LESSON_COMPLETED");
       expect(analyticsEvents).toHaveLength(1);
 
       const event = analyticsEvents[0];
-      expect(event.userId).toBe("test-analytics-user");
+      expect(event.userId).toBe(user.id);
       expect(event.type).toBe("LESSON_COMPLETED");
+      expect(event.source).toBe("server");
 
-      const properties = event.properties as Record<string, any>;
-      expect(properties.lessonId).toBe(testLessons[0].id);
-      expect(properties.courseId).toBe(testCourse.id);
+      const properties = event.properties as Props;
+      expect(properties.lessonId).toBe(lessons[0].id);
+      expect(properties.courseId).toBe(course.id);
       expect(properties.lessonOrder).toBe(1);
       expect(properties.watchTime).toBe(300);
       expect(properties.completionPercentage).toBe(100);
       expect(properties.isFirstCompletion).toBe(true);
     });
 
+    test("only the first completion of a lesson is recorded", async () => {
+      await enrollCourse({ courseId: course.id });
+
+      await updateLessonProgress({ lessonId: lessons[0].id, completed: true });
+      await updateLessonProgress({
+        lessonId: lessons[0].id,
+        completed: true,
+        watchTimeDelta: 30,
+      });
+
+      expect(await eventsOf("LESSON_COMPLETED")).toHaveLength(1);
+    });
+
     test("tracks progress across multiple lesson completions", async () => {
-      // Setup enrollment
-      await db.enrollment.create({
-        data: {
-          userId: "test-analytics-user",
-          courseId: testCourse.id,
-        },
+      await enrollCourse({ courseId: course.id });
+
+      await updateLessonProgress({
+        lessonId: lessons[0].id,
+        completed: true,
+        watchTimeDelta: 300,
+      });
+      await updateLessonProgress({
+        lessonId: lessons[1].id,
+        completed: true,
+        watchTimeDelta: 450,
       });
 
-      // Complete first lesson
-      await db.progress.create({
-        data: {
-          userId: "test-analytics-user",
-          lessonId: testLessons[0].id,
-          completed: true,
-          watchTime: 300,
-        },
-      });
-
-      await db.analyticsEvent.create({
-        data: {
-          userId: "test-analytics-user",
-          type: "LESSON_COMPLETED",
-          source: "server",
-          properties: {
-            lessonId: testLessons[0].id,
-            courseId: testCourse.id,
-            lessonOrder: 1,
-            watchTime: 300,
-            completionPercentage: 100,
-            isFirstCompletion: true,
-            correlationId: `corr_${Date.now()}_lesson1`,
-          },
-        },
-      });
-
-      // Complete second lesson
-      await db.progress.create({
-        data: {
-          userId: "test-analytics-user",
-          lessonId: testLessons[1].id,
-          completed: true,
-          watchTime: 450,
-        },
-      });
-
-      await db.analyticsEvent.create({
-        data: {
-          userId: "test-analytics-user",
-          type: "LESSON_COMPLETED",
-          source: "server",
-          properties: {
-            lessonId: testLessons[1].id,
-            courseId: testCourse.id,
-            lessonOrder: 2,
-            watchTime: 450,
-            completionPercentage: 100,
-            isFirstCompletion: true,
-            correlationId: `corr_${Date.now()}_lesson2`,
-          },
-        },
-      });
-
-      // Verify both events recorded
-      const analyticsEvents = await db.analyticsEvent.findMany({
-        where: {
-          userId: "test-analytics-user",
-          type: "LESSON_COMPLETED",
-        },
-        orderBy: { createdAt: "asc" },
-      });
-
+      const analyticsEvents = await eventsOf("LESSON_COMPLETED");
       expect(analyticsEvents).toHaveLength(2);
 
       // Verify lesson 1 completion
-      const lesson1Event = analyticsEvents[0];
-      const lesson1Props = lesson1Event.properties as Record<string, any>;
+      const lesson1Props = analyticsEvents[0].properties as Props;
+      expect(lesson1Props.lessonId).toBe(lessons[0].id);
       expect(lesson1Props.lessonOrder).toBe(1);
       expect(lesson1Props.watchTime).toBe(300);
 
       // Verify lesson 2 completion
-      const lesson2Event = analyticsEvents[1];
-      const lesson2Props = lesson2Event.properties as Record<string, any>;
+      const lesson2Props = analyticsEvents[1].properties as Props;
+      expect(lesson2Props.lessonId).toBe(lessons[1].id);
       expect(lesson2Props.lessonOrder).toBe(2);
       expect(lesson2Props.watchTime).toBe(450);
     });
@@ -255,74 +178,44 @@ describe("Analytics Event Integration", () => {
 
   describe("Certificate issuance analytics", () => {
     test("records certificate event when course is completed", async () => {
-      // Setup: Complete enrollment and all lessons
-      await db.enrollment.create({
-        data: {
-          userId: "test-analytics-user",
-          courseId: testCourse.id,
-        },
-      });
-
-      // Complete all lessons
-      for (const lesson of testLessons) {
-        await db.progress.create({
-          data: {
-            userId: "test-analytics-user",
-            lessonId: lesson.id,
-            completed: true,
-            watchTime: 300,
-          },
+      await enrollCourse({ courseId: course.id });
+      for (const lesson of lessons) {
+        await updateLessonProgress({
+          lessonId: lesson.id,
+          completed: true,
+          watchTimeDelta: 300,
         });
       }
 
-      // Create certificate
-      const certificate = await db.certificate.create({
-        data: {
-          userId: "test-analytics-user",
-          courseId: testCourse.id,
-          issuedAt: new Date(),
-        },
-      });
+      const result = await issueCertificate({ courseId: course.id });
+      expect(result.success).toBe(true);
 
-      // Trigger analytics event
-      await db.analyticsEvent.create({
-        data: {
-          userId: "test-analytics-user",
-          type: "CERTIFICATE_ISSUED",
-          source: "server",
-          properties: {
-            certificateId: certificate.id,
-            courseId: testCourse.id,
-            courseTitle: testCourse.title,
-            completionDate: new Date().toISOString().split("T")[0],
-            totalLessons: testLessons.length,
-            totalWatchTime: 600, // 2 lessons * 300s each
-            timestamp: new Date().toISOString(),
-            correlationId: `corr_${Date.now()}_cert`,
-          },
-        },
-      });
-
-      // Verify analytics event
-      const analyticsEvents = await db.analyticsEvent.findMany({
-        where: {
-          userId: "test-analytics-user",
-          type: "CERTIFICATE_ISSUED",
-        },
-      });
-
+      const analyticsEvents = await eventsOf("CERTIFICATE_ISSUED");
       expect(analyticsEvents).toHaveLength(1);
 
       const event = analyticsEvents[0];
-      expect(event.userId).toBe("test-analytics-user");
+      expect(event.userId).toBe(user.id);
       expect(event.type).toBe("CERTIFICATE_ISSUED");
 
-      const properties = event.properties as Record<string, any>;
-      expect(properties.certificateId).toBe(certificate.id);
-      expect(properties.courseId).toBe(testCourse.id);
-      expect(properties.courseTitle).toBe(testCourse.title);
+      const properties = event.properties as Props;
+      expect(properties.certificateId).toBe(result.certificate!.id);
+      expect(properties.courseId).toBe(course.id);
+      expect(properties.courseTitle).toBe(course.title);
       expect(properties.totalLessons).toBe(2);
-      expect(properties.totalWatchTime).toBe(600);
+      expect(properties.totalWatchTime).toBe(600); // 2 lessons * 300s each
+    });
+
+    test("asking for the certificate again does not record a second event", async () => {
+      await enrollCourse({ courseId: course.id });
+      for (const lesson of lessons) {
+        await updateLessonProgress({ lessonId: lesson.id, completed: true });
+      }
+
+      await issueCertificate({ courseId: course.id });
+      const again = await issueCertificate({ courseId: course.id });
+
+      expect(again.alreadyIssued).toBe(true);
+      expect(await eventsOf("CERTIFICATE_ISSUED")).toHaveLength(1);
     });
   });
 
@@ -330,145 +223,93 @@ describe("Analytics Event Integration", () => {
     test("events include correlation IDs for session tracking", async () => {
       const correlationId = `corr_${Date.now()}_session_test`;
 
-      // Create multiple related events with same correlation ID
-      await db.enrollment.create({
-        data: {
-          userId: "test-analytics-user",
-          courseId: testCourse.id,
-        },
+      // Related events sharing one correlation ID
+      await AnalyticsHelper.emit({
+        userId: user.id,
+        type: "ENROLLMENT_CREATED",
+        source: "server",
+        properties: { courseId: course.id, correlationId },
       });
-
-      await db.analyticsEvent.create({
-        data: {
-          userId: "test-analytics-user",
-          type: "ENROLLMENT_CREATED",
-          source: "server",
-          properties: {
-            courseId: testCourse.id,
-            correlationId,
-          },
-        },
+      await AnalyticsHelper.emit({
+        userId: user.id,
+        type: "LESSON_COMPLETED",
+        source: "server",
+        properties: { lessonId: lessons[0].id, courseId: course.id, correlationId },
       });
-
-      await db.progress.create({
-        data: {
-          userId: "test-analytics-user",
-          lessonId: testLessons[0].id,
-          completed: true,
-          watchTime: 300,
-        },
-      });
-
-      await db.analyticsEvent.create({
-        data: {
-          userId: "test-analytics-user",
-          type: "LESSON_COMPLETED",
-          source: "server",
-          properties: {
-            lessonId: testLessons[0].id,
-            courseId: testCourse.id,
-            correlationId,
-          },
-        },
+      // ...and an unrelated one
+      await AnalyticsHelper.emit({
+        userId: user.id,
+        type: "LESSON_COMPLETED",
+        source: "server",
+        properties: { lessonId: lessons[1].id, courseId: course.id },
       });
 
       // Verify events can be correlated
       const correlatedEvents = await db.analyticsEvent.findMany({
         where: {
-          userId: "test-analytics-user",
-          properties: {
-            path: ["correlationId"],
-            equals: correlationId,
-          },
+          userId: user.id,
+          properties: { path: ["correlationId"], equals: correlationId },
         },
       });
 
       expect(correlatedEvents).toHaveLength(2);
-      expect(correlatedEvents.map((e) => e.type)).toEqual(
-        expect.arrayContaining(["ENROLLMENT_CREATED", "LESSON_COMPLETED"])
-      );
+      expect(correlatedEvents.map((e) => e.type).sort()).toEqual([
+        "ENROLLMENT_CREATED",
+        "LESSON_COMPLETED",
+      ]);
     });
 
     test("events contain proper timestamps and metadata", async () => {
       const beforeTime = new Date();
 
-      await db.enrollment.create({
-        data: {
-          userId: "test-analytics-user",
-          courseId: testCourse.id,
-        },
-      });
-
-      await db.analyticsEvent.create({
-        data: {
-          userId: "test-analytics-user",
-          type: "ENROLLMENT_CREATED",
-          source: "server",
-          properties: {
-            courseId: testCourse.id,
-            timestamp: new Date().toISOString(),
-            correlationId: `corr_${Date.now()}_timestamp`,
-          },
-        },
-      });
+      await enrollCourse({ courseId: course.id });
 
       const afterTime = new Date();
 
-      const event = await db.analyticsEvent.findFirst({
-        where: {
-          userId: "test-analytics-user",
-          type: "ENROLLMENT_CREATED",
-        },
+      const event = await db.analyticsEvent.findFirstOrThrow({
+        where: { userId: user.id, type: "ENROLLMENT_CREATED" },
       });
 
-      expect(event).toBeDefined();
-      expect(event!.createdAt.getTime()).toBeGreaterThanOrEqual(
+      expect(event.createdAt.getTime()).toBeGreaterThanOrEqual(
         beforeTime.getTime()
       );
-      expect(event!.createdAt.getTime()).toBeLessThanOrEqual(
-        afterTime.getTime()
-      );
-      expect(event!.source).toBe("server");
+      expect(event.createdAt.getTime()).toBeLessThanOrEqual(afterTime.getTime());
+      expect(event.source).toBe("server");
 
-      const properties = event!.properties as Record<string, any>;
-      expect(properties.timestamp).toBeDefined();
-      expect(properties.correlationId).toMatch(/^corr_\d+_timestamp$/);
+      const properties = event.properties as Props;
+      expect(new Date(properties.timestamp).getTime()).toBeGreaterThanOrEqual(
+        beforeTime.getTime()
+      );
+      expect(properties.correlationId).toMatch(/^corr_\d+_/);
     });
   });
 
   describe("Event data integrity", () => {
     test("handles missing optional properties gracefully", async () => {
-      // Create event with minimal required data
-      await db.analyticsEvent.create({
-        data: {
-          userId: "test-analytics-user",
-          type: "ENROLLMENT_CREATED",
-          source: "server",
-          properties: {
-            courseId: testCourse.id,
-            // Missing optional fields like timestamp, correlationId
-          },
-        },
+      // Minimal payload: no timestamp, no correlationId
+      await AnalyticsHelper.emit({
+        userId: user.id,
+        type: "ENROLLMENT_CREATED",
+        source: "server",
+        properties: { courseId: course.id },
       });
 
-      const event = await db.analyticsEvent.findFirst({
-        where: {
-          userId: "test-analytics-user",
-          type: "ENROLLMENT_CREATED",
-        },
+      const event = await db.analyticsEvent.findFirstOrThrow({
+        where: { userId: user.id, type: "ENROLLMENT_CREATED" },
       });
 
-      expect(event).toBeDefined();
-      expect(event!.userId).toBe("test-analytics-user");
-      expect(event!.type).toBe("ENROLLMENT_CREATED");
+      expect(event.userId).toBe(user.id);
+      expect(event.type).toBe("ENROLLMENT_CREATED");
 
-      const properties = event!.properties as Record<string, any>;
-      expect(properties.courseId).toBe(testCourse.id);
+      const properties = event.properties as Props;
+      expect(properties.courseId).toBe(course.id);
+      // a correlation id is generated when the caller gives none
+      expect(properties.correlationId).toMatch(/^corr_\d+_/);
     });
 
     test("preserves complex property structures", async () => {
       const complexProperties = {
-        courseId: testCourse.id,
+        courseId: course.id,
         metadata: {
           userAgent: "test-browser/1.0",
           referrer: "https://example.com",
@@ -484,34 +325,49 @@ describe("Analytics Event Integration", () => {
         correlationId: `corr_${Date.now()}_complex`,
       };
 
-      await db.analyticsEvent.create({
-        data: {
-          userId: "test-analytics-user",
-          type: "ENROLLMENT_CREATED",
-          source: "web",
-          properties: complexProperties,
-        },
+      await AnalyticsHelper.emit({
+        userId: user.id,
+        type: "ENROLLMENT_CREATED",
+        source: "web",
+        properties: complexProperties,
       });
 
-      const event = await db.analyticsEvent.findFirst({
-        where: {
-          userId: "test-analytics-user",
-          type: "ENROLLMENT_CREATED",
-        },
+      const event = await db.analyticsEvent.findFirstOrThrow({
+        where: { userId: user.id, type: "ENROLLMENT_CREATED" },
       });
 
-      expect(event).toBeDefined();
-
-      const properties = event!.properties as Record<string, any>;
-      expect(properties.courseId).toBe(testCourse.id);
-      expect(properties.metadata.userAgent).toBe("test-browser/1.0");
+      expect(event.source).toBe("web");
+      const properties = event.properties as Props;
+      expect(properties).toEqual(complexProperties);
       expect(properties.metadata.sessionData.interactions).toEqual([
         "click",
         "scroll",
         "submit",
       ]);
-      expect(properties.timing.pageLoadTime).toBe(1250);
-      expect(properties.correlationId).toMatch(/^corr_\d+_complex$/);
+    });
+
+    test("strips personal data from the properties", async () => {
+      await AnalyticsHelper.emit({
+        userId: user.id,
+        type: "ENROLLMENT_CREATED",
+        source: "server",
+        properties: {
+          courseId: course.id,
+          email: "someone@example.com",
+          name: "Someone",
+          ip: "203.0.113.7",
+        },
+      });
+
+      const event = await db.analyticsEvent.findFirstOrThrow({
+        where: { userId: user.id },
+      });
+
+      const properties = event.properties as Props;
+      expect(properties.courseId).toBe(course.id);
+      expect(properties).not.toHaveProperty("email");
+      expect(properties).not.toHaveProperty("name");
+      expect(properties).not.toHaveProperty("ip");
     });
   });
 });

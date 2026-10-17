@@ -127,6 +127,12 @@ export async function issueCertificate(
       select: { title: true },
     });
 
+    // Total time the user spent watching this course's lessons
+    const watched = await db.progress.aggregate({
+      where: { userId, lesson: { courseId } },
+      _sum: { watchTime: true },
+    });
+
     // Log analytics event
     await AnalyticsHelper.recordCertificateIssuance(userId, {
       certificateId: result.certificate!.id,
@@ -134,7 +140,7 @@ export async function issueCertificate(
       courseTitle: course?.title,
       completionDate: new Date().toISOString(),
       totalLessons: eligibility.breakdown?.lessons.total || 0,
-      totalWatchTime: 0, // TODO: Calculate actual watch time
+      totalWatchTime: watched._sum.watchTime ?? 0,
       timestamp: new Date().toISOString(),
     });
 

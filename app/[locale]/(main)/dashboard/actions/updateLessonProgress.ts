@@ -169,7 +169,7 @@ export async function updateLessonProgress(
         await AnalyticsHelper.recordLessonCompletion(userId, {
           lessonId,
           courseId: lesson.courseId,
-          lessonOrder: 1, // TODO: Get actual lesson order
+          lessonOrder: lesson.order,
           watchTime: updated.watchTime,
           completionPercentage: 100,
           isFirstCompletion: true,
