@@ -151,9 +151,9 @@ export function Footer() {
                         <Icon className="h-4 w-4 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">
+                        <h3 className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">
                           {project.label.value}
-                        </h4>
+                        </h3>
                         <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
                           {project.description.value}
                         </p>
