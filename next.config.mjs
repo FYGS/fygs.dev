@@ -1,3 +1,6 @@
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+
 import MonacoWebpackPlugin from "monaco-editor-webpack-plugin";
 
 import { withIntlayer } from "next-intlayer/server";
@@ -8,6 +11,11 @@ import { buildGlobalCsp, buildPlaygroundCsp, CSP_HEADER as cspHeader, NON_PLAYGR
 // Service worker (next-pwa/workbox): runtime caching only, no precache. Never caches /api, personalised
 // areas (keep the deny list in sync with app/[locale]/(admin), (learning) and the personal parts of (main)).
 // NB: the functions below are serialised into public/sw.js by workbox: they must stay self-contained.
+// Offline fallback: a static, hydration-free page (a React page served under another URL cannot hydrate).
+const OFFLINE_REVISION = createHash("md5")
+  .update(readFileSync(new URL("./public/offline.html", import.meta.url)))
+  .digest("hex");
+
 const withPWA = withPWAInit({
   dest: "public",
   disable: process.env.NODE_ENV === "development",
@@ -15,6 +23,10 @@ const withPWA = withPWAInit({
   // letting next-pwa inject its own register script as well made the worker register twice.
   register: false,
   skipWaiting: true,
+  // By default next-pwa precaches every file of public/ (~80 MB: screenshots, project images,
+  // PDF) on each install. Only the offline page is precached; everything else is runtime cached.
+  cacheStartUrl: false,
+  additionalManifestEntries: [{ url: "/offline.html", revision: OFFLINE_REVISION }],
   // Fluid PWA: rely on runtime caching, not aggressive precaching
   dynamicStartUrl: false,
   runtimeCaching: [
@@ -48,14 +60,9 @@ const withPWA = withPWAInit({
               const cacheControl = response.headers.get("cache-control") || "";
               return /no-store|private/i.test(cacheControl) ? null : response;
             },
-            // Offline and nothing cached for this page: show the offline page (pre-cached by the
-            // registration component in the "offline-fallback" cache).
-            handlerDidError: async ({ request }) => {
-              const match = request.url.match(/^https?:[/][/][^/]+[/](fr|en|es)([/]|$)/);
-              const locale = match ? match[1] : "fr";
-              const offline =
-                (await caches.match("/" + locale + "/offline", { cacheName: "offline-fallback" })) ||
-                (await caches.match("/fr/offline", { cacheName: "offline-fallback" }));
+            // Offline and nothing cached for this page: show the precached static offline page.
+            handlerDidError: async () => {
+              const offline = await caches.match("/offline.html", { ignoreSearch: true });
               return offline || Response.error();
             },
           },

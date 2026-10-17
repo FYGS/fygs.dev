@@ -5,7 +5,6 @@ import { toast } from "sonner";
 
 const SW_URL = "/sw.js";
 const UPDATE_INTERVAL_MS = 60 * 60 * 1000;
-const OFFLINE_CACHE = "offline-fallback";
 
 const MESSAGES = {
   fr: { text: "Une nouvelle version du site est disponible.", action: "Actualiser" },
@@ -66,15 +65,6 @@ export function ServiceWorkerRegistration({ locale = "fr" }: { locale?: string }
       if (document.visibilityState === "visible") checkForUpdate();
     };
 
-    const cacheOfflineFallback = async () => {
-      try {
-        const cache = await caches.open(OFFLINE_CACHE);
-        await cache.add(`/${locale}/offline`);
-      } catch {
-        // Best effort: without it the browser shows its own offline page.
-      }
-    };
-
     const register = async () => {
       try {
         registration = await navigator.serviceWorker.register(SW_URL, {
@@ -83,7 +73,6 @@ export function ServiceWorkerRegistration({ locale = "fr" }: { locale?: string }
         });
         if (cancelled) return;
         checkForUpdate();
-        void cacheOfflineFallback();
       } catch (error) {
         console.warn("[pwa] service worker registration failed", error);
       }
