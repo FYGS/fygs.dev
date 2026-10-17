@@ -22,9 +22,6 @@ export class ReviewStatsQueries extends ReviewBulkOperations {
           _count: {
             rating: true,
           },
-          _avg: {
-            rating: true,
-          },
         }),
         db.review.count({
           where: {
@@ -53,12 +50,14 @@ export class ReviewStatsQueries extends ReviewBulkOperations {
         };
       });
 
+      // Weighted by the number of reviews per star level (averaging the groups
+      // would give 3 for four reviews rated 5, 5, 5 and 1)
       const averageRating =
-        reviewStats.length > 0
+        totalCount > 0
           ? reviewStats.reduce(
-              (sum: any, stat: any) => sum + (stat._avg.rating || 0),
+              (sum: number, stat: any) => sum + stat.rating * stat._count.rating,
               0
-            ) / reviewStats.length
+            ) / totalCount
           : 0;
 
       return {

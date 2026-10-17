@@ -245,9 +245,6 @@ exports[`ReviewDatabaseOptimizer (pinned behaviour) > courseStats 1`] = `
     [
       "review.groupBy",
       {
-        "_avg": {
-          "rating": true,
-        },
         "_count": {
           "rating": true,
         },
@@ -284,7 +281,7 @@ exports[`ReviewDatabaseOptimizer (pinned behaviour) > courseStats 1`] = `
   ],
   "outcome": {
     "value": {
-      "averageRating": 2.5,
+      "averageRating": 4.25,
       "queryDuration": 10,
       "ratingDistribution": [
         {
@@ -325,9 +322,6 @@ exports[`ReviewDatabaseOptimizer (pinned behaviour) > courseStatsEmpty 1`] = `
     [
       "review.groupBy",
       {
-        "_avg": {
-          "rating": true,
-        },
         "_count": {
           "rating": true,
         },
@@ -405,9 +399,6 @@ exports[`ReviewDatabaseOptimizer (pinned behaviour) > courseStatsFails 1`] = `
     [
       "review.groupBy",
       {
-        "_avg": {
-          "rating": true,
-        },
         "_count": {
           "rating": true,
         },
@@ -2135,7 +2126,8 @@ exports[`ReviewDatabaseOptimizer (pinned behaviour) > searchDefaults 1`] = `
         "take": 10,
         "where": {
           "comment": {
-            "search": "react hooks",
+            "contains": "react hooks",
+            "mode": "insensitive",
           },
           "status": "APPROVED",
         },
@@ -2146,7 +2138,8 @@ exports[`ReviewDatabaseOptimizer (pinned behaviour) > searchDefaults 1`] = `
       {
         "where": {
           "comment": {
-            "search": "react hooks",
+            "contains": "react hooks",
+            "mode": "insensitive",
           },
           "status": "APPROVED",
         },
@@ -2454,7 +2447,8 @@ exports[`ReviewDatabaseOptimizer (pinned behaviour) > searchEmptyFilters 1`] = `
         "take": 10,
         "where": {
           "comment": {
-            "search": "ts",
+            "contains": "ts",
+            "mode": "insensitive",
           },
           "status": "APPROVED",
           "verified": true,
@@ -2466,7 +2460,8 @@ exports[`ReviewDatabaseOptimizer (pinned behaviour) > searchEmptyFilters 1`] = `
       {
         "where": {
           "comment": {
-            "search": "ts",
+            "contains": "ts",
+            "mode": "insensitive",
           },
           "status": "APPROVED",
           "verified": true,
@@ -2787,7 +2782,8 @@ exports[`ReviewDatabaseOptimizer (pinned behaviour) > searchFails 1`] = `
         "take": 10,
         "where": {
           "comment": {
-            "search": "ts",
+            "contains": "ts",
+            "mode": "insensitive",
           },
           "status": "APPROVED",
           "verified": true,
@@ -2799,7 +2795,8 @@ exports[`ReviewDatabaseOptimizer (pinned behaviour) > searchFails 1`] = `
       {
         "where": {
           "comment": {
-            "search": "ts",
+            "contains": "ts",
+            "mode": "insensitive",
           },
           "status": "APPROVED",
           "verified": true,
@@ -2869,7 +2866,8 @@ exports[`ReviewDatabaseOptimizer (pinned behaviour) > searchFilters 1`] = `
         "take": 4,
         "where": {
           "comment": {
-            "search": "ts",
+            "contains": "ts",
+            "mode": "insensitive",
           },
           "courseId": {
             "in": [
@@ -2897,7 +2895,8 @@ exports[`ReviewDatabaseOptimizer (pinned behaviour) > searchFilters 1`] = `
       {
         "where": {
           "comment": {
-            "search": "ts",
+            "contains": "ts",
+            "mode": "insensitive",
           },
           "courseId": {
             "in": [
@@ -3236,7 +3235,8 @@ exports[`ReviewDatabaseOptimizer (pinned behaviour) > searchHelpful 1`] = `
         "take": 10,
         "where": {
           "comment": {
-            "search": "ts",
+            "contains": "ts",
+            "mode": "insensitive",
           },
           "status": "APPROVED",
         },
@@ -3247,7 +3247,8 @@ exports[`ReviewDatabaseOptimizer (pinned behaviour) > searchHelpful 1`] = `
       {
         "where": {
           "comment": {
-            "search": "ts",
+            "contains": "ts",
+            "mode": "insensitive",
           },
           "status": "APPROVED",
         },
@@ -3563,7 +3564,8 @@ exports[`ReviewDatabaseOptimizer (pinned behaviour) > searchNone 1`] = `
         "take": 10,
         "where": {
           "comment": {
-            "search": "ts",
+            "contains": "ts",
+            "mode": "insensitive",
           },
           "status": "APPROVED",
         },
@@ -3574,7 +3576,8 @@ exports[`ReviewDatabaseOptimizer (pinned behaviour) > searchNone 1`] = `
       {
         "where": {
           "comment": {
-            "search": "ts",
+            "contains": "ts",
+            "mode": "insensitive",
           },
           "status": "APPROVED",
         },
@@ -3655,7 +3658,8 @@ exports[`ReviewDatabaseOptimizer (pinned behaviour) > searchUnknownSort 1`] = `
         "take": 10,
         "where": {
           "comment": {
-            "search": "ts",
+            "contains": "ts",
+            "mode": "insensitive",
           },
           "status": "APPROVED",
         },
@@ -3666,7 +3670,8 @@ exports[`ReviewDatabaseOptimizer (pinned behaviour) > searchUnknownSort 1`] = `
       {
         "where": {
           "comment": {
-            "search": "ts",
+            "contains": "ts",
+            "mode": "insensitive",
           },
           "status": "APPROVED",
         },
