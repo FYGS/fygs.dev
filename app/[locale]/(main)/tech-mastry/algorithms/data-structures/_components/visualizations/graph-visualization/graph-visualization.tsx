@@ -18,6 +18,19 @@ import type {
   OperationType,
 } from "./types";
 
+function initialGraphStep(): GraphStep {
+  return {
+    nodes: [],
+    edges: [],
+    activeNodeIds: [],
+    activeEdgeIds: [],
+    visitedNodeIds: [],
+    message: "Graphe initialisé",
+    operation: "clear",
+    operationCount: 0,
+  };
+}
+
 export function GraphVisualization() {
   // État pour le graphe
   const [nodes, setNodes] = useState<GraphNode[]>([]);
@@ -25,7 +38,7 @@ export function GraphVisualization() {
   const [graphType, setGraphType] = useState<GraphType>("undirected");
 
   // État pour les étapes de visualisation
-  const [steps, setSteps] = useState<GraphStep[]>([]);
+  const [steps, setSteps] = useState<GraphStep[]>(() => [initialGraphStep()]);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
   // État pour les contrôles
@@ -248,18 +261,7 @@ export function GraphVisualization() {
     setEdges([]);
 
     // Réinitialiser les étapes
-    const initialStep: GraphStep = {
-      nodes: [],
-      edges: [],
-      activeNodeIds: [],
-      activeEdgeIds: [],
-      visitedNodeIds: [],
-      message: "Graphe initialisé",
-      operation: "clear",
-      operationCount: 0,
-    };
-
-    setSteps([initialStep]);
+    setSteps([initialGraphStep()]);
     setCurrentStepIndex(0);
     setIsPlaying(false);
 
@@ -343,11 +345,6 @@ export function GraphVisualization() {
     },
     [nodes, edges, steps]
   );
-
-  // Initialiser le graphe au chargement du composant
-  useEffect(() => {
-    initializeGraph();
-  }, [initializeGraph]);
 
   // Contrôles de la visualisation
   const handlePlay = () => {

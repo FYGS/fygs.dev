@@ -1,14 +1,7 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/custom-card";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useReducer,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
 import { createSampleGraph } from "./graph-visualization/data";
 import { ExplanationPanel } from "./graph-visualization/explanation-panel";
 import { GraphCanvas } from "./graph-visualization/graph-canvas";
@@ -21,130 +14,60 @@ import {
   resetGraphHighlights,
   updateGraphHighlights,
 } from "./graph-visualization/traversal";
-import type { Graph, TraversalType } from "./graph-visualization/types";
+import type {
+  Graph,
+  TraversalType,
+  VisualizationState,
+} from "./graph-visualization/types";
 
 export function GraphVisualization() {
   // State for traversal type and start node
   const [traversalType, setTraversalType] = useState<TraversalType>("dfs");
   const [startNode, setStartNode] = useState<string>("A");
 
-  // Refs to prevent infinite loops
-  const graphRef = useRef<Graph | null>(null);
-  const initializedRef = useRef<boolean>(false);
+  // The positioned graph never changes: highlights are derived from the step
+  const [baseGraph] = useState<Graph>(() => calculatePositions(createSampleGraph()));
 
   // Use reducer for main state management
-  const [state, dispatch] = useReducer(reducer, {
-    graph: null,
-    nodeSteps: [],
-    edgeSteps: [],
-    currentStep: -1,
-    isPlaying: false,
-    speed: 1,
-    initialized: false,
-  });
+  const [state, dispatch] = useReducer(
+    reducer,
+    undefined,
+    (): VisualizationState => {
+      // Calculate initial traversal steps
+      const { nodes, edges } = getTraversalSteps(baseGraph, "A", "dfs");
+      return {
+        graph: baseGraph,
+        nodeSteps: nodes,
+        edgeSteps: edges,
+        currentStep: -1,
+        isPlaying: false,
+        speed: 1,
+        initialized: true,
+      };
+    }
+  );
 
   // UI state
   const [showHint, setShowHint] = useState<boolean>(false);
 
-  // Initialize graph only once
-  useEffect(() => {
-    if (initializedRef.current) return;
-
-    // Create and position the graph
-    const sampleGraph = createSampleGraph();
-    const positionedGraph = calculatePositions(sampleGraph);
-
-    // Store in ref for stability
-    graphRef.current = positionedGraph;
-
-    // Calculate initial traversal steps
-    const { nodes, edges } = getTraversalSteps(
-      positionedGraph,
-      startNode,
-      traversalType
-    );
-
-    // Initialize state
-    dispatch({
-      type: "INITIALIZE",
-      payload: positionedGraph,
-    });
-
-    dispatch({
-      type: "SET_TRAVERSAL",
-      payload: {
-        nodeSteps: nodes,
-        edgeSteps: edges,
-      },
-    });
-
-    initializedRef.current = true;
-  }, [startNode, traversalType]); // Add dependencies
-
-  // Memoize traversal steps calculation for better performance
-  const traversalSteps = useMemo(() => {
-    if (!initializedRef.current || !graphRef.current) return null;
-
-    // Calculate new traversal steps
-    return getTraversalSteps(graphRef.current, startNode, traversalType);
-  }, [traversalType, startNode]);
-
-  // Handle traversal type or start node changes
-  useEffect(() => {
-    if (!initializedRef.current || !graphRef.current || !traversalSteps) return;
-
-    // Reset the graph highlights
-    const resetGraph = resetGraphHighlights(graphRef.current);
-
-    // Update the graph ref
-    graphRef.current = resetGraph;
-
-    // Update state
-    dispatch({
-      type: "UPDATE_GRAPH",
-      payload: resetGraph,
-    });
-
-    dispatch({
-      type: "SET_TRAVERSAL",
-      payload: {
-        nodeSteps: traversalSteps.nodes,
-        edgeSteps: traversalSteps.edges,
-      },
-    });
-  }, [traversalSteps]);
-
-  // Update highlights when current step changes
-  useEffect(() => {
-    if (!initializedRef.current || !graphRef.current || state.currentStep < 0)
-      return;
+  // Highlights follow the current step
+  const graph = useMemo(() => {
+    if (state.currentStep < 0) return resetGraphHighlights(baseGraph);
 
     try {
-      // Update graph highlights
-      const updatedGraph = updateGraphHighlights(
-        graphRef.current,
+      return updateGraphHighlights(
+        baseGraph,
         state.currentStep,
         state.nodeSteps,
         state.edgeSteps
       );
-
-      // Update the graph ref and state
-      graphRef.current = updatedGraph;
-
-      dispatch({
-        type: "UPDATE_GRAPH",
-        payload: updatedGraph,
-      });
     } catch (error) {
       console.error("Error updating graph highlights:", error);
       // Fallback to reset if there's an error
-      if (graphRef.current) {
-        const resetGraph = resetGraphHighlights(graphRef.current);
-        graphRef.current = resetGraph;
-        dispatch({ type: "UPDATE_GRAPH", payload: resetGraph });
-      }
+      return resetGraphHighlights(baseGraph);
     }
-  }, [state.currentStep, state.nodeSteps, state.edgeSteps]);
+  }, [baseGraph, state.currentStep, state.nodeSteps, state.edgeSteps]);
+  const view = useMemo(() => ({ ...state, graph }), [state, graph]);
 
   // Animation loop with error handling
   useEffect(() => {
@@ -180,14 +103,6 @@ export function GraphVisualization() {
     if (state.currentStep >= state.nodeSteps.length - 1) {
       // If at the end, restart
       dispatch({ type: "RESET" });
-
-      // Reset graph highlights
-      if (graphRef.current) {
-        const resetGraph = resetGraphHighlights(graphRef.current);
-        graphRef.current = resetGraph;
-        dispatch({ type: "UPDATE_GRAPH", payload: resetGraph });
-      }
-
       dispatch({ type: "PLAY" });
     } else {
       dispatch({
@@ -199,13 +114,6 @@ export function GraphVisualization() {
   // Reset traversal
   const resetTraversal = useCallback(() => {
     dispatch({ type: "RESET" });
-
-    // Reset graph highlights
-    if (graphRef.current) {
-      const resetGraph = resetGraphHighlights(graphRef.current);
-      graphRef.current = resetGraph;
-      dispatch({ type: "UPDATE_GRAPH", payload: resetGraph });
-    }
   }, []);
 
   // Step forward
@@ -223,35 +131,45 @@ export function GraphVisualization() {
     dispatch({ type: "SKIP_TO_END" });
   }, []);
 
+  // Changing the traversal type or the start node restarts the traversal
+  const restartTraversal = useCallback(
+    (nextStartNode: string, nextTraversalType: TraversalType) => {
+      const { nodes, edges } = getTraversalSteps(
+        baseGraph,
+        nextStartNode,
+        nextTraversalType
+      );
+      dispatch({
+        type: "SET_TRAVERSAL",
+        payload: { nodeSteps: nodes, edgeSteps: edges },
+      });
+    },
+    [baseGraph]
+  );
+
   // Change traversal type
-  const handleTraversalTypeChange = useCallback((type: TraversalType) => {
-    setTraversalType(type);
-  }, []);
+  const handleTraversalTypeChange = useCallback(
+    (type: TraversalType) => {
+      setTraversalType(type);
+      restartTraversal(startNode, type);
+    },
+    [restartTraversal, startNode]
+  );
 
   // Change start node
-  const handleStartNodeChange = useCallback((nodeId: string) => {
-    setStartNode(nodeId);
-  }, []);
-
-  // If not initialized yet, show loading state
-  if (!state.initialized) {
-    return (
-      <Card className="w-full overflow-hidden border border-border/50 shadow-md">
-        <CardContent className="p-6 flex justify-center items-center h-[450px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Initialisation...</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const handleStartNodeChange = useCallback(
+    (nodeId: string) => {
+      setStartNode(nodeId);
+      restartTraversal(nodeId, traversalType);
+    },
+    [restartTraversal, traversalType]
+  );
 
   return (
     <Card className="w-full overflow-hidden border border-border/50 shadow-md">
       <CardContent className="p-6 space-y-6">
         <GraphHeader
-          graph={state.graph}
+          graph={graph}
           startNode={startNode}
           traversalType={traversalType}
           handleStartNodeChange={handleStartNodeChange}
@@ -259,11 +177,11 @@ export function GraphVisualization() {
         />
 
         {/* Graph visualization */}
-        <GraphCanvas graph={state.graph} />
+        <GraphCanvas graph={graph} />
 
         {/* Controls */}
         <PlaybackControls
-          state={state}
+          state={view}
           showHint={showHint}
           setShowHint={setShowHint}
           stepBackward={stepBackward}
@@ -277,7 +195,7 @@ export function GraphVisualization() {
         {/* Current step explanation */}
         {showHint && (
           <ExplanationPanel
-            state={state}
+            state={view}
             traversalType={traversalType}
             startNode={startNode}
           />

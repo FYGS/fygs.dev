@@ -11,13 +11,37 @@ import { generateInsertSteps } from "./insert-steps";
 import { OperationPanel } from "./operation-panel";
 import type { HeapNode, HeapStep, HeapType, OperationType } from "./types";
 
+// Créer un tas avec quelques valeurs
+function createInitialHeap(heapType: HeapType): HeapNode[] {
+  const values = [45, 30, 60, 10, 25, 50, 70];
+  const newHeap: HeapNode[] = values.map((value) => ({
+    id: `node-${value}-${Date.now()}`,
+    value,
+  }));
+
+  // Heapify pour s'assurer que c'est un tas valide
+  return heapify(newHeap, heapType);
+}
+
+function initialStepFor(heap: HeapNode[], heapType: HeapType): HeapStep {
+  return {
+    heap: [...heap],
+    activeIndices: [],
+    swappedIndices: null,
+    message: `Tas ${heapType === "max" ? "maximum" : "minimum"} initialisé`,
+    operation: "heapify",
+    heapType,
+    operationCount: 0,
+  };
+}
+
 export function HeapVisualization() {
   // État pour le tas
-  const [heap, setHeap] = useState<HeapNode[]>([]);
   const [heapType, setHeapType] = useState<HeapType>("max");
+  const [heap, setHeap] = useState<HeapNode[]>(() => createInitialHeap(heapType));
 
   // État pour les étapes de visualisation
-  const [steps, setSteps] = useState<HeapStep[]>([]);
+  const [steps, setSteps] = useState<HeapStep[]>(() => [initialStepFor(heap, heapType)]);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
   // État pour les contrôles
@@ -32,39 +56,22 @@ export function HeapVisualization() {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initialiser le tas avec quelques valeurs
-  const initializeHeap = useCallback(() => {
-    // Créer un tas avec quelques valeurs
-    const values = [45, 30, 60, 10, 25, 50, 70];
-    const newHeap: HeapNode[] = values.map((value) => ({
-      id: `node-${value}-${Date.now()}`,
-      value,
-    }));
-
-    // Heapify pour s'assurer que c'est un tas valide
-    const heapifiedHeap = heapify(newHeap, heapType);
+  const initializeHeap = useCallback((type: HeapType = heapType) => {
+    const heapifiedHeap = createInitialHeap(type);
 
     setHeap(heapifiedHeap);
 
     // Réinitialiser les étapes
-    const initialStep: HeapStep = {
-      heap: [...heapifiedHeap],
-      activeIndices: [],
-      swappedIndices: null,
-      message: `Tas ${heapType === "max" ? "maximum" : "minimum"} initialisé`,
-      operation: "heapify",
-      heapType,
-      operationCount: 0,
-    };
-
-    setSteps([initialStep]);
+    setSteps([initialStepFor(heapifiedHeap, type)]);
     setCurrentStepIndex(0);
     setIsPlaying(false);
   }, [heapType]);
 
-  // Initialiser le tas au chargement du composant et lorsque le type de tas change
-  useEffect(() => {
-    initializeHeap();
-  }, [initializeHeap]);
+  // Changer le type de tas le réinitialise
+  const handleHeapTypeChange = (type: HeapType) => {
+    setHeapType(type);
+    initializeHeap(type);
+  };
 
   // Contrôles de la visualisation
   const handlePlay = () => {
@@ -183,13 +190,13 @@ export function HeapVisualization() {
         {/* Contrôles d'opération */}
         <OperationPanel
           heapType={heapType}
-          onHeapTypeChange={setHeapType}
+          onHeapTypeChange={handleHeapTypeChange}
           operation={operation}
           onOperationChange={setOperation}
           value={value}
           onValueChange={setValue}
           onExecute={executeOperation}
-          onReset={initializeHeap}
+          onReset={() => initializeHeap()}
         />
 
         {/* Visualisation */}

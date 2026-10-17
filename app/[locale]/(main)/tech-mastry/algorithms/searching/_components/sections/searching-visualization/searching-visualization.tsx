@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
+import { useClientValue } from "../../../../../_hooks/use-client-value";
 import { applySearchStep } from "./apply-step";
 import {
   binarySearch,
@@ -12,15 +13,54 @@ import { SettingsCard } from "./settings-card";
 import type { AlgorithmType, ArrayElement } from "./types";
 import { VisualizationCard } from "./visualization-card";
 
+const DEFAULT_ARRAY_SIZE = 20;
+
+// Générer un tableau aléatoire
+function randomArray(arraySize: number, algorithm: AlgorithmType): ArrayElement[] {
+  const newArray: ArrayElement[] = [];
+  const min = 1;
+  const max = 100;
+
+  for (let i = 0; i < arraySize; i++) {
+    newArray.push({
+      value: Math.floor(Math.random() * (max - min + 1)) + min,
+      state: "default",
+    });
+  }
+
+  // Trier le tableau si nécessaire
+  if (
+    algorithm === "binary" ||
+    algorithm === "jump" ||
+    algorithm === "interpolation"
+  ) {
+    newArray.sort((a, b) => a.value - b.value);
+  }
+
+  return newArray;
+}
+
+// Le tableau aléatoire n'existe que côté client : il remplace le rendu vide de
+// l'hydratation (pas de décalage entre serveur et client).
 export function SearchingVisualization() {
+  const initialArray = useClientValue(() => randomArray(DEFAULT_ARRAY_SIZE, "linear"));
+  return (
+    <SearchingVisualizationContent
+      key={initialArray ? "ready" : "pending"}
+      initialArray={initialArray}
+    />
+  );
+}
+
+function SearchingVisualizationContent({ initialArray }: { initialArray: ArrayElement[] | null }) {
   // États pour la visualisation
   const [algorithm, setAlgorithm] = useState<AlgorithmType>("linear");
-  const [array, setArray] = useState<ArrayElement[]>([]);
+  const [array, setArray] = useState<ArrayElement[]>(initialArray ?? []);
   const [target, setTarget] = useState<number>(42);
   const [speed, setSpeed] = useState<number>(50);
   const [isRunning, setIsRunning] = useState<boolean>(false);
 
-  const [arraySize, setArraySize] = useState<number>(20);
+  const [arraySize, setArraySize] = useState<number>(DEFAULT_ARRAY_SIZE);
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [totalSteps, setTotalSteps] = useState<number>(0);
   const [result, setResult] = useState<string>("");
@@ -28,38 +68,22 @@ export function SearchingVisualization() {
   // Référence pour l'animation
   const animationRef = useRef<number | null>(null);
 
-  // Générer un tableau aléatoire
-  const generateArray = useCallback(() => {
-    const newArray: ArrayElement[] = [];
-    const min = 1;
-    const max = 100;
-
-    for (let i = 0; i < arraySize; i++) {
-      newArray.push({
-        value: Math.floor(Math.random() * (max - min + 1)) + min,
-        state: "default",
-      });
-    }
-
-    // Trier le tableau si nécessaire
-    if (
-      algorithm === "binary" ||
-      algorithm === "jump" ||
-      algorithm === "interpolation"
-    ) {
-      newArray.sort((a, b) => a.value - b.value);
-    }
-
-    setArray(newArray);
+  // Générer un tableau aléatoire (pour l'algorithme et la taille donnés)
+  const generateArray = (
+    newAlgorithm: AlgorithmType = algorithm,
+    newSize: number = arraySize
+  ) => {
+    setArray(randomArray(newSize, newAlgorithm));
     setCurrentStep(0);
     setTotalSteps(0);
     setResult("");
-  }, [algorithm, arraySize]);
+  };
 
-  // Initialiser le tableau
-  useEffect(() => {
-    generateArray();
-  }, [generateArray, algorithm]);
+  // Changer l'algorithme génère un nouveau tableau (trié ou non selon l'algorithme)
+  const handleAlgorithmChange = (newAlgorithm: AlgorithmType) => {
+    setAlgorithm(newAlgorithm);
+    generateArray(newAlgorithm, arraySize);
+  };
 
   // Réinitialiser la visualisation
   const resetVisualization = useCallback(() => {
@@ -161,7 +185,7 @@ export function SearchingVisualization() {
   // Changer la taille du tableau
   const handleSizeChange = (newSize: number) => {
     setArraySize(newSize);
-    generateArray();
+    generateArray(algorithm, newSize);
   };
 
   // Changer la valeur cible
@@ -186,7 +210,7 @@ export function SearchingVisualization() {
       {/* Contrôles */}
       <SettingsCard
         algorithm={algorithm}
-        onAlgorithmChange={setAlgorithm}
+        onAlgorithmChange={handleAlgorithmChange}
         isRunning={isRunning}
         arraySize={arraySize}
         onSizeChange={handleSizeChange}
@@ -196,7 +220,7 @@ export function SearchingVisualization() {
         onSpeedChange={setSpeed}
         onToggle={toggleVisualization}
         onReset={resetVisualization}
-        onGenerate={generateArray}
+        onGenerate={() => generateArray()}
       />
 
       {/* Zone de visualisation */}

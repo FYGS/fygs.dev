@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useClientValue } from "../../../../../_hooks/use-client-value";
 import { VisualizationContainer } from "../visualization-container";
 import { ArrayCanvas } from "./array-canvas";
 import { getArrayStats } from "./array-stats";
@@ -18,12 +19,43 @@ import {
 } from "./remove-steps";
 import type { ArrayStep, OperationType } from "./types";
 
+// Générer un tableau aléatoire
+function randomArray(): number[] {
+  const size = 8;
+  return Array.from({ length: size }, () => Math.floor(Math.random() * 100));
+}
+
+// Étape initiale d'un tableau
+function initialStepFor(array: number[]): ArrayStep {
+  return {
+    array: [...array],
+    activeIndices: [],
+    message: "Tableau initial",
+    operation: "access",
+    operationCount: 0,
+  };
+}
+
+// Le tableau aléatoire n'existe que côté client : il remplace le rendu vide de
+// l'hydratation (pas de décalage entre serveur et client).
 export function ArrayVisualization() {
+  const initialArray = useClientValue(randomArray);
+  return (
+    <ArrayVisualizationContent
+      key={initialArray ? "ready" : "pending"}
+      initialArray={initialArray}
+    />
+  );
+}
+
+function ArrayVisualizationContent({ initialArray }: { initialArray: number[] | null }) {
   // État pour le tableau
-  const [array, setArray] = useState<number[]>([]);
+  const [array, setArray] = useState<number[]>(initialArray ?? []);
 
   // État pour les étapes de visualisation
-  const [steps, setSteps] = useState<ArrayStep[]>([]);
+  const [steps, setSteps] = useState<ArrayStep[]>(() =>
+    initialArray ? [initialStepFor(initialArray)] : []
+  );
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
   // État pour les contrôles
@@ -38,29 +70,13 @@ export function ArrayVisualization() {
   // Référence pour le timer d'animation
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Initialiser le tableau
-  useEffect(() => {
-    generateRandomArray();
-  }, []);
-
   // Générer un tableau aléatoire
   const generateRandomArray = () => {
-    const size = 8;
-    const newArray = Array.from({ length: size }, () =>
-      Math.floor(Math.random() * 100)
-    );
+    const newArray = randomArray();
     setArray(newArray);
 
     // Réinitialiser les étapes
-    const initialStep: ArrayStep = {
-      array: [...newArray],
-      activeIndices: [],
-      message: "Tableau initial",
-      operation: "access",
-      operationCount: 0,
-    };
-
-    setSteps([initialStep]);
+    setSteps([initialStepFor(newArray)]);
     setCurrentStepIndex(0);
     setIsPlaying(false);
   };

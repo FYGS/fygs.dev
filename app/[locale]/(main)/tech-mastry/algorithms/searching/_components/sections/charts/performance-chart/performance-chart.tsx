@@ -20,63 +20,36 @@ export function PerformanceChart({ metric }: PerformanceChartProps) {
   const [chartType, setChartType] = useState<ChartType>("line");
   const chartRef = useRef<HTMLDivElement>(null);
 
-  // Fonction pour dessiner le graphique de performance (ligne)
-  const drawPerformanceLineChart = () => {
-    if (!chartRef.current) return;
-    renderPerformanceLineChart(chartRef.current);
-  };
-
-  // Fonction pour dessiner le graphique de performance (barres)
-  const drawPerformanceBarChart = () => {
-    if (!chartRef.current) return;
-    renderPerformanceBarChart(chartRef.current);
-  };
-
-  // Fonction pour dessiner le graphique de mémoire
-  const drawMemoryChart = () => {
-    if (!chartRef.current) return;
-    renderMemoryChart(chartRef.current);
-  };
-
-  // Fonction pour dessiner le graphique d'utilisation (radar)
-  const drawUsageChart = () => {
-    if (!chartRef.current) return;
-    renderUsageChart(chartRef.current);
-  };
-
-  // Dessiner le graphique approprié en fonction de la métrique et du type de graphique
+  // Dessiner le graphique approprié en fonction de la métrique et du type de graphique,
+  // et le redessiner lorsque la fenêtre ou le conteneur est redimensionné
   useEffect(() => {
-    if (metric === "performance") {
-      if (chartType === "line") {
-        drawPerformanceLineChart();
-      } else if (chartType === "bar") {
-        drawPerformanceBarChart();
-      }
-    } else if (metric === "memory") {
-      drawMemoryChart();
-    } else if (metric === "usage") {
-      drawUsageChart();
-    }
-  }, [metric, chartType, chartRef.current?.clientWidth]);
+    const container = chartRef.current;
+    if (!container) return;
 
-  // Redessiner le graphique lors du redimensionnement de la fenêtre
-  useEffect(() => {
-    const handleResize = () => {
+    const draw = () => {
       if (metric === "performance") {
         if (chartType === "line") {
-          drawPerformanceLineChart();
+          renderPerformanceLineChart(container);
         } else if (chartType === "bar") {
-          drawPerformanceBarChart();
+          renderPerformanceBarChart(container);
         }
       } else if (metric === "memory") {
-        drawMemoryChart();
+        renderMemoryChart(container);
       } else if (metric === "usage") {
-        drawUsageChart();
+        renderUsageChart(container);
       }
     };
 
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    draw();
+
+    window.addEventListener("resize", draw);
+    const observer =
+      typeof ResizeObserver === "undefined" ? null : new ResizeObserver(draw);
+    observer?.observe(container);
+    return () => {
+      window.removeEventListener("resize", draw);
+      observer?.disconnect();
+    };
   }, [metric, chartType]);
 
   return (

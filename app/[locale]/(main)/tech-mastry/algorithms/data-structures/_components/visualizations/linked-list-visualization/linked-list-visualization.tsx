@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useClientValue } from "../../../../../_hooks/use-client-value";
 import { VisualizationContainer } from "../visualization-container";
 import {
   generateInsertAtSteps,
@@ -18,12 +19,46 @@ import {
 import { generateAccessSteps, generateSearchSteps } from "./traversal-steps";
 import type { LinkedListStep, ListNode, OperationType } from "./types";
 
+// Générer une liste chaînée aléatoire
+function randomList(): ListNode[] {
+  const size = 5;
+  return Array.from({ length: size }, (_, i) => ({
+    value: Math.floor(Math.random() * 100),
+    id: `node-${Date.now()}-${i}`,
+  }));
+}
+
+// Étape initiale d'une liste
+function initialStepFor(nodes: ListNode[]): LinkedListStep {
+  return {
+    nodes: [...nodes],
+    activeIndices: [],
+    message: "Liste chaînée initiale",
+    operation: "access",
+    operationCount: 0,
+  };
+}
+
+// La liste aléatoire n'existe que côté client : elle remplace le rendu vide de
+// l'hydratation (pas de décalage entre serveur et client).
 export function LinkedListVisualization() {
+  const initialNodes = useClientValue(randomList);
+  return (
+    <LinkedListVisualizationContent
+      key={initialNodes ? "ready" : "pending"}
+      initialNodes={initialNodes}
+    />
+  );
+}
+
+function LinkedListVisualizationContent({ initialNodes }: { initialNodes: ListNode[] | null }) {
   // État pour la liste chaînée
-  const [nodes, setNodes] = useState<ListNode[]>([]);
+  const [nodes, setNodes] = useState<ListNode[]>(initialNodes ?? []);
 
   // État pour les étapes de visualisation
-  const [steps, setSteps] = useState<LinkedListStep[]>([]);
+  const [steps, setSteps] = useState<LinkedListStep[]>(() =>
+    initialNodes ? [initialStepFor(initialNodes)] : []
+  );
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
   // État pour les contrôles
@@ -38,31 +73,14 @@ export function LinkedListVisualization() {
   // Référence pour le timer d'animation
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Initialiser la liste chaînée
-  useEffect(() => {
-    generateRandomList();
-  }, []);
-
   // Générer une liste chaînée aléatoire
   const generateRandomList = () => {
-    const size = 5;
-    const newNodes: ListNode[] = Array.from({ length: size }, (_, i) => ({
-      value: Math.floor(Math.random() * 100),
-      id: `node-${Date.now()}-${i}`,
-    }));
+    const newNodes = randomList();
 
     setNodes(newNodes);
 
     // Réinitialiser les étapes
-    const initialStep: LinkedListStep = {
-      nodes: [...newNodes],
-      activeIndices: [],
-      message: "Liste chaînée initiale",
-      operation: "access",
-      operationCount: 0,
-    };
-
-    setSteps([initialStep]);
+    setSteps([initialStepFor(newNodes)]);
     setCurrentStepIndex(0);
     setIsPlaying(false);
   };

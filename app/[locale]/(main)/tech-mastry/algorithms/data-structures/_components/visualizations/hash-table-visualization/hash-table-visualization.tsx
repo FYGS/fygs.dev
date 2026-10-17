@@ -13,13 +13,34 @@ import { generateInsertSteps } from "./insert-steps";
 import { OperationPanel } from "./operation-panel";
 import type { HashTableBucket, HashTableStep, OperationType } from "./types";
 
+const DEFAULT_SIZE = 7; // Taille par défaut
+
+// Créer une table de hachage vide
+function createBuckets(size: number): HashTableBucket[] {
+  return Array.from({ length: size }, (_, index) => ({
+    index,
+    entries: [],
+  }));
+}
+
+function initialStepFor(buckets: HashTableBucket[]): HashTableStep {
+  return {
+    buckets: [...buckets],
+    activeIndices: [],
+    activeEntries: [],
+    message: "Table de hachage initialisée",
+    operation: "clear",
+    operationCount: 0,
+  };
+}
+
 export function HashTableVisualization() {
   // État pour la table de hachage
-  const [buckets, setBuckets] = useState<HashTableBucket[]>([]);
-  const [size, setSize] = useState<number>(7); // Taille par défaut
+  const [buckets, setBuckets] = useState<HashTableBucket[]>(() => createBuckets(DEFAULT_SIZE));
+  const [size, setSize] = useState<number>(DEFAULT_SIZE);
 
   // État pour les étapes de visualisation
-  const [steps, setSteps] = useState<HashTableStep[]>([]);
+  const [steps, setSteps] = useState<HashTableStep[]>(() => [initialStepFor(buckets)]);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
   // État pour les contrôles
@@ -35,36 +56,22 @@ export function HashTableVisualization() {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initialiser une table de hachage vide
-  const initializeHashTable = useCallback(() => {
-    const newBuckets: HashTableBucket[] = Array.from(
-      { length: size },
-      (_, index) => ({
-        index,
-        entries: [],
-      })
-    );
+  const initializeHashTable = useCallback((tableSize: number = size) => {
+    const newBuckets = createBuckets(tableSize);
 
     setBuckets(newBuckets);
 
     // Réinitialiser les étapes
-    const initialStep: HashTableStep = {
-      buckets: [...newBuckets],
-      activeIndices: [],
-      activeEntries: [],
-      message: "Table de hachage initialisée",
-      operation: "clear",
-      operationCount: 0,
-    };
-
-    setSteps([initialStep]);
+    setSteps([initialStepFor(newBuckets)]);
     setCurrentStepIndex(0);
     setIsPlaying(false);
   }, [size]);
 
-  // Initialiser la table de hachage
-  useEffect(() => {
-    initializeHashTable();
-  }, [initializeHashTable]);
+  // Changer la taille réinitialise la table
+  const handleSizeChange = (newSize: number) => {
+    setSize(newSize);
+    initializeHashTable(newSize);
+  };
 
   // Contrôles de la visualisation
   const handlePlay = () => {
@@ -196,9 +203,9 @@ export function HashTableVisualization() {
           value={value}
           onValueChange={setValue}
           size={size}
-          onSizeChange={setSize}
+          onSizeChange={handleSizeChange}
           onExecute={executeOperation}
-          onReset={initializeHashTable}
+          onReset={() => initializeHashTable()}
         />
 
         {/* Visualisation */}

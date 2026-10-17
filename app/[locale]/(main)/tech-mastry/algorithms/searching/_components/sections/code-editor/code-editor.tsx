@@ -84,7 +84,6 @@ export function CodeEditor({
 
         // Exécuter le code
         try {
-          // eslint-disable-next-line no-new-func
           const result = new Function(code)();
           if (result !== undefined) {
             logs.push(`Résultat: ${result}`);

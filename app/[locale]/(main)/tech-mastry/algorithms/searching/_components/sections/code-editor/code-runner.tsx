@@ -44,7 +44,6 @@ export function CodeRunner({
 
     try {
       // Extraire la fonction du code
-      // eslint-disable-next-line no-new-func
       const fn = new Function(`
         ${code}
         return ${functionName};

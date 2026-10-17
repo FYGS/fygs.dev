@@ -31,11 +31,22 @@ type ArrayElement = {
   state: ElementState;
 };
 
+function createSortedArray(size: number): ArrayElement[] {
+  const newArray: ArrayElement[] = [];
+  for (let i = 0; i < size; i++) {
+    newArray.push({
+      value: i * 2 + 1, // Valeurs impaires pour un tableau trié
+      state: "default",
+    });
+  }
+  return newArray;
+}
+
 export function BinarySearch3D() {
   // État pour le tableau et la cible
-  const [array, setArray] = useState<ArrayElement[]>([]);
-  const [target, setTarget] = useState<number>(15);
   const arraySize = 15; // Taille fixe pour simplifier
+  const [array, setArray] = useState<ArrayElement[]>(() => createSortedArray(arraySize));
+  const [target, setTarget] = useState<number>(15);
 
   // Obtenir la couleur en fonction de l'état
   const getColorForState = useCallback((state: string): number => {
@@ -57,24 +68,6 @@ export function BinarySearch3D() {
     }
   }, []);
 
-  // Générer un tableau trié
-  const generateArray = useCallback(() => {
-    const newArray: ArrayElement[] = [];
-    for (let i = 0; i < arraySize; i++) {
-      newArray.push({
-        value: i * 2 + 1, // Valeurs impaires pour un tableau trié
-        state: "default",
-      });
-    }
-    setArray(newArray);
-
-    // Réinitialiser la visualisation
-    setIsRunning(false);
-    setCurrentStep(0);
-    setTotalSteps(0);
-    setResult("");
-  }, [arraySize]);
-
   // État pour l'animation
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [speed, setSpeed] = useState<number>(50);
@@ -92,10 +85,17 @@ export function BinarySearch3D() {
   const controlsRef = useRef<OrbitControls | null>(null);
   const cubesRef = useRef<THREE.Mesh[]>([]);
 
-  // Initialiser le tableau
-  useEffect(() => {
-    generateArray();
-  }, [generateArray]); // Dépendance ajoutée pour éviter l'avertissement ESLint
+  // Générer un tableau trié
+  const generateArray = useCallback(() => {
+    const newArray = createSortedArray(arraySize);
+    setArray(newArray);
+
+    // Réinitialiser la visualisation
+    setIsRunning(false);
+    setCurrentStep(0);
+    setTotalSteps(0);
+    setResult("");
+  }, [arraySize]);
 
   // Réinitialiser la visualisation
   const resetVisualization = () => {

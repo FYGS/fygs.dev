@@ -15,12 +15,55 @@ import type {
   TreeNode,
 } from "./types";
 
+// Créer un arbre binaire de recherche équilibré avec quelques valeurs
+function createInitialTree(): TreeNode | null {
+  const values = [50, 30, 70, 20, 40, 60, 80];
+  let newRoot: TreeNode | null = null;
+
+  // Fonction pour insérer une valeur dans l'arbre
+  const insertNode = (root: TreeNode | null, value: number): TreeNode => {
+    if (root === null) {
+      return {
+        id: `node-${value}-${Date.now()}`,
+        value,
+        left: null,
+        right: null,
+      };
+    }
+
+    if (value < root.value) {
+      root.left = insertNode(root.left, value);
+    } else if (value > root.value) {
+      root.right = insertNode(root.right, value);
+    }
+
+    return root;
+  };
+
+  // Insérer chaque valeur dans l'arbre
+  values.forEach((value) => {
+    newRoot = insertNode(newRoot, value);
+  });
+  return newRoot;
+}
+
+function initialStepFor(root: TreeNode | null): BinaryTreeStep {
+  return {
+    root,
+    activeNodes: [],
+    highlightedEdges: [],
+    message: "Arbre binaire de recherche initialisé",
+    operation: "clear",
+    operationCount: 0,
+  };
+}
+
 export function BinaryTreeVisualization() {
   // État pour l'arbre binaire
-  const [root, setRoot] = useState<TreeNode | null>(null);
+  const [root, setRoot] = useState<TreeNode | null>(createInitialTree);
 
   // État pour les étapes de visualisation
-  const [steps, setSteps] = useState<BinaryTreeStep[]>([]);
+  const [steps, setSteps] = useState<BinaryTreeStep[]>(() => [initialStepFor(root)]);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
   // État pour les contrôles
@@ -37,56 +80,14 @@ export function BinaryTreeVisualization() {
 
   // Initialiser l'arbre binaire avec quelques valeurs
   const initializeTree = useCallback(() => {
-    // Créer un arbre binaire de recherche équilibré avec quelques valeurs
-    const values = [50, 30, 70, 20, 40, 60, 80];
-    let newRoot: TreeNode | null = null;
-
-    // Fonction pour insérer une valeur dans l'arbre
-    const insertNode = (root: TreeNode | null, value: number): TreeNode => {
-      if (root === null) {
-        return {
-          id: `node-${value}-${Date.now()}`,
-          value,
-          left: null,
-          right: null,
-        };
-      }
-
-      if (value < root.value) {
-        root.left = insertNode(root.left, value);
-      } else if (value > root.value) {
-        root.right = insertNode(root.right, value);
-      }
-
-      return root;
-    };
-
-    // Insérer chaque valeur dans l'arbre
-    values.forEach((value) => {
-      newRoot = insertNode(newRoot, value);
-    });
-
+    const newRoot = createInitialTree();
     setRoot(newRoot);
 
     // Réinitialiser les étapes
-    const initialStep: BinaryTreeStep = {
-      root: newRoot,
-      activeNodes: [],
-      highlightedEdges: [],
-      message: "Arbre binaire de recherche initialisé",
-      operation: "clear",
-      operationCount: 0,
-    };
-
-    setSteps([initialStep]);
+    setSteps([initialStepFor(newRoot)]);
     setCurrentStepIndex(0);
     setIsPlaying(false);
   }, []);
-
-  // Initialiser l'arbre au chargement du composant
-  useEffect(() => {
-    initializeTree();
-  }, [initializeTree]);
 
   // Contrôles de la visualisation
   const handlePlay = () => {

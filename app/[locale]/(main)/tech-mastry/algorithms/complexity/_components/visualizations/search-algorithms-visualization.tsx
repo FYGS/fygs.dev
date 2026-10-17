@@ -15,7 +15,8 @@ import {
   Play,
   RefreshCw,
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useClientValue } from "../../../../_hooks/use-client-value";
 
 interface SearchStep {
   type: "linear" | "binary";
@@ -30,175 +31,202 @@ interface SearchStep {
   message: string;
 }
 
+interface Problem {
+  array: number[];
+  target: number;
+}
+
+const EMPTY_PROBLEM: Problem = { array: [], target: 0 };
+
+// Générer un tableau trié de nombres aléatoires
+function generateProblem(arraySize: number): Problem {
+  const array = Array.from({ length: arraySize }, () =>
+    Math.floor(Math.random() * 100)
+  ).sort((a, b) => a - b);
+
+  // Choisir une valeur cible (75% de chance d'être dans le tableau)
+  if (Math.random() < 0.75 && array.length > 0) {
+    return { array, target: array[Math.floor(Math.random() * array.length)] };
+  }
+  // Valeur qui n'est pas dans le tableau
+  let newTarget;
+  do {
+    newTarget = Math.floor(Math.random() * 100);
+  } while (array.includes(newTarget));
+  return { array, target: newTarget };
+}
+
+// Générer les étapes pour la recherche linéaire
+function generateLinearSearchSteps(array: number[], target: number): SearchStep[] {
+  const steps: SearchStep[] = [];
+
+  // Étape initiale
+  steps.push({
+    type: "linear",
+    array: [...array],
+    target,
+    comparisons: 0,
+    message: `Recherche de la valeur ${target} dans le tableau.`,
+  });
+
+  // Simuler la recherche linéaire
+  for (let i = 0; i < array.length; i++) {
+    const found = array[i] === target;
+
+    steps.push({
+      type: "linear",
+      array: [...array],
+      target,
+      currentIndex: i,
+      comparisons: i + 1,
+      found,
+      message: found
+        ? `Valeur ${target} trouvée à l'index ${i} après ${
+            i + 1
+          } comparaisons.`
+        : `Comparaison avec l'élément à l'index ${i}: ${array[i]} ${
+            found ? "=" : "≠"
+          } ${target}`,
+    });
+
+    if (found) break;
+  }
+
+  // Si la valeur n'a pas été trouvée
+  if (!steps[steps.length - 1].found) {
+    steps.push({
+      type: "linear",
+      array: [...array],
+      target,
+      comparisons: array.length,
+      message: `Valeur ${target} non trouvée après ${array.length} comparaisons.`,
+    });
+  }
+
+  return steps;
+}
+
+// Générer les étapes pour la recherche binaire
+function generateBinarySearchSteps(array: number[], target: number): SearchStep[] {
+  const steps: SearchStep[] = [];
+
+  // Étape initiale
+  steps.push({
+    type: "binary",
+    array: [...array],
+    target,
+    left: 0,
+    right: array.length - 1,
+    comparisons: 0,
+    message: `Recherche de la valeur ${target} dans le tableau trié.`,
+  });
+
+  // Simuler la recherche binaire
+  let left = 0;
+  let right = array.length - 1;
+  let comparisons = 0;
+
+  while (left <= right) {
+    const middle = Math.floor((left + right) / 2);
+    comparisons++;
+
+    const found = array[middle] === target;
+
+    steps.push({
+      type: "binary",
+      array: [...array],
+      target,
+      left,
+      right,
+      middle,
+      comparisons,
+      found,
+      message: found
+        ? `Valeur ${target} trouvée à l'index ${middle} après ${comparisons} comparaisons.`
+        : `Comparaison avec l'élément au milieu (index ${middle}): ${
+            array[middle]
+          } ${array[middle] < target ? "<" : ">"} ${target}`,
+    });
+
+    if (found) break;
+
+    if (array[middle] < target) {
+      left = middle + 1;
+    } else {
+      right = middle - 1;
+    }
+  }
+
+  // Si la valeur n'a pas été trouvée
+  if (!steps[steps.length - 1].found) {
+    steps.push({
+      type: "binary",
+      array: [...array],
+      target,
+      left,
+      right,
+      comparisons,
+      message: `Valeur ${target} non trouvée après ${comparisons} comparaisons.`,
+    });
+  }
+
+  return steps;
+}
+
 export function SearchAlgorithmsVisualization() {
   const [arraySize, setArraySize] = useState(15);
-  const [array, setArray] = useState<number[]>([]);
-  const [target, setTarget] = useState<number>(0);
+  // Le tableau aléatoire n'existe que côté client (pas de décalage d'hydratation)
+  const initialProblem = useClientValue(() => generateProblem(15));
+  const [problem, setProblem] = useState<Problem | null>(null);
+  const { array, target } = problem ?? initialProblem ?? EMPTY_PROBLEM;
   const [activeTab, setActiveTab] = useState<"linear" | "binary">("linear");
-  const [steps, setSteps] = useState<SearchStep[]>([]);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Générer un tableau trié de nombres aléatoires
-  const generateArray = useCallback(() => {
-    const newArray = Array.from({ length: arraySize }, () =>
-      Math.floor(Math.random() * 100)
-    ).sort((a, b) => a - b);
-
-    setArray(newArray);
-
-    // Choisir une valeur cible (75% de chance d'être dans le tableau)
-    if (Math.random() < 0.75 && newArray.length > 0) {
-      setTarget(newArray[Math.floor(Math.random() * newArray.length)]);
-    } else {
-      // Valeur qui n'est pas dans le tableau
-      let newTarget;
-      do {
-        newTarget = Math.floor(Math.random() * 100);
-      } while (newArray.includes(newTarget));
-      setTarget(newTarget);
-    }
-  }, [arraySize]);
-
-  // Générer les étapes pour la recherche linéaire
-  const generateLinearSearchSteps = useCallback(() => {
-    const steps: SearchStep[] = [];
-
-    // Étape initiale
-    steps.push({
-      type: "linear",
-      array: [...array],
-      target,
-      comparisons: 0,
-      message: `Recherche de la valeur ${target} dans le tableau.`,
-    });
-
-    // Simuler la recherche linéaire
-    for (let i = 0; i < array.length; i++) {
-      const found = array[i] === target;
-
-      steps.push({
-        type: "linear",
-        array: [...array],
-        target,
-        currentIndex: i,
-        comparisons: i + 1,
-        found,
-        message: found
-          ? `Valeur ${target} trouvée à l'index ${i} après ${
-              i + 1
-            } comparaisons.`
-          : `Comparaison avec l'élément à l'index ${i}: ${array[i]} ${
-              found ? "=" : "≠"
-            } ${target}`,
-      });
-
-      if (found) break;
-    }
-
-    // Si la valeur n'a pas été trouvée
-    if (!steps[steps.length - 1].found) {
-      steps.push({
-        type: "linear",
-        array: [...array],
-        target,
-        comparisons: array.length,
-        message: `Valeur ${target} non trouvée après ${array.length} comparaisons.`,
-      });
-    }
-
-    return steps;
-  }, [array, target]);
-
-  // Générer les étapes pour la recherche binaire
-  const generateBinarySearchSteps = useCallback(() => {
-    const steps: SearchStep[] = [];
-
-    // Étape initiale
-    steps.push({
-      type: "binary",
-      array: [...array],
-      target,
-      left: 0,
-      right: array.length - 1,
-      comparisons: 0,
-      message: `Recherche de la valeur ${target} dans le tableau trié.`,
-    });
-
-    // Simuler la recherche binaire
-    let left = 0;
-    let right = array.length - 1;
-    let comparisons = 0;
-
-    while (left <= right) {
-      const middle = Math.floor((left + right) / 2);
-      comparisons++;
-
-      const found = array[middle] === target;
-
-      steps.push({
-        type: "binary",
-        array: [...array],
-        target,
-        left,
-        right,
-        middle,
-        comparisons,
-        found,
-        message: found
-          ? `Valeur ${target} trouvée à l'index ${middle} après ${comparisons} comparaisons.`
-          : `Comparaison avec l'élément au milieu (index ${middle}): ${
-              array[middle]
-            } ${array[middle] < target ? "<" : ">"} ${target}`,
-      });
-
-      if (found) break;
-
-      if (array[middle] < target) {
-        left = middle + 1;
-      } else {
-        right = middle - 1;
-      }
-    }
-
-    // Si la valeur n'a pas été trouvée
-    if (!steps[steps.length - 1].found) {
-      steps.push({
-        type: "binary",
-        array: [...array],
-        target,
-        left,
-        right,
-        comparisons,
-        message: `Valeur ${target} non trouvée après ${comparisons} comparaisons.`,
-      });
-    }
-
-    return steps;
-  }, [array, target]);
-
-  // Générer les étapes en fonction de l'onglet actif
-  const generateSteps = useCallback(() => {
-    return activeTab === "linear"
-      ? generateLinearSearchSteps()
-      : generateBinarySearchSteps();
-  }, [activeTab, generateLinearSearchSteps, generateBinarySearchSteps]);
+  // Les étapes dérivent du tableau, de la cible et de l'onglet actif
+  const steps = useMemo(
+    () =>
+      activeTab === "linear"
+        ? generateLinearSearchSteps(array, target)
+        : generateBinarySearchSteps(array, target),
+    [activeTab, array, target]
+  );
 
   // Réinitialiser la visualisation
-  const handleReset = useCallback(() => {
+  const handleReset = () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
 
     setIsPlaying(false);
-    const newSteps = generateSteps();
-    setSteps(newSteps);
     setCurrentStepIndex(0);
-  }, [generateSteps]);
+  };
+
+  // Un nouveau tableau (ou une nouvelle taille) réinitialise la visualisation
+  const generateArray = (size = arraySize) => {
+    setProblem(generateProblem(size));
+    handleReset();
+  };
+
+  const handleArraySizeChange = (size: number) => {
+    setArraySize(size);
+    generateArray(size);
+  };
+
+  const handleTargetChange = (value: number) => {
+    if (value === target) return;
+    setProblem({ array, target: value });
+    handleReset();
+  };
+
+  const handleTabChange = (tab: "linear" | "binary") => {
+    setActiveTab(tab);
+    handleReset();
+  };
 
   // Passer à l'étape suivante
   const handleStepForward = () => {
@@ -253,16 +281,6 @@ export function SearchAlgorithmsVisualization() {
     }
   };
 
-  // Initialiser le tableau et les étapes au chargement
-  useEffect(() => {
-    generateArray();
-  }, [generateArray]);
-
-  // Mettre à jour les étapes lorsque le tableau, la cible ou l'onglet actif change
-  useEffect(() => {
-    handleReset();
-  }, [array, target, activeTab, handleReset]);
-
   // Nettoyer le timer lors du démontage du composant
   useEffect(() => {
     return () => {
@@ -289,7 +307,7 @@ export function SearchAlgorithmsVisualization() {
       <CardContent className="space-y-6">
         <Tabs
           value={activeTab}
-          onValueChange={(value) => setActiveTab(value as "linear" | "binary")}
+          onValueChange={(value) => handleTabChange(value as "linear" | "binary")}
         >
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="linear">
@@ -337,13 +355,13 @@ export function SearchAlgorithmsVisualization() {
                     min={5}
                     max={30}
                     step={1}
-                    onValueChange={(value) => setArraySize(value[0])}
+                    onValueChange={(value) => handleArraySizeChange(value[0])}
                     className="flex-1"
                   />
                   <span className="w-8 text-center">{arraySize}</span>
                 </div>
               </div>
-              <Button variant="outline" size="sm" onClick={generateArray}>
+              <Button variant="outline" size="sm" onClick={() => generateArray()}>
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Nouveau
               </Button>
@@ -358,7 +376,7 @@ export function SearchAlgorithmsVisualization() {
                   min={0}
                   max={99}
                   value={target}
-                  onChange={(e) => setTarget(parseInt(e.target.value) || 0)}
+                  onChange={(e) => handleTargetChange(parseInt(e.target.value) || 0)}
                 />
                 <Button variant="outline" size="sm" onClick={handleReset}>
                   Rechercher
