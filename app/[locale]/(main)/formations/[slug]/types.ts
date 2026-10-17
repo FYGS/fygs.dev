@@ -51,6 +51,7 @@ export interface SerializedCourse {
   isInSubscription?: boolean;
   isEnrolled?: boolean;
   hasEntitlement?: boolean;
+  firstLessonSlug?: string | null;
 }
 
 export interface SerializedLesson {

@@ -298,6 +298,8 @@ export default async function CoursePage({
     isInSubscription: hasActiveSubscription,
     isEnrolled,
     hasEntitlement: hasActiveSubscription || isEnrolled || detail.price === 0,
+    // where enrolling and "continue" send the learner (and the preview button needs it)
+    firstLessonSlug: detail.firstLessonSlug,
   };
 
   return (
