@@ -128,6 +128,10 @@ const nextConfig = {
     return config;
   },
   // Performance optimizations
+  // lucide-react, date-fns and recharts are optimised by default; these are barrel-heavy too.
+  experimental: {
+    optimizePackageImports: ["framer-motion", "@radix-ui/react-icons", "react-icons/fa6"],
+  },
   poweredByHeader: false,
   reactStrictMode: true,
 

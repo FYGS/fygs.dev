@@ -1,6 +1,5 @@
 "use client";
 
-import { generatePDF } from "@/app/_lib/pdf-generator";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Eye, Loader2 } from "lucide-react";
@@ -23,6 +22,8 @@ export function CVPreview() {
         URL.revokeObjectURL(pdfUrl);
       }
 
+      // jsPDF + the CV data are only needed once the user asks for the preview.
+      const { generatePDF } = await import("@/app/_lib/pdf-generator");
       const doc = generatePDF();
       const pdfBlob = doc.output("blob");
       const url = URL.createObjectURL(pdfBlob);

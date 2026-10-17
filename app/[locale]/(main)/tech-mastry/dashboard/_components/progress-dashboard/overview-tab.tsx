@@ -4,9 +4,15 @@ import { Progress } from "@/components/ui/progress";
 import { TabsContent } from "@/components/ui/tabs";
 import { BookOpen, Brain, Calendar, ListTodo } from "lucide-react";
 import { RecentActivities } from "../recent-activities";
-import { SkillRadarChart } from "../skill-radar-chart";
 import { StreakCalendar } from "../streak-calendar";
 import type { ProgressStats } from "./types";
+import dynamic from "next/dynamic";
+
+// recharts is only fetched by the dashboard overview.
+const SkillRadarChart = dynamic(
+  () => import("../skill-radar-chart").then((m) => m.SkillRadarChart),
+  { ssr: false },
+);
 
 export function OverviewTab({ progressData }: { progressData: ProgressStats }) {
   return (
