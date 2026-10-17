@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useSyncExternalStore } from "react";
 
 export interface UserProgress {
   challengesCompleted: string[];
@@ -44,75 +44,106 @@ function saveProgress(progress: UserProgress) {
   }
 }
 
+// Progress lives in a tiny external store: the server and the first client
+// render both see defaultProgress; the mount effect then loads the persisted
+// value (and bumps the streak) without setting React state inside the effect.
+interface ProgressStore {
+  progress: UserProgress;
+  isLoaded: boolean;
+}
+
+let store: ProgressStore = { progress: defaultProgress, isLoaded: false };
+const serverStore: ProgressStore = store;
+const listeners = new Set<() => void>();
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+function getSnapshot() {
+  return store;
+}
+
+function getServerSnapshot() {
+  return serverStore;
+}
+
+function setStore(next: ProgressStore) {
+  store = next;
+  listeners.forEach((listener) => listener());
+}
+
+/** Applies the updater to the current progress, persists the result, notifies readers. */
+function updateProgress(update: (prev: UserProgress) => UserProgress) {
+  const prev = store.progress;
+  const updated = update(prev);
+  if (updated === prev) return;
+  saveProgress(updated);
+  setStore({ ...store, progress: updated });
+}
+
+function loadOnMount() {
+  const loaded = loadProgress();
+  // Update streak
+  const today = new Date().toISOString().split("T")[0];
+  if (!loaded.streakDates.includes(today)) {
+    loaded.streakDates = [...loaded.streakDates, today];
+  }
+  loaded.lastVisit = new Date().toISOString();
+  saveProgress(loaded);
+  setStore({ progress: loaded, isLoaded: true });
+}
+
 export function useProgress() {
-  const [progress, setProgress] = useState<UserProgress>(defaultProgress);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const { progress, isLoaded } = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   useEffect(() => {
-    const loaded = loadProgress();
-    // Update streak
-    const today = new Date().toISOString().split("T")[0];
-    if (!loaded.streakDates.includes(today)) {
-      loaded.streakDates = [...loaded.streakDates, today];
-    }
-    loaded.lastVisit = new Date().toISOString();
-    setProgress(loaded);
-    saveProgress(loaded);
-    setIsLoaded(true);
+    loadOnMount();
   }, []);
 
   const trackPageVisit = useCallback((path: string) => {
-    setProgress((prev) => {
+    updateProgress((prev) => {
       if (prev.visitedPages.includes(path)) return prev;
-      const updated = {
+      return {
         ...prev,
         visitedPages: [...prev.visitedPages, path],
         lastVisit: new Date().toISOString(),
       };
-      saveProgress(updated);
-      return updated;
     });
   }, []);
 
   const trackQuizScore = useCallback((quizId: string, score: number, total: number) => {
-    setProgress((prev) => {
-      const updated = {
-        ...prev,
-        quizScores: {
-          ...prev.quizScores,
-          [quizId]: { score, total, date: new Date().toISOString() },
-        },
-      };
-      saveProgress(updated);
-      return updated;
-    });
+    updateProgress((prev) => ({
+      ...prev,
+      quizScores: {
+        ...prev.quizScores,
+        [quizId]: { score, total, date: new Date().toISOString() },
+      },
+    }));
   }, []);
 
   const trackChallengeComplete = useCallback((challengeId: string) => {
-    setProgress((prev) => {
+    updateProgress((prev) => {
       if (prev.challengesCompleted.includes(challengeId)) return prev;
-      const updated = {
+      return {
         ...prev,
         challengesCompleted: [...prev.challengesCompleted, challengeId],
       };
-      saveProgress(updated);
-      return updated;
     });
   }, []);
 
   const trackTimeSpent = useCallback((path: string, minutes: number) => {
-    setProgress((prev) => {
-      const updated = {
-        ...prev,
-        timeSpent: {
-          ...prev.timeSpent,
-          [path]: (prev.timeSpent[path] || 0) + minutes,
-        },
-        totalTimeMinutes: prev.totalTimeMinutes + minutes,
-      };
-      saveProgress(updated);
-      return updated;
-    });
+    updateProgress((prev) => ({
+      ...prev,
+      timeSpent: {
+        ...prev.timeSpent,
+        [path]: (prev.timeSpent[path] || 0) + minutes,
+      },
+      totalTimeMinutes: prev.totalTimeMinutes + minutes,
+    }));
   }, []);
 
   const getStreakDays = useCallback((): number => {
@@ -152,8 +183,8 @@ export function useProgress() {
   }, [progress.quizScores]);
 
   const resetProgress = useCallback(() => {
-    setProgress(defaultProgress);
     saveProgress(defaultProgress);
+    setStore({ ...store, progress: defaultProgress });
   }, []);
 
   return {

@@ -26,18 +26,19 @@ export function SearchBar() {
   // Close search results when clicking outside
   useOnClickOutside(searchRef as RefObject<HTMLElement>, () => setIsOpen(false));
 
-  // Perform search when debounced query changes
-  useEffect(() => {
+  // Perform search when debounced query changes (state adjusted during render,
+  // see https://react.dev/learn/you-might-not-need-an-effect)
+  const [searchedQuery, setSearchedQuery] = useState(debouncedQuery);
+  if (searchedQuery !== debouncedQuery) {
+    setSearchedQuery(debouncedQuery);
     if (debouncedQuery.trim() === "") {
       setResults([]);
-      return;
+    } else {
+      setResults(searchTopics(debouncedQuery));
+      setIsOpen(true);
+      setSelectedIndex(-1);
     }
-
-    const searchResults = searchTopics(debouncedQuery);
-    setResults(searchResults);
-    setIsOpen(true);
-    setSelectedIndex(-1);
-  }, [debouncedQuery]);
+  }
 
   // Handle result click
   const handleResultClick = useCallback(

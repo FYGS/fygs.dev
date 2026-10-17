@@ -104,7 +104,7 @@ exports[`tech-mastry components rewritten for the lint rules > lcs renders the s
 exports[`tech-mastry components rewritten for the lint rules > messaging renders the same markup in every state reachable by clicking 1`] = `
 [
   "3f68168b",
-  "0f8ba3fa",
+  "6ca5a657",
   "3f68168b",
   "88b30484",
   "19de3d44",
@@ -117,7 +117,7 @@ exports[`tech-mastry components rewritten for the lint rules > messaging renders
   "274aa7a8",
   "5654efce",
   "463916b1",
-  "e212a39d",
+  "31a842bd",
   "463916b1",
   "d281c9b0",
   "ecb8af40",

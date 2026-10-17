@@ -43,7 +43,7 @@ export function Quiz({
   const [score, setScore] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [answers, setAnswers] = useState<(number | null)[]>([]);
-  const [startTime] = useState(Date.now());
+  const [startTime] = useState(() => Date.now());
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 

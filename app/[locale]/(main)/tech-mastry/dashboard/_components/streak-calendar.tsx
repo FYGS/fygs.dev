@@ -2,34 +2,50 @@
 
 import { cn } from "@/lib/utils";
 import { CheckCircle2 } from "lucide-react";
+import { useState } from "react";
 
 interface StreakCalendarProps {
   streakDays: number;
 }
 
+const DAYS_SHOWN = 30;
+
+// Simulate activity data - in a real app, this would come from an API
+function simulateActivity(streakDays: number) {
+  return Array.from({ length: DAYS_SHOWN }, (_, index) => {
+    // For demo purposes, mark the last 'streakDays' as active
+    // and some random days before that
+    const isActive =
+      index >= DAYS_SHOWN - streakDays ||
+      (index < DAYS_SHOWN - streakDays && Math.random() > 0.6);
+
+    return {
+      isActive,
+      intensity: isActive ? Math.floor(Math.random() * 3) + 1 : 0, // 0-3 intensity levels
+    };
+  });
+}
+
 export function StreakCalendar({ streakDays }: StreakCalendarProps) {
   // Generate the last 30 days
   const today = new Date();
-  const days = Array.from({ length: 30 }, (_, i) => {
+  const days = Array.from({ length: DAYS_SHOWN }, (_, i) => {
     const date = new Date();
     date.setDate(today.getDate() - i);
     return date;
   }).reverse();
 
-  // Simulate activity data - in a real app, this would come from an API
-  const activityData = days.map((day, index) => {
-    // For demo purposes, mark the last 'streakDays' as active
-    // and some random days before that
-    const isActive =
-      index >= days.length - streakDays ||
-      (index < days.length - streakDays && Math.random() > 0.6);
-    
-    return {
-      date: day,
-      isActive,
-      intensity: isActive ? Math.floor(Math.random() * 3) + 1 : 0, // 0-3 intensity levels
-    };
-  });
+  // The simulated activity is drawn once per streak length, not on every render
+  const [simulation, setSimulation] = useState(() => ({
+    streakDays,
+    activity: simulateActivity(streakDays),
+  }));
+  let activity = simulation.activity;
+  if (simulation.streakDays !== streakDays) {
+    activity = simulateActivity(streakDays);
+    setSimulation({ streakDays, activity });
+  }
+  const activityData = days.map((day, index) => ({ date: day, ...activity[index] }));
 
   // Format day name
   const formatDay = (date: Date) => {
