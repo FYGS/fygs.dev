@@ -54,3 +54,8 @@ public/worker-*.js.map
 
 # Embedded test Postgres data directory
 /.test-db/
+
+# Playwright
+/playwright-report/
+/test-results/
+/.e2e-serve.json

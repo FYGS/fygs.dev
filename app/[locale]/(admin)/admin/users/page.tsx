@@ -91,7 +91,9 @@ async function getUsersData(searchParams: URLSearchParams) {
     enrollmentsCount: user.enrollments.length,
     totalSpent: user.payments.reduce((sum: number, payment: any) => sum + safeNumber(payment.amount), 0),
     completedLessons: user.progress.length,
-    hasActiveSubscription: user.subscriptions.some((sub: any) => sub.status === SubscriptionStatus.ACTIVE && !sub.cancelAtPeriodEnd),
+    // `subscriptions` is a one-to-one relation: null for users who never subscribed
+    hasActiveSubscription:
+      user.subscriptions?.status === SubscriptionStatus.ACTIVE && !user.subscriptions.cancelAtPeriodEnd,
     lastEnrollment: user.enrollments.length > 0 
       ? user.enrollments.sort((a: any, b: any) => new Date(b.enrolledAt).getTime() - new Date(a.enrolledAt).getTime())[0].enrolledAt.toISOString()
       : null,

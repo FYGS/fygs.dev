@@ -61,7 +61,7 @@ function FunnelStep({
             </div>
             
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-2xl font-bold">{value.toLocaleString()}</span>
+              <span className="text-2xl font-bold">{value.toLocaleString("fr-FR")}</span>
               <span className="text-xs text-muted-foreground">
                 ({percentage.toFixed(1)}% du total)
               </span>

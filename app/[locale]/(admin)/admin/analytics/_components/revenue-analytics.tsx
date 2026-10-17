@@ -74,7 +74,7 @@ export function RevenueAnalytics({ data }: RevenueAnalyticsProps) {
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Total</p>
-              <p className="text-xl font-bold">{totalRevenue.toLocaleString()}€</p>
+              <p className="text-xl font-bold">{totalRevenue.toLocaleString("fr-FR")}€</p>
             </div>
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Transactions</p>
@@ -90,7 +90,7 @@ export function RevenueAnalytics({ data }: RevenueAnalyticsProps) {
           <div className="space-y-3">
             <div className="flex justify-between text-sm text-muted-foreground">
               <span>Évolution mensuelle</span>
-              <span>Max: {maxRevenue.toLocaleString()}€</span>
+              <span>Max: {maxRevenue.toLocaleString("fr-FR")}€</span>
             </div>
             
             <div className="space-y-2">
@@ -114,7 +114,7 @@ export function RevenueAnalytics({ data }: RevenueAnalyticsProps) {
                         />
                         <div className="absolute inset-0 flex items-center px-3">
                           <span className="text-xs font-medium text-white mix-blend-difference">
-                            {Number(item.revenue).toLocaleString()}€
+                            {Number(item.revenue).toLocaleString("fr-FR")}€
                           </span>
                         </div>
                       </div>

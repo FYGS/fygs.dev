@@ -43,7 +43,7 @@ async function getAnalyticsData() {
         DATE_TRUNC('month', "createdAt") as month,
         COUNT(*) as new_users,
         SUM(COUNT(*)) OVER (ORDER BY DATE_TRUNC('month', "createdAt")) as total_users
-      FROM "User"
+      FROM "user"
       WHERE "createdAt" >= NOW() - INTERVAL '12 months'
       GROUP BY DATE_TRUNC('month', "createdAt")
       ORDER BY month ASC

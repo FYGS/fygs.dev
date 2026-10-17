@@ -44,12 +44,12 @@ function MetricCard({
 }: MetricCardProps) {
   const formatValue = (val: string | number) => {
     if (format === "currency") {
-      return typeof val === "number" ? `${val.toLocaleString()}€` : val;
+      return typeof val === "number" ? `${val.toLocaleString("fr-FR")}€` : val;
     }
     if (format === "percentage") {
       return typeof val === "number" ? `${val}%` : val;
     }
-    return typeof val === "number" ? val.toLocaleString() : val;
+    return typeof val === "number" ? val.toLocaleString("fr-FR") : val;
   };
 
   const getChangeIcon = () => {

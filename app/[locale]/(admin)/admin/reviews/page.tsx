@@ -66,7 +66,7 @@ export default async function AdminReviewsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-blue-600">
-              {stats.totalReviews.toLocaleString()}
+              {stats.totalReviews.toLocaleString("fr-FR")}
             </div>
             <p className="text-sm text-muted-foreground mt-1">
               Sur {stats.totalCourses} formations

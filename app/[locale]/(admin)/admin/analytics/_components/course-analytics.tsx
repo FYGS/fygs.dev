@@ -98,7 +98,7 @@ export function CourseAnalytics({ courses }: CourseAnalyticsProps) {
           <div className="grid grid-cols-3 gap-4 pb-4 border-b">
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">
-                {totalRevenue.toLocaleString()}€
+                {totalRevenue.toLocaleString("fr-FR")}€
               </div>
               <div className="text-xs text-muted-foreground">Revenus totaux</div>
             </div>
@@ -160,7 +160,7 @@ export function CourseAnalytics({ courses }: CourseAnalyticsProps) {
                       
                       <div className="flex items-center gap-1">
                         <Euro className="h-3 w-3 text-muted-foreground" />
-                        <span>{course.totalRevenue.toLocaleString()}€</span>
+                        <span>{course.totalRevenue.toLocaleString("fr-FR")}€</span>
                       </div>
                       
                       {course.averageRating > 0 && (

@@ -48,7 +48,7 @@ export function UserGrowthChart() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Total utilisateurs</p>
-              <p className="text-2xl font-bold">{totalUsers.toLocaleString()}</p>
+              <p className="text-2xl font-bold">{totalUsers.toLocaleString("fr-FR")}</p>
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Ce mois-ci</p>

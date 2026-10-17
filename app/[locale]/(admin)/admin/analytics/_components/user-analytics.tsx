@@ -48,7 +48,7 @@ export function UserAnalytics({ data }: UserAnalyticsProps) {
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Total</p>
-              <p className="text-xl font-bold">{totalUsers.toLocaleString()}</p>
+              <p className="text-xl font-bold">{totalUsers.toLocaleString("fr-FR")}</p>
             </div>
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Ce mois</p>
