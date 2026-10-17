@@ -6,9 +6,11 @@ import { CACHE_CHECK_TIME, DB_QUERY_TIME } from "./constants";
 
 
 
-export function CachingCanvas({ cache, requests }: {
+export function CachingCanvas({ cache, requests, now }: {
   cache: CacheState;
   requests: Request[];
+  /** Time of the last animation frame, from which request positions are interpolated */
+  now: number;
 }) {
   return (
     <div className="relative w-full h-[400px] border border-indigo-500/20 rounded-xl bg-linear-to-br from-indigo-500/5 via-background/80 to-purple-500/5 backdrop-blur-xs overflow-hidden shadow-inner">
@@ -364,27 +366,27 @@ export function CachingCanvas({ cache, requests }: {
           // Calculate position based on status
           if (request.status === "cache-check") {
             const progress = Math.min(
-              (Date.now() - request.startTime) / CACHE_CHECK_TIME,
+              (now - request.startTime) / CACHE_CHECK_TIME,
               1
             );
             x = 100 + (300 - 100) * progress;
             y = 200 + (100 - 200) * progress;
           } else if (request.status === "cache-hit") {
             const timeInStatus =
-              Date.now() - (request.completionTime || 0);
+              now - (request.completionTime || 0);
             const returnProgress = Math.min(timeInStatus / 500, 1);
             x = 300 - (300 - 100) * returnProgress;
             y = 100 - (100 - 200) * returnProgress;
           } else if (request.status === "cache-miss") {
             const progress = Math.min(
-              (Date.now() - (request.dbQueryTime || 0)) / DB_QUERY_TIME,
+              (now - (request.dbQueryTime || 0)) / DB_QUERY_TIME,
               1
             );
             x = 300 + (500 - 300) * progress;
             y = 100 + (200 - 100) * progress;
           } else if (request.status === "completed") {
             const timeInStatus =
-              Date.now() - (request.completionTime || 0);
+              now - (request.completionTime || 0);
             const returnProgress = Math.min(timeInStatus / 500, 1);
             x = 500 - (500 - 100) * returnProgress;
             y = 200;

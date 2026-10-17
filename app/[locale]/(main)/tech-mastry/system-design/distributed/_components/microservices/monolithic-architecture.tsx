@@ -8,8 +8,9 @@ import {
   Server,
   Users,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import type { Scenario, RequestStatus, Request } from "./types";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { Scenario, Request } from "./types";
+import { stepMonolithRequests } from "./monolith-step";
 import { getRequestInterval } from "./request-interval";
 
 export function MonolithicArchitecture({ scenario }: { scenario: Scenario }) {
@@ -23,6 +24,13 @@ export function MonolithicArchitecture({ scenario }: { scenario: Scenario }) {
     averageResponseTime: 0,
   });
 
+  // The loop reads and writes the request list through a ref so that no state
+  // updater has side effects or draws random numbers (StrictMode runs updaters twice)
+  const requestsRef = useRef<Request[]>([]);
+  const commitRequests = useCallback((next: Request[]) => {
+    requestsRef.current = next;
+    setRequests(next);
+  }, []);
   const requestIdRef = useRef(1);
   const animationFrameRef = useRef<number | null>(null);
   const lastRequestTimeRef = useRef(0);
@@ -74,7 +82,7 @@ export function MonolithicArchitecture({ scenario }: { scenario: Scenario }) {
       };
 
       // Add the request to the list
-      setRequests((prev) => [...prev, newRequest]);
+      commitRequests([...requestsRef.current, newRequest]);
 
       // Update stats
       setStats((prev) => ({
@@ -85,123 +93,32 @@ export function MonolithicArchitecture({ scenario }: { scenario: Scenario }) {
 
     // Process existing requests
     const processRequests = (timestamp: number) => {
-      setRequests((prev) => {
-        // Process each request
-        const updatedRequests = prev.map((request) => {
-          // If the system has failed, mark all processing requests as failed
-          if (isFailed && request.status === "processing") {
-            return {
-              ...request,
-              status: "failed" as RequestStatus,
-              completionTime: timestamp,
-            };
-          }
+      const { requests: nextRequests, newlyCompleted, newlyFailed } = stepMonolithRequests(
+        requestsRef.current,
+        { timestamp, isFailed, isOverloaded }
+      );
 
-          // Move the request along its path
-          if (request.currentPathIndex < request.path.length - 1) {
-            // const currentPoint = request.path[request.currentPathIndex]; // Not used
-            const nextPoint = request.path[request.currentPathIndex + 1];
-
-            // Calculate direction and distance
-            const dx = nextPoint.x - request.position.x;
-            const dy = nextPoint.y - request.position.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-
-            // If we've reached the next point (or close enough)
-            if (distance < 5) {
-              // Move to the next point in the path
-              const newIndex = request.currentPathIndex + 1;
-
-              // Update status based on position in the path
-              let newStatus = request.status;
-              if (newIndex === 1) {
-                // Reached the monolith
-                newStatus = "processing" as RequestStatus;
-              } else if (newIndex === request.path.length - 1) {
-                // Completed the full path
-                newStatus = isOverloaded
-                  ? Math.random() < 0.3
-                    ? ("failed" as RequestStatus)
-                    : ("completed" as RequestStatus)
-                  : ("completed" as RequestStatus);
-              }
-
-              return {
-                ...request,
-                position: { ...nextPoint },
-                currentPathIndex: newIndex,
-                status: newStatus,
-                processingTime:
-                  newStatus === "processing" && !request.processingTime
-                    ? timestamp
-                    : request.processingTime,
-                completionTime:
-                  newStatus === "completed" || newStatus === "failed"
-                    ? timestamp
-                    : request.completionTime,
-              };
-            }
-
-            // Otherwise, move towards the next point
-            const speed = request.speed * (isOverloaded ? 0.5 : 1); // Slow down if overloaded
-            const step = speed * 2; // Pixels per frame
-            const moveRatio = step / distance;
-
-            return {
-              ...request,
-              position: {
-                x: request.position.x + dx * moveRatio,
-                y: request.position.y + dy * moveRatio,
-              },
-            };
-          }
-
-          return request;
-        });
-
-        // Calculate stats
-        const newCompletedRequests = updatedRequests.filter(
-          (r) =>
-            r.status === "completed" &&
-            !prev.find((p) => p.id === r.id && p.status === "completed")
-        );
-        const newFailedRequests = updatedRequests.filter(
-          (r) =>
-            r.status === "failed" &&
-            !prev.find((p) => p.id === r.id && p.status === "failed")
-        );
-
-        // Update response times
-        newCompletedRequests.forEach((request) => {
-          if (request.completionTime && request.startTime) {
-            responseTimes.current.push(
-              request.completionTime - request.startTime
-            );
-          }
-        });
-
-        // Calculate average response time
-        if (responseTimes.current.length > 0) {
-          const avgTime =
-            responseTimes.current.reduce((sum, time) => sum + time, 0) /
-            responseTimes.current.length;
-          setStats((prev) => ({
-            ...prev,
-            completedRequests:
-              prev.completedRequests + newCompletedRequests.length,
-            failedRequests: prev.failedRequests + newFailedRequests.length,
-            averageResponseTime: Math.round(avgTime),
-          }));
+      // Update response times
+      newlyCompleted.forEach((request) => {
+        if (request.completionTime && request.startTime) {
+          responseTimes.current.push(request.completionTime - request.startTime);
         }
-
-        // Remove completed or failed requests after they've been displayed for a while
-        return updatedRequests.filter((r) => {
-          if (r.status === "completed" || r.status === "failed") {
-            return timestamp - (r.completionTime || 0) < 2000; // Keep for 2 seconds
-          }
-          return true;
-        });
       });
+
+      // Calculate average response time
+      if (responseTimes.current.length > 0) {
+        const avgTime =
+          responseTimes.current.reduce((sum, time) => sum + time, 0) /
+          responseTimes.current.length;
+        setStats((prev) => ({
+          ...prev,
+          completedRequests: prev.completedRequests + newlyCompleted.length,
+          failedRequests: prev.failedRequests + newlyFailed.length,
+          averageResponseTime: Math.round(avgTime),
+        }));
+      }
+
+      commitRequests(nextRequests);
     };
 
     const animate = (timestamp: number) => {
@@ -230,30 +147,30 @@ export function MonolithicArchitecture({ scenario }: { scenario: Scenario }) {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [scenario, isFailed, isOverloaded]);
+  }, [scenario, isFailed, isOverloaded, commitRequests]);
 
   // Update overloaded state based on scenario
   useEffect(() => {
-    if (scenario === "high-load") {
-      const timer = setTimeout(() => {
-        setIsOverloaded(true);
-      }, 3000);
-      return () => clearTimeout(timer);
-    } else {
+    if (scenario !== "high-load") return;
+    const timer = setTimeout(() => {
+      setIsOverloaded(true);
+    }, 3000);
+    return () => {
+      clearTimeout(timer);
       setIsOverloaded(false);
-    }
+    };
   }, [scenario]);
 
   // Update failed state based on scenario
   useEffect(() => {
-    if (scenario === "failure") {
-      const timer = setTimeout(() => {
-        setIsFailed(true);
-      }, 3000);
-      return () => clearTimeout(timer);
-    } else {
+    if (scenario !== "failure") return;
+    const timer = setTimeout(() => {
+      setIsFailed(true);
+    }, 3000);
+    return () => {
+      clearTimeout(timer);
       setIsFailed(false);
-    }
+    };
   }, [scenario]);
 
   // Get color for a request based on its type and status
