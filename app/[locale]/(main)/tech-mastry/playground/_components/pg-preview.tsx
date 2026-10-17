@@ -11,7 +11,7 @@ import {
   Smartphone,
   Tablet,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePlaygroundStore } from "../_stores/playground-store";
 
 type DeviceMode = "responsive" | "mobile" | "tablet" | "desktop";
@@ -29,9 +29,14 @@ export function PgPreview() {
   const wcStatus = usePlaygroundStore((s) => s.wcStatus);
   const addConsoleEntry = usePlaygroundStore((s) => s.addConsoleEntry);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [deviceMode, setDeviceMode] = useState<DeviceMode>("responsive");
   const [isLoading, setIsLoading] = useState(false);
+  // A new static preview starts loading (state adjusted during render)
+  const [seenInputs, setSeenInputs] = useState<{ previewHtml: string | null; serverUrl: string | null } | null>(null);
+  if (!seenInputs || seenInputs.previewHtml !== previewHtml || seenInputs.serverUrl !== serverUrl) {
+    setSeenInputs({ previewHtml, serverUrl });
+    if (previewHtml && !serverUrl) setIsLoading(true);
+  }
 
   // Listen for console messages from the iframe
   useEffect(() => {
@@ -55,33 +60,24 @@ export function PgPreview() {
     return () => window.removeEventListener("message", handleMessage);
   }, [addConsoleEntry]);
 
-  // Create blob URL from preview HTML (for static HTML preview)
-  useEffect(() => {
-    if (!previewHtml || serverUrl) {
-      setBlobUrl(null);
-      return;
-    }
-
-    setIsLoading(true);
+  // Blob URL of the preview HTML (static HTML preview only: no dev server running)
+  const blobUrl = useMemo(() => {
+    if (!previewHtml || serverUrl) return null;
 
     try {
-      // Clean up previous blob
-      if (blobUrl) URL.revokeObjectURL(blobUrl);
-
       const htmlContent = previewHtml.startsWith("data:text/html")
         ? decodeURIComponent(previewHtml.split(",")[1])
         : previewHtml;
 
       const blob = new Blob([htmlContent], { type: "text/html" });
-      const url = URL.createObjectURL(blob);
-      setBlobUrl(url);
+      return URL.createObjectURL(blob);
     } catch (error) {
       console.error("Preview error:", error);
+      return null;
     }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [previewHtml, serverUrl]);
 
+  // Release the blob once it is replaced or the preview unmounts
   useEffect(() => {
     return () => {
       if (blobUrl) URL.revokeObjectURL(blobUrl);
