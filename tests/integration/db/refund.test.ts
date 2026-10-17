@@ -55,7 +55,9 @@ describe("requestRefund (real database, Stripe mocked)", () => {
     expect(h.stripe.refundPayment).toHaveBeenCalledWith("pi_123", 1990, {
       idempotencyKey: `refund:${sub.id}:pi_123`,
     });
-    expect(h.stripe.cancelImmediately).toHaveBeenCalledWith(sub.stripeSubscriptionId);
+    expect(h.stripe.cancelImmediately).toHaveBeenCalledWith(sub.stripeSubscriptionId, {
+      idempotencyKey: `cancel:${sub.stripeSubscriptionId}:immediate`,
+    });
 
     expect((await db.subscription.findUniqueOrThrow({ where: { id: sub.id } })).status).toBe(SubscriptionStatus.CANCELED);
     const audit = await db.invoiceAudit.findFirstOrThrow({ where: { userId: user.id } });
