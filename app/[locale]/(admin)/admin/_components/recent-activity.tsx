@@ -25,7 +25,7 @@ const recentActivities = [
       email: "alice@example.com",
       avatar: null,
     },
-    timestamp: new Date(Date.now() - 5 * 60 * 1000), // 5 min ago
+    minutesAgo: 5,
     icon: UserPlus,
     color: "text-green-600",
   },
@@ -39,7 +39,7 @@ const recentActivities = [
       email: "thomas@example.com", 
       avatar: null,
     },
-    timestamp: new Date(Date.now() - 15 * 60 * 1000), // 15 min ago
+    minutesAgo: 15,
     icon: BookOpen,
     color: "text-blue-600",
   },
@@ -53,7 +53,7 @@ const recentActivities = [
       email: "marie@example.com",
       avatar: null,
     },
-    timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 min ago
+    minutesAgo: 30,
     icon: CreditCard,
     color: "text-orange-600",
   },
@@ -67,7 +67,7 @@ const recentActivities = [
       email: "pierre@example.com",
       avatar: null,
     },
-    timestamp: new Date(Date.now() - 45 * 60 * 1000), // 45 min ago
+    minutesAgo: 45,
     icon: MessageSquare,
     color: "text-purple-600",
   },
@@ -81,7 +81,7 @@ const recentActivities = [
       email: "fernand@fygs.dev",
       avatar: "/images/fernand-avatar.jpg",
     },
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2h ago
+    minutesAgo: 120,
     icon: FileText,
     color: "text-indigo-600",
  },
@@ -95,21 +95,21 @@ const recentActivities = [
       email: "sophie@example.com",
       avatar: null,
     },
-    timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000), // 3h ago
+    minutesAgo: 180,
     icon: Award,
     color: "text-yellow-600",
   },
 ];
 
-function formatTimeAgo(date: Date): string {
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / (1000 * 60));
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 24));
+// The activity below is sample data expressed as an age, not as a date: a date computed
+// from Date.now() at module load differs between the server (started long ago) and the
+// browser, which made the labels mismatch at hydration.
+function formatTimeAgo(minutesAgo: number): string {
+  const diffHours = Math.floor(minutesAgo / 60);
+  const diffDays = Math.floor(minutesAgo / (60 * 24));
 
-  if (diffMins < 1) return "À l'instant";
-  if (diffMins < 60) return `Il y a ${diffMins}min`;
+  if (minutesAgo < 1) return "À l'instant";
+  if (minutesAgo < 60) return `Il y a ${minutesAgo}min`;
   if (diffHours < 24) return `Il y a ${diffHours}h`;
   return `Il y a ${diffDays}j`;
 }
@@ -143,7 +143,7 @@ export function RecentActivity() {
                       {activity.title}
                     </p>
                     <span className="text-xs text-muted-foreground shrink-0">
-                      {formatTimeAgo(activity.timestamp)}
+                      {formatTimeAgo(activity.minutesAgo)}
                     </span>
                   </div>
                   

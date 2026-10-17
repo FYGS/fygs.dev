@@ -20,7 +20,7 @@ export const test = base.extend<{ lang: Lang; pageErrorGuard: void }>({
   pageErrorGuard: [
     async ({ page }, use) => {
       const errors: string[] = [];
-      page.on("pageerror", (error) => errors.push(error.message));
+      page.on("pageerror", (error) => errors.push(`${page.url()} -> ${error.message}`));
       await use();
       expect(errors, "uncaught page errors").toEqual([]);
     },
