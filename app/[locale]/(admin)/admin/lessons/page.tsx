@@ -13,7 +13,7 @@ import {
   LessonsStatsSkeleton,
   LessonsTableSkeleton
 } from "./_components/lessons-skeletons";
-import { Role } from "@prisma/client";
+import { Role } from "@/lib/generated/prisma/browser";
 
 async function LessonsContent({ session }: { session: AuthSession }) {
   // Build query based on user role - ADMIN sees all, INSTRUCTOR sees only their courses

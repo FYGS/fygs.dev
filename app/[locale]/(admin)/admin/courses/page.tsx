@@ -9,7 +9,7 @@ import { CoursesTable } from "./_components/courses-table";
 import { CoursesStats } from "./_components/courses-stats";
 import { PaginationService, extractPaginationParams } from "@/lib/pagination-utils";
 import { serializeCourse } from "@/lib/serialization-utils";
-import { Prisma, Role } from "@prisma/client";
+import { Prisma, Role } from "@/lib/generated/prisma/browser";
 
 type AdminCourseRow = Prisma.CourseGetPayload<{
   include: {

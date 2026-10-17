@@ -1,7 +1,7 @@
 import type {
   DiscussionSortType,
 } from "@/types/community";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/lib/generated/prisma/browser";
 
 /** Maps a discussion sort type to its Prisma orderBy clause. */
 export class DiscussionOrder {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ReviewSearchService } from "@/lib/services/review-search";
-import { ReviewStatus } from "@prisma/client";
+import { ReviewStatus } from "@/lib/generated/prisma/browser";
 import { logger } from "@/lib/structured-logger";
 import { enforceRateLimit } from "@/lib/rate-limit";
 

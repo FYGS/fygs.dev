@@ -1,5 +1,11 @@
 onlyBuiltDependencies:
   - puppeteer
+  # embedded-postgres platform packages recreate the symlinks of the Postgres
+  # binaries in a postinstall step (Linux/macOS); needed for `pnpm test:db`.
+  - "@embedded-postgres/linux-x64"
+  - "@embedded-postgres/linux-arm64"
+  - "@embedded-postgres/darwin-x64"
+  - "@embedded-postgres/darwin-arm64"
 overrides:
   # next-pwa -> workbox-build -> rollup-plugin-terser pins serialize-javascript 4 (RCE advisory)
   serialize-javascript: ">=7.1.2"

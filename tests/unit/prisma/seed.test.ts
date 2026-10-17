@@ -13,8 +13,8 @@ const h = vi.hoisted(() => ({
   resolveDone: null as null | (() => void),
 }));
 
-vi.mock("@prisma/client", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@prisma/client")>();
+vi.mock("@/lib/generated/prisma/client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/generated/prisma/client")>();
   const store = new Map<string, Record<string, unknown>[]>();
   let n = 0;
   const rowsOf = (model: string) => {
@@ -89,6 +89,10 @@ const hash = (v: unknown) =>
 
 describe("prisma/seed.ts (pinned Prisma call sequence)", () => {
   it("issues the same Prisma calls in the same order", async () => {
+    // Load the driver and the generated client first: module initialisation may
+    // draw from Math.random, which would shift the pinned sequence below.
+    await import("@prisma/adapter-pg");
+    await import("@/lib/generated/prisma/client");
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(new Date("2030-06-15T10:20:30Z"));
     vi.spyOn(Math, "random").mockImplementation(mulberry32(1234));

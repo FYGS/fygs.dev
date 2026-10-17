@@ -30,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ReportReason } from "@prisma/client";
+import { ReportReason } from "@/lib/generated/prisma/browser";
 
 interface ReviewInteractionsProps {
   reviewId: string;

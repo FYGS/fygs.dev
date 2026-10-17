@@ -2,7 +2,7 @@ import { SubscriptionPlansWrapper } from "@/app/_components/payment/subscription
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
-import { SubscriptionStatus } from "@prisma/client";
+import { SubscriptionStatus } from "@/lib/generated/prisma/browser";
 
 // Force dynamic rendering since we need user-specific data
 export const dynamic = 'force-dynamic';

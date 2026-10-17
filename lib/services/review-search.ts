@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { ReviewStatus, Prisma } from "@prisma/client";
+import { ReviewStatus, Prisma } from "@/lib/generated/prisma/browser";
 import { cache } from "react";
 
 export interface ReviewSearchFilters {

@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { BookOpen, Clock, Play, CheckCircle, Crown, Users } from "lucide-react";
 import { FadeIn, FadeInStagger } from "@/components/ui/motion";
 import Link from "next/link";
-import { PaymentStatus, SubscriptionStatus } from "@prisma/client";
+import { PaymentStatus, SubscriptionStatus } from "@/lib/generated/prisma/browser";
 
 export const metadata: Metadata = {
   title: "Mes Formations | FYGS Learning Platform",

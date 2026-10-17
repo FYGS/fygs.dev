@@ -19,7 +19,7 @@ import { SubscriptionStatus } from "./_components/subscription-status";
 import { PremiumUpgradeCard } from "@/components/premium-upgrade-card";
 import { db } from "@/lib/db";
 import { CourseProgressGridServer } from './_components/course-progress-grid-server';
-import { SubscriptionStatus as PrismaSubscriptionStatus } from '@prisma/client';
+import { SubscriptionStatus as PrismaSubscriptionStatus } from '@/lib/generated/prisma/browser';
 
 
 interface DashboardPageProps {

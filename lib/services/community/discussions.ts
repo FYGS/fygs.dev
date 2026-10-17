@@ -5,7 +5,7 @@ import type {
   DiscussionFilters,
   DiscussionsResponse,
 } from "@/types/community";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/lib/generated/prisma/browser";
 import { DiscussionOrder } from "./order";
 
 /** Discussion listing, detail and replies. */

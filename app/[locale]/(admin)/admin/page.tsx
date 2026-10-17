@@ -12,7 +12,7 @@ import {
   safeNumber,
 } from "@/lib/serialization-utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { PaymentStatus } from "@prisma/client";
+import { PaymentStatus } from "@/lib/generated/prisma/browser";
 
 export const metadata: Metadata = {
   title: "Dashboard Admin | FYGS Learning Platform",

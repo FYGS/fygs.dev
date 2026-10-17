@@ -1,4 +1,4 @@
-import { CourseAccessTier, PaymentKind, PaymentStatus, SubscriptionStatus } from "@prisma/client";
+import { CourseAccessTier, PaymentKind, PaymentStatus, SubscriptionStatus } from "@/lib/generated/prisma/browser";
 import { db } from "./db";
 
 export interface UserAccess {

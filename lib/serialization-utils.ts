@@ -3,7 +3,7 @@
  * Convertit les types Decimal, BigInt et Date en types sérialisables pour les Client Components
  */
 
-import { Decimal } from "@prisma/client/runtime/library";
+import { Decimal } from "@prisma/client/runtime/client";
 
 /**
  * Convertit un Decimal ou BigInt en number de façon sécurisée

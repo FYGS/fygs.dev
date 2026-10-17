@@ -1,5 +1,5 @@
 import { useSession } from "@/lib/auth-client";
-import { Role } from "@prisma/client";
+import { Role } from "@/lib/generated/prisma/browser";
 
 // Extend the session user type to include the role property
 interface ExtendedUser {

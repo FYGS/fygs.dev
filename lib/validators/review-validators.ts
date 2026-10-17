@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ReportReason } from "@prisma/client";
+import { ReportReason } from "@/lib/generated/prisma/browser";
 import { db } from "@/lib/db";
 
 /**

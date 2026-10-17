@@ -3,7 +3,7 @@
  * Assure la cohérence et la sécurité des données avant rendu
  */
 
-import { CourseCategory, CourseLevel, Role } from "@prisma/client";
+import { CourseCategory, CourseLevel, Role } from "@/lib/generated/prisma/browser";
 import { safeNumber } from "./serialization-utils";
 
 /**

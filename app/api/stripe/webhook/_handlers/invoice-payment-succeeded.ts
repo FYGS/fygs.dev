@@ -1,7 +1,7 @@
 import type Stripe from "stripe";
 import { paymentService } from "@/lib/payment-service";
 import { db } from "@/lib/db";
-import { Prisma, PaymentStatus, PaymentKind, SubscriptionStatus } from "@prisma/client";
+import { Prisma, PaymentStatus, PaymentKind, SubscriptionStatus } from "@/lib/generated/prisma/browser";
 import { Analytics } from "@/lib/analytics-helper";
 import { logger } from "../_lib/logger";
 import { getInvoiceSubscriptionId } from "../_lib/invoice";

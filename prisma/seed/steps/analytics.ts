@@ -1,7 +1,7 @@
 import {
   type PrismaClient,
   type User,
-} from "@prisma/client";
+} from "../../../lib/generated/prisma/client";
 import { randomDate, randomChoice } from "../utils";
 
 /** Analytics events. */

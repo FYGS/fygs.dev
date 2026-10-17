@@ -26,7 +26,7 @@ vi.mock('@/lib/auth', () => ({
 }))
 
 // Import the action after mocking
-const { cancelSubscription } = await import('@/app/(main)/dashboard/actions/cancelSubscription')
+const { cancelSubscription } = await import('@/app/[locale]/(main)/dashboard/actions/cancelSubscription')
 
 describe('Cancel Subscription Database Isolation Tests', () => {
   const testEnv = createTestEnvironment()

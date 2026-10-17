@@ -34,7 +34,7 @@ import {
   Euro,
   Calendar
 } from "lucide-react";
-import { Role } from "@prisma/client";
+import { Role } from "@/lib/generated/prisma/browser";
 
 interface User {
   id: string;

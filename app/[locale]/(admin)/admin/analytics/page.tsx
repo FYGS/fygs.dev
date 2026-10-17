@@ -8,7 +8,7 @@ import { UserAnalytics } from "./_components/user-analytics";
 import { CourseAnalytics } from "./_components/course-analytics";
 import { ConversionFunnel } from "./_components/conversion-funnel";
 import { serializeRevenueData, serializeUserGrowthData, serializeCourse, safeNumber } from "@/lib/serialization-utils";
-import { PaymentStatus } from "@prisma/client";
+import { PaymentStatus } from "@/lib/generated/prisma/browser";
 
 export const metadata: Metadata = {
   title: "Analytics & Rapports | Admin FYGS",

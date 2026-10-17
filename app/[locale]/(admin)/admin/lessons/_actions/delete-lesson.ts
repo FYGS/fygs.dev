@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { Role } from "@prisma/client";
+import { Role } from "@/lib/generated/prisma/browser";
 
 export async function deleteLesson(lessonId: string) {
   try {

@@ -3,7 +3,7 @@ import {
   PaymentStatus,
   PaymentKind,
   type PrismaClient,
-} from "@prisma/client";
+} from "../../../lib/generated/prisma/client";
 import type { EnrollmentWithRelations } from "../types";
 
 /** Payments for premium courses. */

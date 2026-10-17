@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CourseCategory, CourseLevel, CourseAccessTier } from "@prisma/client";
+import { CourseCategory, CourseLevel, CourseAccessTier } from "@/lib/generated/prisma/browser";
 import type { UseFormReturn } from "react-hook-form";
 
 // Schema aligned with Prisma model

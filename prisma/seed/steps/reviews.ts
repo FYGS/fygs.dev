@@ -2,7 +2,7 @@ import {
   ReviewStatus,
   type PrismaClient,
   type Review,
-} from "@prisma/client";
+} from "../../../lib/generated/prisma/client";
 import { randomDate, randomBetween } from "../utils";
 import { authenticReviews } from "../data/reviews";
 import type { EnrollmentWithRelations } from "../types";

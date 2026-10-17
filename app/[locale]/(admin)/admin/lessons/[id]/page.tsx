@@ -15,7 +15,7 @@ import { ArrowLeft, BookOpen } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { CourseQueryOptions } from "@/types/admin";
-import { Role } from "@prisma/client";
+import { Role } from "@/lib/generated/prisma/browser";
 
 export const metadata: Metadata = {
   title: "Modifier la Leçon | Admin FYGS",

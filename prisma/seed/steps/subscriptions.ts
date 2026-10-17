@@ -3,7 +3,7 @@ import {
   SubscriptionPlan,
   type PrismaClient,
   type User,
-} from "@prisma/client";
+} from "../../../lib/generated/prisma/client";
 
 /** Subscription scenarios (active, canceled, past due, free). */
 export async function seedSubscriptions(

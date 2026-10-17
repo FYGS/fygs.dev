@@ -4,7 +4,7 @@ import { ReviewPermissionsService } from "@/lib/services/review-permissions";
 import { ReviewNotificationService } from "@/lib/services/review-notification";
 import { createReportSchema } from "@/lib/validators/review-validators";
 import { db } from "@/lib/db";
-import { ReportStatus } from "@prisma/client";
+import { ReportStatus } from "@/lib/generated/prisma/browser";
 import { logger } from "@/lib/structured-logger";
 import { enforceRateLimit } from "@/lib/rate-limit";
 

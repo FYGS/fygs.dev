@@ -9,7 +9,7 @@ import { VisualSupportsManagement } from "./_components/visual-supports/visual-s
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Role } from "@prisma/client";
+import { Role } from "@/lib/generated/prisma/browser";
 import { BookOpen, Layers, Brain, Image, Eye, Settings } from "lucide-react";
 
 interface CourseEditPageProps {

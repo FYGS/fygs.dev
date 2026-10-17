@@ -8,7 +8,7 @@ import { auth } from '@/lib/auth'
 import { paymentService } from '@/lib/payment-service'
 import { AnalyticsHelper } from '@/lib/analytics-helper'
 import { resolveRequestedPriceId } from '@/lib/subscription-pricing'
-import { Prisma, SubscriptionStatus } from '@prisma/client'
+import { Prisma, SubscriptionStatus } from '@/lib/generated/prisma/browser'
 
 const switchPlanSchema = z.object({
   newPriceId: z.string().min(1, 'Price ID is required'),
