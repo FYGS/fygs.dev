@@ -9,7 +9,6 @@
  * DATABASE_URL from the shell or `.env` is deliberately ignored, so the suite
  * can never run against the remote development database.
  */
-// @ts-expect-error plain ESM script shared with the CLI
 import { assertDisposableDatabase, startTestDb } from "../../scripts/test-db.mjs";
 
 export default async function setup() {

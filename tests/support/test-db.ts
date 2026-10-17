@@ -4,7 +4,6 @@
  */
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/lib/generated/prisma/client";
-// @ts-expect-error plain ESM script shared with the CLI
 import { assertDisposableDatabase } from "../../scripts/test-db.mjs";
 
 /** The connection string of the test database (throws if it is not a disposable one). */
