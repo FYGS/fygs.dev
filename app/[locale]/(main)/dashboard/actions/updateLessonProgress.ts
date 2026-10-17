@@ -12,7 +12,7 @@ import { auth } from '@/lib/auth'
 const updateLessonProgressSchema = z.object({
   lessonId: z.string().cuid(),
   completed: z.boolean().optional(),
-  watchTimeDelta: z.number().min(0).optional(), // Additional watch time in seconds
+  watchTimeDelta: z.number().min(0).max(7200).optional(), // Additional watch time in seconds (at most 2h per call)
 })
 
 export type UpdateLessonProgressResult = {
@@ -116,13 +116,13 @@ export async function updateLessonProgress(
       })
       
       // Calculate new values
-      const currentWatchTime = existing?.watchTime || 0
-      const newWatchTime = currentWatchTime + watchTimeDelta
       const wasCompleted = existing?.completed || false
       const newCompleted = completed !== undefined ? completed : wasCompleted
       const shouldUpdateCompletedAt = newCompleted && !wasCompleted
       
-      // Upsert progress with accumulated watch time
+      // Upsert progress. The watch time is added by the database (increment), not
+      // computed from the row read above: concurrent updates (two tabs, player
+      // heartbeats) would otherwise overwrite each other and lose watch time.
       const updated = await tx.progress.upsert({
         where: {
           userId_lessonId: {
@@ -134,13 +134,18 @@ export async function updateLessonProgress(
           userId,
           lessonId,
           completed: newCompleted,
-          watchTime: newWatchTime,
+          watchTime: watchTimeDelta,
           completedAt: newCompleted ? new Date() : null
         },
         update: {
           completed: newCompleted,
-          watchTime: newWatchTime,
-          completedAt: shouldUpdateCompletedAt ? new Date() : existing?.completedAt,
+          watchTime: { increment: watchTimeDelta },
+          // keep the first completion date; un-completing clears it
+          completedAt: !newCompleted
+            ? null
+            : shouldUpdateCompletedAt
+              ? new Date()
+              : existing?.completedAt,
           updatedAt: new Date()
         },
         select: {
@@ -157,7 +162,7 @@ export async function updateLessonProgress(
           metadata: {
             lessonId,
             courseId: lesson.courseId, 
-            watchTime: newWatchTime
+            watchTime: updated.watchTime
           }
         })
 
@@ -165,7 +170,7 @@ export async function updateLessonProgress(
           lessonId,
           courseId: lesson.courseId,
           lessonOrder: 1, // TODO: Get actual lesson order
-          watchTime: newWatchTime,
+          watchTime: updated.watchTime,
           completionPercentage: 100,
           isFirstCompletion: true,
           timestamp: new Date().toISOString()
