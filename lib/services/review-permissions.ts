@@ -293,11 +293,6 @@ export class ReviewPermissionsService {
 
       const review = await db.review.findUnique({
         where: { id: reviewId },
-        include: {
-          votes: {
-            where: { userId },
-          },
-        },
       });
 
       if (!review) {
@@ -312,10 +307,8 @@ export class ReviewPermissionsService {
         };
       }
 
-      // Check if user already voted
-      if (review.votes.length > 0) {
-        return { allowed: false, reason: "Vous avez déjà voté sur cet avis" };
-      }
+      // An existing vote does not block voting: the vote endpoint turns a
+      // repeated vote into a change (opposite value) or a removal (same value).
 
       // Check if review is approved
       if (review.status !== ReviewStatus.APPROVED) {

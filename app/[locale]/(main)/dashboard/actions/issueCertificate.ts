@@ -55,20 +55,9 @@ export async function issueCertificate(
       courseId
     );
 
-    if (!eligibility.eligible) {
-      return {
-        success: false,
-        message: eligibility.reason,
-        error: "NOT_ELIGIBLE",
-        eligibility: {
-          eligible: eligibility.eligible,
-          reason: eligibility.reason,
-          completionPercentage: eligibility.completionPercentage,
-        },
-      };
-    }
-
-    // Handle already issued case
+    // Already issued: answer with the existing certificate. This must come before
+    // the eligibility check, because checkCertificateEligibility reports an
+    // existing certificate as eligible:false ("Certificate already issued").
     if (eligibility.reason === "Certificate already issued") {
       const certificate = await db.certificate.findUnique({
         where: {
@@ -100,6 +89,19 @@ export async function issueCertificate(
       };
     }
 
+    if (!eligibility.eligible) {
+      return {
+        success: false,
+        message: eligibility.reason,
+        error: "NOT_ELIGIBLE",
+        eligibility: {
+          eligible: eligibility.eligible,
+          reason: eligibility.reason,
+          completionPercentage: eligibility.completionPercentage,
+        },
+      };
+    }
+
     // Issue new certificate
     const issuanceData = {
       userId,
@@ -125,6 +127,12 @@ export async function issueCertificate(
       select: { title: true },
     });
 
+    // Total time the user spent watching this course's lessons
+    const watched = await db.progress.aggregate({
+      where: { userId, lesson: { courseId } },
+      _sum: { watchTime: true },
+    });
+
     // Log analytics event
     await AnalyticsHelper.recordCertificateIssuance(userId, {
       certificateId: result.certificate!.id,
@@ -132,7 +140,7 @@ export async function issueCertificate(
       courseTitle: course?.title,
       completionDate: new Date().toISOString(),
       totalLessons: eligibility.breakdown?.lessons.total || 0,
-      totalWatchTime: 0, // TODO: Calculate actual watch time
+      totalWatchTime: watched._sum.watchTime ?? 0,
       timestamp: new Date().toISOString(),
     });
 

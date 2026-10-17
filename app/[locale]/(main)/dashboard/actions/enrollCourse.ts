@@ -131,17 +131,37 @@ export async function enrollCourse(input: z.infer<typeof enrollCourseSchema>): P
     }
     
     // Create enrollment
-    const enrollment = await db.enrollment.create({
-      data: {
-        userId,
-        courseId,
-        enrolledAt: new Date()
-      },
-      select: {
-        id: true,
-        enrolledAt: true
+    let enrollment: { id: string; enrolledAt: Date }
+    try {
+      enrollment = await db.enrollment.create({
+        data: {
+          userId,
+          courseId,
+          enrolledAt: new Date()
+        },
+        select: {
+          id: true,
+          enrolledAt: true
+        }
+      })
+    } catch (error) {
+      // A concurrent request (double click, two tabs) enrolled the user between
+      // the check above and this insert: unique (userId, courseId). Treat it as
+      // the already-enrolled case instead of failing.
+      if ((error as { code?: string } | null)?.code !== 'P2002') throw error
+      const winner = await db.enrollment.findUnique({
+        where: { userId_courseId: { userId, courseId } },
+        select: { id: true, enrolledAt: true }
+      })
+      if (!winner) throw error
+      contextLogger.info('Concurrent enrollment detected, returning the existing one', { metadata: { enrollmentId: winner.id } })
+      return {
+        success: true,
+        message: 'Vous êtes déjà inscrit à cette formation',
+        enrollment: winner,
+        alreadyEnrolled: true
       }
-    })
+    }
     
     contextLogger.businessEvent('COURSE_ENROLLMENT', {
       metadata: {

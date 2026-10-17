@@ -25,12 +25,17 @@ describe("Update Lesson Progress Server Action Contract Tests", () => {
   let testUserId: string;
   let testCourseId: string;
   let testLessonId: string;
+  let testEmail: string;
+  let suffix: string;
 
   beforeEach(async () => {
+    // unique per test: no collision with leftovers of another test or file
+    suffix = Math.random().toString(36).slice(2, 10);
+    testEmail = `progress-test-${suffix}@example.com`;
     // Create test user
     const user = await db.user.create({
       data: {
-        email: "progress-test@example.com",
+        email: testEmail,
         name: "Progress Test User",
         emailVerified: true,
       },
@@ -41,7 +46,7 @@ describe("Update Lesson Progress Server Action Contract Tests", () => {
     const course = await db.course.create({
       data: {
         title: "Progress Test Course",
-        slug: "progress-test-course",
+        slug: `progress-test-course-${suffix}`,
         description: "Course for testing progress",
         category: "JAVASCRIPT",
         level: "BEGINNER",
@@ -73,8 +78,8 @@ describe("Update Lesson Progress Server Action Contract Tests", () => {
 
     // Mock the auth user ID to match our test user
     vi.mocked(auth.api.getSession).mockResolvedValue({
-      user: { id: testUserId, email: "progress-test@example.com" },
-    });
+      user: { id: testUserId, email: testEmail },
+    } as never);
   });
 
   afterEach(async () => {
@@ -89,13 +94,14 @@ describe("Update Lesson Progress Server Action Contract Tests", () => {
 
   describe("Input validation", () => {
     test("rejects invalid lesson ID format", async () => {
-      try {
-        await updateLessonProgress({ lessonId: "invalid-id" });
-        expect.fail("Should have thrown validation error");
-      } catch (error) {
-        // Zod validation should throw for invalid CUID
-        expect(error).toBeDefined();
-      }
+      // The action reports schema errors in its result instead of throwing
+      const result = await updateLessonProgress({ lessonId: "invalid id" });
+
+      expect(result).toMatchObject({
+        success: false,
+        error: "VALIDATION_ERROR",
+      });
+      expect(await db.progress.count({ where: { userId: testUserId } })).toBe(0);
     });
 
     test("accepts valid lesson ID with optional fields", async () => {
@@ -105,34 +111,41 @@ describe("Update Lesson Progress Server Action Contract Tests", () => {
         completed: false,
       });
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+      expect(result.success).toBe(true);
+      expect(result.progress!.watchTime).toBe(30);
     });
 
     test("rejects negative watch time delta", async () => {
-      try {
-        await updateLessonProgress({
-          lessonId: testLessonId,
-          watchTimeDelta: -10,
-        });
-        expect.fail("Should have thrown validation error");
-      } catch (error) {
-        // Zod validation should throw for negative values
-        expect(error).toBeDefined();
-      }
+      const result = await updateLessonProgress({
+        lessonId: testLessonId,
+        watchTimeDelta: -10,
+      });
+
+      expect(result).toMatchObject({
+        success: false,
+        error: "VALIDATION_ERROR",
+      });
+      expect(await db.progress.count({ where: { userId: testUserId } })).toBe(0);
     });
 
     test("rejects excessive watch time delta", async () => {
-      try {
-        await updateLessonProgress({
-          lessonId: testLessonId,
-          watchTimeDelta: 8000, // Over 2 hours (7200 seconds)
-        });
-        expect.fail("Should have thrown validation error");
-      } catch (error) {
-        // Zod validation should throw for values over max
-        expect(error).toBeDefined();
-      }
+      // More than 2 hours (7200 seconds) in one call cannot be real playback
+      const tooMuch = await updateLessonProgress({
+        lessonId: testLessonId,
+        watchTimeDelta: 8000,
+      });
+      expect(tooMuch).toMatchObject({
+        success: false,
+        error: "VALIDATION_ERROR",
+      });
+      expect(await db.progress.count({ where: { userId: testUserId } })).toBe(0);
+
+      // the limit itself is accepted
+      const atLimit = await updateLessonProgress({
+        lessonId: testLessonId,
+        watchTimeDelta: 7200,
+      });
+      expect(atLimit.success).toBe(true);
     });
   });
 
@@ -143,7 +156,7 @@ describe("Update Lesson Progress Server Action Contract Tests", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      expect(result.error).toBe("LESSON_NOT_FOUND");
     });
 
     test("rejects lesson from course user is not enrolled in", async () => {
@@ -151,7 +164,7 @@ describe("Update Lesson Progress Server Action Contract Tests", () => {
       const otherCourse = await db.course.create({
         data: {
           title: "Other Course",
-          slug: "other-course",
+          slug: `other-course-${suffix}`,
           description: "Course user is not enrolled in",
           category: "TYPESCRIPT",
           level: "INTERMEDIATE",
@@ -176,7 +189,10 @@ describe("Update Lesson Progress Server Action Contract Tests", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      expect(result.error).toBe("ACCESS_DENIED");
+      expect(
+        await db.progress.count({ where: { lessonId: otherLesson.id } })
+      ).toBe(0);
 
       // Cleanup
       await db.lesson.delete({ where: { id: otherLesson.id } });
@@ -325,6 +341,40 @@ describe("Update Lesson Progress Server Action Contract Tests", () => {
       expect(result.success).toBe(true);
       expect(result.progress!.completed).toBe(false);
       expect(result.progress!.completedAt).toBeNull();
+
+      // the stored row agrees with the response, and the watch time is kept
+      const stored = await db.progress.findUniqueOrThrow({
+        where: {
+          userId_lessonId: { userId: testUserId, lessonId: testLessonId },
+        },
+      });
+      expect(stored.completed).toBe(false);
+      expect(stored.completedAt).toBeNull();
+      expect(stored.watchTime).toBe(300);
+    });
+
+    test("completing again after un-completing records a new completion date", async () => {
+      const first = new Date("2024-01-01T12:00:00.000Z");
+      await db.progress.create({
+        data: {
+          userId: testUserId,
+          lessonId: testLessonId,
+          completed: true,
+          watchTime: 300,
+          completedAt: first,
+        },
+      });
+
+      await updateLessonProgress({ lessonId: testLessonId, completed: false });
+      const result = await updateLessonProgress({
+        lessonId: testLessonId,
+        completed: true,
+      });
+
+      expect(result.progress!.completed).toBe(true);
+      expect(result.progress!.completedAt!.getTime()).toBeGreaterThan(
+        first.getTime()
+      );
     });
   });
 
@@ -356,6 +406,7 @@ describe("Update Lesson Progress Server Action Contract Tests", () => {
         },
       });
 
+      // (increments are applied by the database: none may be lost)
       expect(finalProgress!.watchTime).toBe(90);
 
       // Should only have one progress record
@@ -396,7 +447,7 @@ describe("Update Lesson Progress Server Action Contract Tests", () => {
         success: true,
         message: expect.any(String),
         progress: {
-          lessonId: testLessonId,
+          id: expect.any(String),
           completed: true,
           watchTime: expect.any(Number),
           completedAt: expect.any(Date),

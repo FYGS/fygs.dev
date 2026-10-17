@@ -12,6 +12,7 @@ import { ReviewAnalyticsService } from "@/lib/services/review-analytics";
 import { ReviewNotificationService } from "@/lib/services/review-notification";
 import { ReviewSearchService } from "@/lib/services/review-search";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { parseJsonBody } from "@/lib/utils/parse-json-body";
 
 // Use Node.js runtime for email services
 export const runtime = "nodejs";
@@ -41,7 +42,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse and validate request body
-    const body = await request.json();
+    const parsed = await parseJsonBody(request);
+    if (!parsed.ok) return parsed.response;
+    const body = parsed.body;
     const validation = createReviewSchema.safeParse(body);
 
     if (!validation.success) {

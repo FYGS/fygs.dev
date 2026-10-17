@@ -33,10 +33,13 @@ export class ReviewSearchQueries extends ReviewStatsQueries {
         status: "APPROVED",
       };
 
-      // Add full-text search
+      // Case-insensitive text match on the comment. (Prisma's `search` operator
+      // needs the fullTextSearchPostgres preview feature, which is not enabled:
+      // the query was rejected at runtime.)
       if (searchQuery.trim()) {
         where.comment = {
-          search: searchQuery.trim(),
+          contains: searchQuery.trim(),
+          mode: "insensitive",
         };
       }
 

@@ -56,8 +56,8 @@ PostgreSQL (see the test database below):
 Integration tests no longer need Docker or a remote database. `scripts/test-db.mjs` starts a real
 PostgreSQL (npm `embedded-postgres`, 17.x binaries), applies the schema with `prisma db push`
 and runs the suite (`pnpm test:integration`); CI runs it on the embedded server and on a
-service container. See `tests/README.md`. Older contract suites that no longer match the app are
-quarantined in `vitest.integration.config.ts` (`STALE_SUITES`) until they are fixed.
+service container. See `tests/README.md`. Every integration and contract suite runs by default (the former
+quarantine of legacy suites is gone: they were rewritten against the current app).
 
 ### Held back on purpose
 

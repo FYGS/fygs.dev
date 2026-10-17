@@ -34,12 +34,16 @@ describe("Unpublished Course Visibility Integration Tests", () => {
   let testUserId: string;
   let publishedCourseId: string;
   let unpublishedCourseId: string;
+  let testEmail: string;
 
   beforeEach(async () => {
+    // unique per test: no collision with leftovers of another test or file
+    const suffix = Math.random().toString(36).slice(2, 10);
+    testEmail = `visibility-test-${suffix}@example.com`;
     // Create test user
     const user = await db.user.create({
       data: {
-        email: "visibility-test@example.com",
+        email: testEmail,
         name: "Visibility Test User",
         emailVerified: true,
       },
@@ -50,7 +54,7 @@ describe("Unpublished Course Visibility Integration Tests", () => {
     const publishedCourse = await db.course.create({
       data: {
         title: "Published Test Course",
-        slug: "published-test-course",
+        slug: `published-test-course-${suffix}`,
         description: "Published course for testing",
         category: "JAVASCRIPT",
         level: "BEGINNER",
@@ -64,7 +68,7 @@ describe("Unpublished Course Visibility Integration Tests", () => {
     const unpublishedCourse = await db.course.create({
       data: {
         title: "Unpublished Test Course",
-        slug: "unpublished-test-course",
+        slug: `unpublished-test-course-${suffix}`,
         description: "Unpublished course for testing",
         category: "TYPESCRIPT",
         level: "INTERMEDIATE",
@@ -118,8 +122,8 @@ describe("Unpublished Course Visibility Integration Tests", () => {
 
     // Mock the auth user ID to match our test user
     vi.mocked(auth.api.getSession).mockResolvedValue({
-      user: { id: testUserId, email: "visibility-test@example.com" },
-    });
+      user: { id: testUserId, email: testEmail },
+    } as never);
   });
 
   afterEach(async () => {
@@ -315,7 +319,22 @@ describe("Unpublished Course Visibility Integration Tests", () => {
     );
     expect(accessResult.canAccessCourse).toBe(false);
     expect(accessResult.isEnrolledInCourse).toBe(false);
+    // a draft course offers no first-lesson preview either (previewEnabled
+    // defaults to true: the draft must stay hidden regardless)
+    expect(accessResult.canPreviewFirstLesson).toBe(false);
     expect(accessResult.accessReason).toBe("not_enrolled");
+
+    // ...so none of its lessons can be opened
+    const draftLessons = await db.lesson.findMany({
+      where: { courseId: unpublishedCourseId },
+      select: { id: true },
+    });
+    expect(draftLessons.length).toBeGreaterThan(0);
+    for (const lesson of draftLessons) {
+      expect(await AccessService.canAccessLesson(testUserId, lesson.id)).toBe(
+        false
+      );
+    }
 
     // Verify course doesn't appear in catalog
     const catalogCourses = await getCachedCourseList({

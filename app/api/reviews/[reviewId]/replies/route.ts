@@ -6,6 +6,7 @@ import { createReplySchema } from "@/lib/validators/review-validators";
 import { db } from "@/lib/db";
 import { logger } from "@/lib/structured-logger";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { parseJsonBody } from "@/lib/utils/parse-json-body";
 
 export const runtime = "nodejs";
 
@@ -42,8 +43,12 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     // Parse and validate request body
-    const body = await request.json();
-    const validation = createReplySchema.safeParse({ ...body, reviewId });
+    const parsed = await parseJsonBody(request);
+    if (!parsed.ok) return parsed.response;
+    const validation = createReplySchema.safeParse({
+      ...(parsed.body as object),
+      reviewId,
+    });
 
     if (!validation.success) {
       return NextResponse.json(

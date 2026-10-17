@@ -21,7 +21,10 @@ export async function getUserCoursesProgress(userId: string): Promise<CourseProg
     const totalLessons = lessons.length;
     if (totalLessons === 0) continue;
     const progresses = await db.progress.findMany({ where: { userId, lesson: { courseId: c.courseId } }, select: { lessonId: true, completed: true, watchTime: true } });
-    const completedSet = new Set(progresses.filter(p=>p.completed).map(p=>p.lessonId));
+    // Only published lessons count: progress left on a lesson that was unpublished
+    // since must not push the percentage above 100%
+    const publishedIds = new Set(lessons.map(l => l.id));
+    const completedSet = new Set(progresses.filter(p => p.completed && publishedIds.has(p.lessonId)).map(p => p.lessonId));
     const completedLessons = completedSet.size;
     const percent = Math.round((completedLessons / totalLessons) * 100);
     const totalDurationSec = lessons.reduce((a,l)=> a + (l.duration || 0), 0);

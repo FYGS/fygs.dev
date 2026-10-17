@@ -1,524 +1,267 @@
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterAll } from "vitest";
 import { db } from "@/lib/db";
-import { createTestEnvironment, TestDatabase } from "../../utils/test-database";
+import { AccessService } from "@/lib/access-service";
+import { CourseAccessTier, Role } from "@/lib/generated/prisma/client";
+import {
+  createCourse,
+  createSubscription,
+  createUser,
+  enroll,
+} from "../../support/factories";
+import { resetDatabase } from "../../support/test-db";
 
-// Service for handling premium lesson preview logic
-class PremiumPreviewService {
-  static async canPreviewFirstLesson(
-    userId: string,
-    courseId: string
-  ): Promise<boolean> {
-    const course = await db.course.findUnique({
-      where: { id: courseId },
-      include: {
-        lessons: {
-          orderBy: { order: "asc" },
-          take: 1,
-        },
-      },
-    });
+/**
+ * T114: first-lesson preview of premium courses, through the real AccessService.
+ *
+ * Rules (lib/access-service.ts): every course is enrollment-gated. The one
+ * exception is the preview: a PREMIUM course with previewEnabled lets a visitor
+ * (enrolled or not, subscribed or not) watch its first published lesson, and only
+ * that one. FREE courses have no preview, they simply need an enrollment.
+ */
 
-    if (!course || !course.published) return false;
-    if (course.accessTier === "FREE") return true;
-
-    // For PREMIUM courses, check if user has subscription or enrollment
-    const user = await db.user.findUnique({
-      where: { id: userId },
-      include: {
-        subscriptions: true,
-        enrollments: {
-          where: { courseId },
-        },
-      },
-    });
-
-    if (!user) return false;
-
-    // Admin always has access
-    if (user.role === "ADMIN") return true;
-
-    // If enrolled, can access
-    if (user.enrollments.length > 0) return true;
-
-    // If has active subscription, can preview first lesson
-    const activeSubscription = user.subscriptions.find(
-      (sub) => sub.status === "ACTIVE" && !sub.cancelAtPeriodEnd
-    );
-    if (activeSubscription) return true;
-
-    // Otherwise, can still preview first lesson for PREMIUM courses
-    return course.accessTier === "PREMIUM";
-  }
-
-  static async getProgressRecord(userId: string, courseId: string) {
-    // Progress is linked to lessons, so we need to find progress for any lesson in the course
-    return await db.progress.findFirst({
-      where: {
-        userId,
-        lesson: {
-          courseId: courseId,
-        },
-      },
-    });
-  }
-
-  static async hasEnrollment(
-    userId: string,
-    courseId: string
-  ): Promise<boolean> {
-    const enrollment = await db.enrollment.findFirst({
-      where: {
-        userId,
-        courseId,
-      },
-    });
-    return !!enrollment;
-  }
+let lessonCounter = 0;
+function createLesson(
+  courseId: string,
+  order: number,
+  published = true
+): Promise<{ id: string }> {
+  lessonCounter += 1;
+  return db.lesson.create({
+    data: {
+      title: `Lesson ${order}`,
+      slug: `lesson-${order}-${lessonCounter}`,
+      content: `Content of lesson ${order}`,
+      order,
+      courseId,
+      published,
+    },
+    select: { id: true },
+  });
 }
 
-describe("T114: Premium First Lesson Preview Tests", () => {
-  const testEnv = createTestEnvironment();
+/** A premium course with two published lessons. */
+async function premiumCourseWithLessons(previewEnabled = true) {
+  const course = await createCourse({
+    accessTier: CourseAccessTier.PREMIUM,
+    previewEnabled,
+  });
+  const first = await createLesson(course.id, 1);
+  const second = await createLesson(course.id, 2);
+  return { course, first, second };
+}
 
-  afterEach(async () => {
-    await testEnv.cleanup();
+const getProgressRecord = (userId: string, courseId: string) =>
+  db.progress.findFirst({ where: { userId, lesson: { courseId } } });
+
+// leave an empty database for the suites that run next
+afterAll(async () => {
+  await resetDatabase(db);
+});
+
+describe("T114: Premium First Lesson Preview Tests", () => {
+  beforeEach(async () => {
+    await resetDatabase(db);
   });
 
   describe("Premium Course Preview Access", () => {
     it("non-subscribed user can preview first lesson of premium course", async () => {
-      const user = await db.user.create({
-        data: {
-          email: TestDatabase.getUniqueEmail("preview"),
-          name: "Preview User",
-          role: "STUDENT",
-        },
-      });
-      testEnv.trackUser(user.id);
+      const user = await createUser();
+      const { course, first, second } = await premiumCourseWithLessons();
 
-      const course = await db.course.create({
-        data: {
-          title: "Premium Preview Course",
-          slug: TestDatabase.getUniqueSlug("premium-preview"),
-          description: "Course for testing preview access",
-          category: "FULLSTACK",
-          level: "BEGINNER",
-          accessTier: "PREMIUM",
-          published: true,
-        },
-      });
-      testEnv.trackCourse(course.id);
-
-      const lesson = await db.lesson.create({
-        data: {
-          title: "First Lesson",
-          slug: TestDatabase.getUniqueSlug("first-lesson"),
-          content: "Preview content",
-          order: 1,
-          courseId: course.id,
-          published: true,
-        },
-      });
-      testEnv.trackLesson(lesson.id);
-
-      const canPreview = await PremiumPreviewService.canPreviewFirstLesson(
-        user.id,
-        course.id
+      expect(await AccessService.canAccessLesson(user.id, first.id)).toBe(true);
+      // ...but only the first one
+      expect(await AccessService.canAccessLesson(user.id, second.id)).toBe(
+        false
       );
-      expect(canPreview).toBe(true);
+
+      const access = await AccessService.checkCourseAccess(user.id, course.id);
+      expect(access).toMatchObject({
+        canPreviewFirstLesson: true,
+        canAccessCourse: false,
+        accessReason: "preview_only",
+      });
     });
 
-    it("subscribed user can preview first lesson of premium course", async () => {
-      const user = await db.user.create({
-        data: {
-          email: TestDatabase.getUniqueEmail("subscribed"),
-          name: "Subscribed User",
-          role: "STUDENT",
-        },
-      });
-      testEnv.trackUser(user.id);
+    it("subscribed user can preview first lesson of premium course (the subscription does not enroll)", async () => {
+      const user = await createUser();
+      await createSubscription(user.id, { priceId: "price_premium" });
+      const { course, first, second } = await premiumCourseWithLessons();
 
-      await db.subscription.create({
-        data: {
-          userId: user.id,
-          plan: "PREMIUM",
-          status: "ACTIVE",
-          priceId: "price_premium_monthly",
-          currentPeriodStart: new Date(),
-          currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        },
-      });
-
-      const course = await db.course.create({
-        data: {
-          title: "Premium Subscribed Course",
-          slug: TestDatabase.getUniqueSlug("premium-subscribed"),
-          description: "Course for subscribed users",
-          category: "BACKEND",
-          level: "INTERMEDIATE",
-          accessTier: "PREMIUM",
-          published: true,
-        },
-      });
-      testEnv.trackCourse(course.id);
-
-      const canPreview = await PremiumPreviewService.canPreviewFirstLesson(
-        user.id,
-        course.id
+      expect(await AccessService.canAccessLesson(user.id, first.id)).toBe(true);
+      expect(await AccessService.canAccessLesson(user.id, second.id)).toBe(
+        false
       );
-      expect(canPreview).toBe(true);
+
+      const access = await AccessService.checkCourseAccess(user.id, course.id);
+      expect(access).toMatchObject({
+        hasActiveSubscription: true,
+        isEnrolledInCourse: false,
+        canPreviewFirstLesson: true,
+      });
     });
 
-    it("enrolled user can preview first lesson of premium course", async () => {
-      const user = await db.user.create({
-        data: {
-          email: TestDatabase.getUniqueEmail("enrolled"),
-          name: "Enrolled User",
-          role: "STUDENT",
-        },
-      });
-      testEnv.trackUser(user.id);
+    it("enrolled user can access every lesson of the premium course", async () => {
+      const user = await createUser();
+      const { course, first, second } = await premiumCourseWithLessons();
+      await enroll(user.id, course.id);
 
-      const course = await db.course.create({
-        data: {
-          title: "Premium Enrolled Course",
-          slug: TestDatabase.getUniqueSlug("premium-enrolled"),
-          description: "Course for enrolled testing",
-          category: "FRONTEND",
-          level: "ADVANCED",
-          accessTier: "PREMIUM",
-          published: true,
-        },
-      });
-      testEnv.trackCourse(course.id);
+      expect(await AccessService.canAccessLesson(user.id, first.id)).toBe(true);
+      expect(await AccessService.canAccessLesson(user.id, second.id)).toBe(true);
 
-      await db.enrollment.create({
-        data: {
-          userId: user.id,
-          courseId: course.id,
-          enrolledAt: new Date(),
-        },
+      const access = await AccessService.checkCourseAccess(user.id, course.id);
+      expect(access).toMatchObject({
+        canAccessCourse: true,
+        canPreviewFirstLesson: false, // a preview only exists for those locked out
+        accessReason: "ok",
       });
+    });
 
-      const canPreview = await PremiumPreviewService.canPreviewFirstLesson(
-        user.id,
-        course.id
-      );
-      expect(canPreview).toBe(true);
+    it("no preview when the course has previewEnabled turned off", async () => {
+      const user = await createUser();
+      const { course, first } = await premiumCourseWithLessons(false);
+
+      expect(await AccessService.canAccessLesson(user.id, first.id)).toBe(false);
+      expect(
+        (await AccessService.checkCourseAccess(user.id, course.id)).accessReason
+      ).toBe("not_enrolled");
     });
   });
 
   describe("Progress Record Verification", () => {
     it("no progress record exists before enrollment for premium preview", async () => {
-      const user = await db.user.create({
-        data: {
-          email: TestDatabase.getUniqueEmail("no-progress"),
-          name: "No Progress User",
-          role: "STUDENT",
-        },
-      });
-      testEnv.trackUser(user.id);
+      const user = await createUser();
+      const { course, first } = await premiumCourseWithLessons();
 
-      const course = await db.course.create({
-        data: {
-          title: "No Progress Course",
-          slug: TestDatabase.getUniqueSlug("no-progress"),
-          description: "Course for progress testing",
-          category: "FULLSTACK",
-          level: "BEGINNER",
-          accessTier: "PREMIUM",
-          published: true,
-        },
-      });
-      testEnv.trackCourse(course.id);
-
-      // Verify no progress record exists
-      const progress = await PremiumPreviewService.getProgressRecord(
-        user.id,
-        course.id
+      // Previewing is a read: it leaves no progress and no enrollment behind
+      expect(await getProgressRecord(user.id, course.id)).toBeNull();
+      expect(await AccessService.isEnrolledInCourse(user.id, course.id)).toBe(
+        false
       );
-      expect(progress).toBeNull();
-
-      // Verify no enrollment exists
-      const hasEnrollment = await PremiumPreviewService.hasEnrollment(
-        user.id,
-        course.id
+      expect(await AccessService.canAccessLesson(user.id, first.id)).toBe(true);
+      expect(await getProgressRecord(user.id, course.id)).toBeNull();
+      expect(await AccessService.isEnrolledInCourse(user.id, course.id)).toBe(
+        false
       );
-      expect(hasEnrollment).toBe(false);
-
-      // But preview should still be accessible
-      const canPreview = await PremiumPreviewService.canPreviewFirstLesson(
-        user.id,
-        course.id
-      );
-      expect(canPreview).toBe(true);
     });
 
     it("progress record can exist after enrollment for premium course", async () => {
-      const user = await db.user.create({
-        data: {
-          email: TestDatabase.getUniqueEmail("with-progress"),
-          name: "Progress User",
-          role: "STUDENT",
-        },
-      });
-      testEnv.trackUser(user.id);
+      const user = await createUser();
+      const { course, first } = await premiumCourseWithLessons();
+      await enroll(user.id, course.id);
 
-      const course = await db.course.create({
-        data: {
-          title: "Progress Course",
-          slug: TestDatabase.getUniqueSlug("with-progress"),
-          description: "Course for progress after enrollment",
-          category: "BACKEND",
-          level: "INTERMEDIATE",
-          accessTier: "PREMIUM",
-          published: true,
-        },
-      });
-      testEnv.trackCourse(course.id);
-
-      const lesson = await db.lesson.create({
-        data: {
-          title: "Progress Lesson",
-          slug: TestDatabase.getUniqueSlug("progress-lesson"),
-          content: "Lesson with progress",
-          order: 1,
-          courseId: course.id,
-          published: true,
-        },
-      });
-      testEnv.trackLesson(lesson.id);
-
-      // Create enrollment first
-      await db.enrollment.create({
-        data: {
-          userId: user.id,
-          courseId: course.id,
-          enrolledAt: new Date(),
-        },
-      });
-
-      // Now create progress record
       await db.progress.create({
         data: {
           userId: user.id,
-          lessonId: lesson.id,
+          lessonId: first.id,
           completed: true,
           completedAt: new Date(),
+          watchTime: 120,
         },
       });
 
-      // Verify progress exists after enrollment
-      const foundProgress = await PremiumPreviewService.getProgressRecord(
-        user.id,
-        course.id
-      );
+      const foundProgress = await getProgressRecord(user.id, course.id);
       expect(foundProgress).toBeTruthy();
       expect(foundProgress?.completed).toBe(true);
-
-      // Preview should still be accessible
-      const canPreview = await PremiumPreviewService.canPreviewFirstLesson(
-        user.id,
-        course.id
-      );
-      expect(canPreview).toBe(true);
+      expect(await AccessService.canAccessLesson(user.id, first.id)).toBe(true);
     });
   });
 
   describe("Free Course Comparison", () => {
-    it("free course first lesson is always accessible", async () => {
-      const user = await db.user.create({
-        data: {
-          email: TestDatabase.getUniqueEmail("free-user"),
-          name: "Free User",
-          role: "STUDENT",
-        },
-      });
-      testEnv.trackUser(user.id);
+    it("free course first lesson needs an enrollment, there is no preview", async () => {
+      const user = await createUser();
+      const course = await createCourse({ accessTier: CourseAccessTier.FREE });
+      const lesson = await createLesson(course.id, 1);
 
-      const course = await db.course.create({
-        data: {
-          title: "Free Course",
-          slug: TestDatabase.getUniqueSlug("free-course"),
-          description: "Free course for comparison",
-          category: "FRONTEND",
-          level: "BEGINNER",
-          accessTier: "FREE",
-          published: true,
-        },
-      });
-      testEnv.trackCourse(course.id);
+      expect(await AccessService.canAccessLesson(user.id, lesson.id)).toBe(false);
+      expect(
+        (await AccessService.checkCourseAccess(user.id, course.id))
+          .canPreviewFirstLesson
+      ).toBe(false);
 
-      const canPreview = await PremiumPreviewService.canPreviewFirstLesson(
-        user.id,
-        course.id
-      );
-      expect(canPreview).toBe(true);
+      await enroll(user.id, course.id);
+      expect(await AccessService.canAccessLesson(user.id, lesson.id)).toBe(true);
     });
   });
 
   describe("Admin and Edge Cases", () => {
-    it("admin can preview any premium course first lesson", async () => {
-      const admin = await db.user.create({
-        data: {
-          email: TestDatabase.getUniqueEmail("admin"),
-          name: "Admin User",
-          role: "ADMIN",
-        },
-      });
-      testEnv.trackUser(admin.id);
+    it("admin gets the same first-lesson preview as anybody (not enrolled)", async () => {
+      const admin = await createUser({ role: Role.ADMIN });
+      const { first, second } = await premiumCourseWithLessons();
 
-      const course = await db.course.create({
-        data: {
-          title: "Admin Access Course",
-          slug: TestDatabase.getUniqueSlug("admin-access"),
-          description: "Course for admin access testing",
-          category: "BACKEND",
-          level: "EXPERT",
-          accessTier: "PREMIUM",
-          published: true,
-        },
-      });
-      testEnv.trackCourse(course.id);
-
-      const canPreview = await PremiumPreviewService.canPreviewFirstLesson(
-        admin.id,
-        course.id
+      expect(await AccessService.canAccessLesson(admin.id, first.id)).toBe(true);
+      // admin viewing of the rest is a route-level decision, not an entitlement
+      expect(await AccessService.canAccessLesson(admin.id, second.id)).toBe(
+        false
       );
-      expect(canPreview).toBe(true);
     });
 
-    it("unpublished premium course is not previewable", async () => {
-      const user = await db.user.create({
-        data: {
-          email: TestDatabase.getUniqueEmail("unpublished"),
-          name: "Unpublished User",
-          role: "STUDENT",
-        },
+    it("the preview lesson is the first PUBLISHED lesson", async () => {
+      const user = await createUser();
+      const course = await createCourse({
+        accessTier: CourseAccessTier.PREMIUM,
+        previewEnabled: true,
       });
-      testEnv.trackUser(user.id);
+      const draft = await createLesson(course.id, 1, false);
+      const published = await createLesson(course.id, 2);
 
-      const course = await db.course.create({
-        data: {
-          title: "Unpublished Course",
-          slug: TestDatabase.getUniqueSlug("unpublished"),
-          description: "Unpublished course",
-          category: "FULLSTACK",
-          level: "INTERMEDIATE",
-          accessTier: "PREMIUM",
-          published: false,
-        },
-      });
-      testEnv.trackCourse(course.id);
-
-      const canPreview = await PremiumPreviewService.canPreviewFirstLesson(
-        user.id,
-        course.id
+      expect(await AccessService.canAccessLesson(user.id, draft.id)).toBe(false);
+      expect(await AccessService.canAccessLesson(user.id, published.id)).toBe(
+        true
       );
-      expect(canPreview).toBe(false);
     });
 
-    it("non-existent user cannot preview", async () => {
-      const course = await db.course.create({
-        data: {
-          title: "No User Course",
-          slug: TestDatabase.getUniqueSlug("no-user"),
-          description: "Course for non-existent user test",
-          category: "FRONTEND",
-          level: "BEGINNER",
-          accessTier: "PREMIUM",
-          published: true,
-        },
-      });
-      testEnv.trackCourse(course.id);
+    it("an unknown user id is treated like any visitor that is not enrolled", async () => {
+      const { first, second } = await premiumCourseWithLessons();
 
-      const canPreview = await PremiumPreviewService.canPreviewFirstLesson(
-        "non-existent-user-id",
-        course.id
+      // preview needs no account; nothing is created for the unknown id
+      expect(await AccessService.canAccessLesson("non-existent-user", first.id)).toBe(
+        true
       );
-      expect(canPreview).toBe(false);
+      expect(await AccessService.canAccessLesson("non-existent-user", second.id)).toBe(
+        false
+      );
+      expect(await db.enrollment.count()).toBe(0);
+      expect(await db.progress.count()).toBe(0);
     });
 
-    it("non-existent course cannot be previewed", async () => {
-      const user = await db.user.create({
-        data: {
-          email: TestDatabase.getUniqueEmail("no-course"),
-          name: "No Course User",
-          role: "STUDENT",
-        },
-      });
-      testEnv.trackUser(user.id);
+    it("non-existent lesson or course cannot be previewed", async () => {
+      const user = await createUser();
 
-      const canPreview = await PremiumPreviewService.canPreviewFirstLesson(
-        user.id,
-        "non-existent-course-id"
+      expect(await AccessService.canAccessLesson(user.id, "non-existent-lesson")).toBe(
+        false
       );
-      expect(canPreview).toBe(false);
+      expect(
+        (await AccessService.checkCourseAccess(user.id, "non-existent-course"))
+          .canPreviewFirstLesson
+      ).toBe(false);
     });
   });
 
   describe("Preview Access Flow Verification", () => {
     it("verifies complete preview flow for premium course", async () => {
-      const user = await db.user.create({
-        data: {
-          email: TestDatabase.getUniqueEmail("flow"),
-          name: "Flow User",
-          role: "STUDENT",
-        },
-      });
-      testEnv.trackUser(user.id);
-
-      const course = await db.course.create({
-        data: {
-          title: "Flow Course",
-          slug: TestDatabase.getUniqueSlug("flow"),
-          description: "Course for complete flow testing",
-          category: "FULLSTACK",
-          level: "INTERMEDIATE",
-          accessTier: "PREMIUM",
-          published: true,
-        },
-      });
-      testEnv.trackCourse(course.id);
-
-      const lesson = await db.lesson.create({
-        data: {
-          title: "Flow Lesson",
-          slug: TestDatabase.getUniqueSlug("flow-lesson"),
-          content: "Lesson for flow testing",
-          order: 1,
-          courseId: course.id,
-          published: true,
-        },
-      });
-      testEnv.trackLesson(lesson.id);
+      const user = await createUser();
+      const { course, first, second } = await premiumCourseWithLessons();
 
       // 1. Initial state - no enrollment, no progress
-      expect(
-        await PremiumPreviewService.hasEnrollment(user.id, course.id)
-      ).toBe(false);
-      expect(
-        await PremiumPreviewService.getProgressRecord(user.id, course.id)
-      ).toBeNull();
+      expect(await AccessService.isEnrolledInCourse(user.id, course.id)).toBe(
+        false
+      );
+      expect(await getProgressRecord(user.id, course.id)).toBeNull();
 
-      // 2. Preview should be accessible
-      expect(
-        await PremiumPreviewService.canPreviewFirstLesson(user.id, course.id)
-      ).toBe(true);
+      // 2. Preview accessible for the first lesson only
+      expect(await AccessService.canAccessLesson(user.id, first.id)).toBe(true);
+      expect(await AccessService.canAccessLesson(user.id, second.id)).toBe(
+        false
+      );
 
-      // 3. After enrollment - still accessible, can have progress
-      await db.enrollment.create({
-        data: {
-          userId: user.id,
-          courseId: course.id,
-          enrolledAt: new Date(),
-        },
-      });
+      // 3. After enrollment - the whole course opens up
+      await enroll(user.id, course.id);
 
-      expect(
-        await PremiumPreviewService.hasEnrollment(user.id, course.id)
-      ).toBe(true);
-      expect(
-        await PremiumPreviewService.canPreviewFirstLesson(user.id, course.id)
-      ).toBe(true);
+      expect(await AccessService.isEnrolledInCourse(user.id, course.id)).toBe(
+        true
+      );
+      expect(await AccessService.canAccessLesson(user.id, first.id)).toBe(true);
+      expect(await AccessService.canAccessLesson(user.id, second.id)).toBe(true);
     });
   });
 });

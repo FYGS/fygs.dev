@@ -27,12 +27,17 @@ describe("Certificate Issuance Flow Integration Tests", () => {
   let testUserId: string;
   let courseId: string;
   let lessonIds: string[];
+  let testEmail: string;
+  // unique per test: no collision with leftovers of another test or file
+  let suffix: string;
 
   beforeEach(async () => {
+    suffix = Math.random().toString(36).slice(2, 10);
+    testEmail = `certificate-flow-test-${suffix}@example.com`;
     // Create test user
     const user = await db.user.create({
       data: {
-        email: "certificate-flow-test@example.com",
+        email: testEmail,
         name: "Certificate Flow Test User",
         emailVerified: true,
       },
@@ -43,7 +48,7 @@ describe("Certificate Issuance Flow Integration Tests", () => {
     const course = await db.course.create({
       data: {
         title: "Certificate Flow Test Course",
-        slug: "certificate-flow-test-course",
+        slug: `certificate-flow-test-course-${suffix}`,
         description: "Course for testing certificate issuance flow",
         category: "JAVASCRIPT",
         level: "BEGINNER",
@@ -90,8 +95,8 @@ describe("Certificate Issuance Flow Integration Tests", () => {
 
     // Mock the auth user ID to match our test user
     vi.mocked(auth.api.getSession).mockResolvedValue({
-      user: { id: testUserId, email: "certificate-flow-test@example.com" },
-    });
+      user: { id: testUserId, email: testEmail },
+    } as never);
   });
 
   afterEach(async () => {
@@ -114,8 +119,10 @@ describe("Certificate Issuance Flow Integration Tests", () => {
     // Step 2: Attempt certificate issuance before completion (should fail)
     const prematureCertificateResult = await issueCertificate({ courseId });
     expect(prematureCertificateResult.success).toBe(false);
-    expect(prematureCertificateResult.error).toBeDefined();
-    expect(prematureCertificateResult.message).toContain("100%");
+    expect(prematureCertificateResult.error).toBe("NOT_ELIGIBLE");
+    expect(
+      prematureCertificateResult.eligibility?.completionPercentage
+    ).toBeLessThan(100);
 
     // Step 3: Complete first lesson (partial completion)
     const firstLessonProgress = await updateLessonProgress({
@@ -129,7 +136,10 @@ describe("Certificate Issuance Flow Integration Tests", () => {
     // Verify still can't get certificate (not 100% complete)
     const partialCertificateResult = await issueCertificate({ courseId });
     expect(partialCertificateResult.success).toBe(false);
-    expect(partialCertificateResult.message).toContain("100%");
+    expect(partialCertificateResult.error).toBe("NOT_ELIGIBLE");
+    expect(
+      partialCertificateResult.eligibility?.completionPercentage
+    ).toBeLessThan(100);
 
     // Step 4: Complete second lesson
     const secondLessonProgress = await updateLessonProgress({
@@ -257,7 +267,7 @@ describe("Certificate Issuance Flow Integration Tests", () => {
     const emptyCourse = await db.course.create({
       data: {
         title: "Empty Course",
-        slug: "empty-course",
+        slug: `empty-course-${suffix}`,
         description: "Course with no lessons",
         category: "JAVASCRIPT",
         level: "BEGINNER",
@@ -272,8 +282,10 @@ describe("Certificate Issuance Flow Integration Tests", () => {
     // Attempt certificate issuance (should fail)
     const result = await issueCertificate({ courseId: emptyCourse.id });
     expect(result.success).toBe(false);
-    expect(result.error).toBeDefined();
-    expect(result.message).toContain("lessons");
+    expect(result.error).toBe("NOT_ELIGIBLE");
+    expect(
+      await db.certificate.count({ where: { courseId: emptyCourse.id } })
+    ).toBe(0);
 
     // Cleanup
     await db.enrollment.deleteMany({ where: { courseId: emptyCourse.id } });
@@ -331,7 +343,7 @@ describe("Certificate Issuance Flow Integration Tests", () => {
     const premiumCourse = await db.course.create({
       data: {
         title: "Premium Certificate Course",
-        slug: "premium-certificate-course",
+        slug: `premium-certificate-course-${suffix}`,
         description: "Premium course for certificate testing",
         category: "TYPESCRIPT",
         level: "INTERMEDIATE",
