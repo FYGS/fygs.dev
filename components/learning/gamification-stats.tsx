@@ -38,7 +38,7 @@ export function GamificationStats({
       {/* Total XP */}
       <div className="flex items-center gap-1.5">
         <Trophy className="h-5 w-5 text-purple-500" />
-        <span className="text-sm font-medium">{totalXp.toLocaleString()}</span>
+        <span className="text-sm font-medium">{totalXp.toLocaleString("en-US")}</span>
       </div>
     </div>
   );

@@ -16,7 +16,14 @@ const routes = fs.existsSync(routesArg)
   : routesArg.split(",");
 
 const browser = await chromium.launch({ channel: "chrome", headless: true });
-const ctx = await browser.newContext();
+const [vw, vh] = (process.env.VIEWPORT ?? "1280x800").split("x").map(Number);
+const ctx = await browser.newContext({
+  viewport: { width: vw, height: vh },
+  colorScheme: process.env.SCHEME ?? "dark",
+  reducedMotion: process.env.REDUCED ? "reduce" : "no-preference",
+  locale: process.env.LANG_HDR ?? "fr-FR",
+  timezoneId: process.env.TZ_ID ?? "Europe/Paris",
+});
 await ctx.addCookies([{ name: "locale_selected", value: "true", url: base }]);
 const bad = [];
 for (const route of routes) {
@@ -33,6 +40,10 @@ for (const route of routes) {
     page.on("pageerror", (e) => {
       if (/hydrat|#418|#423|#425/i.test(e.message)) msgs.push("pageerror: " + e.message);
     });
+    if (process.env.THROTTLE) {
+      const cdp = await ctx.newCDPSession(page);
+      await cdp.send("Emulation.setCPUThrottlingRate", { rate: Number(process.env.THROTTLE) });
+    }
     try {
       await page.goto(base + route, { waitUntil: "load", timeout: 180000 });
       await page.waitForTimeout(2500);

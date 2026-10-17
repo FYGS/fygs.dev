@@ -304,7 +304,7 @@ export function ComplexityCurvesVisualization() {
                           {func.label}
                         </span>
                         <span className="text-sm">
-                          {func.calculate(n).toLocaleString()}
+                          {func.calculate(n).toLocaleString("fr-FR")}
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground">
@@ -341,19 +341,19 @@ export function ComplexityCurvesVisualization() {
                       <span className="font-mono">{func.label}</span>
                     </div>
                     <div className="text-center">
-                      {func.calculate(10).toLocaleString()}
+                      {func.calculate(10).toLocaleString("fr-FR")}
                     </div>
                     <div className="text-center">
-                      {func.calculate(100).toLocaleString()}
+                      {func.calculate(100).toLocaleString("fr-FR")}
                     </div>
                     <div className="text-center">
-                      {func.calculate(1000).toLocaleString()}
+                      {func.calculate(1000).toLocaleString("fr-FR")}
                     </div>
                     <div className="text-center">
-                      {func.calculate(10000).toLocaleString()}
+                      {func.calculate(10000).toLocaleString("fr-FR")}
                     </div>
                     <div className="text-center">
-                      {func.calculate(100000).toLocaleString()}
+                      {func.calculate(100000).toLocaleString("fr-FR")}
                     </div>
                   </div>
                 ))}

@@ -134,12 +134,12 @@ export function BlogPostCard({ post, initialStats }: BlogPostCardProps) {
                 <span className="text-border/50">·</span>
                 <div className="flex items-center gap-1">
                   <Eye className="h-3 w-3" />
-                  <span>{initialStats.views.toLocaleString()}</span>
+                  <span>{initialStats.views.toLocaleString(locale)}</span>
                 </div>
                 <span className="text-border/50">·</span>
                 <div className="flex items-center gap-1">
                   <Heart className="h-3 w-3" />
-                  <span>{initialStats.likes.toLocaleString()}</span>
+                  <span>{initialStats.likes.toLocaleString(locale)}</span>
                 </div>
               </>
             )}
@@ -154,6 +154,7 @@ export function BlogPostCard({ post, initialStats }: BlogPostCardProps) {
                   year: "numeric",
                   month: "short",
                   day: "numeric",
+                  timeZone: "UTC",
                 })}
               </time>
             </div>

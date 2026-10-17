@@ -317,7 +317,7 @@ export function RealtimePerformance() {
           <div className="space-y-4">
             <div className="space-y-2">
               <label htmlFor="array-size" className="text-sm font-medium">
-                Taille du tableau: {arraySize.toLocaleString()}
+                Taille du tableau: {arraySize.toLocaleString("fr-FR")}
               </label>
               <Slider
                 id="array-size"
@@ -355,7 +355,7 @@ export function RealtimePerformance() {
             <h3 className="text-sm font-medium mb-2">Configuration</h3>
             <ul className="space-y-1 text-sm text-muted-foreground">
               <li>
-                • Taille du tableau: {arraySize.toLocaleString()} éléments
+                • Taille du tableau: {arraySize.toLocaleString("fr-FR")} éléments
               </li>
               <li>• Valeurs: nombres aléatoires entre 1 et 1000</li>
               <li>• Mesure: temps d&apos;exécution en millisecondes</li>
