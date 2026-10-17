@@ -108,7 +108,8 @@ interface UserManagementProps {
 interface ContentModerationProps {
   discussions: AdminDiscussion[];
   replies: AdminReply[];
-  onContentAction: (contentId: string, type: "discussion" | "reply", action: string) => void;
+  /** Optional: a server component cannot pass a function here (the moderation page does not). */
+  onContentAction?: (contentId: string, type: "discussion" | "reply", action: string) => void;
 }
 
 export function AdminStats({ stats }: AdminStatsProps) {
@@ -131,7 +132,7 @@ export function AdminStats({ stats }: AdminStatsProps) {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                  <p className="text-2xl font-bold">{stat.value.toLocaleString()}</p>
+                  <p className="text-2xl font-bold">{stat.value.toLocaleString("fr-FR")}</p>
                 </div>
                 <IconComponent className={cn("h-8 w-8", stat.color)} />
               </div>
@@ -413,7 +414,7 @@ export function ContentModeration({ discussions, replies, onContentAction }: Con
 
       if (result.success) {
         toast.success(`Content ${action}d successfully`);
-        onContentAction(contentId, type, action);
+        onContentAction?.(contentId, type, action);
       } else {
         toast.error(result.error || `Failed to ${action} content`);
       }
