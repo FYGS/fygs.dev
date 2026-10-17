@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { ReviewSearchService } from "@/lib/services/review-search";
+import { reviewSearchUnavailableResponse } from "@/lib/services/review-search-response";
 import { ReviewStatus } from "@/lib/generated/prisma/browser";
 import { logger } from "@/lib/structured-logger";
 
@@ -87,6 +88,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error) {
+    const unavailable = reviewSearchUnavailableResponse(error, "reviews.moderation");
+    if (unavailable) return unavailable;
+
     logger.error("Failed to fetch moderation queue", {
       metadata: {
         error: error instanceof Error ? error.message : String(error),

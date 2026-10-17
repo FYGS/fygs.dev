@@ -70,9 +70,18 @@ export class SubscriptionManagement extends StripeBilling {
   }
 
   // Immediate cancellation (not at period end) with optional refund (within grace period logic at caller)
-  async cancelImmediately(stripeSubscriptionId: string) {
+  async cancelImmediately(
+    stripeSubscriptionId: string,
+    options: { idempotencyKey?: string } = {},
+  ) {
     try {
-      await stripe.subscriptions.cancel(stripeSubscriptionId);
+      if (options.idempotencyKey) {
+        await stripe.subscriptions.cancel(stripeSubscriptionId, undefined, {
+          idempotencyKey: options.idempotencyKey,
+        });
+      } else {
+        await stripe.subscriptions.cancel(stripeSubscriptionId);
+      }
       return true;
     } catch (error) {
       console.error("Immediate cancellation failed", error);

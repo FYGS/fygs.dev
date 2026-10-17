@@ -10,6 +10,7 @@ import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { ReviewStatus, Role } from "@/lib/generated/prisma/client";
 import { __resetRateLimitMemory } from "@/lib/rate-limit";
+import { logger } from "@/lib/structured-logger";
 import { createCourse, createUser } from "../../support/factories";
 import { resetDatabase } from "../../support/test-db";
 
@@ -826,13 +827,13 @@ describe("Review API Integration Tests", () => {
       }
     });
 
-    it("should serve an empty list (not an error) when the review search fails", async () => {
-      // ReviewSearchService deliberately degrades to an empty result
+    it("should answer 503 with Retry-After (not an empty 200) when the review search fails", async () => {
       const { course } = await seedCourse();
       await seedReview(course.id);
       const spy = vi
         .spyOn(db.review, "count")
-        .mockRejectedValueOnce(new Error("connection lost"));
+        .mockRejectedValueOnce(new Error("connection lost for user@example.com"));
+      const logSpy = vi.spyOn(logger, "error").mockImplementation(() => {});
 
       try {
         const response = await getReviews(
@@ -841,12 +842,32 @@ describe("Review API Integration Tests", () => {
         const data = await response.json();
 
         expect(spy).toHaveBeenCalled();
-        expect(response.status).toBe(200);
-        expect(data.reviews).toEqual([]);
-        expect(data.pagination.totalCount).toBe(0);
+        expect(response.status).toBe(503);
+        expect(Number(response.headers.get("Retry-After"))).toBeGreaterThan(0);
+        expect(data.reviews).toBeUndefined();
+        expect(data.error).toEqual(expect.any(String));
+        // structured log, without the raw (possibly PII-bearing) driver message
+        expect(logSpy).toHaveBeenCalledWith(
+          "Review search unavailable",
+          expect.anything(),
+        );
+        expect(JSON.stringify(logSpy.mock.calls)).not.toContain("user@example.com");
       } finally {
         spy.mockRestore();
+        logSpy.mockRestore();
       }
+    });
+
+    it("should still answer 200 with an empty list when nothing matches", async () => {
+      const { course } = await seedCourse();
+      const response = await getReviews(
+        new NextRequest(`${BASE}?courseId=${course.id}`),
+      );
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.reviews).toEqual([]);
+      expect(data.pagination.totalCount).toBe(0);
     });
 
     it.each([

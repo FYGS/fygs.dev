@@ -22,15 +22,25 @@ export const metadata: Metadata = {
 async function getModerationQueue() {
   try {
     const result = await ReviewSearchService.getModerationQueue();
-    return result;
+    return { ...result, unavailable: false };
   } catch (error) {
-    console.error("Error fetching moderation queue:", error);
-    return { reviews: [], pagination: { totalCount: 0 } };
+    console.error(
+      "Error fetching moderation queue:",
+      error instanceof Error ? error.name : "unknown",
+    );
+    // An outage must not look like an empty queue
+    return {
+      reviews: [] as Awaited<
+        ReturnType<typeof ReviewSearchService.getModerationQueue>
+      >["reviews"],
+      pagination: { totalCount: 0 },
+      unavailable: true,
+    };
   }
 }
 
 export default async function AdminReviewsModerationPage() {
-  const { reviews, pagination } = await getModerationQueue();
+  const { reviews, pagination, unavailable } = await getModerationQueue();
 
   return (
     <div className="space-y-6">
@@ -47,6 +57,17 @@ export default async function AdminReviewsModerationPage() {
           {pagination.totalCount} en attente
         </Badge>
       </div>
+
+      {unavailable && (
+        <div
+          role="alert"
+          className="rounded-lg border border-red-500/40 bg-red-900/20 p-4 text-sm text-red-300"
+        >
+          La file de modération est momentanément indisponible. Le nombre
+          d&apos;avis en attente affiché n&apos;est pas fiable, réessayez dans
+          quelques instants.
+        </div>
+      )}
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

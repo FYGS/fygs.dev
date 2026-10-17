@@ -60,6 +60,24 @@ export interface ReviewSearchResult {
   };
 }
 
+/**
+ * The review search could not be answered (database down, schema drift, ...).
+ * The original error is kept as `cause` for diagnostics; its message may embed
+ * query details, so callers must not log it verbatim.
+ */
+export class ReviewSearchUnavailableError extends Error {
+  readonly code: string | undefined;
+
+  constructor(cause: unknown) {
+    super("Review search is temporarily unavailable", { cause });
+    this.name = "ReviewSearchUnavailableError";
+    this.code =
+      cause && typeof cause === "object" && "code" in cause
+        ? String((cause as { code?: unknown }).code)
+        : undefined;
+  }
+}
+
 export class ReviewSearchService {
   /**
    * Search reviews with advanced filtering and sorting
@@ -175,67 +193,10 @@ export class ReviewSearchService {
 
       return result;
     } catch (error) {
-      // Graceful compatibility fallback: some environments may not have
-      // the Review.status column migrated yet.
-      if (this.isMissingReviewStatusColumnError(error)) {
-        // If caller explicitly relies on status filtering (e.g. moderation queue),
-        // return an empty result instead of incorrect data.
-        if (filters.status !== undefined) {
-          console.warn(
-            "[ReviewSearchService.searchReviews] Review.status column missing; returning empty status-filtered result.",
-          );
-          return {
-            reviews: [],
-            pagination: {
-              page,
-              limit,
-              totalCount: 0,
-              totalPages: 0,
-              hasNextPage: false,
-              hasPrevPage: false,
-            },
-          };
-        }
-      }
-
-      console.error("[ReviewSearchService.searchReviews] Query failed:", error);
-      return {
-        reviews: [],
-        pagination: {
-          page,
-          limit,
-          totalCount: 0,
-          totalPages: 0,
-          hasNextPage: false,
-          hasPrevPage: false,
-        },
-      };
+      // An empty result must mean "no review matches", never "the query failed":
+      // callers decide how to degrade (503 for the API, a banner for admin pages).
+      throw new ReviewSearchUnavailableError(error);
     }
-  }
-
-  private static isMissingReviewStatusColumnError(error: unknown): boolean {
-    if (!error || typeof error !== "object") {
-      return false;
-    }
-
-    const prismaError = error as {
-      code?: string;
-      message?: string;
-      meta?: { column?: string };
-    };
-
-    if (prismaError.code !== "P2022") {
-      return false;
-    }
-
-    const message = prismaError.message || "";
-    const column = prismaError.meta?.column || "";
-
-    return (
-      message.includes("Review.status") ||
-      message.includes("column `Review.status`") ||
-      column.includes("Review.status")
-    );
   }
 
   /**

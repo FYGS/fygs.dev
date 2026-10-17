@@ -193,6 +193,43 @@ export class ReviewContentValidator {
   ];
 
   /**
+   * Whole-word matcher per forbidden term (Unicode-aware, case-insensitive).
+   * A term only matches when it is not glued to a letter, mark, digit or
+   * underscore on a side where the term itself starts/ends with one, so
+   * "ass" no longer matches "class" or "assistant", while "@gmail.com" still
+   * matches inside "john@gmail.com". Spaces inside a phrase match any run of
+   * whitespace.
+   */
+  private static forbiddenMatchers:
+    | ReadonlyArray<{ word: string; regex: RegExp }>
+    | undefined;
+
+  private static buildForbiddenMatchers() {
+    const wordChar = String.raw`[\p{L}\p{M}\p{N}_]`;
+    return this.FORBIDDEN_WORDS.map((word) => {
+      const escaped = word
+        .trim()
+        .split(/\s+/)
+        .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`))
+        .join(String.raw`\s+`);
+      const left = new RegExp(`^${wordChar}`, "u").test(word)
+        ? `(?<!${wordChar})`
+        : "";
+      const right = new RegExp(`${wordChar}$`, "u").test(word)
+        ? `(?!${wordChar})`
+        : "";
+      return { word, regex: new RegExp(`${left}${escaped}${right}`, "iu") };
+    });
+  }
+
+  static findForbiddenWords(content: string): string[] {
+    this.forbiddenMatchers ??= this.buildForbiddenMatchers();
+    return this.forbiddenMatchers
+      .filter(({ regex }) => regex.test(content))
+      .map(({ word }) => word);
+  }
+
+  /**
    * Validate review content for spam and inappropriate content
    */
   static validateContent(content: string): {
@@ -204,10 +241,7 @@ export class ReviewContentValidator {
     let confidence = 1.0;
 
     // Check forbidden words
-    const lowerContent = content.toLowerCase();
-    const forbiddenFound = this.FORBIDDEN_WORDS.filter((word) =>
-      lowerContent.includes(word.toLowerCase())
-    );
+    const forbiddenFound = this.findForbiddenWords(content);
 
     if (forbiddenFound.length > 0) {
       issues.push(`Contenu inapproprié détecté: ${forbiddenFound.join(", ")}`);

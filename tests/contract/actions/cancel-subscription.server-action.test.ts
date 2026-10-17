@@ -104,7 +104,8 @@ describe("Cancel Subscription Server Action Contract Tests", () => {
       expect(stored.status).toBe(SubscriptionStatus.CANCELED);
       expect(stripe.cancelImmediately).toHaveBeenCalledTimes(1);
       expect(stripe.cancelImmediately).toHaveBeenCalledWith(
-        stored.stripeSubscriptionId
+        stored.stripeSubscriptionId,
+        { idempotencyKey: `cancel:${activeSubscriptionId}:immediate` }
       );
       expect(stripe.cancelSubscription).not.toHaveBeenCalled();
     });
@@ -397,6 +398,59 @@ describe("Cancel Subscription Server Action Contract Tests", () => {
           })
         ).status
       ).toBe(SubscriptionStatus.ACTIVE);
+    });
+  });
+
+  describe("Concurrent requests", () => {
+    test("two simultaneous immediate cancellations call Stripe once and both succeed", async () => {
+      // Make Stripe slow so the second request really overlaps the first
+      stripe.cancelImmediately.mockImplementation(
+        () => new Promise((resolve) => setTimeout(() => resolve(true), 150))
+      );
+
+      const results = await Promise.all([
+        cancelSubscription({ immediate: true }),
+        cancelSubscription({ immediate: true }),
+      ]);
+
+      expect(results.map((r) => r.success)).toEqual([true, true]);
+      expect(results.filter((r) => r.alreadyCancelled)).toHaveLength(1);
+      for (const r of results) {
+        expect(r.subscription?.status).toBe("CANCELED");
+      }
+      expect(stripe.cancelImmediately).toHaveBeenCalledTimes(1);
+      expect(
+        await db.invoiceAudit.count({ where: { userId: user.id } })
+      ).toBe(1);
+    });
+
+    test("two simultaneous period-end cancellations call Stripe once", async () => {
+      stripe.cancelSubscription.mockImplementation(
+        () => new Promise((resolve) => setTimeout(() => resolve(true), 150))
+      );
+
+      const results = await Promise.all([
+        cancelSubscription({ immediate: false }),
+        cancelSubscription({ immediate: false }),
+      ]);
+
+      expect(results.map((r) => r.success)).toEqual([true, true]);
+      expect(stripe.cancelSubscription).toHaveBeenCalledTimes(1);
+      expect(stripe.cancelImmediately).not.toHaveBeenCalled();
+    });
+
+    test("a Stripe failure releases the claim so the user can retry", async () => {
+      stripe.cancelImmediately.mockRejectedValueOnce(new Error("stripe down"));
+
+      const failed = await cancelSubscription({ immediate: true });
+      expect(failed).toMatchObject({ success: false, error: "INTERNAL_ERROR" });
+      expect(
+        (await db.subscription.findUniqueOrThrow({ where: { id: activeSubscriptionId } })).status
+      ).toBe(SubscriptionStatus.ACTIVE);
+
+      const retried = await cancelSubscription({ immediate: true });
+      expect(retried.success).toBe(true);
+      expect(stripe.cancelImmediately).toHaveBeenCalledTimes(2);
     });
   });
 
