@@ -15,38 +15,38 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
+type QueuedMessage = { id: number; text: string; status: "queued" | "processing" | "done" };
+
+/** Starts the oldest queued message unless one is already being processed. */
+function startNext(messages: QueuedMessage[]): QueuedMessage[] {
+  if (messages.some((m) => m.status === "processing")) return messages;
+  const next = messages.find((m) => m.status === "queued");
+  if (!next) return messages;
+  return messages.map((m) => (m.id === next.id ? { ...m, status: "processing" } : m));
+}
+
 function MessageQueueDemo() {
-  const [messages, setMessages] = useState<
-    { id: number; text: string; status: "queued" | "processing" | "done" }[]
-  >([]);
+  const [messages, setMessages] = useState<QueuedMessage[]>([]);
   const [counter, setCounter] = useState(0);
-  const [processing, setProcessing] = useState(false);
 
   const enqueue = () => {
     const id = counter + 1;
     setCounter(id);
-    setMessages((prev) => [
-      ...prev,
-      { id, text: `Message #${id}`, status: "queued" },
-    ]);
+    setMessages((prev) => startNext([...prev, { id, text: `Message #${id}`, status: "queued" }]));
   };
 
+  // Finish the message being processed after a delay, then start the next one.
+  // Keyed on the processing id so that enqueueing meanwhile does not cancel the timer.
+  const processingId = messages.find((m) => m.status === "processing")?.id;
   useEffect(() => {
-    if (processing) return;
-    const next = messages.find((m) => m.status === "queued");
-    if (!next) return;
-    setProcessing(true);
-    setMessages((prev) =>
-      prev.map((m) => (m.id === next.id ? { ...m, status: "processing" } : m)),
-    );
+    if (processingId === undefined) return;
     const timer = setTimeout(() => {
       setMessages((prev) =>
-        prev.map((m) => (m.id === next.id ? { ...m, status: "done" } : m)),
+        startNext(prev.map((m) => (m.id === processingId ? { ...m, status: "done" } : m))),
       );
-      setProcessing(false);
     }, 1200);
     return () => clearTimeout(timer);
-  }, [messages, processing]);
+  }, [processingId]);
 
   return (
     <div className="space-y-6">
@@ -68,7 +68,6 @@ function MessageQueueDemo() {
           onClick={() => {
             setMessages([]);
             setCounter(0);
-            setProcessing(false);
           }}
           className="px-4 py-2 rounded-lg border border-border text-sm"
         >

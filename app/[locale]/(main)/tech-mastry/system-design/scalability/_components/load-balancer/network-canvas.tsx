@@ -6,9 +6,11 @@ import type { Request, Server } from "./types";
 interface NetworkCanvasProps {
   servers: Server[];
   requests: Request[];
+  /** Time of the last animation frame, from which request positions are interpolated */
+  now: number;
 }
 
-export function NetworkCanvas({ servers, requests }: NetworkCanvasProps) {
+export function NetworkCanvas({ servers, requests, now }: NetworkCanvasProps) {
   return (
         <div className="relative w-full h-[400px] border border-indigo-500/20 rounded-xl bg-linear-to-br from-indigo-500/5 via-background/80 to-purple-500/5 backdrop-blur-xs overflow-hidden shadow-inner">
           <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
@@ -242,7 +244,7 @@ export function NetworkCanvas({ servers, requests }: NetworkCanvasProps) {
                 const progress =
                   request.status === "processing"
                     ? Math.min(
-                        (Date.now() - (request.processingTime || 0)) / 1000,
+                        (now - (request.processingTime || 0)) / 1000,
                         1
                       )
                     : 1;

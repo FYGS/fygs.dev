@@ -21,7 +21,7 @@ import {
   RefreshCw,
   XCircle,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 
@@ -222,7 +222,7 @@ export function SortingExercises() {
   const [selectedExercise, setSelectedExercise] = useState<string>(
     exercises[0].id
   );
-  const [code, setCode] = useState<string>("");
+  const [code, setCode] = useState<string>(exercises[0].starterCode);
   const [results, setResults] = useState<
     { passed: boolean; message: string }[]
   >([]);
@@ -237,13 +237,16 @@ export function SortingExercises() {
     exercises.find((ex) => ex.id === selectedExercise) || exercises[0];
 
   // Initialiser le code lorsque l'exercice change
-  useEffect(() => {
-    setCode(exercise.starterCode);
+  const selectExercise = (id: string) => {
+    if (id === selectedExercise) return;
+    const next = exercises.find((ex) => ex.id === id) || exercises[0];
+    setSelectedExercise(id);
+    setCode(next.starterCode);
     setResults([]);
     setShowSolution(false);
     setShowHints(false);
     setCurrentHint(0);
-  }, [selectedExercise, exercise.starterCode]);
+  };
 
   // Exécuter le code
   const runCode = () => {
@@ -369,7 +372,7 @@ export function SortingExercises() {
           {/* Sélection de l'exercice */}
           <Tabs
             value={selectedExercise}
-            onValueChange={setSelectedExercise}
+            onValueChange={selectExercise}
             className="w-full"
           >
             <TabsList className="grid grid-cols-1 md:grid-cols-3 w-full">

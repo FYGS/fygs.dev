@@ -1,7 +1,7 @@
 "use client";
 
 import { useTheme } from "@/providers/theme-provider";
-import { useEffect, useState } from "react";
+import { useMounted } from "../../_hooks/use-mounted";
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -18,7 +18,7 @@ interface SkillRadarChartProps {
 
 export function SkillRadarChart({ skills }: SkillRadarChartProps) {
   const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useMounted();
 
   // Format the skills data for the radar chart
   const data = Object.entries(skills).map(([key, value]) => ({
@@ -27,11 +27,7 @@ export function SkillRadarChart({ skills }: SkillRadarChartProps) {
     fullMark: 100,
   }));
 
-  // Wait for theme to be available
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
+  // Wait for theme to be available (mounted is false until hydration is done)
   if (!mounted) {
     return (
       <div className="flex items-center justify-center h-full">

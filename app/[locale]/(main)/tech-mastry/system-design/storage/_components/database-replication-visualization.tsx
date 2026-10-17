@@ -9,16 +9,15 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Database } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ExplanationTab } from "./database-replication/explanation-tab";
 import { createTopology } from "./database-replication/lib";
+import { simulateTick, type SimulationSettings } from "./database-replication/simulation";
 import { LoadControls } from "./database-replication/load-controls";
 import { ReplicationCanvas } from "./database-replication/replication-canvas";
 import { ReplicationSelectors } from "./database-replication/replication-selectors";
 import type {
   ConsistencyModel,
-  DatabaseNode,
-  ReplicationLink,
   ReplicationType,
 } from "./database-replication/types";
 
@@ -34,11 +33,9 @@ export function DatabaseReplicationVisualization() {
   const [consistencyModel, setConsistencyModel] =
     useState<ConsistencyModel>("async");
 
-  // State for database nodes
-  const [nodes, setNodes] = useState<DatabaseNode[]>([]);
-
-  // State for replication links
-  const [links, setLinks] = useState<ReplicationLink[]>([]);
+  // State for database nodes and replication links
+  const [topology, setTopology] = useState(() => createTopology("master-slave"));
+  const { nodes, links } = topology;
 
   // State for simulated load
   const [writeLoad, setWriteLoad] = useState(30);
@@ -50,176 +47,63 @@ export function DatabaseReplicationVisualization() {
   // Timer reference for animations
   const animationTimer = useRef<NodeJS.Timeout | null>(null);
 
-  // Initialize the visualization based on replication type
+  // The tick reads the topology and the settings through refs: it runs from an
+  // interval created once per replication type, so it would otherwise see the
+  // load, consistency model and failed node of the render that created it.
+  // Every topology change goes through `commitTopology` so that the ref is the
+  // source of truth, and the tick (which draws random numbers) never runs
+  // inside a state updater, which StrictMode runs twice.
+  const topologyRef = useRef(topology);
+  const settingsRef = useRef<SimulationSettings>({ writeLoad, readLoad, consistencyModel, failedNode });
   useEffect(() => {
-    // Clear any existing animation timer
-    if (animationTimer.current) {
-      clearInterval(animationTimer.current);
-    }
+    settingsRef.current = { writeLoad, readLoad, consistencyModel, failedNode };
+  });
+  const commitTopology = useCallback((next: typeof topology) => {
+    topologyRef.current = next;
+    setTopology(next);
+  }, []);
 
-    // Reset failed node when changing replication type
+  // Switching the replication type rebuilds the topology and clears the failed node
+  const changeReplicationType = (type: ReplicationType) => {
+    if (type === replicationType) return;
+    setReplicationType(type);
     setFailedNode(null);
+    commitTopology(createTopology(type));
+  };
 
-    // Create nodes and links based on replication type
-    const { nodes: newNodes, links: newLinks } =
-      createTopology(replicationType);
-
-    setNodes(newNodes);
-    setLinks(newLinks);
-
-    // Start animation timer
-    animationTimer.current = setInterval(() => {
-      simulateOperations();
+  // Simulate database operations on a timer
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const { nodes: prevNodes, links: prevLinks } = topologyRef.current;
+      commitTopology(simulateTick(prevNodes, prevLinks, settingsRef.current, Date.now()));
     }, 2000);
+    animationTimer.current = timer;
 
     return () => {
-      if (animationTimer.current) {
-        clearInterval(animationTimer.current);
-      }
+      clearInterval(timer);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [replicationType]);
-
-  // Simulate database operations
-  const simulateOperations = () => {
-    setNodes((prevNodes) => {
-      const newNodes = [...prevNodes];
-
-      // Reset operations
-      newNodes.forEach((node) => {
-        node.operations = [];
-      });
-
-      // Simulate write operations
-      if (Math.random() * 100 < writeLoad) {
-        // Find master nodes
-        const masterNodes = newNodes.filter(
-          (node) =>
-            node.type === "master" &&
-            node.status === "active" &&
-            node.id !== failedNode
-        );
-
-        if (masterNodes.length > 0) {
-          // Select a random master for the write
-          const randomMaster =
-            masterNodes[Math.floor(Math.random() * masterNodes.length)];
-          randomMaster.operations.push("write");
-          randomMaster.lastUpdated = Date.now();
-
-          // Propagate to other nodes based on consistency model
-          if (consistencyModel === "sync" || consistencyModel === "semi-sync") {
-            // Synchronous replication - update all nodes immediately
-            setLinks((prevLinks) => {
-              const newLinks = [...prevLinks];
-
-              newLinks.forEach((link) => {
-                if (
-                  link.source === randomMaster.id &&
-                  link.status === "active"
-                ) {
-                  link.status = "syncing";
-                  link.lastSync = Date.now();
-
-                  // Find the target node and update it
-                  const targetNode = newNodes.find((n) => n.id === link.target);
-                  if (
-                    targetNode &&
-                    targetNode.status === "active" &&
-                    targetNode.id !== failedNode
-                  ) {
-                    targetNode.operations.push("sync");
-                    targetNode.lastUpdated = Date.now();
-                  }
-                }
-              });
-
-              return newLinks;
-            });
-          }
-        }
-      }
-
-      // Simulate read operations
-      if (Math.random() * 100 < readLoad) {
-        // In master-slave, reads can go to any node
-        // In master-master and multi-master, reads can also go to any node
-        const availableNodes = newNodes.filter(
-          (node) => node.status === "active" && node.id !== failedNode
-        );
-
-        if (availableNodes.length > 0) {
-          const randomNode =
-            availableNodes[Math.floor(Math.random() * availableNodes.length)];
-          randomNode.operations.push("read");
-        }
-      }
-
-      return newNodes;
-    });
-
-    // Update links status
-    setLinks((prevLinks) => {
-      const newLinks = [...prevLinks];
-
-      newLinks.forEach((link) => {
-        if (link.status === "syncing") {
-          // After some time, change syncing back to active
-          if (Date.now() - link.lastSync > 1000) {
-            link.status = "active";
-          }
-        }
-      });
-
-      return newLinks;
-    });
-  };
+  }, [replicationType, commitTopology]);
 
   // Simulate node failure
   const handleNodeFailure = (nodeId: string) => {
-    if (failedNode === nodeId) {
-      // Recover the node
-      setFailedNode(null);
+    const { nodes: prevNodes, links: prevLinks } = topologyRef.current;
+    const recover = failedNode === nodeId;
+    setFailedNode(recover ? null : nodeId);
 
-      setNodes((prevNodes) => {
-        return prevNodes.map((node) => {
-          if (node.id === nodeId) {
-            return { ...node, status: "active" };
-          }
-          return node;
-        });
-      });
-
-      setLinks((prevLinks) => {
-        return prevLinks.map((link) => {
-          if (link.source === nodeId || link.target === nodeId) {
-            return { ...link, status: "active" };
-          }
-          return link;
-        });
-      });
-    } else {
-      // Fail the node
-      setFailedNode(nodeId);
-
-      setNodes((prevNodes) => {
-        return prevNodes.map((node) => {
-          if (node.id === nodeId) {
-            return { ...node, status: "down", operations: [] };
-          }
-          return node;
-        });
-      });
-
-      setLinks((prevLinks) => {
-        return prevLinks.map((link) => {
-          if (link.source === nodeId || link.target === nodeId) {
-            return { ...link, status: "down" };
-          }
-          return link;
-        });
-      });
-    }
+    commitTopology({
+      nodes: prevNodes.map((node) =>
+        node.id === nodeId
+          ? recover
+            ? { ...node, status: "active" }
+            : { ...node, status: "down", operations: [] }
+          : node
+      ),
+      links: prevLinks.map((link) =>
+        link.source === nodeId || link.target === nodeId
+          ? { ...link, status: recover ? "active" : "down" }
+          : link
+      ),
+    });
   };
 
   return (
@@ -244,7 +128,7 @@ export function DatabaseReplicationVisualization() {
           <TabsContent value="visualization" className="space-y-6">
             <ReplicationSelectors
               replicationType={replicationType}
-              setReplicationType={setReplicationType}
+              setReplicationType={changeReplicationType}
               consistencyModel={consistencyModel}
               setConsistencyModel={setConsistencyModel}
             />

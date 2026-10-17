@@ -11,8 +11,6 @@ export function useMicroservicesSimulation(scenario: Scenario) {
 
   const [requests, setRequests] = useState<Request[]>([]);
   const [stats, setStats] = useState<ArchitectureStats>(INITIAL_STATS);
-  const [isOverloaded] = useState(false);
-  const [isFailed] = useState(false);
 
   const requestIdRef = useRef(1);
   const animationFrameRef = useRef<number | null>(null);
@@ -30,9 +28,6 @@ export function useMicroservicesSimulation(scenario: Scenario) {
   useEffect(() => {
     // Generate a new request
     const generateRequest = () => {
-      // Don't generate new requests if the system has failed
-      if (isFailed) return;
-
       // Randomly select a request type
       const newRequest = createMicroserviceRequest(requestIdRef.current++, scenario);
 
@@ -51,7 +46,7 @@ export function useMicroservicesSimulation(scenario: Scenario) {
       const nextRequests = ((prev: Request[]) => {
         // Process each request
         const updatedRequests = prev.map((request) =>
-          advanceRequest(request, timestamp, isFailed, isOverloaded)
+          advanceRequest(request, timestamp)
         );
 
         // Calculate stats
@@ -126,7 +121,7 @@ export function useMicroservicesSimulation(scenario: Scenario) {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [scenario, isFailed, isOverloaded]);
+  }, [scenario]);
 
   // Update service status based on scenario
   useEffect(() => {
@@ -146,17 +141,15 @@ export function useMicroservicesSimulation(scenario: Scenario) {
         }));
       }, 3000);
       return () => clearTimeout(timer);
-    } else {
-      // Reset all services to online
-      setServices({
-        users: { status: "online", load: 0 },
-        orders: { status: "online", load: 0 },
-        payments: { status: "online", load: 0 },
-        inventory: { status: "online", load: 0 },
-        notifications: { status: "online", load: 0 },
-      });
     }
   }, [scenario]);
+
+  // Back to the normal scenario, every service is online again (state adjusted during render)
+  const [seenScenario, setSeenScenario] = useState(scenario);
+  if (seenScenario !== scenario) {
+    setSeenScenario(scenario);
+    if (scenario === "normal") setServices(INITIAL_SERVICES);
+  }
 
   return { services, requests, stats };
 }

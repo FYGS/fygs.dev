@@ -3,7 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3, Settings } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useClientValue } from "../../../../../_hooks/use-client-value";
 
 import { AlgorithmTabs } from "./algorithm-tabs";
 import { PlaybackControls } from "./playback-controls";
@@ -13,56 +14,61 @@ import { generateSortingSteps } from "./steps";
 import { ProgressBar, StepInfo } from "./step-info";
 import type { SortingAlgorithm, SortingStep } from "./types";
 
+const NO_ITEMS: number[] = [];
+
+// Générer un tableau aléatoire
+function randomArray(size: number): number[] {
+  return Array.from({ length: size }, () => Math.floor(Math.random() * 100) + 1);
+}
+
 export function SortingVisualization() {
   // État pour la configuration
   const [arraySize, setArraySize] = useState(15);
   const [algorithm, setAlgorithm] = useState<SortingAlgorithm>("bubble");
-  const [array, setArray] = useState<number[]>([]);
+  // Le tableau aléatoire n'existe que côté client (pas de décalage d'hydratation)
+  const initialArray = useClientValue(() => randomArray(15));
+  const [generatedArray, setArray] = useState<number[] | null>(null);
+  const array = generatedArray ?? initialArray ?? NO_ITEMS;
   const [speed, setSpeed] = useState(1.5);
   const [showSettings, setShowSettings] = useState(false);
 
   // État pour la visualisation
-  const [steps, setSteps] = useState<SortingStep[]>([]);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
 
   // Référence pour le timer
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Générer un tableau aléatoire
-  const generateArray = useCallback(() => {
-    const newArray = Array.from(
-      { length: arraySize },
-      () => Math.floor(Math.random() * 100) + 1
-    );
-    setArray(newArray);
+  // Générer un tableau aléatoire (de la taille donnée)
+  const generateArray = (size: number = arraySize) => {
+    setArray(randomArray(size));
 
-    // Réinitialiser les étapes et l'index
+    // Réinitialiser l'index
     setCurrentStepIndex(0);
     setIsPlaying(false);
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-  }, [arraySize]);
+  };
 
-  // Générer les étapes en fonction de l'algorithme sélectionné
-  const generateSteps = useCallback(
+  // Les étapes dérivent de l'algorithme sélectionné et du tableau
+  const steps: SortingStep[] = useMemo(
     () => generateSortingSteps(algorithm, array),
     [algorithm, array]
   );
 
-  // Initialiser le tableau
-  useEffect(() => {
-    generateArray();
-  }, [generateArray]);
-
-  // Générer les étapes lorsque l'algorithme ou le tableau change
-  useEffect(() => {
-    const newSteps = generateSteps();
-    setSteps(newSteps);
+  // Changer d'algorithme revient à la première étape
+  const handleAlgorithmChange = (newAlgorithm: SortingAlgorithm) => {
+    setAlgorithm(newAlgorithm);
     setCurrentStepIndex(0);
-  }, [algorithm, array, generateSteps]);
+  };
+
+  // Changer la taille génère un nouveau tableau
+  const handleArraySizeChange = (size: number) => {
+    setArraySize(size);
+    generateArray(size);
+  };
 
   // Nettoyer le timer lors du démontage du composant
   useEffect(() => {
@@ -151,15 +157,15 @@ export function SortingVisualization() {
 
         <CardContent className="space-y-6">
           {/* Sélection d'algorithme */}
-          <AlgorithmTabs algorithm={algorithm} onAlgorithmChange={setAlgorithm} />
+          <AlgorithmTabs algorithm={algorithm} onAlgorithmChange={handleAlgorithmChange} />
 
           {/* Panneau de configuration */}
           <SettingsPanel
             showSettings={showSettings}
             arraySize={arraySize}
             speed={speed}
-            onGenerateArray={generateArray}
-            onArraySizeChange={setArraySize}
+            onGenerateArray={() => generateArray()}
+            onArraySizeChange={handleArraySizeChange}
             onSpeedChange={setSpeed}
           />
 

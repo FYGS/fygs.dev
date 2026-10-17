@@ -3,9 +3,11 @@ import { Progress } from "@/components/ui/progress";
 import { TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, Trophy } from "lucide-react";
+import { useState } from "react";
 import type { ProgressStats } from "./types";
 
 export function AchievementsTab({ progressData }: { progressData: ProgressStats }) {
+  const [now] = useState(() => Date.now());
   return (
     <TabsContent value="achievements" className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -75,7 +77,7 @@ export function AchievementsTab({ progressData }: { progressData: ProgressStats 
                 <div className="text-xs text-green-500 mt-1">
                   Completed on{" "}
                   {new Date(
-                    Date.now() - 1000 * 60 * 60 * 24 * 30,
+                    now - 1000 * 60 * 60 * 24 * 30,
                   ).toLocaleDateString()}
                 </div>
               </div>

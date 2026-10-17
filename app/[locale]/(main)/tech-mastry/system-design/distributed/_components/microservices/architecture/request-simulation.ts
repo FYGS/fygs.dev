@@ -43,21 +43,7 @@ export function createMicroserviceRequest(id: number, scenario: Scenario): Reque
 }
 
 // Advance one request along its path by one animation frame
-export function advanceRequest(
-  request: Request,
-  timestamp: number,
-  isFailed: boolean,
-  isOverloaded: boolean
-): Request {
-  // If the system has failed, mark all processing requests as failed
-  if (isFailed && request.status === "processing") {
-    return {
-      ...request,
-      status: "failed" as RequestStatus,
-      completionTime: timestamp,
-    };
-  }
-
+export function advanceRequest(request: Request, timestamp: number): Request {
   // Move the request along its path
   if (request.currentPathIndex < request.path.length - 1) {
     // const currentPoint = request.path[request.currentPathIndex]; // Not used
@@ -80,11 +66,7 @@ export function advanceRequest(
         newStatus = "processing" as RequestStatus;
       } else if (newIndex === request.path.length - 1) {
         // Completed the full path
-        newStatus = isOverloaded
-          ? Math.random() < 0.3
-            ? ("failed" as RequestStatus)
-            : ("completed" as RequestStatus)
-          : ("completed" as RequestStatus);
+        newStatus = "completed" as RequestStatus;
       }
 
       return {
@@ -104,8 +86,7 @@ export function advanceRequest(
     }
 
     // Otherwise, move towards the next point
-    const speed = request.speed * (isOverloaded ? 0.5 : 1); // Slow down if overloaded
-    const step = speed * 2; // Pixels per frame
+    const step = request.speed * 2; // Pixels per frame
     const moveRatio = step / distance;
 
     return {

@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Layers } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AlgorithmControls } from "./load-balancer/algorithm-controls";
 import { AlgorithmExplanation } from "./load-balancer/algorithm-explanation";
 import { initialState } from "./load-balancer/data";
@@ -30,8 +30,13 @@ import type {
 } from "./load-balancer/types";
 
 export function LoadBalancerVisualization() {
-  const [state, setState] = useState<LoadBalancerState>(initialState);
+  const [state, setState] = useState<LoadBalancerState>(() => ({
+    ...initialState,
+    servers: layoutServers(initialState.servers),
+  }));
   const [isRunning, setIsRunning] = useState(false);
+  // Time of the last animation frame, from which the canvas interpolates request positions
+  const [now, setNow] = useState(() => Date.now());
   const [requestRate, setRequestRate] = useState(1);
   const [serverCount, setServerCount] = useState(3);
   const [failureRate, setFailureRate] = useState(5);
@@ -43,52 +48,55 @@ export function LoadBalancerVisualization() {
   const animationFrameRef = useRef<number | null>(null);
   const lastRequestTimeRef = useRef(0);
 
-  // Calculate positions for visualization
-  useEffect(() => {
-    const updatedServers = layoutServers(state.servers);
+  // Every change goes through `update`, which computes the next state from a
+  // ref and commits the value: the transitions draw random numbers, so they
+  // must not run inside a state updater (StrictMode runs updaters twice).
+  const stateRef = useRef(state);
+  const update = useCallback((transition: (prev: LoadBalancerState) => LoadBalancerState) => {
+    const next = transition(stateRef.current);
+    stateRef.current = next;
+    setState(next);
+  }, []);
 
-    setState((prev) => ({
-      ...prev,
-      servers: updatedServers,
-    }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [serverCount]); // Only recalculate positions when server count changes
-
-  // Handle server count changes
-  useEffect(() => {
-    const currentCount = state.servers.length;
-
-    if (serverCount > currentCount) {
-      // Add servers
-      const newServers = [...state.servers];
-      for (let i = currentCount + 1; i <= serverCount; i++) {
-        newServers.push({
-          id: i,
-          load: 0,
-          status: "online",
-          position: { x: 0, y: 0 },
-          requests: 0,
-          failureChance: failureRate / 100,
-        });
+  // Add or remove servers (and lay them out) when the server count changes
+  const changeServerCount = (count: number) => {
+    setServerCount(count);
+    update((prev) => {
+      const currentCount = prev.servers.length;
+      if (count > currentCount) {
+        // Add servers
+        const newServers = [...prev.servers];
+        for (let i = currentCount + 1; i <= count; i++) {
+          newServers.push({
+            id: i,
+            load: 0,
+            status: "online",
+            position: { x: 0, y: 0 },
+            requests: 0,
+            failureChance: failureRate / 100,
+          });
+        }
+        return { ...prev, servers: layoutServers(newServers) };
       }
-      setState((prev) => ({ ...prev, servers: newServers }));
-    } else if (serverCount < currentCount) {
-      // Remove servers
-      const newServers = state.servers.slice(0, serverCount);
-      setState((prev) => ({ ...prev, servers: newServers }));
-    }
-  }, [serverCount, state.servers, failureRate]);
+      if (count < currentCount) {
+        // Remove servers
+        return { ...prev, servers: layoutServers(prev.servers.slice(0, count)) };
+      }
+      return prev;
+    });
+  };
 
   // Update failure rates when the slider changes
-  useEffect(() => {
-    setState((prev) => ({
+  const changeFailureRate = (rate: number) => {
+    setFailureRate(rate);
+    update((prev) => ({
       ...prev,
       servers: prev.servers.map((server) => ({
         ...server,
-        failureChance: failureRate / 100,
+        failureChance: rate / 100,
       })),
     }));
-  }, [failureRate]);
+  };
 
   // Animation loop
   useEffect(() => {
@@ -101,12 +109,12 @@ export function LoadBalancerVisualization() {
         startTime: Date.now(),
       };
 
-      setState((prev) => dispatchRequest(prev, newRequest));
+      update((prev) => dispatchRequest(prev, newRequest));
     };
 
     // Process existing requests
     const processRequests = (timestamp: number) => {
-      setState((prev) => advanceRequests(prev, timestamp, processingSpeed));
+      update((prev) => advanceRequests(prev, timestamp, processingSpeed));
     };
 
     if (!isRunning) {
@@ -126,6 +134,7 @@ export function LoadBalancerVisualization() {
 
       // Process requests
       processRequests(timestamp);
+      setNow(Date.now());
 
       // Continue animation loop
       animationFrameRef.current = requestAnimationFrame(animate);
@@ -138,21 +147,22 @@ export function LoadBalancerVisualization() {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isRunning, requestRate, processingSpeed]);
+  }, [isRunning, requestRate, processingSpeed, update]);
 
   // Reset the simulation
   const resetSimulation = () => {
     setIsRunning(false);
 
     // Preserve current server positions
+    const current = stateRef.current;
     const currentPositions: Record<number, { x: number; y: number }> = {};
-    state.servers.forEach((server) => {
+    current.servers.forEach((server) => {
       currentPositions[server.id] = server.position;
     });
 
-    setState({
+    update(() => ({
       ...initialState,
-      algorithm: state.algorithm,
+      algorithm: current.algorithm,
       servers: Array(serverCount)
         .fill(0)
         .map((_, i) => {
@@ -163,7 +173,7 @@ export function LoadBalancerVisualization() {
             status: "online" as const,
             // Use existing position if available, otherwise default to current position
             position: currentPositions[serverId] ||
-              state.servers.find((s) => s.id === serverId)?.position || {
+              current.servers.find((s) => s.id === serverId)?.position || {
                 x: 0,
                 y: 0,
               },
@@ -171,14 +181,14 @@ export function LoadBalancerVisualization() {
             failureChance: failureRate / 100,
           };
         }),
-    });
+    }));
     requestIdRef.current = 1;
     lastRequestTimeRef.current = 0;
   };
 
   // Change the load balancing algorithm
   const changeAlgorithm = (algorithm: Algorithm) => {
-    setState((prev) => ({ ...prev, algorithm }));
+    update((prev) => ({ ...prev, algorithm }));
   };
 
   return (
@@ -231,7 +241,7 @@ export function LoadBalancerVisualization() {
             />
 
             {/* Visualization Canvas */}
-            <NetworkCanvas servers={state.servers} requests={state.requests} />
+            <NetworkCanvas servers={state.servers} requests={state.requests} now={now} />
 
             {/* Controls */}
             <SimulationControls
@@ -253,9 +263,9 @@ export function LoadBalancerVisualization() {
               requestRate={requestRate}
               failureRate={failureRate}
               processingSpeed={processingSpeed}
-              onServerCountChange={setServerCount}
+              onServerCountChange={changeServerCount}
               onRequestRateChange={setRequestRate}
-              onFailureRateChange={setFailureRate}
+              onFailureRateChange={changeFailureRate}
               onProcessingSpeedChange={setProcessingSpeed}
               onBack={() => setActiveTab("visualization")}
             />

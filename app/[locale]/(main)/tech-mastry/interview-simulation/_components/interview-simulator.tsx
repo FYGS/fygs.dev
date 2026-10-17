@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ActiveInterview } from "./interview-simulator/active-interview";
 import {
   generateMockFeedback,
@@ -145,6 +145,12 @@ export function InterviewSimulator() {
     setIsAudioOn(!isAudioOn);
   };
 
+  // Always call the nextQuestion of the latest render from the timer below
+  const nextQuestionRef = useRef(nextQuestion);
+  useEffect(() => {
+    nextQuestionRef.current = nextQuestion;
+  });
+
   // Timer effect
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -154,11 +160,10 @@ export function InterviewSimulator() {
       }, 1000);
     } else if (interviewMode === "active" && timeRemaining === 0) {
       // Time's up - automatically move to next question
-      nextQuestion();
+      timer = setTimeout(() => nextQuestionRef.current(), 0);
     }
 
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [interviewMode, timeRemaining]);
 
   return (

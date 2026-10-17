@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DPVisualizationBase } from "./dp-visualization-base";
 
 interface FibonacciStep {
@@ -15,140 +15,148 @@ interface FibonacciStep {
   table?: number[];
 }
 
-export function FibonacciVisualization() {
-  const [n] = useState(5);
-  const [activeTab, setActiveTab] = useState("memoization");
-  const [steps, setSteps] = useState<FibonacciStep[]>([]);
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [speed, setSpeed] = useState(1);
+// Générer les étapes pour la mémoïsation
+function generateMemoizationSteps(n: number): FibonacciStep[] {
+  const steps: FibonacciStep[] = [];
+  const memo: Record<number, number> = {};
 
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  function fibWithSteps(n: number, callStack: number[] = []): number {
+    // Ajouter l'appel à la pile
+    const currentCallStack = [...callStack, n];
 
-  // Générer les étapes pour la mémoïsation
-  const generateMemoizationSteps = useCallback(() => {
-    const steps: FibonacciStep[] = [];
-    const memo: Record<number, number> = {};
-
-    function fibWithSteps(n: number, callStack: number[] = []): number {
-      // Ajouter l'appel à la pile
-      const currentCallStack = [...callStack, n];
-
-      // Vérifier si le résultat est déjà dans le mémo
-      if (memo[n] !== undefined) {
-        steps.push({
-          n,
-          result: memo[n],
-          callStack: currentCallStack,
-          memo: { ...memo },
-          fromCache: true,
-        });
-        return memo[n];
-      }
-
-      // Cas de base
-      if (n <= 1) {
-        const result = n;
-        memo[n] = result;
-        steps.push({
-          n,
-          result,
-          callStack: currentCallStack,
-          memo: { ...memo },
-        });
-        return result;
-      }
-
-      // Ajouter une étape avant les appels récursifs
+    // Vérifier si le résultat est déjà dans le mémo
+    if (memo[n] !== undefined) {
       steps.push({
         n,
+        result: memo[n],
         callStack: currentCallStack,
         memo: { ...memo },
+        fromCache: true,
       });
+      return memo[n];
+    }
 
-      // Appels récursifs
-      const result1 = fibWithSteps(n - 1, currentCallStack);
-      const result2 = fibWithSteps(n - 2, currentCallStack);
-
-      // Calculer et mémoriser le résultat
-      const result = result1 + result2;
+    // Cas de base
+    if (n <= 1) {
+      const result = n;
       memo[n] = result;
-
-      // Ajouter une étape avec le résultat
       steps.push({
         n,
         result,
         callStack: currentCallStack,
         memo: { ...memo },
       });
-
       return result;
     }
 
-    fibWithSteps(n);
-    return steps;
-  }, [n]);
-
-  // Générer les étapes pour la tabulation
-  const generateTabulationSteps = useCallback(() => {
-    const steps: FibonacciStep[] = [];
-    const table = new Array(n + 1).fill(0);
-
-    // Cas de base
-    table[0] = 0;
+    // Ajouter une étape avant les appels récursifs
     steps.push({
-      n: 0,
-      result: 0,
+      n,
+      callStack: currentCallStack,
+      memo: { ...memo },
+    });
+
+    // Appels récursifs
+    const result1 = fibWithSteps(n - 1, currentCallStack);
+    const result2 = fibWithSteps(n - 2, currentCallStack);
+
+    // Calculer et mémoriser le résultat
+    const result = result1 + result2;
+    memo[n] = result;
+
+    // Ajouter une étape avec le résultat
+    steps.push({
+      n,
+      result,
+      callStack: currentCallStack,
+      memo: { ...memo },
+    });
+
+    return result;
+  }
+
+  fibWithSteps(n);
+  return steps;
+}
+
+// Générer les étapes pour la tabulation
+function generateTabulationSteps(n: number): FibonacciStep[] {
+  const steps: FibonacciStep[] = [];
+  const table = new Array(n + 1).fill(0);
+
+  // Cas de base
+  table[0] = 0;
+  steps.push({
+    n: 0,
+    result: 0,
+    callStack: [],
+    memo: {},
+    table: [...table],
+  });
+
+  if (n >= 1) {
+    table[1] = 1;
+    steps.push({
+      n: 1,
+      result: 1,
       callStack: [],
       memo: {},
       table: [...table],
     });
+  }
 
-    if (n >= 1) {
-      table[1] = 1;
-      steps.push({
-        n: 1,
-        result: 1,
-        callStack: [],
-        memo: {},
-        table: [...table],
-      });
-    }
+  // Remplir la table
+  for (let i = 2; i <= n; i++) {
+    table[i] = table[i - 1] + table[i - 2];
+    steps.push({
+      n: i,
+      result: table[i],
+      callStack: [],
+      memo: {},
+      table: [...table],
+    });
+  }
 
-    // Remplir la table
-    for (let i = 2; i <= n; i++) {
-      table[i] = table[i - 1] + table[i - 2];
-      steps.push({
-        n: i,
-        result: table[i],
-        callStack: [],
-        memo: {},
-        table: [...table],
-      });
-    }
+  return steps;
+}
 
-    return steps;
-  }, [n]);
+// Générer les étapes en fonction de l'onglet actif
+function generateSteps(n: number, activeTab: string): FibonacciStep[] {
+  return activeTab === "memoization"
+    ? generateMemoizationSteps(n)
+    : generateTabulationSteps(n);
+}
 
-  // Générer les étapes en fonction de l'onglet actif
-  const generateSteps = useCallback(() => {
-    return activeTab === "memoization"
-      ? generateMemoizationSteps()
-      : generateTabulationSteps();
-  }, [activeTab, generateMemoizationSteps, generateTabulationSteps]);
+export function FibonacciVisualization() {
+  const [n] = useState(5);
+  const [activeTab, setActiveTab] = useState("memoization");
+  const [steps, setSteps] = useState<FibonacciStep[]>(() => generateSteps(n, "memoization"));
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [speed, setSpeed] = useState(1);
 
-  // Réinitialiser la visualisation
-  const handleReset = useCallback(() => {
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Réinitialiser la visualisation pour un onglet donné
+  const resetFor = (tab: string) => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
 
     setIsPlaying(false);
-    const newSteps = generateSteps();
-    setSteps(newSteps);
+    setSteps(generateSteps(n, tab));
     setCurrentStepIndex(0);
-  }, [generateSteps]);
+  };
+
+  // Réinitialiser la visualisation
+  const handleReset = () => resetFor(activeTab);
+
+  // Changer d'onglet réinitialise la visualisation
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    resetFor(tab);
+  };
 
   // Passer à l'étape suivante
   const handleStepForward = () => {
@@ -229,11 +237,6 @@ export function FibonacciVisualization() {
     }
   };
 
-  // Mettre à jour les étapes lorsque n ou l'onglet actif change
-  useEffect(() => {
-    handleReset();
-  }, [handleReset, n, activeTab]);
-
   // Nettoyer le timer lors du démontage du composant
   useEffect(() => {
     return () => {
@@ -252,7 +255,7 @@ export function FibonacciVisualization() {
   };
 
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+    <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
       <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger value="memoization">Mémoïsation (Top-Down)</TabsTrigger>
         <TabsTrigger value="tabulation">Tabulation (Bottom-Up)</TabsTrigger>

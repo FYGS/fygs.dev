@@ -16,8 +16,10 @@ import { createExecutionSlice } from "./slices/execution";
 import { createWebContainerSlice } from "./slices/webcontainer";
 import { createWorkspaceSlice } from "./slices/workspace";
 import { createCompatSlice } from "./slices/compat";
+import { withCompatFields } from "./compat-fields";
 
 export const usePlaygroundStore = create<PlaygroundStore>()(
+  withCompatFields(
   persist(
     (set, get) => ({
       // ── File System State ──
@@ -54,32 +56,12 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
       history: { snapshots: [], maxSnapshots: 50 } as EditorHistory,
 
       // ── Backward Compatibility ──
-      get code() {
-        const file = get().getActiveFile();
-        return file?.content ?? "";
-      },
-      get language() {
-        const file = get().getActiveFile();
-        return file?.language ?? "typescript";
-      },
-      get output() {
-        return get()
-          .consoleEntries.filter((e) => e.type === "result")
-          .map((e) => e.content)
-          .join("\n");
-      },
-      get logs() {
-        return get()
-          .consoleEntries.filter(
-            (e) => e.type !== "error" && e.type !== "result",
-          )
-          .map((e) => e.content);
-      },
-      get errors() {
-        return get()
-          .consoleEntries.filter((e) => e.type === "error")
-          .map((e) => e.content);
-      },
+      // Derived from the files and the console by withCompatFields on every update
+      code: "",
+      language: "typescript",
+      output: "",
+      logs: [],
+      errors: [],
 
       ...createFilesSlice(set, get),
       ...createTabsSlice(set, get),
@@ -92,6 +74,13 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
     }),
     {
       name: "playground-v2",
+      // Saved state has never been restored at load: the old compatibility getters
+      // threw while persist merged the stored state into the initial one (the error
+      // is swallowed by the middleware), so the store always started from its
+      // defaults. That behaviour is kept explicitly. Restoring the saved playground
+      // means calling usePlaygroundStore.persist.rehydrate() after mount (a
+      // synchronous hydration at import would mismatch the server markup).
+      skipHydration: true,
       partialize: (state) => ({
         files: state.files,
         activeFileId: state.activeFileId,
@@ -103,6 +92,7 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
         history: state.history,
       }),
     },
+    ),
   ),
 );
 

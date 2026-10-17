@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { DPVisualizationBase } from "./dp-visualization-base";
 
 interface LCSStep {
@@ -16,114 +16,126 @@ interface LCSStep {
   lcs?: string;
 }
 
+// Générer les étapes pour la résolution du problème LCS
+function generateSteps(str1: string, str2: string): LCSStep[] {
+  const steps: LCSStep[] = [];
+  const m = str1.length;
+  const n = str2.length;
+  
+  // Initialiser la table DP
+  const dp: number[][] = Array(m + 1)
+    .fill(0)
+    .map(() => Array(n + 1).fill(0));
+  
+  // Étape initiale
+  steps.push({
+    i: 0,
+    j: 0,
+    table: dp.map(row => [...row]),
+  });
+  
+  // Initialiser la première ligne et la première colonne
+  for (let i = 0; i <= m; i++) {
+    for (let j = 0; j <= n; j++) {
+      if (i === 0 || j === 0) {
+        steps.push({
+          i,
+          j,
+          result: 0,
+          table: dp.map(row => [...row]),
+        });
+      }
+    }
+  }
+  
+  // Remplir la table DP
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (str1[i - 1] === str2[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1] + 1;
+        steps.push({
+          i,
+          j,
+          result: dp[i][j],
+          decision: "match",
+          table: dp.map(row => [...row]),
+        });
+      } else {
+        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+        steps.push({
+          i,
+          j,
+          result: dp[i][j],
+          decision: "mismatch",
+          table: dp.map(row => [...row]),
+        });
+      }
+    }
+  }
+  
+  // Reconstruire la LCS
+  let lcs = "";
+  let i = m, j = n;
+  
+  while (i > 0 && j > 0) {
+    if (str1[i - 1] === str2[j - 1]) {
+      lcs = str1[i - 1] + lcs;
+      i--;
+      j--;
+    } else if (dp[i - 1][j] > dp[i][j - 1]) {
+      i--;
+    } else {
+      j--;
+    }
+  }
+  
+  // Ajouter une étape finale avec la LCS
+  steps.push({
+    i: m,
+    j: n,
+    result: dp[m][n],
+    table: dp.map(row => [...row]),
+    lcs,
+  });
+  
+  return steps;
+}
+
 export function LCSVisualization() {
   const [str1, setStr1] = useState("ABCBDAB");
   const [str2, setStr2] = useState("BDCABA");
-  const [steps, setSteps] = useState<LCSStep[]>([]);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  
-  // Générer les étapes pour la résolution du problème LCS
-  const generateSteps = useCallback(() => {
-    const steps: LCSStep[] = [];
-    const m = str1.length;
-    const n = str2.length;
-    
-    // Initialiser la table DP
-    const dp: number[][] = Array(m + 1)
-      .fill(0)
-      .map(() => Array(n + 1).fill(0));
-    
-    // Étape initiale
-    steps.push({
-      i: 0,
-      j: 0,
-      table: dp.map(row => [...row]),
-    });
-    
-    // Initialiser la première ligne et la première colonne
-    for (let i = 0; i <= m; i++) {
-      for (let j = 0; j <= n; j++) {
-        if (i === 0 || j === 0) {
-          steps.push({
-            i,
-            j,
-            result: 0,
-            table: dp.map(row => [...row]),
-          });
-        }
-      }
-    }
-    
-    // Remplir la table DP
-    for (let i = 1; i <= m; i++) {
-      for (let j = 1; j <= n; j++) {
-        if (str1[i - 1] === str2[j - 1]) {
-          dp[i][j] = dp[i - 1][j - 1] + 1;
-          steps.push({
-            i,
-            j,
-            result: dp[i][j],
-            decision: "match",
-            table: dp.map(row => [...row]),
-          });
-        } else {
-          dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
-          steps.push({
-            i,
-            j,
-            result: dp[i][j],
-            decision: "mismatch",
-            table: dp.map(row => [...row]),
-          });
-        }
-      }
-    }
-    
-    // Reconstruire la LCS
-    let lcs = "";
-    let i = m, j = n;
-    
-    while (i > 0 && j > 0) {
-      if (str1[i - 1] === str2[j - 1]) {
-        lcs = str1[i - 1] + lcs;
-        i--;
-        j--;
-      } else if (dp[i - 1][j] > dp[i][j - 1]) {
-        i--;
-      } else {
-        j--;
-      }
-    }
-    
-    // Ajouter une étape finale avec la LCS
-    steps.push({
-      i: m,
-      j: n,
-      result: dp[m][n],
-      table: dp.map(row => [...row]),
-      lcs,
-    });
-    
-    return steps;
-  }, [str1, str2]);
+
+  // Les étapes dérivent des deux chaînes
+  const steps = useMemo(() => generateSteps(str1, str2), [str1, str2]);
   
   // Réinitialiser la visualisation
-  const handleReset = useCallback(() => {
+  const handleReset = () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    
+
     setIsPlaying(false);
-    const newSteps = generateSteps();
-    setSteps(newSteps);
     setCurrentStepIndex(0);
-  }, [generateSteps]);
-  
+  };
+
+  // Changer une des chaînes réinitialise la visualisation
+  const handleStr1Change = (value: string) => {
+    if (value === str1) return;
+    setStr1(value);
+    handleReset();
+  };
+  const handleStr2Change = (value: string) => {
+    if (value === str2) return;
+    setStr2(value);
+    handleReset();
+  };
+
   // Passer à l'étape suivante
   const handleStepForward = () => {
     if (currentStepIndex < steps.length - 1) {
@@ -203,11 +215,6 @@ export function LCSVisualization() {
     }
   };
   
-  // Mettre à jour les étapes lorsque les chaînes changent
-  useEffect(() => {
-    handleReset();
-  }, [handleReset]);
-  
   // Nettoyer le timer lors du démontage du composant
   useEffect(() => {
     return () => {
@@ -249,7 +256,7 @@ export function LCSVisualization() {
               <Input
                 id="str1"
                 value={str1}
-                onChange={(e) => setStr1(e.target.value.toUpperCase())}
+                onChange={(e) => handleStr1Change(e.target.value.toUpperCase())}
                 className="font-mono"
                 maxLength={10}
               />
@@ -262,7 +269,7 @@ export function LCSVisualization() {
               <Input
                 id="str2"
                 value={str2}
-                onChange={(e) => setStr2(e.target.value.toUpperCase())}
+                onChange={(e) => handleStr2Change(e.target.value.toUpperCase())}
                 className="font-mono"
                 maxLength={10}
               />

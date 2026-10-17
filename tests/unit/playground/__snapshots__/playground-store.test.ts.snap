@@ -459,7 +459,10 @@ console.log(greet(user));
       "showFileExplorer": true,
       "showPreview": true,
     },
-    "logs": [],
+    "logs": [
+      "Running...",
+      "✅ Execution completed successfully",
+    ],
     "openTabs": [
       {
         "fileId": "default-ts",
@@ -650,7 +653,9 @@ console.log(greet(user));
         "type": "error",
       },
     ],
-    "errors": [],
+    "errors": [
+      "bad",
+    ],
     "files": [
       {
         "content": "// Welcome to FYGS Playground!
@@ -689,7 +694,10 @@ console.log(greet(user));
       "showFileExplorer": true,
       "showPreview": true,
     },
-    "logs": [],
+    "logs": [
+      "Running...",
+      "l",
+    ],
     "openTabs": [
       {
         "fileId": "default-ts",
@@ -973,7 +981,10 @@ console.log(greet(user));
       "showFileExplorer": true,
       "showPreview": true,
     },
-    "logs": [],
+    "logs": [
+      "Running...",
+      "✅ Execution completed successfully",
+    ],
     "openTabs": [
       {
         "fileId": "default-ts",
@@ -1269,7 +1280,11 @@ console.log(greet(user));
       "showFileExplorer": true,
       "showPreview": true,
     },
-    "logs": [],
+    "logs": [
+      "Running...",
+      "l1",
+      "✅ Execution completed successfully",
+    ],
     "openTabs": [
       {
         "fileId": "default-ts",
@@ -1277,7 +1292,7 @@ console.log(greet(user));
         "isPreview": false,
       },
     ],
-    "output": "",
+    "output": "hello",
     "previewHtml": null,
     "serverUrl": null,
     "settings": {
@@ -1551,7 +1566,7 @@ console.log(greet(user));
         },
       ],
     },
-    "language": "typescript",
+    "language": "python",
     "layout": {
       "activeOutputTab": "console",
       "layout": "default",
@@ -1559,7 +1574,10 @@ console.log(greet(user));
       "showFileExplorer": true,
       "showPreview": true,
     },
-    "logs": [],
+    "logs": [
+      "Loading Python runtime (Pyodide)...",
+      "✅ Execution completed successfully",
+    ],
     "openTabs": [
       {
         "fileId": "default-ts",
@@ -1567,7 +1585,7 @@ console.log(greet(user));
         "isPreview": false,
       },
     ],
-    "output": "",
+    "output": "py",
     "previewHtml": null,
     "serverUrl": null,
     "settings": {
@@ -1666,7 +1684,9 @@ console.log(greet(user));
       "showFileExplorer": true,
       "showPreview": true,
     },
-    "logs": [],
+    "logs": [
+      "Execution stopped",
+    ],
     "openTabs": [
       {
         "fileId": "default-ts",
@@ -1851,7 +1871,9 @@ console.log(greet(user));
         "type": "error",
       },
     ],
-    "errors": [],
+    "errors": [
+      "exec exploded",
+    ],
     "files": [
       {
         "content": "// Welcome to FYGS Playground!
@@ -1890,7 +1912,9 @@ console.log(greet(user));
       "showFileExplorer": true,
       "showPreview": true,
     },
-    "logs": [],
+    "logs": [
+      "Running...",
+    ],
     "openTabs": [
       {
         "fileId": "default-ts",
@@ -2075,7 +2099,9 @@ console.log(greet(user));
         "type": "error",
       },
     ],
-    "errors": [],
+    "errors": [
+      "Cannot read properties of undefined (reading 'forEach')",
+    ],
     "files": [
       {
         "content": "// Welcome to FYGS Playground!
@@ -2114,7 +2140,9 @@ console.log(greet(user));
       "showFileExplorer": true,
       "showPreview": true,
     },
-    "logs": [],
+    "logs": [
+      "Running...",
+    ],
     "openTabs": [
       {
         "fileId": "default-ts",
@@ -2307,23 +2335,7 @@ console.log(greet(user));
   },
   "state": {
     "activeFileId": "uuid-1",
-    "code": "// Welcome to FYGS Playground!
-// Start coding in TypeScript here.
-
-interface User {
-  name: string;
-  age: number;
-}
-
-function greet(user: User): string {
-  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
-}
-
-const user: User = { name: "Developer", age: 25 };
-console.log(greet(user));
-
-// Try pressing Ctrl/Cmd + Enter to run your code!
-",
+    "code": "{}",
     "consoleEntries": [
       {
         "content": "Running in WebContainer (real Node.js)...",
@@ -2356,7 +2368,9 @@ console.log(greet(user));
         "type": "info",
       },
     ],
-    "errors": [],
+    "errors": [
+      "streamed err",
+    ],
     "files": [
       {
         "content": "// Welcome to FYGS Playground!
@@ -2430,7 +2444,7 @@ console.log(greet(user));
         },
       ],
     },
-    "language": "typescript",
+    "language": "json",
     "layout": {
       "activeOutputTab": "preview",
       "layout": "default",
@@ -2438,7 +2452,12 @@ console.log(greet(user));
       "showFileExplorer": true,
       "showPreview": true,
     },
-    "logs": [],
+    "logs": [
+      "Running in WebContainer (real Node.js)...",
+      "streamed",
+      "🌐 Server ready at http://localhost:3111",
+      "✅ Execution completed successfully",
+    ],
     "openTabs": [
       {
         "fileId": "default-ts",
@@ -2745,7 +2764,11 @@ console.log(greet(user));
       "showFileExplorer": true,
       "showPreview": true,
     },
-    "logs": [],
+    "logs": [
+      "Running in WebContainer (real Node.js)...",
+      "a",
+      "✅ Execution completed successfully",
+    ],
     "openTabs": [
       {
         "fileId": "default-ts",
@@ -2753,7 +2776,7 @@ console.log(greet(user));
         "isPreview": false,
       },
     ],
-    "output": "",
+    "output": "o",
     "previewHtml": null,
     "serverUrl": null,
     "settings": {
@@ -3041,7 +3064,11 @@ console.log(greet(user));
       "showFileExplorer": true,
       "showPreview": true,
     },
-    "logs": [],
+    "logs": [
+      "Running in WebContainer (real Node.js)...",
+      "x",
+      "✅ Execution completed successfully",
+    ],
     "openTabs": [
       {
         "fileId": "default-ts",
@@ -3081,23 +3108,7 @@ exports[`playground store (pinned) > file, tab, editor, layout, history, templat
     "createFile a",
     {
       "activeFileId": "uuid-1",
-      "code": "// Welcome to FYGS Playground!
-// Start coding in TypeScript here.
-
-interface User {
-  name: string;
-  age: number;
-}
-
-function greet(user: User): string {
-  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
-}
-
-const user: User = { name: "Developer", age: 25 };
-console.log(greet(user));
-
-// Try pressing Ctrl/Cmd + Enter to run your code!
-",
+      "code": "const a = 1;",
       "consoleEntries": [],
       "errors": [],
       "files": [
@@ -3186,23 +3197,7 @@ console.log(greet(user));
     "createFile duplicate path",
     {
       "activeFileId": "uuid-1",
-      "code": "// Welcome to FYGS Playground!
-// Start coding in TypeScript here.
-
-interface User {
-  name: string;
-  age: number;
-}
-
-function greet(user: User): string {
-  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
-}
-
-const user: User = { name: "Developer", age: 25 };
-console.log(greet(user));
-
-// Try pressing Ctrl/Cmd + Enter to run your code!
-",
+      "code": "const a = 1;",
       "consoleEntries": [],
       "errors": [],
       "files": [
@@ -3301,23 +3296,7 @@ console.log(greet(user));
     "createFile b, readme",
     {
       "activeFileId": "uuid-4",
-      "code": "// Welcome to FYGS Playground!
-// Start coding in TypeScript here.
-
-interface User {
-  name: string;
-  age: number;
-}
-
-function greet(user: User): string {
-  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
-}
-
-const user: User = { name: "Developer", age: 25 };
-console.log(greet(user));
-
-// Try pressing Ctrl/Cmd + Enter to run your code!
-",
+      "code": "# hi",
       "consoleEntries": [],
       "errors": [],
       "files": [
@@ -3371,7 +3350,7 @@ console.log(greet(user));
         "maxSnapshots": 50,
         "snapshots": [],
       },
-      "language": "typescript",
+      "language": "markdown",
       "layout": {
         "activeOutputTab": "console",
         "layout": "default",
@@ -3435,23 +3414,7 @@ console.log(greet(user));
     "update + rename",
     {
       "activeFileId": "uuid-4",
-      "code": "// Welcome to FYGS Playground!
-// Start coding in TypeScript here.
-
-interface User {
-  name: string;
-  age: number;
-}
-
-function greet(user: User): string {
-  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
-}
-
-const user: User = { name: "Developer", age: 25 };
-console.log(greet(user));
-
-// Try pressing Ctrl/Cmd + Enter to run your code!
-",
+      "code": "# hi",
       "consoleEntries": [],
       "errors": [],
       "files": [
@@ -3506,7 +3469,7 @@ console.log(greet(user));
         "maxSnapshots": 50,
         "snapshots": [],
       },
-      "language": "typescript",
+      "language": "markdown",
       "layout": {
         "activeOutputTab": "console",
         "layout": "default",
@@ -3570,23 +3533,7 @@ console.log(greet(user));
     "setEntryPoint",
     {
       "activeFileId": "uuid-4",
-      "code": "// Welcome to FYGS Playground!
-// Start coding in TypeScript here.
-
-interface User {
-  name: string;
-  age: number;
-}
-
-function greet(user: User): string {
-  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
-}
-
-const user: User = { name: "Developer", age: 25 };
-console.log(greet(user));
-
-// Try pressing Ctrl/Cmd + Enter to run your code!
-",
+      "code": "# hi",
       "consoleEntries": [],
       "errors": [],
       "files": [
@@ -3644,7 +3591,7 @@ console.log(greet(user));
         "maxSnapshots": 50,
         "snapshots": [],
       },
-      "language": "typescript",
+      "language": "markdown",
       "layout": {
         "activeOutputTab": "console",
         "layout": "default",
@@ -3756,23 +3703,7 @@ console.log(greet(user));
     "setActiveFile",
     {
       "activeFileId": "uuid-1",
-      "code": "// Welcome to FYGS Playground!
-// Start coding in TypeScript here.
-
-interface User {
-  name: string;
-  age: number;
-}
-
-function greet(user: User): string {
-  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
-}
-
-const user: User = { name: "Developer", age: 25 };
-console.log(greet(user));
-
-// Try pressing Ctrl/Cmd + Enter to run your code!
-",
+      "code": "const a = 2;",
       "consoleEntries": [],
       "errors": [],
       "files": [
@@ -3830,7 +3761,7 @@ console.log(greet(user));
         "maxSnapshots": 50,
         "snapshots": [],
       },
-      "language": "typescript",
+      "language": "javascript",
       "layout": {
         "activeOutputTab": "console",
         "layout": "default",
@@ -3894,23 +3825,7 @@ console.log(greet(user));
     "openTab preview",
     {
       "activeFileId": "uuid-1",
-      "code": "// Welcome to FYGS Playground!
-// Start coding in TypeScript here.
-
-interface User {
-  name: string;
-  age: number;
-}
-
-function greet(user: User): string {
-  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
-}
-
-const user: User = { name: "Developer", age: 25 };
-console.log(greet(user));
-
-// Try pressing Ctrl/Cmd + Enter to run your code!
-",
+      "code": "const a = 2;",
       "consoleEntries": [],
       "errors": [],
       "files": [
@@ -3968,7 +3883,7 @@ console.log(greet(user));
         "maxSnapshots": 50,
         "snapshots": [],
       },
-      "language": "typescript",
+      "language": "javascript",
       "layout": {
         "activeOutputTab": "console",
         "layout": "default",
@@ -4032,23 +3947,7 @@ console.log(greet(user));
     "openTab permanent",
     {
       "activeFileId": "uuid-1",
-      "code": "// Welcome to FYGS Playground!
-// Start coding in TypeScript here.
-
-interface User {
-  name: string;
-  age: number;
-}
-
-function greet(user: User): string {
-  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
-}
-
-const user: User = { name: "Developer", age: 25 };
-console.log(greet(user));
-
-// Try pressing Ctrl/Cmd + Enter to run your code!
-",
+      "code": "const a = 2;",
       "consoleEntries": [],
       "errors": [],
       "files": [
@@ -4106,7 +4005,7 @@ console.log(greet(user));
         "maxSnapshots": 50,
         "snapshots": [],
       },
-      "language": "typescript",
+      "language": "javascript",
       "layout": {
         "activeOutputTab": "console",
         "layout": "default",
@@ -4170,23 +4069,7 @@ console.log(greet(user));
     "pinTab",
     {
       "activeFileId": "uuid-1",
-      "code": "// Welcome to FYGS Playground!
-// Start coding in TypeScript here.
-
-interface User {
-  name: string;
-  age: number;
-}
-
-function greet(user: User): string {
-  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
-}
-
-const user: User = { name: "Developer", age: 25 };
-console.log(greet(user));
-
-// Try pressing Ctrl/Cmd + Enter to run your code!
-",
+      "code": "const a = 2;",
       "consoleEntries": [],
       "errors": [],
       "files": [
@@ -4244,7 +4127,7 @@ console.log(greet(user));
         "maxSnapshots": 50,
         "snapshots": [],
       },
-      "language": "typescript",
+      "language": "javascript",
       "layout": {
         "activeOutputTab": "console",
         "layout": "default",
@@ -4308,23 +4191,7 @@ console.log(greet(user));
     "reorderTabs",
     {
       "activeFileId": "uuid-1",
-      "code": "// Welcome to FYGS Playground!
-// Start coding in TypeScript here.
-
-interface User {
-  name: string;
-  age: number;
-}
-
-function greet(user: User): string {
-  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
-}
-
-const user: User = { name: "Developer", age: 25 };
-console.log(greet(user));
-
-// Try pressing Ctrl/Cmd + Enter to run your code!
-",
+      "code": "const a = 2;",
       "consoleEntries": [],
       "errors": [],
       "files": [
@@ -4382,7 +4249,7 @@ console.log(greet(user));
         "maxSnapshots": 50,
         "snapshots": [],
       },
-      "language": "typescript",
+      "language": "javascript",
       "layout": {
         "activeOutputTab": "console",
         "layout": "default",
@@ -4579,23 +4446,7 @@ console.log(greet(user));
     "closeOtherTabs",
     {
       "activeFileId": "uuid-3",
-      "code": "// Welcome to FYGS Playground!
-// Start coding in TypeScript here.
-
-interface User {
-  name: string;
-  age: number;
-}
-
-function greet(user: User): string {
-  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
-}
-
-const user: User = { name: "Developer", age: 25 };
-console.log(greet(user));
-
-// Try pressing Ctrl/Cmd + Enter to run your code!
-",
+      "code": "",
       "consoleEntries": [],
       "errors": [],
       "files": [
@@ -4653,7 +4504,7 @@ console.log(greet(user));
         "maxSnapshots": 50,
         "snapshots": [],
       },
-      "language": "typescript",
+      "language": "python",
       "layout": {
         "activeOutputTab": "console",
         "layout": "default",
@@ -4697,23 +4548,7 @@ console.log(greet(user));
     "closeAllTabs",
     {
       "activeFileId": null,
-      "code": "// Welcome to FYGS Playground!
-// Start coding in TypeScript here.
-
-interface User {
-  name: string;
-  age: number;
-}
-
-function greet(user: User): string {
-  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
-}
-
-const user: User = { name: "Developer", age: 25 };
-console.log(greet(user));
-
-// Try pressing Ctrl/Cmd + Enter to run your code!
-",
+      "code": "",
       "consoleEntries": [],
       "errors": [],
       "files": [
@@ -4809,23 +4644,7 @@ console.log(greet(user));
     "deleteFile",
     {
       "activeFileId": null,
-      "code": "// Welcome to FYGS Playground!
-// Start coding in TypeScript here.
-
-interface User {
-  name: string;
-  age: number;
-}
-
-function greet(user: User): string {
-  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
-}
-
-const user: User = { name: "Developer", age: 25 };
-console.log(greet(user));
-
-// Try pressing Ctrl/Cmd + Enter to run your code!
-",
+      "code": "",
       "consoleEntries": [],
       "errors": [],
       "files": [
@@ -4913,23 +4732,7 @@ console.log(greet(user));
     "theme/settings/layout",
     {
       "activeFileId": null,
-      "code": "// Welcome to FYGS Playground!
-// Start coding in TypeScript here.
-
-interface User {
-  name: string;
-  age: number;
-}
-
-function greet(user: User): string {
-  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
-}
-
-const user: User = { name: "Developer", age: 25 };
-console.log(greet(user));
-
-// Try pressing Ctrl/Cmd + Enter to run your code!
-",
+      "code": "",
       "consoleEntries": [],
       "errors": [],
       "files": [
@@ -5017,23 +4820,7 @@ console.log(greet(user));
     "snapshots",
     {
       "activeFileId": null,
-      "code": "// Welcome to FYGS Playground!
-// Start coding in TypeScript here.
-
-interface User {
-  name: string;
-  age: number;
-}
-
-function greet(user: User): string {
-  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
-}
-
-const user: User = { name: "Developer", age: 25 };
-console.log(greet(user));
-
-// Try pressing Ctrl/Cmd + Enter to run your code!
-",
+      "code": "",
       "consoleEntries": [],
       "errors": [],
       "files": [
@@ -5391,23 +5178,7 @@ console.log(greet(user));
     "loadTemplate",
     {
       "activeFileId": "uuid-11",
-      "code": "// Welcome to FYGS Playground!
-// Start coding in TypeScript here.
-
-interface User {
-  name: string;
-  age: number;
-}
-
-function greet(user: User): string {
-  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
-}
-
-const user: User = { name: "Developer", age: 25 };
-console.log(greet(user));
-
-// Try pressing Ctrl/Cmd + Enter to run your code!
-",
+      "code": "m",
       "consoleEntries": [],
       "errors": [],
       "files": [
@@ -5738,23 +5509,7 @@ console.log(greet(user));
     "importFromUrl",
     {
       "activeFileId": "uuid-13",
-      "code": "// Welcome to FYGS Playground!
-// Start coding in TypeScript here.
-
-interface User {
-  name: string;
-  age: number;
-}
-
-function greet(user: User): string {
-  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
-}
-
-const user: User = { name: "Developer", age: 25 };
-console.log(greet(user));
-
-// Try pressing Ctrl/Cmd + Enter to run your code!
-",
+      "code": "u",
       "consoleEntries": [],
       "errors": [],
       "files": [
@@ -5905,23 +5660,7 @@ console.log(greet(user));
     "importFromUrl invalid",
     {
       "activeFileId": "uuid-13",
-      "code": "// Welcome to FYGS Playground!
-// Start coding in TypeScript here.
-
-interface User {
-  name: string;
-  age: number;
-}
-
-function greet(user: User): string {
-  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
-}
-
-const user: User = { name: "Developer", age: 25 };
-console.log(greet(user));
-
-// Try pressing Ctrl/Cmd + Enter to run your code!
-",
+      "code": "u",
       "consoleEntries": [],
       "errors": [],
       "files": [
@@ -6072,23 +5811,7 @@ console.log(greet(user));
     "compat methods",
     {
       "activeFileId": "uuid-13",
-      "code": "// Welcome to FYGS Playground!
-// Start coding in TypeScript here.
-
-interface User {
-  name: string;
-  age: number;
-}
-
-function greet(user: User): string {
-  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
-}
-
-const user: User = { name: "Developer", age: 25 };
-console.log(greet(user));
-
-// Try pressing Ctrl/Cmd + Enter to run your code!
-",
+      "code": "compat code",
       "consoleEntries": [
         {
           "content": "log line",
@@ -6103,7 +5826,9 @@ console.log(greet(user));
           "type": "error",
         },
       ],
-      "errors": [],
+      "errors": [
+        "error line",
+      ],
       "files": [
         {
           "content": "compat code",
@@ -6217,7 +5942,9 @@ console.log(greet(user));
         "showFileExplorer": true,
         "showPreview": true,
       },
-      "logs": [],
+      "logs": [
+        "log line",
+      ],
       "openTabs": [
         {
           "fileId": "uuid-13",
@@ -6959,7 +6686,9 @@ console.log(greet(user));
           "type": "error",
         },
       ],
-      "errors": [],
+      "errors": [
+        "WebContainer boot failed: boot boom",
+      ],
       "files": [
         {
           "content": "// Welcome to FYGS Playground!
@@ -6998,7 +6727,9 @@ console.log(greet(user));
         "showFileExplorer": true,
         "showPreview": true,
       },
-      "logs": [],
+      "logs": [
+        "Booting WebContainer (real Node.js runtime)...",
+      ],
       "openTabs": [
         {
           "fileId": "default-ts",
@@ -7108,7 +6839,10 @@ console.log(greet(user));
         "showFileExplorer": true,
         "showPreview": true,
       },
-      "logs": [],
+      "logs": [
+        "Booting WebContainer (real Node.js runtime)...",
+        "✅ WebContainer ready — real Node.js environment active",
+      ],
       "openTabs": [
         {
           "fileId": "default-ts",
@@ -7338,7 +7072,9 @@ console.log(greet(user));
         "showFileExplorer": true,
         "showPreview": true,
       },
-      "logs": [],
+      "logs": [
+        "Installing dependencies with npm...",
+      ],
       "openTabs": [
         {
           "fileId": "default-ts",
@@ -7476,7 +7212,10 @@ console.log(greet(user));
         "showFileExplorer": true,
         "showPreview": true,
       },
-      "logs": [],
+      "logs": [
+        "Installing dependencies with npm...",
+        "✅ Dependencies installed successfully",
+      ],
       "openTabs": [
         {
           "fileId": "default-ts",
@@ -7537,7 +7276,9 @@ console.log(greet(user));
           "type": "error",
         },
       ],
-      "errors": [],
+      "errors": [
+        "WebContainer not available — cannot install packages",
+      ],
       "files": [
         {
           "content": "// Welcome to FYGS Playground!
@@ -7684,7 +7425,10 @@ console.log(greet(user));
     "showFileExplorer": true,
     "showPreview": true,
   },
-  "logs": [],
+  "logs": [
+    "Installing dependencies with npm...",
+    "✅ Dependencies installed successfully",
+  ],
   "openTabs": [
     {
       "fileId": "default-ts",

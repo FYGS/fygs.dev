@@ -99,6 +99,7 @@ export function selectRequestPath(
       { path: { source: "frontend", target: "products" }, weight: 0.4 },
     ];
 
+    // The weights sum to 1 and Math.random() is below 1, so a path is always selected
     const rand = Math.random();
     let cumulativeWeight = 0;
 
@@ -108,13 +109,6 @@ export function selectRequestPath(
         requestPath = entry.path;
         break;
       }
-    }
-
-    // If no weighted path was selected, use a random one
-    if (!requestPath) {
-      const basePath =
-        requestPaths[Math.floor(Math.random() * requestPaths.length)];
-      requestPath = { ...basePath };
     }
   } else {
     // Default random selection

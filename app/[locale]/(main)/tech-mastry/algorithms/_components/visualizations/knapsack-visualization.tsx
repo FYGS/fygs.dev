@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { DPVisualizationBase } from "./dp-visualization-base";
 
 interface Item {
@@ -24,6 +24,101 @@ interface KnapsackStep {
   selectedItems?: number[];
 }
 
+// Générer les étapes pour la résolution du problème du sac à dos
+function generateSteps(items: Item[], capacity: number): KnapsackStep[] {
+  const steps: KnapsackStep[] = [];
+  const n = items.length;
+  
+  // Initialiser la table DP
+  const dp: number[][] = Array(n + 1)
+    .fill(0)
+    .map(() => Array(capacity + 1).fill(0));
+  
+  // Étape initiale
+  steps.push({
+    i: 0,
+    w: 0,
+    items: [...items],
+    capacity,
+    table: dp.map(row => [...row]),
+  });
+  
+  // Remplir la table DP
+  for (let i = 1; i <= n; i++) {
+    for (let w = 0; w <= capacity; w++) {
+      const currentItem = items[i - 1];
+      
+      if (currentItem.weight <= w) {
+        // On peut prendre l'objet
+        const takeValue = currentItem.value + dp[i - 1][w - currentItem.weight];
+        const leaveValue = dp[i - 1][w];
+        
+        if (takeValue > leaveValue) {
+          dp[i][w] = takeValue;
+          steps.push({
+            i,
+            w,
+            result: takeValue,
+            decision: "take",
+            items: [...items],
+            capacity,
+            table: dp.map(row => [...row]),
+          });
+        } else {
+          dp[i][w] = leaveValue;
+          steps.push({
+            i,
+            w,
+            result: leaveValue,
+            decision: "leave",
+            items: [...items],
+            capacity,
+            table: dp.map(row => [...row]),
+          });
+        }
+      } else {
+        // On ne peut pas prendre l'objet
+        dp[i][w] = dp[i - 1][w];
+        steps.push({
+          i,
+          w,
+          result: dp[i - 1][w],
+          decision: "leave",
+          items: [...items],
+          capacity,
+          table: dp.map(row => [...row]),
+        });
+      }
+    }
+  }
+  
+  // Ajouter une étape finale avec les objets sélectionnés
+  const selectedItems: number[] = [];
+  let remainingCapacity = capacity;
+  let i = n;
+  
+  while (i > 0 && remainingCapacity > 0) {
+    if (dp[i][remainingCapacity] !== dp[i - 1][remainingCapacity]) {
+      // L'objet i a été inclus
+      selectedItems.push(items[i - 1].id);
+      remainingCapacity -= items[i - 1].weight;
+    }
+    i--;
+  }
+  
+  steps.push({
+    i: n,
+    w: capacity,
+    result: dp[n][capacity],
+    items: [...items],
+    capacity,
+    table: dp.map(row => [...row]),
+    selectedItems,
+  });
+  
+  return steps;
+}
+
 export function KnapsackVisualization() {
   const [items, setItems] = useState<Item[]>([
     { id: 1, value: 60, weight: 10 },
@@ -31,121 +126,26 @@ export function KnapsackVisualization() {
     { id: 3, value: 120, weight: 30 },
   ]);
   const [capacity, setCapacity] = useState(50);
-  const [steps, setSteps] = useState<KnapsackStep[]>([]);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  
-  // Générer les étapes pour la résolution du problème du sac à dos
-  const generateSteps = useCallback(() => {
-    const steps: KnapsackStep[] = [];
-    const n = items.length;
-    
-    // Initialiser la table DP
-    const dp: number[][] = Array(n + 1)
-      .fill(0)
-      .map(() => Array(capacity + 1).fill(0));
-    
-    // Étape initiale
-    steps.push({
-      i: 0,
-      w: 0,
-      items: [...items],
-      capacity,
-      table: dp.map(row => [...row]),
-    });
-    
-    // Remplir la table DP
-    for (let i = 1; i <= n; i++) {
-      for (let w = 0; w <= capacity; w++) {
-        const currentItem = items[i - 1];
-        
-        if (currentItem.weight <= w) {
-          // On peut prendre l'objet
-          const takeValue = currentItem.value + dp[i - 1][w - currentItem.weight];
-          const leaveValue = dp[i - 1][w];
-          
-          if (takeValue > leaveValue) {
-            dp[i][w] = takeValue;
-            steps.push({
-              i,
-              w,
-              result: takeValue,
-              decision: "take",
-              items: [...items],
-              capacity,
-              table: dp.map(row => [...row]),
-            });
-          } else {
-            dp[i][w] = leaveValue;
-            steps.push({
-              i,
-              w,
-              result: leaveValue,
-              decision: "leave",
-              items: [...items],
-              capacity,
-              table: dp.map(row => [...row]),
-            });
-          }
-        } else {
-          // On ne peut pas prendre l'objet
-          dp[i][w] = dp[i - 1][w];
-          steps.push({
-            i,
-            w,
-            result: dp[i - 1][w],
-            decision: "leave",
-            items: [...items],
-            capacity,
-            table: dp.map(row => [...row]),
-          });
-        }
-      }
-    }
-    
-    // Ajouter une étape finale avec les objets sélectionnés
-    const selectedItems: number[] = [];
-    let remainingCapacity = capacity;
-    let i = n;
-    
-    while (i > 0 && remainingCapacity > 0) {
-      if (dp[i][remainingCapacity] !== dp[i - 1][remainingCapacity]) {
-        // L'objet i a été inclus
-        selectedItems.push(items[i - 1].id);
-        remainingCapacity -= items[i - 1].weight;
-      }
-      i--;
-    }
-    
-    steps.push({
-      i: n,
-      w: capacity,
-      result: dp[n][capacity],
-      items: [...items],
-      capacity,
-      table: dp.map(row => [...row]),
-      selectedItems,
-    });
-    
-    return steps;
-  }, [items, capacity]);
+
+  // Les étapes dérivent des objets et de la capacité
+  const steps = useMemo(() => generateSteps(items, capacity), [items, capacity]);
   
   // Réinitialiser la visualisation
-  const handleReset = useCallback(() => {
+  const handleReset = () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    
+
     setIsPlaying(false);
-    const newSteps = generateSteps();
-    setSteps(newSteps);
     setCurrentStepIndex(0);
-  }, [generateSteps]);
-  
+  };
+
   // Passer à l'étape suivante
   const handleStepForward = () => {
     if (currentStepIndex < steps.length - 1) {
@@ -225,15 +225,24 @@ export function KnapsackVisualization() {
     }
   };
   
+  // Changer la capacité réinitialise la visualisation
+  const handleCapacityChange = (value: number) => {
+    if (value === capacity) return;
+    setCapacity(value);
+    handleReset();
+  };
+
   // Ajouter un nouvel objet
   const handleAddItem = () => {
     const newId = items.length > 0 ? Math.max(...items.map(item => item.id)) + 1 : 1;
     setItems([...items, { id: newId, value: 50, weight: 10 }]);
+    handleReset();
   };
   
   // Supprimer un objet
   const handleRemoveItem = (id: number) => {
     setItems(items.filter(item => item.id !== id));
+    handleReset();
   };
   
   // Mettre à jour la valeur d'un objet
@@ -241,6 +250,7 @@ export function KnapsackVisualization() {
     setItems(items.map(item => 
       item.id === id ? { ...item, value } : item
     ));
+    handleReset();
   };
   
   // Mettre à jour le poids d'un objet
@@ -248,12 +258,8 @@ export function KnapsackVisualization() {
     setItems(items.map(item => 
       item.id === id ? { ...item, weight } : item
     ));
-  };
-  
-  // Mettre à jour les étapes lorsque les objets ou la capacité changent
-  useEffect(() => {
     handleReset();
-  }, [handleReset]);
+  };
   
   // Nettoyer le timer lors du démontage du composant
   useEffect(() => {
@@ -302,7 +308,7 @@ export function KnapsackVisualization() {
                 min={1}
                 max={100}
                 value={capacity}
-                onChange={(e) => setCapacity(parseInt(e.target.value) || 1)}
+                onChange={(e) => handleCapacityChange(parseInt(e.target.value) || 1)}
                 className="w-20"
               />
             </div>
