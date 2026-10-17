@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ReviewSearchService } from "@/lib/services/review-search";
+import {
+  ReviewSearchService,
+  ReviewSearchUnavailableError,
+} from "@/lib/services/review-search";
+import { reviewSearchUnavailableResponse } from "@/lib/services/review-search-response";
 import { ReviewStatus } from "@/lib/generated/prisma/browser";
 import { logger } from "@/lib/structured-logger";
 import { enforceRateLimit } from "@/lib/rate-limit";
@@ -82,6 +86,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error) {
+    const unavailable = reviewSearchUnavailableResponse(error, "reviews.search");
+    if (unavailable) return unavailable;
+
     logger.error("Failed to search reviews", {
       metadata: {
         error: error instanceof Error ? error.message : String(error),
@@ -124,6 +131,12 @@ export async function POST(request: NextRequest) {
       suggestions,
     });
   } catch (error) {
+    const unavailable = reviewSearchUnavailableResponse(
+      error,
+      "reviews.suggestions"
+    );
+    if (unavailable) return unavailable;
+
     logger.error("Failed to get search suggestions", {
       metadata: {
         error: error instanceof Error ? error.message : String(error),
@@ -208,6 +221,9 @@ async function getSuggestions(
         frequency: count as number,
       }));
   } catch (error) {
+    // An outage is not "no suggestions": let the handler answer 503
+    if (error instanceof ReviewSearchUnavailableError) throw error;
+
     logger.error("Failed to generate suggestions", {
       metadata: {
         error: error instanceof Error ? error.message : String(error),

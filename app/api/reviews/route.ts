@@ -11,6 +11,7 @@ import { logger } from "@/lib/structured-logger";
 import { ReviewAnalyticsService } from "@/lib/services/review-analytics";
 import { ReviewNotificationService } from "@/lib/services/review-notification";
 import { ReviewSearchService } from "@/lib/services/review-search";
+import { reviewSearchUnavailableResponse } from "@/lib/services/review-search-response";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { parseJsonBody } from "@/lib/utils/parse-json-body";
 
@@ -310,6 +311,9 @@ export async function GET(request: NextRequest) {
       ...result,
     });
   } catch (error) {
+    const unavailable = reviewSearchUnavailableResponse(error, "reviews.list");
+    if (unavailable) return unavailable;
+
     logger.error("Failed to fetch reviews", {
       metadata: {
         error: error instanceof Error ? error.message : String(error),
