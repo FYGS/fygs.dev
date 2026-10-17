@@ -24,8 +24,13 @@
 - Dependencies moved to the latest stable majors (Next 16, zod 4, Stripe SDK 23, better-auth 1.7, vitest 5…); see docs/modernization-2026-10.md. Build and dev run on webpack; `middleware.ts` is now `proxy.ts`; CI runs on Node 22.
 - Large files split into focused modules (community actions, visualizations, services, templates, forms).
 - i18n dictionaries unified; analytics calls go through `AnalyticsHelper`.
+- Stripe: SDK default API version, handlers accept old and new payload shapes, `scripts/stripe-smoke.mjs` checks the integration in TEST mode (rollout plan in docs/modernization-2026-10.md).
+- Security and ops: CSP report-only candidate and `/api/csp-report`, `/api/health` with the rate-limit degradation status, daily AI budgets, PII redaction in logs, `pnpm test:e2e` (32 browser tests on a production build, also in CI).
 
 ### Fixed
+- Stripe: one payment row per payment (renewals no longer overwrite one row), invoices read the basil subscription field, free (100% promo) checkouts grant access, plan switch and proration audit repaired, redirect URLs without a double slash, concurrent cancellation / refund call Stripe once.
+- Defects found by the new database and browser tests: build failure (a client component imported the Prisma client), /admin pages crashing (users without subscription, a missing table, a function prop passed to a client component), hydration errors (locale-dependent numbers, sample dates computed at module load), enrolling did not open the first lesson, concurrent enrollment / certificate issuance / progress updates, progress of unpublished lessons inflating course completion, review votes, review search answering an empty 200 on failure, review content filter matching inside words, saved playground workspace never restored.
+- The admin sidebar and quick actions no longer link to pages that do not exist.
 - Accessibility pass (WCAG 2.2 AA, see docs/accessibility-audit-2026-10.md): one `main` landmark and a skip link, `prefers-reduced-motion` support, labelled and described form fields, named icon buttons, heading levels, contrast of the brand colour, keyboard-reachable code blocks, modal command palette.
 - Hydration mismatch (React #418): numbers and dates rendered with the runtime default locale/time zone now pin it (`/tech-mastry/algorithms/complexity`, blog cards).
 - Service worker: API responses and personalised pages are never cached, a single registration with a safe update flow ("new version" toast), a static offline page, and `public/` (80 MB) is no longer precached.
