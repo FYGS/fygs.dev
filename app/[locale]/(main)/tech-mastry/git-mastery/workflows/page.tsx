@@ -165,7 +165,7 @@ export default function WorkflowsPage() {
   const [copied, setCopied] = useState(false);
 
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <section className="text-center space-y-4">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/20">
           <Workflow className="w-4 h-4 text-green-500" />
@@ -274,6 +274,6 @@ export default function WorkflowsPage() {
           </pre>
         </Card>
       </section>
-    </main>
+    </div>
   );
 }

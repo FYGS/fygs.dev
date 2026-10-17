@@ -468,7 +468,7 @@ eventBus.subscribe("order.created", async (event) => {
 
 export default function MessagingPage() {
   return (
-    <main className="container py-8 space-y-16 animate-fadeIn">
+    <div className="container py-8 space-y-16 animate-fadeIn">
       <section className="text-center space-y-6">
         <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-purple-500/10 text-purple-500">
           <MessageSquare className="w-8 h-8" />
@@ -495,6 +495,6 @@ export default function MessagingPage() {
       <Card className="p-8 border-border/40">
         <EventDrivenArchitecture />
       </Card>
-    </main>
+    </div>
   );
 }

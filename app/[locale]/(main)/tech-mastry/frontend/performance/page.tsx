@@ -10,9 +10,9 @@ export const metadata: Metadata = {
 
 export default function PerformancePage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <PerformanceHero />
       <PerformanceContent />
-    </main>
+    </div>
   );
 }

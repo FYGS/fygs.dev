@@ -1,0 +1,14 @@
+/fr
+/fr/blog
+/fr/blog/advanced-react-performance-patterns
+/fr/pricing
+/fr/auth/login
+/fr/projects
+/fr/me
+/fr/tech-mastry
+/fr/tech-mastry/frontend
+/fr/tech-mastry/algorithms/searching
+/fr/tech-mastry/algorithms/sorting
+/fr/tech-mastry/algorithms/complexity
+/fr/tech-mastry/dashboard
+/fr/tech-mastry/playground

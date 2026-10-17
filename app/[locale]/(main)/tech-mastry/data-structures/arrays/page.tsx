@@ -10,7 +10,7 @@ import { operations, techniques, stringTechniques } from "./_data/content";
 
 export default function ArraysPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       {/* Hero */}
       <section className="text-center space-y-6">
         <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-blue-500/10 text-blue-500">
@@ -168,6 +168,6 @@ function buildPrefixSum(arr: number[]): number[] {
           </pre>
         </Card>
       </section>
-    </main>
+    </div>
   );
 }

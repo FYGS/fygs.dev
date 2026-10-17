@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,13 +9,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FieldError, fieldErrorProps } from "@/components/ui/field-error";
 import { authService } from "@/lib/auth-service";
 import { toast } from "sonner";
 import { useIntlayer } from "next-intlayer";
 
 export default function ForgotPasswordPage() {
   const content = useIntlayer("auth");
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [sent, setSent] = useState(false);
 
@@ -55,7 +55,7 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-background via-background to-muted/20 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-2">
-          <CardTitle className="text-2xl font-bold">
+          <CardTitle as="h1" className="text-2xl font-bold">
             {content.forgotPassword.title}
           </CardTitle>
           <p className="text-muted-foreground">
@@ -66,8 +66,8 @@ export default function ForgotPasswordPage() {
           {sent ? (
             <div className="text-center space-y-4">
               <p className="text-sm">{content.forgotPassword.success}</p>
-              <Button onClick={() => router.push("/auth/login")}>
-                {content.forgotPassword.backToLogin}
+              <Button asChild>
+                <Link href="/auth/login">{content.forgotPassword.backToLogin}</Link>
               </Button>
             </div>
           ) : (
@@ -81,13 +81,11 @@ export default function ForgotPasswordPage() {
                   type="email"
                   placeholder="you@email.com"
                   {...register("email")}
+              {...fieldErrorProps("email", errors.email)}
+              autoComplete="email"
                   disabled={isLoading}
                 />
-                {errors.email && (
-                  <p className="text-sm text-destructive">
-                    {errors.email.message}
-                  </p>
-                )}
+                <FieldError id="email" message={errors.email?.message} />
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading
@@ -95,12 +93,8 @@ export default function ForgotPasswordPage() {
                   : content.forgotPassword.sendLink}
               </Button>
               <div className="text-center">
-                <Button
-                  variant="link"
-                  onClick={() => router.push("/auth/login")}
-                  type="button"
-                >
-                  {content.forgotPassword.backToLogin}
+                <Button variant="link" asChild>
+                  <Link href="/auth/login">{content.forgotPassword.backToLogin}</Link>
                 </Button>
               </div>
             </form>

@@ -51,15 +51,16 @@ export function Breadcrumbs() {
     >
       <Link
         href="/tech-mastry"
+        aria-label="Accueil TechMastery"
         className={cn(
           "flex items-center text-muted-foreground transition-colors hover:text-foreground"
         )}
       >
-        <Home className="h-4 w-4" />
+        <Home className="h-4 w-4" aria-hidden="true" />
       </Link>
       {breadcrumbs.map(({ name, path, isLast }) => (
         <div key={path} className="flex items-center">
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <Link
             href={path}
             className={cn(

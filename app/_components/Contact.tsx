@@ -74,7 +74,7 @@ export const Contact = () => {
               name="@fernandsoualo"
               description="Follow me on LinkedIn"
               image="/linkedin_profile_photo.jpeg"
-              mediumImage="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRokEYt0yyh6uNDKL8uksVLlhZ35laKNQgZ9g&s"
+              mediumImage="/images/contact/linkedin-badge.webp"
             />
           </motion.div>
           <motion.div
@@ -89,8 +89,8 @@ export const Contact = () => {
               url="https://github.com/fygs"
               name="@fygsdev"
               description="Follow me on GitHub"
-              image="https://avatars.githubusercontent.com/u/24303747?v=4"
-              mediumImage="https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png"
+              image="/images/contact/github-avatar.webp"
+              mediumImage="/images/contact/github-mark.webp"
             />
           </motion.div>
           <motion.div
@@ -105,8 +105,8 @@ export const Contact = () => {
               url="mailto:fygs.dev@gmail.com"
               name="me@contact.com"
               description="Email me for any inquiries"
-              image="https://lh3.googleusercontent.com/a/ACg8ocLyWsphW_y-YNkW5Hmyzb0E8mxBDtJCDctdTWV3l4HtyHnnfkYI=s432-c-no"
-              mediumImage="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Gmail_icon_%282020%29.svg/640px-Gmail_icon_%282020%29.svg.png"
+              image="/images/contact/email-avatar.webp"
+              mediumImage="/images/contact/gmail.svg"
             />
           </motion.div>
         </motion.div>

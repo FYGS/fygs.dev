@@ -3,9 +3,9 @@ import { PracticesList } from "./_components/practices-list";
 
 export default function BestPracticesPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <BestPracticesHero />
       <PracticesList />
-    </main>
+    </div>
   );
 }

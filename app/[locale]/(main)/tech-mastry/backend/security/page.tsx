@@ -490,7 +490,7 @@ if (req.headers["x-csrf-token"] !== req.cookies.csrf) {
 
 export default function BackendSecurityPage() {
   return (
-    <main className="container py-8 space-y-16 animate-fadeIn">
+    <div className="container py-8 space-y-16 animate-fadeIn">
       <section className="text-center space-y-6">
         <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-red-500/10 text-red-500">
           <Lock className="w-8 h-8" />
@@ -515,6 +515,6 @@ export default function BackendSecurityPage() {
       <Card className="p-8 border-border/40">
         <VulnerabilityDemo />
       </Card>
-    </main>
+    </div>
   );
 }

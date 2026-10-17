@@ -73,7 +73,7 @@ const twelveFactor = [
 
 export default function CloudNativePage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <section className="text-center space-y-6">
         <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-purple-500/10 text-purple-500">
           <Cloud className="w-8 h-8" />
@@ -132,6 +132,6 @@ export default function CloudNativePage() {
           </Card>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

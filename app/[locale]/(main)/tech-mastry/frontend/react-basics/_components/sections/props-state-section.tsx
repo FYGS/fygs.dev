@@ -44,7 +44,7 @@ function PropsDemo() {
       <UserProfile
         name="John Doe"
         role="Developer"
-        avatar="https://i.pravatar.cc/150?u=john"
+        avatar="/images/demo/avatar-john.webp"
         theme={theme}
       />
     </div>
@@ -72,7 +72,7 @@ function UserProfile({
         <div className="relative w-12 h-12 rounded-full overflow-hidden">
           <Image
             src={avatar}
-            alt={name}
+            alt=""
             fill
             sizes="48px"
             className="object-cover"

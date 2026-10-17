@@ -26,6 +26,11 @@
 - i18n dictionaries unified; analytics calls go through `AnalyticsHelper`.
 
 ### Fixed
+- Accessibility pass (WCAG 2.2 AA, see docs/accessibility-audit-2026-10.md): one `main` landmark and a skip link, `prefers-reduced-motion` support, labelled and described form fields, named icon buttons, heading levels, contrast of the brand colour, keyboard-reachable code blocks, modal command palette.
+- Hydration mismatch (React #418): numbers and dates rendered with the runtime default locale/time zone now pin it (`/tech-mastry/algorithms/complexity`, blog cards).
+- Service worker: API responses and personalised pages are never cached, a single registration with a safe update flow ("new version" toast), a static offline page, and `public/` (80 MB) is no longer precached.
+- Contact card icons are hosted under `public/images/contact`; `images.remotePatterns` lists only the hosts still needed (minio, GitHub and Google avatars, Unsplash seed images).
+- Bundle: jsPDF, three, d3 and Monaco sections load on demand; the Prism highlighter loads languages on demand.
 - Playground: program output was erased (CRLF), real execution for every template, runaway programs can be stopped, preview isolation.
 - Spacing tokens collapsed `max-w-*` utilities.
 

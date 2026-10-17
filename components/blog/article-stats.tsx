@@ -63,7 +63,7 @@ export function ArticleStats({
           >
             <Eye className="h-4 w-4 text-primary transition-colors group-hover:text-primary/80" />
             <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-              {views.toLocaleString()} {views === 1 ? viewLabel : viewsLabel}
+              {views.toLocaleString("en-US")} {views === 1 ? viewLabel : viewsLabel}
             </span>
           </motion.div>
           <motion.div
@@ -73,7 +73,7 @@ export function ArticleStats({
           >
             <ThumbsUp className="h-4 w-4 text-primary transition-colors group-hover:text-primary/80" />
             <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-              {likes.toLocaleString()} {likes === 1 ? likeLabel : likesLabel}
+              {likes.toLocaleString("en-US")} {likes === 1 ? likeLabel : likesLabel}
             </span>
           </motion.div>
           <motion.div
@@ -83,7 +83,7 @@ export function ArticleStats({
           >
             <Users className="h-4 w-4 text-primary transition-colors group-hover:text-primary/80" />
             <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-              {shares.toLocaleString()}{" "}
+              {shares.toLocaleString("en-US")}{" "}
               {shares === 1 ? shareLabel : sharesLabel}
             </span>
           </motion.div>

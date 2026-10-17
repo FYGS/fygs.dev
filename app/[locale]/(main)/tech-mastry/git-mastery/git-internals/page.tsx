@@ -138,7 +138,7 @@ export default function GitInternalsPage() {
   const [selected, setSelected] = useState<string | null>(null);
 
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <section className="text-center space-y-4">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20">
           <Eye className="w-4 h-4 text-purple-500" />
@@ -209,6 +209,6 @@ export default function GitInternalsPage() {
           (contenu des fichiers) et d&apos;autres trees (sous-répertoires).
         </p>
       </Card>
-    </main>
+    </div>
   );
 }

@@ -264,7 +264,7 @@ export default function DesignPatternsPage() {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
 
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <section className="text-center space-y-4">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20">
           <Blocks className="w-4 h-4 text-indigo-500" />
@@ -335,6 +335,6 @@ export default function DesignPatternsPage() {
           </Card>
         ))}
       </div>
-    </main>
+    </div>
   );
 }

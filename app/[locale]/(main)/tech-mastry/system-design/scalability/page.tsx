@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function ScalabilityPage() {
   return (
-    <main className="container py-8 space-y-16 animate-fadeIn">
+    <div className="container py-8 space-y-16 animate-fadeIn">
       <div className="absolute inset-0 bg-grid-pattern opacity-5 -z-10"></div>
       <div className="absolute inset-0 bg-linear-to-br from-indigo-500/5 via-transparent to-purple-500/5 -z-10"></div>
 
@@ -558,6 +558,6 @@ export default function ScalabilityPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

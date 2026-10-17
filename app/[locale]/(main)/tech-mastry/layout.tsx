@@ -156,7 +156,7 @@ export default function InterviewPrepLayout({
         </header>
 
         {/* Content Area */}
-        <main className="flex-1">
+        <div className="flex-1">
           <div className="w-full max-w-[1920px] mx-auto px-6 py-8 lg:px-8 lg:py-10 xl:px-12 2xl:px-16">
             <Suspense
               fallback={
@@ -172,7 +172,7 @@ export default function InterviewPrepLayout({
               {children}
             </Suspense>
           </div>
-        </main>
+        </div>
 
         {/* Footer */}
         <footer className="border-t bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60">

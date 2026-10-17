@@ -19,9 +19,9 @@ const challengeData = {
 
 export default function StringsChallengePage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <ChallengeHeader {...challengeData} />
       <StringChallenge />
-    </main>
+    </div>
   );
 }

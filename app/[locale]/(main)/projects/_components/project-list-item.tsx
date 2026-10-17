@@ -53,14 +53,14 @@ export function ProjectListItem({
           <div className="flex-1 p-6">
             <div className="flex flex-col h-full">
               <div className="flex justify-between items-start gap-4 mb-3">
-                <motion.h3
+                <motion.h2
                   className="text-2xl font-semibold"
                   variants={{
                     hover: { color: "var(--primary)" },
                   }}
                 >
                   {project.title}
-                </motion.h3>
+                </motion.h2>
                 <div className="flex gap-2 shrink-0">
                   {project.githubUrl && (
                     <Link

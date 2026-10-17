@@ -14,7 +14,7 @@ export default function LearningLoading() {
       </aside>
 
       {/* Main content skeleton */}
-      <main className="flex-1 p-6 space-y-6">
+      <div className="flex-1 p-6 space-y-6">
         {/* Top bar */}
         <div className="flex items-center gap-4">
           <Skeleton className="h-8 w-8" />
@@ -34,7 +34,7 @@ export default function LearningLoading() {
           <Skeleton className="h-4 w-5/6" />
           <Skeleton className="h-4 w-3/4" />
         </div>
-      </main>
+      </div>
     </div>
   );
 }

@@ -232,7 +232,7 @@ function CommandCard({ command }: { command: Command }) {
 
 export default function AdvancedCommandsPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <section className="text-center space-y-4">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20">
           <Terminal className="w-4 h-4 text-blue-500" />
@@ -262,6 +262,6 @@ export default function AdvancedCommandsPage() {
           </TabsContent>
         ))}
       </Tabs>
-    </main>
+    </div>
   );
 }

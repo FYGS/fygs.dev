@@ -54,7 +54,7 @@ const testimonialsContent = {
           es: "Desarrolladora Frontend Senior",
         }),
         company: "Spotify",
-        avatar: "https://ui-avatars.com/api/?name=Sarah+Martinez&size=64&background=8b5cf6&color=fff",
+        avatar: "/images/testimonials/sarah-martinez.svg",
         content: t({
           en: "The FYGS courses helped me advance from junior to senior in 8 months. The practical approach and real-world projects make all the difference.",
           fr: "Les cours FYGS m'ont aidée à passer de junior à senior en 8 mois. L'approche pratique et les projets réels font toute la différence.",
@@ -87,7 +87,7 @@ const testimonialsContent = {
           es: "Ingeniero Fullstack",
         }),
         company: "Airbnb",
-        avatar: "https://ui-avatars.com/api/?name=Thomas+Dubois&size=64&background=3b82f6&color=fff",
+        avatar: "/images/testimonials/thomas-dubois.svg",
         content: t({
           en: "Thanks to the TypeScript and Node.js courses, I landed my dream job at Airbnb. The content is up-to-date and very professional.",
           fr: "Grâce aux cours TypeScript et Node.js, j'ai décroché mon emploi de rêve chez Airbnb. Le contenu est à jour et très professionnel.",
@@ -120,7 +120,7 @@ const testimonialsContent = {
           es: "Tech Lead",
         }),
         company: "Microsoft",
-        avatar: "https://ui-avatars.com/api/?name=Marie+Chen&size=64&background=ec4899&color=fff",
+        avatar: "/images/testimonials/marie-chen.svg",
         content: t({
           en: "Fernand's expertise in architecture and best practices helped me advance to a Tech Lead position. Exceptional courses!",
           fr: "L'expertise de Fernand en architecture et bonnes pratiques m'a aidée à accéder à un poste de Tech Lead. Des cours exceptionnels !",
@@ -153,7 +153,7 @@ const testimonialsContent = {
           es: "Ingeniero DevOps",
         }),
         company: "Netflix",
-        avatar: "https://ui-avatars.com/api/?name=Alex+Johnson&size=64&background=10b981&color=fff",
+        avatar: "/images/testimonials/alex-johnson.svg",
         content: t({
           en: "The Cloud and DevOps courses are incredible. I was able to implement complex solutions from my first week at Netflix.",
           fr: "Les cours Cloud et DevOps sont incroyables. J'ai pu implémenter des solutions complexes dès ma première semaine chez Netflix.",

@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 export default function StoragePage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <StorageHero />
 
       <section className="space-y-12">
@@ -110,6 +110,6 @@ export default function StoragePage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

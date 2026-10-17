@@ -21,7 +21,7 @@ function LoginPageContent() {
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-background via-background to-muted/20 p-3 sm:p-4">
       <Card className="w-full max-w-md mx-auto">
         <CardHeader className="text-center space-y-2 px-4 sm:px-6 pt-6 pb-4">
-          <CardTitle className="text-xl sm:text-2xl font-bold">
+          <CardTitle as="h1" className="text-xl sm:text-2xl font-bold">
             {content.title}
           </CardTitle>
           <p className="text-muted-foreground text-sm sm:text-base">

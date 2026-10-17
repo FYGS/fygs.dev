@@ -176,7 +176,7 @@ export function PgToolbar() {
                 "h-7 gap-1.5 px-3 text-xs font-semibold transition-colors",
                 status === "running"
                   ? "bg-red-600 hover:bg-red-700"
-                  : "bg-green-600 hover:bg-green-700",
+                  : "bg-green-700 hover:bg-green-800",
               )}
               onClick={status === "running" ? stopExecution : handleRun}
             >
@@ -271,6 +271,8 @@ export function PgToolbar() {
                   : "text-muted-foreground opacity-60",
               )}
               onClick={toggleFileExplorer}
+              aria-label="File explorer"
+              aria-pressed={layout.showFileExplorer}
             >
               <FolderTree className="h-3.5 w-3.5" />
             </Button>
@@ -292,6 +294,8 @@ export function PgToolbar() {
                   : "text-muted-foreground opacity-60",
               )}
               onClick={toggleConsole}
+              aria-label="Console"
+              aria-pressed={layout.showConsole}
             >
               <Terminal className="h-3.5 w-3.5" />
             </Button>
@@ -313,6 +317,8 @@ export function PgToolbar() {
                   : "text-muted-foreground opacity-60",
               )}
               onClick={togglePreview}
+              aria-label="Preview"
+              aria-pressed={layout.showPreview}
             >
               <Monitor className="h-3.5 w-3.5" />
             </Button>
@@ -419,7 +425,12 @@ export function PgToolbar() {
           <Tooltip>
             <TooltipTrigger asChild>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  aria-label="More options"
+                >
                   <MoreHorizontal className="h-3.5 w-3.5" />
                 </Button>
               </DropdownMenuTrigger>
@@ -473,6 +484,7 @@ function ToolbarButton({
           size="icon"
           className="h-7 w-7"
           onClick={onClick}
+          aria-label={tooltip}
         >
           <Icon className="h-3.5 w-3.5" />
         </Button>

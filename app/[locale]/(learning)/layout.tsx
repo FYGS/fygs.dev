@@ -7,5 +7,9 @@ export default function LearningLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <div className="min-h-screen bg-background">{children}</div>;
+  return (
+    <main id="main-content" tabIndex={-1} className="min-h-screen bg-background outline-hidden">
+      {children}
+    </main>
+  );
 }

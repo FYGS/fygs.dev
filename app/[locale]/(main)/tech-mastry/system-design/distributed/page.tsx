@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function DistributedArchitecturePage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <DistributedHero />
 
       <section className="space-y-12">
@@ -152,6 +152,6 @@ export default function DistributedArchitecturePage() {
           </p>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

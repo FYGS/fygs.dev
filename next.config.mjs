@@ -1,3 +1,6 @@
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+
 import MonacoWebpackPlugin from "monaco-editor-webpack-plugin";
 
 import { withIntlayer } from "next-intlayer/server";
@@ -14,17 +17,44 @@ import {
   REPORTING_ENDPOINTS_VALUE,
 } from "./lib/csp.mjs";
 
+// Service worker (next-pwa/workbox): runtime caching only, no precache. Never caches /api, personalised
+// areas (keep the deny list in sync with app/[locale]/(admin), (learning) and the personal parts of (main)).
+// NB: the functions below are serialised into public/sw.js by workbox: they must stay self-contained.
+// Offline fallback: a static, hydration-free page (a React page served under another URL cannot hydrate).
+const OFFLINE_REVISION = createHash("md5")
+  .update(readFileSync(new URL("./public/offline.html", import.meta.url)))
+  .digest("hex");
+
 const withPWA = withPWAInit({
   dest: "public",
   disable: process.env.NODE_ENV === "development",
-  register: true,
+  // Registration (and the update/refresh flow) lives in components/pwa/service-worker-registration.tsx;
+  // letting next-pwa inject its own register script as well made the worker register twice.
+  register: false,
   skipWaiting: true,
+  // By default next-pwa precaches every file of public/ (~80 MB: screenshots, project images,
+  // PDF) on each install. Only the offline page is precached; everything else is runtime cached.
+  cacheStartUrl: false,
+  additionalManifestEntries: [{ url: "/offline.html", revision: OFFLINE_REVISION }],
   // Fluid PWA: rely on runtime caching, not aggressive precaching
   dynamicStartUrl: false,
   runtimeCaching: [
     {
-      // Pages — network first, fall back to cache
-      urlPattern: /^https?:\/\/[^/]+\/(fr|en|es)(\/.*)?$/,
+      // Never cache the API (auth/session, AI, Stripe, uploads, ...): always hit the network.
+      urlPattern: ({ url }) => url.pathname.startsWith("/api/"),
+      handler: "NetworkOnly",
+    },
+    {
+      // Public pages (full document navigations only) — network first, fall back to cache.
+      // RSC/prefetch requests and personalised areas are excluded, and responses Next marks as
+      // private/no-store (anything reading cookies or the session) are never written to the cache.
+      urlPattern: ({ url, request, sameOrigin }) => {
+        if (!sameOrigin || request.mode !== "navigate") return false;
+        if (!/^[/](fr|en|es)([/]|$)/.test(url.pathname)) return false;
+        return !/^[/](fr|en|es)[/](admin|dashboard|profile|me|auth|learn|certificates|offline|community[/](notifications|bookmarks|following|new|mentorship))([/]|$)/.test(
+          url.pathname,
+        );
+      },
       handler: "NetworkFirst",
       options: {
         cacheName: "pages-cache",
@@ -32,25 +62,26 @@ const withPWA = withPWAInit({
           maxEntries: 64,
           maxAgeSeconds: 24 * 60 * 60, // 24h
         },
-        networkTimeoutSeconds: 10,
+        networkTimeoutSeconds: 4,
+        plugins: [
+          {
+            cacheWillUpdate: async ({ response }) => {
+              const cacheControl = response.headers.get("cache-control") || "";
+              return /no-store|private/i.test(cacheControl) ? null : response;
+            },
+            // Offline and nothing cached for this page: show the precached static offline page.
+            handlerDidError: async () => {
+              const offline = await caches.match("/offline.html", { ignoreSearch: true });
+              return offline || Response.error();
+            },
+          },
+        ],
       },
     },
     {
-      // API calls — network first with shorter TTL
-      urlPattern: /\/api\/.*/,
-      handler: "NetworkFirst",
-      options: {
-        cacheName: "api-cache",
-        expiration: {
-          maxEntries: 32,
-          maxAgeSeconds: 5 * 60, // 5 min
-        },
-        networkTimeoutSeconds: 10,
-      },
-    },
-    {
-      // Static assets (images, fonts, etc.) — cache first
-      urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|avif|ico|woff2?|ttf|eot)$/i,
+      // Static assets (images, fonts, etc.) — cache first, same-origin only
+      urlPattern: ({ url, sameOrigin }) =>
+        sameOrigin && /[.](?:png|jpg|jpeg|svg|gif|webp|avif|ico|woff2?|ttf|eot)$/i.test(url.pathname),
       handler: "CacheFirst",
       options: {
         cacheName: "static-assets",
@@ -62,7 +93,7 @@ const withPWA = withPWAInit({
     },
     {
       // JS/CSS bundles — stale while revalidate
-      urlPattern: /\/_next\/static\/.*/,
+      urlPattern: /[/]_next[/]static[/]/,
       handler: "StaleWhileRevalidate",
       options: {
         cacheName: "next-static",
@@ -87,39 +118,11 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "picsum.photos",
-      },
-      {
-        protocol: "https",
-        hostname: "encrypted-tbn0.gstatic.com",
-      },
-      {
-        protocol: "https",
         hostname: "avatars.githubusercontent.com",
       },
       {
         protocol: "https",
-        hostname: "github.githubassets.com",
-      },
-      {
-        protocol: "https",
         hostname: "lh3.googleusercontent.com",
-      },
-      {
-        protocol: "https",
-        hostname: "upload.wikimedia.org",
-      },
-      {
-        protocol: "https",
-        hostname: "i.pravatar.cc",
-      },
-      {
-        protocol: "https",
-        hostname: "images.pexels.com",
-      },
-      {
-        protocol: "https",
-        hostname: "www.pexels.com",
       },
       {
         protocol: "https",
@@ -141,6 +144,10 @@ const nextConfig = {
     return config;
   },
   // Performance optimizations
+  // lucide-react, date-fns and recharts are optimised by default; these are barrel-heavy too.
+  experimental: {
+    optimizePackageImports: ["framer-motion", "@radix-ui/react-icons", "react-icons/fa6"],
+  },
   poweredByHeader: false,
   reactStrictMode: true,
 

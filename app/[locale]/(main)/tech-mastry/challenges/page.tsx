@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 
 export default function ChallengesPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <AdvancedCodingChallenges />
-    </main>
+    </div>
   );
 }
