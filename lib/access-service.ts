@@ -180,7 +180,7 @@ export class AccessService {
       }),
       db.course.findUnique({
         where: { id: courseId },
-        select: { id: true, accessTier: true, previewEnabled: true },
+        select: { id: true, accessTier: true, previewEnabled: true, published: true },
       }),
     ]);
 
@@ -206,9 +206,13 @@ export class AccessService {
     // Access granted only once enrolled (enrollment creates dashboard association & tracking)
     const canAccessCourse = isEnrolledInCourse;
     const canAccessLessons = canAccessCourse;
-    // Preview allowed only for premium locked courses (not free) when previewEnabled flag set
+    // Preview allowed only for premium locked courses (not free) when previewEnabled flag set,
+    // and never for a course that is not published (a draft is not public)
     const canPreviewFirstLesson =
-      !canAccessCourse && !isFreeCourse && !!course.previewEnabled;
+      !canAccessCourse &&
+      !isFreeCourse &&
+      !!course.previewEnabled &&
+      !!course.published;
     const accessReason: UserAccess["accessReason"] = canAccessCourse
       ? "ok"
       : canPreviewFirstLesson
@@ -366,7 +370,7 @@ export class AccessService {
       }),
       db.course.findMany({
         where: { id: { in: courseIds } },
-        select: { id: true, accessTier: true, previewEnabled: true },
+        select: { id: true, accessTier: true, previewEnabled: true, published: true },
       }),
     ]);
 
@@ -382,7 +386,10 @@ export class AccessService {
       const isEnrolledInCourse = !!enrollment;
       const canAccessCourse = isEnrolledInCourse; // enrollment-required gating
       const canPreviewFirstLesson =
-        !canAccessCourse && !isFreeCourse && !!course.previewEnabled;
+        !canAccessCourse &&
+        !isFreeCourse &&
+        !!course.previewEnabled &&
+        !!course.published;
 
       const accessReason: UserAccess["accessReason"] = canAccessCourse
         ? "ok"
