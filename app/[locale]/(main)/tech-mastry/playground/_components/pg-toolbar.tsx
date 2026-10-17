@@ -176,7 +176,7 @@ export function PgToolbar() {
                 "h-7 gap-1.5 px-3 text-xs font-semibold transition-colors",
                 status === "running"
                   ? "bg-red-600 hover:bg-red-700"
-                  : "bg-green-600 hover:bg-green-700",
+                  : "bg-green-700 hover:bg-green-800",
               )}
               onClick={status === "running" ? stopExecution : handleRun}
             >

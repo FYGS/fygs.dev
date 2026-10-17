@@ -128,7 +128,7 @@ export function BookingCalendar({ className }: BookingCalendarProps) {
             </div>
 
             <Select value={timeSlot} onValueChange={setTimeSlot}>
-              <SelectTrigger>
+              <SelectTrigger aria-label="Select a time">
                 <SelectValue placeholder="Select a time" />
               </SelectTrigger>
               <SelectContent>

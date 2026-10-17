@@ -186,6 +186,7 @@ export function PgLayout() {
     <MobileGuard>
       <TooltipProvider delayDuration={200}>
         <div className="flex h-[calc(100vh-64px)] flex-col overflow-hidden bg-[#1e1e1e] text-white">
+          <h1 className="sr-only">Playground</h1>
           {/* Top Toolbar */}
           <PgToolbar />
 

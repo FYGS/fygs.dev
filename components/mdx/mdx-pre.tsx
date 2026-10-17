@@ -125,6 +125,7 @@ export function MDXPre({
       {/* Code content */}
       <pre
         ref={preRef}
+        tabIndex={0}
         className={cn(
           "overflow-x-auto overflow-y-auto max-h-[80vh] p-4 text-sm leading-relaxed",
           "[&>code]:bg-transparent [&>code]:p-0 [&>code]:border-0",

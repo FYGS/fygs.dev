@@ -16,7 +16,14 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { useLocale } from "next-intlayer";
 import { useRouter } from "next/navigation";
+
+const LABELS = {
+  fr: { nav: "Pagination", first: "Première page", prev: "Page précédente", next: "Page suivante", last: "Dernière page", page: "Page", perPage: "Éléments par page" },
+  en: { nav: "Pagination", first: "First page", prev: "Previous page", next: "Next page", last: "Last page", page: "Page", perPage: "Items per page" },
+  es: { nav: "Paginación", first: "Primera página", prev: "Página anterior", next: "Página siguiente", last: "Última página", page: "Página", perPage: "Elementos por página" },
+} as const;
 
 const pageSizeOptions = [6, 12, 24, 48];
 const initialPageSize = 6;
@@ -47,6 +54,8 @@ export const Pagination = ({
   searchParams,
 }: PaginationProps) => {
   const router = useRouter();
+  const { locale } = useLocale();
+  const labels = LABELS[(locale in LABELS ? locale : "fr") as keyof typeof LABELS];
 
   // Use either provided currentPage or get from searchParams
   const currentSize = searchParams
@@ -134,7 +143,7 @@ export const Pagination = ({
           value={String(currentSize)}
           onValueChange={handlePageSizeChange}
         >
-          <SelectTrigger className="h-8 w-[70px]">
+          <SelectTrigger className="h-8 w-[70px]" aria-label={labels.perPage}>
             <SelectValue placeholder={currentSize} />
           </SelectTrigger>
           <SelectContent side="top">
@@ -147,15 +156,16 @@ export const Pagination = ({
         </Select>
       </div>
 
-      <div className="flex items-center justify-end gap-1">
+      <nav aria-label={labels.nav} className="flex items-center justify-end gap-1">
         <Button
           variant="outline"
           size="icon"
           className="h-8 w-8"
           onClick={() => handlePageChange(firstPage())}
           disabled={!hasPrevPage}
+          aria-label={labels.first}
         >
-          <ChevronFirst className="h-4 w-4" />
+          <ChevronFirst className="h-4 w-4" aria-hidden="true" />
         </Button>
         <Button
           variant="outline"
@@ -163,8 +173,9 @@ export const Pagination = ({
           className="h-8 w-8"
           onClick={() => handlePageChange(prevPage())}
           disabled={!hasPrevPage}
+          aria-label={labels.prev}
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="h-4 w-4" aria-hidden="true" />
         </Button>
 
         {paginationRange.map((pageNumber, i) => {
@@ -176,6 +187,7 @@ export const Pagination = ({
                 size="icon"
                 className="h-8 w-8"
                 disabled
+                aria-hidden="true"
               >
                 &#8230;
               </Button>
@@ -189,6 +201,8 @@ export const Pagination = ({
               size="icon"
               className="h-8 w-8"
               onClick={() => handlePageChange(pageNumber as number)}
+              aria-label={`${labels.page} ${pageNumber}`}
+              aria-current={pageNumber === currentPage ? "page" : undefined}
             >
               {pageNumber}
             </Button>
@@ -201,8 +215,9 @@ export const Pagination = ({
           className="h-8 w-8"
           onClick={() => handlePageChange(nextPage())}
           disabled={!hasNextPage}
+          aria-label={labels.next}
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-4 w-4" aria-hidden="true" />
         </Button>
         <Button
           variant="outline"
@@ -210,10 +225,11 @@ export const Pagination = ({
           className="h-8 w-8"
           onClick={() => handlePageChange(lastPage())}
           disabled={!hasNextPage}
+          aria-label={labels.last}
         >
-          <ChevronLast className="h-4 w-4" />
+          <ChevronLast className="h-4 w-4" aria-hidden="true" />
         </Button>
-      </div>
+      </nav>
     </div>
   );
 };

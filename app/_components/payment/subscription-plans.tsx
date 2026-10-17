@@ -134,7 +134,7 @@ export function SubscriptionPlans({
   return (
     <div className="space-y-8">
       <div className="text-center space-y-4">
-        <h2 className="text-3xl font-bold">Choisissez votre plan</h2>
+        <h1 className="text-3xl font-bold">Choisissez votre plan</h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
           Accédez à notre catalogue complet de formations premium et accélérez
           votre carrière en développement.
@@ -168,7 +168,7 @@ export function SubscriptionPlans({
                   ) : (
                     <Zap className="h-6 w-6 text-muted-foreground" />
                   )}
-                  <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                  <CardTitle as="h2" className="text-2xl">{plan.name}</CardTitle>
                 </div>
                 <p className="text-muted-foreground">{plan.description}</p>
               </div>
@@ -260,9 +260,9 @@ export function SubscriptionPlans({
                   plan.limitations.map((limitation, index) => (
                     <div
                       key={index}
-                      className="flex items-start gap-3 opacity-60"
+                      className="flex items-start gap-3"
                     >
-                      <div className="h-5 w-5 shrink-0 mt-0.5 flex items-center justify-center">
+                      <div className="h-5 w-5 shrink-0 mt-0.5 flex items-center justify-center opacity-60">
                         <div className="h-2 w-2 bg-muted-foreground rounded-full" />
                       </div>
                       <span className="text-sm text-muted-foreground line-through">

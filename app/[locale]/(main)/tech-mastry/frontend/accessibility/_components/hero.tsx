@@ -18,7 +18,7 @@ export function AccessibilityHero() {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <Badge variant="secondary" className="bg-blue-500/10 text-blue-500">
+        <Badge variant="secondary" className="bg-blue-500/10 text-blue-400">
           ARIA
         </Badge>
         <Badge variant="secondary" className="bg-purple-500/10 text-purple-500">

@@ -482,7 +482,8 @@
     --card-foreground: 214 32% 91%; /* #E2E8F0 - Slate 200 */
     --border: 217 19% 27%; /* #334155 - Slate 700 */
     --input: 217 19% 27%; /* #334155 */
-    --primary: 239 84% 67%; /* #818CF8 - Indigo 400 */
+    --primary: 239 84% 65%; /* Indigo, white text 5.0:1 */
+    --primary-text: 239 84% 74%; /* Indigo as TEXT on dark surfaces, >= 4.5:1 */
     --primary-foreground: 0 0% 100%; /* White */
     --secondary: 217 19% 27%; /* #334155 - Slate 700 */
     --secondary-foreground: 210 40% 98%; /* #F8FAFC */
@@ -521,7 +522,8 @@
     --card-foreground: 222 47% 11%; /* Slate 900 */
     --border: 214 32% 91%; /* #E2E8F0 - Slate 200 */
     --input: 214 32% 91%; /* Slate 200 */
-    --primary: 239 84% 67%; /* #818CF8 - Indigo 400 (same hue) */
+    --primary: 239 84% 65%; /* Indigo (same hue) */
+    --primary-text: 243 75% 52%; /* Indigo as TEXT on light surfaces, >= 4.5:1 */
     --primary-foreground: 0 0% 100%; /* White */
     --secondary: 210 40% 96%; /* #F1F5F9 - Slate 100 */
     --secondary-foreground: 222 47% 11%; /* Slate 900 */
@@ -619,5 +621,19 @@
   .animate-spin {
     animation-duration: 1s !important;
     animation-iteration-count: infinite !important;
+  }
+}
+
+/*
+ * Contrast (WCAG 1.4.3): the brand indigo cannot be both a fill behind white text and text on a
+ * dark surface at 4.5:1, so text uses --primary-text and fills keep --primary.
+ */
+@layer utilities {
+  .text-primary {
+    color: hsl(var(--primary-text));
+  }
+  .hover\:text-primary:hover,
+  .group:hover .group-hover\:text-primary {
+    color: hsl(var(--primary-text));
   }
 }
