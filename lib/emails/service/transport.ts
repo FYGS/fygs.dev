@@ -1,5 +1,6 @@
 import { createTransport, type Transporter } from "nodemailer";
 
+import { captureEmail, isCaptureRequested } from "./capture";
 import type { EmailOptions } from "./types";
 
 /** SMTP transport: lazily creates the nodemailer transporter and sends mail. */
@@ -22,6 +23,11 @@ export class EmailTransport {
   }
 
   async sendEmail({ to, subject, html, text }: EmailOptions): Promise<boolean> {
+    // Test-only hook (see ./capture): fails closed, never reaches SMTP when requested.
+    if (isCaptureRequested()) {
+      captureEmail({ to, subject, html, text });
+      return true;
+    }
     try {
       const transporter = this.getTransporter();
 
