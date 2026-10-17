@@ -358,6 +358,12 @@ describe("playground store (pinned)", () => {
     };
     storage.set("playground-v2", JSON.stringify(saved));
     const store = await fresh();
+    // hydration is skipped at import (server/client markup); PgLayout restores after mount
+    expect(store.getState().files[0].content).not.toBe("saved");
+    await store.persist.rehydrate();
+    expect(store.getState().files[0].content).toBe("saved");
+    expect(store.getState().code).toBe("saved"); // compat fields follow the restored files
+    expect(store.getState().settings.fontSize).toBe(18);
     expect(data(store.getState() as never)).toMatchSnapshot();
     // transient state is not restored from storage
     store.getState().addConsoleEntry({ type: "log", content: "t" });
