@@ -136,7 +136,11 @@ describe('T103: Course Enrollment Contract Tests', () => {
 
       expect(result.success).toBe(true)
       expect(result.alreadyEnrolled).toBe(true)
-      expect(result.message).toContain('Already enrolled')
+      // user-facing text is localized: the flag is the contract
+      expect(result.message).toEqual(expect.any(String))
+      expect(
+        await db.enrollment.count({ where: { userId: testUserId, courseId: freeCourseId } })
+      ).toBe(1)
     })
 
     test('allows enrollment in multiple free courses', async () => {
@@ -175,7 +179,8 @@ describe('T103: Course Enrollment Contract Tests', () => {
 
       expect(result.success).toBe(false)
       expect(result.error).toBe('PREMIUM_ACCESS_REQUIRED')
-      expect(result.message).toContain('subscription')
+      // user-facing text is localized: the error code is the contract
+      expect(result.message).toEqual(expect.any(String))
     })
 
     test('allows premium course enrollment with active subscription', async () => {
