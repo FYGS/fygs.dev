@@ -140,6 +140,20 @@ export class CertificateService {
 
       return result;
     } catch (error) {
+      // Concurrent issuance: another request created the certificate between our
+      // existence check and our insert (unique userId+courseId). The transaction is
+      // aborted at that point, so read the winner's row outside of it and answer
+      // as for any later attempt.
+      if ((error as { code?: string } | null)?.code === "P2002") {
+        const existing = await db.certificate.findUnique({
+          where: { userId_courseId: { userId, courseId } },
+          select: { id: true, issuedAt: true },
+        });
+        if (existing) {
+          return { success: true, certificate: existing, alreadyIssued: true };
+        }
+      }
+
       console.error("Certificate issuance failed:", error);
       return {
         success: false,

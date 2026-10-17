@@ -3,15 +3,18 @@ import { db } from '@/lib/db'
 import { CertificateService } from '@/lib/certificate-service'
 
 describe('Certificate Issuance Idempotency Contract Tests', () => {
+  // unique per test: no collision with leftovers of another test or file
+  const unique = () => Math.random().toString(36).slice(2, 10)
   let testUserId: string
   let testCourseId: string
   let testLessonIds: string[]
 
   beforeEach(async () => {
+    const suffix = unique()
     // Create test user
     const user = await db.user.create({
       data: {
-        email: 'certificate-test@example.com',
+        email: `certificate-test-${suffix}@example.com`,
         name: 'Certificate Test User',
         emailVerified: true
       }
@@ -22,7 +25,7 @@ describe('Certificate Issuance Idempotency Contract Tests', () => {
     const course = await db.course.create({
       data: {
         title: 'Certificate Test Course',
-        slug: 'certificate-test-course',
+        slug: `certificate-test-course-${suffix}`,
         description: 'Course for testing certificate issuance',
         category: 'JAVASCRIPT',
         level: 'BEGINNER',
