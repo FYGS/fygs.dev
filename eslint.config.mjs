@@ -45,6 +45,22 @@ const eslintConfig = [
       "@typescript-eslint/no-require-imports": "off",
     },
   },
+  // --- lint-tech-mastry overrides ---
+  {
+    // tech-mastry is clean: the React Compiler checks block the build there.
+    files: ["app/[[]locale]/(main)/tech-mastry/**/*.{ts,tsx}"],
+    rules: {
+      "react-hooks/error-boundaries": "error",
+      "react-hooks/set-state-in-effect": "error",
+      "react-hooks/purity": "error",
+      "react-hooks/immutability": "error",
+      "react-hooks/refs": "error",
+      "react-hooks/static-components": "error",
+      "react-hooks/globals": "error",
+      "@next/next/no-html-link-for-pages": "error",
+    },
+  },
+  // --- end lint-tech-mastry overrides ---
 ];
 
 export default eslintConfig;
