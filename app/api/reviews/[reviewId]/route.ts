@@ -10,6 +10,7 @@ import { ReviewStatus } from "@/lib/generated/prisma/browser";
 import { logger } from "@/lib/structured-logger";
 import { ReviewAnalyticsService } from "@/lib/services/review-analytics";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { parseJsonBody } from "@/lib/utils/parse-json-body";
 
 export const runtime = "nodejs";
 
@@ -159,7 +160,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
 
     // Parse and validate request body
-    const body = await request.json();
+    const parsed = await parseJsonBody(request);
+    if (!parsed.ok) return parsed.response;
+    const body = parsed.body;
     const validation = updateReviewSchema.safeParse(body);
 
     if (!validation.success) {
