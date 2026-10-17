@@ -3,8 +3,8 @@ import { PrismaClient } from "@/lib/generated/prisma/client";
 
 // Prisma 7 talks to PostgreSQL through the `pg` driver adapter. The connection
 // is opened lazily, so importing this module (e.g. during `next build`) does
-// not need a reachable database. This module is Node-only: never import it from
-// the proxy (middleware) or from edge routes.
+// not need a reachable database. This module is Node-only (the `pg` driver needs
+// TCP sockets): never import it from a route that declares `runtime = "edge"`.
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
