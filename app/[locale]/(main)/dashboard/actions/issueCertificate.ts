@@ -55,20 +55,9 @@ export async function issueCertificate(
       courseId
     );
 
-    if (!eligibility.eligible) {
-      return {
-        success: false,
-        message: eligibility.reason,
-        error: "NOT_ELIGIBLE",
-        eligibility: {
-          eligible: eligibility.eligible,
-          reason: eligibility.reason,
-          completionPercentage: eligibility.completionPercentage,
-        },
-      };
-    }
-
-    // Handle already issued case
+    // Already issued: answer with the existing certificate. This must come before
+    // the eligibility check, because checkCertificateEligibility reports an
+    // existing certificate as eligible:false ("Certificate already issued").
     if (eligibility.reason === "Certificate already issued") {
       const certificate = await db.certificate.findUnique({
         where: {
@@ -97,6 +86,19 @@ export async function issueCertificate(
             }
           : undefined,
         alreadyIssued: true,
+      };
+    }
+
+    if (!eligibility.eligible) {
+      return {
+        success: false,
+        message: eligibility.reason,
+        error: "NOT_ELIGIBLE",
+        eligibility: {
+          eligible: eligibility.eligible,
+          reason: eligibility.reason,
+          completionPercentage: eligibility.completionPercentage,
+        },
       };
     }
 

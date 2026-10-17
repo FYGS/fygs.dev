@@ -25,12 +25,17 @@ describe("Issue Certificate Server Action Contract Tests", () => {
   let testUserId: string;
   let testCourseId: string;
   let testLessonIds: string[];
+  let testEmail: string;
+  let suffix: string;
 
   beforeEach(async () => {
+    // unique per test: no collision with leftovers of another test or file
+    suffix = Math.random().toString(36).slice(2, 10);
+    testEmail = `certificate-test-${suffix}@example.com`;
     // Create test user
     const user = await db.user.create({
       data: {
-        email: "certificate-test@example.com",
+        email: testEmail,
         name: "Certificate Test User",
         emailVerified: true,
       },
@@ -41,7 +46,7 @@ describe("Issue Certificate Server Action Contract Tests", () => {
     const course = await db.course.create({
       data: {
         title: "Certificate Test Course",
-        slug: "certificate-test-course",
+        slug: `certificate-test-course-${suffix}`,
         description: "Course for testing certificate issuance",
         category: "JAVASCRIPT",
         level: "BEGINNER",
@@ -93,7 +98,7 @@ describe("Issue Certificate Server Action Contract Tests", () => {
 
     // Mock the auth user ID to match our test user
     vi.mocked(auth.api.getSession).mockResolvedValue({
-      user: { id: testUserId, email: "certificate-test@example.com" },
+      user: { id: testUserId, email: testEmail },
     });
   });
 
@@ -110,13 +115,14 @@ describe("Issue Certificate Server Action Contract Tests", () => {
 
   describe("Input validation", () => {
     test("rejects invalid course ID format", async () => {
-      try {
-        await issueCertificate({ courseId: "invalid-id" });
-        expect.fail("Should have thrown validation error");
-      } catch (error) {
-        // Zod validation should throw for invalid CUID
-        expect(error).toBeDefined();
-      }
+      // The action reports schema errors in its result instead of throwing
+      const result = await issueCertificate({ courseId: "invalid id" });
+
+      expect(result).toMatchObject({
+        success: false,
+        error: "VALIDATION_ERROR",
+      });
+      expect(await db.certificate.count({ where: { userId: testUserId } })).toBe(0);
     });
 
     test("accepts valid course ID", async () => {
@@ -143,7 +149,7 @@ describe("Issue Certificate Server Action Contract Tests", () => {
       const otherCourse = await db.course.create({
         data: {
           title: "Other Course",
-          slug: "other-course",
+          slug: `other-course-${suffix}`,
           description: "Course user is not enrolled in",
           category: "TYPESCRIPT",
           level: "INTERMEDIATE",
@@ -196,8 +202,10 @@ describe("Issue Certificate Server Action Contract Tests", () => {
       const result = await issueCertificate({ courseId: testCourseId });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
-      expect(result.message).toContain("100%");
+      expect(result.error).toBe("NOT_ELIGIBLE");
+      expect(result.eligibility).toMatchObject({ eligible: false });
+      expect(result.eligibility!.completionPercentage).toBeLessThan(100);
+      expect(await db.certificate.count({ where: { userId: testUserId } })).toBe(0);
     });
 
     test("issues certificate for 100% completed course", async () => {
@@ -268,7 +276,7 @@ describe("Issue Certificate Server Action Contract Tests", () => {
       const emptyeCourse = await db.course.create({
         data: {
           title: "Empty Course",
-          slug: "empty-course",
+          slug: `empty-course-${suffix}`,
           description: "Course with no lessons",
           category: "JAVASCRIPT",
           level: "BEGINNER",
@@ -287,9 +295,12 @@ describe("Issue Certificate Server Action Contract Tests", () => {
 
       const result = await issueCertificate({ courseId: emptyeCourse.id });
 
+      // nothing to complete is not "completed": no certificate for an empty course
       expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
-      expect(result.message).toContain("lessons");
+      expect(result.error).toBe("NOT_ELIGIBLE");
+      expect(
+        await db.certificate.count({ where: { courseId: emptyeCourse.id } })
+      ).toBe(0);
 
       // Cleanup
       await db.enrollment.deleteMany({ where: { courseId: emptyeCourse.id } });
@@ -485,7 +496,8 @@ describe("Issue Certificate Server Action Contract Tests", () => {
     });
 
     test("error response has correct structure", async () => {
-      // Don't complete lessons to trigger completion error
+      // Un-complete the lessons to trigger a completion error
+      await db.progress.deleteMany({ where: { userId: testUserId } });
       const result = await issueCertificate({ courseId: testCourseId });
 
       expect(result).toMatchObject({
