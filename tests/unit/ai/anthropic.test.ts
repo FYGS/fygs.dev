@@ -55,11 +55,10 @@ describe("getAiConfig", () => {
     expect(getAiConfig({ ANTHROPIC_API_KEY: "  " } as NodeJS.ProcessEnv)).toBeNull();
   });
   it("applies defaults and trims the base url", () => {
-    expect(getAiConfig({ ANTHROPIC_API_KEY: "k" } as NodeJS.ProcessEnv)).toEqual({
-      apiKey: "k",
-      model: DEFAULT_AI_MODEL,
-      baseUrl: "https://api.anthropic.com",
-    });
+    const config = getAiConfig({ ANTHROPIC_API_KEY: "k" } as NodeJS.ProcessEnv)!;
+    // The key is readable but not enumerable, so it never serialises by accident
+    expect(config.apiKey).toBe("k");
+    expect({ ...config }).toEqual({ model: DEFAULT_AI_MODEL, baseUrl: "https://api.anthropic.com" });
     expect(
       getAiConfig({ ANTHROPIC_API_KEY: "k", AI_MODEL: "x", ANTHROPIC_BASE_URL: "http://h:1//" } as NodeJS.ProcessEnv),
     ).toMatchObject({ model: "x", baseUrl: "http://h:1" });
@@ -211,5 +210,40 @@ describe("openCompletion", () => {
     await expect(
       openCompletion({ ...base, fetchImpl: fetchImpl as unknown as typeof fetch, signal: ac.signal }),
     ).rejects.toBeDefined();
+  });
+});
+
+describe("openCompletion - usage", () => {
+  it("reads token usage from message_start and message_delta without content", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(
+      responseOf([
+        sse("message_start", {
+          type: "message_start",
+          message: { usage: { input_tokens: 200, output_tokens: 1, cache_read_input_tokens: 50, cache_creation_input_tokens: 10 } },
+        }),
+        delta("Hello"),
+        sse("message_delta", { type: "message_delta", delta: { stop_reason: "end_turn" }, usage: { output_tokens: 33 } }),
+        stop,
+      ]),
+    );
+    const c = await openCompletion({ ...base, fetchImpl });
+    expect(c.usage).toEqual({ inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheCreationTokens: 0 });
+    await drain(c.text);
+    expect(c.usage).toEqual({ inputTokens: 200, outputTokens: 33, cacheReadTokens: 50, cacheCreationTokens: 10 });
+    expect(c.stopReason).toBe("end_turn");
+    expect(c.outputChars).toBe(5);
+  });
+
+  it("tolerates a stream without usage", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(responseOf([delta("a"), stop]));
+    const c = await openCompletion({ ...base, fetchImpl });
+    await drain(c.text);
+    expect(c.usage.outputTokens).toBe(0);
+    expect(c.stopReason).toBeNull();
+  });
+
+  it("carries the provider status on upstream errors, for logs", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(new Response("x", { status: 529 }));
+    await expect(openCompletion({ ...base, fetchImpl })).rejects.toMatchObject({ code: "busy", upstreamStatus: 529 });
   });
 });

@@ -157,7 +157,6 @@ export async function handleCheckoutSessionCompleted(
                   resourceId: productId,
                   metadata: {
                     courseTitle: course.title,
-                    userEmail: user.email,
                   },
                 });
               }
@@ -174,7 +173,7 @@ export async function handleCheckoutSessionCompleted(
                 eventType: "email.subscription_welcome_sent",
                 userId,
                 resourceType: "subscription",
-                metadata: { userEmail: user.email },
+                metadata: {},
               });
             }
           }

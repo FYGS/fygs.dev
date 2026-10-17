@@ -70,7 +70,6 @@ export class ReviewNotificationService {
           metadata: {
             reviewId: review.id,
             instructorId: instructor.id,
-            instructorEmail: instructor.email,
             courseId: review.courseId,
             rating: review.rating,
           },
@@ -80,7 +79,6 @@ export class ReviewNotificationService {
           metadata: {
             reviewId: review.id,
             instructorId: instructor.id,
-            instructorEmail: instructor.email,
           },
         });
       }
@@ -132,7 +130,6 @@ export class ReviewNotificationService {
             replyId: reply.id,
             reviewId: reply.reviewId,
             studentId: student.id,
-            studentEmail: student.email,
             instructorId: reply.author.id,
           },
         });
@@ -141,7 +138,6 @@ export class ReviewNotificationService {
           metadata: {
             replyId: reply.id,
             studentId: student.id,
-            studentEmail: student.email,
           },
         });
       }

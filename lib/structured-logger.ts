@@ -12,6 +12,8 @@
  * - PII-safe logging practices
  */
 
+import { redact, redactString } from "./log-redaction";
+
 type LogLevel = "debug" | "info" | "warn" | "error";
 
 type LogContext = {
@@ -185,42 +187,16 @@ class StructuredLogger {
   }
 
   /**
-   * Remove PII from log events
+   * Redact personal data and secrets from a log event (lib/log-redaction.ts).
+   * Applied to the message, the whole context and the error, for every level and
+   * every output, so a call site cannot bypass it.
    */
   private sanitizeEvent(event: LogEvent): LogEvent {
-    const piiFields = [
-      "email",
-      "name",
-      "firstName",
-      "lastName",
-      "address",
-      "phone",
-      "ip",
-    ];
-
-    const sanitizedContext = { ...event.context };
-    const sanitizedMetadata = { ...sanitizedContext.metadata };
-
-    // Remove PII from top-level context
-    piiFields.forEach((field) => {
-      if (sanitizedContext[field as keyof LogContext]) {
-        delete sanitizedContext[field as keyof LogContext];
-      }
-    });
-
-    // Remove PII from metadata
-    if (sanitizedMetadata) {
-      piiFields.forEach((field) => {
-        if (sanitizedMetadata[field]) {
-          delete sanitizedMetadata[field];
-        }
-      });
-      sanitizedContext.metadata = sanitizedMetadata;
-    }
-
     return {
       ...event,
-      context: sanitizedContext,
+      message: redactString(event.message),
+      context: redact(event.context),
+      error: event.error === undefined ? undefined : (redact(event.error) as unknown as Error),
     };
   }
 

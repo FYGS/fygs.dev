@@ -1,6 +1,14 @@
 import { describe, it, expect } from "vitest";
 // @ts-expect-error plain ESM shared with next.config.mjs
-import { buildGlobalCsp, buildPlaygroundCsp, NON_PLAYGROUND_SOURCE } from "@/lib/csp.mjs";
+import {
+  buildGlobalCsp,
+  buildPlaygroundCsp,
+  buildReportOnlyCsp,
+  CSP_REPORT_PATH,
+  NON_PLAYGROUND_SOURCE,
+  REPORT_ONLY_HEADER,
+  REPORTING_ENDPOINTS_VALUE,
+} from "@/lib/csp.mjs";
 
 const directive = (policy: string, name: string) =>
   policy.split("; ").find((d) => d === name || d.startsWith(`${name} `)) ?? "";
@@ -15,6 +23,10 @@ describe("Content-Security-Policy", () => {
     expect(directive(csp, "form-action")).toBe("form-action 'self'");
     expect(directive(csp, "connect-src")).not.toMatch(/https:(\s|$)/);
     expect(directive(csp, "frame-src")).not.toMatch(/https:(\s|$)/);
+  });
+
+  it("blocks inline event-handler attributes", () => {
+    expect(directive(buildGlobalCsp(), "script-src-attr")).toBe("script-src-attr 'none'");
   });
 
   it("allows eval only in development", () => {
@@ -38,5 +50,32 @@ describe("Content-Security-Policy", () => {
     expect(re.test("/fr/tech-mastry/system-design")).toBe(true);
     expect(re.test("/fr/tech-mastry/playground")).toBe(false);
     expect(re.test("/en/tech-mastry/playground")).toBe(false);
+  });
+
+  describe("report-only candidate policy", () => {
+    it("drops 'unsafe-inline' for scripts and styles and never allows eval, even in dev", () => {
+      for (const dev of [false, true]) {
+        const csp = buildReportOnlyCsp(dev);
+        expect(directive(csp, "script-src")).toBe("script-src 'self' https://js.stripe.com");
+        expect(directive(csp, "script-src")).not.toContain("unsafe");
+        expect(directive(csp, "style-src")).toBe("style-src 'self'");
+      }
+    });
+
+    it("keeps every other restriction of the enforced policy and reports to /api/csp-report", () => {
+      const csp = buildReportOnlyCsp(false);
+      expect(directive(csp, "default-src")).toBe("default-src 'self'");
+      expect(directive(csp, "object-src")).toBe("object-src 'none'");
+      expect(directive(csp, "frame-ancestors")).toBe("frame-ancestors 'self'");
+      expect(directive(csp, "report-uri")).toBe(`report-uri ${CSP_REPORT_PATH}`);
+      expect(directive(csp, "report-to")).toBe("report-to csp");
+      expect(REPORTING_ENDPOINTS_VALUE).toBe(`csp="${CSP_REPORT_PATH}"`);
+      expect(REPORT_ONLY_HEADER).toBe("Content-Security-Policy-Report-Only");
+    });
+
+    it("is strictly stricter than the enforced one on scripts (so it measures something)", () => {
+      expect(directive(buildGlobalCsp(false), "script-src")).toContain("'unsafe-inline'");
+      expect(directive(buildReportOnlyCsp(false), "script-src")).not.toContain("'unsafe-inline'");
+    });
   });
 });

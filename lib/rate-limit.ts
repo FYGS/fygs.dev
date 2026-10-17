@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import redis from "./redis";
+import { logger } from "./structured-logger";
 
 /**
  * Rate limiting.
@@ -38,6 +39,20 @@ const REDIS_TIMEOUT_MS = 500;
 // Without this every request would pay the timeout while Redis is down.
 const REDIS_RETRY_AFTER_MS = 10_000;
 let redisDownUntilMs = 0;
+
+/**
+ * Degraded-mode bookkeeping, exposed through getRateLimitStatus() (health
+ * endpoint). Counters are per process: sum them across instances when alerting.
+ */
+export const RATE_LIMIT_DEGRADED_EVENT = "rate_limit.degraded";
+export const RATE_LIMIT_RECOVERED_EVENT = "rate_limit.recovered";
+/** While an outage lasts, repeat the error line at most this often. */
+const DEGRADED_LOG_INTERVAL_MS = 60_000;
+let degradedSinceMs: number | null = null;
+let degradedTransitions = 0;
+let fallbackDecisions = 0;
+let lastRedisSuccessMs: number | null = null;
+let lastRecoveredLogMs = 0;
 
 const SLIDING_WINDOW_SCRIPT = `
 local current = redis.call('INCR', KEYS[1])
@@ -134,6 +149,35 @@ export function __resetRateLimitMemory() {
   memory.clear();
   lastDegradedLogMs = 0;
   redisDownUntilMs = 0;
+  degradedSinceMs = null;
+  degradedTransitions = 0;
+  fallbackDecisions = 0;
+  lastRedisSuccessMs = null;
+  lastRecoveredLogMs = 0;
+}
+
+export interface RateLimitStatus {
+  /** "redis": shared counters; "memory-fallback": per-process counters; "unknown": no check yet. */
+  mode: "redis" | "memory-fallback" | "unknown";
+  degraded: boolean;
+  /** ISO time the current outage began, null when healthy. */
+  degradedSince: string | null;
+  /** How many times this process entered degraded mode. */
+  degradedTransitions: number;
+  /** Requests decided by the in-process fallback (or refused) since start. */
+  fallbackDecisions: number;
+}
+
+/** Cheap, in-memory snapshot; never touches Redis and exposes no error detail. */
+export function getRateLimitStatus(): RateLimitStatus {
+  const degraded = degradedSinceMs !== null;
+  return {
+    mode: degraded ? "memory-fallback" : lastRedisSuccessMs === null ? "unknown" : "redis",
+    degraded,
+    degradedSince: degradedSinceMs === null ? null : new Date(degradedSinceMs).toISOString(),
+    degradedTransitions,
+    fallbackDecisions,
+  };
 }
 
 // ─── Redis path ──────────────────────────────────────────────────────────────
@@ -154,14 +198,45 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   });
 }
 
+/** Redis failed: enter (or stay in) degraded mode, logging at a bounded rate. */
 function logDegraded(error: unknown, nowMs: number) {
-  // One line per minute is enough to alert without flooding the logs
-  if (nowMs - lastDegradedLogMs < 60_000) return;
+  const entering = degradedSinceMs === null;
+  if (entering) {
+    degradedSinceMs = nowMs;
+    degradedTransitions += 1;
+  }
+  // Entering and reminders share one budget: a flapping Redis cannot flood the logs
+  if (lastDegradedLogMs && nowMs - lastDegradedLogMs < DEGRADED_LOG_INTERVAL_MS) return;
   lastDegradedLogMs = nowMs;
-  console.error(
-    "[rate-limit] Redis unavailable, using the in-process fallback:",
-    error instanceof Error ? error.message : error,
-  );
+  logger.error(RATE_LIMIT_DEGRADED_EVENT, {
+    eventType: RATE_LIMIT_DEGRADED_EVENT,
+    operation: "rate-limit",
+    metadata: {
+      // The error text can name hosts; keep only its class
+      reason: error instanceof Error ? error.name : "unknown",
+      ongoing: !entering,
+      sinceMs: nowMs - (degradedSinceMs ?? nowMs),
+      transitions: degradedTransitions,
+      fallbackDecisions,
+      impact: "Limits are enforced per instance only, not shared across instances",
+    },
+  });
+}
+
+/** Redis answered: leave degraded mode if we were in it. */
+function markRedisHealthy(nowMs: number) {
+  lastRedisSuccessMs = nowMs;
+  if (degradedSinceMs === null) return;
+  const durationMs = nowMs - degradedSinceMs;
+  degradedSinceMs = null;
+  if (lastRecoveredLogMs && nowMs - lastRecoveredLogMs < DEGRADED_LOG_INTERVAL_MS) return;
+  lastRecoveredLogMs = nowMs;
+  logger.info(RATE_LIMIT_RECOVERED_EVENT, {
+    eventType: RATE_LIMIT_RECOVERED_EVENT,
+    operation: "rate-limit",
+    duration: durationMs,
+    metadata: { transitions: degradedTransitions, fallbackDecisions },
+  });
 }
 
 function refuse(limit: number, nowMs: number): RateLimitResult {
@@ -191,6 +266,7 @@ export async function rateLimit(
   const previousKey = `rl:${key}:${windowIndex - 1}`;
 
   if (nowMs < redisDownUntilMs) {
+    fallbackDecisions += 1;
     return options.failMode === "closed"
       ? refuse(limit, nowMs)
       : memoryCheck(key, limit, windowSeconds, nowMs, true);
@@ -208,9 +284,11 @@ export async function rateLimit(
       REDIS_TIMEOUT_MS,
     );
     if (!Array.isArray(raw) || raw.length < 2) throw new Error("Unexpected reply");
+    markRedisHealthy(nowMs);
     return decide(limit, windowSeconds, nowMs, Number(raw[0]), Number(raw[1]), false);
   } catch (error) {
     redisDownUntilMs = nowMs + REDIS_RETRY_AFTER_MS;
+    fallbackDecisions += 1;
     logDegraded(error, nowMs);
     if (options.failMode === "closed") return refuse(limit, nowMs);
     return memoryCheck(key, limit, windowSeconds, nowMs, true);
@@ -309,7 +387,9 @@ export async function ensureIdempotent(id: string, ttlSeconds = 60): Promise<boo
   const nowMs = Date.now();
   if (nowMs < redisDownUntilMs) return true;
   try {
-    return await withTimeout(redis.setNxEx(`idem:${id}`, "1", ttlSeconds), REDIS_TIMEOUT_MS);
+    const claimed = await withTimeout(redis.setNxEx(`idem:${id}`, "1", ttlSeconds), REDIS_TIMEOUT_MS);
+    markRedisHealthy(nowMs);
+    return claimed;
   } catch (error) {
     redisDownUntilMs = nowMs + REDIS_RETRY_AFTER_MS;
     logDegraded(error, nowMs);
