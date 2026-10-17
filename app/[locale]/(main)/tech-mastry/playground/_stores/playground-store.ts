@@ -74,12 +74,10 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
     }),
     {
       name: "playground-v2",
-      // Saved state has never been restored at load: the old compatibility getters
-      // threw while persist merged the stored state into the initial one (the error
-      // is swallowed by the middleware), so the store always started from its
-      // defaults. That behaviour is kept explicitly. Restoring the saved playground
-      // means calling usePlaygroundStore.persist.rehydrate() after mount (a
-      // synchronous hydration at import would mismatch the server markup).
+      // Hydration is done after mount by PgLayout (usePlaygroundStore.persist.rehydrate()):
+      // a synchronous hydration at import would mismatch the server markup. (Saved state
+      // used to be silently dropped: the old compatibility getters threw while persist
+      // merged it into the initial state.)
       skipHydration: true,
       partialize: (state) => ({
         files: state.files,

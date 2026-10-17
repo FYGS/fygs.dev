@@ -131,14 +131,23 @@ export function PgLayout() {
     return () => window.removeEventListener("pg-open-ai-assistant", onOpen);
   }, []);
 
-  // On mount, check for ?code= query param
+  // On mount: restore the saved playground, then apply a ?code= link on top of it.
+  // The store skips hydration at import so that the first client render matches the
+  // server's; restoring after mount keeps the user's files, tabs and settings.
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const encoded = params.get("code");
-    if (encoded) {
-      importFromUrl(encoded);
-      window.history.replaceState({}, "", window.location.pathname);
-    }
+    let cancelled = false;
+    void Promise.resolve(usePlaygroundStore.persist.rehydrate()).then(() => {
+      if (cancelled) return;
+      const params = new URLSearchParams(window.location.search);
+      const encoded = params.get("code");
+      if (encoded) {
+        importFromUrl(encoded);
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [importFromUrl]);
 
   // Auto-boot WebContainer on mount (lazy, non-blocking)
