@@ -10,7 +10,7 @@ import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { ReviewStatus, Role } from "@/lib/generated/prisma/client";
 import { __resetRateLimitMemory } from "@/lib/rate-limit";
-import { createCourse, createUser, enroll } from "../../support/factories";
+import { createCourse, createUser } from "../../support/factories";
 import { resetDatabase } from "../../support/test-db";
 
 // API handlers under test

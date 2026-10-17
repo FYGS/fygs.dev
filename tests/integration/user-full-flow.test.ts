@@ -160,7 +160,7 @@ describe("User Full Flow Integration Tests", () => {
     // Mock the auth user ID to match our test user
     vi.mocked(auth.api.getSession).mockResolvedValue({
       user: { id: testUserId, email: testEmail },
-    });
+    } as never);
   });
 
   afterEach(async () => {

@@ -72,7 +72,7 @@ describe("Enroll Course Server Action Contract Tests", () => {
     // Mock the auth user ID to match our test user
     vi.mocked(auth.api.getSession).mockResolvedValue({
       user: { id: testUserId, email: testEmail },
-    });
+    } as never);
   });
 
   afterEach(async () => {

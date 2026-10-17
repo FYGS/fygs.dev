@@ -13,7 +13,7 @@ import { db } from "@/lib/db";
 import { __resetRateLimitMemory } from "@/lib/rate-limit";
 import { PerformanceTestUtils } from "../fixtures/test-utils";
 import { FakeRedis } from "../fixtures/fake-redis";
-import { createCourse, createUser } from "../../support/factories";
+import { createCourse } from "../../support/factories";
 import { resetDatabase } from "../../support/test-db";
 import { ReviewCacheService } from "@/lib/services/review-cache";
 import { ReviewDatabaseOptimizer } from "@/lib/services/review-database-optimizer";
