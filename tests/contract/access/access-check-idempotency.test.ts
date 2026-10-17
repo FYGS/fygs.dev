@@ -7,7 +7,7 @@
  * for every course (free or premium), a check never creates one.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterAll } from "vitest"
 import { db } from '@/lib/db'
 import { AccessService } from '@/lib/access-service'
 import { CourseAccessTier, Role } from '@/lib/generated/prisma/client'
@@ -21,6 +21,11 @@ import { resetDatabase } from '../../support/test-db'
 
 const countUserEnrollments = (userId: string) => db.enrollment.count({ where: { userId } })
 const countTotalEnrollments = () => db.enrollment.count()
+
+// leave an empty database for the suites that run next
+afterAll(async () => {
+  await resetDatabase(db);
+});
 
 describe('T118: Access Check Idempotency Tests', () => {
   beforeEach(async () => {

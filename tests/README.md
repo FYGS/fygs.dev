@@ -73,14 +73,6 @@ Examples: `tests/integration/db/` (auth flow on the real better-auth Prisma
 adapter, `AccessService`, quiz grading, refund eligibility, community write
 limits, schema and the real `prisma/seed` orchestrator).
 
-### Quarantined legacy suites
-
-`vitest.integration.config.ts` lists `STALE_SUITES`: older contract/integration
-files that no longer match the app (French messages, `user.subscriptions` shape,
-fixed slugs shared between tests, undefined fixtures...). They are excluded so the
-run is green and meaningful; run them with `INTEGRATION_INCLUDE_STALE=1 pnpm test:integration`
-while fixing them, and remove an entry once its file passes.
-
 ## Configuration
 
 - **Unit config**: `vitest.config.ts`

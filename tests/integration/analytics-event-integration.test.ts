@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, vi } from "vitest";
+import { describe, test, expect, beforeEach, vi, afterAll } from "vitest";
 import { db } from "@/lib/db";
 import { AnalyticsHelper } from "@/lib/analytics-helper";
 import { createCourse, createUser } from "../support/factories";
@@ -27,6 +27,11 @@ import { updateLessonProgress } from "@/app/[locale]/(main)/dashboard/actions/up
 import { issueCertificate } from "@/app/[locale]/(main)/dashboard/actions/issueCertificate";
 
 type Props = Record<string, any>;
+
+// leave an empty database for the suites that run next
+afterAll(async () => {
+  await resetDatabase(db);
+});
 
 describe("Analytics Event Integration", () => {
   let user: Awaited<ReturnType<typeof createUser>>;

@@ -5,7 +5,7 @@
  * database is emptied before each one.
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi, afterAll } from "vitest";
 import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { ReviewStatus, Role } from "@/lib/generated/prisma/client";
@@ -113,6 +113,11 @@ async function seedReview(
     },
   });
 }
+
+// leave an empty database for the suites that run next
+afterAll(async () => {
+  await resetDatabase(db);
+});
 
 describe("Review API Integration Tests", () => {
   beforeEach(async () => {

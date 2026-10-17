@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, vi } from "vitest";
+import { describe, test, expect, beforeEach, vi, afterAll } from "vitest";
 import { db } from "@/lib/db";
 import { SubscriptionStatus } from "@/lib/generated/prisma/client";
 import { createSubscription, createUser } from "../../support/factories";
@@ -20,6 +20,11 @@ vi.mock("@/lib/payment-service", () => ({ paymentService: stripe }));
 import { cancelSubscription } from "@/app/[locale]/(main)/dashboard/actions/cancelSubscription";
 
 const DAY = 24 * 60 * 60 * 1000;
+
+// leave an empty database for the suites that run next
+afterAll(async () => {
+  await resetDatabase(db);
+});
 
 describe("Cancel Subscription Server Action Contract Tests", () => {
   let user: Awaited<ReturnType<typeof createUser>>;

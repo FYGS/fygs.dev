@@ -7,7 +7,7 @@
  * time budgets.
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi, afterAll } from "vitest";
 import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { __resetRateLimitMemory } from "@/lib/rate-limit";
@@ -77,6 +77,11 @@ async function seedReviews(
   }));
   return ReviewDatabaseOptimizer.bulkCreateReviews(reviews);
 }
+
+// leave an empty database for the suites that run next
+afterAll(async () => {
+  await resetDatabase(db);
+});
 
 describe("Review System Performance Tests", () => {
   beforeEach(async () => {

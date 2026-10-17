@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterAll } from "vitest";
 import { db } from "@/lib/db";
 import { AccessService } from "@/lib/access-service";
 import { CourseAccessTier, Role } from "@/lib/generated/prisma/client";
@@ -52,6 +52,11 @@ async function premiumCourseWithLessons(previewEnabled = true) {
 
 const getProgressRecord = (userId: string, courseId: string) =>
   db.progress.findFirst({ where: { userId, lesson: { courseId } } });
+
+// leave an empty database for the suites that run next
+afterAll(async () => {
+  await resetDatabase(db);
+});
 
 describe("T114: Premium First Lesson Preview Tests", () => {
   beforeEach(async () => {
