@@ -17,13 +17,20 @@ import {
 } from "../fixtures/review-fixtures";
 
 // Mock the database
-vi.mock("@/lib/db", () => ({
-  db: mockDb,
+vi.mock("@/lib/db", async () => ({
+  db: (await import("../fixtures/test-utils")).mockDb,
 }));
 
 // Mock Redis
-vi.mock("@/lib/redis", () => ({
-  redis: mockRedis,
+vi.mock("@/lib/redis", async () => {
+  const { mockRedis } = await import("../fixtures/test-utils");
+  return { RedisClient: { getInstance: () => mockRedis } };
+});
+
+// Pipeline returned by redis.multi() (used by the invalidation helpers)
+const pipeline = vi.hoisted(() => ({
+  del: vi.fn(),
+  exec: vi.fn(),
 }));
 
 // Mock the logger
@@ -40,6 +47,10 @@ setupTestEnvironment();
 describe("ReviewCacheService", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockRedis.keys.mockResolvedValue([]);
+    pipeline.del.mockReturnValue(pipeline);
+    pipeline.exec.mockResolvedValue([]);
+    mockRedis.multi.mockReturnValue(pipeline);
   });
 
   describe("getReview", () => {
@@ -295,8 +306,8 @@ describe("ReviewCacheService", () => {
       mockDb.review.count.mockResolvedValue(1);
 
       const filters = {
-        courseIds: [mockCourses.published.id],
-        ratings: [4, 5],
+        courseId: mockCourses.published.id,
+        rating: [4, 5],
         verified: true,
       };
 
@@ -309,8 +320,8 @@ describe("ReviewCacheService", () => {
       expect(mockDb.review.findMany).toHaveBeenCalledWith({
         where: expect.objectContaining({
           status: "APPROVED",
-          comment: { search: "excellent" },
-          courseId: { in: [mockCourses.published.id] },
+          comment: { contains: "excellent", mode: "insensitive" },
+          courseId: mockCourses.published.id,
           rating: { in: [4, 5] },
           verified: true,
         }),
@@ -340,7 +351,8 @@ describe("ReviewCacheService", () => {
 
       expect(result).toEqual([mockReviews.approved]);
       expect(mockDb.review.findMany).toHaveBeenCalledWith({
-        where: { status: "APPROVED" },
+        // "popular" means at least one helpful vote
+        where: { status: "APPROVED", helpfulCount: { gte: 1 } },
         include: expect.any(Object),
         orderBy: [
           { helpfulCount: "desc" },
@@ -379,88 +391,133 @@ describe("ReviewCacheService", () => {
   });
 
   describe("Cache invalidation", () => {
-    it("should invalidate review cache", async () => {
-      await ReviewCacheService.invalidateReviewCache(mockReviews.approved.id);
+    it("should invalidate the review, its course and user lists, and the shared lists", async () => {
+      mockRedis.keys.mockImplementation(async (pattern: string) => {
+        if (pattern.startsWith("course_reviews:")) return ["course_reviews:c:1:10:newest:{}"];
+        if (pattern.startsWith("review_stats:")) return ["review_stats:c"];
+        if (pattern.startsWith("user_reviews:")) return ["user_reviews:u:1:10:APPROVED"];
+        if (pattern.startsWith("popular_reviews:")) return ["popular_reviews:10"];
+        if (pattern.startsWith("recent_reviews:")) return ["recent_reviews:10"];
+        if (pattern.startsWith("review_search:")) return ["review_search:q"];
+        return [];
+      });
 
-      expect(mockRedis.delete).toHaveBeenCalledWith(
-        expect.stringContaining(mockReviews.approved.id)
+      await ReviewCacheService.invalidateReviewCache("r1", "c", "u");
+
+      const deleted = pipeline.del.mock.calls.map(([key]) => key).sort();
+      expect(deleted).toEqual(
+        [
+          "review:r1",
+          "course_reviews:c:1:10:newest:{}",
+          "review_stats:c",
+          "user_reviews:u:1:10:APPROVED",
+          "popular_reviews:10",
+          "recent_reviews:10",
+          "review_search:q",
+        ].sort()
       );
+      expect(pipeline.exec).toHaveBeenCalledTimes(1);
+    });
+
+    it("should always delete the review key even without course or user", async () => {
+      await ReviewCacheService.invalidateReviewCache("r1");
+
+      expect(pipeline.del).toHaveBeenCalledWith("review:r1");
+      expect(mockRedis.keys).not.toHaveBeenCalledWith(
+        expect.stringContaining("course_reviews:")
+      );
+    });
+
+    it("should swallow Redis errors during review invalidation", async () => {
+      mockRedis.keys.mockRejectedValue(new Error("Redis down"));
+
+      await expect(
+        ReviewCacheService.invalidateReviewCache("r1", "c")
+      ).resolves.toBeUndefined();
     });
 
     it("should invalidate course cache", async () => {
-      await ReviewCacheService.invalidateCourseCache(mockCourses.published.id);
-
-      expect(mockRedis.deletePattern).toHaveBeenCalledWith(
-        expect.stringContaining(mockCourses.published.id)
+      mockRedis.keys.mockImplementation(async (pattern: string) =>
+        pattern.startsWith("course_reviews:")
+          ? ["course_reviews:c:1:10:newest:{}"]
+          : pattern.startsWith("review_stats:")
+            ? ["review_stats:c"]
+            : []
       );
+
+      await ReviewCacheService.invalidateCourseCache("c");
+
+      expect(mockRedis.keys).toHaveBeenCalledWith("course_reviews:c:*");
+      expect(pipeline.del).toHaveBeenCalledWith("course_reviews:c:1:10:newest:{}");
+      expect(pipeline.del).toHaveBeenCalledWith("review_stats:c");
+      expect(pipeline.exec).toHaveBeenCalledTimes(1);
     });
 
-    it("should warm up course cache", async () => {
+    it("should not open a pipeline when the course has nothing cached", async () => {
+      await ReviewCacheService.invalidateCourseCache("c");
+
+      expect(mockRedis.multi).not.toHaveBeenCalled();
+    });
+
+    it("should warm up the first page (newest and helpful) and the stats", async () => {
       mockDb.review.findMany.mockResolvedValue([mockReviews.approved]);
       mockDb.review.count.mockResolvedValue(1);
+      mockDb.review.groupBy.mockResolvedValue([]);
+      mockDb.review.aggregate.mockResolvedValue({ _avg: { rating: null } });
 
       await ReviewCacheService.warmUpCourseCache(mockCourses.published.id);
 
-      expect(mockDb.review.findMany).toHaveBeenCalled();
-      expect(mockRedis.setJSON).toHaveBeenCalled();
+      const orderings = mockDb.review.findMany.mock.calls.map(
+        ([args]) => args.orderBy
+      );
+      expect(orderings).toContainEqual({ createdAt: "desc" });
+      expect(orderings).toContainEqual({ helpfulCount: "desc" });
+      // two course pages + the statistics
+      expect(mockRedis.setJSON).toHaveBeenCalledTimes(3);
     });
   });
 
   describe("getCacheStats", () => {
-    it("should return cache statistics", async () => {
-      mockRedis.info.mockResolvedValue(
-        "used_memory:1024000\r\nconnected_clients:5"
-      );
-      mockRedis.keys.mockResolvedValue([
-        "reviews:review_123",
-        "reviews:course_reviews_456",
-        "reviews:stats_789",
-      ]);
+    it("should count the cached keys per prefix", async () => {
+      mockRedis.keys.mockImplementation(async (pattern: string) => {
+        if (pattern === "review:*") return ["review:1", "review:2"];
+        if (pattern === "course_reviews:*") return ["course_reviews:c:1"];
+        return [];
+      });
 
       const stats = await ReviewCacheService.getCacheStats();
 
       expect(stats).toMatchObject({
-        totalKeys: 3,
-        memoryUsage: "1024000",
-        connectedClients: "5",
-        keysByType: expect.objectContaining({
-          review: 1,
-          course_reviews: 1,
-          stats: 1,
+        totalCacheKeys: 3,
+        breakdown: expect.objectContaining({
+          "review:": 2,
+          "course_reviews:": 1,
+          "user_reviews:": 0,
         }),
         lastUpdated: expect.any(String),
       });
     });
 
-    it("should handle Redis errors in cache stats", async () => {
-      mockRedis.info.mockRejectedValue(new Error("Redis error"));
+    it("should return null when Redis fails", async () => {
+      mockRedis.keys.mockRejectedValue(new Error("Redis error"));
 
-      await expect(ReviewCacheService.getCacheStats()).rejects.toThrow(
-        "Redis error"
-      );
+      await expect(ReviewCacheService.getCacheStats()).resolves.toBeNull();
     });
   });
 
   describe("clearAllCache", () => {
     it("should clear all review-related cache", async () => {
-      // The actual implementation uses Object.values(CACHE_KEYS) and redis.keys/multi/del
-      // Let's mock this properly
+      // One lookup per key prefix; only two prefixes hold keys
       mockRedis.keys
-        .mockResolvedValueOnce(["reviews:review_123"]) // First pattern
-        .mockResolvedValueOnce(["reviews:course_456"]); // Second pattern
-
-      const mockPipeline = {
-        del: vi.fn().mockReturnThis(),
-        exec: vi.fn().mockResolvedValue([]),
-      };
-      mockRedis.multi = vi.fn().mockReturnValue(mockPipeline);
+        .mockResolvedValueOnce(["review:123"])
+        .mockResolvedValueOnce(["course_reviews:456"]);
 
       const result = await ReviewCacheService.clearAllCache();
 
       expect(result).toBe(2); // Total keys cleared
-      expect(mockRedis.keys).toHaveBeenCalledTimes(2); // Called for each pattern
-      expect(mockPipeline.del).toHaveBeenCalledTimes(2);
-      expect(mockPipeline.exec).toHaveBeenCalledTimes(2);
+      expect(mockRedis.keys).toHaveBeenCalledTimes(8); // one per prefix
+      expect(pipeline.del).toHaveBeenCalledTimes(2);
+      expect(pipeline.exec).toHaveBeenCalledTimes(2);
     });
 
     it("should handle errors during cache clearing", async () => {
