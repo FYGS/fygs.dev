@@ -7,9 +7,10 @@
  * applies the real Prisma schema with `prisma db push`, and hands out a
  * connection string. Nothing outside a temp directory is touched.
  *
- *   node scripts/test-db.mjs run -- <command...>   start, push schema, run, tear down (exit code is the command's)
+ *   node scripts/test-db.mjs run [--migrate] -- <command...>   start, push schema, run, tear down (exit code is the command's; --migrate applies prisma/migrations)
  *   node scripts/test-db.mjs start                 start + push schema and stay up until Ctrl+C (prints the URL)
  *
+ * TEST_DB_SCHEMA=migrate applies prisma/migrations instead of `db push` (drift check).
  * If TEST_DATABASE_URL is set (CI service container, docker-compose.test.yml)
  * that server is used instead of an embedded one: same schema push, same tests.
  *
@@ -60,14 +61,17 @@ function removeDir(dir) {
   rmSync(dir, { recursive: true, force: true, maxRetries: 20, retryDelay: 250 });
 }
 
-/** Applies prisma/schema.prisma to `url` (a freshly created, empty database). */
+/**
+ * Applies the schema to `url` (a freshly created, empty database): `prisma db push`,
+ * or `prisma migrate deploy` (the production path) with TEST_DB_SCHEMA=migrate.
+ */
 export function pushSchema(url) {
   assertDisposableDatabase(url);
   const prismaCli = require.resolve("prisma/build/index.js");
   return new Promise((resolve, reject) => {
     const child = spawn(
       process.execPath,
-      [prismaCli, "db", "push"],
+      process.env.TEST_DB_SCHEMA === "migrate" ? [prismaCli, "migrate", "deploy"] : [prismaCli, "db", "push"],
       {
         cwd: root,
         env: { ...process.env, DATABASE_URL: url },
@@ -79,7 +83,7 @@ export function pushSchema(url) {
     child.stderr.on("data", (d) => (output += d));
     child.on("error", reject);
     child.on("exit", (code) =>
-      code === 0 ? resolve() : reject(new Error(`prisma db push failed (${code})\n${output}`)),
+      code === 0 ? resolve() : reject(new Error(`prisma schema setup failed (${code})\n${output}`)),
     );
   });
 }
@@ -144,6 +148,7 @@ async function main() {
   if (command === "run") {
     const separator = rest.indexOf("--");
     const argv = separator === -1 ? rest : rest.slice(separator + 1);
+    if (rest.slice(0, Math.max(separator, 0)).includes("--migrate")) process.env.TEST_DB_SCHEMA = "migrate";
     if (argv.length === 0) throw new Error("usage: test-db.mjs run -- <command...>");
 
     const db = await startTestDb();

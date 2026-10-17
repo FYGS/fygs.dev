@@ -132,7 +132,7 @@ vercel --prod
 # Run migrations
 npx prisma migrate deploy
 
-# Generate Prisma client
+# Generate Prisma client (written to lib/generated/prisma, DATABASE_URL is read from the environment)
 npx prisma generate
 ```
 
@@ -162,6 +162,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Generate Prisma client
+# Prisma 7: prisma.config.ts and prisma/ are in the build context (COPY . .)
 RUN npx prisma generate
 
 # Build application

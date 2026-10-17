@@ -9,7 +9,7 @@
 [![React](https://img.shields.io/badge/React-19.1.1-61DAFB?style=flat-square&logo=react)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8.2-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.1-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com)
-[![Prisma](https://img.shields.io/badge/Prisma-6.18-2D3748?style=flat-square&logo=prisma)](https://prisma.io)
+[![Prisma](https://img.shields.io/badge/Prisma-7-2D3748?style=flat-square&logo=prisma)](https://prisma.io)
 [![Better Auth](https://img.shields.io/badge/Better_Auth-1.3.11-22C55E?style=flat-square)](https://better-auth.com)
 [![Stripe](https://img.shields.io/badge/Stripe-18.5-635BFF?style=flat-square&logo=stripe)](https://stripe.com)
 [![CI](https://img.shields.io/github/actions/workflow/status/fygs/fygs.dev/ci-cd.yml?style=flat-square&label=CI)](../../actions)
@@ -34,7 +34,7 @@ Plateforme fullstack combinant portfolio professionnel, cours interactifs et sys
 | **Framework** | Next.js 15.5.9 (App Router, Turbopack, RSC) |
 | **UI** | React 19.1.1, Tailwind CSS 4.1, shadcn/ui, Framer Motion 11.18 |
 | **Auth** | Better Auth 1.3.11 (Google, GitHub, Apple, credentials) |
-| **Base de données** | PostgreSQL + Prisma 6.18 |
+| **Base de données** | PostgreSQL + Prisma 7 (adapter pg) |
 | **Cache** | Redis (ioredis 5.8.1) |
 | **Paiement** | Stripe 18.5 (abonnements, remboursements, portail) |
 | **State** | Zustand 5.0.3 (client), nuqs 2.4.1 (URL), RSC (serveur) |
@@ -117,7 +117,7 @@ pnpm install
 # Configurer les variables d'environnement
 cp .env.example .env.local
 
-# Générer le client Prisma
+# Créer les tables (le client Prisma est généré par pnpm install)
 pnpm db:push
 
 # Lancer le serveur dev (webpack)
@@ -132,6 +132,7 @@ pnpm dev
 | `pnpm build` | Build production (webpack) |
 | `pnpm test` | Tests unitaires (Vitest) |
 | `pnpm test:watch` | Tests en mode watch |
+| `pnpm test:integration` | Tests d'intégration sur un PostgreSQL jetable (embarqué, rien à installer) |
 | `pnpm lint` | ESLint |
 | `pnpm db:push` | Sync schema Prisma → DB |
 | `pnpm db:studio` | Prisma Studio (GUI) |
@@ -160,8 +161,9 @@ Pipeline GitHub Actions (`ci-cd.yml`) :
 
 1. **Lint & Typecheck** — ESLint + `tsc --noEmit`
 2. **Test** — Vitest avec Prisma generate
-3. **Build** — Production build + artifact cache
-4. **Security** — `pnpm audit` + CodeQL (PRs)
+3. **Intégration** — Vitest sur un vrai PostgreSQL (embarqué et service container) + vérification des migrations
+4. **Build** — Production build + artifact cache
+5. **Security** — `pnpm audit` + CodeQL (PRs)
 
 ## Performance
 

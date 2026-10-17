@@ -14,6 +14,7 @@ and what was deliberately **not** upgraded.
 | Node | **22+** (CI updated). |
 | Build / dev | Both run on **webpack** (`next build --webpack`, `next dev --webpack`): `next-pwa` and the Monaco plugin need it. |
 | Content-Security-Policy | Defined in `lib/csp.mjs` (site-wide + a looser policy for the playground). |
+| Prisma 7 | `pnpm install` then `prisma generate` (the `postinstall` does it) writes the client to `lib/generated/prisma` (gitignored). `DATABASE_URL` is read by `prisma.config.ts` (CLI) and `lib/db.ts` (runtime). In a Docker build run `npx prisma generate` after copying `prisma.config.ts` and `prisma/`; `migrate deploy` needs the `prisma` package and `DATABASE_URL` at run time. The `pg` driver validates TLS certificates itself: if the old setup relied on an unverifiable certificate, fix the CA (`NODE_EXTRA_CA_CERTS`) rather than disabling verification. |
 
 ## Dependencies
 
@@ -40,11 +41,29 @@ Audit (public npm advisory endpoint): 17 critical / 134 high before,
 (`braces` has no patched release and is dev tooling; `deepmerge-ts` is inside the
 Prisma CLI, build time only).
 
+### Prisma 7
+
+Prisma moved from 6.19 to **7.10** (not the 8 release candidate), validated against a real
+PostgreSQL (see the test database below):
+
+- generator `prisma-client` writing to `lib/generated/prisma` instead of `node_modules`; every `@prisma/client` import now points there (`lib/generated/prisma/client`, or the browser-safe `.../browser` entry for files that only need enums and types, which keeps `node:` modules out of client bundles);
+- `datasource.url` moved from `schema.prisma` to `prisma.config.ts` (`.env` is loaded there explicitly);
+- `lib/db.ts` builds the client on `@prisma/adapter-pg` (+ `pg`), same `db` export and same `globalThis` singleton; `connectionTimeoutMillis` is 5 s as with Prisma 6;
+- `prisma/seed.ts` is a thin CLI over the importable `runSeed()` (`prisma/seed/run.ts`);
+- `prisma/migrations` still produces exactly `schema.prisma` (`pnpm db:check-migrations`).
+
+### Test database
+
+Integration tests no longer need Docker or a remote database. `scripts/test-db.mjs` starts a real
+PostgreSQL (npm `embedded-postgres`, 17.x binaries), applies the schema with `prisma db push`
+and runs the suite (`pnpm test:integration`); CI runs it on the embedded server and on a
+service container. See `tests/README.md`. Older contract suites that no longer match the app are
+quarantined in `vitest.integration.config.ts` (`STALE_SUITES`) until they are fixed.
+
 ### Held back on purpose
 
 | Package | Why |
 |---|---|
-| `prisma` / `@prisma/client` 7+ | Requires driver adapters, a new generator and `prisma.config.ts`. It must be validated against a real database; this was not possible during the upgrade. |
 | `typescript` 7 | The native compiler has no JS API: Next's type check and typescript-eslint cannot use it yet. Stays on 5.9. |
 | `eslint` 10 | `eslint-config-next` 16 and its plugins only declare support up to ESLint 9. |
 | `@types/node` 26 | Types follow the runtime: Node 22. |

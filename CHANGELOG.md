@@ -19,6 +19,8 @@
 - Stripe webhook events are processed once per event id (duplicate deliveries are acknowledged, failed handlers can be retried).
 
 ### Changed
+- Prisma 6.19 -> 7.10: `prisma-client` generator (`lib/generated/prisma`), `prisma.config.ts`, `pg` driver adapter in `lib/db.ts`.
+- Integration tests run on a disposable embedded PostgreSQL (`pnpm test:integration`, no Docker); new DB-backed suites for auth, access control, quiz grading, refunds, community limits and the seed; CI job for it.
 - Dependencies moved to the latest stable majors (Next 16, zod 4, Stripe SDK 23, better-auth 1.7, vitest 5…); see docs/modernization-2026-10.md. Build and dev run on webpack; `middleware.ts` is now `proxy.ts`; CI runs on Node 22.
 - Large files split into focused modules (community actions, visualizations, services, templates, forms).
 - i18n dictionaries unified; analytics calls go through `AnalyticsHelper`.

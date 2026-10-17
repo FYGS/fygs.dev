@@ -14,6 +14,7 @@
     "test:integration": "node scripts/test-db.mjs run -- vitest run --config vitest.integration.config.ts",
     "test:integration:watch": "vitest --config vitest.integration.config.ts",
     "test:db": "node scripts/test-db.mjs start",
+    "db:check-migrations": "node scripts/test-db.mjs run --migrate -- prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:ci": "vitest run",
