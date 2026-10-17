@@ -35,7 +35,6 @@ for (const route of routes) {
     // axe
     await page.evaluate(axeSource);
     const axe = await page.evaluate(async () => {
-      // eslint-disable-next-line no-undef
       const r = await axe.run(document, {
         runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"] },
         resultTypes: ["violations", "incomplete"],

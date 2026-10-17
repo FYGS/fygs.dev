@@ -95,7 +95,9 @@ describe("requestRefund (recorded Stripe answers)", () => {
       { payment_intent: PI, amount: f.invoiceRetrieved.amount_paid },
       { idempotencyKey: `refund:dbsub:${PI}` },
     );
-    expect(h.stripe.subscriptions.cancel).toHaveBeenCalledWith(SUB);
+    expect(h.stripe.subscriptions.cancel).toHaveBeenCalledWith(SUB, undefined, {
+      idempotencyKey: `cancel:${SUB}:immediate`,
+    });
     expect(result).toEqual({
       success: true,
       message: expect.stringContaining("Refund processed"),
