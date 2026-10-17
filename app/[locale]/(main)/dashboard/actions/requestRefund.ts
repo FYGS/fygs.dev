@@ -104,7 +104,9 @@ export async function requestRefund(
       );
 
       // Stop future billing; otherwise the customer would be refunded and charged again
-      await paymentService.cancelImmediately(subscription.stripeSubscriptionId);
+      await paymentService.cancelImmediately(subscription.stripeSubscriptionId, {
+        idempotencyKey: `cancel:${subscription.stripeSubscriptionId}:immediate`,
+      });
 
       const amount = payment.amountPaidCents / 100;
       const currency = payment.currency;

@@ -111,7 +111,9 @@ describe("requestRefund", () => {
 
   it("cancels the Stripe subscription, then records cancellation and audit atomically", async () => {
     const result = await requestRefund({ ...input, reason: "changed my mind" });
-    expect(m.cancelImmediately).toHaveBeenCalledWith("sub_123");
+    expect(m.cancelImmediately).toHaveBeenCalledWith("sub_123", {
+      idempotencyKey: "cancel:sub_123:immediate",
+    });
     expect(m.subscriptionUpdate.mock.calls[0][0].data.status).toBe("CANCELED");
     const audit = m.auditCreate.mock.calls[0][0].data;
     expect(audit).toMatchObject({ type: "REFUND_PROCESSED", amount: 29, currency: "eur" });
