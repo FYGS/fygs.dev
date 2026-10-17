@@ -14,7 +14,38 @@ import { DynamicProgrammingGuide } from "@/app/[locale]/(main)/tech-mastry/algor
 import { SortingQuizzes } from "@/app/[locale]/(main)/tech-mastry/algorithms/sorting/_components/sections/sorting-quizzes";
 import { SortingAlgorithmsOverview } from "@/app/[locale]/(main)/tech-mastry/algorithms/sorting/_components/sections/sorting-algorithms-overview";
 import { SearchingAlgorithmsOverview } from "@/app/[locale]/(main)/tech-mastry/algorithms/searching/_components/sections/searching-algorithms-overview";
+import { BinarySearch3D } from "@/app/[locale]/(main)/tech-mastry/algorithms/searching/_components/sections/3d-visualization/binary-search-3d";
 import { renderWalkSim } from "./render-walk-sim";
+
+// jsdom has no WebGL: every three.js class becomes a stub that accepts any call, so that
+// the React side (state, controls, animation steps) can be walked.
+vi.mock("three", () => {
+  const stub = (): unknown => {
+    let canvas: HTMLCanvasElement | null = null;
+    return new Proxy(function () {}, {
+      get: (_t, prop) =>
+        prop === "domElement"
+          ? (canvas ??= document.createElement("canvas"))
+          : prop === Symbol.toPrimitive
+            ? () => 0
+            : stub(),
+      apply: () => stub(),
+      construct: () => stub() as object,
+      set: () => true,
+    });
+  };
+  const names = [
+    "Scene", "Color", "PerspectiveCamera", "WebGLRenderer", "AmbientLight", "DirectionalLight",
+    "PlaneGeometry", "MeshStandardMaterial", "DoubleSide", "Mesh", "BoxGeometry", "Sprite",
+    "SpriteMaterial", "CanvasTexture",
+  ];
+  return Object.fromEntries(
+    names.map((name) => [name, class { constructor() { return stub() as object; } }]),
+  );
+});
+vi.mock("three/examples/jsm/controls/OrbitControls.js", () => ({
+  OrbitControls: class { update() {} },
+}));
 
 // Characterisation of the large components that were split into smaller files: the
 // markup reached by clicking through them must not change when the files move.
@@ -41,6 +72,7 @@ const cases: [string, ComponentType][] = [
   ["sorting-quizzes", SortingQuizzes],
   ["sorting-algorithms-overview", SortingAlgorithmsOverview],
   ["searching-algorithms-overview", SearchingAlgorithmsOverview],
+  ["binary-search-3d", BinarySearch3D],
 ];
 
 describe("tech-mastry components split into smaller files", () => {

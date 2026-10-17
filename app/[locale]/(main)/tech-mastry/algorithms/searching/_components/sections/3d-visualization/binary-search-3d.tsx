@@ -16,57 +16,21 @@ import { Info, Maximize, Minimize, Pause, Play, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-
-// Types pour la visualisation
-type ElementState =
-  | "default"
-  | "current"
-  | "found"
-  | "not-found"
-  | "searching"
-  | "range";
-
-type ArrayElement = {
-  value: number;
-  state: ElementState;
-};
-
-function createSortedArray(size: number): ArrayElement[] {
-  const newArray: ArrayElement[] = [];
-  for (let i = 0; i < size; i++) {
-    newArray.push({
-      value: i * 2 + 1, // Valeurs impaires pour un tableau trié
-      state: "default",
-    });
-  }
-  return newArray;
-}
+import { createSortedArray } from "./binary-search-3d/elements";
+import { Legend } from "./binary-search-3d/legend";
+import {
+  disposeScene,
+  rebuildCubes,
+  updateCubeColors,
+} from "./binary-search-3d/scene";
+import { applySearchStep, binarySearchSteps } from "./binary-search-3d/search-steps";
+import type { ArrayElement } from "./binary-search-3d/types";
 
 export function BinarySearch3D() {
   // État pour le tableau et la cible
   const arraySize = 15; // Taille fixe pour simplifier
   const [array, setArray] = useState<ArrayElement[]>(() => createSortedArray(arraySize));
   const [target, setTarget] = useState<number>(15);
-
-  // Obtenir la couleur en fonction de l'état
-  const getColorForState = useCallback((state: string): number => {
-    switch (state) {
-      case "default":
-        return 0xcccccc;
-      case "current":
-        return 0x3b82f6; // blue-500
-      case "found":
-        return 0x10b981; // emerald-500
-      case "not-found":
-        return 0xef4444; // red-500
-      case "range":
-        return 0xf59e0b; // amber-500
-      case "searching":
-        return 0x8b5cf6; // violet-500
-      default:
-        return 0xcccccc;
-    }
-  }, []);
 
   // État pour l'animation
   const [isRunning, setIsRunning] = useState<boolean>(false);
@@ -122,77 +86,6 @@ export function BinarySearch3D() {
     updateCubesState();
   };
 
-  // Type pour les étapes de l'algorithme
-  type SearchStep = {
-    left?: number;
-    right?: number;
-    mid?: number;
-    state:
-      | "default"
-      | "current"
-      | "found"
-      | "not-found"
-      | "searching"
-      | "range";
-    message?: string;
-  };
-
-  // Algorithme de recherche binaire
-  const binarySearch = () => {
-    const steps: SearchStep[] = [];
-    const arr = array.map((item) => item.value);
-    let left = 0;
-    let right = arr.length - 1;
-
-    while (left <= right) {
-      const mid = Math.floor((left + right) / 2);
-
-      steps.push({
-        left,
-        right,
-        mid,
-        state: "searching",
-        message: `Comparaison de ${arr[mid]} avec ${target}`,
-      });
-
-      if (arr[mid] === target) {
-        steps.push({
-          left,
-          right,
-          mid,
-          state: "found",
-          message: `L'élément ${target} est trouvé à l'index ${mid}.`,
-        });
-        return { steps, found: true, foundIndex: mid };
-      }
-
-      if (arr[mid] < target) {
-        left = mid + 1;
-        steps.push({
-          left,
-          right,
-          state: "range",
-          message: `L'élément ${arr[mid]} est plus petit que ${target}, on cherche à droite.`,
-        });
-      } else {
-        right = mid - 1;
-        steps.push({
-          left,
-          right,
-          state: "range",
-          message: `L'élément ${arr[mid]} est plus grand que ${target}, on cherche à gauche.`,
-        });
-      }
-    }
-
-    steps.push({
-      state: "not-found",
-      message: `L'élément ${target} n'est pas trouvé dans le tableau.`,
-    });
-
-    return { steps, found: false, foundIndex: -1 };
-  };
-
   // Exécuter l'animation
   const runAnimation = () => {
     // Annuler toute animation en cours
@@ -205,7 +98,10 @@ export function BinarySearch3D() {
     resetVisualization();
 
     // Obtenir les étapes de l'algorithme
-    const { steps } = binarySearch();
+    const { steps } = binarySearchSteps(
+      array.map((item) => item.value),
+      target
+    );
     setTotalSteps(steps.length);
 
     // Fonction pour animer les étapes
@@ -218,49 +114,7 @@ export function BinarySearch3D() {
         setResult(step.message || "");
 
         // Mettre à jour l'état du tableau
-        setArray((prev) => {
-          const newArray = [...prev].map((item) => ({
-            ...item,
-            state: "default" as ElementState,
-          }));
-
-          if (step.state === "searching") {
-            // Marquer l'élément en cours de comparaison
-            if (step.mid !== undefined) {
-              newArray[step.mid].state = "current";
-            }
-
-            // Marquer la plage de recherche
-            if (step.left !== undefined && step.right !== undefined) {
-              for (let i = step.left; i <= step.right; i++) {
-                if (i !== step.mid && i < newArray.length) {
-                  newArray[i].state = "range";
-                }
-              }
-            }
-          } else if (step.state === "found") {
-            // Marquer l'élément trouvé
-            if (step.mid !== undefined) {
-              newArray[step.mid].state = "found";
-            }
-          } else if (step.state === "not-found") {
-            // Marquer tous les éléments comme non trouvés
-            newArray.forEach((item) => {
-              item.state = "not-found";
-            });
-          } else if (step.state === "range") {
-            // Marquer la plage de recherche
-            if (step.left !== undefined && step.right !== undefined) {
-              for (let i = step.left; i <= step.right; i++) {
-                if (i < newArray.length) {
-                  newArray[i].state = "range";
-                }
-              }
-            }
-          }
-
-          return newArray;
-        });
+        setArray((prev) => applySearchStep(prev, step));
 
         // Mettre à jour la visualisation 3D
         updateCubesState();
@@ -282,107 +136,11 @@ export function BinarySearch3D() {
     animationRef.current = requestAnimationFrame(animate);
   };
 
-  // Mettre en pause ou reprendre l'animation - non utilisé pour l'instant mais pourrait être utile plus tard
-  // const toggleAnimation = () => {
-  //   setIsRunning(!isRunning);
-  //   if (!isRunning) {
-  //     runAnimation();
-  //   } else if (animationRef.current) {
-  //     cancelAnimationFrame(animationRef.current);
-  //     animationRef.current = null;
-  //   }
-  // };
-
   // Créer les cubes pour représenter le tableau
   const createCubes = useCallback(() => {
     if (!sceneRef.current) return;
-
-    // Supprimer uniquement les cubes et sprites, pas les lumières ni le plan
-    const objectsToRemove = [];
-    for (let i = 0; i < sceneRef.current.children.length; i++) {
-      const object = sceneRef.current.children[i];
-      // Ne supprime pas les lumières ni le plan (qui est le premier mesh ajouté)
-      if (
-        (object instanceof THREE.Mesh &&
-          object.geometry instanceof THREE.BoxGeometry) ||
-        object instanceof THREE.Sprite
-      ) {
-        objectsToRemove.push(object);
-      }
-    }
-
-    // Maintenant supprime les objets identifiés
-    objectsToRemove.forEach((object) => {
-      if (object instanceof THREE.Mesh) {
-        object.geometry.dispose();
-        if (Array.isArray(object.material)) {
-          object.material.forEach((material) => material.dispose());
-        } else {
-          object.material.dispose();
-        }
-      } else if (object instanceof THREE.Sprite) {
-        if (
-          object.material instanceof THREE.SpriteMaterial &&
-          object.material.map
-        ) {
-          object.material.map.dispose();
-        }
-        object.material.dispose();
-      }
-      sceneRef.current?.remove(object);
-    });
-
-    cubesRef.current = [];
-
-    // Créer de nouveaux cubes
-    const cubes: THREE.Mesh[] = [];
-
-    array.forEach((item, index) => {
-      const cubeGeometry = new THREE.BoxGeometry(1, item.value / 2, 1);
-      const cubeMaterial = new THREE.MeshStandardMaterial({
-        color: getColorForState(item.state),
-      });
-
-      const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-      cube.position.set(
-        index * 1.5 - (array.length * 1.5) / 2 + 0.75,
-        item.value / 4,
-        0
-      );
-
-      // Créer un sprite pour afficher la valeur
-      const canvas = document.createElement("canvas");
-      const context = canvas.getContext("2d");
-      if (context) {
-        canvas.width = 64;
-        canvas.height = 64;
-        context.fillStyle = "#000000";
-        context.font = "Bold 24px Arial";
-        context.textAlign = "center";
-        context.textBaseline = "middle";
-        context.fillText(item.value.toString(), 32, 32);
-
-        const texture = new THREE.CanvasTexture(canvas);
-        const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
-        const sprite = new THREE.Sprite(spriteMaterial);
-        sprite.position.set(
-          index * 1.5 - (array.length * 1.5) / 2 + 0.75,
-          item.value / 2 + 1,
-          0
-        );
-        sprite.scale.set(1, 1, 1);
-
-        sceneRef.current?.add(cube);
-        sceneRef.current?.add(sprite);
-      } else {
-        sceneRef.current?.add(cube);
-      }
-
-      cubes.push(cube);
-    });
-
-    cubesRef.current = cubes;
-  }, [array, getColorForState]);
+    cubesRef.current = rebuildCubes(sceneRef.current, array);
+  }, [array]);
 
   // Initialiser la scène 3D
   useEffect(() => {
@@ -441,6 +199,7 @@ export function BinarySearch3D() {
     createCubes();
 
     // Fonction d'animation
+    let frameId = 0;
     const animate = () => {
       if (controlsRef.current) {
         controlsRef.current.update();
@@ -450,7 +209,7 @@ export function BinarySearch3D() {
         rendererRef.current.render(sceneRef.current, cameraRef.current);
       }
 
-      requestAnimationFrame(animate);
+      frameId = requestAnimationFrame(animate);
     };
 
     animate();
@@ -460,6 +219,9 @@ export function BinarySearch3D() {
 
     // Nettoyer lors du démontage
     return () => {
+      // Arrêter la boucle de rendu
+      cancelAnimationFrame(frameId);
+
       if (rendererRef.current && container) {
         container.removeChild(rendererRef.current.domElement);
       }
@@ -467,26 +229,7 @@ export function BinarySearch3D() {
       // Nettoyer la scène complète
       if (sceneRef.current) {
         // Supprimer tous les objets de la scène
-        while (sceneRef.current.children.length > 0) {
-          const object = sceneRef.current.children[0];
-          if (object instanceof THREE.Mesh) {
-            object.geometry.dispose();
-            if (Array.isArray(object.material)) {
-              object.material.forEach((material) => material.dispose());
-            } else {
-              object.material.dispose();
-            }
-          } else if (object instanceof THREE.Sprite) {
-            if (
-              object.material instanceof THREE.SpriteMaterial &&
-              object.material.map
-            ) {
-              object.material.map.dispose();
-            }
-            object.material.dispose();
-          }
-          sceneRef.current.remove(object);
-        }
+        disposeScene(sceneRef.current);
 
         cubesRef.current = [];
       }
@@ -517,17 +260,7 @@ export function BinarySearch3D() {
   const updateCubesState = () => {
     if (!sceneRef.current) return;
 
-    array.forEach((item, index) => {
-      if (index < cubesRef.current.length) {
-        const cube = cubesRef.current[index];
-        if (
-          !Array.isArray(cube.material) &&
-          cube.material instanceof THREE.MeshStandardMaterial
-        ) {
-          cube.material.color.set(getColorForState(item.state));
-        }
-      }
-    });
+    updateCubeColors(cubesRef.current, array);
   };
 
   // Basculer en mode plein écran
@@ -646,28 +379,7 @@ export function BinarySearch3D() {
         ></div>
 
         {/* Légende */}
-        <div className="flex flex-wrap gap-3 justify-center text-xs">
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-sm bg-[#cccccc]"></div>
-            <span>Non visité</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-sm bg-amber-500"></div>
-            <span>Plage de recherche</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-sm bg-blue-500"></div>
-            <span>Élément courant</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-sm bg-emerald-500"></div>
-            <span>Trouvé</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-sm bg-red-500"></div>
-            <span>Non trouvé</span>
-          </div>
-        </div>
+        <Legend />
 
         {/* Résultat et progression */}
         <div className="space-y-2">

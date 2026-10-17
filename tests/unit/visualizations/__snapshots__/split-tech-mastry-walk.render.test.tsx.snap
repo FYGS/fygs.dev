@@ -54,6 +54,22 @@ exports[`tech-mastry components split into smaller files > arrays-page renders t
 ]
 `;
 
+exports[`tech-mastry components split into smaller files > binary-search-3d renders the same markup in every state reachable by clicking 1`] = `
+[
+  "4389f93f",
+  "4389f93f",
+  "30875f24",
+  "920b148f",
+  "30875f24",
+  "12ef2fbb",
+  "12ef2fbb",
+  "1bfa70db",
+  "12473ce4",
+  "fe9ca5a8",
+  "386d86fd",
+]
+`;
+
 exports[`tech-mastry components split into smaller files > dp-real-world renders the same markup in every state reachable by clicking 1`] = `
 [
   "8ff8f8f8",
