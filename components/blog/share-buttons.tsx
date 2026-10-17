@@ -83,6 +83,7 @@ export function ShareButtons({
                 "transition-all hover:scale-105 shrink-0",
                 compact && "h-8 w-8",
               )}
+              aria-label={link.name}
               onClick={() =>
                 window.open(link.href, "_blank", "noopener,noreferrer")
               }
@@ -104,6 +105,7 @@ export function ShareButtons({
               copied && "border-emerald-500/50 text-emerald-500",
               compact && "h-8 w-8",
             )}
+            aria-label={copied ? "Copied!" : "Copy link"}
             onClick={copyToClipboard}
           >
             {copied ? (

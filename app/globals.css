@@ -632,6 +632,9 @@
   .text-primary {
     color: hsl(var(--primary-text));
   }
+  .text-primary\/80,
+  .text-primary\/90,
+  .hover\:text-primary\/80:hover,
   .hover\:text-primary:hover,
   .group:hover .group-hover\:text-primary {
     color: hsl(var(--primary-text));

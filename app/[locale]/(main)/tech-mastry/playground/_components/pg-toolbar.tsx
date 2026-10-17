@@ -473,6 +473,7 @@ function ToolbarButton({
           size="icon"
           className="h-7 w-7"
           onClick={onClick}
+          aria-label={tooltip}
         >
           <Icon className="h-3.5 w-3.5" />
         </Button>

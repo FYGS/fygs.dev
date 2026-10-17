@@ -605,7 +605,7 @@ export function SortingAlgorithmsOverview() {
                     </Button>
                   </div>
                   <div className="relative">
-                    <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto max-h-80">
+                    <pre tabIndex={0} className="bg-muted p-4 rounded-lg text-sm overflow-x-auto max-h-80">
                       <code>{algorithm.code}</code>
                     </pre>
                   </div>

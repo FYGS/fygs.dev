@@ -76,10 +76,10 @@ export function Footer() {
 
           {/* Colonne 2: Information */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold flex items-center gap-2 pb-2 border-b">
+            <h2 className="text-sm font-semibold flex items-center gap-2 pb-2 border-b">
               <span className="w-2 h-2 rounded-full bg-linear-to-r from-primary to-primary/60" />
               {content.information.label.value}
-            </h3>
+            </h2>
             <div className="space-y-2">
               {content.information.links.map((link) => (
                 <LocaleAwareLink
@@ -102,10 +102,10 @@ export function Footer() {
 
           {/* Colonne 3: Learning */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold flex items-center gap-2 pb-2 border-b">
+            <h2 className="text-sm font-semibold flex items-center gap-2 pb-2 border-b">
               <span className="w-2 h-2 rounded-full bg-linear-to-r from-primary to-primary/60" />
               {content.learning.label.value}
-            </h3>
+            </h2>
             <div className="space-y-2">
               {content.learning.links.map((link) => (
                 <LocaleAwareLink
@@ -128,10 +128,10 @@ export function Footer() {
 
           {/* Colonne 4: Featured Projects */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold flex items-center gap-2 pb-2 border-b">
+            <h2 className="text-sm font-semibold flex items-center gap-2 pb-2 border-b">
               <span className="w-2 h-2 rounded-full bg-linear-to-r from-primary to-primary/60" />
               {content.projects.label.value}
-            </h3>
+            </h2>
             <div className="space-y-3">
               {content.projects.items.map((project) => {
                 const Icon =
