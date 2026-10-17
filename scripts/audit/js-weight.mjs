@@ -13,16 +13,18 @@ const [base, routesFile, outFile] = process.argv.slice(2);
 const routes = fs.readFileSync(routesFile, "utf8").split(/\r?\n/).filter((l) => l && !l.startsWith("#"));
 
 const SIG = {
-  monaco: /monaco/i,
+  monaco: /EditorOption|StandaloneKeybindingService/,
   three: /WebGLRenderer/,
-  mermaid: /mermaid/i,
-  recharts: /recharts/i,
-  jspdf: /jspdf/i,
-  d3: /d3-selection|d3-scale/,
-  refractor: /refractor/i,
-  tiptap: /tiptap|prosemirror/i,
-  webcontainer: /webcontainer/i,
-  stripe: /js\.stripe\.com|stripe/i,
+  mermaid: /mermaidAPI|flowchart-v2/,
+  recharts: /RadarChart|recharts-wrapper/,
+  jspdf: /%PDF-|jsPDF/,
+  d3: /forceSimulation|scaleLinear/,
+  refractor: /refractor[/]core|PrismAsyncLight|highlightAll/,
+  tiptap: /ProseMirror|prosemirror/i,
+  webcontainer: /WebContainer/,
+  stripe: /js[.]stripe[.]com/,
+  zod: /ZodError/,
+  intlayer: /intlayer/i,
 };
 
 const browser = await chromium.launch({ channel: "chrome", headless: true });
@@ -63,6 +65,7 @@ for (const route of routes) {
     row.requests = scripts.length;
     row.jsKB = +(scripts.reduce((a, s) => a + s.bytes, 0) / 1024).toFixed(1);
     row.heavy = [...new Set(scripts.flatMap((s) => s.sig))];
+    row.scripts = scripts.map((x) => ({ file: new URL(x.url).pathname.split("/").pop(), kb: +(x.bytes / 1024).toFixed(1), sig: x.sig }));
     row.top = scripts
       .sort((a, b) => b.bytes - a.bytes)
       .slice(0, 4)
