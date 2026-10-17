@@ -679,6 +679,9 @@ function QuizConfetti() {
         Math.floor(Math.random() * 5)
       ],
       size: 6 + Math.random() * 8,
+      rotate: 360 + Math.random() * 360,
+      duration: 2 + Math.random(),
+      borderRadius: Math.random() > 0.5 ? "50%" : "2px",
     })),
   );
 
@@ -691,10 +694,10 @@ function QuizConfetti() {
           animate={{
             y: "100vh",
             opacity: 0,
-            rotate: 360 + Math.random() * 360,
+            rotate: p.rotate,
           }}
           transition={{
-            duration: 2 + Math.random(),
+            duration: p.duration,
             delay: p.delay,
             ease: "easeIn",
           }}
@@ -703,7 +706,7 @@ function QuizConfetti() {
             width: p.size,
             height: p.size,
             backgroundColor: p.color,
-            borderRadius: Math.random() > 0.5 ? "50%" : "2px",
+            borderRadius: p.borderRadius,
           }}
         />
       ))}

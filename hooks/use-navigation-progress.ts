@@ -10,7 +10,7 @@ export function useNavigationProgress() {
     let progressInterval: NodeJS.Timeout;
 
     if (isNavigating) {
-      setProgress(0);
+      queueMicrotask(() => setProgress(0));
       progressInterval = setInterval(() => {
         setProgress((prev) => {
           if (prev >= 90) {
@@ -21,7 +21,7 @@ export function useNavigationProgress() {
         });
       }, 100);
     } else {
-      setProgress(100);
+      queueMicrotask(() => setProgress(100));
       setTimeout(() => {
         setProgress(0);
       }, 200);

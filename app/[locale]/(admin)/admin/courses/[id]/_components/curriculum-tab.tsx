@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
@@ -24,10 +24,12 @@ export function CurriculumTab({ courseId, modules }: CurriculumTabProps) {
   const [localModules, setLocalModules] = useState(modules);
   const [, startReorderTransition] = useTransition();
 
-  // Sync local state when server data updates
-  useEffect(() => {
+  // Sync local state when server data updates (derived during render, not in an effect)
+  const [syncedModules, setSyncedModules] = useState(modules);
+  if (syncedModules !== modules) {
+    setSyncedModules(modules);
     setLocalModules(modules);
-  }, [modules]);
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),

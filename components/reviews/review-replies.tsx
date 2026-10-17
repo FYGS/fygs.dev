@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -70,13 +70,12 @@ export function ReviewReplies({
   }, [reviewId, isLoading]);
 
   // Update replies when initialReplies changes (real-time updates)
-  useEffect(() => {
-    if (initialReplies.length > replies.length) {
-      setReplies(initialReplies);
-      setHasLoaded(true);
-      setIsExpanded(true);
-    }
-  }, [initialReplies, replies.length]);
+  // (derived during render; the guard stops once replies caught up)
+  if (initialReplies.length > replies.length) {
+    setReplies(initialReplies);
+    setHasLoaded(true);
+    setIsExpanded(true);
+  }
 
   const handleToggleExpanded = () => {
     if (!isExpanded && !hasLoaded) {

@@ -2,7 +2,7 @@
 
 import { useCallback, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useAutoSave } from "@/hooks/use-auto-save";
@@ -75,7 +75,7 @@ export function CourseEditForm({ course, tags }: CourseEditFormProps) {
   );
 
   // Watch form values for auto-save
-  const watchedValues = form.watch();
+  const watchedValues = useWatch({ control: form.control }) as CourseEditFormData;
   const { status: autoSaveStatus, lastSaved } = useAutoSave({
     data: watchedValues,
     onSave: handleAutoSave,

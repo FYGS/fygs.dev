@@ -121,9 +121,7 @@ export async function switchSubscriptionPlan(
       where: { id: subscription.id },
       data: {
         priceId: resolvedPriceInfo.priceId,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         currentPeriodStart: new Date((stripeSubscription as any).current_period_start * 1000),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         currentPeriodEnd: new Date((stripeSubscription as any).current_period_end * 1000),
         cancelAtPeriodEnd: false
       }

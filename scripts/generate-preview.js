@@ -21,7 +21,6 @@
  * @see {@link https://github.com/fygs/fygs.dev GitHub Repository}
  */
 
-/* eslint-disable @typescript-eslint/no-require-imports */
 const puppeteer = require("puppeteer");
 const path = require("path");
 const fs = require("fs").promises;

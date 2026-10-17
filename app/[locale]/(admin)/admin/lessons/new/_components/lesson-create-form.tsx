@@ -2,7 +2,7 @@
 
 import { useTransition, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -93,6 +93,8 @@ export function LessonCreateForm({ courses, selectedCourseId }: LessonCreateForm
       moduleId: undefined,
     },
   });
+  const watchedPublished = useWatch({ control: form.control, name: "published" });
+  const watchedSlug = useWatch({ control: form.control, name: "slug" });
 
   // Auto-generate slug from title
   const handleTitleChange = (title: string) => {
@@ -130,10 +132,12 @@ export function LessonCreateForm({ courses, selectedCourseId }: LessonCreateForm
   };
 
   // Watch for course changes
-  const selectedCourse = form.watch("courseId");
+  const selectedCourse = useWatch({ control: form.control, name: "courseId" });
   useEffect(() => {
     if (selectedCourse) {
-      fetchModules(selectedCourse);
+      queueMicrotask(() => {
+        void fetchModules(selectedCourse);
+      });
       // Reset module selection when course changes
       form.setValue("moduleId", undefined);
     }
@@ -469,12 +473,12 @@ Votre contenu en Markdown/MDX..."
             Annuler
           </Button>
 
-          {form.watch("published") && (
+          {watchedPublished && (
             <Button
               type="button"
               variant="ghost"
               className="flex items-center gap-2"
-              disabled={!form.watch("courseId") || !form.watch("slug")}
+              disabled={!selectedCourse || !watchedSlug}
             >
               <Eye className="h-4 w-4" />
               Prévisualiser

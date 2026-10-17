@@ -2,7 +2,6 @@ import Redis, { ChainableCommander } from "ioredis";
 
 // Add proper typing for global
 declare global {
-  // eslint-disable-next-line no-var
   var redis: Redis | undefined;
 }
 

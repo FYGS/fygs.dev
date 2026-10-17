@@ -127,7 +127,10 @@ export function ReviewPerformanceMonitor() {
   };
 
   useEffect(() => {
-    loadData();
+    // Fetch after mount; state updates happen in the async callback.
+    queueMicrotask(() => {
+      void loadData();
+    });
   }, []);
 
   const getStatusIcon = (status: string) => {

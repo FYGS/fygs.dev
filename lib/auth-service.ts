@@ -99,14 +99,14 @@ export class AuthService {
             await signOut({
                 fetchOptions: {
                     onSuccess: () => {
-                        window.location.href = "/formations";
+                        window.location.href = new URL("/formations", window.location.origin).href;
                     },
                 },
             });
         } catch (signOutError) {
             console.error('Sign out error:', signOutError);
             // Force redirect even if signOut fails
-            window.location.href = "/formations";
+            window.location.href = new URL("/formations", window.location.origin).href;
         }
     }
 

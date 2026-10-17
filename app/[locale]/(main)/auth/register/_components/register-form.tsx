@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,7 +12,7 @@ import { authService } from "@/lib/auth-service";
 import { toast } from "sonner";
 import { Mail, Eye, EyeOff } from "lucide-react";
 import { Github } from "@/components/icons/brand-icons";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useIntlayer } from "next-intlayer";
@@ -53,7 +54,6 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
     handleSubmit,
     formState: { errors },
     setError,
-    watch,
     control,
   } = useForm<z.input<typeof registerSchema>, unknown, RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -62,7 +62,7 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
     },
   });
 
-  const acceptTerms = watch("acceptTerms");
+  const acceptTerms = useWatch({ control, name: "acceptTerms" });
 
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
@@ -262,13 +262,13 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
             className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
           >
             {content.form.acceptTerms.text}{" "}
-            <a href="/terms" className="text-primary hover:underline">
+            <Link href="/terms" className="text-primary hover:underline">
               {content.form.acceptTerms.terms}
-            </a>{" "}
+            </Link>{" "}
             {content.form.acceptTerms.and}{" "}
-            <a href="/privacy" className="text-primary hover:underline">
+            <Link href="/privacy" className="text-primary hover:underline">
               {content.form.acceptTerms.privacy}
-            </a>
+            </Link>
           </Label>
         </div>
         {errors.acceptTerms && (

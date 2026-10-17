@@ -63,7 +63,6 @@ export function CommunityFilters({
   );
 
   const handleDiscussionSuccess = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     (_discussionId: string) => {
       // Refresh the page to show the new discussion
       router.refresh();

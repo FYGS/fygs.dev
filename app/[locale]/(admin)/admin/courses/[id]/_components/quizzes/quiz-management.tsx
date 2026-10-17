@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -82,16 +82,45 @@ interface UserAnswer {
   isCorrect: boolean;
 }
 
+// Stable default so the "props changed" check below never fires spuriously.
+const NO_QUIZZES: Quiz[] = [];
+
+// Load quiz data - prefer real data over samples
+function loadQuizData(title: string, slug: string, initialQuizzes: Quiz[]): QuizData[] {
+  if (initialQuizzes.length > 0) {
+    // Convert real database data to component format
+    return initialQuizzes.map(quiz => ({
+      id: quiz.id,
+      moduleId: quiz.moduleId,
+      title: quiz.title,
+      questions: quiz.questions.map(q => ({
+        id: q.id,
+        question: q.question,
+        options: q.options,
+        correct: q.correct,
+        explanation: q.explanation || '',
+        order: q.order
+      }))
+    }));
+  }
+  // Fallback to sample data for demonstration
+  return generateSampleQuizzes(title, slug);
+}
+
 export function QuizManagement({ 
   course,
   modules = [],
-  initialQuizzes = []
+  initialQuizzes = NO_QUIZZES
 }: Pick<QuizManagementProps, 'course'> & { 
   modules?: QuizModule[];
   initialQuizzes?: Quiz[];
 }) {
-  const [quizzes, setQuizzes] = useState<QuizData[]>([]);
-  const [selectedModule, setSelectedModule] = useState<number | null>(null);
+  const [quizzes, setQuizzes] = useState<QuizData[]>(() =>
+    loadQuizData(course.title, course.slug, initialQuizzes),
+  );
+  const [selectedModule, setSelectedModule] = useState<number | null>(
+    () => loadQuizData(course.title, course.slug, initialQuizzes)[0]?.moduleId ?? null,
+  );
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
   const [showExplanation, setShowExplanation] = useState(false);
@@ -102,36 +131,25 @@ export function QuizManagement({
   const [showEditor, setShowEditor] = useState(false);
   const [editingQuiz, setEditingQuiz] = useState<QuizData | null>(null);
 
-  // Load quiz data - prefer real data over samples
-  useEffect(() => {
-    if (initialQuizzes.length > 0) {
-      // Convert real database data to component format
-      const realData = initialQuizzes.map(quiz => ({
-        id: quiz.id,
-        moduleId: quiz.moduleId,
-        title: quiz.title,
-        questions: quiz.questions.map(q => ({
-          id: q.id,
-          question: q.question,
-          options: q.options,
-          correct: q.correct,
-          explanation: q.explanation || '',
-          order: q.order
-        }))
-      }));
-      setQuizzes(realData);
-      if (realData.length > 0) {
-        setSelectedModule(realData[0].moduleId);
-      }
-    } else {
-      // Fallback to sample data for demonstration
-      const sampleData = generateSampleQuizzes(course.title, course.slug);
-      setQuizzes(sampleData);
-      if (sampleData.length > 0) {
-        setSelectedModule(sampleData[0].moduleId);
-      }
+  // Reload quiz data when the course or the server data changes (derived during
+  // render rather than in an effect).
+  const [loadedFrom, setLoadedFrom] = useState({
+    title: course.title,
+    slug: course.slug,
+    initialQuizzes,
+  });
+  if (
+    loadedFrom.title !== course.title ||
+    loadedFrom.slug !== course.slug ||
+    loadedFrom.initialQuizzes !== initialQuizzes
+  ) {
+    setLoadedFrom({ title: course.title, slug: course.slug, initialQuizzes });
+    const loaded = loadQuizData(course.title, course.slug, initialQuizzes);
+    setQuizzes(loaded);
+    if (loaded.length > 0) {
+      setSelectedModule(loaded[0].moduleId);
     }
-  }, [course.title, course.slug, initialQuizzes]);
+  }
 
   // Helper functions for editor
   const handleCreateNew = () => {

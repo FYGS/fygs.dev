@@ -87,7 +87,7 @@ export function CoursePaymentForm({
       // Redirect to login with callback to return to course page
       const currentPath = `/formations/${course.slug}`;
       const callbackUrl = encodeURIComponent(currentPath);
-      window.location.href = `/auth/login?callbackUrl=${callbackUrl}`;
+      window.location.href = new URL(`/auth/login?callbackUrl=${callbackUrl}`, window.location.origin).href;
       return;
     }
 
@@ -175,7 +175,7 @@ export function CoursePaymentForm({
     if (!session || isSessionPending) {
       const currentPath = `/formations/${course.slug}`;
       const callbackUrl = encodeURIComponent(currentPath);
-      window.location.href = `/auth/login?callbackUrl=${callbackUrl}`;
+      window.location.href = new URL(`/auth/login?callbackUrl=${callbackUrl}`, window.location.origin).href;
       return;
     }
 
@@ -300,7 +300,7 @@ export function CoursePaymentForm({
             variant="secondary"
             className="w-full"
             onClick={() => {
-              window.location.href = `/formations/${course.slug}/lessons/${course.firstLessonSlug}?preview=1`;
+              window.location.href = new URL(`/formations/${course.slug}/lessons/${course.firstLessonSlug}?preview=1`, window.location.origin).href;
             }}
           >
             <PlayCircle className="h-4 w-4 mr-2" /> Prévisualiser la première

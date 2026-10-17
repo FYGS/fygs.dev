@@ -42,7 +42,7 @@ export function MobileToc() {
       })
       .filter((h) => h.text);
 
-    setHeadings(elements);
+    const frame = requestAnimationFrame(() => setHeadings(elements));
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -58,7 +58,10 @@ export function MobileToc() {
       if (el) observer.observe(el);
     });
 
-    return () => observer.disconnect();
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
   }, []);
 
   if (headings.length === 0) return null;

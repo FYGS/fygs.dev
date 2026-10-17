@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -99,6 +99,8 @@ export function LessonEditForm({ lesson, courses }: LessonEditFormProps) {
       courseId: lesson.courseId,
     },
   });
+  const watchedPublished = useWatch({ control: form.control, name: "published" });
+  const watchedSlug = useWatch({ control: form.control, name: "slug" });
 
   // Auto-generate slug from title
   const handleTitleChange = (title: string) => {
@@ -410,14 +412,14 @@ export function LessonEditForm({ lesson, courses }: LessonEditFormProps) {
               Annuler
             </Button>
 
-            {form.watch("published") && (
+            {watchedPublished && (
               <Button
                 type="button"
                 variant="ghost"
                 className="flex items-center gap-2"
                 onClick={() =>
                   window.open(
-                    `/formations/${lesson.course.slug}/lessons/${form.watch("slug")}`,
+                    `/formations/${lesson.course.slug}/lessons/${watchedSlug}`,
                     "_blank",
                   )
                 }

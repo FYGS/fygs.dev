@@ -115,11 +115,13 @@ export function TrainingOverview({
     }
   }, [isPlaying, totalSlides]);
 
-  // Reset slide when changing modules
-  useEffect(() => {
+  // Reset slide when changing modules (derived during render, not in an effect)
+  const [slideModule, setSlideModule] = useState(selectedModule);
+  if (slideModule !== selectedModule) {
+    setSlideModule(selectedModule);
     setCurrentSlide(0);
     setIsPlaying(false);
-  }, [selectedModule]);
+  }
 
   if (validVisualSupports.length === 0) {
     return null; // Don't show section if no valid visual supports

@@ -14,6 +14,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useIntlayer } from "next-intlayer";
+import { hardNavigate } from "@/lib/browser-effects";
 
 interface LoginFormProps {
   callbackUrl?: string;
@@ -71,7 +72,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
           : "/dashboard";
 
         // Use window.location.href for better compatibility with external redirects
-        window.location.href = redirectUrl;
+        hardNavigate(redirectUrl);
       }
     } catch {
       setError("root", { message: content.messages.error.generic.value });

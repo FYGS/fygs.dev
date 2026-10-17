@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -30,7 +30,7 @@ function ResetPasswordContent() {
   const token = params.get("token");
   const errorParam = params.get("error");
   const [isLoading, setIsLoading] = useState(false);
-  const [invalid, setInvalid] = useState(false);
+  const invalid = !token || !!errorParam;
 
   const {
     register,
@@ -38,12 +38,6 @@ function ResetPasswordContent() {
     formState: { errors },
     setError,
   } = useForm<FormData>({ resolver: zodResolver(schema) });
-
-  useEffect(() => {
-    if (!token || errorParam) {
-      setInvalid(true);
-    }
-  }, [token, errorParam]);
 
   const onSubmit = async (data: FormData) => {
     if (!token) return;
