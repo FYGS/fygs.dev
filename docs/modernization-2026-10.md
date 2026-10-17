@@ -167,3 +167,35 @@ exit code 1 on any failure, 2 when the key is not a test key.
   `type === "premium_subscription"`, which the checkout route never sets; the welcome
   mail is sent by `customer.subscription.created`.
 - Abandoned checkouts leave PENDING placeholder rows (as before).
+
+## Browser e2e suite
+
+`pnpm test:e2e` (`scripts/e2e.mjs`, `tests/e2e`, `playwright.config.ts`, CI job `e2e`) runs
+Playwright on system Chrome against a production build and the embedded PostgreSQL
+(migrations + seed). Details and conventions: `tests/README.md`. The stale
+`student-journey.spec.ts` (dev server, assumed a seeded database, tolerant `if (visible)` checks)
+was replaced, and the tracked `playwright-report/index.html` removed from git.
+
+### Test-only hook
+
+`EMAIL_TRANSPORT=capture` (`lib/emails/service/capture.ts`) writes outgoing mail to a file so the
+tests can follow verification and reset links. It fails closed and needs an explicit consent
+variable, a capture file and a local database whose name contains `test`; it cannot be enabled
+against a real deployment.
+
+### Real bugs the suite found (all fixed, each with a regression test)
+
+| Bug | Cause | Regression |
+|---|---|---|
+| `next build` failed (`Can't resolve 'dns' / 'net' / 'tls'`) | `course-payment-form` (use client) imported `lib/analytics-helper`, which imports the Prisma client; the CTA event would also have been written from the browser | `tests/unit/client-bundle-boundary.test.ts`: no client component may reach `lib/db` |
+| `/admin/users` crashed (error boundary) as soon as one user had no subscription | `User.subscriptions` is one-to-one (null), the page called `.some()` on it | e2e: every admin page renders |
+| `/admin/analytics` crashed | raw SQL `FROM "User"`, the table is `"user"` (`@@map`) | `tests/integration/db/raw-sql-tables.test.ts`: every table named in a hand-written query exists |
+| Enrolling / "continue" reloaded the course page instead of opening the first lesson; the preview button never showed | the course page never passed `firstLessonSlug` to the payment card | e2e learner flow asserts the redirect to the lesson |
+
+### Not covered, on purpose
+
+- WebContainer (real Node.js in the browser) needs network access to StackBlitz: the playground tests use the iframe fallback.
+- Paying on Stripe: the suite stops at the `checkout.stripe.com` URL. Webhooks are covered by the integration suite.
+- Google / GitHub sign-in (external identity providers) and a real AI model.
+- Several admin sidebar entries (`/admin/blog`, `certificates`, `database`, `enrollments`, `pages`, `payments`,
+  `progress`, `projects`, `revenue`, `security`, `settings`, `subscriptions`) have no page and answer 404; not changed here.
