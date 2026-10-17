@@ -33,13 +33,29 @@ export async function handleInvoicePaymentSucceeded(event: Stripe.InvoicePayment
         try {
           // One payment row per invoice (the reference column holds the invoice id):
           // keying on the subscription id made every renewal overwrite the same row.
-          const existingPayment = await db.payment.findFirst({
-            where: {
-              userId,
-              stripePaymentIntentId: invoice.id,
-              kind: PaymentKind.SUBSCRIPTION,
-            },
-          });
+          //
+          // The FIRST invoice of a subscription is the payment the checkout already
+          // announced (checkout.session.completed settles the same payment, in any
+          // order): settle the placeholder row the checkout route created instead of
+          // adding a second row for one payment.
+          const isFirstInvoice = invoice.billing_reason === "subscription_create";
+          const existingPayment =
+            (await db.payment.findFirst({
+              where: {
+                userId,
+                stripePaymentIntentId: invoice.id,
+                kind: PaymentKind.SUBSCRIPTION,
+              },
+            })) ??
+            (isFirstInvoice
+              ? await db.payment.findFirst({
+                  where: {
+                    userId,
+                    kind: PaymentKind.SUBSCRIPTION,
+                    status: PaymentStatus.PENDING,
+                  },
+                })
+              : null);
 
           const paymentData = {
             userId,
@@ -49,7 +65,9 @@ export async function handleInvoicePaymentSucceeded(event: Stripe.InvoicePayment
             ),
             currency: invoice.currency || "eur",
             status: PaymentStatus.COMPLETED,
-            description: "Renouvellement abonnement Premium",
+            description: isFirstInvoice
+              ? "Abonnement Premium"
+              : "Renouvellement abonnement Premium",
             kind: PaymentKind.SUBSCRIPTION,
           };
 

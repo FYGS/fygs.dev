@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const origin = SITE_BASE_URL;
+    const origin = SITE_BASE_URL.origin;
 
     if (type === "course") {
       // Get course details for accurate price
@@ -154,21 +154,32 @@ export async function POST(req: NextRequest) {
           },
         });
 
-        // Create or update subscription record
-        await db.subscription.upsert({
+        // Create or update subscription record. A member who already has access
+        // keeps it while a second checkout is open (or abandoned): flipping the row to
+        // INCOMPLETE would lock them out of a subscription they paid for.
+        const current = await db.subscription.findUnique({
           where: { userId: session.user.id },
-          update: {
-            status: SubscriptionStatus.INCOMPLETE, // Will be updated to ACTIVE by webhook
-            priceId: mapped.priceId,
-            plan: SubscriptionPlan.PREMIUM,
-          },
-          create: {
-            userId: session.user.id,
-            status: SubscriptionStatus.INCOMPLETE, // Will be updated to ACTIVE by webhook
-            plan: SubscriptionPlan.PREMIUM,
-            priceId: mapped.priceId,
-          },
+          select: { status: true },
         });
+        const keepsAccess =
+          current?.status === SubscriptionStatus.ACTIVE ||
+          current?.status === SubscriptionStatus.TRIALING;
+        if (!keepsAccess) {
+          await db.subscription.upsert({
+            where: { userId: session.user.id },
+            update: {
+              status: SubscriptionStatus.INCOMPLETE, // Will be updated to ACTIVE by webhook
+              priceId: mapped.priceId,
+              plan: SubscriptionPlan.PREMIUM,
+            },
+            create: {
+              userId: session.user.id,
+              status: SubscriptionStatus.INCOMPLETE, // Will be updated to ACTIVE by webhook
+              plan: SubscriptionPlan.PREMIUM,
+              priceId: mapped.priceId,
+            },
+          });
+        }
 
         checkoutLogger.info("Pending subscription records created", {
           userId: session.user.id,

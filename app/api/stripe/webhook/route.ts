@@ -84,7 +84,8 @@ export async function POST(req: NextRequest) {
     // Handle the event with proper error handling for each case
 
     switch (event.type) {
-      case "checkout.session.completed": {
+      case "checkout.session.completed":
+      case "checkout.session.async_payment_succeeded": {
         await handleCheckoutSessionCompleted(event);
         break;
       }

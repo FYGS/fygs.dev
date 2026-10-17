@@ -41,7 +41,19 @@ const stripeDefaults: Record<string, unknown> = {
   "subscriptions.retrieve": subscriptionFixture(),
   "subscriptions.update": {},
   "subscriptions.cancel": {},
-  "invoices.retrieveUpcoming": { id: "in_up", amount_due: 1234 },
+  // invoices.retrieveUpcoming no longer exists (removed in API 2025-03-31): the
+  // preview is what Stripe really returns (see tests/fixtures/stripe)
+  "invoices.createPreview": {
+    id: "upcoming_in_1",
+    amount_due: 1234,
+    currency: "eur",
+    lines: {
+      data: [
+        { amount: -500, parent: { subscription_item_details: { proration: true } } },
+        { amount: 1734, parent: { subscription_item_details: { proration: false } } },
+      ],
+    },
+  },
   "invoices.list": { data: [{ id: "in_1", amount_paid: 999, currency: "eur" }] },
   "invoicePayments.list": {
     data: [{ payment: { type: "payment_intent", payment_intent: "pi_1" } }],
@@ -234,14 +246,13 @@ describe("paymentService (pinned behaviour)", () => {
         { stripe: { "checkout.sessions.create": { id: "cs_x" } } },
         () => p.createSubscriptionSession({ userId: "u1", customerEmail: "a@b.c", priceId: "price_z", successUrl: "s", cancelUrl: "c" }),
       ),
-    switchOkNoAudit: () => scenario({ db: { "invoiceAudit.findFirst": null } }, () => p.switchSubscriptionPrice("sub_1", "price_y")),
-    switchOkExistingAudit: () => scenario({ db: { "invoiceAudit.findFirst": { id: "a1" } } }, () => p.switchSubscriptionPrice("sub_1", "price_y")),
-    switchNoUpcoming: () => scenario({ stripe: { "invoices.retrieveUpcoming": null } }, () => p.switchSubscriptionPrice("sub_1", "price_y")),
-    switchUpcomingFails: () =>
-      scenario({ stripe: { "invoices.retrieveUpcoming": new Error("no upcoming") } }, () => p.switchSubscriptionPrice("sub_1", "price_y")),
+    switchOkNoAudit: () => scenario({}, () => p.switchSubscriptionPrice("sub_1", "price_y")),
+    switchNoPreview: () => scenario({ stripe: { "invoices.createPreview": null } }, () => p.switchSubscriptionPrice("sub_1", "price_y")),
+    switchPreviewFails: () =>
+      scenario({ stripe: { "invoices.createPreview": new Error("no preview") } }, () => p.switchSubscriptionPrice("sub_1", "price_y")),
     switchAuditCreateFails: () =>
       scenario(
-        { db: { "invoiceAudit.findFirst": null, "invoiceAudit.create": new Error("db") } },
+        { db: { "invoiceAudit.create": new Error("db") } },
         () => p.switchSubscriptionPrice("sub_1", "price_y"),
       ),
     switchUpdateFails: () =>

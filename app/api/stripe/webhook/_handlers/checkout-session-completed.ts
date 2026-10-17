@@ -5,7 +5,18 @@ import { SubscriptionStatus } from "@prisma/client";
 import { emailService } from "@/lib/email-service";
 import { logger } from "../_lib/logger";
 
-export async function handleCheckoutSessionCompleted(event: Stripe.CheckoutSessionCompletedEvent): Promise<void> {
+/**
+ * A session is settled by `checkout.session.completed` when it was paid on the
+ * spot. Payment methods that settle later (bank debits...) complete the session
+ * UNPAID and announce the money with `checkout.session.async_payment_succeeded`:
+ * both carry the same session and go through the same `payment_status === "paid"`
+ * gate, so an unpaid completion is ignored and the async confirmation fulfils it.
+ */
+export async function handleCheckoutSessionCompleted(
+  event:
+    | Stripe.CheckoutSessionCompletedEvent
+    | Stripe.CheckoutSessionAsyncPaymentSucceededEvent,
+): Promise<void> {
   try {
     const session = event.data.object;
 

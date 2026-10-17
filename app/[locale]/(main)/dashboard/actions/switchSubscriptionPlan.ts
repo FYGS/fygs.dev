@@ -7,6 +7,7 @@ import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { paymentService } from '@/lib/payment-service'
 import { AnalyticsHelper } from '@/lib/analytics-helper'
+import { getSubscriptionPeriod } from '@/lib/stripe-shapes'
 import { resolveRequestedPriceId } from '@/lib/subscription-pricing'
 import { Prisma, SubscriptionStatus } from '@prisma/client'
 
@@ -116,13 +117,16 @@ export async function switchSubscriptionPlan(
       subscription.stripeSubscriptionId
     )
 
-    // Update local subscription record
+    // Update local subscription record. The period lives on the subscription item
+    // (since API 2025-03-31 there is no root current_period_*): reading the root
+    // gave NaN dates and failed the update after Stripe had already switched.
+    const period = getSubscriptionPeriod(stripeSubscription)
     const updatedSubscription = await db.subscription.update({
       where: { id: subscription.id },
       data: {
         priceId: resolvedPriceInfo.priceId,
-        currentPeriodStart: new Date((stripeSubscription as any).current_period_start * 1000),
-        currentPeriodEnd: new Date((stripeSubscription as any).current_period_end * 1000),
+        ...(period.start ? { currentPeriodStart: new Date(period.start * 1000) } : {}),
+        ...(period.end ? { currentPeriodEnd: new Date(period.end * 1000) } : {}),
         cancelAtPeriodEnd: false
       }
     })

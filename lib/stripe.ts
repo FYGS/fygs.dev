@@ -1,7 +1,15 @@
 import Stripe from "stripe";
 
-const PINNED_API_VERSION =
-  "2025-08-27.basil" as unknown as Stripe.LatestApiVersion;
+/**
+ * API version used for every request this app makes: the one built into the
+ * installed SDK (stripe-node ships the typings for exactly that version, so
+ * types and runtime agree). It moves when the SDK major is upgraded.
+ *
+ * Webhook payloads are NOT governed by this: they use the API version of the
+ * endpoint configured in the Stripe dashboard. Handlers therefore accept the
+ * shapes of both old and new versions (see docs/modernization-2026-10.md).
+ */
+export const STRIPE_API_VERSION: string = Stripe.API_VERSION;
 
 let _stripe: Stripe | undefined;
 
@@ -11,10 +19,7 @@ export function getStripeServer(): Stripe {
       throw new Error("STRIPE_SECRET_KEY is required");
     }
     _stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      // Pinned on purpose: requests and webhook payloads keep the shapes the
-      // billing code was written against. Moving to the SDK default is a
-      // separate, tested migration (the SDK types follow its own default).
-      apiVersion: PINNED_API_VERSION,
+      // No `apiVersion` option: the SDK default (see STRIPE_API_VERSION).
       typescript: true,
     });
   }

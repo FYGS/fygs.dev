@@ -5,6 +5,7 @@ import { emailService } from "@/lib/email-service";
 import { Analytics } from "@/lib/analytics-helper";
 import { classifyBillingCycle } from "@/lib/subscription-pricing";
 import { mapStripeSubscriptionStatus } from "@/lib/stripe-subscription-status";
+import { getSubscriptionPeriod, stripeRefId } from "@/lib/stripe-shapes";
 import { logger } from "../_lib/logger";
 
 export async function handleSubscriptionUpserted(event: Stripe.CustomerSubscriptionCreatedEvent | Stripe.CustomerSubscriptionUpdatedEvent): Promise<void> {
@@ -53,20 +54,19 @@ export async function handleSubscriptionUpserted(event: Stripe.CustomerSubscript
       // Cast subscription to any to safely access properties that might not be in the type definition
       const subData = subscription as any;
 
-      // Get period dates from subscription_item (items.data[0]) as they are not at root level
-      const subscriptionItem = subscription.items?.data?.[0];
-      const itemData = subscriptionItem as any;
+      // Period dates: on the subscription item since API 2025-03-31 (basil), on the
+      // subscription itself before: the endpoint may still send either shape
+      const period = getSubscriptionPeriod(subscription);
 
       // Add safe access to period timestamps with fallbacks
-      // Period dates are in items.data[0], not at subscription root level
       const currentPeriodStart =
-        itemData?.current_period_start ||
+        period.start ||
         subData.billing_cycle_anchor ||
         subData.start_date ||
         Math.floor(Date.now() / 1000);
 
       const currentPeriodEnd =
-        itemData?.current_period_end ||
+        period.end ||
         Math.floor(Date.now() / 1000) +
           (interval === "yearly" ? 365 : 30) * 24 * 60 * 60;
 
@@ -76,8 +76,8 @@ export async function handleSubscriptionUpserted(event: Stripe.CustomerSubscript
         userId,
         resourceId: subscription.id,
         metadata: {
-          currentPeriodStartRaw: itemData?.current_period_start,
-          currentPeriodEndRaw: itemData?.current_period_end,
+          currentPeriodStartRaw: period.start,
+          currentPeriodEndRaw: period.end,
           currentPeriodStartDate: new Date(
             currentPeriodStart * 1000,
           ).toISOString(),
@@ -92,7 +92,7 @@ export async function handleSubscriptionUpserted(event: Stripe.CustomerSubscript
 
       const subscriptionData = {
         userId,
-        stripeCustomerId: subscription.customer as string,
+        stripeCustomerId: stripeRefId(subscription.customer) ?? (subscription.customer as string),
         stripeSubscriptionId: subscription.id,
         status: mappedStatus,
         priceId,

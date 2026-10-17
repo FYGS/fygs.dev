@@ -7,6 +7,7 @@ import {
 } from "@prisma/client";
 import { Analytics } from "../analytics-helper";
 import { createLogger } from "../structured-logger";
+import { stripeRefId } from "../stripe-shapes";
 import { AccessGrants } from "./access";
 
 /** Handling of successful Stripe checkout sessions. */
@@ -54,18 +55,38 @@ export class PaymentWebhookHandler extends AccessGrants {
     try {
       // Handle course purchase
       if (type === "course_purchase" && productId) {
+        // Reference stored on the payment row: the PaymentIntent. A session that
+        // was fully discounted (100% promotion code) is `paid` with amount 0 and has
+        // NO PaymentIntent: the session id is the reference then, otherwise the
+        // buyer would pay nothing and get no access.
+        const paymentReference =
+          stripeRefId(session.payment_intent) ??
+          ((session.amount_total ?? 0) === 0 ? session.id : null);
+
         // Auto-enroll upon successful purchase to align with enrollment-required gating
-        if (session.payment_intent) {
+        if (paymentReference) {
           // First, try to find and update existing pending payment record
           try {
-            const existingPayment = await db.payment.findFirst({
-              where: {
-                userId,
-                courseId: productId,
-                kind: PaymentKind.COURSE,
-                status: PaymentStatus.PENDING,
-              },
-            });
+            // The row this very session created (the checkout route stores the session
+            // id as placeholder), or one a previous delivery already completed;
+            // otherwise fall back to any pending purchase of that course.
+            const existingPayment =
+              (await db.payment.findFirst({
+                where: {
+                  userId,
+                  courseId: productId,
+                  kind: PaymentKind.COURSE,
+                  stripePaymentIntentId: { in: [session.id, paymentReference] },
+                },
+              })) ??
+              (await db.payment.findFirst({
+                where: {
+                  userId,
+                  courseId: productId,
+                  kind: PaymentKind.COURSE,
+                  status: PaymentStatus.PENDING,
+                },
+              }));
 
             // Calculate safe amount
             const amountTotal = session.amount_total || 0;
@@ -78,7 +99,7 @@ export class PaymentWebhookHandler extends AccessGrants {
               await db.payment.update({
                 where: { id: existingPayment.id },
                 data: {
-                  stripePaymentIntentId: session.payment_intent as string,
+                  stripePaymentIntentId: paymentReference,
                   amount: amountDecimal,
                   currency: session.currency || "eur",
                   status: PaymentStatus.COMPLETED,
@@ -93,7 +114,7 @@ export class PaymentWebhookHandler extends AccessGrants {
               await db.payment.create({
                 data: {
                   userId,
-                  stripePaymentIntentId: session.payment_intent as string,
+                  stripePaymentIntentId: paymentReference,
                   amount: amountDecimal,
                   currency: session.currency || "eur",
                   status: PaymentStatus.COMPLETED,
@@ -187,7 +208,7 @@ export class PaymentWebhookHandler extends AccessGrants {
           return;
         }
 
-        const subscriptionId = session.subscription as string;
+        const subscriptionId = stripeRefId(session.subscription) as string;
 
         // Grant subscription access
         try {
@@ -222,21 +243,36 @@ export class PaymentWebhookHandler extends AccessGrants {
             (amountTotal / 100).toFixed(2),
           );
 
-          // Find and update existing pending payment record if it exists
-          const existingPayment = await db.payment.findFirst({
-            where: {
-              userId,
-              kind: PaymentKind.SUBSCRIPTION,
-              status: PaymentStatus.PENDING,
-            },
-          });
+          // One payment row per invoice, like renewals (invoice.payment_succeeded):
+          // the first invoice is paid by the checkout, and both events describe the
+          // same payment, in any order. A subscription-mode session has no
+          // PaymentIntent, so the session's invoice is the reference.
+          const paymentReference = stripeRefId(session.invoice) ?? subscriptionId;
+
+          // The row either event already settled, the placeholder this session
+          // created at checkout, or else any pending subscription payment.
+          const existingPayment =
+            (await db.payment.findFirst({
+              where: {
+                userId,
+                kind: PaymentKind.SUBSCRIPTION,
+                stripePaymentIntentId: { in: [paymentReference, session.id] },
+              },
+            })) ??
+            (await db.payment.findFirst({
+              where: {
+                userId,
+                kind: PaymentKind.SUBSCRIPTION,
+                status: PaymentStatus.PENDING,
+              },
+            }));
 
           if (existingPayment) {
             // Update existing payment record
             await db.payment.update({
               where: { id: existingPayment.id },
               data: {
-                stripePaymentIntentId: subscriptionId,
+                stripePaymentIntentId: paymentReference,
                 amount: amountDecimal,
                 currency: session.currency || "eur",
                 status: PaymentStatus.COMPLETED,
@@ -254,7 +290,7 @@ export class PaymentWebhookHandler extends AccessGrants {
             await db.payment.create({
               data: {
                 userId,
-                stripePaymentIntentId: subscriptionId,
+                stripePaymentIntentId: paymentReference,
                 amount: amountDecimal,
                 currency: session.currency || "eur",
                 status: PaymentStatus.COMPLETED,
