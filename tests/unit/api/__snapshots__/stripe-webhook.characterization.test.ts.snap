@@ -183,7 +183,6 @@ exports[`POST /api/stripe/webhook (pinned behaviour) > checkoutCourse 1`] = `
           "eventType": "email.course_purchase_sent",
           "metadata": {
             "courseTitle": "TS",
-            "userEmail": "a@x.test",
           },
           "resourceId": "c1",
           "resourceType": "course",
@@ -459,7 +458,6 @@ exports[`POST /api/stripe/webhook (pinned behaviour) > checkoutCourseNoAmount 1`
           "eventType": "email.course_purchase_sent",
           "metadata": {
             "courseTitle": "TS",
-            "userEmail": "n@x.test",
           },
           "resourceId": "c1",
           "resourceType": "course",
@@ -1401,9 +1399,7 @@ exports[`POST /api/stripe/webhook (pinned behaviour) > checkoutPremium 1`] = `
         "Premium subscription email sent",
         {
           "eventType": "email.subscription_welcome_sent",
-          "metadata": {
-            "userEmail": "a@x.test",
-          },
+          "metadata": {},
           "resourceType": "subscription",
           "userId": "u1",
         },
@@ -1982,7 +1978,6 @@ exports[`POST /api/stripe/webhook (pinned behaviour) > invoiceFailed 1`] = `
           "eventType": "email.payment_failed_sent",
           "metadata": {
             "subscriptionId": "sub_1",
-            "userEmail": "a@x.test",
           },
           "resourceId": "in_1",
           "resourceType": "invoice",
@@ -2249,7 +2244,6 @@ exports[`POST /api/stripe/webhook (pinned behaviour) > invoiceFailedNoName 1`] =
           "eventType": "email.payment_failed_sent",
           "metadata": {
             "subscriptionId": "sub_1",
-            "userEmail": "n@x.test",
           },
           "resourceId": "in_1",
           "resourceType": "invoice",
@@ -3275,7 +3269,6 @@ exports[`POST /api/stripe/webhook (pinned behaviour) > subCreatedActive 1`] = `
           "eventType": "email.subscription_welcome_sent",
           "metadata": {
             "interval": "monthly",
-            "userEmail": "a@x.test",
           },
           "resourceId": "sub_1",
           "resourceType": "subscription",
@@ -3444,7 +3437,6 @@ exports[`POST /api/stripe/webhook (pinned behaviour) > subCreatedFallbackDates 1
           "eventType": "email.subscription_welcome_sent",
           "metadata": {
             "interval": "monthly",
-            "userEmail": "a@x.test",
           },
           "resourceId": "sub_1",
           "resourceType": "subscription",
@@ -3752,7 +3744,6 @@ exports[`POST /api/stripe/webhook (pinned behaviour) > subCreatedNoPrice 1`] = `
           "eventType": "email.subscription_welcome_sent",
           "metadata": {
             "interval": "monthly",
-            "userEmail": "n@x.test",
           },
           "resourceId": "sub_1",
           "resourceType": "subscription",
@@ -4058,7 +4049,6 @@ exports[`POST /api/stripe/webhook (pinned behaviour) > subCreatedYearlyMeta 1`] 
           "eventType": "email.subscription_welcome_sent",
           "metadata": {
             "interval": "yearly",
-            "userEmail": "a@x.test",
           },
           "resourceId": "sub_1",
           "resourceType": "subscription",
@@ -4169,9 +4159,7 @@ exports[`POST /api/stripe/webhook (pinned behaviour) > subDeleted 1`] = `
         "Subscription cancellation email sent",
         {
           "eventType": "email.subscription_cancellation_sent",
-          "metadata": {
-            "userEmail": "a@x.test",
-          },
+          "metadata": {},
           "resourceId": "sub_1",
           "resourceType": "subscription",
           "userId": "u1",
@@ -4376,9 +4364,7 @@ exports[`POST /api/stripe/webhook (pinned behaviour) > subDeletedNoName 1`] = `
         "Subscription cancellation email sent",
         {
           "eventType": "email.subscription_cancellation_sent",
-          "metadata": {
-            "userEmail": "n@x.test",
-          },
+          "metadata": {},
           "resourceId": "sub_1",
           "resourceType": "subscription",
           "userId": "u1",
