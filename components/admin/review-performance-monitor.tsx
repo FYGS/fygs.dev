@@ -209,7 +209,7 @@ export function ReviewPerformanceMonitor() {
                       <AlertTitle>System Healthy</AlertTitle>
                       <AlertDescription>
                         All systems are operating normally. Last checked:{' '}
-                        {new Date(healthCheck.timestamp).toLocaleString()}
+                        {new Date(healthCheck.timestamp).toLocaleString("fr-FR")}
                       </AlertDescription>
                     </Alert>
                   )}
@@ -252,7 +252,7 @@ export function ReviewPerformanceMonitor() {
                   <MessageSquare className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{metrics.tables.reviews.toLocaleString()}</div>
+                  <div className="text-2xl font-bold">{metrics.tables.reviews.toLocaleString("fr-FR")}</div>
                 </CardContent>
               </Card>
               <Card>
@@ -261,7 +261,7 @@ export function ReviewPerformanceMonitor() {
                   <ThumbsUp className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{metrics.tables.votes.toLocaleString()}</div>
+                  <div className="text-2xl font-bold">{metrics.tables.votes.toLocaleString("fr-FR")}</div>
                 </CardContent>
               </Card>
               <Card>
@@ -270,7 +270,7 @@ export function ReviewPerformanceMonitor() {
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{metrics.tables.replies.toLocaleString()}</div>
+                  <div className="text-2xl font-bold">{metrics.tables.replies.toLocaleString("fr-FR")}</div>
                 </CardContent>
               </Card>
               <Card>
@@ -279,7 +279,7 @@ export function ReviewPerformanceMonitor() {
                   <Flag className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{metrics.tables.reports.toLocaleString()}</div>
+                  <div className="text-2xl font-bold">{metrics.tables.reports.toLocaleString("fr-FR")}</div>
                 </CardContent>
               </Card>
             </div>
@@ -421,7 +421,7 @@ export function ReviewPerformanceMonitor() {
                   </div>
 
                   <div className="text-xs text-muted-foreground">
-                    Last updated: {new Date(cacheStats.lastUpdated).toLocaleString()}
+                    Last updated: {new Date(cacheStats.lastUpdated).toLocaleString("fr-FR")}
                   </div>
                 </div>
               </CardContent>

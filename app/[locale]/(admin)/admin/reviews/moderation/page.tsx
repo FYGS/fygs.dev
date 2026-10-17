@@ -143,7 +143,7 @@ export default async function AdminReviewsModerationPage() {
                       <div>
                         <p className="font-medium">{review.course?.title}</p>
                         <p className="text-sm text-muted-foreground">
-                          Par {review.user?.name} • {new Date(review.createdAt).toLocaleDateString()}
+                          Par {review.user?.name} • {new Date(review.createdAt).toLocaleDateString("fr-FR")}
                         </p>
                       </div>
                       

@@ -227,7 +227,7 @@ export function UsersTable({ users, pagination }: UsersTableProps) {
                   <TableCell>
                     <div className="flex items-center gap-1 text-sm font-medium">
                       <Euro className="h-3 w-3 text-muted-foreground" />
-                      <span>{user.totalSpent.toLocaleString()}</span>
+                      <span>{user.totalSpent.toLocaleString("fr-FR")}</span>
                     </div>
                   </TableCell>
                   

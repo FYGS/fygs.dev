@@ -327,7 +327,7 @@ function StatsCard({ title, value, icon: Icon, color }: StatsCardProps) {
             <Icon className="h-6 w-6" />
           </div>
           <div>
-            <div className="text-2xl font-bold">{value.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{value.toLocaleString("fr-FR")}</div>
             <div className="text-sm text-slate-400">{title}</div>
           </div>
         </div>

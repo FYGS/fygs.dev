@@ -46,7 +46,7 @@ function StatCard({ title, value, icon: Icon, description, color = "text-primary
       <CardContent>
         <div className="space-y-1">
           <div className="text-2xl font-bold">
-            {value.toLocaleString()}
+            {value.toLocaleString("fr-FR")}
           </div>
           
           {description && (
