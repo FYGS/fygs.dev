@@ -35,8 +35,12 @@ export class RedisClient implements IRedisClient {
   private readonly client: Redis;
 
   private constructor() {
+    // The legacy KV variable is only usable when it really is a redis:// URL (the
+    // Vercel KV one is an https REST endpoint, which ioredis cannot talk to).
+    const legacyUrl = process.env.blog_stats_KV_REST_API_URL;
     const redisUrl =
-      process.env.REDIS_URL || process.env.blog_stats_KV_REST_API_URL;
+      process.env.REDIS_URL ||
+      (legacyUrl && /^rediss?:\/\//.test(legacyUrl) ? legacyUrl : undefined);
 
     if (!redisUrl) {
       throw new Error(
