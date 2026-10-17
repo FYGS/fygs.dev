@@ -7,8 +7,8 @@ const LABELS = {
 export const MAIN_CONTENT_ID = "main-content";
 
 /** First focusable element of every page: lets keyboard users bypass the header (WCAG 2.4.1). */
-export function SkipLink({ locale }: { locale: string }) {
-  const label = LABELS[(locale in LABELS ? locale : "fr") as keyof typeof LABELS];
+export function SkipLink({ locale }: { locale?: string }) {
+  const label = LABELS[(locale && locale in LABELS ? locale : "fr") as keyof typeof LABELS];
   return (
     <a
       href={`#${MAIN_CONTENT_ID}`}

@@ -26,7 +26,7 @@ type SupportedLocale = keyof typeof MESSAGES;
  * - when a new worker takes control (skipWaiting + clientsClaim) the user is offered a
  *   refresh instead of being reloaded under their feet.
  */
-export function ServiceWorkerRegistration({ locale }: { locale: string }) {
+export function ServiceWorkerRegistration({ locale = "fr" }: { locale?: string }) {
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
 
@@ -95,7 +95,7 @@ export function ServiceWorkerRegistration({ locale }: { locale: string }) {
 
     const start = () => {
       if ("requestIdleCallback" in window) window.requestIdleCallback(() => void register());
-      else window.setTimeout(() => void register(), 1000);
+      else setTimeout(() => void register(), 1000);
     };
     if (document.readyState === "complete") start();
     else window.addEventListener("load", start, { once: true });
