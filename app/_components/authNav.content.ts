@@ -13,6 +13,11 @@ const authNavContent = {
       en: "Register",
       es: "Registrarse",
     }),
+    accountMenu: t({
+      fr: "Menu du compte",
+      en: "Account menu",
+      es: "Menú de la cuenta",
+    }),
   },
 } satisfies Dictionary;
 

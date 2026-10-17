@@ -83,6 +83,11 @@ export function AuthNav({ isMobile = false, onItemClick }: AuthNavProps) {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
+          aria-label={
+            user.name
+              ? `${content.accountMenu.value} - ${user.name}`
+              : content.accountMenu.value
+          }
           className="relative h-8 w-8 rounded-full hover:bg-accent transition-all duration-20"
         >
           <Avatar className="h-8 w-8">
