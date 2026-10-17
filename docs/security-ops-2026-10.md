@@ -32,7 +32,7 @@ move the one first-party inline script out of the HTML, and ship a stricter poli
 `default-src 'self'`, `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`, `frame-ancestors 'self'`,
 connect/frame allowlists limited to Stripe and Calendly, and new: `script-src-attr 'none'` (inline event-handler
 attributes cannot run, which closes the most common XSS payload shape even with `'unsafe-inline'`).
-The service-worker registration moved from an inline `<script>` to `public/sw-register.js`, so the only
+The service-worker registration moved from an inline `<script>` to a React component (`components/pwa/service-worker-registration.tsx`), so the only
 executable inline scripts left are Next.js's own. JSON-LD blocks are `type="application/ld+json"`, which CSP
 does not govern.
 
@@ -195,12 +195,12 @@ and are outside this policy.
 
 Chrome (`channel: "chrome"`, Playwright) against a minimal page that has the site's script mix and the real
 headers from `lib/csp.mjs` (inline Next-style flight scripts, a `type="application/ld+json"` block, the external
-`/sw-register.js`, an inline style, an `onclick` attribute, an `eval` call):
+an external script file, an inline style, an `onclick` attribute, an `eval` call):
 
 | Check | Enforced policy | Playground policy |
 | --- | --- | --- |
 | inline `self.__next_f.push(...)` script runs | yes | yes |
-| external `/sw-register.js` loads | yes | yes |
+| external script file loads | yes | yes |
 | JSON-LD block | not subject to CSP | same |
 | `onclick="..."` attribute | **blocked** (`script-src-attr`) | allowed |
 | `eval()` (production policy) | blocked | allowed |
