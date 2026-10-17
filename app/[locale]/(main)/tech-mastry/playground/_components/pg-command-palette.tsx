@@ -32,16 +32,22 @@ interface PaletteAction {
 
 export function PgCommandPalette() {
   const [open, setOpen] = useState(false);
-  const previouslyFocused = useRef<HTMLElement | null>(null);
+  const lastFocused = useRef<HTMLElement | null>(null);
 
-  // Modal behaviour: remember what had focus and give it back when the palette closes.
+  // Modal behaviour: remember the last element focused outside the palette (the input takes
+  // focus through autoFocus before any effect could read it) and give it back on close.
   useEffect(() => {
-    if (open) {
-      previouslyFocused.current = document.activeElement as HTMLElement | null;
-    } else if (previouslyFocused.current) {
-      previouslyFocused.current.focus?.();
-      previouslyFocused.current = null;
-    }
+    const onFocusIn = (e: FocusEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && !target.closest?.('[role="dialog"][aria-label="Command palette"]')) {
+        lastFocused.current = target;
+      }
+    };
+    document.addEventListener("focusin", onFocusIn);
+    return () => document.removeEventListener("focusin", onFocusIn);
+  }, []);
+  useEffect(() => {
+    if (!open) lastFocused.current?.focus?.();
   }, [open]);
   const executeCode = usePlaygroundStore((s) => s.executeCode);
   const clearConsole = usePlaygroundStore((s) => s.clearConsole);
