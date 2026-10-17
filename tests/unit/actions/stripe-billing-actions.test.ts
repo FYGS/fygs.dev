@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { SubscriptionStatus } from "@prisma/client";
+import { SubscriptionStatus } from "@/lib/generated/prisma/browser";
 import { clone, fixtures as f, toLegacySubscription } from "../../fixtures/stripe";
 
 /**

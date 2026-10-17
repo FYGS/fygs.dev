@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
-import { PaymentKind, PaymentStatus, SubscriptionStatus } from "@prisma/client";
+import { PaymentKind, PaymentStatus, SubscriptionStatus } from "@/lib/generated/prisma/browser";
 import {
   clone,
   fixtures as f,
