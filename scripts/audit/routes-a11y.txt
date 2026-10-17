@@ -1,3 +1,5 @@
+/fr
+/en
 /fr/blog
 /fr/blog/advanced-react-performance-patterns
 /fr/pricing
