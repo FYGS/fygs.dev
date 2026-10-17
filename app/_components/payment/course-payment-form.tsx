@@ -19,7 +19,7 @@ import {
 import { useSession } from "@/lib/auth-client";
 import { formatPrice as formatPriceCentral } from "@/lib/price-format";
 import { logger, createLogger } from "@/lib/structured-logger";
-import { Analytics } from "@/lib/analytics-helper";
+import { enqueueAnalytics } from "@/lib/analytics-batch";
 import { toast } from "sonner";
 import { enrollCourse } from "@/app/[locale]/(main)/dashboard/actions/enrollCourse";
 
@@ -92,11 +92,15 @@ export function CoursePaymentForm({
     }
 
     // Track CTA click
-    await Analytics.courseCardCtaClicked(session.user.id, {
-      courseId: course.id,
-      courseSlug: course.slug,
-      price: course.price,
-      correlationId,
+    enqueueAnalytics({
+      type: "COURSE_CARD_CTA_CLICKED",
+      userId: session.user.id,
+      context: {
+        courseId: course.id,
+        courseSlug: course.slug,
+        price: course.price,
+        correlationId,
+      },
     });
 
     if (course.price === 0) {
