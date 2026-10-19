@@ -10,6 +10,38 @@ interface MinIOConfig {
   bucketName: string;
 }
 
+interface ParsedEndpoint {
+  host: string;
+  port?: number;
+  useSSL?: boolean;
+}
+
+function parseMinioEndpoint(rawValue: string): ParsedEndpoint {
+  const trimmed = rawValue.trim();
+  const withProtocol = /^https?:\/\//i.test(trimmed)
+    ? trimmed
+    : `http://${trimmed}`;
+
+  try {
+    const parsedUrl = new URL(withProtocol);
+    const parsedPort = parsedUrl.port ? Number(parsedUrl.port) : undefined;
+    return {
+      host: parsedUrl.hostname,
+      port: Number.isNaN(parsedPort) ? undefined : parsedPort,
+      useSSL: parsedUrl.protocol === "https:",
+    };
+  } catch {
+    const sanitized = trimmed.replace(/^https?:\/\//i, "").replace(/\/.*/, "");
+    const [hostPart, portPart] = sanitized.split(":");
+    const manualPort = portPart ? Number(portPart) : undefined;
+
+    return {
+      host: hostPart || "localhost",
+      port: Number.isNaN(manualPort) ? undefined : manualPort,
+    };
+  }
+}
+
 export class MinIOService {
   private client: Client;
   private bucketName: string;
@@ -54,7 +86,7 @@ export class MinIOService {
 
       await this.client.setBucketPolicy(
         this.bucketName,
-        JSON.stringify(policy)
+        JSON.stringify(policy),
       );
       this.logger.info("MinIO service initialized successfully");
     } catch (error) {
@@ -74,7 +106,7 @@ export class MinIOService {
     objectName: string,
     buffer: Buffer,
     size: number,
-    metaData: Record<string, any> = {}
+    metaData: Record<string, any> = {},
   ): Promise<string> {
     try {
       const uploadInfo = await this.client.putObject(
@@ -82,7 +114,7 @@ export class MinIOService {
         objectName,
         buffer,
         size,
-        metaData
+        metaData,
       );
 
       this.logger.info("File uploaded successfully to MinIO", {
@@ -113,7 +145,7 @@ export class MinIOService {
   async uploadImage(
     file: File | Buffer,
     fileName: string,
-    folder: string = "images"
+    folder: string = "images",
   ): Promise<string> {
     try {
       let buffer: Buffer;
@@ -201,13 +233,13 @@ export class MinIOService {
    */
   async getPresignedUploadUrl(
     objectName: string,
-    expiry: number = 3600
+    expiry: number = 3600,
   ): Promise<string> {
     try {
       const presignedUrl = await this.client.presignedPutObject(
         this.bucketName,
         objectName,
-        expiry
+        expiry,
       );
 
       this.logger.info("Presigned upload URL generated", {
@@ -310,13 +342,25 @@ export class MinIOService {
 }
 
 // Create singleton instance
+const endpointSource =
+  process.env.MINIO_API_URL || process.env.MINIO_ENDPOINT || "localhost:9000";
+const parsedEndpoint = parseMinioEndpoint(endpointSource);
+const explicitSsl = process.env.MINIO_USE_SSL;
+const useSSL =
+  explicitSsl !== undefined
+    ? explicitSsl === "true"
+    : parsedEndpoint.useSSL === true;
+const explicitPort = process.env.MINIO_PORT
+  ? Number(process.env.MINIO_PORT)
+  : undefined;
+
 const minioConfig: MinIOConfig = {
-  endPoint:
-    process.env.MINIO_API_URL?.replace(/^https?:\/\//, "") ||
-    process.env.MINIO_ENDPOINT ||
-    "localhost",
-  port: process.env.MINIO_USE_SSL === "true" ? 443 : 80,
-  useSSL: process.env.MINIO_USE_SSL === "true",
+  endPoint: parsedEndpoint.host,
+  port:
+    (explicitPort && !Number.isNaN(explicitPort) ? explicitPort : undefined) ||
+    parsedEndpoint.port ||
+    (useSSL ? 443 : 9000),
+  useSSL,
   accessKey: process.env.MINIO_ACCESS_KEY || "minioadmin",
   secretKey: process.env.MINIO_SECRET_KEY || "minioadmin",
   bucketName: process.env.MINIO_BUCKET_NAME || "fygs-dev",
