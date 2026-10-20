@@ -25,10 +25,11 @@ async function openTwoSum(page: Page) {
   await expect(page.locator(".monaco-editor").first()).toBeVisible({ timeout: 45_000 });
 }
 
+/** One line: Monaco re-indents every line break it is given, which is not what is being tested. */
 async function typeSolution(page: Page, code: string) {
   await page.locator(".monaco-editor .view-lines").first().click();
   await page.keyboard.press("Control+A");
-  await page.keyboard.insertText(code);
+  await page.keyboard.insertText(code.replace(/\s*\n\s*/g, " "));
 }
 
 const submit = (page: Page) => page.getByRole("button", { name: "Submit Solution" }).click();
@@ -56,23 +57,25 @@ test.describe("code sandbox", () => {
   test("the pages themselves still cannot eval", async ({ page }) => {
     await page.goto("/fr/tech-mastry/challenges");
 
-    // page.evaluate() would not tell: the debugger protocol is allowed to eval whatever the CSP says.
-    // A script of the page is subject to it.
-    const outcome = await page.evaluate(() => {
+    // Code run through page.evaluate() would not tell: the debugger protocol may eval whatever the CSP
+    // says, for everything that runs inside its call. So the probe is a handler of the page, run by a
+    // real click.
+    await page.evaluate(() => {
       const script = document.createElement("script");
       script.textContent =
-        "try { new Function('return 1')(); window.__evalOutcome = 'allowed'; } catch (error) { window.__evalOutcome = error.name; }";
+        "addEventListener('click', function () { try { new Function('return 1')(); window.__evalOutcome = 'allowed'; } catch (error) { window.__evalOutcome = error.name; } }, { once: true });";
       document.head.appendChild(script);
-      return (window as unknown as { __evalOutcome?: string }).__evalOutcome;
     });
+    await page.mouse.click(5, 5);
 
-    expect(outcome).toBe("EvalError");
+    expect(await page.evaluate(() => (window as unknown as { __evalOutcome?: string }).__evalOutcome)).toBe("EvalError");
   });
 
   test("a challenge is graded for real: right, wrong, broken and endless code", async ({ page }) => {
     const violations: string[] = [];
     page.on("console", (message) => {
-      if (/Content Security Policy|Refused to/i.test(message.text())) violations.push(message.text());
+      // enforced violations are console errors; the report-only candidate policy only logs infos
+      if (message.type() === "error" && /Content Security Policy|Refused to/i.test(message.text())) violations.push(message.text());
     });
     await openTwoSum(page);
 
@@ -81,7 +84,7 @@ test.describe("code sandbox", () => {
     await submit(page);
     await expect(page.getByText("All Tests Passed!")).toBeVisible({ timeout: 30_000 });
     await expect(page.getByText("4/4").first()).toBeVisible();
-    await expect(page.getByText("Solved")).toBeVisible();
+    await expect(page.getByText("Solved", { exact: true })).toBeVisible();
 
     // a wrong one fails and shows what it returned
     await typeSolution(page, "function twoSum(nums, target) { return [7, 7]; }");
@@ -90,7 +93,7 @@ test.describe("code sandbox", () => {
     await expect(page.getByText("[7,7]").first()).toBeVisible();
 
     // a syntax error is not a wrong answer
-    await typeSolution(page, "function twoSum(nums, target) { return [");
+    await typeSolution(page, "function twoSum(nums, target) { return nums ) }");
     await submit(page);
     await expect(page.getByRole("alert").filter({ hasText: "Your code could not run" })).toBeVisible({ timeout: 30_000 });
 

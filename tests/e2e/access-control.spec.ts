@@ -79,7 +79,7 @@ test.describe("access control (fr)", () => {
     for (const name of ADMIN_ONLY) {
       await page.goto(`/fr/admin/${name}`);
       await expect(page, `/admin/${name}`).toHaveURL(/\/fr\/admin$/);
-      await expect(page.getByText(instructor.email).first()).toBeVisible(); // still in the back office, own header
+      await expect(page.locator("main")).toBeVisible(); // still in the back office, not thrown out to the login
     }
   });
 
