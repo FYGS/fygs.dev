@@ -69,7 +69,7 @@ export function FormActions({ form, course, autoSaveStatus, lastSaved, isPending
               <AlertDialogCancel>Annuler</AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleDelete}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                className="bg-destructive-solid text-destructive-foreground hover:bg-destructive-solid/90"
               >
                 Supprimer définitivement
               </AlertDialogAction>

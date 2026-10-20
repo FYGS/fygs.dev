@@ -61,6 +61,7 @@
 
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-destructive-solid: hsl(var(--destructive-solid));
 
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
@@ -475,7 +476,7 @@
     --background: 222 47% 11%; /* #0F172A - Slate 900 */
     --foreground: 210 40% 98%; /* #F8FAFC - Slate 50 */
     --muted: 217 33% 17%; /* #1E293B - Slate 800 */
-    --muted-foreground: 215 20% 65%; /* #94A3B8 - Slate 400 */
+    --muted-foreground: 215 20% 72%; /* Slate 400+, >= 4.5:1 on every dark surface (slate 400 itself was 3.96:1 on secondary) */
     --popover: 222 47% 11%; /* #0F172A */
     --popover-foreground: 210 40% 98%; /* #F8FAFC */
     --card: 217 33% 17%; /* #1E293B */
@@ -489,7 +490,8 @@
     --secondary-foreground: 210 40% 98%; /* #F8FAFC */
     --accent: 217 33% 22%; /* Slate 750 */
     --accent-foreground: 210 40% 98%; /* #F8FAFC */
-    --destructive: 0 84% 60%; /* #EF4444 - Red 500 */
+    --destructive: 0 84% 68%; /* Red 400+, as TEXT on dark surfaces (>= 4.5:1 on slate 800 too) */
+    --destructive-solid: 0 72% 45%; /* the same red as a BACKGROUND under white text (>= 4.5:1) */
     --destructive-foreground: 0 0% 100%;
     --ring: 239 84% 67%; /* Indigo 400 */
     --radius: 0.625rem;
@@ -515,7 +517,7 @@
     --background: 0 0% 100%; /* White */
     --foreground: 222 47% 11%; /* #0F172A - Slate 900 */
     --muted: 210 40% 96%; /* #F1F5F9 - Slate 100 */
-    --muted-foreground: 215 16% 47%; /* #64748B - Slate 500 */
+    --muted-foreground: 215 19% 35%; /* #475569 - Slate 600: slate 500 was 4.3:1 on muted/secondary/accent */
     --popover: 0 0% 100%; /* White */
     --popover-foreground: 222 47% 11%; /* Slate 900 */
     --card: 210 40% 98%; /* #F8FAFC - Slate 50 */
@@ -529,7 +531,8 @@
     --secondary-foreground: 222 47% 11%; /* Slate 900 */
     --accent: 210 40% 96%; /* Slate 100 */
     --accent-foreground: 222 47% 11%; /* Slate 900 */
-    --destructive: 0 84% 60%; /* Red 500 */
+    --destructive: 0 72% 45%; /* Red 600, as text on light surfaces (>= 4.5:1) and as a background under white text */
+    --destructive-solid: 0 72% 45%;
     --destructive-foreground: 0 0% 100%;
     --ring: 239 84% 67%; /* Indigo 400 */
     --radius: 0.625rem;

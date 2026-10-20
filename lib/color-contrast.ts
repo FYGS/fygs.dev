@@ -13,6 +13,21 @@ export function parseHexColor(input: string | null | undefined): [number, number
   return [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16)) as [number, number, number];
 }
 
+/** The design tokens are written as "239 84% 65%" (shadcn style): hue, saturation %, lightness % -> [r, g, b] */
+export function parseHslTriplet(input: string | null | undefined): [number, number, number] | null {
+  const match = /^\s*(-?\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)%\s+(\d+(?:\.\d+)?)%\s*$/.exec(input ?? "");
+  if (!match) return null;
+  const h = ((Number(match[1]) % 360) + 360) % 360;
+  const sat = Number(match[2]) / 100;
+  const light = Number(match[3]) / 100;
+  const chroma = (1 - Math.abs(2 * light - 1)) * sat;
+  const x = chroma * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = light - chroma / 2;
+  const [r, g, b] =
+    h < 60 ? [chroma, x, 0] : h < 120 ? [x, chroma, 0] : h < 180 ? [0, chroma, x] : h < 240 ? [0, x, chroma] : h < 300 ? [x, 0, chroma] : [chroma, 0, x];
+  return [r, g, b].map((channel) => Math.round((channel + m) * 255)) as [number, number, number];
+}
+
 export function relativeLuminance([r, g, b]: [number, number, number]): number {
   const channel = (value: number) => {
     const v = value / 255;

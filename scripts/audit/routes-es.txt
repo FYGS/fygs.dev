@@ -1,0 +1,10 @@
+# The Spanish locale, which the first accessibility pass did not render (lang comes from the same URL parameter)
+/es
+/es/pricing
+/es/contact
+/es/auth/login
+/es/auth/register
+/es/blog
+/es/tech-mastry
+/es/privacy
+/es/terms

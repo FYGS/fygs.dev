@@ -110,7 +110,7 @@ export function ModuleCard({
                     <AlertDialogCancel>Annuler</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={handleDelete}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      className="bg-destructive-solid text-destructive-foreground hover:bg-destructive-solid/90"
                     >
                       Supprimer
                     </AlertDialogAction>
