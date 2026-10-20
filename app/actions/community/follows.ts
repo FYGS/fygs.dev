@@ -6,7 +6,7 @@ import { auth } from "@/lib/auth";
 import type {
   ActionResult,
 } from "@/types/community";
-import { isCommunityWriteLimited } from "./_rate-limit";
+import { communityWriteBlock } from "./_rate-limit";
 
 /**
  * Follow/unfollow a topic
@@ -19,8 +19,9 @@ export async function toggleTopicFollow(
     if (!session?.user) {
       return { success: false, error: "Authentication required" };
     }
-    if (await isCommunityWriteLimited(session.user.id)) {
-      return { success: false, error: "Too many requests" };
+    const writeBlock = await communityWriteBlock(session.user.id);
+    if (writeBlock) {
+      return { success: false, error: writeBlock };
     }
 
 
@@ -64,8 +65,9 @@ export async function toggleUserFollow(
     if (!session?.user) {
       return { success: false, error: "Authentication required" };
     }
-    if (await isCommunityWriteLimited(session.user.id)) {
-      return { success: false, error: "Too many requests" };
+    const writeBlock = await communityWriteBlock(session.user.id);
+    if (writeBlock) {
+      return { success: false, error: writeBlock };
     }
 
 

@@ -3,6 +3,7 @@ import {
   PaymentKind,
   PaymentStatus,
   ReviewStatus,
+  Role,
   SubscriptionStatus,
   type Prisma,
 } from "@/lib/generated/prisma/browser";
@@ -317,6 +318,81 @@ export async function listReviews(query: ListQuery & { rating?: string }): Promi
   });
   return pageOf(
     rows.map(({ course, ...row }) => ({ ...row, courseTitle: course.title })),
+    total,
+    requested,
+  );
+}
+
+// ── users ───────────────────────────────────────────────────────────────────
+
+export const USER_ROLES = Object.values(Role);
+export const USER_PLANS = ["premium", "free"] as const;
+
+export interface UserRow {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+  isBanned: boolean;
+  createdAt: Date;
+  enrollments: number;
+  completedLessons: number;
+  /** Settled payments, all kinds */
+  spent: number;
+  premium: boolean;
+}
+
+export async function listUsers(query: ListQuery & { role?: string; plan?: string }): Promise<Page<UserRow>> {
+  const q = trimmed(query.q);
+  const role = oneOf(USER_ROLES, query.role);
+  const plan = oneOf(USER_PLANS, query.plan);
+  const premiumNow: Prisma.UserWhereInput = { subscriptions: { is: { status: SubscriptionStatus.ACTIVE } } };
+  const where: Prisma.UserWhereInput = {
+    ...personFilter(q),
+    ...(role ? { role } : {}),
+    ...(plan === "premium" ? premiumNow : {}),
+    ...(plan === "free" ? { NOT: premiumNow } : {}),
+  };
+
+  const total = await db.user.count({ where });
+  const requested = clampPage(query.page, Math.ceil(total / PAGE_SIZE));
+  const users = await db.user.findMany({
+    where,
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    skip: (requested - 1) * PAGE_SIZE,
+    take: PAGE_SIZE,
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      isBanned: true,
+      createdAt: true,
+      subscriptions: { select: { status: true } },
+      _count: { select: { enrollments: true, progress: { where: { completed: true } } } },
+    },
+  });
+
+  const spent = await db.payment.groupBy({
+    by: ["userId"],
+    where: { userId: { in: users.map((user) => user.id) }, status: PaymentStatus.COMPLETED },
+    _sum: { amount: true },
+  });
+  const spentBy = new Map(spent.map((row) => [row.userId, Number(row._sum.amount ?? 0)]));
+
+  return pageOf(
+    users.map((user) => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      isBanned: user.isBanned,
+      createdAt: user.createdAt,
+      enrollments: user._count.enrollments,
+      completedLessons: user._count.progress,
+      spent: spentBy.get(user.id) ?? 0,
+      premium: user.subscriptions?.status === SubscriptionStatus.ACTIVE,
+    })),
     total,
     requested,
   );

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
+import { USER_ADMIN_MESSAGES, changeUserRole, setUserBan } from "@/lib/services/user-admin";
 
 /**
  * Moderate content (discussions and replies)
@@ -75,16 +76,13 @@ export async function updateUserRole(formData: FormData) {
       return { success: false, error: "User ID and role are required" };
     }
 
-    if (!["USER", "MENTOR", "MODERATOR", "ADMIN"].includes(role)) {
-      return { success: false, error: "Invalid role" };
+    const result = await changeUserRole(session.user.id, userId, role);
+    if (!result.ok) {
+      return { success: false, error: USER_ADMIN_MESSAGES[result.code] };
     }
 
-    await db.user.update({
-      where: { id: userId },
-      data: { role: role as any },
-    });
-
     revalidatePath("/admin/users");
+    revalidatePath("/admin/community/users");
 
     return { success: true };
   } catch (error) {
@@ -116,12 +114,13 @@ export async function banUser(formData: FormData) {
       return { success: false, error: "User ID is required" };
     }
 
-    await db.user.update({
-      where: { id: userId },
-      data: { isBanned: true },
-    });
+    const result = await setUserBan(session.user.id, userId, true);
+    if (!result.ok) {
+      return { success: false, error: USER_ADMIN_MESSAGES[result.code] };
+    }
 
     revalidatePath("/admin/users");
+    revalidatePath("/admin/community/users");
 
     return { success: true };
   } catch (error) {
@@ -153,12 +152,13 @@ export async function unbanUser(formData: FormData) {
       return { success: false, error: "User ID is required" };
     }
 
-    await db.user.update({
-      where: { id: userId },
-      data: { isBanned: false },
-    });
+    const result = await setUserBan(session.user.id, userId, false);
+    if (!result.ok) {
+      return { success: false, error: USER_ADMIN_MESSAGES[result.code] };
+    }
 
     revalidatePath("/admin/users");
+    revalidatePath("/admin/community/users");
 
     return { success: true };
   } catch (error) {

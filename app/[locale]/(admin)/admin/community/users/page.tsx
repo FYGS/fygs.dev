@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { headers } from "next/headers";
 import Link from "next/link";
-import { Users, Search, Shield, Ban, Mail, Calendar, MessageCircle, Filter } from "lucide-react";
+import { Users, Search, Shield, Mail, Calendar, MessageCircle } from "lucide-react";
 
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { formatDistanceToNow } from "date-fns";
+import { fr } from "date-fns/locale";
 
 // Evaluated per request (server component); kept out of the render bodies so that
 // the current time is read in a plain helper.
@@ -19,14 +20,27 @@ function oneWeekAgo(): Date {
   return new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 }
 
-async function getCommunityUsers() {
+async function getCommunityUsers(q: string) {
   try {
+    const search = q.slice(0, 100).replace(/[\\%_]/g, (character) => `\\${character}`);
     const users = await db.user.findMany({
       where: {
         OR: [
           { discussions: { some: {} } },
           { discussionReplies: { some: {} } }
-        ]
+        ],
+        ...(search
+          ? {
+              AND: [
+                {
+                  OR: [
+                    { name: { contains: search, mode: "insensitive" as const } },
+                    { email: { contains: search, mode: "insensitive" as const } },
+                  ],
+                },
+              ],
+            }
+          : {}),
       },
       include: {
         _count: {
@@ -91,34 +105,34 @@ async function getCommunityUsers() {
   }
 }
 
-async function UsersContent() {
+async function UsersContent({ q }: { q: string }) {
   const session = await auth.api.getSession({ headers: await headers() });
   
   if (!session?.user || session.user.role !== "ADMIN") {
     return (
       <div className="p-6">
-        <h1 className="text-2xl font-bold text-red-600">Access Denied</h1>
-        <p>You need admin privileges to access this page.</p>
+        <h1 className="text-2xl font-bold text-red-600">Accès refusé</h1>
+        <p>Cette page est réservée aux administrateurs.</p>
       </div>
     );
   }
 
-  const users = await getCommunityUsers();
+  const users = await getCommunityUsers(q);
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Community Users</h1>
+          <h1 className="text-3xl font-bold">Membres de la communauté</h1>
           <p className="text-slate-400">
-            Manage community members and their permissions
+            Les membres qui ont publié ou répondu. Ouvrez un compte pour changer son rôle ou le suspendre.
           </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" asChild>
             <Link href="/admin/community">
-              Back to Dashboard
+              Retour au tableau de bord
             </Link>
           </Button>
         </div>
@@ -134,7 +148,7 @@ async function UsersContent() {
               </div>
               <div>
                 <div className="text-xl font-bold">{users.length}</div>
-                <div className="text-sm text-slate-400">Total Users</div>
+                <div className="text-sm text-slate-400">Membres</div>
               </div>
             </div>
           </CardContent>
@@ -150,7 +164,7 @@ async function UsersContent() {
                 <div className="text-xl font-bold">
                   {users.filter(u => (u._count.discussions + u._count.discussionReplies) > 0).length}
                 </div>
-                <div className="text-sm text-slate-400">Active Contributors</div>
+                <div className="text-sm text-slate-400">Contributeurs</div>
               </div>
             </div>
           </CardContent>
@@ -166,7 +180,7 @@ async function UsersContent() {
                 <div className="text-xl font-bold">
                   {users.filter(u => u.role === "ADMIN" || u.role === "INSTRUCTOR").length}
                 </div>
-                <div className="text-sm text-slate-400">Staff Members</div>
+                <div className="text-sm text-slate-400">Équipe</div>
               </div>
             </div>
           </CardContent>
@@ -185,41 +199,40 @@ async function UsersContent() {
                     return new Date(u.lastActivity) > lastWeek;
                   }).length}
                 </div>
-                <div className="text-sm text-slate-400">Active This Week</div>
+                <div className="text-sm text-slate-400">Actifs cette semaine</div>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Search and Filters */}
+      {/* Search */}
       <Card>
         <CardHeader>
-          <CardTitle>Search Users</CardTitle>
+          <CardTitle>Rechercher</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
-                <Input 
-                  placeholder="Search by name or email..." 
-                  className="pl-10"
-                />
-              </div>
+          <form method="get" action="/admin/community/users" role="search" className="flex gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" aria-hidden="true" />
+              <Input name="q" defaultValue={q} aria-label="Nom ou e-mail" placeholder="Nom ou e-mail…" className="pl-10" maxLength={100} />
             </div>
-            <Button variant="outline">
-              <Filter className="h-4 w-4 mr-2" />
-              Filter
+            <Button type="submit" variant="outline">
+              Rechercher
             </Button>
-          </div>
+            {q && (
+              <Button variant="ghost" asChild>
+                <Link href="/admin/community/users">Réinitialiser</Link>
+              </Button>
+            )}
+          </form>
         </CardContent>
       </Card>
 
       {/* Users List */}
       <Card>
         <CardHeader>
-          <CardTitle>Community Members</CardTitle>
+          <CardTitle>Membres</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -229,7 +242,7 @@ async function UsersContent() {
               ))
             ) : (
               <p className="text-center py-8 text-slate-400">
-                No community users found
+                Aucun membre trouvé
               </p>
             )}
           </div>
@@ -273,9 +286,10 @@ function UserItem({ user }: { user: any }) {
           </Badge>
           {isActive && (
             <Badge variant="outline" className="text-green-600 border-green-600">
-              Active
+              Actif
             </Badge>
           )}
+          {user.isBanned && <Badge variant="destructive">Suspendu</Badge>}
         </div>
         
         <div className="flex items-center gap-4 text-sm text-slate-400">
@@ -285,20 +299,20 @@ function UserItem({ user }: { user: any }) {
           </div>
           <div className="flex items-center gap-1">
             <MessageCircle className="h-4 w-4" />
-            <span>{totalActivity} posts</span>
+            <span>{totalActivity} messages</span>
           </div>
           <div className="flex items-center gap-1">
             <Calendar className="h-4 w-4" />
-            <span>Last active {formatDistanceToNow(new Date(user.lastActivity), { addSuffix: true })}</span>
+            <span>Dernière activité {formatDistanceToNow(new Date(user.lastActivity), { addSuffix: true, locale: fr })}</span>
           </div>
         </div>
 
         {user.topDiscussion && (
           <div className="mt-2 text-sm">
-            <span className="text-slate-400">Top discussion: </span>
+            <span className="text-slate-400">Meilleure discussion : </span>
             <span className="font-medium">{user.topDiscussion.title}</span>
             <span className="text-slate-400">
-              {" "}({user.topDiscussion._count.votes} votes, {user.topDiscussion._count.replies} replies)
+              {" "}({user.topDiscussion._count.votes} votes, {user.topDiscussion._count.replies} réponses)
             </span>
           </div>
         )}
@@ -306,29 +320,16 @@ function UserItem({ user }: { user: any }) {
 
       <div className="flex gap-2">
         <Button variant="outline" size="sm" asChild>
-          <Link href={`/admin/users/${user.id}`}>
-            View Profile
-          </Link>
+          <Link href={`/admin/users/${user.id}`}>Gérer le compte</Link>
         </Button>
-        
-        {user.role !== "ADMIN" && (
-          <>
-            <Button variant="outline" size="sm" className="text-orange-600 hover:text-orange-700">
-              <Shield className="h-4 w-4 mr-1" />
-              Moderate
-            </Button>
-            <Button variant="outline" size="sm" className="text-red-400 hover:text-red-300">
-              <Ban className="h-4 w-4 mr-1" />
-              Suspend
-            </Button>
-          </>
-        )}
       </div>
     </div>
   );
 }
 
-export default function CommunityUsersPage() {
+export default async function CommunityUsersPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const raw = (await searchParams).q;
+  const q = (Array.isArray(raw) ? raw[0] : raw)?.trim() ?? "";
   return (
     <Suspense
       fallback={
@@ -337,7 +338,7 @@ export default function CommunityUsersPage() {
         </div>
       }
     >
-      <UsersContent />
+      <UsersContent q={q} />
     </Suspense>
   );
 }
