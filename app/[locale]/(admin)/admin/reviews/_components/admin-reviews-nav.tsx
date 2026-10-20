@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 import { 
   BarChart3, 
   MessageSquare, 
-  Settings, 
   Shield
 } from "lucide-react";
 
@@ -31,12 +30,6 @@ export function AdminReviewsNav() {
       href: "/admin/reviews/moderation",
       icon: Shield,
       description: "File d'attente de modération"
-    },
-    {
-      title: "Paramètres",
-      href: "/admin/reviews/settings",
-      icon: Settings,
-      description: "Configuration des avis"
     }
   ];
 

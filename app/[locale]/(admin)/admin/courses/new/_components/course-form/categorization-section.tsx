@@ -34,7 +34,7 @@ export function CategorizationSection({ form, tags, selectedTags, handleTagToggl
                   defaultValue={field.value}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger aria-label="Sélectionner une catégorie">
                       <SelectValue placeholder="Sélectionner une catégorie" />
                     </SelectTrigger>
                   </FormControl>
@@ -70,7 +70,7 @@ export function CategorizationSection({ form, tags, selectedTags, handleTagToggl
                   defaultValue={field.value}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger aria-label="Sélectionner un niveau">
                       <SelectValue placeholder="Sélectionner un niveau" />
                     </SelectTrigger>
                   </FormControl>
@@ -99,7 +99,7 @@ export function CategorizationSection({ form, tags, selectedTags, handleTagToggl
                   defaultValue={field.value}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger aria-label="Sélectionner l'accès">
                       <SelectValue placeholder="Sélectionner l'accès" />
                     </SelectTrigger>
                   </FormControl>

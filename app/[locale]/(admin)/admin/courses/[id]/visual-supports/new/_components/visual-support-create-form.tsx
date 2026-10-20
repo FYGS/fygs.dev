@@ -121,7 +121,7 @@ export function VisualSupportCreateForm({ course }: VisualSupportCreateFormProps
                   value={watchedModuleId?.toString() || ""}
                   onValueChange={(value) => form.setValue("moduleId", parseInt(value))}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger aria-label="Sélectionnez un module">
                     <SelectValue placeholder="Sélectionnez un module" />
                   </SelectTrigger>
                   <SelectContent>

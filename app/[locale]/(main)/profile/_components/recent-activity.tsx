@@ -129,8 +129,11 @@ export function RecentActivity({ userId }: RecentActivityProps) {
             )}
             
             <Button variant="ghost" size="sm" asChild>
-              <Link href={`/formations/${enrollment.course.slug}`}>
-                <ExternalLink className="h-4 w-4" />
+              <Link
+                href={`/formations/${enrollment.course.slug}`}
+                aria-label={`Ouvrir la formation ${enrollment.course.title}`}
+              >
+                <ExternalLink className="h-4 w-4" aria-hidden="true" />
               </Link>
             </Button>
           </div>

@@ -199,7 +199,8 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
   );
 
   return (
-    <div
+    <aside
+      aria-label="Menu d'administration"
       className={cn(
         "bg-slate-900 border-r border-slate-700 transition-all duration-300 flex flex-col",
         collapsed ? "w-16" : "w-72",
@@ -214,9 +215,7 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
                 <Palette className="h-4 w-4 text-white" />
               </div>
               <div>
-                <h2 className="font-bold text-lg text-gradient-heading">
-                  Admin
-                </h2>
+                <p className="font-bold text-lg text-gradient-heading">Admin</p>
                 <p className="text-xs text-muted-foreground">FYGS Platform</p>
               </div>
             </div>
@@ -226,11 +225,13 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
             size="sm"
             onClick={() => setCollapsed(!collapsed)}
             className="h-8 w-8 p-0"
+            aria-label={collapsed ? "Développer le menu" : "Réduire le menu"}
+            aria-expanded={!collapsed}
           >
             {collapsed ? (
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-4 w-4" aria-hidden="true" />
             ) : (
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-4 w-4" aria-hidden="true" />
             )}
           </Button>
         </div>
@@ -242,29 +243,25 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
         type="auto"
         scrollHideDelay={300}
       >
+        <nav aria-label="Navigation d'administration">
         {filteredNavigation.map((item) => {
           const isActive =
             pathname === item.href ||
             (item.href !== "/admin" && pathname.startsWith(item.href));
 
           return (
-            <Link key={item.href} href={item.href}>
-              <div
-                className={cn(
-                  "group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-slate-800 focus:outline-hidden focus:ring-2 focus:ring-primary/50",
-                  isActive &&
-                    "bg-primary/10 text-primary border border-primary/20",
-                  collapsed && "justify-center px-2",
-                )}
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    window.location.href = item.href;
-                  }
-                }}
-                aria-current={isActive ? "page" : undefined}
-              >
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-slate-800 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50",
+                isActive && "bg-primary/10 text-primary border border-primary/20",
+                collapsed && "justify-center px-2",
+              )}
+              aria-current={isActive ? "page" : undefined}
+              aria-label={collapsed ? item.title : undefined}
+            >
+              <>
                 <item.icon
                   className={cn(
                     "h-5 w-5 shrink-0 transition-colors",
@@ -308,10 +305,11 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
                     </div>
                   </>
                 )}
-              </div>
+              </>
             </Link>
           );
         })}
+        </nav>
       </ScrollArea>
 
       {/* Footer */}
@@ -329,6 +327,6 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
           </div>
         )}
       </div>
-    </div>
+    </aside>
   );
 }

@@ -23,25 +23,21 @@ export function ChallengeCard({ challenge, onSelect, solved = false }: Challenge
     <motion.div
       key={challenge.id}
       whileHover={{ y: -5 }}
-      className="cursor-pointer rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-      role="button"
-      tabIndex={0}
-      aria-label={`${challenge.title}${solved ? " (solved)" : ""}`}
-      onClick={() => {
-        onSelect(challenge);
-      }}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          onSelect(challenge);
-        }
-      }}
+      className="relative cursor-pointer rounded-xl focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary"
     >
       <Card className="h-full border border-border/50 hover:shadow-lg transition-all duration-300 backdrop-blur-xl bg-background/80">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">
-              {challenge.title}
+            <CardTitle as="h2" className="text-lg">
+              {/* the button covers the whole card (after:inset-0): one control, named by the title */}
+              <button
+                type="button"
+                className="text-left after:absolute after:inset-0 after:content-[''] focus-visible:outline-hidden"
+                onClick={() => onSelect(challenge)}
+              >
+                {challenge.title}
+                {solved && <span className="sr-only"> (résolu)</span>}
+              </button>
             </CardTitle>
             {solved && <CheckCircle className="h-5 w-5 text-green-500" aria-hidden="true" />}
           </div>

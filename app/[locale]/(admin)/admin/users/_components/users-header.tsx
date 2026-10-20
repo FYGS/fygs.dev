@@ -94,7 +94,7 @@ export function UsersHeader() {
 
         {/* Role filter */}
         <Select value={roleFilter} onValueChange={setRoleFilter}>
-          <SelectTrigger className="w-full sm:w-48">
+          <SelectTrigger className="w-full sm:w-48" aria-label="Rôle">
             <SelectValue placeholder="Rôle" />
           </SelectTrigger>
           <SelectContent>
@@ -107,7 +107,7 @@ export function UsersHeader() {
 
         {/* Status filter */}
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full sm:w-48">
+          <SelectTrigger className="w-full sm:w-48" aria-label="Statut">
             <SelectValue placeholder="Statut" />
           </SelectTrigger>
           <SelectContent>

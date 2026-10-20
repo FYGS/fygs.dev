@@ -180,7 +180,7 @@ export function LessonEditForm({ lesson, courses }: LessonEditFormProps) {
                   defaultValue={field.value}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger aria-label="Sélectionnez une formation">
                       <SelectValue placeholder="Sélectionnez une formation" />
                     </SelectTrigger>
                   </FormControl>

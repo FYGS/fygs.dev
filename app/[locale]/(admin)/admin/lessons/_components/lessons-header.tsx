@@ -70,7 +70,7 @@ export function LessonsHeader({ totalLessons, publishedLessons }: LessonsHeaderP
         
         <div className="flex gap-2">
           <Select defaultValue="all">
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="w-[160px]" aria-label="Statut">
               <SelectValue placeholder="Statut" />
             </SelectTrigger>
             <SelectContent>
@@ -81,7 +81,7 @@ export function LessonsHeader({ totalLessons, publishedLessons }: LessonsHeaderP
           </Select>
 
           <Select defaultValue="all">
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="w-[160px]" aria-label="Formation">
               <SelectValue placeholder="Formation" />
             </SelectTrigger>
             <SelectContent>

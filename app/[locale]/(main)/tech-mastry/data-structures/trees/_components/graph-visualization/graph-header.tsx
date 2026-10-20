@@ -40,7 +40,7 @@ export function GraphHeader({
         <div className="flex items-center gap-2">
           <span className="text-sm">Départ:</span>
           <Select value={startNode} onValueChange={handleStartNodeChange}>
-            <SelectTrigger className="w-16">
+            <SelectTrigger className="w-16" aria-label="Nœud de départ">
               <SelectValue placeholder={startNode} />
             </SelectTrigger>
             <SelectContent>

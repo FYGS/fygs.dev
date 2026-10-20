@@ -152,8 +152,10 @@ export function DiscussionCard({
                   "text-green-600 bg-green-50 hover:bg-green-100"
               )}
               onClick={() => handleVote("UPVOTE")}
+              aria-label="Voter pour cette discussion"
+              aria-pressed={userVote === "UPVOTE"}
             >
-              <ArrowUp className="h-4 w-4" />
+              <ArrowUp className="h-4 w-4" aria-hidden="true" />
             </Button>
 
             <span
@@ -175,8 +177,10 @@ export function DiscussionCard({
                   "text-red-600 bg-red-50 hover:bg-red-100"
               )}
               onClick={() => handleVote("DOWNVOTE")}
+              aria-label="Voter contre cette discussion"
+              aria-pressed={userVote === "DOWNVOTE"}
             >
-              <ArrowDown className="h-4 w-4" />
+              <ArrowDown className="h-4 w-4" aria-hidden="true" />
             </Button>
           </div>
         </div>
@@ -216,9 +220,12 @@ export function DiscussionCard({
               isBookmarked && "text-yellow-600 bg-yellow-50 hover:bg-yellow-100"
             )}
             onClick={handleBookmark}
+            aria-label={isBookmarked ? "Retirer des favoris" : "Ajouter aux favoris"}
+            aria-pressed={isBookmarked}
           >
             <BookmarkIcon
               className={cn("h-4 w-4", isBookmarked && "fill-current")}
+              aria-hidden="true"
             />
           </Button>
         </div>

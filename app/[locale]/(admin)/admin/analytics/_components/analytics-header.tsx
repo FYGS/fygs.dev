@@ -95,7 +95,7 @@ export function AnalyticsHeader() {
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-48" aria-label="Période d'analyse">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -113,7 +113,7 @@ export function AnalyticsHeader() {
         <div className="flex items-center gap-2">
           <BarChart3 className="h-4 w-4 text-muted-foreground" />
           <Select defaultValue="revenue">
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-48" aria-label="Métrique affichée">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

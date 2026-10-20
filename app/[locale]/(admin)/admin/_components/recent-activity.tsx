@@ -39,7 +39,11 @@ export function RecentActivity({ activities, now = new Date() }: { activities: A
           {activities.length === 0 ? (
             <p className="p-6 text-sm text-muted-foreground">Aucune activité récente.</p>
           ) : (
-            <ul className="space-y-4 p-4">
+            <ul
+              className="space-y-4 p-4 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary"
+              tabIndex={0}
+              aria-label="Dernières activités"
+            >
               {activities.map((activity) => {
                 const { icon: Icon, color } = APPEARANCE[activity.type];
                 return (

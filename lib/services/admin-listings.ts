@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import {
   PaymentKind,
   PaymentStatus,
+  ReviewStatus,
   SubscriptionStatus,
   type Prisma,
 } from "@/lib/generated/prisma/browser";
@@ -257,6 +258,65 @@ export async function listCertificates(query: ListQuery): Promise<Page<Certifica
   });
   return pageOf(
     rows.map((row) => ({ id: row.id, user: row.user, courseTitle: row.course.title, issuedAt: row.issuedAt })),
+    total,
+    requested,
+  );
+}
+
+// ── reviews ─────────────────────────────────────────────────────────────────
+
+export const REVIEW_STATUSES = Object.values(ReviewStatus);
+export const REVIEW_RATINGS = ["5", "4", "3", "2", "1"] as const;
+
+export interface ReviewRow {
+  id: string;
+  createdAt: Date;
+  rating: number;
+  status: ReviewStatus;
+  comment: string | null;
+  reportCount: number;
+  user: { id: string; name: string; email: string };
+  courseTitle: string;
+}
+
+export async function listReviews(query: ListQuery & { rating?: string }): Promise<Page<ReviewRow>> {
+  const q = trimmed(query.q);
+  const status = oneOf(REVIEW_STATUSES, query.status);
+  const rating = oneOf(REVIEW_RATINGS, query.rating);
+  const where: Prisma.ReviewWhereInput = {
+    ...(status ? { status } : {}),
+    ...(rating ? { rating: Number(rating) } : {}),
+    ...(q
+      ? {
+          OR: [
+            { comment: { contains: q, mode: "insensitive" } },
+            { user: personFilter(q) },
+            { course: { title: { contains: q, mode: "insensitive" } } },
+          ],
+        }
+      : {}),
+  };
+
+  const total = await db.review.count({ where });
+  const requested = clampPage(query.page, Math.ceil(total / PAGE_SIZE));
+  const rows = await db.review.findMany({
+    where,
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    skip: (requested - 1) * PAGE_SIZE,
+    take: PAGE_SIZE,
+    select: {
+      id: true,
+      createdAt: true,
+      rating: true,
+      status: true,
+      comment: true,
+      reportCount: true,
+      user: person,
+      course: { select: { title: true } },
+    },
+  });
+  return pageOf(
+    rows.map(({ course, ...row }) => ({ ...row, courseTitle: course.title })),
     total,
     requested,
   );

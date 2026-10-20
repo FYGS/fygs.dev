@@ -65,16 +65,25 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe("AdvancedCodingChallenges", () => {
-  it("lists the challenges and opens one with the keyboard", async () => {
+  it("lists the challenges as real buttons, named by their title, and opens one", async () => {
     render(<AdvancedCodingChallenges />);
 
     for (const challenge of challenges) {
-      expect(await screen.findByRole("button", { name: new RegExp(challenge.title) })).toBeInTheDocument();
+      const card = await screen.findByRole("button", { name: new RegExp(challenge.title) });
+      // a native <button> is focusable and answers Enter and Space without any key handler
+      expect(card.tagName).toBe("BUTTON");
+      expect(card).toHaveAttribute("type", "button");
     }
-    const card = screen.getByRole("button", { name: /Valid Parentheses/ });
-    expect(card).toHaveAttribute("tabindex", "0");
-    fireEvent.keyDown(card, { key: "Enter" });
+    fireEvent.click(screen.getByRole("button", { name: /Valid Parentheses/ }));
     expect(await screen.findByRole("heading", { name: /Valid Parentheses/ })).toBeInTheDocument();
+  });
+
+  it("tells a screen reader which challenges are solved", async () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ challengesCompleted: [twoSum.id] }));
+    render(<AdvancedCodingChallenges />);
+
+    expect(await screen.findByRole("button", { name: /^Two Sum\s*\(résolu\)$/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Valid Parentheses" })).toBeInTheDocument();
   });
 
   it("shows the starter code in an editor and the tests, hiding what hidden tests contain", async () => {

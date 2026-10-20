@@ -229,7 +229,7 @@ export function UserManagement({ users, onUserAction }: UserManagementProps) {
           </div>
           
           <Select value={roleFilter} onValueChange={setRoleFilter}>
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="w-32" aria-label="Role">
               <SelectValue placeholder="Role" />
             </SelectTrigger>
             <SelectContent>
@@ -242,7 +242,7 @@ export function UserManagement({ users, onUserAction }: UserManagementProps) {
           </Select>
 
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="w-32" aria-label="Status">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -297,7 +297,7 @@ export function UserManagement({ users, onUserAction }: UserManagementProps) {
                     value={user.role}
                     onValueChange={(value) => handleRoleChange(user.id, value)}
                   >
-                    <SelectTrigger className="w-32">
+                    <SelectTrigger className="w-32" aria-label={`Rôle de ${user.name}`}>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -513,7 +513,7 @@ export function ContentModeration({ discussions, replies, onContentAction }: Con
           </div>
           
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="w-32" aria-label="Status">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>

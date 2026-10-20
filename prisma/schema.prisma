@@ -66,6 +66,7 @@ model User {
   progress          Progress[]
   quizResults       QuizResult[]
   quizAttempts      QuizAttempt[]
+  reviewModerations ReviewModeration[] @relation("ReviewModerator")
   examResults       ExamResult[]
   reviews           Review[]
   reviewVotes       ReviewVote[]
@@ -241,6 +242,7 @@ model Review {
   votes         ReviewVote[] // Helpful/unhelpful votes
   replies       ReviewReply[] // Instructor replies
   reports       ReviewReport[] // User reports
+  moderations   ReviewModeration[] // Moderation decisions, newest last
 
   @@unique([userId, courseId])
 }
@@ -280,6 +282,23 @@ model ReviewReport {
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, reviewId])
+}
+
+/// One moderation decision on a review: who changed its status, from what to what. The review keeps
+/// only its current status; this is the trail (and what the moderation page counts).
+model ReviewModeration {
+  id          String       @id @default(cuid())
+  reviewId    String
+  moderatorId String?
+  fromStatus  ReviewStatus
+  toStatus    ReviewStatus
+  note        String?
+  createdAt   DateTime     @default(now())
+  review      Review       @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  moderator   User?        @relation("ReviewModerator", fields: [moderatorId], references: [id], onDelete: SetNull)
+
+  @@index([reviewId, createdAt])
+  @@index([createdAt])
 }
 
 model Tag {

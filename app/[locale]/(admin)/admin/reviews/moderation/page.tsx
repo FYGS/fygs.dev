@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,9 @@ import {
 import { ReviewSearchService } from "@/lib/services/review-search";
 import { ReviewStatus } from "@/lib/generated/prisma/browser";
 import { StarRatingDisplay } from "@/components/reviews/star-rating";
+import { requireAdminPage } from "@/lib/admin-guard";
+import { getModerationCounts } from "@/lib/services/review-moderation";
+import { ModerationActions } from "../_components/moderation-actions";
 
 export const metadata: Metadata = {
   title: "Modération des avis | Administration",
@@ -40,7 +44,11 @@ async function getModerationQueue() {
 }
 
 export default async function AdminReviewsModerationPage() {
-  const { reviews, pagination, unavailable } = await getModerationQueue();
+  await requireAdminPage(); // the review queue shows every learner's name and words: admins only
+  const [{ reviews, pagination, unavailable }, counts] = await Promise.all([
+    getModerationQueue(),
+    getModerationCounts().catch(() => null),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -92,7 +100,7 @@ export default async function AdminReviewsModerationPage() {
                 <Flag className="h-5 w-5 text-red-400" />
               </div>
               <div>
-                <div className="text-2xl font-bold">0</div>
+                <div className="text-2xl font-bold">{counts?.flagged ?? "—"}</div>
                 <div className="text-sm text-muted-foreground">Signalés</div>
               </div>
             </div>
@@ -106,8 +114,8 @@ export default async function AdminReviewsModerationPage() {
                 <CheckCircle className="h-5 w-5 text-green-400" />
               </div>
               <div>
-                <div className="text-2xl font-bold">0</div>
-                <div className="text-sm text-muted-foreground">Approuvés aujourd&apos;hui</div>
+                <div className="text-2xl font-bold">{counts?.approvedLast24h ?? "—"}</div>
+                <div className="text-sm text-muted-foreground">Approuvés ces dernières 24 h</div>
               </div>
             </div>
           </CardContent>
@@ -120,8 +128,8 @@ export default async function AdminReviewsModerationPage() {
                 <XCircle className="h-5 w-5 text-gray-400" />
               </div>
               <div>
-                <div className="text-2xl font-bold">0</div>
-                <div className="text-sm text-muted-foreground">Rejetés aujourd&apos;hui</div>
+                <div className="text-2xl font-bold">{counts?.rejectedLast24h ?? "—"}</div>
+                <div className="text-sm text-muted-foreground">Rejetés ces dernières 24 h</div>
               </div>
             </div>
           </CardContent>
@@ -175,19 +183,22 @@ export default async function AdminReviewsModerationPage() {
                       )}
                     </div>
                     
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm">
-                        <Eye className="h-4 w-4 mr-1" />
-                        Voir détails
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button variant="outline" size="sm" asChild>
+                        <Link
+                          href={`/admin/reviews/${review.id}`}
+                          aria-label={`Voir les détails de l'avis de ${review.user?.name} sur ${review.course?.title}`}
+                        >
+                          <Eye className="h-4 w-4 mr-1" aria-hidden="true" />
+                          Voir détails
+                        </Link>
                       </Button>
-                      <Button variant="outline" size="sm" className="text-green-600 hover:text-green-700">
-                        <CheckCircle className="h-4 w-4 mr-1" />
-                        Approuver
-                      </Button>
-                      <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
-                        <XCircle className="h-4 w-4 mr-1" />
-                        Rejeter
-                      </Button>
+                      <ModerationActions
+                        reviewId={review.id}
+                        status={review.status}
+                        author={review.user?.name ?? "un apprenant"}
+                        courseTitle={review.course?.title ?? "une formation"}
+                      />
                     </div>
                   </div>
                 </div>

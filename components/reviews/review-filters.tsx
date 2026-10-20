@@ -162,7 +162,7 @@ export function ReviewFilterPanel({
           value={filters.sortBy || "newest"}
           onValueChange={(value) => updateFilter('sortBy', value)}
         >
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-[160px]" aria-label="Trier par">
             <SelectValue placeholder="Trier par" />
           </SelectTrigger>
           <SelectContent>

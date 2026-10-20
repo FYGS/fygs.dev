@@ -287,7 +287,7 @@ export function ReviewInteractions({
                   Raison du signalement *
                 </label>
                 <Select value={reportReason} onValueChange={(value) => setReportReason(value as ReportReason)}>
-                  <SelectTrigger className="mt-1">
+                  <SelectTrigger className="mt-1" aria-label="Sélectionnez une raison">
                     <SelectValue placeholder="Sélectionnez une raison" />
                   </SelectTrigger>
                   <SelectContent>

@@ -33,23 +33,29 @@ const routes = fs.readFileSync(routesFile, "utf8").split(/\r?\n/).filter((l) => 
 const browser = await chromium.launch({ channel: "chrome", headless: true });
 const results = [];
 
+let session;
+if (signInEmail) {
+  const loginContext = await browser.newContext();
+  await loginContext.addCookies([{ name: "locale_selected", value: "true", url: base }]);
+  const ip = `10.${Math.floor(Math.random() * 250) + 1}.${Math.floor(Math.random() * 250) + 1}.${Math.floor(Math.random() * 250) + 1}`;
+  const signIn = await loginContext.request.post(base + "/api/auth/sign-in/email", {
+    data: { email: signInEmail, password: signInPassword },
+    headers: { origin: new URL(base).origin, "x-forwarded-for": ip },
+  });
+  if (!signIn.ok()) throw new Error(`sign-in as ${signInEmail} answered ${signIn.status()}`);
+  session = await loginContext.storageState();
+  await loginContext.close();
+}
+
 for (const route of routes) {
   const ctx = await browser.newContext({
     bypassCSP: true,
     viewport: { width: viewportWidth, height: viewportHeight },
     ...(theme ? { colorScheme: theme } : {}),
+    ...(session ? { storageState: session } : {}),
   });
   await ctx.addCookies([{ name: "locale_selected", value: "true", url: base }]);
   if (theme) await ctx.addInitScript((value) => localStorage.setItem("fygs-theme", value), theme);
-  if (signInEmail) {
-    // every context gets its own rate-limit bucket (the app trusts the last X-Forwarded-For hop)
-    const ip = `10.${Math.floor(Math.random() * 250) + 1}.${Math.floor(Math.random() * 250) + 1}.${Math.floor(Math.random() * 250) + 1}`;
-    const signIn = await ctx.request.post(base + "/api/auth/sign-in/email", {
-      data: { email: signInEmail, password: signInPassword },
-      headers: { origin: new URL(base).origin, "x-forwarded-for": ip },
-    });
-    if (!signIn.ok()) throw new Error(`sign-in as ${signInEmail} answered ${signIn.status()}`);
-  }
   const page = await ctx.newPage();
   const entry = { route };
   try {

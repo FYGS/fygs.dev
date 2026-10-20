@@ -5,7 +5,6 @@ import { headers } from "next/headers";
 import { AdminSidebar } from "./admin/_components/admin-sidebar";
 import { AdminHeader } from "./admin/_components/admin-header";
 import { AdminBreadcrumb } from "./admin/_components/admin-breadcrumb";
-import { Toaster } from "@/components/ui/sonner";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { defaultMetadata } from "../../_lib/metadata";
@@ -76,8 +75,6 @@ export default async function AdminLayout({
         </div>
       </div>
 
-      {/* Toast Notifications */}
-      <Toaster position="top-right" expand={true} richColors closeButton />
     </>
   );
 }

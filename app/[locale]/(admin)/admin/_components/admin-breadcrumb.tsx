@@ -47,19 +47,20 @@ export function AdminBreadcrumb() {
 
   return (
     <div className="bg-slate-800/50 border-b border-slate-700 px-6 py-3">
-      <nav className="flex items-center space-x-2 text-sm">
+      <nav aria-label="Fil d'Ariane" className="flex items-center space-x-2 text-sm">
         <Link 
           href="/admin"
           className="flex items-center text-muted-foreground hover:text-foreground transition-colors"
+          aria-label="Accueil de l'administration"
         >
-          <Home className="h-4 w-4" />
+          <Home className="h-4 w-4" aria-hidden="true" />
         </Link>
         
         {breadcrumbs.map((breadcrumb) => (
           <div key={breadcrumb.path} className="flex items-center space-x-2">
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
             {breadcrumb.isLast ? (
-              <span className="font-medium text-foreground">
+              <span className="font-medium text-foreground" aria-current="page">
                 {breadcrumb.name}
               </span>
             ) : (

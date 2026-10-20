@@ -5,8 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
 /**
- * The frame of a read-only back-office listing: a title, a GET form for the filters (it works
- * without JavaScript and keeps the URL shareable) and the pager. Server component.
+ * The pieces of a read-only back-office listing: a GET form for the filters (it works without
+ * JavaScript and keeps the URL shareable), the pager, and a frame that puts them around a table.
+ * Server components.
  */
 
 export interface FilterOption {
@@ -30,6 +31,100 @@ export function hrefWith(basePath: string, params: Params, page: number): string
   return query ? `${basePath}?${query}` : basePath;
 }
 
+export function ListFilters({
+  basePath,
+  params,
+  searchLabel,
+  selects = [],
+}: {
+  basePath: string;
+  /** The filters currently applied (from the URL) */
+  params: Params;
+  searchLabel: string;
+  selects?: FilterSelect[];
+}) {
+  const filtered = Object.values(params).some(Boolean);
+  return (
+    <form method="get" action={basePath} className="flex flex-wrap items-end gap-3" role="search">
+      <label className="flex flex-col gap-1 text-sm">
+        <span className="text-muted-foreground">{searchLabel}</span>
+        <Input name="q" defaultValue={params.q ?? ""} placeholder="Rechercher…" className="w-64" maxLength={100} />
+      </label>
+      {selects.map((select) => (
+        <label key={select.name} className="flex flex-col gap-1 text-sm">
+          <span className="text-muted-foreground">{select.label}</span>
+          <select
+            name={select.name}
+            defaultValue={params[select.name] ?? ""}
+            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+          >
+            <option value="">Tous</option>
+            {select.options.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      ))}
+      <Button type="submit">Filtrer</Button>
+      {filtered && (
+        <Button variant="ghost" asChild>
+          <Link href={basePath}>Réinitialiser</Link>
+        </Button>
+      )}
+    </form>
+  );
+}
+
+export function ListPager({
+  basePath,
+  params,
+  pager,
+}: {
+  basePath: string;
+  params: Params;
+  pager: { page: number; pages: number; total: number; pageSize: number };
+}) {
+  const { page, pages, total, pageSize } = pager;
+  const first = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const last = Math.min(page * pageSize, total);
+  return (
+    <nav aria-label="Pagination" className="flex flex-wrap items-center justify-between gap-3 text-sm">
+      <p className="text-muted-foreground" aria-live="polite">
+        {total === 0 ? "Aucun résultat" : `${first}–${last} sur ${total}`}
+      </p>
+      <div className="flex items-center gap-2">
+        {page > 1 ? (
+          <Button variant="outline" size="sm" asChild>
+            <Link href={hrefWith(basePath, params, page - 1)} rel="prev">
+              Précédent
+            </Link>
+          </Button>
+        ) : (
+          <Button variant="outline" size="sm" disabled>
+            Précédent
+          </Button>
+        )}
+        <span>
+          Page {page} / {pages}
+        </span>
+        {page < pages ? (
+          <Button variant="outline" size="sm" asChild>
+            <Link href={hrefWith(basePath, params, page + 1)} rel="next">
+              Suivant
+            </Link>
+          </Button>
+        ) : (
+          <Button variant="outline" size="sm" disabled>
+            Suivant
+          </Button>
+        )}
+      </div>
+    </nav>
+  );
+}
+
 export function AdminListShell({
   title,
   description,
@@ -44,7 +139,6 @@ export function AdminListShell({
   title: string;
   description: string;
   basePath: string;
-  /** The filters currently applied (from the URL) */
   params: Params;
   searchLabel: string;
   selects?: FilterSelect[];
@@ -52,11 +146,6 @@ export function AdminListShell({
   pager: { page: number; pages: number; total: number; pageSize: number };
   children: ReactNode;
 }) {
-  const { page, pages, total, pageSize } = pager;
-  const first = total === 0 ? 0 : (page - 1) * pageSize + 1;
-  const last = Math.min(page * pageSize, total);
-  const filtered = Object.values(params).some(Boolean);
-
   return (
     <div className="space-y-6">
       <div className="space-y-1">
@@ -68,72 +157,14 @@ export function AdminListShell({
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="sr-only">Filtres</CardTitle>
-          <form method="get" action={basePath} className="flex flex-wrap items-end gap-3" role="search">
-            <label className="flex flex-col gap-1 text-sm">
-              <span className="text-muted-foreground">{searchLabel}</span>
-              <Input name="q" defaultValue={params.q ?? ""} placeholder="Rechercher…" className="w-64" maxLength={100} />
-            </label>
-            {selects.map((select) => (
-              <label key={select.name} className="flex flex-col gap-1 text-sm">
-                <span className="text-muted-foreground">{select.label}</span>
-                <select
-                  name={select.name}
-                  defaultValue={params[select.name] ?? ""}
-                  className="h-10 rounded-md border border-input bg-background px-3 text-sm"
-                >
-                  <option value="">Tous</option>
-                  {select.options.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            ))}
-            <Button type="submit">Filtrer</Button>
-            {filtered && (
-              <Button variant="ghost" asChild>
-                <Link href={basePath}>Réinitialiser</Link>
-              </Button>
-            )}
-          </form>
+          <CardTitle as="h2" className="sr-only">
+            Filtres
+          </CardTitle>
+          <ListFilters basePath={basePath} params={params} searchLabel={searchLabel} selects={selects} />
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="overflow-x-auto rounded-md border">{children}</div>
-
-          <nav aria-label="Pagination" className="flex flex-wrap items-center justify-between gap-3 text-sm">
-            <p className="text-muted-foreground" aria-live="polite">
-              {total === 0 ? "Aucun résultat" : `${first}–${last} sur ${total}`}
-            </p>
-            <div className="flex items-center gap-2">
-              {page > 1 ? (
-                <Button variant="outline" size="sm" asChild>
-                  <Link href={hrefWith(basePath, params, page - 1)} rel="prev">
-                    Précédent
-                  </Link>
-                </Button>
-              ) : (
-                <Button variant="outline" size="sm" disabled>
-                  Précédent
-                </Button>
-              )}
-              <span>
-                Page {page} / {pages}
-              </span>
-              {page < pages ? (
-                <Button variant="outline" size="sm" asChild>
-                  <Link href={hrefWith(basePath, params, page + 1)} rel="next">
-                    Suivant
-                  </Link>
-                </Button>
-              ) : (
-                <Button variant="outline" size="sm" disabled>
-                  Suivant
-                </Button>
-              )}
-            </div>
-          </nav>
+          <ListPager basePath={basePath} params={params} pager={pager} />
         </CardContent>
       </Card>
     </div>

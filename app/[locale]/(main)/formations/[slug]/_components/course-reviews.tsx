@@ -544,8 +544,8 @@ function CourseReviewsContent({
               
               <div className="flex gap-2">
                 <Select value={filterBy} onValueChange={(value: FilterOption) => setFilterBy(value)}>
-                  <SelectTrigger className="w-32">
-                    <Filter className="h-4 w-4 mr-2" />
+                  <SelectTrigger className="w-32" aria-label="Filtrer les avis">
+                    <Filter className="h-4 w-4 mr-2" aria-hidden="true" />
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -560,8 +560,8 @@ function CourseReviewsContent({
                 </Select>
 
                 <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
-                  <SelectTrigger className="w-40">
-                    <TrendingUp className="h-4 w-4 mr-2" />
+                  <SelectTrigger className="w-40" aria-label="Trier les avis">
+                    <TrendingUp className="h-4 w-4 mr-2" aria-hidden="true" />
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -631,7 +631,7 @@ function CourseReviewsContent({
                   prev ? { ...prev, reason: value } : null
                 )}
               >
-                <SelectTrigger>
+                <SelectTrigger aria-label="Choisir une raison">
                   <SelectValue placeholder="Choisir une raison" />
                 </SelectTrigger>
                 <SelectContent>

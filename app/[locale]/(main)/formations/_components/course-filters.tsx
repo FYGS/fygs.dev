@@ -88,7 +88,7 @@ export function CourseFilters() {
             value={searchParams.get("category") || ""}
             onValueChange={handleCategoryChange}
           >
-            <SelectTrigger className="w-full sm:w-48 h-11">
+            <SelectTrigger className="w-full sm:w-48 h-11" aria-label="Toutes les catégories">
               <SelectValue placeholder="Toutes les catégories" />
             </SelectTrigger>
             <SelectContent>
@@ -104,7 +104,7 @@ export function CourseFilters() {
             value={searchParams.get("level") || ""}
             onValueChange={handleLevelChange}
           >
-            <SelectTrigger className="w-full sm:w-48 h-11">
+            <SelectTrigger className="w-full sm:w-48 h-11" aria-label="Tous les niveaux">
               <SelectValue placeholder="Tous les niveaux" />
             </SelectTrigger>
             <SelectContent>

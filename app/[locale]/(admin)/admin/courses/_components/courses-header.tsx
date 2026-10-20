@@ -94,7 +94,7 @@ export function CoursesHeader() {
 
         {/* Status filter */}
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full sm:w-48">
+          <SelectTrigger className="w-full sm:w-48" aria-label="Statut">
             <SelectValue placeholder="Statut" />
           </SelectTrigger>
           <SelectContent>
@@ -107,7 +107,7 @@ export function CoursesHeader() {
 
         {/* Category filter */}
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-full sm:w-48">
+          <SelectTrigger className="w-full sm:w-48" aria-label="Catégorie">
             <SelectValue placeholder="Catégorie" />
           </SelectTrigger>
           <SelectContent>

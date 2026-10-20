@@ -130,8 +130,8 @@ export function PopularCourses({ courses }: PopularCoursesProps) {
                   {/* Actions */}
                   <div className="shrink-0">
                     <Button variant="ghost" size="sm" asChild>
-                      <Link href={`/admin/courses/${course.id}`}>
-                        <ExternalLink className="h-4 w-4" />
+                      <Link href={`/admin/courses/${course.id}`} aria-label={`Gérer la formation ${course.title}`}>
+                        <ExternalLink className="h-4 w-4" aria-hidden="true" />
                       </Link>
                     </Button>
                   </div>
