@@ -2,17 +2,17 @@
 
 exports[`SortingAlgorithmsVisualization rendering > renders the same markup in every state reachable by clicking 1`] = `
 [
-  "e20bcc0e",
-  "cebeb0a8",
-  "cebeb0a8",
-  "a66ce67a",
-  "45879448",
-  "7b6022e8",
-  "7b6022e8",
-  "2386be49",
-  "b930ea45",
-  "85a5e967",
-  "3d851d00",
-  "19dd65af",
+  "e81b20bf",
+  "0f45d5c0",
+  "0f45d5c0",
+  "80a793ed",
+  "f30b36bb",
+  "ee603358",
+  "ee603358",
+  "9e275941",
+  "47df5326",
+  "e4d90a11",
+  "a82a7196",
+  "e0156348",
 ]
 `;

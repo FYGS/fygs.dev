@@ -37,7 +37,7 @@ export function ModerationActions({
       <Button
         variant="outline"
         size="sm"
-        className="text-green-600 hover:text-green-700"
+        className="text-green-400 hover:text-green-300"
         disabled={pending || status === "APPROVED"}
         onClick={() => decide("APPROVE")}
         aria-label={`Approuver ${about}`}
@@ -48,7 +48,7 @@ export function ModerationActions({
       <Button
         variant="outline"
         size="sm"
-        className="text-red-600 hover:text-red-700"
+        className="text-red-400 hover:text-red-300"
         disabled={pending || status === "REJECTED"}
         onClick={() => decide("REJECT")}
         aria-label={`Rejeter ${about}`}

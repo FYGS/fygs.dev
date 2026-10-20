@@ -86,7 +86,7 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-600">
+            <div className="text-3xl font-bold text-blue-400">
               {stats.totalReviews.toLocaleString("fr-FR")}
             </div>
             <p className="text-sm text-muted-foreground mt-1">

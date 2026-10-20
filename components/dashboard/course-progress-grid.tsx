@@ -158,7 +158,7 @@ export function CourseProgressGrid({ initialData, refreshIntervalMs = 60000, ini
             )}
             <div className="flex items-center justify-between">
               <h3 className="font-medium text-sm">Cours #{c.courseId.slice(0,6)}</h3>
-              {c.hasCertificate && <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">Certificat</span>}
+              {c.hasCertificate && <span className="text-xs px-2 py-0.5 rounded bg-primary/20 text-foreground">Certificat</span>}
             </div>
             <div className="h-2 w-full bg-muted rounded overflow-hidden">
               <div className="h-full bg-primary transition-all" style={{width: pct + '%'}} />

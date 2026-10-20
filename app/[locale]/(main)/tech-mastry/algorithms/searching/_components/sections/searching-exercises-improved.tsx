@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowRight, CheckCircle, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { CodeEditor } from "./code-editor/code-editor";
@@ -429,8 +429,8 @@ export function SearchingExercisesImproved() {
             </TabsTrigger>
           ))}
         </TabsList>
-      </Tabs>
 
+        <TabsContent value={activeExercise} className="mt-6 space-y-8">
       {/* Exercice actif */}
       <Card>
         <CardHeader>
@@ -444,6 +444,7 @@ export function SearchingExercisesImproved() {
           </div>
 
           <CodeRunner
+            key={currentExercise.id}
             initialCode={currentExercise.template}
             language="javascript"
             title={`Exercice: ${currentExercise.title}`}
@@ -528,6 +529,8 @@ export function SearchingExercisesImproved() {
           </CardContent>
         </Card>
       )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

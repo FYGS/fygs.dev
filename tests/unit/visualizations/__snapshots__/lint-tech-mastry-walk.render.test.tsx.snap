@@ -2,15 +2,15 @@
 
 exports[`tech-mastry components rewritten for the lint rules > exponential-search renders the same markup in every state reachable by clicking 1`] = `
 [
-  "34cde947",
-  "34cde947",
-  "939b222f",
-  "c56a4e5b",
-  "7bede3cb",
-  "2fbc5fac",
-  "d43d64ee",
-  "97e842d1",
-  "13b0a12b",
+  "cbcdb1fe",
+  "cbcdb1fe",
+  "0025358a",
+  "b05babc1",
+  "a0ed24cf",
+  "87b39f94",
+  "3918f3d8",
+  "b032eca6",
+  "4b16baf5",
 ]
 `;
 
@@ -148,31 +148,31 @@ exports[`tech-mastry components rewritten for the lint rules > quiz renders the 
 
 exports[`tech-mastry components rewritten for the lint rules > realtime-performance renders the same markup in every state reachable by clicking 1`] = `
 [
-  "146a2a0f",
-  "a7ce4e3f",
-  "a7ce4e3f",
-  "efc976c7",
-  "d5b9ba84",
-  "146a2a0f",
-  "d5b9ba84",
+  "ef8f2535",
+  "54ecb1c0",
+  "54ecb1c0",
+  "bcc0ad4d",
+  "3246e4f0",
+  "ef8f2535",
+  "3246e4f0",
 ]
 `;
 
 exports[`tech-mastry components rewritten for the lint rules > search-algorithms renders the same markup in every state reachable by clicking 1`] = `
 [
-  "a4722651",
-  "55f088c0",
-  "55f088c0",
-  "55f088c0",
-  "378233e2",
-  "5b4e52ab",
-  "617d8f0c",
-  "617d8f0c",
-  "617d8f0c",
-  "1b8ec54e",
-  "cd41f9f7",
-  "ec32b398",
-  "ed502da8",
+  "afb886c1",
+  "f3f9b3e2",
+  "f3f9b3e2",
+  "f3f9b3e2",
+  "c4cd045c",
+  "bd0fa40e",
+  "bce95eb3",
+  "bce95eb3",
+  "bce95eb3",
+  "340d1da7",
+  "85160b37",
+  "1b7d5a04",
+  "1dd4a889",
 ]
 `;
 
@@ -200,38 +200,38 @@ exports[`tech-mastry components rewritten for the lint rules > sorting-algorithm
 
 exports[`tech-mastry components rewritten for the lint rules > sorting-exercises renders the same markup in every state reachable by clicking 1`] = `
 [
-  "3af3d197",
-  "3af3d197",
-  "984edbcb",
-  "d7363a52",
-  "c9e40a30",
-  "37ad2cae",
-  "c9e40a30",
-  "984edbcb",
-  "f1900e1e",
-  "f1900e1e",
-  "7d9f2a76",
-  "b82a3da3",
-  "de82aeb5",
+  "ee8cc296",
+  "ee8cc296",
+  "ee8cc296",
+  "7b4b3161",
+  "5532c0cd",
+  "5532c0cd",
+  "5532c0cd",
+  "ee8cc296",
+  "a8d8b3a3",
+  "a8d8b3a3",
+  "2d27b915",
+  "5c8d05b0",
+  "ba287ae6",
 ]
 `;
 
 exports[`tech-mastry components rewritten for the lint rules > streak-calendar renders the same markup in every state reachable by clicking 1`] = `
 [
-  "b10343e9",
+  "3454ac1b",
 ]
 `;
 
 exports[`tech-mastry components rewritten for the lint rules > ternary-search renders the same markup in every state reachable by clicking 1`] = `
 [
-  "cec48abc",
-  "cec48abc",
-  "e5c26b3f",
-  "92a6c139",
-  "ac182ace",
-  "cf49fcc3",
-  "2dd6f960",
-  "261f0839",
-  "6c7da5d2",
+  "57e4e0e4",
+  "57e4e0e4",
+  "a5367d11",
+  "5fcc5267",
+  "7a9881d8",
+  "d4c5a6e0",
+  "c320f0db",
+  "82a230d4",
+  "119e98e5",
 ]
 `;

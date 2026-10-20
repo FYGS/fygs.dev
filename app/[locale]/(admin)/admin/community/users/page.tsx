@@ -317,7 +317,7 @@ function UserItem({ user }: { user: any }) {
               <Shield className="h-4 w-4 mr-1" />
               Moderate
             </Button>
-            <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+            <Button variant="outline" size="sm" className="text-red-400 hover:text-red-300">
               <Ban className="h-4 w-4 mr-1" />
               Suspend
             </Button>

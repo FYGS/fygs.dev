@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { readableTextColor } from "@/lib/color-contrast";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -221,7 +222,7 @@ export function TagCard({ tag }: TagCardProps) {
             variant={tag.courseCount > 0 ? "default" : "secondary"}
             style={{ 
               backgroundColor: tag.courseCount > 0 ? tag.color : undefined,
-              color: tag.courseCount > 0 ? "white" : undefined 
+              color: tag.courseCount > 0 ? readableTextColor(tag.color) : undefined 
             }}
           >
             {tag.courseCount > 0 ? "En usage" : "Inutilisé"}

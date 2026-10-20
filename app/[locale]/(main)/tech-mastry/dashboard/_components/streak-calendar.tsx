@@ -56,9 +56,9 @@ export function StreakCalendar({ streakDays, activityByDay, today = new Date() }
               className={cn(
                 "w-6 h-6 rounded-sm flex items-center justify-center text-xs",
                 day.level === 0 && "bg-muted/30 text-muted-foreground",
-                day.level === 1 && "bg-green-500/20 text-green-700 dark:text-green-400",
-                day.level === 2 && "bg-green-500/40 text-green-700 dark:text-green-400",
-                day.level === 3 && "bg-green-500/60 text-green-800 dark:text-green-300",
+                day.level === 1 && "bg-green-500/20 text-foreground",
+                day.level === 2 && "bg-green-500/40 text-foreground",
+                day.level === 3 && "bg-green-500/60 text-foreground",
               )}
               title={`${formatDate(day.date)}: ${day.count > 0 ? `${day.count} activit${day.count === 1 ? "y" : "ies"}` : "no activity"}`}
             >

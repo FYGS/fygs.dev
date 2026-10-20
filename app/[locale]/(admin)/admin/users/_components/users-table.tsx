@@ -145,9 +145,11 @@ export function UsersTable({ users, pagination }: UsersTableProps) {
           <TableHeader>
             <TableRow>
               <TableHead className="w-12">
+                <span className="sr-only">Sélection</span>
                 <Checkbox
                   checked={selectedUsers.length === users.length}
                   onCheckedChange={handleSelectAll}
+                  aria-label="Sélectionner tous les utilisateurs"
                 />
               </TableHead>
               <TableHead>Utilisateur</TableHead>
@@ -155,7 +157,9 @@ export function UsersTable({ users, pagination }: UsersTableProps) {
               <TableHead>Activité</TableHead>
               <TableHead>Dépenses</TableHead>
               <TableHead>Inscription</TableHead>
-              <TableHead className="w-12"></TableHead>
+              <TableHead className="w-12">
+                <span className="sr-only">Actions</span>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -173,6 +177,7 @@ export function UsersTable({ users, pagination }: UsersTableProps) {
                 <TableRow key={user.id} className="group hover:bg-muted/50">
                   <TableCell>
                     <Checkbox
+                      aria-label={`Sélectionner ${user.name}`}
                       checked={selectedUsers.includes(user.id)}
                       onCheckedChange={(checked) => 
                         handleSelectUser(user.id, checked as boolean)

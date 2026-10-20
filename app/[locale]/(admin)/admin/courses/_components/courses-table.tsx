@@ -176,9 +176,11 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
           <TableHeader>
             <TableRow>
               <TableHead className="w-12">
+                <span className="sr-only">Sélection</span>
                 <Checkbox
                   checked={selectedCourses.length === courses.length}
                   onCheckedChange={handleSelectAll}
+                  aria-label="Sélectionner toutes les formations"
                 />
               </TableHead>
               <TableHead>Cours</TableHead>
@@ -189,7 +191,9 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
               <TableHead>Prix</TableHead>
               <TableHead>Durée</TableHead>
               <TableHead>Créé le</TableHead>
-              <TableHead className="w-12"></TableHead>
+              <TableHead className="w-12">
+                <span className="sr-only">Actions</span>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -207,6 +211,7 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
                 <TableRow key={course.id} className="group hover:bg-muted/50">
                   <TableCell>
                     <Checkbox
+                      aria-label={`Sélectionner ${course.title}`}
                       checked={selectedCourses.includes(course.id)}
                       onCheckedChange={(checked) => 
                         handleSelectCourse(course.id, checked as boolean)

@@ -81,7 +81,7 @@ export default async function AdminReviewsAnalyticsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-600">
+            <div className="text-3xl font-bold text-blue-400">
               {((globalStats.totalReviews / globalStats.totalCourses) * 100).toFixed(1)}%
             </div>
             <p className="text-sm text-muted-foreground mt-1">
@@ -121,7 +121,7 @@ export default async function AdminReviewsAnalyticsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-purple-600">
+            <div className="text-3xl font-bold text-purple-400">
               {(sentimentData.positive * 100).toFixed(0)}%
             </div>
             <p className="text-sm text-muted-foreground mt-1">

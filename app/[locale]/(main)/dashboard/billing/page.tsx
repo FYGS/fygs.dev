@@ -301,7 +301,7 @@ export default async function BillingPage() {
                       )}
 
                       <div className="flex gap-3">
-                        <Button asChild className="bg-amber-500 hover:bg-amber-600 text-white">
+                        <Button asChild className="bg-amber-500 hover:bg-amber-600 text-black">
                             <Link href="/dashboard">
                             <BookOpen className="h-4 w-4 mr-2" />
                             Tableau de Bord

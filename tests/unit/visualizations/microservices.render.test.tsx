@@ -8,19 +8,19 @@ describe("MicroservicesVisualization rendering", () => {
     expect(states).toBeGreaterThanOrEqual(5);
     expect(hashes).toMatchInlineSnapshot(`
       [
-        "8ec3d401",
-        "8ec3d401",
-        "52dde19d",
-        "5f481826",
-        "99027e34",
-        "bc14c7f1",
-        "4bd04754",
-        "e52b9b9e",
-        "87c5515b",
-        "06d08628",
-        "c624f039",
-        "0e962f59",
-        "acbb4b4d",
+        "b27622db",
+        "b27622db",
+        "051e2fa0",
+        "a8594f4a",
+        "3ff82fb8",
+        "3078ffb3",
+        "bc2cf4a5",
+        "728a5dbe",
+        "8f31c8f8",
+        "1388ede1",
+        "b240148d",
+        "4b9608cc",
+        "2112105c",
       ]
     `);
   });

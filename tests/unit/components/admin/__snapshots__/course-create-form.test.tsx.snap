@@ -1,46 +1,46 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`CourseCreateForm (pinned DOM + behaviour) > initial markup is stable 1`] = `"5cc1d89b73e55ecbc20798c0b95980fd"`;
+exports[`CourseCreateForm (pinned DOM + behaviour) > initial markup is stable 1`] = `"cb5055c5cbcdf41b650714248c57faa2"`;
 
-exports[`CourseCreateForm (pinned DOM + behaviour) > initial markup is stable 2`] = `22247`;
+exports[`CourseCreateForm (pinned DOM + behaviour) > initial markup is stable 2`] = `22357`;
 
 exports[`CourseCreateForm (pinned DOM + behaviour) > renders the same DOM through a click walk 1`] = `
 {
   "hashes": [
-    "5cc1d89b",
-    "5cc1d89b",
-    "2303b148",
-    "1e6adf4e",
-    "ebf33c0a",
-    "e61daa34",
-    "4ba52b26",
-    "6d4013aa",
-    "758aef3a",
-    "a15add6b",
-    "617e492d",
-    "4e862ba0",
-    "4e862ba0",
-    "4e862ba0",
-    "4e862ba0",
-    "4e862ba0",
-    "4098ceaa",
-    "bca0d0ba",
-    "fddd5323",
-    "b1f5e559",
-    "a0c8ba6e",
-    "a0c8ba6e",
-    "9117a46e",
-    "9117a46e",
-    "9117a46e",
-    "9117a46e",
-    "9117a46e",
-    "51dcee33",
-    "677f28b8",
-    "166b226a",
-    "9c038bea",
-    "25571529",
-    "24e5b455",
-    "24e5b455",
+    "cb5055c5",
+    "cb5055c5",
+    "53cb2258",
+    "002af2ad",
+    "2013583c",
+    "8cc25ab1",
+    "1062026c",
+    "eed9215c",
+    "89640e1e",
+    "a57133f0",
+    "f6cebcae",
+    "1924e13b",
+    "1924e13b",
+    "1924e13b",
+    "1924e13b",
+    "1924e13b",
+    "fa549f44",
+    "a061e7af",
+    "9ce8243f",
+    "2823ad8b",
+    "d256ae69",
+    "d256ae69",
+    "3e99254f",
+    "3e99254f",
+    "3e99254f",
+    "3e99254f",
+    "3e99254f",
+    "4cf6201d",
+    "667b9911",
+    "b233a247",
+    "f2793710",
+    "a0c3281b",
+    "79813034",
+    "79813034",
   ],
   "states": 23,
 }
@@ -49,16 +49,16 @@ exports[`CourseCreateForm (pinned DOM + behaviour) > renders the same DOM throug
 exports[`CourseCreateForm (pinned DOM + behaviour) > renders without tags 1`] = `
 {
   "hashes": [
-    "a80bffc3",
-    "a80bffc3",
-    "d7734353",
-    "ab516aca",
-    "a9bd5881",
-    "898c4809",
-    "1f890f07",
-    "8f15b433",
-    "49c421b7",
-    "6a9af09f",
+    "bbba55aa",
+    "bbba55aa",
+    "43debcc1",
+    "06f624ab",
+    "89cee135",
+    "13d01bc2",
+    "54c953f4",
+    "34b446ba",
+    "392a07f4",
+    "72a118e6",
   ],
   "states": 9,
 }
@@ -77,7 +77,7 @@ exports[`CourseCreateForm (pinned DOM + behaviour) > reports server errors and e
 
 exports[`CourseCreateForm (pinned DOM + behaviour) > title typing generates the slug; tags toggle; draft/publish send the payload 1`] = `"mon-cours-react-co"`;
 
-exports[`CourseCreateForm (pinned DOM + behaviour) > title typing generates the slug; tags toggle; draft/publish send the payload 2`] = `"06987d7db81aba9ebd15d07fd29d54a3"`;
+exports[`CourseCreateForm (pinned DOM + behaviour) > title typing generates the slug; tags toggle; draft/publish send the payload 2`] = `"bb9034526def4dd1258025b9790542de"`;
 
 exports[`CourseCreateForm (pinned DOM + behaviour) > title typing generates the slug; tags toggle; draft/publish send the payload 3`] = `
 {
