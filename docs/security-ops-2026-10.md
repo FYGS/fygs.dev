@@ -191,6 +191,26 @@ Redaction is pattern based: free text that contains a person's name without an e
 detected. Do not log free text. Third parties (Stripe dashboard, SMTP provider, analytics) keep their own data
 and are outside this policy.
 
+## 5. Dependency advisories
+
+Audit of the lockfile (`node scripts/audit/lockfile-advisories.mjs pnpm-lock.yaml`; `pnpm audit` is blocked by the corporate proxy, so the script calls the npm bulk advisory endpoint).
+
+| Date | Result |
+| --- | --- |
+| 2026-10-17 | 5 advisories: 1 high, 2 moderate, 2 low |
+| 2026-10-20 | 2 advisories: 1 high, 1 moderate, both without an upstream fix |
+
+Fixed on 2026-10-20:
+- `webpack` 5.99.9 (2 low, `buildHttp` allow-list bypass): the `>=5.105.0` override only constrains peer ranges, the peer still resolved to 5.99.9. `webpack ^5.112.0` is now a direct devDependency, so every peer resolves to it.
+- `postcss-selector-parser` 6.0.10 (moderate, quadratic complexity): `@tailwindcss/typography` pins it exactly; overridden to `>=7.1.7` for that package only.
+
+### Accepted risk (revisit on every dependency update)
+
+| Package | Advisory | Why it is not exploitable here | Revisit when |
+| --- | --- | --- | --- |
+| `braces` <=3.0.3 (high) | GHSA-vfj7-8cjw-p6xm, stack exhaustion on deeply nested brace patterns | No release above 3.0.3 exists. Reached only through `micromatch` <- `fast-glob` <- `intlayer` CLI and `next-pwa` (`globby`): build-time globbing with patterns written in our own configuration. The application code never calls these packages and no request input reaches a glob. | a `braces` release newer than 3.0.3, or `micromatch` 5 |
+| `sprintf-js` <=1.1.3 (moderate) | GHSA-hp3w-g68c-fv3c, unbounded precision specifier | No release above 1.1.3 exists. Reached only through `gray-matter` <- `js-yaml` 3 <- `argparse` 1 (front matter of our own MDX files in `lib/mdx.ts`); the format strings come from the library, not from users. | `gray-matter` 5 or a `sprintf-js` release newer than 1.1.3 |
+
 ## Real Chrome run (CSP)
 
 Chrome (`channel: "chrome"`, Playwright) against a minimal page that has the site's script mix and the real

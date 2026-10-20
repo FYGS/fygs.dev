@@ -1,4 +1,4 @@
-# Platform completion trackerDONE |DONE |DONE |DONE |DONE |DONE |DONE |
+| P5-3 | The 23 remote `dependabot/*` branches are all superseded by the lockfile or no longer in it (list in the log); deleting them on GitHub is outward-facing | OWNER | remote has no stale dependabot branch | DECISION (go-ahead to delete) || P5-2 | Moderate/low advisories: `webpack` (direct devDependency ^5.112) and `postcss-selector-parser` (override) fixed; `sprintf-js` has no fix, documented. Audit: 5 -> 2 | DEV | fixed or documented | DONE || P5-1 | `braces` high advisory: no release above 3.0.3 exists; reached only by build-time globbing; accepted risk documented with a revisit trigger (docs/security-ops-2026-10.md section 5) | DEV | audit shows 0 high or a signed risk note | DONE |# Platform completion trackerDONE |DONE |DONE |DONE |DONE |DONE |DONE |
 
 Source: backlog memory of 2026-10-17 (17 items done) + the leftovers listed after it.
 Goal: nothing left open. Every task has an owner, an acceptance criterion and a status.
@@ -76,3 +76,4 @@ e2e green when a user flow changes, CHANGELOG entry, committed on `feature/refac
 
 - 2026-10-20: tracker created. P0-1 done (owner approved), P0-3 done (owner moved the folder), P1-1 decided: follow the spec (revoke premium access after cancellation).
 - 2026-10-20: P1-1 (access rule), P1-2 (charge.refunded), P1-3 (async_payment_failed; async_payment_succeeded was already handled), P2-1 (DATABASE_URL check), P3-1 (real admin activity), P4-1 (single h1) done. Integration 190+ tests green on embedded Postgres, unit 1650 green, tsc 0, eslint 0.
+- 2026-10-20: P5 done. Lockfile audit 5 -> 2 advisories (both without upstream fix, risk documented). `scripts/audit/lockfile-advisories.mjs` added. Dependabot branches classified: 23/23 superseded.
