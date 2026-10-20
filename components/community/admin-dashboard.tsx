@@ -478,16 +478,18 @@ export function ContentModeration({ discussions, replies, onContentAction }: Con
             variant="outline"
             size="sm"
             onClick={() => handleContentAction(item.id, type, item.isModerated ? "unmoderate" : "moderate")}
+            aria-label={item.isModerated ? "Rendre ce contenu visible" : "Masquer ce contenu"}
           >
-            {item.isModerated ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+            {item.isModerated ? <Eye className="h-4 w-4" aria-hidden="true" /> : <EyeOff className="h-4 w-4" aria-hidden="true" />}
           </Button>
 
           <Button
             variant="outline"
             size="sm"
             onClick={() => handleContentAction(item.id, type, "delete")}
+            aria-label="Supprimer ce contenu"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-4 w-4" aria-hidden="true" />
           </Button>
         </div>
       </div>

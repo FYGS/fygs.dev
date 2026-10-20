@@ -55,10 +55,10 @@ export default function PrivacyPage() {
             <CardContent className="pt-6 space-y-6">
               <div className="space-y-4">
                 <div className="p-4 bg-slate-700/30 rounded-lg">
-                  <h4 className="font-semibold text-lg text-slate-20 mb-3 flex items-center gap-2">
+                  <h3 className="font-semibold text-lg text-slate-20 mb-3 flex items-center gap-2">
                     <User className="w-4 h-4 text-purple-400" />
                     2.1 Identification Information
-                  </h4>
+                  </h3>
                   <ul className="list-disc list-inside space-y-1 text-slate-300 ml-4">
                     <li>Name and surname</li>
                     <li>Email address</li>
@@ -67,10 +67,10 @@ export default function PrivacyPage() {
                   </ul>
                 </div>
                 <div className="p-4 bg-slate-700/30 rounded-lg">
-                  <h4 className="font-semibold text-lg text-slate-20 mb-3 flex items-center gap-2">
+                  <h3 className="font-semibold text-lg text-slate-20 mb-3 flex items-center gap-2">
                     <BarChart className="w-4 h-4 text-blue-400" />
                     2.2 Learning Data
-                  </h4>
+                  </h3>
                   <ul className="list-disc list-inside space-y-1 text-slate-300 ml-4">
                     <li>Course progress</li>
                     <li>Exercise and quiz results</li>
@@ -79,10 +79,10 @@ export default function PrivacyPage() {
                   </ul>
                 </div>
                 <div className="p-4 bg-slate-700/30 rounded-lg">
-                  <h4 className="font-semibold text-lg text-slate-20 mb-3 flex items-center gap-2">
+                  <h3 className="font-semibold text-lg text-slate-20 mb-3 flex items-center gap-2">
                     <Globe className="w-4 h-4 text-green-400" />
                     2.3 Technical Data
-                  </h4>
+                  </h3>
                   <ul className="list-disc list-inside space-y-1 text-slate-300 ml-4">
                     <li>IP address</li>
                     <li>Browser type and operating system</li>
@@ -106,10 +106,10 @@ export default function PrivacyPage() {
             <CardContent className="pt-6 space-y-6">
               <div className="space-y-4">
                 <div className="p-4 bg-slate-700/30 rounded-lg">
-                  <h4 className="font-semibold text-lg text-slate-20 mb-3 flex items-center gap-2">
+                  <h3 className="font-semibold text-lg text-slate-20 mb-3 flex items-center gap-2">
                     <Key className="w-4 h-4 text-purple-400" />
                     3.1 Service Provision
-                  </h4>
+                  </h3>
                   <ul className="list-disc list-inside space-y-1 text-slate-300 ml-4">
                     <li>Create and manage your user account</li>
                     <li>Provide access to courses and content</li>
@@ -118,10 +118,10 @@ export default function PrivacyPage() {
                   </ul>
                 </div>
                 <div className="p-4 bg-slate-700/30 rounded-lg">
-                  <h4 className="font-semibold text-lg text-slate-200 mb-3 flex items-center gap-2">
+                  <h3 className="font-semibold text-lg text-slate-200 mb-3 flex items-center gap-2">
                     <BarChart className="w-4 h-4 text-blue-400" />
                     3.2 Service Improvement
-                  </h4>
+                  </h3>
                   <ul className="list-disc list-inside space-y-1 text-slate-300 ml-4">
                     <li>Analyze platform usage</li>
                     <li>Personalize your learning experience</li>
@@ -130,10 +130,10 @@ export default function PrivacyPage() {
                   </ul>
                 </div>
                 <div className="p-4 bg-slate-700/30 rounded-lg">
-                  <h4 className="font-semibold text-lg text-slate-200 mb-3 flex items-center gap-2">
+                  <h3 className="font-semibold text-lg text-slate-200 mb-3 flex items-center gap-2">
                     <Mail className="w-4 h-4 text-green-400" />
                     3.3 Communication
-                  </h4>
+                  </h3>
                   <ul className="list-disc list-inside space-y-1 text-slate-300 ml-4">
                     <li>Send important notifications</li>
                     <li>Respond to your questions and requests</li>
@@ -156,10 +156,10 @@ export default function PrivacyPage() {
             <CardContent className="pt-6 space-y-6">
               <div className="space-y-4">
                 <div className="p-4 bg-slate-700/30 rounded-lg">
-                  <h4 className="font-semibold text-lg text-slate-20 mb-3 flex items-center gap-2">
+                  <h3 className="font-semibold text-lg text-slate-20 mb-3 flex items-center gap-2">
                     <Cookie className="w-4 h-4 text-purple-400" />
                     4.1 Types of Cookies
-                  </h4>
+                  </h3>
                   <ul className="list-disc list-inside space-y-1 text-slate-300 ml-4">
                     <li><strong>Essential cookies:</strong> Necessary for site functionality</li>
                     <li><strong>Performance cookies:</strong> Analyze site usage</li>
@@ -167,10 +167,10 @@ export default function PrivacyPage() {
                   </ul>
                 </div>
                 <div className="p-4 bg-slate-700/30 rounded-lg">
-                  <h4 className="font-semibold text-lg text-slate-20 mb-3 flex items-center gap-2">
+                  <h3 className="font-semibold text-lg text-slate-20 mb-3 flex items-center gap-2">
                     <Globe className="w-4 h-4 text-blue-400" />
                     4.2 Cookie Management
-                  </h4>
+                  </h3>
                   <p className="text-slate-300 leading-relaxed">
                     You can manage your cookie preferences in your browser settings. Please note that disabling certain cookies may affect the functionality of the platform.
                   </p>
@@ -223,19 +223,19 @@ export default function PrivacyPage() {
               </p>
               <div className="grid md:grid-cols-2 gap-4 mt-4">
                 <div className="p-4 bg-slate-700/30 rounded-lg">
-                  <h4 className="font-semibold text-slate-200">Right of access</h4>
+                  <h3 className="font-semibold text-slate-200">Right of access</h3>
                   <p className="text-sm text-slate-300">Consult your personal data</p>
                 </div>
                 <div className="p-4 bg-slate-700/30 rounded-lg">
-                  <h4 className="font-semibold text-slate-200">Right to rectification</h4>
+                  <h3 className="font-semibold text-slate-200">Right to rectification</h3>
                   <p className="text-sm text-slate-30">Correct your information</p>
                 </div>
                 <div className="p-4 bg-slate-700/30 rounded-lg">
-                  <h4 className="font-semibold text-slate-200">Right to erasure</h4>
+                  <h3 className="font-semibold text-slate-200">Right to erasure</h3>
                   <p className="text-sm text-slate-300">Delete your data</p>
                 </div>
                 <div className="p-4 bg-slate-700/30 rounded-lg">
-                  <h4 className="font-semibold text-slate-20">Right to portability</h4>
+                  <h3 className="font-semibold text-slate-20">Right to portability</h3>
                   <p className="text-sm text-slate-300">Retrieve your data</p>
                 </div>
               </div>

@@ -14,7 +14,6 @@ import {
 import {
   Plus,
   Search,
-  Filter,
   Download,
   Upload,
   MoreHorizontal,
@@ -123,9 +122,6 @@ export function CoursesHeader() {
           </SelectContent>
         </Select>
 
-        <Button variant="outline" size="icon">
-          <Filter className="h-4 w-4" />
-        </Button>
       </div>
     </div>
   );

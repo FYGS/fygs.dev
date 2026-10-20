@@ -119,10 +119,10 @@ export function CourseAnalytics({ courses }: CourseAnalyticsProps) {
 
           {/* Top courses */}
           <div className="space-y-3">
-            <h4 className="text-sm font-medium flex items-center gap-2">
+            <h3 className="text-sm font-medium flex items-center gap-2">
               <Award className="h-4 w-4" />
               Top 5 des cours
-            </h4>
+            </h3>
             
             <div className="space-y-3">
               {courses.slice(0, 5).map((course, index) => (
@@ -180,7 +180,7 @@ export function CourseAnalytics({ courses }: CourseAnalyticsProps) {
                   {/* Actions */}
                   <div className="shrink-0">
                     <Button variant="ghost" size="sm" asChild>
-                      <Link href={`/admin/courses/${course.id}`}>
+                      <Link href={`/admin/courses/${course.id}`} aria-label={`Gérer la formation ${course.title}`}>
                         <ExternalLink className="h-4 w-4" />
                       </Link>
                     </Button>
@@ -193,10 +193,10 @@ export function CourseAnalytics({ courses }: CourseAnalyticsProps) {
           {/* Insights */}
           <div className="border-t pt-4">
             <div className="space-y-2">
-              <h4 className="text-sm font-medium flex items-center gap-2">
+              <h3 className="text-sm font-medium flex items-center gap-2">
                 <TrendingUp className="h-4 w-4" />
                 Insights
-              </h4>
+              </h3>
               <div className="space-y-1 text-xs text-muted-foreground">
                 <p>• Cours le plus rentable: {courses[0]?.title}</p>
                 <p>• Catégorie populaire: {Object.entries(courses.reduce((acc, course) => {

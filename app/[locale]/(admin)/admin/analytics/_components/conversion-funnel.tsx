@@ -52,7 +52,7 @@ function FunnelStep({
           
           <div className="flex-1">
             <div className="flex items-center justify-between">
-              <h4 className="font-medium text-sm">{title}</h4>
+              <h3 className="font-medium text-sm">{title}</h3>
               {conversionRate && (
                 <Badge variant="outline" className="text-xs">
                   {conversionRate.toFixed(1)}%
@@ -174,10 +174,10 @@ export function ConversionFunnel({ data }: ConversionFunnelProps) {
         {/* Insights */}
         <div className="border-t pt-4 mt-6">
           <div className="space-y-2">
-            <h4 className="text-sm font-medium flex items-center gap-2">
+            <h3 className="text-sm font-medium flex items-center gap-2">
               <TrendingDown className="h-4 w-4" />
               Analyse du funnel
-            </h4>
+            </h3>
             <div className="grid grid-cols-2 gap-4 text-xs">
               <div className="space-y-1">
                 <p className="text-muted-foreground">Points forts:</p>

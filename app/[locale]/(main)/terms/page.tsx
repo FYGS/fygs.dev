@@ -93,28 +93,28 @@ export default function TermsPage() {
             <CardContent className="pt-6 space-y-6">
               <div className="space-y-4">
                 <div className="p-4 bg-slate-700/30 rounded-lg">
-                  <h4 className="font-semibold text-lg text-slate-20 mb-2 flex items-center gap-2">
+                  <h3 className="font-semibold text-lg text-slate-20 mb-2 flex items-center gap-2">
                     <Clock className="w-4 h-4 text-purple-400" />
                     3.1 Account Creation
-                  </h4>
+                  </h3>
                   <p className="text-slate-300 leading-relaxed">
                     To access certain features, you must create an account by providing accurate and complete information. You are responsible for maintaining the confidentiality of your credentials.
                   </p>
                 </div>
                 <div className="p-4 bg-slate-700/30 rounded-lg">
-                  <h4 className="font-semibold text-lg text-slate-200 mb-2 flex items-center gap-2">
+                  <h3 className="font-semibold text-lg text-slate-200 mb-2 flex items-center gap-2">
                     <Lock className="w-4 h-4 text-blue-400" />
                     3.2 Eligibility
-                  </h4>
+                  </h3>
                   <p className="text-slate-300 leading-relaxed">
                     You must be at least 16 years old to use this service. If you are between 16 and 18 years old, you must obtain parental consent.
                   </p>
                 </div>
                 <div className="p-4 bg-slate-700/30 rounded-lg">
-                  <h4 className="font-semibold text-lg text-slate-200 mb-2 flex items-center gap-2">
+                  <h3 className="font-semibold text-lg text-slate-200 mb-2 flex items-center gap-2">
                     <Eye className="w-4 h-4 text-green-400" />
                     3.3 Acceptable Use
-                  </h4>
+                  </h3>
                   <p className="text-slate-300 leading-relaxed">
                     You agree to use the platform only for legal purposes and in accordance with these terms. It is prohibited to share your credentials or access content illegally.
                   </p>
@@ -130,19 +130,19 @@ export default function TermsPage() {
             <CardContent className="pt-6 space-y-6">
               <div className="space-y-4">
                 <div className="p-4 bg-slate-700/30 rounded-lg">
-                  <h4 className="font-semibold text-lg text-slate-20 mb-2">4.1 Content Ownership</h4>
+                  <h3 className="font-semibold text-lg text-slate-20 mb-2">4.1 Content Ownership</h3>
                   <p className="text-slate-300 leading-relaxed">
                     All platform content (videos, text, exercises, source code) is protected by copyright and belongs to FYGS or its partners.
                   </p>
                 </div>
                 <div className="p-4 bg-slate-700/30 rounded-lg">
-                  <h4 className="font-semibold text-lg text-slate-20 mb-2">4.2 License of Use</h4>
+                  <h3 className="font-semibold text-lg text-slate-20 mb-2">4.2 License of Use</h3>
                   <p className="text-slate-300 leading-relaxed">
                     We grant you a limited, non-exclusive, and non-transferable license to access content for personal learning purposes only.
                   </p>
                 </div>
                 <div className="p-4 bg-slate-700/30 rounded-lg">
-                  <h4 className="font-semibold text-lg text-slate-20 mb-2">4.3 Restrictions</h4>
+                  <h3 className="font-semibold text-lg text-slate-20 mb-2">4.3 Restrictions</h3>
                   <p className="text-slate-300 leading-relaxed">
                     It is strictly prohibited to copy, distribute, resell, or use the content for commercial purposes without written permission.
                   </p>
@@ -158,13 +158,13 @@ export default function TermsPage() {
             <CardContent className="pt-6 space-y-6">
               <div className="space-y-4">
                 <div className="p-4 bg-slate-700/30 rounded-lg">
-                  <h4 className="font-semibold text-lg text-slate-20 mb-2">5.1 Pricing</h4>
+                  <h3 className="font-semibold text-lg text-slate-20 mb-2">5.1 Pricing</h3>
                   <p className="text-slate-300 leading-relaxed">
                     Prices are displayed in euros including taxes. We reserve the right to change our prices with 30 days&apos; notice.
                   </p>
                 </div>
                 <div className="p-4 bg-slate-700/30 rounded-lg">
-                  <h4 className="font-semibold text-lg text-slate-200 mb-2">5.2 Refund Policy</h4>
+                  <h3 className="font-semibold text-lg text-slate-200 mb-2">5.2 Refund Policy</h3>
                   <p className="text-slate-300 leading-relaxed">
                     You have 14 days to request a full refund if you are not satisfied, provided you have not completed more than 20% of the content.
                   </p>

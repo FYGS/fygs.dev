@@ -75,8 +75,9 @@ export function SearchBar({
             size="sm"
             onClick={handleClear}
             className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+            aria-label="Effacer la recherche"
           >
-            <X className="h-3 w-3" />
+            <X className="h-3 w-3" aria-hidden="true" />
           </Button>
         )}
       </div>

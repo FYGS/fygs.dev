@@ -63,65 +63,72 @@ export function StarRating({
     }
   };
 
-  return (
-    <div 
-      className={cn(
-        'flex items-center gap-0.5',
-        interactive && 'cursor-pointer',
-        className
+  const icon = (starType: 'full' | 'half' | 'empty', index: number) => (
+    <>
+      {starType === 'full' && (
+        <Star className={cn(sizeClasses[size], 'fill-yellow-400 text-yellow-400')} aria-hidden="true" />
       )}
+      {starType === 'half' && (
+        <div className="relative">
+          <Star className={cn(sizeClasses[size], 'text-gray-300')} aria-hidden="true" />
+          <StarHalf
+            className={cn(sizeClasses[size], 'absolute top-0 left-0 fill-yellow-400 text-yellow-400')}
+            aria-hidden="true"
+          />
+        </div>
+      )}
+      {starType === 'empty' && (
+        <Star
+          className={cn(
+            sizeClasses[size],
+            interactive && hoverRating && hoverRating > index ? 'text-yellow-200' : 'text-gray-300'
+          )}
+          aria-hidden="true"
+        />
+      )}
+    </>
+  );
+
+  // Showing a rating is not a control: one image with the value as its name, not five disabled buttons
+  if (!interactive) {
+    const shown = Math.round(rating * 10) / 10;
+    return (
+      <div
+        role="img"
+        aria-label={`Note : ${shown} sur ${maxRating}`}
+        className={cn('flex items-center gap-0.5', className)}
+      >
+        {Array.from({ length: maxRating }).map((_, index) => (
+          <span key={index} className="relative" aria-hidden="true">
+            {icon(getStarType(index), index)}
+          </span>
+        ))}
+      </div>
+    );
+  }
+
+  // Choosing a rating is a radio group: one button per value, named, and one of them checked
+  return (
+    <div
+      role="radiogroup"
+      aria-label="Note"
+      className={cn('flex items-center gap-0.5 cursor-pointer', className)}
       onMouseLeave={handleMouseLeave}
     >
       {Array.from({ length: maxRating }).map((_, index) => {
-        const starType = getStarType(index);
-        
+        const value = index + 1;
         return (
           <button
             key={index}
             type="button"
-            className={cn(
-              'relative transition-colors duration-150',
-              interactive && 'hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded',
-              !interactive && 'pointer-events-none'
-            )}
-            onClick={() => handleStarClick(index + 1)}
-            onMouseEnter={() => handleStarHover(index + 1)}
-            disabled={!interactive}
+            role="radio"
+            aria-checked={Math.round(rating) === value}
+            aria-label={`${value} étoile${value > 1 ? 's' : ''}`}
+            className="relative transition-colors duration-150 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded"
+            onClick={() => handleStarClick(value)}
+            onMouseEnter={() => handleStarHover(value)}
           >
-            {starType === 'full' && (
-              <Star 
-                className={cn(
-                  sizeClasses[size],
-                  'fill-yellow-400 text-yellow-400'
-                )} 
-              />
-            )}
-            {starType === 'half' && (
-              <div className="relative">
-                <Star 
-                  className={cn(
-                    sizeClasses[size],
-                    'text-gray-300'
-                  )} 
-                />
-                <StarHalf 
-                  className={cn(
-                    sizeClasses[size],
-                    'absolute top-0 left-0 fill-yellow-400 text-yellow-400'
-                  )} 
-                />
-              </div>
-            )}
-            {starType === 'empty' && (
-              <Star 
-                className={cn(
-                  sizeClasses[size],
-                  interactive && hoverRating && hoverRating > index 
-                    ? 'text-yellow-200' 
-                    : 'text-gray-300'
-                )} 
-              />
-            )}
+            {icon(getStarType(index), index)}
           </button>
         );
       })}

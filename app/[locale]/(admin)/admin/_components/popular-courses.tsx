@@ -98,9 +98,9 @@ export function PopularCourses({ courses }: PopularCoursesProps) {
                   {/* Course Info */}
                   <div className="flex-1 min-w-0 space-y-2">
                     <div className="flex items-start justify-between gap-2">
-                      <h4 className="font-medium text-sm leading-tight line-clamp-2">
+                      <h3 className="font-medium text-sm leading-tight line-clamp-2">
                         {course.title}
-                      </h4>
+                      </h3>
                       <Badge className={getLevelColor(course.level)}>
                         {formatLevel(course.level)}
                       </Badge>

@@ -199,8 +199,8 @@ export function ReplyCard({
               {(isAuthor || currentUserId) && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                      <MoreHorizontal className="h-3 w-3" />
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0" aria-label="Actions de la réponse">
+                      <MoreHorizontal className="h-3 w-3" aria-hidden="true" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">

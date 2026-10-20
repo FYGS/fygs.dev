@@ -102,12 +102,18 @@ STRIPE_SUBSCRIPTION_PRICE_ID="price_your-subscription-price-id"
 
 **Webhook Configuration:**
 - Endpoint URL: `https://yourdomain.com/api/stripe/webhook`
-- Events to send:
+- Events to send (every one of them is handled; an event that is not listed here is acknowledged and ignored):
   - `checkout.session.completed`
+  - `checkout.session.async_payment_succeeded` (bank debits and other delayed payment methods: the money arrives later)
+  - `checkout.session.async_payment_failed` (the delayed payment failed: the pending payment is marked FAILED and the buyer is told)
   - `customer.subscription.created`
   - `customer.subscription.updated`
   - `customer.subscription.deleted`
+  - `invoice.payment_succeeded`
   - `invoice.payment_failed`
+  - `charge.refunded` (a refund made in the Stripe dashboard: a full refund ends the access bought by that payment, a partial one is only recorded)
+
+After adding events, use "Send test webhook" in the dashboard for `charge.refunded` and check the `webhook.processed` log line. The subscription itself is never cancelled by a refund: stopping future billing stays a decision to take in Stripe.
 
 ## 🚀 Deployment Options
 
@@ -342,14 +348,10 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 ```
 
-**Custom Monitoring:**
-```typescript
-// Add to your monitoring service
-const logError = (error: Error, context: string) => {
-  console.error(`[${context}] ${error.message}`, error.stack);
-  // Send to monitoring service (Sentry, LogRocket, etc.)
-};
-```
+**Error monitoring (Sentry), optional:**
+Nothing is sent unless a DSN is set. With one, server errors (`SENTRY_DSN`) and browser errors (`NEXT_PUBLIC_SENTRY_DSN`, inlined at build time) are reported after `lib/monitoring.ts` has stripped what must not leave: e-mail addresses, IPs, names, cookies, headers, request bodies and query strings. Only an opaque user id is kept. Set `SENTRY_ENVIRONMENT` and `SENTRY_RELEASE` (or `GIT_COMMIT_SHA`) to tell deployments apart. The Content-Security-Policy opens `connect-src` to the DSN's host automatically; rebuild after changing `NEXT_PUBLIC_SENTRY_DSN`.
+
+**Code sandbox (`/sandbox/runner.html`):** exercises and coding challenges run learners' code there, under its own Content-Security-Policy (set in `next.config.mjs`). A reverse proxy must pass the `Content-Security-Policy` header of that path through untouched, and must not add a second one: two policies are intersected and would take `eval` away again.
 
 ### Database Monitoring
 

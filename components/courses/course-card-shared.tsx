@@ -167,7 +167,7 @@ export function CourseCardShared({
             {course.requiredTier &&
               course.requiredTier !== "FREE" &&
               accessState === "LOCKED" && (
-                <Badge className="bg-amber-600 text-white flex items-center gap-1">
+                <Badge className="bg-amber-700 text-white flex items-center gap-1">
                   <Shield className="h-3 w-3" /> {content.badges.premium.value}
                 </Badge>
               )}

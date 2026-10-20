@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Search, Filter } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import Link from "next/link";
 
 interface LessonsHeaderProps {
@@ -90,9 +90,6 @@ export function LessonsHeader({ totalLessons, publishedLessons }: LessonsHeaderP
             </SelectContent>
           </Select>
 
-          <Button variant="outline" size="icon">
-            <Filter className="h-4 w-4" />
-          </Button>
         </div>
       </div>
     </div>

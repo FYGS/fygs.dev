@@ -293,7 +293,7 @@ async function AnalyticsContent() {
                           {discussion.topic?.name}
                         </Badge>
                       </div>
-                      <h4 className="font-medium text-sm truncate">{discussion.title}</h4>
+                      <h3 className="font-medium text-sm truncate">{discussion.title}</h3>
                       <div className="flex items-center gap-2 mt-1 text-xs text-slate-400">
                         <span>by {discussion.author?.name}</span>
                         <span>•</span>

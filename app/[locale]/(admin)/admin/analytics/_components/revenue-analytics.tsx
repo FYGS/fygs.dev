@@ -138,10 +138,10 @@ export function RevenueAnalytics({ data }: RevenueAnalyticsProps) {
           {/* Insights */}
           <div className="border-t pt-4">
             <div className="space-y-2">
-              <h4 className="text-sm font-medium flex items-center gap-2">
+              <h3 className="text-sm font-medium flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
                 Insights
-              </h4>
+              </h3>
               <div className="space-y-1 text-xs text-muted-foreground">
                 <p>• Meilleur mois: {data.reduce((max, item) => item.revenue > max.revenue ? item : max, data[0])?.month.toLocaleDateString('fr-FR', { month: 'long' })}</p>
                 <p>• Croissance moyenne: +{(growthRate / data.length).toFixed(1)}% par mois</p>

@@ -64,6 +64,8 @@ export function FollowTopicButton({
         }}
         disabled={isLoading}
         className="h-6 w-6 p-0"
+        aria-label={following ? "Ne plus suivre ce sujet" : "Suivre ce sujet"}
+        aria-pressed={following}
       >
         {following ? (
           <Heart className="h-3 w-3 fill-current text-red-500" />
