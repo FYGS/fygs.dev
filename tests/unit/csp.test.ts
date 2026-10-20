@@ -4,10 +4,12 @@ import {
   buildGlobalCsp,
   buildPlaygroundCsp,
   buildReportOnlyCsp,
+  buildSandboxCsp,
   CSP_REPORT_PATH,
   NON_PLAYGROUND_SOURCE,
   REPORT_ONLY_HEADER,
   REPORTING_ENDPOINTS_VALUE,
+  SANDBOX_SOURCE,
 } from "@/lib/csp.mjs";
 
 const directive = (policy: string, name: string) =>
@@ -50,6 +52,43 @@ describe("Content-Security-Policy", () => {
     expect(re.test("/fr/tech-mastry/system-design")).toBe(true);
     expect(re.test("/fr/tech-mastry/playground")).toBe(false);
     expect(re.test("/en/tech-mastry/playground")).toBe(false);
+  });
+
+  describe("code sandbox policy", () => {
+    const csp = buildSandboxCsp();
+
+    it("allows eval for the worker and nothing else", () => {
+      expect(directive(csp, "default-src")).toBe("default-src 'none'");
+      expect(directive(csp, "script-src")).toBe("script-src 'self' 'unsafe-eval'");
+      expect(directive(csp, "worker-src")).toBe("worker-src blob:");
+      // no network at all: inherited by the worker, so learners' code cannot send anything anywhere
+      expect(directive(csp, "connect-src")).toBe("connect-src 'none'");
+    });
+
+    it("cannot be framed by another site, nor submit forms, nor change the base URL", () => {
+      expect(directive(csp, "frame-ancestors")).toBe("frame-ancestors 'self'");
+      expect(directive(csp, "form-action")).toBe("form-action 'none'");
+      expect(directive(csp, "base-uri")).toBe("base-uri 'none'");
+    });
+
+    it("does not allow remote scripts, inline scripts or styles", () => {
+      expect(csp).not.toMatch(/https?:/);
+      expect(directive(csp, "script-src")).not.toContain("'unsafe-inline'");
+      expect(directive(csp, "style-src")).toBe(""); // falls back to default-src 'none'
+    });
+
+    it("is served from /sandbox only, which the site-wide policy leaves alone", () => {
+      const sandbox = new RegExp(`^${SANDBOX_SOURCE.replace(":path*", ".*")}$`);
+      expect(sandbox.test("/sandbox/runner.html")).toBe(true);
+      expect(sandbox.test("/sandbox/runner.js")).toBe(true);
+      expect(sandbox.test("/fr/sandbox/runner.html")).toBe(false);
+
+      // two policies on one response are intersected: the sandbox must not get the site-wide one too
+      const global = new RegExp(`^${NON_PLAYGROUND_SOURCE}$`);
+      expect(global.test("/sandbox/runner.html")).toBe(false);
+      expect(global.test("/sandbox/runner.js")).toBe(false);
+      expect(global.test("/fr/blog/sandbox-tips")).toBe(true); // only the real directory is excluded
+    });
   });
 
   describe("report-only candidate policy", () => {

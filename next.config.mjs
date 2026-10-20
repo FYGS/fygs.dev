@@ -12,6 +12,8 @@ import {
   buildReportOnlyCsp,
   CSP_HEADER as cspHeader,
   NON_PLAYGROUND_SOURCE,
+  SANDBOX_SOURCE,
+  buildSandboxCsp,
   REPORT_ONLY_HEADER,
   REPORTING_ENDPOINTS_HEADER,
   REPORTING_ENDPOINTS_VALUE,
@@ -178,6 +180,14 @@ const nextConfig = {
           { key: cspHeader, value: buildGlobalCsp() },
           { key: REPORT_ONLY_HEADER, value: buildReportOnlyCsp() },
           { key: REPORTING_ENDPOINTS_HEADER, value: REPORTING_ENDPOINTS_VALUE },
+        ],
+      },
+      // The code sandbox: its own policy (eval for the worker, nothing else)
+      {
+        source: SANDBOX_SOURCE,
+        headers: [
+          { key: cspHeader, value: buildSandboxCsp() },
+          { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
         ],
       },
       // The playground page is cross-origin isolated (COEP require-corp, needed by
