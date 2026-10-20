@@ -141,6 +141,18 @@ npx prisma generate
 - Configure DNS records as instructed
 - SSL certificates are automatically handled
 
+### Production database connection (Prisma 7 + `pg`)
+
+Prisma 7 reaches PostgreSQL through the `pg` driver adapter. Three differences from the old engine matter in production:
+
+| Topic | Behaviour | What to do |
+|-------|-----------|------------|
+| TLS | The server certificate is **validated**; `sslmode=require`/`prefer`/`verify-ca` behave like `verify-full`. | Use `?sslmode=require`. If the provider uses a private CA, point `NODE_EXTRA_CA_CERTS` at the CA file, otherwise the first query fails with `self-signed certificate in certificate chain`. Never disable verification globally. |
+| URL parameters | `pgbouncer`, `connection_limit`, `pool_timeout`, `socket_timeout` and `statement_cache_size` are **ignored**. | Remove them; the pool uses the `pg` default (10 connections). With PgBouncer in transaction mode, use its own pool size. |
+| Timeout | A connection attempt fails after 5 s (`lib/db.ts`). | A timeout on the first request almost always means a wrong host, port or TLS setting. |
+
+At startup the server logs the problems it can detect from `DATABASE_URL` (`[database] NO_TLS`, `IGNORED_PARAMS`, `TLS_PRIVATE_CA`, ...; see `lib/database-url.ts`). The URL is never logged. Check the deploy logs for `[database]` lines, then confirm with `GET /api/health`.
+
 ### Option 2: Docker Deployment
 
 **Dockerfile:**
