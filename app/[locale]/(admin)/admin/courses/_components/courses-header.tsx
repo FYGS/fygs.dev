@@ -1,128 +1,90 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
+import { Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Plus,
-  Search,
-  Download,
-  Upload,
-  MoreHorizontal,
-} from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
-export function CoursesHeader() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [categoryFilter, setCategoryFilter] = useState("all");
+export const COURSE_STATUS_FILTERS = [
+  { value: "published", label: "Publiés" },
+  { value: "draft", label: "Brouillons" },
+  { value: "featured", label: "Mis en avant" },
+] as const;
 
+export const COURSE_CATEGORY_FILTERS = [
+  { value: "JAVASCRIPT", label: "JavaScript" },
+  { value: "TYPESCRIPT", label: "TypeScript" },
+  { value: "FRONTEND", label: "Frontend" },
+  { value: "BACKEND", label: "Backend" },
+  { value: "FULLSTACK", label: "Fullstack" },
+  { value: "AI", label: "Intelligence Artificielle" },
+  { value: "CLOUD", label: "Cloud" },
+  { value: "DEVOPS", label: "DevOps" },
+  { value: "PRODUCTIVITY", label: "Productivité" },
+] as const;
+
+export interface CourseFilters {
+  q: string;
+  status: string;
+  category: string;
+}
+
+const selectClass = "h-10 rounded-md border border-input bg-background px-3 text-sm w-full sm:w-48";
+
+/** Title, "new course", and the filters as a GET form: the URL carries them, the server applies them. */
+export function CoursesHeader({ filters }: { filters: CourseFilters }) {
+  const filtered = Boolean(filters.q || filters.status || filters.category);
   return (
     <div className="space-y-4">
-      {/* Title and main actions */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold text-gradient-heading">
-            Gestion des Formations
-          </h1>
-          <p className="text-muted-foreground">
-            Créez, modifiez et gérez vos formations et leurs contenus
-          </p>
+          <h1 className="text-3xl font-bold text-gradient-heading">Gestion des Formations</h1>
+          <p className="text-muted-foreground">Créez, modifiez et gérez vos formations et leurs contenus</p>
         </div>
-
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            <Upload className="h-4 w-4 mr-2" />
-            Importer
-          </Button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions groupées</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Download className="h-4 w-4 mr-2" />
-                Exporter la liste
-              </DropdownMenuItem>
-              <DropdownMenuItem>Publier sélectionnés</DropdownMenuItem>
-              <DropdownMenuItem>Archiver sélectionnés</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <Button asChild>
-            <Link href="/admin/courses/new">
-              <Plus className="h-4 w-4 mr-2" />
-              Nouveau cours
-            </Link>
-          </Button>
-        </div>
+        <Button asChild>
+          <Link href="/admin/courses/new">
+            <Plus className="h-4 w-4 mr-2" />
+            Nouveau cours
+          </Link>
+        </Button>
       </div>
 
-      {/* Filters and search */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        {/* Search */}
+      <form method="get" action="/admin/courses" role="search" className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <Input
+            name="q"
+            defaultValue={filters.q}
+            aria-label="Rechercher une formation"
             placeholder="Rechercher par titre, description..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
+            maxLength={100}
           />
         </div>
 
-        {/* Status filter */}
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full sm:w-48" aria-label="Statut">
-            <SelectValue placeholder="Statut" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tous les statuts</SelectItem>
-            <SelectItem value="published">Publiés</SelectItem>
-            <SelectItem value="draft">Brouillons</SelectItem>
-            <SelectItem value="featured">Mis en avant</SelectItem>
-          </SelectContent>
-        </Select>
+        <select name="status" defaultValue={filters.status} aria-label="Statut" className={selectClass}>
+          <option value="">Tous les statuts</option>
+          {COURSE_STATUS_FILTERS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
 
-        {/* Category filter */}
-        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-full sm:w-48" aria-label="Catégorie">
-            <SelectValue placeholder="Catégorie" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Toutes catégories</SelectItem>
-            <SelectItem value="JAVASCRIPT">JavaScript</SelectItem>
-            <SelectItem value="TYPESCRIPT">TypeScript</SelectItem>
-            <SelectItem value="FRONTEND">Frontend</SelectItem>
-            <SelectItem value="BACKEND">Backend</SelectItem>
-            <SelectItem value="FULLSTACK">Fullstack</SelectItem>
-            <SelectItem value="AI">Intelligence Artificielle</SelectItem>
-            <SelectItem value="CLOUD">Cloud</SelectItem>
-            <SelectItem value="DEVOPS">DevOps</SelectItem>
-          </SelectContent>
-        </Select>
+        <select name="category" defaultValue={filters.category} aria-label="Catégorie" className={selectClass}>
+          <option value="">Toutes catégories</option>
+          {COURSE_CATEGORY_FILTERS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
 
-      </div>
+        <Button type="submit">Filtrer</Button>
+        {filtered && (
+          <Button variant="ghost" asChild>
+            <Link href="/admin/courses">Réinitialiser</Link>
+          </Button>
+        )}
+      </form>
     </div>
   );
 }

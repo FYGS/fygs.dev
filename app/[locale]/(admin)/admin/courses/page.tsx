@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
-import { CoursesHeader } from "./_components/courses-header";
+import { COURSE_CATEGORY_FILTERS, CoursesHeader } from "./_components/courses-header";
 import { CoursesTable } from "./_components/courses-table";
 import { CoursesStats } from "./_components/courses-stats";
 import { PaginationService, extractPaginationParams } from "@/lib/pagination-utils";
@@ -29,13 +29,14 @@ async function getCoursesData(searchParams: URLSearchParams, session: { user: { 
   const paginationParams = extractPaginationParams(searchParams);
   
   // Extraire les filtres spécifiques
-  const category = searchParams.get('category') || '';
+  // the values come from the URL: anything the schema does not know is ignored, never handed to the query
+  const category = (COURSE_CATEGORY_FILTERS.find((option) => option.value === searchParams.get('category'))?.value) ?? '';
   const level = searchParams.get('level') || '';
   const status = searchParams.get('status') || '';
   
   // Construire les filtres
   const filters: Record<string, unknown> = {};
-  if (category && category !== 'all') {
+  if (category) {
     filters.category = category;
   }
   if (level && level !== 'all') {
@@ -45,6 +46,8 @@ async function getCoursesData(searchParams: URLSearchParams, session: { user: { 
     filters.published = true;
   } else if (status === 'draft') {
     filters.published = false;
+  } else if (status === 'featured') {
+    filters.featured = true;
   }
 
   // Add instructor ownership filter - ADMIN sees all, INSTRUCTOR sees only their own
@@ -198,7 +201,13 @@ async function CoursesContent({
   return (
     <>
       {/* Header avec actions */}
-      <CoursesHeader />
+      <CoursesHeader
+        filters={{
+          q: searchParams.get('q') || '',
+          status: searchParams.get('status') || '',
+          category: COURSE_CATEGORY_FILTERS.find((option) => option.value === searchParams.get('category'))?.value ?? '',
+        }}
+      />
 
       {/* Statistiques */}
       <CoursesStats stats={stats} />

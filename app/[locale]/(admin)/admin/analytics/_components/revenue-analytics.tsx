@@ -52,7 +52,7 @@ export function RevenueAnalytics({ data }: RevenueAnalyticsProps) {
     ((Number(currentMonth?.revenue) - Number(previousMonth.revenue)) / Number(previousMonth.revenue)) * 100 : 0;
 
   // Trouver le maximum pour la normalisation
-  const maxRevenue = Math.max(...validatedData.map(item => Number(item.revenue)));
+  const maxRevenue = Math.max(0, ...validatedData.map(item => Number(item.revenue)));
 
   return (
     <Card>
@@ -144,7 +144,7 @@ export function RevenueAnalytics({ data }: RevenueAnalyticsProps) {
               </h3>
               <div className="space-y-1 text-xs text-muted-foreground">
                 <p>• Meilleur mois: {data.reduce((max, item) => item.revenue > max.revenue ? item : max, data[0])?.month.toLocaleDateString('fr-FR', { month: 'long' })}</p>
-                <p>• Croissance moyenne: +{(growthRate / data.length).toFixed(1)}% par mois</p>
+                <p>• Revenu moyen: {(data.reduce((sum, item) => sum + item.revenue, 0) / Math.max(1, data.length)).toFixed(0)}€ par mois actif</p>
                 <p>• Tendance: {growthRate > 0 ? 'Croissance' : growthRate < 0 ? 'Décroissance' : 'Stable'}</p>
               </div>
             </div>

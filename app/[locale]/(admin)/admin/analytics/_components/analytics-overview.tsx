@@ -11,6 +11,7 @@ import {
   ArrowDownRight,
   Minus
 } from "lucide-react";
+import { percentChange } from "@/lib/percent-change";
 
 interface AnalyticsOverviewProps {
   stats: {
@@ -18,6 +19,9 @@ interface AnalyticsOverviewProps {
     monthlyRevenue: number;
     monthlyUsers: number;
     monthlyEnrollments: number;
+    previousRevenue: number;
+    previousUsers: number;
+    previousEnrollments: number;
   };
 }
 
@@ -113,60 +117,39 @@ function MetricCard({
   );
 }
 
-export function AnalyticsOverview({ stats }: AnalyticsOverviewProps) {
-  // Calculer les changements (simulés pour l'exemple)
-  const revenueGrowth = 15.2; // +15.2% par rapport au mois précédent
-  const userGrowth = 8.7; // +8.7% par rapport au mois précédent
-  const enrollmentGrowth = 12.4; // +12.4% par rapport au mois précédent
+/** The change with the previous month, or nothing at all when there was nothing to compare with. */
+function monthlyChange(current: number, previous: number, period: string): MetricCardProps["change"] {
+  const value = percentChange(current, previous);
+  if (value === null) return undefined;
+  return { value, type: value > 0 ? "increase" : value < 0 ? "decrease" : "neutral", period };
+}
 
+export function AnalyticsOverview({ stats }: AnalyticsOverviewProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <MetricCard
-        title="Revenus totaux"
-        value={stats.totalRevenue}
-        change={{
-          value: revenueGrowth,
-          type: "increase",
-          period: "vs mois dernier"
-        }}
-        icon={Euro}
-        color="text-green-600"
-        format="currency"
-      />
-      
+      <MetricCard title="Revenus totaux" value={stats.totalRevenue} icon={Euro} color="text-green-600" format="currency" />
+
       <MetricCard
         title="Revenus ce mois"
         value={stats.monthlyRevenue}
-        change={{
-          value: revenueGrowth,
-          type: "increase",
-          period: "vs mois dernier"
-        }}
+        change={monthlyChange(stats.monthlyRevenue, stats.previousRevenue, "vs mois dernier")}
         icon={TrendingUp}
         color="text-blue-600"
         format="currency"
       />
-      
+
       <MetricCard
         title="Nouveaux utilisateurs"
         value={stats.monthlyUsers}
-        change={{
-          value: userGrowth,
-          type: "increase",
-          period: "ce mois"
-        }}
+        change={monthlyChange(stats.monthlyUsers, stats.previousUsers, "vs mois dernier")}
         icon={Users}
         color="text-purple-600"
       />
-      
+
       <MetricCard
         title="Nouvelles inscriptions"
         value={stats.monthlyEnrollments}
-        change={{
-          value: enrollmentGrowth,
-          type: "increase",
-          period: "ce mois"
-        }}
+        change={monthlyChange(stats.monthlyEnrollments, stats.previousEnrollments, "vs mois dernier")}
         icon={BookOpen}
         color="text-orange-600"
       />

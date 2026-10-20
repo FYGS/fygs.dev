@@ -10,9 +10,11 @@ interface UserAnalyticsProps {
     new_users: number;
     total_users: number;
   }>;
+  /** The length of the period shown, in months */
+  months: number;
 }
 
-export function UserAnalytics({ data }: UserAnalyticsProps) {
+export function UserAnalytics({ data, months }: UserAnalyticsProps) {
   // Calculer les métriques
   const totalUsers = data[data.length - 1]?.total_users || 0;
   const newUsersThisMonth = data[data.length - 1]?.new_users || 0;
@@ -25,8 +27,8 @@ export function UserAnalytics({ data }: UserAnalyticsProps) {
     ((currentMonth?.new_users - previousMonth.new_users) / previousMonth.new_users) * 100 : 0;
 
   // Trouver le maximum pour la normalisation
-  const maxNewUsers = Math.max(...data.map(item => item.new_users));
-  const maxTotalUsers = Math.max(...data.map(item => item.total_users));
+  const maxNewUsers = Math.max(0, ...data.map(item => item.new_users));
+  const maxTotalUsers = Math.max(0, ...data.map(item => item.total_users));
 
   return (
     <Card>
@@ -55,7 +57,7 @@ export function UserAnalytics({ data }: UserAnalyticsProps) {
               <p className="text-xl font-bold text-blue-600">+{newUsersThisMonth}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">Sur 12 mois</p>
+              <p className="text-xs text-muted-foreground">Sur {months} mois</p>
               <p className="text-xl font-bold">+{totalNewUsers}</p>
             </div>
           </div>

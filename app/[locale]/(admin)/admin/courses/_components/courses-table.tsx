@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -26,7 +25,6 @@ import {
   Edit,
   Eye,
   Trash2,
-  Copy,
   Star,
   Users,
   BookOpen,
@@ -75,25 +73,8 @@ interface CoursesTableProps {
 }
 
 export function CoursesTable({ courses, pagination }: CoursesTableProps) {
-  const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const router = useRouter();
-
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedCourses(courses.map(course => course.id));
-    } else {
-      setSelectedCourses([]);
-    }
-  };
-
-  const handleSelectCourse = (courseId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedCourses(prev => [...prev, courseId]);
-    } else {
-      setSelectedCourses(prev => prev.filter(id => id !== courseId));
-    }
-  };
 
   const handleDeleteCourse = async (courseId: string) => {
     setIsDeleting(courseId);
@@ -150,39 +131,11 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
 
   return (
     <div className="space-y-4">
-      {/* Selection info */}
-      {selectedCourses.length > 0 && (
-        <div className="flex items-center justify-between p-4 bg-primary/10 rounded-lg border border-primary/20">
-          <span className="text-sm font-medium">
-            {selectedCourses.length} cours sélectionné(s)
-          </span>
-          <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline">
-              Publier
-            </Button>
-            <Button size="sm" variant="outline">
-              Archiver
-            </Button>
-            <Button size="sm" variant="destructive">
-              Supprimer
-            </Button>
-          </div>
-        </div>
-      )}
-
       {/* Table */}
       <div className="rounded-lg border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-12">
-                <span className="sr-only">Sélection</span>
-                <Checkbox
-                  checked={selectedCourses.length === courses.length}
-                  onCheckedChange={handleSelectAll}
-                  aria-label="Sélectionner toutes les formations"
-                />
-              </TableHead>
               <TableHead>Cours</TableHead>
               <TableHead>Statut</TableHead>
               <TableHead>Niveau</TableHead>
@@ -199,7 +152,7 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
           <TableBody>
             {courses.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} className="text-center py-8">
+                <TableCell colSpan={9} className="text-center py-8">
                   <div className="flex flex-col items-center gap-2 text-muted-foreground">
                     <BookOpen className="h-8 w-8 opacity-50" />
                     <p>Aucun cours trouvé</p>
@@ -209,16 +162,6 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
             ) : (
               courses.map((course) => (
                 <TableRow key={course.id} className="group hover:bg-muted/50">
-                  <TableCell>
-                    <Checkbox
-                      aria-label={`Sélectionner ${course.title}`}
-                      checked={selectedCourses.includes(course.id)}
-                      onCheckedChange={(checked) => 
-                        handleSelectCourse(course.id, checked as boolean)
-                      }
-                    />
-                  </TableCell>
-                  
                   <TableCell>
                     <div className="space-y-2">
                       <div className="flex items-start gap-3">
@@ -353,10 +296,6 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
                             <Edit className="h-4 w-4 mr-2" />
                             Modifier
                           </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Copy className="h-4 w-4 mr-2" />
-                          Dupliquer
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <ConfirmationModal
