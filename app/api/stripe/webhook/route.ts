@@ -8,6 +8,8 @@ import { handleSubscriptionUpserted } from "./_handlers/subscription-upserted";
 import { handleSubscriptionDeleted } from "./_handlers/subscription-deleted";
 import { handleInvoicePaymentSucceeded } from "./_handlers/invoice-payment-succeeded";
 import { handleInvoicePaymentFailed } from "./_handlers/invoice-payment-failed";
+import { handleChargeRefunded } from "./_handlers/charge-refunded";
+import { handleCheckoutAsyncPaymentFailed } from "./_handlers/checkout-async-payment-failed";
 
 // Disable body parsing for webhooks
 export const runtime = "nodejs";
@@ -87,6 +89,16 @@ export async function POST(req: NextRequest) {
       case "checkout.session.completed":
       case "checkout.session.async_payment_succeeded": {
         await handleCheckoutSessionCompleted(event);
+        break;
+      }
+
+      case "checkout.session.async_payment_failed": {
+        await handleCheckoutAsyncPaymentFailed(event);
+        break;
+      }
+
+      case "charge.refunded": {
+        await handleChargeRefunded(event);
         break;
       }
 

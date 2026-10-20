@@ -24,6 +24,10 @@ function table(name: string, calls: unknown[]) {
       calls.push([`${name}.findFirst`, args.where]);
       return find(args.where) ?? null;
     },
+    findMany: async (args: { where?: Row } = {}) => {
+      calls.push([`${name}.findMany`, args.where]);
+      return rows.filter((r) => matches(r, args.where));
+    },
     findUnique: async (args: { where: Row }) => {
       calls.push([`${name}.findUnique`, args.where]);
       const compound = args.where.userId_courseId;

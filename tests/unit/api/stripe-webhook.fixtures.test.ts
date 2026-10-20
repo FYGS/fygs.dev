@@ -336,12 +336,58 @@ describe("invoice.payment_failed", () => {
   });
 });
 
-describe("events that are acknowledged without action", () => {
-  it("charge.refunded (a refund made in the dashboard) is acknowledged, nothing changes", async () => {
-    seedCheckoutPlaceholders("course");
-    const before = JSON.stringify(payments());
+describe("charge.refunded (a refund made in the Stripe dashboard)", () => {
+  const refundedIntent = f.chargeRefundedEvent.data.object.payment_intent;
+
+  function seedCompletedPurchase(stripePaymentIntentId: string) {
+    payments().push({
+      id: "paid_course",
+      userId: "user_1",
+      courseId: "course_1",
+      kind: PaymentKind.COURSE,
+      status: PaymentStatus.COMPLETED,
+      stripePaymentIntentId,
+      amount: 9,
+    });
+  }
+
+  it("marks the matching payment REFUNDED and records an audit row", async () => {
+    seedCompletedPurchase(refundedIntent);
+
     const res = await deliver(f.chargeRefundedEvent);
+
+    expect(res).toEqual({ status: 200, body: { received: true } });
+    expect(payments()[0].status).toBe(PaymentStatus.REFUNDED);
+    expect(mem().db.invoiceAudit.rows).toHaveLength(1);
+    expect(mem().db.invoiceAudit.rows[0]).toMatchObject({
+      userId: "user_1",
+      paymentId: "paid_course",
+      type: "CHARGE_REFUNDED",
+      currency: "eur",
+    });
+  });
+
+  it("acknowledges a refund that matches no payment and changes nothing", async () => {
+    seedCompletedPurchase("pi_other");
+    const before = JSON.stringify(payments());
+
+    const res = await deliver(f.chargeRefundedEvent);
+
     expect(res).toEqual({ status: 200, body: { received: true } });
     expect(JSON.stringify(payments())).toBe(before);
+    expect(mem().db.invoiceAudit.rows).toHaveLength(0);
+  });
+
+  it("a partial refund is audited and leaves the payment COMPLETED", async () => {
+    seedCompletedPurchase(refundedIntent);
+    const partial = clone(f.chargeRefundedEvent);
+    partial.data.object.refunded = false;
+    partial.data.object.amount_refunded = 300;
+
+    const res = await deliver(partial);
+
+    expect(res.status).toBe(200);
+    expect(payments()[0].status).toBe(PaymentStatus.COMPLETED);
+    expect(mem().db.invoiceAudit.rows).toHaveLength(1);
   });
 });
