@@ -46,7 +46,7 @@ e2e green when a user flow changes, CHANGELOG entry, committed on `feature/refac
 | P3-4 | Review e-mails (new review -> instructor, reply -> reviewer, report -> moderators, weekly summary) were all failing silently on a shape mismatch hidden by `as any`; the service now loads by id; the bulk mode that only logged now sends | DEV | integration tests on a real database with the mail provider mocked | DONE |
 | P3-5 | Sentry (error monitoring) wired with PII redaction, release tag, source maps | DEV + OWNER (DSN) | test error visible in Sentry | TODO |
 | P3-6 | Coding challenges (`tech-mastry/challenges`) run a SIMULATION (`createMockSubmissionResult`), the leaderboard and analytics are static: run the user's code for real (the playground already has a runner), then call `trackChallengeComplete` on a real pass | DEV | a failing and a passing submission behave differently, test cases really executed | TODO |
-| P3-7 | Lesson page "Ressources" card shows the same generic bullets for every lesson (`lesson-content.tsx`): read real resources/objectives from the lesson or hide the card | DEV | no placeholder text left in lesson pages | TODO |
+| P3-7 | Lesson pages no longer show a "Ressources" card that repeated the same four generic bullets on every lesson (there is no per-lesson resources data) | DEV | no placeholder text left in lesson pages | DONE |
 
 ## Phase 4: Accessibility and quality
 
@@ -81,3 +81,4 @@ e2e green when a user flow changes, CHANGELOG entry, committed on `feature/refac
 - 2026-10-20: P5 done. Lockfile audit 5 -> 2 advisories (both without upstream fix, risk documented). `scripts/audit/lockfile-advisories.mjs` added. Dependabot branches classified: 23/23 superseded.
 - 2026-10-20: P3-2 (TechMastery dashboard on real progress) and P4-4 (quiz sittings) done. New findings: P3-6 (challenge execution is simulated), P3-7 (lesson resources placeholder).
 - 2026-10-20: P3-4 done: three review notifications never reached anyone (wrong relation names, missing `course`), fixed and tested.
+- 2026-10-20: P3-7 done.

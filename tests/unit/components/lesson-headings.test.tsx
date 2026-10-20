@@ -41,6 +41,18 @@ describe("lesson headings (WCAG 1.3.1: one h1 per page)", () => {
     expect(h1s[0].textContent).toBe("My lesson");
   });
 
+  it("shows nothing that is not about this lesson (no generic 'Ressources' card)", () => {
+    const { container } = render(
+      <LessonContent
+        lesson={{ id: "l1", title: "My lesson", description: "About it", content: body, duration: 600, order: 1 }}
+      />,
+    );
+
+    expect(container.textContent).not.toContain("Ressources");
+    expect(container.textContent).not.toContain("Les concepts fondamentaux abordés");
+    expect(container.textContent).toContain("Contenu de la leçon");
+  });
+
   it("markdown embedded in a page that has its own title does not add an <h1> either", () => {
     const { container } = render(<MarkdownRenderer content={body} />);
 

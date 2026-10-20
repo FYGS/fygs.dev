@@ -79,43 +79,6 @@ export function LessonContent({ lesson }: LessonContentProps) {
           </CardContent>
         </Card>
       )}
-
-      {/* Resources Section */}
-      <Card className="bg-gradient-to-br from-card via-card to-card/90 border-border/50 shadow-xl hover:shadow-2xl transition-all duration-300">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-foreground text-xl">Ressources</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="text-foreground/85">
-            <h4 className="font-semibold mb-3 text-lg text-foreground">
-              Dans cette leçon, vous apprendrez :
-            </h4>
-            <ul className="list-disc list-inside space-y-2 text-sm">
-              <li className="text-muted-foreground leading-relaxed">
-                Les concepts fondamentaux abordés
-              </li>
-              <li className="text-muted-foreground leading-relaxed">
-                Les bonnes pratiques à retenir
-              </li>
-              <li className="text-muted-foreground leading-relaxed">
-                Les exercices pratiques à réaliser
-              </li>
-              <li className="text-muted-foreground leading-relaxed">
-                Les ressources complémentaires
-              </li>
-            </ul>
-          </div>
-
-          <div className="pt-4 border-t border-border/50">
-            <p className="text-sm text-muted-foreground leading-relaxed bg-primary/10 border-l-4 border-primary/50 p-4 rounded-r-lg">
-              💡 <strong className="text-primary">Conseil :</strong> Prenez des
-              notes pendant la vidéo et n&apos;hésitez pas à revenir sur les
-              parties importantes. La pratique est essentielle pour maîtriser
-              ces concepts.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
