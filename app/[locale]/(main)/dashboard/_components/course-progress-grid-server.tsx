@@ -12,7 +12,7 @@ export async function CourseProgressGridServer() {
 
   // Mirror logic from /api/progress/summary but simplified (no ETag / justEarned flag needed for initial render)
   const [enrollments, progresses, certificates, lessons] = await Promise.all([
-    db.enrollment.findMany({ where: { userId }, select: { courseId: true } }),
+    db.enrollment.findMany({ where: { userId }, select: { courseId: true, course: { select: { title: true, slug: true } } } }),
     db.progress.findMany({ where: { userId }, select: { lessonId: true, completed: true, lesson: { select: { courseId: true } } } }),
     db.certificate.findMany({ where: { userId }, select: { courseId: true } }),
     db.lesson.findMany({ where: { published: true }, select: { id: true, courseId: true } }),
@@ -40,7 +40,7 @@ export async function CourseProgressGridServer() {
     const completedLessons = completedSet.size;
     const percent = totalLessons === 0 ? 0 : Math.round((completedLessons / totalLessons) * 100);
     const hasCertificate = certSet.has(e.courseId) || percent === 100;
-    return { courseId: e.courseId, totalLessons, completedLessons, percent, hasCertificate };
+    return { courseId: e.courseId, title: e.course.title, slug: e.course.slug, totalLessons, completedLessons, percent, hasCertificate };
   });
 
   // Reproduce ETag hash logic identical to API route

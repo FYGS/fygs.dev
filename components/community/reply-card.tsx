@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { formatDistanceToNow } from "date-fns";
-import { ArrowUp, ArrowDown, MessageCircle, MoreHorizontal, Flag, Edit2, Trash2 } from "lucide-react";
+import { ArrowUp, ArrowDown, MessageCircle, MoreHorizontal, Edit2, Trash2 } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 
@@ -196,7 +196,7 @@ export function ReplyCard({
                 {reply.updatedAt !== reply.createdAt && " (edited)"}
               </span>
               
-              {(isAuthor || currentUserId) && (
+              {isAuthor && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="h-6 w-6 p-0" aria-label="Actions de la réponse">
@@ -218,12 +218,6 @@ export function ReplyCard({
                           Delete
                         </DropdownMenuItem>
                       </>
-                    )}
-                    {!isAuthor && currentUserId && (
-                      <DropdownMenuItem>
-                        <Flag className="h-4 w-4 mr-2" />
-                        Report
-                      </DropdownMenuItem>
                     )}
                   </DropdownMenuContent>
                 </DropdownMenu>

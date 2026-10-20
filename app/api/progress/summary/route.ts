@@ -69,7 +69,10 @@ export async function GET(request: Request) {
 
   // Fetch all published lessons + progresses in two queries then aggregate in memory
   const [enrollments, progresses, certificates, lessons] = await Promise.all([
-    db.enrollment.findMany({ where: { userId }, select: { courseId: true } }),
+    db.enrollment.findMany({
+      where: { userId },
+      select: { courseId: true, course: { select: { title: true, slug: true } } },
+    }),
     db.progress.findMany({
       where: { userId },
       select: {
@@ -118,6 +121,8 @@ export async function GET(request: Request) {
       justEarnedCertificate = true;
     return {
       courseId: e.courseId,
+      title: e.course.title,
+      slug: e.course.slug,
       totalLessons,
       completedLessons,
       percent,

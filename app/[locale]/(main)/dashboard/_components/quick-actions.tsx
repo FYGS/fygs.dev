@@ -4,9 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   BookOpen,
   Search,
-  Calendar,
   MessageCircle,
-  Download,
   Zap,
   Target,
   CreditCard,
@@ -32,13 +30,6 @@ export function QuickActions() {
       color: "bg-green-500/10 text-green-600 hover:bg-green-500/20"
     },
     {
-      title: "Planifier une session",
-      description: "Organisez votre apprentissage",
-      icon: Calendar,
-      href: "/dashboard/schedule",
-      color: "bg-purple-500/10 text-purple-600 hover:bg-purple-500/20"
-    },
-    {
       title: "Communauté",
       description: "Rejoignez les discussions",
       icon: MessageCircle,
@@ -47,17 +38,10 @@ export function QuickActions() {
       badge: "Nouveau"
     },
     {
-      title: "Téléchargements",
-      description: "Ressources et certificats",
-      icon: Download,
-      href: "/dashboard/downloads",
-      color: "bg-indigo-500/10 text-indigo-600 hover:bg-indigo-500/20"
-    },
-    {
       title: "Défis rapides",
       description: "Exercices de 5 minutes",
       icon: Zap,
-      href: "/challenges",
+      href: "/tech-mastry/challenges",
       color: "bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20",
       badge: "⚡"
     },
@@ -87,7 +71,7 @@ export function QuickActions() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
           {actions.map((action) => (
             <Button
               key={action.href}

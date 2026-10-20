@@ -8,6 +8,8 @@ import { Download } from 'lucide-react';
 
 export interface Summary {
   courseId: string;
+  title?: string;
+  slug?: string;
   percent: number;
   completedLessons: number;
   totalLessons: number;
@@ -157,7 +159,7 @@ export function CourseProgressGrid({ initialData, refreshIntervalMs = 60000, ini
               </span>
             )}
             <div className="flex items-center justify-between">
-              <h3 className="font-medium text-sm">Cours #{c.courseId.slice(0,6)}</h3>
+              <h3 className="font-medium text-sm">{c.title ?? `Cours #${c.courseId.slice(0,6)}`}</h3>
               {c.hasCertificate && <span className="text-xs px-2 py-0.5 rounded bg-primary/20 text-foreground">Certificat</span>}
             </div>
             <div className="h-2 w-full bg-muted rounded overflow-hidden">
@@ -168,7 +170,7 @@ export function CourseProgressGrid({ initialData, refreshIntervalMs = 60000, ini
               <span>{pct}%</span>
             </div>
             <div className="flex justify-between items-center gap-2">
-              <Link href={`/dashboard/courses/${c.courseId}`} className="text-xs underline">Ouvrir</Link>
+              {c.slug ? <Link href={`/formations/${c.slug}`} className="text-xs underline">Ouvrir</Link> : <span />}
               {c.hasCertificate && (
                 <div className="flex items-center gap-1">
                   <Link href={`/certificates/${c.courseId}`} className="text-xs underline" title="Voir le certificat">Voir</Link>

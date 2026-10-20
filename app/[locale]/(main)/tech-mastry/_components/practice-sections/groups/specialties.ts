@@ -185,7 +185,7 @@ export const specialtiesSections: Section[] = [
   {
     title: "Code Playground",
     description:
-      "Environnement de codage interactif avec exécution temps réel et collaboration.",
+      "Environnement de codage interactif avec exécution temps réel et partage par lien.",
     icon: Code2,
     href: "/tech-mastry/playground",
     color: "text-lime-500",

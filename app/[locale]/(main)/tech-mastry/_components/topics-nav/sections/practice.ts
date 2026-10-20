@@ -208,13 +208,6 @@ export const practiceTopics: TopicSection[] = [
         badge: "Nouveau",
       },
       {
-        title: "Collaboration",
-        href: "/tech-mastry/collaboration",
-        icon: Code2,
-        description: "Codage collaboratif en temps réel",
-        badge: "Beta",
-      },
-      {
         title: "Architecture Studio",
         href: "/tech-mastry/system-design/architecture",
         icon: BrainCircuit,

@@ -9,8 +9,6 @@ import {
   MessageSquare,
   Puzzle,
   Code2,
-  CalendarCheck,
-  HelpCircle,
   DollarSign,
   ArrowRight,
 } from "lucide-react";
@@ -57,27 +55,6 @@ const practices: Practice[] = [
     icon: Code2,
     color: "text-cyan-400",
     gradient: "from-cyan-500/10 to-cyan-500/5",
-  },
-  {
-    title: "Préparation",
-    description:
-      "Comment se préparer efficacement pour un entretien technique.",
-    category: "Organisation",
-    topics: ["Planning", "Mock Interviews", "Resources", "Timeline"],
-    href: "/tech-mastry/best-practices/preparation",
-    icon: CalendarCheck,
-    color: "text-yellow-400",
-    gradient: "from-yellow-500/10 to-yellow-500/5",
-  },
-  {
-    title: "Questions & Réponses",
-    description: "Questions courantes et stratégies de réponse efficaces.",
-    category: "Soft Skills",
-    topics: ["Behavioral", "Technical", "Culture Fit", "Follow-up"],
-    href: "/tech-mastry/best-practices/qa",
-    icon: HelpCircle,
-    color: "text-purple-400",
-    gradient: "from-purple-500/10 to-purple-500/5",
   },
   {
     title: "Négociation",
