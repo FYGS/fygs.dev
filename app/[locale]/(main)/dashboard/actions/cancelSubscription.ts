@@ -175,6 +175,7 @@ export async function cancelSubscription(
               reason: refundInfo.reason,
               immediate: shouldCancelImmediately,
               inTrialPeriod: isInTrialPeriod,
+              userReason: reason ?? null,
             },
           },
         });
@@ -217,18 +218,7 @@ export async function cancelSubscription(
           timestamp: cancelTimestamp.toISOString(),
         }
       );
-
-      if (refundInfo.eligible) {
-        await AnalyticsHelper.recordRefund(userId, {
-          originalAmount: 0, // TODO: Get actual amount from subscription
-          refundAmount: 0, // TODO: Calculate refund amount
-          currency: "EUR",
-          reason: reason || "User initiated",
-          eligibilityWindow: 14,
-          subscriptionId: subscription.id,
-          timestamp: cancelTimestamp.toISOString(),
-        });
-      }
+      // No refund event here: this action never refunds, requestRefund does (and records the real amount)
     } catch (analyticsError) {
       console.warn("Cancellation analytics failed", analyticsError);
     }

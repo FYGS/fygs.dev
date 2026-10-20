@@ -15,7 +15,7 @@ import Link from "next/link";
 import { BillingActions } from "@/components/billing/billing-actions";
 import { RefundButton } from "@/components/billing/refund-button";
 import { SubscriptionStatus } from "@/lib/generated/prisma/browser";
-import { classifyBillingCycle, getSubscriptionPrices } from "@/lib";
+import { classifyBillingCycle } from "@/lib";
 
 export const metadata: Metadata = {
   title: "Facturation & Abonnement | FYGS Learning Platform",
@@ -122,7 +122,6 @@ export default async function BillingPage() {
 
   const hasActiveSubscription = await AccessService.hasActiveSubscription(session.user.id);
   const subscription = user.subscriptions;
-  const prices = getSubscriptionPrices();
   
   // Get billing cycle for display
   const billingCycle = subscription?.priceId ? classifyBillingCycle(subscription.priceId) : 'unknown';
@@ -142,11 +141,6 @@ export default async function BillingPage() {
     };
   }
   
-  // Only expose semantic identifiers to the client; raw Stripe IDs stay server-side
-  const availablePrices = [
-    prices.monthly ? { id: 'monthly', label: 'Mensuel', amount: 29 } : null,
-    prices.yearly ? { id: 'yearly', label: 'Annuel (2 mois offerts)', amount: 290 } : null,
-  ].filter(Boolean) as { id: string; label: string; amount: number }[];
 
   return (
     <div className="min-h-screen bg-linear-to-br from-background via-background to-muted/20">
@@ -240,7 +234,6 @@ export default async function BillingPage() {
                       </div>
 
                       {subscription.cancelAtPeriodEnd && (
-                        <div className="space-y-4">
                           <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                             <div className="flex items-start gap-3">
                               <AlertCircle className="h-5 w-5 text-orange-600 mt-0.5" />
@@ -252,9 +245,11 @@ export default async function BillingPage() {
                               </div>
                             </div>
                           </div>
-                          
+                      )}
+
+                      <div className="space-y-4">
                           {/* Refund Eligibility Display */}
-                          {refundInfo && (
+                          {refundInfo && subscription.status === SubscriptionStatus.ACTIVE && (
                             <div className={`rounded-lg p-4 border ${
                               refundInfo.eligible 
                                 ? 'bg-green-50 border-green-200' 
@@ -297,8 +292,7 @@ export default async function BillingPage() {
                               </div>
                             </div>
                           )}
-                        </div>
-                      )}
+                      </div>
 
                       <div className="flex gap-3">
                         <Button asChild className="bg-amber-500 hover:bg-amber-600 text-black">
@@ -313,16 +307,6 @@ export default async function BillingPage() {
                             Explorer les formations
                           </Link>
                         </Button>
-                      </div>
-                      <div className="mt-6">
-                        <BillingActions
-                          currentPriceId={subscription.priceId}
-                          currentCycle={billingCycle}
-                          subscriptionStatus={subscription.status}
-                          cancelAtPeriodEnd={subscription.cancelAtPeriodEnd}
-                          // Provide semantic cycle identifiers with amounts for better UX
-                          availablePrices={availablePrices}
-                        />
                       </div>
                     </>
                   ) : (
@@ -455,11 +439,9 @@ export default async function BillingPage() {
                 <CardContent className="space-y-4">
                   {subscription ? (
                     <BillingActions
-                      currentPriceId={subscription.priceId}
-                      currentCycle={billingCycle}
-                      availablePrices={availablePrices}
                       subscriptionStatus={subscription.status}
                       cancelAtPeriodEnd={subscription.cancelAtPeriodEnd}
+                      periodEnd={subscription.currentPeriodEnd ? formatDate(subscription.currentPeriodEnd) : null}
                     />
                   ) : (
                     <p className="text-sm text-muted-foreground">Aucun abonnement actif.</p>
