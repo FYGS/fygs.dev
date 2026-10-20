@@ -77,19 +77,19 @@ describe("InterviewSimulator rendering", () => {
     expect(states).toBeGreaterThanOrEqual(3);
     expect(hashes).toMatchInlineSnapshot(`
       [
-        "7598bd16",
-        "7598bd16",
-        "7598bd16",
-        "7598bd16",
-        "7598bd16",
-        "7598bd16",
-        "7598bd16",
-        "7598bd16",
-        "7598bd16",
-        "7598bd16",
-        "6a1d56b1",
+        "b4e9c254",
+        "b4e9c254",
+        "b4e9c254",
+        "b4e9c254",
+        "b4e9c254",
+        "b4e9c254",
+        "b4e9c254",
+        "b4e9c254",
+        "b4e9c254",
+        "b4e9c254",
+        "b9724f3d",
         "485d3090",
-        "a8c20652",
+        "9e1ce3f4",
       ]
     `);
   });
