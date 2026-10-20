@@ -4,29 +4,38 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, TrendingUp } from "lucide-react";
 
-// Données simulées pour la croissance des utilisateurs
-const userGrowthData = [
-  { month: "Jan", users: 120, newUsers: 25 },
-  { month: "Fév", users: 145, newUsers: 32 },
-  { month: "Mar", users: 180, newUsers: 45 },
-  { month: "Avr", users: 220, newUsers: 38 },
-  { month: "Mai", users: 265, newUsers: 52 },
-  { month: "Juin", users: 310, newUsers: 48 },
-  { month: "Juil", users: 365, newUsers: 65 },
-  { month: "Août", users: 420, newUsers: 58 },
-  { month: "Sep", users: 485, newUsers: 72 },
-  { month: "Oct", users: 560, newUsers: 68 },
-  { month: "Nov", users: 635, newUsers: 85 },
-  { month: "Déc", users: 720, newUsers: 92 },
-];
+export interface UserGrowthPoint {
+  month: Date;
+  new_users: number;
+  total_users: number;
+}
 
-export function UserGrowthChart() {
+const monthLabel = (month: Date) => new Date(month).toLocaleDateString("fr-FR", { month: "short", timeZone: "UTC" });
+
+/** Registrations over the last twelve months: the real figures, passed in by the page. */
+export function UserGrowthChart({ data }: { data: UserGrowthPoint[] }) {
+  const userGrowthData = data.map((point) => ({ month: monthLabel(point.month), users: point.total_users, newUsers: point.new_users }));
+  if (userGrowthData.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Croissance utilisateurs
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">Aucune inscription sur les douze derniers mois.</p>
+        </CardContent>
+      </Card>
+    );
+  }
   const totalUsers = userGrowthData[userGrowthData.length - 1].users;
-  const previousMonthUsers = userGrowthData[userGrowthData.length - 2].users;
-  const growthRate = ((totalUsers - previousMonthUsers) / previousMonthUsers) * 100;
-  
-  const maxUsers = Math.max(...userGrowthData.map(item => item.users));
-  const maxNewUsers = Math.max(...userGrowthData.map(item => item.newUsers));
+  const previous = userGrowthData[userGrowthData.length - 2];
+  const growthRate = previous && previous.newUsers > 0 ? ((userGrowthData[userGrowthData.length - 1].newUsers - previous.newUsers) / previous.newUsers) * 100 : null;
+
+  const maxUsers = Math.max(1, ...userGrowthData.map(item => item.users));
+  const maxNewUsers = Math.max(1, ...userGrowthData.map(item => item.newUsers));
 
   return (
     <Card>
@@ -36,10 +45,12 @@ export function UserGrowthChart() {
             <Users className="h-5 w-5" />
             Croissance utilisateurs
           </CardTitle>
-          <Badge variant="default">
-            <TrendingUp className="h-3 w-3 mr-1" />
-            +{growthRate.toFixed(1)}%
-          </Badge>
+          {growthRate !== null && (
+            <Badge variant={growthRate >= 0 ? "default" : "destructive"}>
+              <TrendingUp className="h-3 w-3 mr-1" />
+              {growthRate >= 0 ? "+" : ""}{growthRate.toFixed(1)}% d&apos;inscriptions vs mois précédent
+            </Badge>
+          )}
         </div>
       </CardHeader>
       <CardContent>

@@ -9,7 +9,7 @@ import { paymentService } from '@/lib/payment-service'
 import { AnalyticsHelper } from '@/lib/analytics-helper'
 import { getSubscriptionPeriod } from '@/lib/stripe-shapes'
 import { resolveRequestedPriceId } from '@/lib/subscription-pricing'
-import { Prisma, SubscriptionStatus } from '@/lib/generated/prisma/browser'
+import { SubscriptionStatus } from '@/lib/generated/prisma/browser'
 
 const switchPlanSchema = z.object({
   newPriceId: z.string().min(1, 'Price ID is required'),
@@ -23,11 +23,6 @@ export type SwitchSubscriptionPlanResult = {
     priceId: string
     status: string
     currentPeriodEnd: Date | null
-  }
-  proration?: {
-    amount: number
-    description: string
-    creditAmount?: number
   }
   auditId?: string
   error?: string
@@ -89,7 +84,7 @@ export async function switchSubscriptionPlan(
     // Validate price ID
     let resolvedPriceInfo: { priceId: string; cycle: 'monthly' | 'yearly' }
     try {
-      resolvedPriceInfo = resolveRequestedPriceId(newPriceId)
+      resolvedPriceInfo = resolveRequestedPriceId(newPriceId, { strict: true })
     } catch {
       return {
         success: false,
@@ -131,48 +126,21 @@ export async function switchSubscriptionPlan(
       }
     })
 
-    // Calculate proration information
-    const oldCycle = subscription.priceId?.includes('yearly') ? 'yearly' : 'monthly'
+    // Only two cycles exist and the plan is different from the current one
     const newCycle = resolvedPriceInfo.cycle
-    
-    let prorationInfo: {
-      amount: number
-      description: string
-      creditAmount?: number
-    }
+    const oldCycle = newCycle === 'yearly' ? 'monthly' : 'yearly'
 
-    if (oldCycle === 'monthly' && newCycle === 'yearly') {
-      // Upgrade: monthly to yearly
-      prorationInfo = {
-        amount: 5000, // Mock proration amount (in cents)
-        description: 'Plan upgrade from monthly to yearly with proration credit'
-      }
-    } else if (oldCycle === 'yearly' && newCycle === 'monthly') {
-      // Downgrade: yearly to monthly
-      prorationInfo = {
-        amount: -3000, // Negative indicates credit
-        creditAmount: 3000,
-        description: 'Plan downgrade from yearly to monthly with remaining credit'
-      }
-    } else {
-      prorationInfo = {
-        amount: 0,
-        description: 'Plan change without proration'
-      }
-    }
-
-    // Create audit record
+    // The change itself. The amounts Stripe computed for it are audited by paymentService
+    // (type PRORATION, from the invoice preview): nothing is estimated here.
     const auditRecord = await db.invoiceAudit.create({
       data: {
         userId,
         subscriptionId: subscription.id,
         type: 'PLAN_CHANGE',
-        amount: new Prisma.Decimal(Math.abs(prorationInfo.amount) / 100), // Convert to decimal
         currency: 'EUR',
         metadata: {
           oldPriceId: subscription.priceId,
           newPriceId: resolvedPriceInfo.priceId,
-          prorationAmount: prorationInfo.amount,
           effectiveDate: new Date().toISOString(),
           oldCycle,
           newCycle
@@ -189,8 +157,7 @@ export async function switchSubscriptionPlan(
         oldPriceId: subscription.priceId,
         newPriceId: resolvedPriceInfo.priceId,
         oldCycle,
-        newCycle,
-        prorationAmount: prorationInfo.amount
+        newCycle
       }
     })
 
@@ -207,7 +174,6 @@ export async function switchSubscriptionPlan(
         status: updatedSubscription.status,
         currentPeriodEnd: updatedSubscription.currentPeriodEnd
       },
-      proration: prorationInfo,
       auditId: auditRecord.id
     }
 

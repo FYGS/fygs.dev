@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { AdminDashboardStats } from "./_components/admin-dashboard-stats";
 import { RecentActivity } from "./_components/recent-activity";
 import { getRecentActivity } from "@/lib/services/admin-activity";
+import { getMonthlySeries } from "@/lib/services/admin-analytics";
 import { RevenueChart } from "./_components/revenue-chart";
 import { PopularCourses } from "./_components/popular-courses";
 import { UserGrowthChart } from "./_components/user-growth-chart";
@@ -112,7 +113,8 @@ async function getAdminStats() {
 }
 
 export default async function AdminDashboardPage() {
-  const [stats, recentActivity] = await Promise.all([getAdminStats(), getRecentActivity()]);
+  const [stats, recentActivity, series] = await Promise.all([getAdminStats(), getRecentActivity(), getMonthlySeries(12)]);
+  const userGrowth = series.users;
 
   return (
     <div className="space-y-8">
@@ -145,7 +147,7 @@ export default async function AdminDashboardPage() {
         <RevenueChart data={stats.monthlyRevenue} />
 
         {/* User Growth Chart */}
-        <UserGrowthChart />
+        <UserGrowthChart data={userGrowth} />
       </div>
 
       {/* Popular Courses and Recent Activity */}

@@ -15,7 +15,7 @@ import Link from "next/link";
 import { BillingActions } from "@/components/billing/billing-actions";
 import { RefundButton } from "@/components/billing/refund-button";
 import { SubscriptionStatus } from "@/lib/generated/prisma/browser";
-import { classifyBillingCycle } from "@/lib";
+import { classifyBillingCycle, getSubscriptionPrices } from "@/lib";
 
 export const metadata: Metadata = {
   title: "Facturation & Abonnement | FYGS Learning Platform",
@@ -123,6 +123,9 @@ export default async function BillingPage() {
   const hasActiveSubscription = await AccessService.hasActiveSubscription(session.user.id);
   const subscription = user.subscriptions;
   
+  const prices = getSubscriptionPrices();
+  const availableCycles = (["monthly", "yearly"] as const).filter((cycle) => Boolean(prices[cycle]));
+
   // Get billing cycle for display
   const billingCycle = subscription?.priceId ? classifyBillingCycle(subscription.priceId) : 'unknown';
   
@@ -441,6 +444,8 @@ export default async function BillingPage() {
                     <BillingActions
                       subscriptionStatus={subscription.status}
                       cancelAtPeriodEnd={subscription.cancelAtPeriodEnd}
+                      currentCycle={billingCycle}
+                      availableCycles={availableCycles}
                       periodEnd={subscription.currentPeriodEnd ? formatDate(subscription.currentPeriodEnd) : null}
                     />
                   ) : (

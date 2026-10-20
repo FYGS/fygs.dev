@@ -15,12 +15,16 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { cancelSubscription } from "@/app/[locale]/(main)/dashboard/actions/cancelSubscription";
+import { switchSubscriptionPlan } from "@/app/[locale]/(main)/dashboard/actions/switchSubscriptionPlan";
 
 interface BillingActionsProps {
   subscriptionStatus?: string;
   cancelAtPeriodEnd?: boolean;
   /** Formatted end of the current period, shown in the confirmation */
   periodEnd?: string | null;
+  /** The billing cycle of the subscription, and the cycles that are configured for sale */
+  currentCycle?: "monthly" | "yearly" | "unknown";
+  availableCycles?: Array<"monthly" | "yearly">;
 }
 
 /** What the user is told when the cancellation did not go through (the server messages are not translated). */
@@ -35,9 +39,24 @@ const CANCEL_ERRORS: Record<string, string> = {
  * Subscription management. Plan changes, payment method and resuming a cancelled subscription go through the
  * Stripe customer portal ("Gérer l'abonnement"); the cancellation at the end of the period is handled here.
  */
-export function BillingActions({ subscriptionStatus, cancelAtPeriodEnd, periodEnd }: BillingActionsProps) {
+const SWITCH_ERRORS: Record<string, string> = {
+  UNAUTHORIZED: "Votre session a expiré, reconnectez-vous.",
+  NO_ACTIVE_SUBSCRIPTION: "Aucun abonnement actif.",
+  SAME_PLAN: "Vous êtes déjà sur cette formule.",
+  INVALID_PRICE_ID: "Cette formule n'est pas disponible.",
+};
+
+const CYCLE_LABEL = { monthly: "mensuelle", yearly: "annuelle" } as const;
+
+export function BillingActions({
+  subscriptionStatus,
+  cancelAtPeriodEnd,
+  periodEnd,
+  currentCycle = "unknown",
+  availableCycles = [],
+}: BillingActionsProps) {
   const router = useRouter();
-  const [loadingAction, setLoadingAction] = useState<"portal" | "cancel" | null>(null);
+  const [loadingAction, setLoadingAction] = useState<"portal" | "cancel" | "switch" | null>(null);
 
   const openPortal = async () => {
     try {
@@ -75,7 +94,27 @@ export function BillingActions({ subscriptionStatus, cancelAtPeriodEnd, periodEn
     }
   };
 
+  const switchTo = async (cycle: "monthly" | "yearly") => {
+    setLoadingAction("switch");
+    try {
+      const result = await switchSubscriptionPlan({ newPriceId: cycle });
+      if (result.success) {
+        toast.success(`Formule ${CYCLE_LABEL[cycle]} activée.`);
+        router.refresh();
+      } else {
+        toast.error(SWITCH_ERRORS[result.error ?? ""] ?? "Le changement de formule a échoué, réessayez plus tard.");
+      }
+    } catch {
+      toast.error("Le changement de formule a échoué, réessayez plus tard.");
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
   const canCancel = subscriptionStatus === "ACTIVE" && !cancelAtPeriodEnd;
+  // the other cycle, when it is on sale and we know which one the subscription is on
+  const otherCycle = currentCycle === "monthly" ? "yearly" : currentCycle === "yearly" ? "monthly" : null;
+  const canSwitch = canCancel && otherCycle !== null && availableCycles.includes(otherCycle);
 
   return (
     <div className="space-y-4">
@@ -88,6 +127,29 @@ export function BillingActions({ subscriptionStatus, cancelAtPeriodEnd, periodEn
         >
           {loadingAction === "portal" ? "Redirection..." : "Gérer l'abonnement"}
         </Button>
+
+        {canSwitch && otherCycle && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" disabled={loadingAction !== null}>
+                Passer à la formule {CYCLE_LABEL[otherCycle]}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Passer à la formule {CYCLE_LABEL[otherCycle]} ?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Le changement s&apos;applique tout de suite. Stripe calcule le prorata : le temps déjà payé de votre formule actuelle est déduit de la
+                  prochaine facture.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Rester sur la formule actuelle</AlertDialogCancel>
+                <AlertDialogAction onClick={() => switchTo(otherCycle)}>Confirmer le changement</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
 
         {canCancel && (
           <AlertDialog>

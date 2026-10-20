@@ -4,15 +4,7 @@ import { isAdminHrefAvailable } from "@/lib/admin-routes";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  Plus,
-  FileText,
-  Users,
-  BarChart3,
-  Mail,
-  BookOpen,
-  FolderOpen
-} from "lucide-react";
+import { Plus, Users, BarChart3, BookOpen } from "lucide-react";
 
 const quickActions = [
   {
@@ -21,20 +13,6 @@ const quickActions = [
     href: "/admin/courses/new",
     icon: BookOpen,
     color: "bg-blue-500 hover:bg-blue-600",
-  },
-  {
-    title: "Nouvel article",
-    description: "Rédiger un article",
-    href: "/admin/blog/new", 
-    icon: FileText,
-    color: "bg-green-500 hover:bg-green-600",
-  },
-  {
-    title: "Nouveau projet",
-    description: "Ajouter au portfolio",
-    href: "/admin/projects/new",
-    icon: FolderOpen,
-    color: "bg-purple-500 hover:bg-purple-600",
   },
   {
     title: "Gérer utilisateurs",
@@ -49,13 +27,6 @@ const quickActions = [
     href: "/admin/analytics",
     icon: BarChart3,
     color: "bg-indigo-500 hover:bg-indigo-600",
-  },
-  {
-    title: "Campagne email",
-    description: "Envoyer un email",
-    href: "/admin/emails/new",
-    icon: Mail,
-    color: "bg-pink-500 hover:bg-pink-600",
   },
 ];
 

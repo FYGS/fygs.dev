@@ -10,29 +10,25 @@ const pathNameMap: Record<string, string> = {
   "/admin/courses": "Formations",
   "/admin/courses/new": "Nouvelle formation",
   "/admin/lessons": "Leçons",
-  "/admin/projects": "Projets", 
-  "/admin/projects/new": "Nouveau projet",
-  "/admin/blog": "Blog",
-  "/admin/blog/new": "Nouvel article",
   "/admin/tags": "Tags & Catégories",
   "/admin/certificates": "Certificats",
   "/admin/users": "Utilisateurs",
   "/admin/enrollments": "Inscriptions",
-  "/admin/progress": "Progrès & Performance",
   "/admin/payments": "Paiements",
   "/admin/subscriptions": "Abonnements",
-  "/admin/revenue": "Revenus",
   "/admin/analytics": "Analytics",
   "/admin/reviews": "Avis & Commentaires",
-  "/admin/pages": "Pages",
-  "/admin/settings": "Paramètres",
-  "/admin/database": "Base de données",
-  "/admin/security": "Sécurité",
+  "/admin/reviews/moderation": "Modération",
+  "/admin/reviews/analytics": "Analytics des avis",
+  "/admin/community": "Communauté",
+  "/admin/community/users": "Membres",
+  "/admin/community/moderation": "Modération",
+  "/admin/community/analytics": "Analytics",
 };
 
 export function AdminBreadcrumb() {
   const pathname = usePathname();
-  
+
   // Générer les segments du breadcrumb
   const segments = pathname.split("/").filter(Boolean);
   const breadcrumbs = segments.map((segment, index) => {
@@ -48,14 +44,14 @@ export function AdminBreadcrumb() {
   return (
     <div className="bg-slate-800/50 border-b border-slate-700 px-6 py-3">
       <nav aria-label="Fil d'Ariane" className="flex items-center space-x-2 text-sm">
-        <Link 
+        <Link
           href="/admin"
           className="flex items-center text-muted-foreground hover:text-foreground transition-colors"
           aria-label="Accueil de l'administration"
         >
           <Home className="h-4 w-4" aria-hidden="true" />
         </Link>
-        
+
         {breadcrumbs.map((breadcrumb) => (
           <div key={breadcrumb.path} className="flex items-center space-x-2">
             <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />

@@ -1,127 +1,60 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, Calendar, MessageSquare, Shield } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { 
-  ArrowLeft,
-  Star, 
-  Calendar,
-  MessageSquare,
-  User,
-  Shield,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-  Eye,
-  EyeOff,
-  Trash2,
-  Edit
-} from "lucide-react";
 import { StarRatingDisplay } from "@/components/reviews/star-rating";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { Role } from "@/lib/generated/prisma/browser";
+import { db } from "@/lib/db";
+import { requireAdminPage } from "@/lib/admin-guard";
+import { formatDateTime } from "../../_components/list-shell";
+import { ReviewDecision } from "../_components/review-decision";
 
-interface ReviewDetailsPageProps {
-  params: Promise<{
-    reviewId: string;
-  }>;
-}
-
-// Mock review data - in real implementation, fetch from database
-const mockReview = {
-  id: "1",
-  rating: 5,
-  comment: "Excellente formation ! J'ai beaucoup appris sur les concepts avancés de React. L'instructeur explique très bien et les exercices pratiques sont très utiles. Je recommande vivement cette formation à tous ceux qui veulent approfondir leurs connaissances en React.",
-  createdAt: new Date("2024-01-15T10:30:00Z"),
-  updatedAt: new Date("2024-01-15T10:30:00Z"),
-  status: "APPROVED" as const,
-  isPublic: true,
-  helpfulCount: 12,
-  reportCount: 0,
-  user: {
-    id: "user-1",
-    name: "Marie Dubois",
-    email: "marie.dubois@example.com",
-    avatar: null,
-    createdAt: new Date("2023-06-01T00:00:00Z"),
-    role: "STUDENT" as const,
-    isVerified: true
-  },
-  course: {
-    id: "course-1",
-    title: "React Avancé : Hooks et Context API",
-    slug: "react-avance-hooks-context",
-    instructor: {
-      name: "Jean Martin",
-      email: "jean.martin@example.com"
-    }
-  },
-  reports: [],
-  replies: [
-    {
-      id: "reply-1",
-      content: "Merci beaucoup pour ce retour positif ! Je suis ravi que la formation vous ait plu.",
-      createdAt: new Date("2024-01-16T09:15:00Z"),
-      author: {
-        name: "Jean Martin",
-        role: "INSTRUCTOR" as const
-      }
-    }
-  ],
-  moderationNotes: "Avis vérifié - utilisateur authentique avec achat confirmé."
+export const metadata: Metadata = {
+  title: "Détails de l'avis | Admin FYGS",
+  description: "Le contenu d'un avis, ses signalements et son historique de modération",
 };
 
-export default async function ReviewDetailsPage({ params }: ReviewDetailsPageProps) {
+const STATUS_LABEL: Record<string, string> = { APPROVED: "Approuvé", PENDING: "En attente", REJECTED: "Rejeté", FLAGGED: "Signalé" };
+const STATUS_CLASS: Record<string, string> = {
+  APPROVED: "bg-green-900/30 text-green-400",
+  PENDING: "bg-yellow-900/30 text-yellow-400",
+  REJECTED: "bg-red-900/30 text-red-400",
+  FLAGGED: "bg-orange-900/30 text-orange-400",
+};
+const REASON_LABEL: Record<string, string> = {
+  SPAM: "Spam",
+  INAPPROPRIATE: "Contenu inapproprié",
+  FAKE: "Faux avis",
+  OFFENSIVE: "Propos offensants",
+  COPYRIGHT: "Droit d'auteur",
+  OTHER: "Autre",
+};
+const REPORT_STATUS_LABEL: Record<string, string> = { PENDING: "À traiter", REVIEWED: "Examiné", RESOLVED: "Résolu", DISMISSED: "Classé sans suite" };
+const ROLE_LABEL: Record<string, string> = { STUDENT: "Étudiant", INSTRUCTOR: "Instructeur", ADMIN: "Administrateur" };
+
+export default async function ReviewDetailsPage({ params }: { params: Promise<{ reviewId: string }> }) {
+  await requireAdminPage();
   const { reviewId } = await params;
-  
-  const session = await auth.api.getSession({
-    headers: await headers(),
+
+  const review = await db.review.findUnique({
+    where: { id: reviewId },
+    include: {
+      user: { select: { id: true, name: true, email: true, image: true, createdAt: true, role: true } },
+      course: { select: { title: true, slug: true, instructor: { select: { name: true } } } },
+      replies: { orderBy: { createdAt: "asc" }, include: { user: { select: { name: true, role: true } } } },
+      reports: { orderBy: { createdAt: "desc" }, include: { user: { select: { name: true, email: true } } } },
+      moderations: { orderBy: { createdAt: "desc" }, include: { moderator: { select: { name: true } } } },
+      _count: { select: { votes: true } },
+    },
   });
-
-  if (!session?.user) {
-    redirect("/auth/login");
-  }
-
-  if (session.user.role !== Role.ADMIN) {
-    redirect("/unauthorized");
-  }
-
-  // In real implementation, fetch review from database
-  // const review = await getReviewById(reviewId);
-  // if (!review) return notFound();
-
-  if (reviewId !== "1") {
-    return notFound();
-  }
-
-  const review = mockReview;
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "APPROVED": return "bg-green-900/30 text-green-400";
-      case "PENDING": return "bg-yellow-900/30 text-yellow-400";
-      case "REJECTED": return "bg-red-900/30 text-red-400";
-      default: return "bg-gray-900/30 text-gray-400";
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "APPROVED": return <CheckCircle className="h-4 w-4" />;
-      case "PENDING": return <AlertTriangle className="h-4 w-4" />;
-      case "REJECTED": return <XCircle className="h-4 w-4" />;
-      default: return <AlertTriangle className="h-4 w-4" />;
-    }
-  };
+  if (!review) notFound();
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="sm" asChild>
           <Link href="/admin/reviews">
@@ -132,330 +65,193 @@ export default async function ReviewDetailsPage({ params }: ReviewDetailsPagePro
         <div className="flex-1">
           <h1 className="text-3xl font-bold">Détails de l&apos;avis</h1>
           <p className="text-muted-foreground mt-2">
-            Modération et gestion de l&apos;avis #{review.id}
+            Avis de {review.user.name} sur « {review.course.title} »
           </p>
         </div>
-        <Badge className={`${getStatusColor(review.status)} flex items-center gap-2`}>
-          {getStatusIcon(review.status)}
-          {review.status === "APPROVED" ? "Approuvé" : 
-           review.status === "PENDING" ? "En attente" : "Rejeté"}
-        </Badge>
+        <Badge className={STATUS_CLASS[review.status] ?? ""}>{STATUS_LABEL[review.status] ?? review.status}</Badge>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Review Content */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center justify-between">
+              <CardTitle as="h2" className="flex items-center justify-between">
                 <span>Contenu de l&apos;avis</span>
-                <div className="flex items-center gap-2">
-                  <StarRatingDisplay rating={review.rating} showNumbers />
-                </div>
+                <StarRatingDisplay rating={review.rating} showNumbers />
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* User Info */}
               <div className="flex items-center gap-4">
                 <Avatar>
-                  <AvatarImage src={review.user.avatar || undefined} />
+                  <AvatarImage src={review.user.image || undefined} alt="" />
                   <AvatarFallback>
-                    {review.user.name?.split(' ').map(n => n[0]).join('') || 'U'}
+                    {review.user.name
+                      .split(" ")
+                      .map((part) => part[0])
+                      .join("")
+                      .slice(0, 2)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium">{review.user.name}</span>
-                    {review.user.isVerified && (
+                    <Link href={`/admin/users/${review.user.id}`} className="font-medium hover:underline">
+                      {review.user.name}
+                    </Link>
+                    {review.verified && (
                       <Badge variant="secondary" className="text-xs">
-                        <Shield className="h-3 w-3 mr-1" />
-                        Vérifié
+                        <Shield className="h-3 w-3 mr-1" aria-hidden="true" />A terminé la formation
                       </Badge>
                     )}
                   </div>
-                  <div className="text-sm text-muted-foreground flex items-center gap-4">
-                    <span>{review.user.email}</span>
-                    <span>•</span>
-                    <span>Membre depuis {review.user.createdAt.toLocaleDateString('fr-FR', { 
-                      month: 'long', 
-                      year: 'numeric' 
-                    })}</span>
-                  </div>
+                  <div className="text-sm text-muted-foreground break-all">{review.user.email}</div>
                 </div>
-                <Badge variant="outline">
-                  {review.user.role === "STUDENT" ? "Étudiant" : 
-                   review.user.role === "INSTRUCTOR" ? "Instructeur" : "Admin"}
-                </Badge>
+                <Badge variant="outline">{ROLE_LABEL[review.user.role] ?? review.user.role}</Badge>
               </div>
 
               <Separator />
 
-              {/* Course Info */}
               <div className="bg-muted/50 p-4 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
-                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                  <MessageSquare className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                   <span className="text-sm font-medium">Formation évaluée</span>
                 </div>
                 <h3 className="font-medium">{review.course.title}</h3>
-                <p className="text-sm text-muted-foreground">
-                  Par {review.course.instructor.name}
-                </p>
+                {review.course.instructor && <p className="text-sm text-muted-foreground">Par {review.course.instructor.name}</p>}
+                <Link href={`/formations/${review.course.slug}`} className="text-sm underline">
+                  Voir la formation
+                </Link>
               </div>
 
-              {/* Review Text */}
               <div className="space-y-2">
-                <h4 className="font-medium">Commentaire</h4>
+                <h3 className="font-medium">Commentaire</h3>
                 <div className="bg-muted/30 p-4 rounded-lg">
-                  <p className="text-sm leading-relaxed">
-                    {review.comment}
-                  </p>
+                  {review.comment ? (
+                    <p className="text-sm leading-relaxed whitespace-pre-line">{review.comment}</p>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Note seule, sans commentaire.</p>
+                  )}
                 </div>
               </div>
 
-              {/* Metadata */}
-              <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  <span>
-                    Publié le {review.createdAt.toLocaleDateString('fr-FR', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </span>
-                </div>
-                {review.updatedAt > review.createdAt && (
-                  <div className="flex items-center gap-2">
-                    <Edit className="h-4 w-4" />
-                    <span>
-                      Modifié le {review.updatedAt.toLocaleDateString('fr-FR', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
-                      })}
-                    </span>
-                  </div>
-                )}
+              <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+                <span className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" aria-hidden="true" />
+                  Publié le {formatDateTime(review.createdAt)}
+                </span>
+                {review.updatedAt.getTime() - review.createdAt.getTime() > 1000 && <span>Modifié le {formatDateTime(review.updatedAt)}</span>}
               </div>
             </CardContent>
           </Card>
 
-          {/* Replies */}
           {review.replies.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Réponses</CardTitle>
+                <CardTitle as="h2">Réponses</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {review.replies.map((reply) => (
                   <div key={reply.id} className="bg-muted/30 p-4 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="font-medium">{reply.author.name}</span>
+                      <span className="font-medium">{reply.user.name}</span>
                       <Badge variant="outline" className="text-xs">
-                        {reply.author.role === "INSTRUCTOR" ? "Instructeur" : "Admin"}
+                        {ROLE_LABEL[reply.user.role] ?? reply.user.role}
                       </Badge>
-                      <span className="text-xs text-muted-foreground">
-                        {reply.createdAt.toLocaleDateString('fr-FR', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric'
-                        })}
-                      </span>
+                      <span className="text-xs text-muted-foreground">{formatDateTime(reply.createdAt)}</span>
                     </div>
-                    <p className="text-sm">{reply.content}</p>
+                    <p className="text-sm whitespace-pre-line">{reply.content}</p>
                   </div>
                 ))}
               </CardContent>
             </Card>
           )}
 
-          {/* Moderation Notes */}
           <Card>
             <CardHeader>
-              <CardTitle>Notes de modération</CardTitle>
+              <CardTitle as="h2">Signalements ({review.reports.length})</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="bg-blue-900/20 p-4 rounded-lg">
-                <p className="text-sm text-blue-200">
-                  {review.moderationNotes || "Aucune note de modération."}
-                </p>
-              </div>
-              <div className="mt-4">
-                <textarea 
-                  className="w-full px-3 py-2 border rounded-lg"
-                  rows={3}
-                  placeholder="Ajouter des notes de modération..."
-                />
-                <Button size="sm" className="mt-2">
-                  Ajouter une note
-                </Button>
-              </div>
+              {review.reports.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Aucun signalement.</p>
+              ) : (
+                <ul className="space-y-3">
+                  {review.reports.map((report) => (
+                    <li key={report.id} className="bg-muted/30 p-4 rounded-lg text-sm">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge variant="outline">{REASON_LABEL[report.reason] ?? report.reason}</Badge>
+                        <Badge variant="secondary">{REPORT_STATUS_LABEL[report.status] ?? report.status}</Badge>
+                        <span className="text-xs text-muted-foreground">
+                          par {report.user.name} · {formatDateTime(report.createdAt)}
+                        </span>
+                      </div>
+                      {report.details && <p className="mt-2 whitespace-pre-line">{report.details}</p>}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle as="h2">Historique de modération</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {review.moderations.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Aucune décision de modération pour le moment.</p>
+              ) : (
+                <ul className="space-y-3">
+                  {review.moderations.map((entry) => (
+                    <li key={entry.id} className="bg-muted/30 p-4 rounded-lg text-sm">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-medium">
+                          {STATUS_LABEL[entry.fromStatus] ?? entry.fromStatus} → {STATUS_LABEL[entry.toStatus] ?? entry.toStatus}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          par {entry.moderator?.name ?? "un compte supprimé"} · {formatDateTime(entry.createdAt)}
+                        </span>
+                      </div>
+                      {entry.note && <p className="mt-2 whitespace-pre-line">{entry.note}</p>}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </CardContent>
           </Card>
         </div>
 
-        {/* Sidebar */}
         <div className="space-y-6">
-          {/* Quick Actions */}
           <Card>
             <CardHeader>
-              <CardTitle>Actions rapides</CardTitle>
+              <CardTitle as="h2">Décision</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <Button className="w-full" size="sm">
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Approuver
-              </Button>
-              <Button variant="destructive" className="w-full" size="sm">
-                <XCircle className="h-4 w-4 mr-2" />
-                Rejeter
-              </Button>
-              <Button variant="outline" className="w-full" size="sm">
-                {review.isPublic ? (
-                  <>
-                    <EyeOff className="h-4 w-4 mr-2" />
-                    Masquer
-                  </>
-                ) : (
-                  <>
-                    <Eye className="h-4 w-4 mr-2" />
-                    Afficher
-                  </>
-                )}
-              </Button>
-              <Button variant="outline" className="w-full" size="sm">
-                <Edit className="h-4 w-4 mr-2" />
-                Modifier
-              </Button>
-              <Button variant="outline" className="w-full" size="sm">
-                <Trash2 className="h-4 w-4 mr-2" />
-                Supprimer
-              </Button>
+            <CardContent>
+              <ReviewDecision reviewId={review.id} status={review.status} />
             </CardContent>
           </Card>
 
-          {/* Statistics */}
           <Card>
             <CardHeader>
-              <CardTitle>Statistiques</CardTitle>
+              <CardTitle as="h2">Statistiques</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Votes utiles</span>
-                <Badge variant="secondary">{review.helpfulCount}</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Signalements</span>
-                <Badge variant={review.reportCount > 0 ? "destructive" : "secondary"}>
-                  {review.reportCount}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Réponses</span>
-                <Badge variant="secondary">{review.replies.length}</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Visibilité</span>
-                <Badge variant={review.isPublic ? "default" : "secondary"}>
-                  {review.isPublic ? "Public" : "Masqué"}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* User Profile */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Profil utilisateur</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="text-center">
-                <Avatar className="h-16 w-16 mx-auto mb-3">
-                  <AvatarImage src={review.user.avatar || undefined} />
-                  <AvatarFallback className="text-lg">
-                    {review.user.name?.split(' ').map(n => n[0]).join('') || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                <h3 className="font-medium">{review.user.name}</h3>
-                <p className="text-sm text-muted-foreground">{review.user.email}</p>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span>Total avis</span>
-                  <span className="font-medium">7</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Note moyenne donnée</span>
-                  <span className="font-medium">4.3</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Formations achetées</span>
-                  <span className="font-medium">12</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Membre depuis</span>
-                  <span className="font-medium">
-                    {review.user.createdAt.toLocaleDateString('fr-FR', { 
-                      month: 'short', 
-                      year: 'numeric' 
-                    })}
-                  </span>
-                </div>
-              </div>
-
-              <Separator />
-
-              <Button variant="outline" size="sm" className="w-full">
-                <User className="h-4 w-4 mr-2" />
-                Voir le profil complet
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Course Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Formation</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h3 className="font-medium text-sm mb-2">{review.course.title}</h3>
-                <p className="text-xs text-muted-foreground">
-                  Par {review.course.instructor.name}
-                </p>
-              </div>
-
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span>Note moyenne</span>
-                  <div className="flex items-center gap-1">
-                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                    <span className="font-medium">4.7</span>
+            <CardContent>
+              <dl className="space-y-2 text-sm">
+                {[
+                  ["Votes « utile »", review.helpfulCount],
+                  ["Votes au total", review._count.votes],
+                  ["Signalements", review.reports.length],
+                ].map(([label, value]) => (
+                  <div key={label} className="flex justify-between">
+                    <dt>{label}</dt>
+                    <dd className="font-medium">{value}</dd>
                   </div>
-                </div>
-                <div className="flex justify-between">
-                  <span>Total avis</span>
-                  <span className="font-medium">234</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Étudiants inscrits</span>
-                  <span className="font-medium">1,247</span>
-                </div>
-              </div>
-
-              <Button variant="outline" size="sm" className="w-full" asChild>
-                <Link href={`/formations/${review.course.slug}`}>
-                  Voir la formation
-                </Link>
-              </Button>
+                ))}
+              </dl>
             </CardContent>
           </Card>
+
+          <Button variant="outline" size="sm" className="w-full" asChild>
+            <Link href={`/admin/users/${review.user.id}`}>Voir le compte de l&apos;auteur</Link>
+          </Button>
         </div>
       </div>
     </div>

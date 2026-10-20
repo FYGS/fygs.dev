@@ -16,7 +16,15 @@ export function classifyBillingCycle(priceId?: string): 'monthly' | 'yearly' | '
   return 'unknown';
 }
 
-export function resolveRequestedPriceId(requested?: string): { priceId: string; cycle: 'monthly' | 'yearly' } {
+/**
+ * Without `strict`, anything unknown falls back to a default (checkout with no choice). With it, a value that is
+ * neither a cycle keyword nor a configured price id is refused: switching plan must never land on another plan
+ * because of a typo.
+ */
+export function resolveRequestedPriceId(
+  requested?: string,
+  options: { strict?: boolean } = {},
+): { priceId: string; cycle: 'monthly' | 'yearly' } {
   const { monthly, yearly } = getSubscriptionPrices();
   if (!monthly && !yearly) throw new Error('SUBSCRIPTION_PRICES_NOT_CONFIGURED');
 
@@ -27,6 +35,8 @@ export function resolveRequestedPriceId(requested?: string): { priceId: string; 
   if (requested && (requested === monthly || requested === yearly)) {
     return { priceId: requested, cycle: requested === yearly ? 'yearly' : 'monthly' };
   }
+
+  if (options.strict) throw new Error('UNKNOWN_PRICE');
 
   // Default preference: monthly then yearly
   if (monthly) return { priceId: monthly, cycle: 'monthly' };

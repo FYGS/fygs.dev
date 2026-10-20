@@ -8,7 +8,8 @@ import { AdminBreadcrumb } from "./admin/_components/admin-breadcrumb";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { defaultMetadata } from "../../_lib/metadata";
-import { Role } from "@/lib/generated/prisma/browser";
+import { ReportStatus, ReviewStatus, Role } from "@/lib/generated/prisma/browser";
+import { db } from "@/lib/db";
 
 export const metadata: Metadata = {
   ...defaultMetadata,
@@ -44,6 +45,23 @@ export default async function AdminLayout({
     redirect("/dashboard");
   }
 
+  // Only an administrator moderates: the counts are for them
+  const alerts =
+    session.user.role === Role.ADMIN
+      ? [
+          {
+            label: "Avis à modérer",
+            count: await db.review.count({ where: { status: { in: [ReviewStatus.PENDING, ReviewStatus.FLAGGED] } } }),
+            href: "/admin/reviews/moderation",
+          },
+          {
+            label: "Signalements d'avis à traiter",
+            count: await db.reviewReport.count({ where: { status: ReportStatus.PENDING } }),
+            href: "/admin/reviews/moderation",
+          },
+        ]
+      : [];
+
   return (
     <>
       <div className="flex h-screen overflow-hidden">
@@ -61,6 +79,7 @@ export default async function AdminLayout({
               image: session.user.image || null,
               role: session.user.role || Role.STUDENT,
             }}
+            alerts={alerts}
           />
 
           {/* Breadcrumb */}

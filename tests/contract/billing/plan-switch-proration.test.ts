@@ -1,6 +1,6 @@
 /**
  * T104: Plan Switch Proration Audit Tests
- * 
+ *
  * Tests the subscription plan switching functionality with proper
  * proration calculation and InvoiceAudit record creation.
  */
@@ -65,7 +65,7 @@ describe('T104: Plan Switch Proration Audit Tests', () => {
   beforeEach(async () => {
     // Create test user with unique email
     const uniqueEmail = `plan-switch-test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}@example.com`
-    
+
     const user = await db.user.create({
       data: {
         email: uniqueEmail,
@@ -113,13 +113,12 @@ describe('T104: Plan Switch Proration Audit Tests', () => {
 
   describe('Monthly to Yearly Switch', () => {
     test('creates proration audit record for monthly to yearly upgrade', async () => {
-      const result = await switchSubscriptionPlan({ 
+      const result = await switchSubscriptionPlan({
         newPriceId: 'price_premium_yearly'
       })
 
       expect(result.success).toBe(true)
       expect(result.subscription).toBeDefined()
-      expect(result.proration).toBeDefined()
 
       // Verify InvoiceAudit record was created
       const auditRecord = await db.invoiceAudit.findFirst({
@@ -133,32 +132,26 @@ describe('T104: Plan Switch Proration Audit Tests', () => {
       expect(auditRecord!.metadata).toMatchObject({
         oldPriceId: 'price_premium_monthly',
         newPriceId: 'price_premium_yearly',
-        prorationAmount: expect.any(Number),
+        oldCycle: 'monthly',
+        newCycle: 'yearly',
         effectiveDate: expect.any(String)
       })
     })
 
-    test('calculates correct proration amount for monthly to yearly', async () => {
-      const result = await switchSubscriptionPlan({ 
+    test('does not invent an amount: the audit row of the change carries none, Stripe\'s own figures are audited as PRORATION', async () => {
+      const result = await switchSubscriptionPlan({
         newPriceId: 'price_premium_yearly'
       })
 
       expect(result.success).toBe(true)
-      expect(result.proration).toBeDefined()
-      expect(result.proration!.amount).toBeGreaterThan(0) // Should be positive (upgrade)
-      expect(result.proration!.description).toContain('monthly to yearly')
-      
-      // Verify proration calculation is reasonable
-      // Yearly plan should provide credit for unused monthly time
-      const daysRemaining = Math.ceil(
-        (new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).getTime() - Date.now()) 
-        / (24 * 60 * 60 * 1000)
-      )
-      expect(daysRemaining).toBeGreaterThan(0)
+      expect('proration' in result).toBe(false)
+      const audit = await db.invoiceAudit.findFirstOrThrow({ where: { subscriptionId: activeSubscriptionId, type: 'PLAN_CHANGE' } })
+      expect(audit.amount).toBeNull()
+      expect(JSON.stringify(audit.metadata)).not.toContain('prorationAmount')
     })
 
     test('updates subscription with new price ID and period', async () => {
-      const result = await switchSubscriptionPlan({ 
+      const result = await switchSubscriptionPlan({
         newPriceId: 'price_premium_yearly'
       })
 
@@ -172,7 +165,7 @@ describe('T104: Plan Switch Proration Audit Tests', () => {
       expect(updatedSubscription).toBeDefined()
       expect(updatedSubscription!.priceId).toBe('price_premium_yearly')
       expect(updatedSubscription!.status).toBe('ACTIVE')
-      
+
       // New period end should be ~365 days from now
       const newPeriodEnd = new Date(updatedSubscription!.currentPeriodEnd!)
       const expectedEnd = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
@@ -195,7 +188,7 @@ describe('T104: Plan Switch Proration Audit Tests', () => {
     })
 
     test('creates proration audit record for yearly to monthly downgrade', async () => {
-      const result = await switchSubscriptionPlan({ 
+      const result = await switchSubscriptionPlan({
         newPriceId: 'price_premium_monthly'
       })
 
@@ -213,29 +206,16 @@ describe('T104: Plan Switch Proration Audit Tests', () => {
       expect(auditRecord!.metadata).toMatchObject({
         oldPriceId: 'price_premium_yearly',
         newPriceId: 'price_premium_monthly',
-        prorationAmount: expect.any(Number),
+        oldCycle: 'yearly',
+        newCycle: 'monthly',
         effectiveDate: expect.any(String)
       })
-    })
-
-    test('handles proration credit for yearly to monthly downgrade', async () => {
-      const result = await switchSubscriptionPlan({ 
-        newPriceId: 'price_premium_monthly'
-      })
-
-      expect(result.success).toBe(true)
-      expect(result.proration).toBeDefined()
-      
-      // Downgrade should result in credit (negative proration amount)
-      expect(result.proration!.creditAmount).toBeGreaterThan(0)
-      expect(result.proration!.description).toContain('yearly to monthly')
-      expect(result.proration!.description).toContain('credit')
     })
   })
 
   describe('Plan Switch Validation', () => {
     test('rejects switch to same plan', async () => {
-      const result = await switchSubscriptionPlan({ 
+      const result = await switchSubscriptionPlan({
         newPriceId: 'price_premium_monthly' // Same as current
       })
 
@@ -245,7 +225,7 @@ describe('T104: Plan Switch Proration Audit Tests', () => {
     })
 
     test('rejects switch with invalid price ID', async () => {
-      const result = await switchSubscriptionPlan({ 
+      const result = await switchSubscriptionPlan({
         newPriceId: 'price_invalid_plan'
       })
 
@@ -260,7 +240,7 @@ describe('T104: Plan Switch Proration Audit Tests', () => {
         data: { status: 'CANCELED' }
       })
 
-      const result = await switchSubscriptionPlan({ 
+      const result = await switchSubscriptionPlan({
         newPriceId: 'price_premium_yearly'
       })
 
@@ -272,7 +252,7 @@ describe('T104: Plan Switch Proration Audit Tests', () => {
       // Clear auth session
       mockAuthSession = null
 
-      const result = await switchSubscriptionPlan({ 
+      const result = await switchSubscriptionPlan({
         newPriceId: 'price_premium_yearly'
       })
 
@@ -284,8 +264,8 @@ describe('T104: Plan Switch Proration Audit Tests', () => {
   describe('Audit Record Structure', () => {
     test('creates complete audit record with all required fields', async () => {
       const beforeSwitch = new Date()
-      
-      const result = await switchSubscriptionPlan({ 
+
+      const result = await switchSubscriptionPlan({
         newPriceId: 'price_premium_yearly'
       })
 
@@ -310,12 +290,12 @@ describe('T104: Plan Switch Proration Audit Tests', () => {
 
     test('preserves plan change history in multiple audit records', async () => {
       // First switch: monthly to yearly
-      await switchSubscriptionPlan({ 
+      await switchSubscriptionPlan({
         newPriceId: 'price_premium_yearly'
       })
 
       // Second switch: yearly back to monthly
-      await switchSubscriptionPlan({ 
+      await switchSubscriptionPlan({
         newPriceId: 'price_premium_monthly'
       })
 
@@ -329,7 +309,7 @@ describe('T104: Plan Switch Proration Audit Tests', () => {
       })
 
       expect(auditRecords).toHaveLength(2)
-      
+
       // First record: monthly to yearly
       expect(auditRecords[0].metadata).toMatchObject({
         oldPriceId: 'price_premium_monthly',
@@ -346,7 +326,7 @@ describe('T104: Plan Switch Proration Audit Tests', () => {
 
   describe('Response Format Validation', () => {
     test('success response has correct structure', async () => {
-      const result = await switchSubscriptionPlan({ 
+      const result = await switchSubscriptionPlan({
         newPriceId: 'price_premium_yearly'
       })
 
@@ -359,16 +339,12 @@ describe('T104: Plan Switch Proration Audit Tests', () => {
           status: 'ACTIVE',
           currentPeriodEnd: expect.any(Date)
         },
-        proration: {
-          amount: expect.any(Number),
-          description: expect.any(String)
-        },
         auditId: expect.stringMatching(/^cm[a-z0-9]+$/)
       })
     })
 
     test('error response has correct structure', async () => {
-      const result = await switchSubscriptionPlan({ 
+      const result = await switchSubscriptionPlan({
         newPriceId: 'price_premium_monthly' // Same plan
       })
 
@@ -378,7 +354,6 @@ describe('T104: Plan Switch Proration Audit Tests', () => {
         error: expect.any(String)
       })
       expect(result.subscription).toBeUndefined()
-      expect(result.proration).toBeUndefined()
     })
   })
 })

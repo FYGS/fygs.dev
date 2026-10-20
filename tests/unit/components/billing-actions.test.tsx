@@ -3,11 +3,13 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 const m = vi.hoisted(() => ({
   cancel: vi.fn(),
+  switchPlan: vi.fn(),
   refresh: vi.fn(),
   success: vi.fn(),
   error: vi.fn(),
 }));
 vi.mock("@/app/[locale]/(main)/dashboard/actions/cancelSubscription", () => ({ cancelSubscription: m.cancel }));
+vi.mock("@/app/[locale]/(main)/dashboard/actions/switchSubscriptionPlan", () => ({ switchSubscriptionPlan: m.switchPlan }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: m.refresh }) }));
 vi.mock("sonner", () => ({ toast: { success: m.success, error: m.error } }));
 
@@ -65,5 +67,45 @@ describe("BillingActions", () => {
 
     await waitFor(() => expect(m.error).toHaveBeenCalledWith("Cet abonnement n'est plus actif."));
     expect(m.refresh).not.toHaveBeenCalled();
+  });
+
+  describe("plan switch", () => {
+    const props = { subscriptionStatus: "ACTIVE", currentCycle: "monthly" as const, availableCycles: ["monthly" as const, "yearly" as const] };
+
+    it("offers the other cycle only when it is on sale and the subscription can change", () => {
+      const view = render(<BillingActions {...props} />);
+      expect(screen.queryByRole("button", { name: "Passer à la formule annuelle" })).not.toBeNull();
+      view.unmount();
+
+      const onlyMonthly = render(<BillingActions {...props} availableCycles={["monthly"]} />);
+      expect(screen.queryByRole("button", { name: /Passer à la formule/ })).toBeNull();
+      onlyMonthly.unmount();
+
+      const unknown = render(<BillingActions {...props} currentCycle="unknown" />);
+      expect(screen.queryByRole("button", { name: /Passer à la formule/ })).toBeNull();
+      unknown.unmount();
+
+      render(<BillingActions {...props} cancelAtPeriodEnd />);
+      expect(screen.queryByRole("button", { name: /Passer à la formule/ })).toBeNull();
+    });
+
+    it("switches by cycle keyword once confirmed, never by a raw price id", async () => {
+      m.switchPlan.mockResolvedValue({ success: true, message: "ok" });
+      render(<BillingActions {...props} />);
+      fireEvent.click(screen.getByRole("button", { name: "Passer à la formule annuelle" }));
+      fireEvent.click(screen.getByRole("button", { name: "Confirmer le changement" }));
+
+      await waitFor(() => expect(m.refresh).toHaveBeenCalled());
+      expect(m.switchPlan).toHaveBeenCalledWith({ newPriceId: "yearly" });
+    });
+
+    it("explains a refusal in French", async () => {
+      m.switchPlan.mockResolvedValue({ success: false, message: "x", error: "INVALID_PRICE_ID" });
+      render(<BillingActions {...props} />);
+      fireEvent.click(screen.getByRole("button", { name: "Passer à la formule annuelle" }));
+      fireEvent.click(screen.getByRole("button", { name: "Confirmer le changement" }));
+
+      await waitFor(() => expect(m.error).toHaveBeenCalledWith("Cette formule n'est pas disponible."));
+    });
   });
 });
