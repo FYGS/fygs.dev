@@ -18,6 +18,20 @@ afterAll(async () => {
   await db.$disconnect();
 });
 
+/** Moves the sittings of a user back in time, to get past the cooldown without waiting */
+async function ageSittings(userId: string, ms: number) {
+  const attempts = await db.quizAttempt.findMany({ where: { userId } });
+  for (const attempt of attempts) {
+    await db.quizAttempt.update({
+      where: { id: attempt.id },
+      data: {
+        startedAt: new Date(attempt.startedAt.getTime() - ms),
+        submittedAt: attempt.submittedAt ? new Date(attempt.submittedAt.getTime() - ms) : null,
+      },
+    });
+  }
+}
+
 async function setup(correct = [1, 2, 0]) {
   const user = await createUser();
   const course = await createCourse();
@@ -46,6 +60,15 @@ describe("quiz grading (server-side, real database)", () => {
       expect(first.review.map((r) => r.isCorrect)).toEqual([true, false, true]);
       expect(first.review[1]).toMatchObject({ correctOption: 2, explanation: "Because 2" });
     }
+
+    // too soon: the cooldown between two sittings applies
+    const tooSoon = await submitQuizAnswers({
+      quizId: quiz.id,
+      courseId: course.id,
+      answers: quiz.questions.map((q) => ({ questionId: q.id, selectedOption: 0 })),
+    });
+    expect(tooSoon.success).toBe(false);
+    await ageSittings(user.id, 10 * 60_000);
 
     // a retake overwrites the previous result instead of adding a row
     const retake = await submitQuizAnswers({
@@ -106,11 +129,103 @@ describe("quiz grading (server-side, real database)", () => {
 
     expect(await checkQuizAnswer({ quizId: quiz.id, questionId: q.id, selectedOption: 3 }))
       .toMatchObject({ success: true, isCorrect: true, correctOption: 3, explanation: "Because 3" });
+    // the first answer is final: asking again with another option still answers about the recorded one
     expect(await checkQuizAnswer({ quizId: quiz.id, questionId: q.id, selectedOption: 0 }))
-      .toMatchObject({ success: true, isCorrect: false, correctOption: 3 });
+      .toMatchObject({ success: true, isCorrect: true, correctOption: 3 });
     expect(await checkQuizAnswer({ quizId: quiz.id, questionId: q.id, selectedOption: 9 }))
       .toEqual({ success: false, error: "Réponse invalide" });
     expect(await checkQuizAnswer({ quizId: quiz.id, questionId: "other", selectedOption: 0 }))
       .toEqual({ success: false, error: "Question invalide" });
+  });
+});
+
+describe("quiz sittings (anti-cheat, real database)", () => {
+  const sitting = async (quizId: string, courseId: string, picks: number[], questionIds: string[]) => {
+    for (const [i, questionId] of questionIds.entries()) {
+      const r = await checkQuizAnswer({ quizId, questionId, selectedOption: picks[i] });
+      if (!r.success) return r;
+    }
+    return submitQuizAnswers({
+      quizId,
+      courseId,
+      answers: questionIds.map((questionId, i) => ({ questionId, selectedOption: picks[i] })),
+    });
+  };
+
+  it("probing all options then submitting the right ones does not give a perfect score", async () => {
+    const { user, course, quiz } = await setup([1, 2, 0]);
+    const ids = quiz.questions.map((q) => q.id);
+
+    // the cheater wants to learn the answers: asks option 0, then 1, 2, 3 for each question
+    for (const questionId of ids) {
+      for (const selectedOption of [0, 1, 2, 3]) await checkQuizAnswer({ quizId: quiz.id, questionId, selectedOption });
+    }
+    // and then submits what the feedback told them
+    const result = await submitQuizAnswers({
+      quizId: quiz.id,
+      courseId: course.id,
+      answers: [
+        { questionId: ids[0], selectedOption: 1 },
+        { questionId: ids[1], selectedOption: 2 },
+        { questionId: ids[2], selectedOption: 0 },
+      ],
+    });
+
+    // only the first option tried for each question counted: 0 -> right only for the last question
+    expect(result).toMatchObject({ success: true, score: 1, total: 3 });
+    expect(await db.quizAttemptAnswer.count()).toBe(3); // one recorded answer per question
+    expect(await db.quizResult.findFirst({ where: { userId: user.id } })).toMatchObject({ score: 1 });
+  });
+
+  it("a second sitting is refused during the cooldown and allowed after it", async () => {
+    const { user, course, quiz } = await setup([1, 2, 0]);
+    const ids = quiz.questions.map((q) => q.id);
+
+    expect(await sitting(quiz.id, course.id, [0, 0, 0], ids)).toMatchObject({ success: true, score: 1 });
+
+    const blocked = await checkQuizAnswer({ quizId: quiz.id, questionId: ids[0], selectedOption: 1 });
+    expect(blocked).toMatchObject({ success: false });
+    expect(blocked).not.toHaveProperty("correctOption");
+    expect(await db.quizAttempt.count({ where: { userId: user.id } })).toBe(1);
+
+    await ageSittings(user.id, 6 * 60_000);
+    expect(await sitting(quiz.id, course.id, [1, 2, 0], ids)).toMatchObject({ success: true, score: 3 });
+  });
+
+  it("allows 5 sittings in 24 hours, not 6", async () => {
+    const { user, course, quiz } = await setup([1, 2, 0]);
+    const ids = quiz.questions.map((q) => q.id);
+
+    for (let i = 0; i < 5; i++) {
+      expect(await sitting(quiz.id, course.id, [0, 0, 0], ids)).toMatchObject({ success: true });
+      await ageSittings(user.id, 10 * 60_000);
+    }
+    const sixth = await sitting(quiz.id, course.id, [1, 2, 0], ids);
+
+    expect(sixth.success).toBe(false);
+    if (!sixth.success) expect(sixth.error).toMatch(/^Limite de 5 tentatives par jour/);
+    expect(await db.quizResult.findFirst({ where: { userId: user.id } })).toMatchObject({ score: 1 });
+  });
+
+  it("an abandoned sitting does not lock the learner out: it expires after 2 hours", async () => {
+    const { user, course, quiz } = await setup([1, 2, 0]);
+    const ids = quiz.questions.map((q) => q.id);
+    await checkQuizAnswer({ quizId: quiz.id, questionId: ids[0], selectedOption: 0 }); // wrong, then walks away
+    await ageSittings(user.id, 3 * 3_600_000);
+
+    // a fresh sitting: the old wrong answer is not carried over
+    expect(await sitting(quiz.id, course.id, [1, 2, 0], ids)).toMatchObject({ success: true, score: 3 });
+    expect(await db.quizAttempt.count({ where: { userId: user.id } })).toBe(2);
+  });
+
+  it("sittings of different users and different quizzes do not interfere", async () => {
+    const { course, quiz } = await setup([1, 2, 0]);
+    const other = await createUser();
+    await enroll(other.id, course.id);
+    const ids = quiz.questions.map((q) => q.id);
+    expect(await sitting(quiz.id, course.id, [0, 0, 0], ids)).toMatchObject({ success: true });
+
+    h.session = sessionFor(other.id);
+    expect(await sitting(quiz.id, course.id, [1, 2, 0], ids)).toMatchObject({ success: true, score: 3 });
   });
 });

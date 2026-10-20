@@ -65,6 +65,7 @@ model User {
   payments          Payment[]
   progress          Progress[]
   quizResults       QuizResult[]
+  quizAttempts      QuizAttempt[]
   examResults       ExamResult[]
   reviews           Review[]
   reviewVotes       ReviewVote[]
@@ -353,6 +354,7 @@ model Quiz {
   updatedAt DateTime       @updatedAt
   course    Course         @relation("CourseToQuiz", fields: [courseId], references: [id], onDelete: Cascade)
   results   QuizResult[]   @relation("QuizToQuizResult")
+  attempts  QuizAttempt[]  @relation("QuizToQuizAttempt")
   questions QuizQuestion[] @relation("QuizToQuizQuestion")
 }
 
@@ -385,6 +387,32 @@ model QuizResult {
 
   @@unique([userId, quizId])
   @@index([userId, quizId, completedAt])
+}
+
+/// One sitting of a quiz. The first answer given to a question is the one that counts (answers
+/// are recorded when the feedback is shown), and a new sitting is limited by a cooldown and a daily cap.
+model QuizAttempt {
+  id          String              @id @default(cuid())
+  userId      String
+  quizId      String
+  startedAt   DateTime            @default(now())
+  submittedAt DateTime?
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz        Quiz                @relation("QuizToQuizAttempt", fields: [quizId], references: [id], onDelete: Cascade)
+  answers     QuizAttemptAnswer[]
+
+  @@index([userId, quizId, startedAt])
+}
+
+model QuizAttemptAnswer {
+  id             String      @id @default(cuid())
+  attemptId      String
+  questionId     String
+  selectedOption Int
+  answeredAt     DateTime    @default(now())
+  attempt        QuizAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  @@unique([attemptId, questionId])
 }
 
 model FinalExam {

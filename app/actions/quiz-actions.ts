@@ -7,12 +7,21 @@ import { AccessService } from "@/lib/access-service";
 import { headers } from "next/headers";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { logger } from "@/lib/structured-logger";
+import {
+  QUIZ_MAX_ATTEMPTS_PER_DAY,
+  canStartQuizAttempt,
+  formatRetryDelay,
+  quizAttemptExpiry,
+  quizDayStart,
+} from "@/lib/quiz-attempt-policy";
 
 /**
  * Quiz grading happens on the server. The browser never receives the correct
  * option or the explanation of a question before answering it: it asks
  * checkQuizAnswer for feedback, and submitQuizAnswers grades the whole attempt
- * and stores the result. A score can no longer be forged by posting numbers.
+ * and stores the result. A score can no longer be forged by posting numbers, and the
+ * right answer cannot be read off before committing: the first answer to a question is
+ * final, and a new sitting of the same quiz is limited (lib/quiz-attempt-policy.ts).
  */
 
 const checkAnswerSchema = z.object({
@@ -69,9 +78,76 @@ async function isLimited(userId: string, name: string, limit: number): Promise<b
   return !result.allowed;
 }
 
+type OpenAttempt = {
+  id: string;
+  answers: { questionId: string; selectedOption: number; answeredAt: Date }[];
+};
+
+/** The sittings of this quiz the learner has started and not finished (normally one), oldest first. */
+async function getOpenAttempts(userId: string, quizId: string, now: Date): Promise<OpenAttempt[]> {
+  return db.quizAttempt.findMany({
+    where: { userId, quizId, submittedAt: null, startedAt: { gt: quizAttemptExpiry(now) } },
+    orderBy: { startedAt: "asc" },
+    select: {
+      id: true,
+      answers: { select: { questionId: true, selectedOption: true, answeredAt: true } },
+    },
+  });
+}
+
+/**
+ * Starts a sitting if the cooldown and the daily cap allow it. The error is the message
+ * shown to the learner when they do not.
+ */
+async function startAttempt(
+  userId: string,
+  quizId: string,
+  now: Date,
+): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
+  const finished = await db.quizAttempt.findMany({
+    where: { userId, quizId, submittedAt: { gt: quizDayStart(now) } },
+    select: { submittedAt: true },
+  });
+  const decision = canStartQuizAttempt(
+    finished.flatMap((attempt) => (attempt.submittedAt ? [attempt.submittedAt] : [])),
+    now,
+  );
+  if (!decision.allowed) {
+    const when = formatRetryDelay(decision.retryAt, now);
+    return {
+      ok: false,
+      error:
+        decision.reason === "COOLDOWN"
+          ? `Vous pourrez refaire ce quiz ${when}`
+          : `Limite de ${QUIZ_MAX_ATTEMPTS_PER_DAY} tentatives par jour atteinte, réessayez ${when}`,
+    };
+  }
+  const created = await db.quizAttempt.create({ data: { userId, quizId }, select: { id: true } });
+  return { ok: true, id: created.id };
+}
+
+/** First answer recorded for each question across the open sittings: it cannot be changed. */
+function recordedAnswers(attempts: OpenAttempt[]): Map<string, number> {
+  const recorded = new Map<string, { selectedOption: number; answeredAt: number }>();
+  for (const attempt of attempts) {
+    for (const answer of attempt.answers) {
+      const known = recorded.get(answer.questionId);
+      if (!known || answer.answeredAt.getTime() < known.answeredAt) {
+        recorded.set(answer.questionId, {
+          selectedOption: answer.selectedOption,
+          answeredAt: answer.answeredAt.getTime(),
+        });
+      }
+    }
+  }
+  return new Map([...recorded].map(([questionId, { selectedOption }]) => [questionId, selectedOption]));
+}
+
 /**
  * Feedback for one answer. Also verifies that the caller can access the course
- * the quiz belongs to.
+ * the quiz belongs to. The first answer to a question is recorded on the learner's
+ * current sitting and is final: asking again with another option returns the feedback
+ * for the recorded one, so the right answer cannot be found by trying every option.
  */
 export async function checkQuizAnswer(
   input: z.infer<typeof checkAnswerSchema>,
@@ -109,10 +185,30 @@ export async function checkQuizAnswer(
       return { success: false, error: "Réponse invalide" };
     }
 
+    const now = new Date();
+    const open = await getOpenAttempts(userId, quizId, now);
+    let effectiveOption = recordedAnswers(open).get(questionId);
+
+    if (effectiveOption === undefined) {
+      let attemptId = open.at(-1)?.id;
+      if (!attemptId) {
+        const started = await startAttempt(userId, quizId, now);
+        if (!started.ok) return { success: false, error: started.error };
+        attemptId = started.id;
+      }
+      // a parallel request may have recorded this question first: its answer wins
+      await db.quizAttemptAnswer.upsert({
+        where: { attemptId_questionId: { attemptId, questionId } },
+        create: { attemptId, questionId, selectedOption },
+        update: {},
+      });
+      effectiveOption = selectedOption;
+    }
+
     return {
       success: true,
       questionId: question.id,
-      isCorrect: selectedOption === question.correct,
+      isCorrect: effectiveOption === question.correct,
       correctOption: question.correct,
       explanation: question.explanation ?? "",
     };
@@ -126,7 +222,10 @@ export async function checkQuizAnswer(
 
 /**
  * Grade a complete attempt and save the result (retakes overwrite the previous
- * result). Every question of the quiz must be answered exactly once.
+ * result). Every question of the quiz must be answered exactly once. A question
+ * whose feedback was already shown is graded on the answer recorded then, whatever
+ * the browser sends now; the others on the submitted answer. A new sitting is subject to
+ * the cooldown and the daily cap (lib/quiz-attempt-policy.ts).
  */
 export async function submitQuizAnswers(
   input: z.infer<typeof submitAnswersSchema>,
@@ -159,20 +258,35 @@ export async function submitQuizAnswers(
     const access = await AccessService.checkCourseAccess(userId, courseId);
     if (!access.canAccessCourse) return { success: false, error: "Accès refusé" };
 
-    const selectedByQuestion = new Map<string, number>();
+    const submitted = new Map<string, number>();
     for (const answer of answers) {
-      if (selectedByQuestion.has(answer.questionId)) {
+      if (submitted.has(answer.questionId)) {
         return { success: false, error: "Réponses invalides" };
       }
-      selectedByQuestion.set(answer.questionId, answer.selectedOption);
+      submitted.set(answer.questionId, answer.selectedOption);
     }
 
     const total = quiz.questions.length;
     const answeredAll =
       total > 0 &&
-      selectedByQuestion.size === total &&
-      quiz.questions.every((q) => selectedByQuestion.has(q.id));
+      submitted.size === total &&
+      quiz.questions.every((q) => submitted.has(q.id));
     if (!answeredAll) return { success: false, error: "Quiz incomplet" };
+
+    const now = new Date();
+    const open = await getOpenAttempts(userId, quizId, now);
+    const attemptIds = open.map((attempt) => attempt.id);
+    if (attemptIds.length === 0) {
+      // answered without asking for feedback (direct call): still one sitting
+      const started = await startAttempt(userId, quizId, now);
+      if (!started.ok) return { success: false, error: started.error };
+      attemptIds.push(started.id);
+    }
+
+    const recorded = recordedAnswers(open);
+    const selectedByQuestion = new Map(
+      quiz.questions.map((q) => [q.id, recorded.get(q.id) ?? submitted.get(q.id)!] as const),
+    );
 
     const review: QuizFeedback[] = quiz.questions.map((q) => ({
       questionId: q.id,
@@ -183,11 +297,17 @@ export async function submitQuizAnswers(
     const score = review.filter((r) => r.isCorrect).length;
     const percentage = Math.round((score / total) * 100);
 
-    await db.quizResult.upsert({
-      where: { userId_quizId: { userId, quizId } },
-      create: { userId, quizId, score, total, percentage },
-      update: { score, total, percentage, completedAt: new Date() },
-    });
+    await db.$transaction([
+      db.quizResult.upsert({
+        where: { userId_quizId: { userId, quizId } },
+        create: { userId, quizId, score, total, percentage },
+        update: { score, total, percentage, completedAt: now },
+      }),
+      db.quizAttempt.updateMany({
+        where: { id: { in: attemptIds }, submittedAt: null },
+        data: { submittedAt: now },
+      }),
+    ]);
 
     return { success: true, score, total, percentage, review };
   } catch (error) {
