@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { db } from "@/lib/db";
 import { AdminDashboardStats } from "./_components/admin-dashboard-stats";
 import { RecentActivity } from "./_components/recent-activity";
+import { getRecentActivity } from "@/lib/services/admin-activity";
 import { RevenueChart } from "./_components/revenue-chart";
 import { PopularCourses } from "./_components/popular-courses";
 import { UserGrowthChart } from "./_components/user-growth-chart";
@@ -111,7 +112,7 @@ async function getAdminStats() {
 }
 
 export default async function AdminDashboardPage() {
-  const stats = await getAdminStats();
+  const [stats, recentActivity] = await Promise.all([getAdminStats(), getRecentActivity()]);
 
   return (
     <div className="space-y-8">
@@ -156,7 +157,7 @@ export default async function AdminDashboardPage() {
 
         {/* Recent Activity */}
         <ScrollArea className="h-[500px] rounded-md border">
-          <RecentActivity />
+          <RecentActivity activities={recentActivity} />
         </ScrollArea>
       </div>
     </div>
