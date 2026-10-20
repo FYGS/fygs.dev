@@ -1,4 +1,4 @@
-# Platform completion tracker
+# Platform completion trackerDONE |DONE |DONE |DONE |DONE |DONE |DONE |
 
 Source: backlog memory of 2026-10-17 (17 items done) + the leftovers listed after it.
 Goal: nothing left open. Every task has an owner, an acceptance criterion and a status.
@@ -75,3 +75,4 @@ e2e green when a user flow changes, CHANGELOG entry, committed on `feature/refac
 ## Log
 
 - 2026-10-20: tracker created. P0-1 done (owner approved), P0-3 done (owner moved the folder), P1-1 decided: follow the spec (revoke premium access after cancellation).
+- 2026-10-20: P1-1 (access rule), P1-2 (charge.refunded), P1-3 (async_payment_failed; async_payment_succeeded was already handled), P2-1 (DATABASE_URL check), P3-1 (real admin activity), P4-1 (single h1) done. Integration 190+ tests green on embedded Postgres, unit 1650 green, tsc 0, eslint 0.

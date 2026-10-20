@@ -15,6 +15,8 @@
 - `BETTER_AUTH_SECRET` is required in production.
 
 ### Added
+- Stripe `charge.refunded` (refunds made in the dashboard): a full refund marks the payment REFUNDED, which ends the lifetime-purchase access; a partial refund is only audited. `checkout.session.async_payment_failed` marks the pending payment FAILED and tells the buyer.
+- Startup check of `DATABASE_URL` (`[database]` log lines: missing TLS, unverified TLS, private CA, Prisma-only parameters the `pg` adapter ignores); production DB section in DEPLOYMENT.md.
 - AI tutor: streaming assistant in the playground (explain, debug, review, optimize, tests, refactor, hint, chat; insert/replace in the editor; "Explain this error") and on course lessons. Needs `ANTHROPIC_API_KEY`; works in a labelled offline mode without it. Rate limited (visitors 8/h, accounts 60/h).
 - Stripe webhook events are processed once per event id (duplicate deliveries are acknowledged, failed handlers can be retried).
 
@@ -28,6 +30,9 @@
 - Security and ops: CSP report-only candidate and `/api/csp-report`, `/api/health` with the rate-limit degradation status, daily AI budgets, PII redaction in logs, `pnpm test:e2e` (32 browser tests on a production build, also in CI).
 
 ### Fixed
+- Access after a subscription ends: premium access now needs an entitlement on top of the enrollment (active subscription, completed lifetime purchase, or a free course), as the spec requires (FR-003, FR-005). The enrollment and the progress are kept; a lapsed subscriber sees the first-lesson preview like a visitor. `AccessService.checkCourseAccess` and `checkMultipleCoursesAccess` share `evaluateCourseAccess`; the contract tests that pinned "enrollment is enough" assert the spec now.
+- Admin dashboard "recent activity" shows real events (registrations, enrollments, settled payments, reviews, certificates) instead of sample data, rendered on the server.
+- Lesson pages (and course detail pages that embed markdown) render a single `<h1>`: a `# Title` in the body is an `<h2>`.
 - Stripe: one payment row per payment (renewals no longer overwrite one row), invoices read the basil subscription field, free (100% promo) checkouts grant access, plan switch and proration audit repaired, redirect URLs without a double slash, concurrent cancellation / refund call Stripe once.
 - Defects found by the new database and browser tests: build failure (a client component imported the Prisma client), /admin pages crashing (users without subscription, a missing table, a function prop passed to a client component), hydration errors (locale-dependent numbers, sample dates computed at module load), enrolling did not open the first lesson, concurrent enrollment / certificate issuance / progress updates, progress of unpublished lessons inflating course completion, review votes, review search answering an empty 200 on failure, review content filter matching inside words, saved playground workspace never restored.
 - The admin sidebar and quick actions no longer link to pages that do not exist.
