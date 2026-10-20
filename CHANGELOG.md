@@ -13,6 +13,7 @@
 - Rate limiting on 32 API routes and the auth endpoints (atomic Redis sliding window, in-process fallback, trusted-proxy IP).
 - Content-Security-Policy and baseline security headers; Stripe webhook invalid signature now answers 400; refunds use the real PaymentIntent and an idempotency key.
 - `BETTER_AUTH_SECRET` is required in production.
+- Dependency audit 5 -> 2 advisories: `webpack` is a direct devDependency at a patched version, `postcss-selector-parser` is overridden for Tailwind Typography. The two left (`braces`, `sprintf-js`) have no upstream fix and are reachable only at build time; risk documented in docs/security-ops-2026-10.md. `scripts/audit/lockfile-advisories.mjs` audits the lockfile without `pnpm audit`.
 
 ### Added
 - Stripe `charge.refunded` (refunds made in the dashboard): a full refund marks the payment REFUNDED, which ends the lifetime-purchase access; a partial refund is only audited. `checkout.session.async_payment_failed` marks the pending payment FAILED and tells the buyer.
@@ -28,9 +29,6 @@
 - i18n dictionaries unified; analytics calls go through `AnalyticsHelper`.
 - Stripe: SDK default API version, handlers accept old and new payload shapes, `scripts/stripe-smoke.mjs` checks the integration in TEST mode (rollout plan in docs/modernization-2026-10.md).
 - Security and ops: CSP report-only candidate and `/api/csp-report`, `/api/health` with the rate-limit degradation status, daily AI budgets, PII redaction in logs, `pnpm test:e2e` (32 browser tests on a production build, also in CI).
-
-### Security
-- Dependency audit 5 -> 2 advisories: `webpack` is a direct devDependency at a patched version, `postcss-selector-parser` is overridden for Tailwind Typography. The two left (`braces`, `sprintf-js`) have no upstream fix and are reachable only at build time; risk documented in docs/security-ops-2026-10.md. `scripts/audit/lockfile-advisories.mjs` audits the lockfile without `pnpm audit`.
 
 ### Fixed
 - Access after a subscription ends: premium access now needs an entitlement on top of the enrollment (active subscription, completed lifetime purchase, or a free course), as the spec requires (FR-003, FR-005). The enrollment and the progress are kept; a lapsed subscriber sees the first-lesson preview like a visitor. `AccessService.checkCourseAccess` and `checkMultipleCoursesAccess` share `evaluateCourseAccess`; the contract tests that pinned "enrollment is enough" assert the spec now.
