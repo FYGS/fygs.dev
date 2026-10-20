@@ -6,6 +6,7 @@ import { AlertCircle, Home, RefreshCcw } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 import { useIntlayer } from "next-intlayer";
+import { reportClientError } from "@/lib/report-error";
 
 interface ErrorPageProps {
   error: Error & { digest?: string };
@@ -18,6 +19,7 @@ export function ErrorPage({ error, reset, homeUrl = "/" }: ErrorPageProps) {
 
   useEffect(() => {
     console.error(error);
+    void reportClientError(error);
   }, [error]);
 
   return (

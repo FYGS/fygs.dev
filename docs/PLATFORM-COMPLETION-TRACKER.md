@@ -35,6 +35,7 @@ e2e green when a user flow changes, CHANGELOG entry, committed on `feature/refac
 | P2-3 | Add the new Stripe events to the webhook endpoint in the Stripe dashboard, optionally upgrade the endpoint API version (plan in `docs/modernization-2026-10.md`) | OWNER | events delivered in the Stripe dashboard | TODO |
 | P2-4 | Promote the CSP from report-only to enforced after reading `/api/csp-report` for a release cycle | OWNER then DEV | no violation in reports, header switched | TODO |
 | P2-5 | Set `ANTHROPIC_API_KEY` so the AI features leave offline mode; smoke-test the budget guard | OWNER | AI endpoint answers, budget log visible | TODO |
+| P2-6 | Create the Sentry project, set `SENTRY_DSN` and `NEXT_PUBLIC_SENTRY_DSN` (rebuild after the second), trigger a test error | OWNER | the error shows up without personal data | TODO |
 
 ## Phase 3: Features that are placeholders today
 
@@ -44,19 +45,21 @@ e2e green when a user flow changes, CHANGELOG entry, committed on `feature/refac
 | P3-2 | TechMastery dashboard computed from the real progress (pages opened, time, quiz results, streak) against the real catalog; visits and quizzes are tracked; the made-up numbers, the fake 500 ms load and the dead buttons are gone | DEV | unit + render tests, mock data removed | DONE |
 | P3-3 | Admin pages: payments, subscriptions, enrollments and certificates are built (read-only, filters, search, pagination, admin-only on the server). Decision: blog, projects, pages, settings, database, security, progress and revenue pages are NOT built: the blog/projects/pages are files of the repository, payments live in Stripe, revenue is on the analytics page; their links stay hidden (`lib/admin-routes.ts`) | DEV | integration + e2e tests | DONE |
 | P3-4 | Review e-mails (new review -> instructor, reply -> reviewer, report -> moderators, weekly summary) were all failing silently on a shape mismatch hidden by `as any`; the service now loads by id; the bulk mode that only logged now sends | DEV | integration tests on a real database with the mail provider mocked | DONE |
-| P3-5 | Sentry (error monitoring) wired with PII redaction, release tag, source maps | DEV + OWNER (DSN) | test error visible in Sentry | TODO |
+| P3-5 | Error monitoring (Sentry): wired for server, browser and the root layout, PII-scrubbed, inert without a DSN, tested with the real SDK. Owner: create the Sentry project and set the DSNs (P2-6) | DEV | tests with the real SDK and a fake transport | DONE |
 | P3-6 | Coding challenges and exercises run for real: isolated sandbox (iframe + worker, own CSP, no network), editor, per-test results, timeouts; the fake leaderboard and analytics are gone | DEV | unit + e2e in a real browser on the production build | DONE |
 | P3-7 | Lesson pages no longer show a "Ressources" card that repeated the same four generic bullets on every lesson (there is no per-lesson resources data) | DEV | no placeholder text left in lesson pages | DONE |
 | P3-8 | Admin-only pages enforce the ADMIN role on the server: the user directory (e-mails, amounts spent) was open to any instructor who typed the URL | DEV | unit + e2e | DONE |
 | P3-9 | Monaco came from a CDN that the CSP blocks: the editor of the exercise pages never appeared in production; the bundled Monaco is used, with a text area fallback | DEV | unit + e2e | DONE |
+| P3-10 | Review moderation: approve/reject with an audit trail, real list and counters, fake settings page removed | DEV | integration + unit + e2e | DONE |
+| P3-11 | Server-side admin check also on the review moderation queue (it had none) | DEV | e2e | DONE |
 
 ## Phase 4: Accessibility and quality
 
 | ID | Task | Owner | Acceptance | Status |
 |----|------|-------|------------|--------|
 | P4-1 | Lesson pages render a single `h1` | DEV | e2e/axe assertion | TODO |
-| P4-2 | Heading order, remaining contrast issues, tooltip icon buttons (`docs/accessibility-audit-2026-10.md`) | DEV | axe 0 violation on audited pages | TODO |
-| P4-3 | Audit what the first pass skipped: light theme, mobile viewports, screen reader flow, `es` locale | DEV | audit appendix + fixes | TODO |
+| P4-2 | Accessibility fixes from the audits (headings, contrast, names, landmarks, rating stars, progress bars, tokens tested in both themes); remaining items and numbers: `docs/accessibility-audit-2026-10.md`, section "Second pass" | DEV | axe on the audited pages, see the document | DONE |
+| P4-3 | The audit now covers what the first pass skipped: back office (20 pages), learner pages signed in, mobile viewport, light theme, `es` locale. Still not covered: screen reader sessions (NVDA/VoiceOver) by a person | DEV | audit reports in the document | DONE (screen readers: OWNER) |
 | P4-4 | Quiz retake: the first answer to a question is final and is what gets graded, a new sitting needs a 5 min cooldown and is capped at 5 per 24 h (QuizAttempt tables + migration). Per-attempt shuffling of the question order not done: once answers are revealed it adds nothing | DEV | integration tests on a real database | DONE |
 
 ## Phase 5: Security and dependencies
@@ -85,3 +88,4 @@ e2e green when a user flow changes, CHANGELOG entry, committed on `feature/refac
 - 2026-10-20: P3-4 done: three review notifications never reached anyone (wrong relation names, missing `course`), fixed and tested.
 - 2026-10-20: P3-7 done.
 - 2026-10-20: P3-3, P3-6, P3-8, P3-9 done. Content bugs found by the new regression tests: the reference solution of the jump search reassigned a `const`, the sorting exercises asked for `bubblesort` while the function to write is `bubbleSort`, the empty tree test expected `[[]]`. All verified in Chrome on a production build (38 e2e tests).
+- 2026-10-20: P3-10, P3-11 done. Two validation traps found and fixed in the process: the validation worktree had silently stayed on an older commit, and the `node_modules` it used predated the lockfile changes (see the log of the next entry).
