@@ -41,10 +41,12 @@ e2e green when a user flow changes, CHANGELOG entry, committed on `feature/refac
 | ID | Task | Owner | Acceptance | Status |
 |----|------|-------|------------|--------|
 | P3-1 | Admin "recent activity" reads real events (audit log) instead of sample data | DEV | integration test, no sample data left | TODO |
-| P3-2 | Tech-mastry progress dashboard reads real progress instead of `Date.now` mock data | DEV | unit + render tests on real data, mock file removed | TODO |
+| P3-2 | TechMastery dashboard computed from the real progress (pages opened, time, quiz results, streak) against the real catalog; visits and quizzes are tracked; the made-up numbers, the fake 500 ms load and the dead buttons are gone | DEV | unit + render tests, mock data removed | DONE |
 | P3-3 | Missing admin pages: blog, projects, pages, settings, payments (and the others hidden by `lib/admin-routes.ts`): one task per page, each with list/create/edit/delete, authorization, validation, tests, then re-enable the link | DEV | each page: integration + e2e, link restored | TODO |
 | P3-4 | Review notifications: notify the author/admin on new review and on moderation | DEV | notification test | TODO |
 | P3-5 | Sentry (error monitoring) wired with PII redaction, release tag, source maps | DEV + OWNER (DSN) | test error visible in Sentry | TODO |
+| P3-6 | Coding challenges (`tech-mastry/challenges`) run a SIMULATION (`createMockSubmissionResult`), the leaderboard and analytics are static: run the user's code for real (the playground already has a runner), then call `trackChallengeComplete` on a real pass | DEV | a failing and a passing submission behave differently, test cases really executed | TODO |
+| P3-7 | Lesson page "Ressources" card shows the same generic bullets for every lesson (`lesson-content.tsx`): read real resources/objectives from the lesson or hide the card | DEV | no placeholder text left in lesson pages | TODO |
 
 ## Phase 4: Accessibility and quality
 
@@ -53,7 +55,7 @@ e2e green when a user flow changes, CHANGELOG entry, committed on `feature/refac
 | P4-1 | Lesson pages render a single `h1` | DEV | e2e/axe assertion | TODO |
 | P4-2 | Heading order, remaining contrast issues, tooltip icon buttons (`docs/accessibility-audit-2026-10.md`) | DEV | axe 0 violation on audited pages | TODO |
 | P4-3 | Audit what the first pass skipped: light theme, mobile viewports, screen reader flow, `es` locale | DEV | audit appendix + fixes | TODO |
-| P4-4 | Quiz retake cheating: server-side attempt limit/cooldown and per-attempt question order | DEV | integration test | TODO |
+| P4-4 | Quiz retake: the first answer to a question is final and is what gets graded, a new sitting needs a 5 min cooldown and is capped at 5 per 24 h (QuizAttempt tables + migration). Per-attempt shuffling of the question order not done: once answers are revealed it adds nothing | DEV | integration tests on a real database | DONE |
 
 ## Phase 5: Security and dependencies
 
@@ -77,3 +79,4 @@ e2e green when a user flow changes, CHANGELOG entry, committed on `feature/refac
 - 2026-10-20: tracker created. P0-1 done (owner approved), P0-3 done (owner moved the folder), P1-1 decided: follow the spec (revoke premium access after cancellation).
 - 2026-10-20: P1-1 (access rule), P1-2 (charge.refunded), P1-3 (async_payment_failed; async_payment_succeeded was already handled), P2-1 (DATABASE_URL check), P3-1 (real admin activity), P4-1 (single h1) done. Integration 190+ tests green on embedded Postgres, unit 1650 green, tsc 0, eslint 0.
 - 2026-10-20: P5 done. Lockfile audit 5 -> 2 advisories (both without upstream fix, risk documented). `scripts/audit/lockfile-advisories.mjs` added. Dependabot branches classified: 23/23 superseded.
+- 2026-10-20: P3-2 (TechMastery dashboard on real progress) and P4-4 (quiz sittings) done. New findings: P3-6 (challenge execution is simulated), P3-7 (lesson resources placeholder).
