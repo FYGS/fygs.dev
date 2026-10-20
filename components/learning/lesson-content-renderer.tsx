@@ -92,6 +92,9 @@ export function LessonContentRenderer({
       components={{
         script: () => null,
         style: () => null,
+        // The lesson page owns the only <h1> (the lesson title): a "# Title" in the
+        // body would be a second one, so the body's top level is an <h2>.
+        h1: ({ node, ...props }) => <h2 {...props} />,
         pre: ({ children }) => {
           const block = extractCodeBlock(children);
 

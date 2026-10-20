@@ -23,13 +23,14 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
         rehypePlugins={[rehypeRaw]}
         components={{
           // Headers
+          // The page embedding this markdown already has its <h1>: "# Title" becomes an <h2>
           h1: ({ children, ...props }) => (
-            <h1 
+            <h2 
               className="text-2xl font-bold mt-8 mb-6 scroll-mt-4 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent"
               {...props}
             >
               {children}
-            </h1>
+            </h2>
           ),
           h2: ({ children, ...props }) => (
             <h2 
