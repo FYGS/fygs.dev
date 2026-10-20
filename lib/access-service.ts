@@ -4,7 +4,7 @@ import { db } from "./db";
 export interface UserAccess {
   hasActiveSubscription: boolean; // Premium subscription (ACTIVE)
   isEnrolledInCourse: boolean; // Explicit enrollment always required for dashboard/progress
-  canAccessCourse: boolean; // True only when enrolled
+  canAccessCourse: boolean; // Enrolled AND entitled (free tier, lifetime purchase or active subscription), FR-003
   canAccessLessons: boolean; // Alias (kept for compatibility)
   subscriptionStatus?: string;
   subscriptionCancelAtPeriodEnd?: boolean;
@@ -12,7 +12,7 @@ export interface UserAccess {
   canPreviewFirstLesson?: boolean; // Can watch first lesson as preview (only first lesson, not enrolled, premium course)
   isFreeCourse?: boolean; // Course is free tier (still requires enrollment for tracking)
   isPremiumCourse?: boolean; // Course requires premium (subscription entitlement + enrollment)
-  accessReason?: "ok" | "not_enrolled" | "preview_only";
+  accessReason?: "ok" | "not_enrolled" | "preview_only" | "premium_locked";
 }
 
 export interface CourseAccessContext {
@@ -164,7 +164,7 @@ export class AccessService {
     userId: string,
     courseId: string
   ): Promise<UserAccess> {
-    const [subscription, enrollment, course] = await Promise.all([
+    const [subscription, enrollment, course, purchase] = await Promise.all([
       db.subscription.findFirst({
         where: { userId, status: SubscriptionStatus.ACTIVE },
         select: {
@@ -181,6 +181,15 @@ export class AccessService {
       db.course.findUnique({
         where: { id: courseId },
         select: { id: true, accessTier: true, previewEnabled: true, published: true },
+      }),
+      db.payment.findFirst({
+        where: {
+          userId,
+          courseId,
+          kind: PaymentKind.COURSE,
+          status: PaymentStatus.COMPLETED,
+        },
+        select: { id: true, kind: true, status: true, courseId: true },
       }),
     ]);
 
@@ -203,8 +212,14 @@ export class AccessService {
     const isFreeCourse = course.accessTier === CourseAccessTier.FREE;
     const hasActiveSubscription = !!subscription; // ACTIVE premium subscription
     const isEnrolledInCourse = !!enrollment; // Represents explicit enrollment (free, subscription add, or one-time purchase)
-    // Access granted only once enrolled (enrollment creates dashboard association & tracking)
-    const canAccessCourse = isEnrolledInCourse;
+    // Enrollment alone is not enough on a premium course: the entitlement must still be valid
+    // (lifetime purchase or active subscription), so a cancelled subscriber loses access (FR-005).
+    const canAccessCourse = AccessService.evaluateCourseAccess({
+      enrollment,
+      course,
+      subscription,
+      payments: purchase ? [purchase] : [],
+    }).allowed;
     const canAccessLessons = canAccessCourse;
     // Preview allowed only for premium locked courses (not free) when previewEnabled flag set,
     // and never for a course that is not published (a draft is not public)
@@ -217,6 +232,8 @@ export class AccessService {
       ? "ok"
       : canPreviewFirstLesson
       ? "preview_only"
+      : isEnrolledInCourse
+      ? "premium_locked"
       : "not_enrolled";
 
     return {
@@ -359,18 +376,27 @@ export class AccessService {
     const results: Record<string, UserAccess> = {};
     if (courseIds.length === 0) return results;
 
-    const [subscription, enrollments, courses] = await Promise.all([
+    const [subscription, enrollments, courses, purchases] = await Promise.all([
       db.subscription.findFirst({
         where: { userId, status: SubscriptionStatus.ACTIVE },
         select: { id: true, status: true, cancelAtPeriodEnd: true },
       }),
       db.enrollment.findMany({
         where: { userId, courseId: { in: courseIds } },
-        select: { courseId: true, enrolledAt: true },
+        select: { id: true, courseId: true, enrolledAt: true },
       }),
       db.course.findMany({
         where: { id: { in: courseIds } },
         select: { id: true, accessTier: true, previewEnabled: true, published: true },
+      }),
+      db.payment.findMany({
+        where: {
+          userId,
+          courseId: { in: courseIds },
+          kind: PaymentKind.COURSE,
+          status: PaymentStatus.COMPLETED,
+        },
+        select: { id: true, kind: true, status: true, courseId: true },
       }),
     ]);
 
@@ -384,7 +410,12 @@ export class AccessService {
       const isFreeCourse = course.accessTier === CourseAccessTier.FREE;
       const enrollment = enrollmentMap.get(courseId);
       const isEnrolledInCourse = !!enrollment;
-      const canAccessCourse = isEnrolledInCourse; // enrollment-required gating
+      const canAccessCourse = AccessService.evaluateCourseAccess({
+        enrollment,
+        course,
+        subscription,
+        payments: purchases.filter((p) => p.courseId === courseId),
+      }).allowed;
       const canPreviewFirstLesson =
         !canAccessCourse &&
         !isFreeCourse &&
@@ -395,6 +426,8 @@ export class AccessService {
         ? "ok"
         : canPreviewFirstLesson
         ? "preview_only"
+        : isEnrolledInCourse
+        ? "premium_locked"
         : "not_enrolled";
       results[courseId] = {
         hasActiveSubscription,

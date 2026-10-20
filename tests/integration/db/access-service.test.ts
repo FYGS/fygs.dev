@@ -62,7 +62,112 @@ describe("AccessService on a real database", () => {
     expect(await AccessService.canAccessLesson(user.id, "does-not-exist")).toBe(false);
 
     await enroll(user.id, course.id);
+    expect(await AccessService.canAccessLesson(user.id, lessons[2].id)).toBe(false); // enrolled but not entitled
+    await createSubscription(user.id, { status: SubscriptionStatus.ACTIVE });
     expect(await AccessService.canAccessLesson(user.id, lessons[2].id)).toBe(true);
+  });
+
+  describe("premium entitlement after enrollment (FR-003, FR-005)", () => {
+    const completedPurchase = (userId: string, courseId: string, status: PaymentStatus = PaymentStatus.COMPLETED) =>
+      db.payment.create({
+        data: { userId, courseId, amount: "49.90", kind: PaymentKind.COURSE, status },
+      });
+
+    it("an active subscriber who is enrolled has access, and loses it once the subscription is canceled", async () => {
+      const user = await createUser();
+      const premium = await createCourse({ accessTier: CourseAccessTier.PREMIUM, previewEnabled: false });
+      const previewable = await createCourse({ accessTier: CourseAccessTier.PREMIUM, previewEnabled: true });
+      await Promise.all([enroll(user.id, premium.id), enroll(user.id, previewable.id)]);
+      const sub = await createSubscription(user.id, { status: SubscriptionStatus.ACTIVE });
+
+      expect(await AccessService.checkCourseAccess(user.id, premium.id)).toMatchObject({
+        isEnrolledInCourse: true,
+        canAccessCourse: true,
+        accessReason: "ok",
+      });
+
+      await db.subscription.update({ where: { id: sub.id }, data: { status: SubscriptionStatus.CANCELED } });
+      const after = await AccessService.checkCourseAccess(user.id, premium.id);
+      expect(after).toMatchObject({
+        isEnrolledInCourse: true, // the enrollment (and the progress) is kept
+        canAccessCourse: false,
+        canAccessLessons: false,
+        accessReason: "premium_locked",
+      });
+      // where the course offers a preview, a lapsed subscriber falls back to it like any visitor
+      expect(await AccessService.checkCourseAccess(user.id, previewable.id)).toMatchObject({
+        canAccessCourse: false,
+        canPreviewFirstLesson: true,
+        accessReason: "preview_only",
+      });
+    });
+
+    it("a subscription scheduled to cancel keeps access until it actually ends", async () => {
+      const user = await createUser();
+      const premium = await createCourse({ accessTier: CourseAccessTier.PREMIUM, previewEnabled: false });
+      await enroll(user.id, premium.id);
+      await createSubscription(user.id, { status: SubscriptionStatus.ACTIVE, cancelAtPeriodEnd: true });
+
+      expect(await AccessService.checkCourseAccess(user.id, premium.id)).toMatchObject({ canAccessCourse: true });
+    });
+
+    it("a lifetime purchase survives the end of any subscription; a refunded one does not", async () => {
+      const user = await createUser();
+      const premium = await createCourse({ accessTier: CourseAccessTier.PREMIUM, previewEnabled: false });
+      await enroll(user.id, premium.id);
+      const payment = await completedPurchase(user.id, premium.id);
+
+      expect(await AccessService.checkCourseAccess(user.id, premium.id)).toMatchObject({ canAccessCourse: true });
+
+      await db.payment.update({ where: { id: payment.id }, data: { status: PaymentStatus.REFUNDED } });
+      expect(await AccessService.checkCourseAccess(user.id, premium.id)).toMatchObject({
+        canAccessCourse: false,
+        accessReason: "premium_locked",
+      });
+    });
+
+    it("a purchase of another course does not unlock this one", async () => {
+      const user = await createUser();
+      const [bought, other] = await Promise.all([
+        createCourse({ accessTier: CourseAccessTier.PREMIUM, previewEnabled: false }),
+        createCourse({ accessTier: CourseAccessTier.PREMIUM, previewEnabled: false }),
+      ]);
+      await Promise.all([enroll(user.id, bought.id), enroll(user.id, other.id)]);
+      await completedPurchase(user.id, bought.id);
+
+      expect(await AccessService.checkCourseAccess(user.id, bought.id)).toMatchObject({ canAccessCourse: true });
+      expect(await AccessService.checkCourseAccess(user.id, other.id)).toMatchObject({ canAccessCourse: false });
+    });
+
+    it("a free course stays accessible without any subscription", async () => {
+      const user = await createUser();
+      const free = await createCourse({ accessTier: CourseAccessTier.FREE });
+      await enroll(user.id, free.id);
+
+      expect(await AccessService.checkCourseAccess(user.id, free.id)).toMatchObject({ canAccessCourse: true });
+    });
+
+    it("checkMultipleCoursesAccess applies the same rule as checkCourseAccess", async () => {
+      const user = await createUser();
+      const [free, bought, locked] = await Promise.all([
+        createCourse({ accessTier: CourseAccessTier.FREE }),
+        createCourse({ accessTier: CourseAccessTier.PREMIUM, previewEnabled: false }),
+        createCourse({ accessTier: CourseAccessTier.PREMIUM, previewEnabled: false }),
+      ]);
+      await Promise.all([enroll(user.id, free.id), enroll(user.id, bought.id), enroll(user.id, locked.id)]);
+      await completedPurchase(user.id, bought.id);
+
+      const ids = [free.id, bought.id, locked.id];
+      const bulk = await AccessService.checkMultipleCoursesAccess(user.id, ids);
+      for (const id of ids) {
+        const single = await AccessService.checkCourseAccess(user.id, id);
+        expect(bulk[id]).toMatchObject({
+          canAccessCourse: single.canAccessCourse,
+          accessReason: single.accessReason,
+        });
+      }
+      expect(bulk[locked.id]).toMatchObject({ canAccessCourse: false, accessReason: "premium_locked" });
+    });
   });
 
   it("an ACTIVE subscription counts, a CANCELED one does not", async () => {
@@ -76,14 +181,14 @@ describe("AccessService on a real database", () => {
     expect(await AccessService.hasActiveSubscription(canceled.id)).toBe(false);
     expect(await AccessService.hasActiveSubscription(none.id)).toBe(false);
 
-    const premium = await createCourse({ accessTier: CourseAccessTier.PREMIUM });
+    const premium = await createCourse({ accessTier: CourseAccessTier.PREMIUM, previewEnabled: false });
     const access = await AccessService.checkCourseAccess(active.id, premium.id);
     expect(access).toMatchObject({ hasActiveSubscription: true, subscriptionCancelAtPeriodEnd: true });
   });
 
   it("getCourseAccessContext + evaluateCourseAccess agree with the stored rows", async () => {
     const user = await createUser();
-    const premium = await createCourse({ accessTier: CourseAccessTier.PREMIUM });
+    const premium = await createCourse({ accessTier: CourseAccessTier.PREMIUM, previewEnabled: false });
     await enroll(user.id, premium.id);
 
     let context = await AccessService.getCourseAccessContext(user.id, premium.id);

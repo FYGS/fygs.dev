@@ -91,6 +91,7 @@ describe('T118: Access Check Idempotency Tests', () => {
     it('does not modify existing enrollment when checking access', async () => {
       const user = await createUser()
       const course = await createCourse({ accessTier: CourseAccessTier.PREMIUM })
+      await createSubscription(user.id) // premium access needs an entitlement on top of the enrollment (FR-003)
       const existingEnrollment = await enroll(user.id, course.id)
 
       const totalEnrollmentsBefore = await countTotalEnrollments()

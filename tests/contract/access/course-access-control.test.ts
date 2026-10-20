@@ -213,31 +213,51 @@ describe('Course Access Control Contract Tests (FR-006)', () => {
       expect(access.accessReason).toBe('not_enrolled')
     })
 
-    test('respects subscription expiration for enrolled users', async () => {
+    test('respects subscription expiration for enrolled users (FR-005)', async () => {
       // Enroll expired user in premium course
       await db.enrollment.create({
         data: { userId: expiredUserId, courseId: premiumCourseId }
       })
 
       const access = await AccessService.checkCourseAccess(expiredUserId, premiumCourseId)
-      expect(access.canAccessCourse).toBe(true) // Still enrolled, so can access
+      expect(access.canAccessCourse).toBe(false) // the subscription ended: premium access is revoked
+      expect(access.canAccessLessons).toBe(false)
       expect(access.isPremiumCourse).toBe(true)
-      expect(access.isEnrolledInCourse).toBe(true)
+      expect(access.isEnrolledInCourse).toBe(true) // the enrollment (and the progress) is kept
       expect(access.hasActiveSubscription).toBe(false)
-      expect(access.accessReason).toBe('ok')
+      expect(access.accessReason).toBe('premium_locked')
     })
   })
 
   describe('Course enrollment verification', () => {
-    test('enrollment grants access regardless of subscription status', async () => {
-      // Enroll free user in premium course (simulating admin enrollment or purchase)
+    test('enrollment alone does not unlock a premium course without subscription or purchase (FR-003)', async () => {
       await db.enrollment.create({
         data: { userId: freeUserId, courseId: premiumCourseId }
       })
 
       const access = await AccessService.checkCourseAccess(freeUserId, premiumCourseId)
-      expect(access.canAccessCourse).toBe(true)
+      expect(access.canAccessCourse).toBe(false)
       expect(access.isEnrolledInCourse).toBe(true)
+      expect(access.hasActiveSubscription).toBe(false)
+      expect(access.accessReason).toBe('premium_locked')
+    })
+
+    test('enrollment backed by a completed lifetime purchase grants access without any subscription', async () => {
+      await db.enrollment.create({
+        data: { userId: freeUserId, courseId: premiumCourseId }
+      })
+      await db.payment.create({
+        data: {
+          userId: freeUserId,
+          courseId: premiumCourseId,
+          amount: new Decimal('29.99'),
+          kind: 'COURSE',
+          status: 'COMPLETED',
+        }
+      })
+
+      const access = await AccessService.checkCourseAccess(freeUserId, premiumCourseId)
+      expect(access.canAccessCourse).toBe(true)
       expect(access.hasActiveSubscription).toBe(false)
       expect(access.accessReason).toBe('ok')
     })

@@ -16,7 +16,9 @@ import { resetDatabase } from "../../support/test-db";
  * Rules (lib/access-service.ts): every course is enrollment-gated. The one
  * exception is the preview: a PREMIUM course with previewEnabled lets a visitor
  * (enrolled or not, subscribed or not) watch its first published lesson, and only
- * that one. FREE courses have no preview, they simply need an enrollment.
+ * that one. FREE courses have no preview, they simply need an enrollment. On a
+ * PREMIUM course the enrollment opens the whole course only while the user holds an
+ * entitlement (active subscription or lifetime purchase, FR-003/FR-005).
  */
 
 let lessonCounter = 0;
@@ -103,6 +105,7 @@ describe("T114: Premium First Lesson Preview Tests", () => {
     it("enrolled user can access every lesson of the premium course", async () => {
       const user = await createUser();
       const { course, first, second } = await premiumCourseWithLessons();
+      await createSubscription(user.id);
       await enroll(user.id, course.id);
 
       expect(await AccessService.canAccessLesson(user.id, first.id)).toBe(true);
@@ -113,6 +116,21 @@ describe("T114: Premium First Lesson Preview Tests", () => {
         canAccessCourse: true,
         canPreviewFirstLesson: false, // a preview only exists for those locked out
         accessReason: "ok",
+      });
+    });
+
+    it("enrolled but without entitlement falls back to the preview of the first lesson only", async () => {
+      const user = await createUser();
+      const { course, first, second } = await premiumCourseWithLessons();
+      await enroll(user.id, course.id); // e.g. the subscription ended
+
+      expect(await AccessService.canAccessLesson(user.id, first.id)).toBe(true);
+      expect(await AccessService.canAccessLesson(user.id, second.id)).toBe(false);
+      expect(await AccessService.checkCourseAccess(user.id, course.id)).toMatchObject({
+        isEnrolledInCourse: true,
+        canAccessCourse: false,
+        canPreviewFirstLesson: true,
+        accessReason: "preview_only",
       });
     });
 
@@ -254,7 +272,8 @@ describe("T114: Premium First Lesson Preview Tests", () => {
         false
       );
 
-      // 3. After enrollment - the whole course opens up
+      // 3. After enrollment - the whole course opens up for an entitled user
+      await createSubscription(user.id);
       await enroll(user.id, course.id);
 
       expect(await AccessService.isEnrolledInCourse(user.id, course.id)).toBe(
