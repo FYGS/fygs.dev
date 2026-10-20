@@ -78,6 +78,7 @@ const navigation: NavItem[] = [
     href: "/admin/certificates",
     icon: Shield,
     description: "Génération et gestion des certificats",
+    adminOnly: true,
   },
 
   // User Management Section (Role-based visibility)
@@ -93,6 +94,7 @@ const navigation: NavItem[] = [
     href: "/admin/enrollments",
     icon: Activity,
     description: "Suivi des inscriptions aux cours",
+    adminOnly: true,
   },
   {
     title: "Progrès & Performance",

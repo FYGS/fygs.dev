@@ -1,5 +1,5 @@
 import { ADMIN_EMAIL } from "./support/global-setup";
-import { createUser, PASSWORD } from "./support/db";
+import { createUser, PASSWORD, sql } from "./support/db";
 import { expect, expectHealthyPage, signInViaApi, test } from "./support/fixtures";
 
 const PROTECTED = ["/fr/dashboard", "/fr/dashboard/my-courses", "/fr/dashboard/billing", "/fr/profile", "/fr/admin"];
@@ -60,7 +60,53 @@ test.describe("access control (fr)", () => {
     "/fr/admin/tags",
     "/fr/admin/tags/new",
     "/fr/admin/users",
+    "/fr/admin/payments",
+    "/fr/admin/subscriptions",
+    "/fr/admin/enrollments",
+    "/fr/admin/certificates",
   ];
+
+  // the sidebar hides these for an instructor, but typing the URL must not be enough
+  const ADMIN_ONLY = ["users", "payments", "subscriptions", "enrollments", "certificates"];
+
+  test("an instructor reaches the back office but not the admin-only pages", async ({ page }) => {
+    const instructor = await createUser({ name: "Instructeur E2E", role: "INSTRUCTOR" });
+    await page.goto("/fr");
+    await signInViaApi(page, instructor.email, instructor.password);
+
+    await page.goto("/fr/admin");
+    await expect(page).toHaveURL(/\/fr\/admin$/);
+    for (const name of ADMIN_ONLY) {
+      await page.goto(`/fr/admin/${name}`);
+      await expect(page, `/admin/${name}`).toHaveURL(/\/fr\/admin$/);
+      await expect(page.getByText(instructor.email).first()).toBeVisible(); // still in the back office, own header
+    }
+  });
+
+  test("the payments list filters, searches and paginates for real", async ({ page }) => {
+    const buyer = await createUser({ name: "Acheteuse Filtre", email: "acheteuse-filtre@example.com" });
+    await sql(
+      `INSERT INTO "Payment" (id, "userId", amount, currency, status, kind, "updatedAt")
+       VALUES (gen_random_uuid()::text, $1, 4900, 'eur', 'REFUNDED', 'COURSE', now()),
+              (gen_random_uuid()::text, $1, 1500, 'eur', 'COMPLETED', 'COURSE', now())`,
+      [buyer.id],
+    );
+    await page.goto("/fr");
+    await signInViaApi(page, ADMIN_EMAIL, PASSWORD);
+
+    await page.goto("/fr/admin/payments?q=acheteuse-filtre");
+    await expect(page.getByText("1–2 sur 2")).toBeVisible();
+    await expect(page.getByRole("row", { name: /Acheteuse Filtre/ })).toHaveCount(2);
+
+    await page.getByLabel("Statut").selectOption("REFUNDED");
+    await page.getByRole("button", { name: "Filtrer" }).click();
+    await expect(page).toHaveURL(/status=REFUNDED/);
+    await expect(page.getByRole("row", { name: /Acheteuse Filtre/ })).toHaveCount(1);
+    await expect(page.getByText("Remboursé").first()).toBeVisible();
+
+    await page.goto("/fr/admin/payments?q=personne-ne-s-appelle-comme-ca");
+    await expect(page.getByText("Aucun résultat")).toBeVisible();
+  });
 
   test("every admin page renders for the admin (no error boundary, no page error)", async ({ page }) => {
     await page.goto("/fr");

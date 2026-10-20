@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { Suspense } from "react";
 import { db } from "@/lib/db";
+import { requireAdminPage } from "@/lib/admin-guard";
 import { UsersHeader } from "./_components/users-header";
 import { UsersTable } from "./_components/users-table";
 import { UsersStats } from "./_components/users-stats";
@@ -140,6 +141,7 @@ interface UsersPageProps {
 }
 
 export default async function UsersPage({ searchParams }: UsersPageProps) {
+  await requireAdminPage();
   const resolvedSearchParams = await searchParams;
   const urlSearchParams = new URLSearchParams(resolvedSearchParams as Record<string, string>);
 
