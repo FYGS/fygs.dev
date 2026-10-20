@@ -56,12 +56,14 @@ test.describe("code sandbox", () => {
   test("the pages themselves still cannot eval", async ({ page }) => {
     await page.goto("/fr/tech-mastry/challenges");
 
+    // page.evaluate() would not tell: the debugger protocol is allowed to eval whatever the CSP says.
+    // A script of the page is subject to it.
     const outcome = await page.evaluate(() => {
-      try {
-        return new Function("return 1")() === 1 ? "allowed" : "odd";
-      } catch (error) {
-        return (error as Error).name;
-      }
+      const script = document.createElement("script");
+      script.textContent =
+        "try { new Function('return 1')(); window.__evalOutcome = 'allowed'; } catch (error) { window.__evalOutcome = error.name; }";
+      document.head.appendChild(script);
+      return (window as unknown as { __evalOutcome?: string }).__evalOutcome;
     });
 
     expect(outcome).toBe("EvalError");

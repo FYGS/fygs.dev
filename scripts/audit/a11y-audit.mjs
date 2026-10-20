@@ -1,6 +1,10 @@
 // Accessibility audit: axe-core (WCAG 2.0/2.1/2.2 A+AA + best practices) plus custom checks
 // (lang, skip link, focus order/visibility, keyboard traps, reduced motion) on a list of routes.
 // Usage: node scripts/audit/a11y-audit.mjs <baseUrl> <routesFile> <outJson> [maxTabs]
+// Environment (all optional):
+//   AUDIT_SIGNIN=email|password   sign in first, to audit the pages behind a login
+//   AUDIT_VIEWPORT=390x844        default 1280x900 (use a phone size for the mobile pass)
+//   AUDIT_THEME=light|dark        the site's theme (the default follows the system, which is dark here)
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -9,10 +13,18 @@ const root = path.resolve(import.meta.dirname, "../..");
 const { chromium } = await import(
   pathToFileURL(path.join(root, "node_modules/@playwright/test/index.mjs")).href
 );
-const axeSource = fs.readFileSync(
-  path.join(root, "node_modules/.pnpm/axe-core@4.14.0/node_modules/axe-core/axe.min.js"),
-  "utf8",
-);
+// axe-core is only a transitive dependency: take the newest copy pnpm installed
+const axeDir = fs
+  .readdirSync(path.join(root, "node_modules/.pnpm"))
+  .filter((name) => name.startsWith("axe-core@"))
+  .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+  .at(-1);
+if (!axeDir) throw new Error("axe-core is not installed");
+const axeSource = fs.readFileSync(path.join(root, "node_modules/.pnpm", axeDir, "node_modules/axe-core/axe.min.js"), "utf8");
+
+const [signInEmail, signInPassword] = (process.env.AUDIT_SIGNIN ?? "").split("|");
+const [viewportWidth, viewportHeight] = (process.env.AUDIT_VIEWPORT ?? "1280x900").split("x").map(Number);
+const theme = process.env.AUDIT_THEME;
 
 const [base, routesFile, outFile, maxTabsArg] = process.argv.slice(2);
 const maxTabs = Number(maxTabsArg ?? 30);
@@ -22,8 +34,22 @@ const browser = await chromium.launch({ channel: "chrome", headless: true });
 const results = [];
 
 for (const route of routes) {
-  const ctx = await browser.newContext({ bypassCSP: true, viewport: { width: 1280, height: 900 } });
+  const ctx = await browser.newContext({
+    bypassCSP: true,
+    viewport: { width: viewportWidth, height: viewportHeight },
+    ...(theme ? { colorScheme: theme } : {}),
+  });
   await ctx.addCookies([{ name: "locale_selected", value: "true", url: base }]);
+  if (theme) await ctx.addInitScript((value) => localStorage.setItem("fygs-theme", value), theme);
+  if (signInEmail) {
+    // every context gets its own rate-limit bucket (the app trusts the last X-Forwarded-For hop)
+    const ip = `10.${Math.floor(Math.random() * 250) + 1}.${Math.floor(Math.random() * 250) + 1}.${Math.floor(Math.random() * 250) + 1}`;
+    const signIn = await ctx.request.post(base + "/api/auth/sign-in/email", {
+      data: { email: signInEmail, password: signInPassword },
+      headers: { origin: new URL(base).origin, "x-forwarded-for": ip },
+    });
+    if (!signIn.ok()) throw new Error(`sign-in as ${signInEmail} answered ${signIn.status()}`);
+  }
   const page = await ctx.newPage();
   const entry = { route };
   try {

@@ -9,13 +9,40 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Editor, { Monaco } from "@monaco-editor/react";
+import Editor, { loader, Monaco } from "@monaco-editor/react";
 import confetti from "canvas-confetti";
 import { Code, Play, RefreshCw, Sparkles } from "lucide-react";
 import { editor } from "monaco-editor";
 import { useTheme } from "@/providers/theme-provider";
 import { runScriptInSandbox } from "@/app/_lib/code-sandbox";
+import { loadMonaco } from "@/app/_lib/monaco-loader";
 import { useEffect, useRef, useState } from "react";
+
+/**
+ * @monaco-editor/react fetches Monaco from a CDN unless it is handed the module: the site's CSP
+ * (rightly) does not allow that CDN, so the editor never appeared in production. The bundled
+ * Monaco is loaded once, with its workers served from /_next/static/monaco, as in the playground.
+ * "failed" means Monaco could not load at all: the editor then falls back to a plain text area.
+ */
+let monacoReady: Promise<boolean> | null = null;
+function useLocalMonaco(): "loading" | "ready" | "failed" {
+  const [state, setState] = useState<"loading" | "ready" | "failed">("loading");
+  useEffect(() => {
+    let cancelled = false;
+    monacoReady ??= loadMonaco().then((monaco) => {
+      if (!monaco) return false;
+      loader.config({ monaco });
+      return true;
+    });
+    monacoReady.then((ok) => {
+      if (!cancelled) setState(ok ? "ready" : "failed");
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  return state;
+}
 
 interface CodeEditorProps {
   initialCode: string;
@@ -41,6 +68,7 @@ export function CodeEditor({
   const [isRunning, setIsRunning] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("code");
   const { theme } = useTheme();
+  const monacoState = useLocalMonaco();
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<Monaco | null>(null);
 
@@ -170,23 +198,38 @@ export function CodeEditor({
           <Tabs value={activeTab} className="w-full">
             <TabsContent value="code" className="m-0">
               <div className="relative" style={{ height }}>
-                <Editor
-                  height="100%"
-                  language={language}
-                  value={code}
-                  onChange={handleCodeChange}
-                  theme={theme === "dark" ? "vs-dark" : "light"}
-                  options={{
-                    minimap: { enabled: false },
-                    fontSize: 14,
-                    lineNumbers: "on",
-                    readOnly,
-                    scrollBeyondLastLine: false,
-                    automaticLayout: true,
-                    tabSize: 2,
-                  }}
-                  onMount={handleEditorDidMount}
-                />
+                {monacoState === "ready" ? (
+                  <Editor
+                    height="100%"
+                    language={language}
+                    value={code}
+                    onChange={handleCodeChange}
+                    theme={theme === "dark" ? "vs-dark" : "light"}
+                    options={{
+                      minimap: { enabled: false },
+                      fontSize: 14,
+                      lineNumbers: "on",
+                      readOnly,
+                      scrollBeyondLastLine: false,
+                      automaticLayout: true,
+                      tabSize: 2,
+                    }}
+                    onMount={handleEditorDidMount}
+                  />
+                ) : monacoState === "failed" ? (
+                  <textarea
+                    aria-label={title}
+                    value={code}
+                    readOnly={readOnly}
+                    onChange={(event) => handleCodeChange(event.target.value)}
+                    spellCheck={false}
+                    className="h-full w-full resize-none bg-muted/30 p-4 font-mono text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-sm text-muted-foreground" role="status">
+                    Chargement de l&apos;éditeur…
+                  </div>
+                )}
               </div>
             </TabsContent>
             <TabsContent value="output" className="m-0">
@@ -231,7 +274,7 @@ export function CodeEditor({
             variant="outline"
             size="sm"
             onClick={formatCode}
-            disabled={isRunning || readOnly}
+            disabled={isRunning || readOnly || monacoState !== "ready"}
           >
             <Sparkles className="h-4 w-4 mr-2" />
             Formater
