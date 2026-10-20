@@ -1,0 +1,22 @@
+# The back office, audited as the seeded admin (AUDIT_SIGNIN, see a11y-audit.mjs)
+/fr/admin
+/fr/admin/analytics
+/fr/admin/community
+/fr/admin/community/analytics
+/fr/admin/community/moderation
+/fr/admin/community/users
+/fr/admin/courses
+/fr/admin/courses/new
+/fr/admin/lessons
+/fr/admin/lessons/new
+/fr/admin/reviews
+/fr/admin/reviews/analytics
+/fr/admin/reviews/moderation
+/fr/admin/reviews/settings
+/fr/admin/tags
+/fr/admin/tags/new
+/fr/admin/users
+/fr/admin/payments
+/fr/admin/subscriptions
+/fr/admin/enrollments
+/fr/admin/certificates

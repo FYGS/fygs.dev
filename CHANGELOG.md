@@ -16,6 +16,8 @@
 - Dependency audit 5 -> 2 advisories: `webpack` is a direct devDependency at a patched version, `postcss-selector-parser` is overridden for Tailwind Typography. The two left (`braces`, `sprintf-js`) have no upstream fix and are reachable only at build time; risk documented in docs/security-ops-2026-10.md. `scripts/audit/lockfile-advisories.mjs` audits the lockfile without `pnpm audit`.
 
 ### Added
+- Code sandbox (`/sandbox/runner.html`): the exercises and coding challenges run the learner's code for real, in an iframe with an opaque origin and its own CSP (eval allowed, no network) that evaluates it in a worker it can kill; per-test results, console output, syntax errors and endless loops are reported. Hidden tests only show pass or fail.
+- Back office: payments (with totals by status), subscriptions, enrollments and certificates listings with search, filters and pagination.
 - Stripe `charge.refunded` (refunds made in the dashboard): a full refund marks the payment REFUNDED, which ends the lifetime-purchase access; a partial refund is only audited. `checkout.session.async_payment_failed` marks the pending payment FAILED and tells the buyer.
 - Startup check of `DATABASE_URL` (`[database]` log lines: missing TLS, unverified TLS, private CA, Prisma-only parameters the `pg` adapter ignores); production DB section in DEPLOYMENT.md.
 - AI tutor: streaming assistant in the playground (explain, debug, review, optimize, tests, refactor, hint, chat; insert/replace in the editor; "Explain this error") and on course lessons. Needs `ANTHROPIC_API_KEY`; works in a labelled offline mode without it. Rate limited (visitors 8/h, accounts 60/h).
@@ -31,6 +33,10 @@
 - Security and ops: CSP report-only candidate and `/api/csp-report`, `/api/health` with the rate-limit degradation status, daily AI budgets, PII redaction in logs, `pnpm test:e2e` (32 browser tests on a production build, also in CI).
 
 ### Fixed
+- The user directory of the back office (e-mails, amounts spent) was readable by any instructor who typed `/admin/users`: admin-only pages now check the role on the server (`requireAdminPage`).
+- The editor of the exercise pages never appeared in production: it fetched Monaco from a CDN that the CSP blocks. The bundled Monaco is used, with a plain text area if it cannot load.
+- Exercises: the reference solution of the jump search reassigned a `const` (the "show solution" button showed code that crashed), the sorting exercises asked for `bubblesort` while the function to write is `bubbleSort` (they could never pass), and the empty-tree test of the level order challenge expected `[[]]`. A test now runs every reference solution against its own tests.
+- Coding challenges graded at random (70 % chance of passing) and had no code editor; the leaderboard and the analytics were made-up numbers. They are replaced by real execution and by the learner's own progress.
 - Lesson pages no longer show a "Ressources" card with the same generic bullets and tip on every lesson.
 - Review e-mails never reached anyone: the new-review mail read a `course` the route never loaded, the reply mail read `reply.author` and the report mail `report.reporter` (the relation is `user`), all hidden by `as any` and swallowed by a `try/catch`. `ReviewNotificationService` now takes ids and loads what it needs; the bulk mode, which only logged when an instructor had several reviews, now sends (capped at 5 per instructor).
 - Quizzes: the right answer shown after each question could be used to retake the quiz and score 100%. The first answer to a question is now final and is the one graded (the browser can no longer resubmit a different one), a new sitting needs a 5 minute cooldown and is limited to 5 per 24 hours (`QuizAttempt`, `QuizAttemptAnswer`, migration `20261020140000_add_quiz_attempts`).

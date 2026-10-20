@@ -42,11 +42,13 @@ e2e green when a user flow changes, CHANGELOG entry, committed on `feature/refac
 |----|------|-------|------------|--------|
 | P3-1 | Admin "recent activity" reads real events (audit log) instead of sample data | DEV | integration test, no sample data left | TODO |
 | P3-2 | TechMastery dashboard computed from the real progress (pages opened, time, quiz results, streak) against the real catalog; visits and quizzes are tracked; the made-up numbers, the fake 500 ms load and the dead buttons are gone | DEV | unit + render tests, mock data removed | DONE |
-| P3-3 | Missing admin pages: blog, projects, pages, settings, payments (and the others hidden by `lib/admin-routes.ts`): one task per page, each with list/create/edit/delete, authorization, validation, tests, then re-enable the link | DEV | each page: integration + e2e, link restored | TODO |
+| P3-3 | Admin pages: payments, subscriptions, enrollments and certificates are built (read-only, filters, search, pagination, admin-only on the server). Decision: blog, projects, pages, settings, database, security, progress and revenue pages are NOT built: the blog/projects/pages are files of the repository, payments live in Stripe, revenue is on the analytics page; their links stay hidden (`lib/admin-routes.ts`) | DEV | integration + e2e tests | DONE |
 | P3-4 | Review e-mails (new review -> instructor, reply -> reviewer, report -> moderators, weekly summary) were all failing silently on a shape mismatch hidden by `as any`; the service now loads by id; the bulk mode that only logged now sends | DEV | integration tests on a real database with the mail provider mocked | DONE |
 | P3-5 | Sentry (error monitoring) wired with PII redaction, release tag, source maps | DEV + OWNER (DSN) | test error visible in Sentry | TODO |
-| P3-6 | Coding challenges (`tech-mastry/challenges`) run a SIMULATION (`createMockSubmissionResult`), the leaderboard and analytics are static: run the user's code for real (the playground already has a runner), then call `trackChallengeComplete` on a real pass | DEV | a failing and a passing submission behave differently, test cases really executed | TODO |
+| P3-6 | Coding challenges and exercises run for real: isolated sandbox (iframe + worker, own CSP, no network), editor, per-test results, timeouts; the fake leaderboard and analytics are gone | DEV | unit + e2e in a real browser on the production build | DONE |
 | P3-7 | Lesson pages no longer show a "Ressources" card that repeated the same four generic bullets on every lesson (there is no per-lesson resources data) | DEV | no placeholder text left in lesson pages | DONE |
+| P3-8 | Admin-only pages enforce the ADMIN role on the server: the user directory (e-mails, amounts spent) was open to any instructor who typed the URL | DEV | unit + e2e | DONE |
+| P3-9 | Monaco came from a CDN that the CSP blocks: the editor of the exercise pages never appeared in production; the bundled Monaco is used, with a text area fallback | DEV | unit + e2e | DONE |
 
 ## Phase 4: Accessibility and quality
 
@@ -82,3 +84,4 @@ e2e green when a user flow changes, CHANGELOG entry, committed on `feature/refac
 - 2026-10-20: P3-2 (TechMastery dashboard on real progress) and P4-4 (quiz sittings) done. New findings: P3-6 (challenge execution is simulated), P3-7 (lesson resources placeholder).
 - 2026-10-20: P3-4 done: three review notifications never reached anyone (wrong relation names, missing `course`), fixed and tested.
 - 2026-10-20: P3-7 done.
+- 2026-10-20: P3-3, P3-6, P3-8, P3-9 done. Content bugs found by the new regression tests: the reference solution of the jump search reassigned a `const`, the sorting exercises asked for `bubblesort` while the function to write is `bubbleSort`, the empty tree test expected `[[]]`. All verified in Chrome on a production build (38 e2e tests).
