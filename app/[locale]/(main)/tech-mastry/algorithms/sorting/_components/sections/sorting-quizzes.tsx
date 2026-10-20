@@ -26,9 +26,11 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { quizzes } from "./sorting-quizzes/data";
+import { useProgress } from "../../../../_hooks/use-progress";
 
 // Composant pour afficher un quiz
 export function SortingQuizzes() {
+  const { trackQuizScore } = useProgress();
   const [activeQuiz, setActiveQuiz] = useState<string>(quizzes[0].id);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -77,6 +79,7 @@ export function SortingQuizzes() {
       // L'explication est gérée par isAnswered
     } else {
       setQuizCompleted(true);
+      trackQuizScore(`sorting-${quiz.id}`, score, quiz.questions.length);
     }
   };
 

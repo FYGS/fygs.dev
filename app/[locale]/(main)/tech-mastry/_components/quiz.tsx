@@ -77,19 +77,14 @@ export function Quiz({
   const handleNext = useCallback(() => {
     if (currentIndex + 1 >= filteredQuestions.length) {
       setIsComplete(true);
-      onComplete?.(
-        score +
-          (selectedAnswer === filteredQuestions[currentIndex].correctIndex
-            ? 0
-            : 0),
-        filteredQuestions.length,
-      );
+      // the last answer is already counted in `score` (handleAnswer)
+      onComplete?.(score, filteredQuestions.length);
     } else {
       setCurrentIndex((i) => i + 1);
       setSelectedAnswer(null);
       setIsAnswered(false);
     }
-  }, [currentIndex, filteredQuestions, score, selectedAnswer, onComplete]);
+  }, [currentIndex, filteredQuestions, score, onComplete]);
 
   const handleReset = useCallback(() => {
     setCurrentIndex(0);

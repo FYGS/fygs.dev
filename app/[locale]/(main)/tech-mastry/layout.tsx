@@ -5,6 +5,7 @@ import { ArrowUpRight, Menu } from "lucide-react";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Breadcrumbs } from "./_components/breadcrumbs";
+import { ProgressTracker } from "./_components/progress-tracker";
 import { SearchBar } from "./_components/search-bar";
 import { TopicsNav } from "./_components/topics-nav";
 import { generateRouteMetadata } from "../_lib/metadata-helpers";
@@ -26,6 +27,7 @@ export default function InterviewPrepLayout({
 }) {
   return (
     <div className="relative flex min-h-screen bg-background">
+      <ProgressTracker />
       {/* Mobile Navigation Trigger */}
       <Sheet>
         <SheetTrigger asChild>

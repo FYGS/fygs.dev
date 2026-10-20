@@ -32,7 +32,16 @@ const cases: [string, ComponentType][] = [
   ["sorting-exercises", SortingExercises],
   ["sorting-algorithms-sized", () => <SortingAlgorithmsVisualization arraySize={8} speed={50} />],
   ["messaging", MessagingPage],
-  ["streak-calendar", () => <StreakCalendar streakDays={5} />],
+  [
+    "streak-calendar",
+    () => (
+      <StreakCalendar
+        streakDays={5}
+        activityByDay={{ "2026-10-16": 1, "2026-10-17": 2, "2026-10-18": 1, "2026-10-19": 4, "2026-10-20": 1 }}
+        today={new Date("2026-10-20T10:00:00Z")}
+      />
+    ),
+  ],
   ["git-hero", GitMasteryHero],
   ["quiz", () => <Quiz questions={questions} />],
 ];

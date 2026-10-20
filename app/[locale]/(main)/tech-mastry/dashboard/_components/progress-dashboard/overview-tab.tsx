@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { TabsContent } from "@/components/ui/tabs";
@@ -6,17 +5,20 @@ import { BookOpen, Brain, Calendar, ListTodo } from "lucide-react";
 import { RecentActivities } from "../recent-activities";
 import { SkillRadarChart } from "../skill-radar-chart";
 import { StreakCalendar } from "../streak-calendar";
+import { PATH_ICONS } from "./icons";
 import type { ProgressStats } from "./types";
 
-export function OverviewTab({ progressData }: { progressData: ProgressStats }) {
+const CARD = "backdrop-blur-xs bg-background/80 border-border/50 shadow-md";
+
+export function OverviewTab({ progressData, now = new Date() }: { progressData: ProgressStats; now?: Date }) {
   return (
     <TabsContent value="overview" className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Skill Radar Chart */}
-        <Card className="lg:col-span-2 backdrop-blur-xs bg-background/80 border-border/50 shadow-md">
+        <Card className={`lg:col-span-2 ${CARD}`}>
           <CardHeader>
             <CardTitle className="text-xl flex items-center gap-2">
-              <Brain className="h-5 w-5 text-primary" />
+              <Brain className="h-5 w-5 text-primary" aria-hidden="true" />
               Skill Assessment
             </CardTitle>
           </CardHeader>
@@ -26,57 +28,58 @@ export function OverviewTab({ progressData }: { progressData: ProgressStats }) {
         </Card>
 
         {/* Recent Activities */}
-        <Card className="backdrop-blur-xs bg-background/80 border-border/50 shadow-md">
+        <Card className={CARD}>
           <CardHeader>
             <CardTitle className="text-xl flex items-center gap-2">
-              <ListTodo className="h-5 w-5 text-primary" />
+              <ListTodo className="h-5 w-5 text-primary" aria-hidden="true" />
               Recent Activities
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <RecentActivities activities={progressData.recentActivities} />
+            <RecentActivities activities={progressData.recentActivities} now={now} />
           </CardContent>
         </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Streak Calendar */}
-        <Card className="backdrop-blur-xs bg-background/80 border-border/50 shadow-md">
+        <Card className={CARD}>
           <CardHeader>
             <CardTitle className="text-xl flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-primary" />
+              <Calendar className="h-5 w-5 text-primary" aria-hidden="true" />
               Activity Streak
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <StreakCalendar streakDays={progressData.streakDays} />
+            <StreakCalendar
+              streakDays={progressData.streakDays}
+              activityByDay={progressData.activityByDay}
+              today={now}
+            />
           </CardContent>
         </Card>
 
         {/* Learning Paths Progress */}
-        <Card className="backdrop-blur-xs bg-background/80 border-border/50 shadow-md">
-          <CardHeader className="flex flex-row items-center justify-between">
+        <Card className={CARD}>
+          <CardHeader>
             <CardTitle className="text-xl flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-primary" />
+              <BookOpen className="h-5 w-5 text-primary" aria-hidden="true" />
               Learning Paths
             </CardTitle>
-            <Button variant="ghost" size="sm">
-              View All
-            </Button>
           </CardHeader>
           <CardContent className="space-y-4">
             {progressData.learningPaths.map((path) => (
               <div key={path.id} className="space-y-2">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
-                    {path.icon}
+                    {PATH_ICONS[path.icon]}
                     <span className="font-medium">{path.title}</span>
                   </div>
                   <span className="text-sm text-foreground/70">
-                    {path.completedModules}/{path.totalModules} modules
+                    {path.completedModules}/{path.totalModules} topics
                   </span>
                 </div>
-                <Progress value={path.progress} className="h-2" />
+                <Progress value={path.progress} className="h-2" aria-label={`${path.title} progress`} />
               </div>
             ))}
           </CardContent>

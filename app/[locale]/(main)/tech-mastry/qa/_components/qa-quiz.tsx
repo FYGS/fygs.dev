@@ -1,6 +1,7 @@
 "use client";
 
 import { Quiz, type QuizQuestion } from "../../_components/quiz";
+import { useProgress } from "../../_hooks/use-progress";
 
 const quizQuestions: QuizQuestion[] = [
   // Algorithmes & Structures de Données
@@ -264,9 +265,14 @@ const quizQuestions: QuizQuestion[] = [
 ];
 
 export function QAQuiz() {
+  const { trackQuizScore } = useProgress();
   return (
     <div className="max-w-3xl mx-auto">
-      <Quiz questions={quizQuestions} showCategories={true} />
+      <Quiz
+        questions={quizQuestions}
+        showCategories={true}
+        onComplete={(score, total) => trackQuizScore("qa-interview", score, total)}
+      />
     </div>
   );
 }

@@ -14,12 +14,13 @@ interface Activity {
 
 interface RecentActivitiesProps {
   activities: Activity[];
+  /** Reference for the relative times; defaults to the current time */
+  now?: Date;
 }
 
-export function RecentActivities({ activities }: RecentActivitiesProps) {
+export function RecentActivities({ activities, now = new Date() }: RecentActivitiesProps) {
   // Format relative time
   const formatRelativeTime = (date: Date) => {
-    const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
     
     if (diffInSeconds < 60) {
@@ -63,6 +64,14 @@ export function RecentActivities({ activities }: RecentActivitiesProps) {
         return <X className="h-4 w-4 text-red-500" />;
     }
   };
+
+  if (activities.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        Nothing yet. Open a topic, take a quiz or solve a challenge and it will show up here.
+      </p>
+    );
+  }
 
   return (
     <div className="space-y-4">

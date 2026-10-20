@@ -15,6 +15,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle, RotateCcw, XCircle } from "lucide-react";
 import { useState } from "react";
+import { useProgress } from "../../../../_hooks/use-progress";
 
 // Types pour les quiz
 type QuizQuestion = {
@@ -149,6 +150,7 @@ const quizQuestions: QuizQuestion[] = [
 ];
 
 export function SearchingQuizzes() {
+  const { trackQuizScore } = useProgress();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState<boolean>(false);
@@ -175,6 +177,7 @@ export function SearchingQuizzes() {
       setIsAnswered(false);
     } else {
       setQuizCompleted(true);
+      trackQuizScore("searching", score, quizQuestions.length);
     }
   };
 
