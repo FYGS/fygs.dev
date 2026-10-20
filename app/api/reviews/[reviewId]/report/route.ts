@@ -119,7 +119,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     });
 
     // Send notification to moderators (async, don't wait)
-    ReviewNotificationService.notifyReviewReported(report as any).catch(
+    ReviewNotificationService.notifyReviewReported(report.id).catch(
       (error) => {
         logger.error("Failed to send report notification", {
           metadata: {

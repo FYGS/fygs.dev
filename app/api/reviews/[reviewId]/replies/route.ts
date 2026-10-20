@@ -101,7 +101,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     });
 
     // Send notification to student (async, don't wait)
-    ReviewNotificationService.notifyInstructorReply(reply as any).catch(
+    ReviewNotificationService.notifyInstructorReply(reply.id).catch(
       (error) => {
         logger.error("Failed to send reply notification", {
           metadata: {

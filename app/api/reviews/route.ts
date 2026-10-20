@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
 
     // Send notification to instructor (async, don't wait)
     if (status === "APPROVED") {
-      ReviewNotificationService.notifyNewReview(review as any).catch(
+      ReviewNotificationService.notifyNewReview(review.id).catch(
         (error) => {
           logger.error("Failed to send review notification", {
             metadata: {
