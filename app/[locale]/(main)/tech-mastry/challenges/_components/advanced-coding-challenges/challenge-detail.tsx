@@ -2,33 +2,31 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { ArrowLeft, Clock, Code, Play, RotateCcw, Star, Target } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, CheckCircle, Clock, Code, Play, RotateCcw, Star, Target } from "lucide-react";
+import { CodeEditor } from "../../../algorithms/searching/_components/sections/code-editor/code-editor";
 import { DifficultyBadge } from "./difficulty-badge";
 import { HintsSection } from "./hints-section";
 import { SubmissionResults } from "./submission-results";
 import { TestCasesSection } from "./test-cases-section";
-import type {
-  Challenge,
-  Hint,
-  PerformanceMetrics,
-  SubmissionResult,
-} from "./types";
+import type { Challenge, Hint, SubmissionResult } from "./types";
 
 interface ChallengeDetailProps {
   selectedChallenge: Challenge;
+  /** The code the editor starts with: the saved draft, else the starter code */
+  initialCode: string;
+  /** Changes when the editor has to be rebuilt from `initialCode` (reset) */
+  editorKey: number;
   userPoints: number;
-  isSubmitting: boolean;
+  isRunning: boolean;
+  isSolved: boolean;
+  attempts: number;
   submissionResult: SubmissionResult | null;
-  performanceMetrics: PerformanceMetrics | null;
+  /** The sandbox could not be reached: not an error in the learner's code */
+  runnerError: string | null;
   revealedHints: string[];
   onBack: () => void;
+  onCodeChange: (code: string) => void;
   resetChallenge: () => void;
   submitCode: () => void;
   runTestCase: (testCaseId: string) => void;
@@ -37,12 +35,17 @@ interface ChallengeDetailProps {
 
 export function ChallengeDetail({
   selectedChallenge,
+  initialCode,
+  editorKey,
   userPoints,
-  isSubmitting,
+  isRunning,
+  isSolved,
+  attempts,
   submissionResult,
-  performanceMetrics,
+  runnerError,
   revealedHints,
   onBack,
+  onCodeChange,
   resetChallenge,
   submitCode,
   runTestCase,
@@ -50,38 +53,26 @@ export function ChallengeDetail({
 }: ChallengeDetailProps) {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <Button
-          variant="outline"
-          onClick={onBack}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <Button variant="outline" onClick={onBack} className="flex items-center gap-2">
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           Back to Challenges
         </Button>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 text-sm">
-            <Star className="h-4 w-4 text-yellow-500" />
+            <Star className="h-4 w-4 text-yellow-500" aria-hidden="true" />
             <span>Points: {userPoints}</span>
           </div>
-          <Button
-            variant="outline"
-            asChild
-            className="flex items-center gap-2"
-          >
+          <Button variant="outline" asChild className="flex items-center gap-2">
             <Link
               href={`/tech-mastry/playground?code=${encodeURIComponent(selectedChallenge.starterCode)}&title=${encodeURIComponent(selectedChallenge.title)}`}
             >
-              <Code className="h-4 w-4" />
+              <Code className="h-4 w-4" aria-hidden="true" />
               Playground
             </Link>
           </Button>
-          <Button
-            variant="outline"
-            onClick={resetChallenge}
-            className="flex items-center gap-2"
-          >
-            <RotateCcw className="h-4 w-4" />
+          <Button variant="outline" onClick={resetChallenge} className="flex items-center gap-2">
+            <RotateCcw className="h-4 w-4" aria-hidden="true" />
             Reset
           </Button>
         </div>
@@ -89,81 +80,102 @@ export function ChallengeDetail({
 
       <Card className="backdrop-blur-xl bg-background/80 border-border/50">
         <CardHeader>
-          <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <CardTitle className="flex items-center gap-2 text-2xl">
                 {selectedChallenge.title}
                 <span className="text-xs">
                   <DifficultyBadge difficulty={selectedChallenge.difficulty} />
                 </span>
+                {isSolved && (
+                  <span className="flex items-center gap-1 text-sm font-normal text-green-600 dark:text-green-400">
+                    <CheckCircle className="h-4 w-4" aria-hidden="true" />
+                    Solved
+                  </span>
+                )}
               </CardTitle>
               <CardDescription className="mt-2 flex items-center gap-4">
-                <div className="flex items-center gap-1">
-                  <Target className="h-4 w-4" />
+                <span className="flex items-center gap-1">
+                  <Target className="h-4 w-4" aria-hidden="true" />
                   <span>{selectedChallenge.category}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
+                </span>
+                <span className="flex items-center gap-1">
+                  <Clock className="h-4 w-4" aria-hidden="true" />
                   <span>{selectedChallenge.estimatedTime} min</span>
-                </div>
+                </span>
               </CardDescription>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Button
-                variant="default"
-                size="sm"
-                onClick={submitCode}
-                disabled={isSubmitting}
-                className="flex items-center gap-2 bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90"
-              >
-                {isSubmitting ? (
-                  <div className="flex items-center gap-2">
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
-                    <span>Running...</span>
-                  </div>
-                ) : (
-                  <>
-                    <Play className="h-4 w-4" />
-                    Submit Solution
-                  </>
-                )}
-              </Button>
-            </div>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={submitCode}
+              disabled={isRunning}
+              className="flex items-center gap-2 bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90"
+            >
+              {isRunning ? (
+                <span className="flex items-center gap-2">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></span>
+                  <span>Running...</span>
+                </span>
+              ) : (
+                <>
+                  <Play className="h-4 w-4" aria-hidden="true" />
+                  Submit Solution
+                </>
+              )}
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
             <div>
               <h3 className="font-medium mb-2 flex items-center gap-2">
-                <Code className="h-4 w-4 text-primary" />
+                <Code className="h-4 w-4 text-primary" aria-hidden="true" />
                 Problem Statement
               </h3>
-              <p className="text-muted-foreground">
-                {selectedChallenge.description}
-              </p>
+              <p className="text-muted-foreground">{selectedChallenge.description}</p>
             </div>
 
-          <HintsSection
-            selectedChallenge={selectedChallenge}
-            revealedHints={revealedHints}
-            revealHint={revealHint}
-          />
+            <div>
+              <h3 className="font-medium mb-2">Your solution</h3>
+              <CodeEditor
+                key={`${selectedChallenge.id}-${editorKey}`}
+                initialCode={initialCode}
+                language="javascript"
+                title={selectedChallenge.title}
+                height="320px"
+                onCodeChange={onCodeChange}
+                onRun={submitCode}
+              />
+            </div>
 
-          <TestCasesSection
-            selectedChallenge={selectedChallenge}
-            submissionResult={submissionResult}
-            isSubmitting={isSubmitting}
-            runTestCase={runTestCase}
-          />
+            <HintsSection
+              selectedChallenge={selectedChallenge}
+              revealedHints={revealedHints}
+              revealHint={revealHint}
+            />
 
-          {submissionResult && (
-            <SubmissionResults
+            {runnerError && (
+              <p role="alert" className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
+                {runnerError}
+              </p>
+            )}
+
+            <TestCasesSection
               selectedChallenge={selectedChallenge}
               submissionResult={submissionResult}
-              performanceMetrics={performanceMetrics}
+              isRunning={isRunning}
+              runTestCase={runTestCase}
             />
-          )}
+
+            {submissionResult && (
+              <SubmissionResults
+                submissionResult={submissionResult}
+                attempts={attempts}
+                estimatedTime={selectedChallenge.estimatedTime}
+              />
+            )}
           </div>
         </CardContent>
       </Card>

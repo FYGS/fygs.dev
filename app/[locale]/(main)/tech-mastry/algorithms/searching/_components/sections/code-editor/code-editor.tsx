@@ -14,6 +14,7 @@ import confetti from "canvas-confetti";
 import { Code, Play, RefreshCw, Sparkles } from "lucide-react";
 import { editor } from "monaco-editor";
 import { useTheme } from "@/providers/theme-provider";
+import { runScriptInSandbox } from "@/app/_lib/code-sandbox";
 import { useEffect, useRef, useState } from "react";
 
 interface CodeEditorProps {
@@ -65,40 +66,16 @@ export function CodeEditor({
         setOutput("");
         setActiveTab("output");
 
-        // Capturer console.log
-        const originalConsoleLog = console.log;
-        const logs: string[] = [];
-
-        console.log = (...args) => {
-          logs.push(
-            args
-              .map((arg) =>
-                typeof arg === "object"
-                  ? JSON.stringify(arg, null, 2)
-                  : String(arg),
-              )
-              .join(" "),
-          );
-          originalConsoleLog(...args);
-        };
-
-        // Exécuter le code
+        // The code runs in the code sandbox (the site's CSP forbids eval in the page itself)
         try {
-          const result = new Function(code)();
-          if (result !== undefined) {
-            logs.push(`Résultat: ${result}`);
-          }
-          setOutput(logs.join("\n"));
+          const result = await runScriptInSandbox(code);
+          const lines = [...result.logs];
+          if (result.ok && result.value !== undefined) lines.push(`Résultat: ${result.value}`);
+          if (!result.ok) lines.push(`Erreur: ${result.error}`);
+          setOutput(lines.join("\n"));
         } catch (error) {
-          if (error instanceof Error) {
-            setOutput(`Erreur: ${error.message}`);
-          } else {
-            setOutput(`Une erreur s'est produite: ${String(error)}`);
-          }
+          setOutput(error instanceof Error ? error.message : `Une erreur s'est produite: ${String(error)}`);
         }
-
-        // Restaurer console.log
-        console.log = originalConsoleLog;
       } finally {
         setIsRunning(false);
       }

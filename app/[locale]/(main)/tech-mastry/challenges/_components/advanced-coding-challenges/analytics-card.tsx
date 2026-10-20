@@ -1,87 +1,74 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { BarChart3, Target, TrendingUp } from "lucide-react";
+import type { ChallengeStats } from "./lib";
 
-export function AnalyticsCard() {
+const percent = (done: number, total: number) => (total > 0 ? Math.round((done / total) * 100) : 0);
+
+/** The learner's own figures, from the challenges they really submitted (kept in this browser). */
+export function AnalyticsCard({ stats }: { stats: ChallengeStats }) {
+  const solvedPercent = percent(stats.solved, stats.total);
+  const triedPercent = percent(stats.attempted, stats.total);
+
   return (
     <Card className="backdrop-blur-xl bg-background/80 border-border/50">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <BarChart3 className="h-5 w-5 text-primary" />
-          <span>Performance Analytics</span>
+          <BarChart3 className="h-5 w-5 text-primary" aria-hidden="true" />
+          <span>Your Progress</span>
         </CardTitle>
         <CardDescription>
-          Detailed insights about your challenge performance and progress
+          {stats.attempts === 0
+            ? "Submit a solution and your progress shows up here. It is saved in this browser."
+            : `${stats.attempts} submission${stats.attempts === 1 ? "" : "s"} so far. Saved in this browser.`}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             <h3 className="font-medium flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-primary" />
-              Overall Performance
+              <TrendingUp className="h-4 w-4 text-primary" aria-hidden="true" />
+              Overall
             </h3>
 
             <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
               <div className="flex justify-between items-center mb-3">
-                <span className="text-sm">Success Rate</span>
-                <span className="font-medium">78%</span>
+                <span className="text-sm">Challenges solved</span>
+                <span className="font-medium">
+                  {stats.solved}/{stats.total}
+                </span>
               </div>
-              <Progress value={78} className="h-2" />
+              <Progress value={solvedPercent} className="h-2" aria-label="Challenges solved" />
             </div>
 
             <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
               <div className="flex justify-between items-center mb-3">
-                <span className="text-sm">Average Efficiency</span>
-                <span className="font-medium">82%</span>
+                <span className="text-sm">Challenges tried</span>
+                <span className="font-medium">
+                  {stats.attempted}/{stats.total}
+                </span>
               </div>
-              <Progress value={82} className="h-2" />
-            </div>
-
-            <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
-              <div className="flex justify-between items-center mb-3">
-                <span className="text-sm">Time Efficiency</span>
-                <span className="font-medium">65%</span>
-              </div>
-              <Progress value={65} className="h-2" />
+              <Progress value={triedPercent} className="h-2" aria-label="Challenges tried" />
             </div>
           </div>
 
           <div className="space-y-4">
             <h3 className="font-medium flex items-center gap-2">
-              <Target className="h-4 w-4 text-primary" />
-              Challenge Completion
+              <Target className="h-4 w-4 text-primary" aria-hidden="true" />
+              By category
             </h3>
 
-            <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
-              <div className="flex justify-between items-center mb-3">
-                <span className="text-sm">Arrays & Strings</span>
-                <span className="font-medium">12/15</span>
+            {stats.byCategory.map(({ category, solved, total }) => (
+              <div key={category} className="p-4 bg-muted/30 rounded-lg border border-border/50">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-sm">{category}</span>
+                  <span className="font-medium">
+                    {solved}/{total}
+                  </span>
+                </div>
+                <Progress value={percent(solved, total)} className="h-2" aria-label={`${category} solved`} />
               </div>
-              <Progress value={80} className="h-2" />
-            </div>
-
-            <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
-              <div className="flex justify-between items-center mb-3">
-                <span className="text-sm">Trees & Graphs</span>
-                <span className="font-medium">8/12</span>
-              </div>
-              <Progress value={67} className="h-2" />
-            </div>
-
-            <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
-              <div className="flex justify-between items-center mb-3">
-                <span className="text-sm">System Design</span>
-                <span className="font-medium">3/8</span>
-              </div>
-              <Progress value={38} className="h-2" />
-            </div>
+            ))}
           </div>
         </div>
       </CardContent>

@@ -19,7 +19,7 @@ import { CodeRunner } from "./code-editor/code-runner";
 type ExerciseType = "linear" | "binary" | "jump" | "interpolation" | "hash";
 
 // Données des exercices
-const exercises = [
+export const exercises = [
   {
     id: "linear",
     title: "Recherche Linéaire",
@@ -173,7 +173,7 @@ console.log(jumpSearch([1, 3, 5, 7, 9, 11, 13, 15, 17, 19], 13)); // Devrait ret
 console.log(jumpSearch([1, 3, 5, 7, 9, 11, 13, 15, 17, 19], 4));  // Devrait retourner -1`,
     solution: `function jumpSearch(arr, target) {
   const n = arr.length;
-  const step = Math.floor(Math.sqrt(n));
+  let step = Math.floor(Math.sqrt(n));
 
   // Trouver le bloc
   let prev = 0;

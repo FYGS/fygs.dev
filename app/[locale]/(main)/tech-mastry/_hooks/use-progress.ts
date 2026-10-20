@@ -7,6 +7,7 @@ import {
   emptyProgress,
   parseStoredProgress,
   recordChallenge,
+  recordChallengeAttempt,
   recordDay,
   recordQuiz,
   recordTime,
@@ -103,6 +104,10 @@ export function useProgress() {
     updateProgress((prev) => recordChallenge(prev, challengeId, new Date()));
   }, []);
 
+  const trackChallengeAttempt = useCallback((challengeId: string, passed: number, total: number) => {
+    updateProgress((prev) => recordChallengeAttempt(prev, challengeId, passed, total, new Date()));
+  }, []);
+
   const trackTimeSpent = useCallback((path: string, minutes: number) => {
     updateProgress((prev) => recordTime(prev, path, minutes));
   }, []);
@@ -124,6 +129,7 @@ export function useProgress() {
     trackPageVisit,
     trackQuizScore,
     trackChallengeComplete,
+    trackChallengeAttempt,
     trackTimeSpent,
     getStreakDays,
     resetProgress,

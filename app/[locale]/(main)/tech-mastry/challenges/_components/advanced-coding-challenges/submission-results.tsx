@@ -1,168 +1,97 @@
 "use client";
 
 import { Progress } from "@/components/ui/progress";
-import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { CheckCircle, Clock, Star, Target, Trophy, XCircle, Zap } from "lucide-react";
-import type {
-  Challenge,
-  PerformanceMetrics,
-  SubmissionResult,
-} from "./types";
+import { AlertTriangle, CheckCircle, Clock, Terminal, XCircle } from "lucide-react";
+import type { SubmissionResult } from "./types";
 
 interface SubmissionResultsProps {
-  selectedChallenge: Challenge;
   submissionResult: SubmissionResult;
-  performanceMetrics: PerformanceMetrics | null;
+  /** Submissions of this challenge so far (this one included) */
+  attempts: number;
+  estimatedTime: number;
 }
 
-export function SubmissionResults({
-  selectedChallenge,
-  submissionResult,
-  performanceMetrics,
-}: SubmissionResultsProps) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="space-y-4"
-    >
-      <div className="p-4 rounded-lg border bg-muted/30">
-        <div className="flex items-center gap-2 mb-3">
-          {submissionResult.passed ? (
-            <>
-              <CheckCircle className="h-5 w-5 text-green-500" />
-              <span className="font-medium text-green-500">
-                All Tests Passed!
-              </span>
-            </>
-          ) : (
-            <>
-              <XCircle className="h-5 w-5 text-red-500" />
-              <span className="font-medium text-red-500">
-                Some Tests Failed
-              </span>
-            </>
-          )}
+function Verdict({ result }: { result: SubmissionResult }) {
+  if (result.compileError) {
+    return (
+      <div className="flex items-start gap-2 text-red-600 dark:text-red-400" role="alert">
+        <XCircle className="h-5 w-5 mt-0.5 shrink-0" aria-hidden="true" />
+        <div>
+          <p className="font-medium">Your code could not run</p>
+          <p className="text-sm font-mono break-all">{result.compileError}</p>
         </div>
+      </div>
+    );
+  }
+  if (result.timedOut) {
+    return (
+      <div className="flex items-start gap-2 text-amber-600 dark:text-amber-400" role="alert">
+        <AlertTriangle className="h-5 w-5 mt-0.5 shrink-0" aria-hidden="true" />
+        <div>
+          <p className="font-medium">Time limit exceeded</p>
+          <p className="text-sm">An infinite loop or a solution that is too slow stopped the run.</p>
+        </div>
+      </div>
+    );
+  }
+  return result.passed ? (
+    <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+      <CheckCircle className="h-5 w-5" aria-hidden="true" />
+      <span className="font-medium">All Tests Passed!</span>
+    </div>
+  ) : (
+    <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+      <XCircle className="h-5 w-5" aria-hidden="true" />
+      <span className="font-medium">Some Tests Failed</span>
+    </div>
+  );
+}
 
-        <div className="grid grid-cols-2 gap-4">
+export function SubmissionResults({ submissionResult, attempts, estimatedTime }: SubmissionResultsProps) {
+  const { testCasesPassed, totalTestCases } = submissionResult;
+  const accuracy = totalTestCases > 0 ? Math.round((testCasesPassed / totalTestCases) * 100) : 0;
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+      <div className="p-4 rounded-lg border bg-muted/30 space-y-4">
+        <Verdict result={submissionResult} />
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <p className="text-sm text-muted-foreground">
-              Test Cases Passed
-            </p>
+            <p className="text-sm text-muted-foreground">Test Cases Passed</p>
             <p className="text-lg font-medium">
-              {submissionResult.testCasesPassed}/
-              {submissionResult.totalTestCases}
+              {testCasesPassed}/{totalTestCases}
             </p>
-            <Progress
-              value={
-                (submissionResult.testCasesPassed /
-                  submissionResult.totalTestCases) *
-                100
-              }
-              className="mt-1 h-2"
-            />
+            <Progress value={accuracy} className="mt-1 h-2" aria-label="Test cases passed" />
           </div>
 
           <div>
-            <p className="text-sm text-muted-foreground">
-              Execution Time
+            <p className="text-sm text-muted-foreground">Execution Time</p>
+            <p className="text-lg font-medium flex items-center gap-1">
+              <Clock className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+              {submissionResult.executionTime} ms
             </p>
-            <p className="text-lg font-medium">
-              {submissionResult.executionTime}ms
-            </p>
-            <div className="text-xs text-muted-foreground">
-              Memory: {submissionResult.memoryUsed}MB
-            </div>
+            <p className="text-xs text-muted-foreground">Time spent in the tests</p>
+          </div>
+
+          <div>
+            <p className="text-sm text-muted-foreground">Submissions</p>
+            <p className="text-lg font-medium">{attempts}</p>
+            <p className="text-xs text-muted-foreground">Estimated: {estimatedTime} min</p>
           </div>
         </div>
       </div>
 
-      {performanceMetrics && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
-            <div className="flex items-center gap-2 mb-2">
-              <Target className="h-4 w-4 text-blue-500" />
-              <span className="text-sm font-medium">
-                Accuracy
-              </span>
-            </div>
-            <p className="text-2xl font-bold">
-              {performanceMetrics.accuracy}%
-            </p>
-            <div className="w-full bg-muted rounded-full h-1.5 mt-2">
-              <div
-                className="h-1.5 rounded-full bg-blue-500"
-                style={{
-                  width: `${performanceMetrics.accuracy}%`,
-                }}
-              ></div>
-            </div>
-          </div>
-
-          <div className="p-4 bg-green-500/10 rounded-lg border border-green-500/20">
-            <div className="flex items-center gap-2 mb-2">
-              <Zap className="h-4 w-4 text-green-500" />
-              <span className="text-sm font-medium">
-                Efficiency
-              </span>
-            </div>
-            <p className="text-2xl font-bold">
-              {performanceMetrics.efficiency}%
-            </p>
-            <div className="w-full bg-muted rounded-full h-1.5 mt-2">
-              <div
-                className="h-1.5 rounded-full bg-green-500"
-                style={{
-                  width: `${performanceMetrics.efficiency}%`,
-                }}
-              ></div>
-            </div>
-          </div>
-
-          <div className="p-4 bg-purple-500/10 rounded-lg border border-purple-500/20">
-            <div className="flex items-center gap-2 mb-2">
-              <Clock className="h-4 w-4 text-purple-500" />
-              <span className="text-sm font-medium">
-                Time Taken
-              </span>
-            </div>
-            <p className="text-2xl font-bold">
-              {performanceMetrics.timeTaken}m
-            </p>
-            <div className="text-xs text-muted-foreground">
-              vs {selectedChallenge.estimatedTime}m est.
-            </div>
-          </div>
-
-          <div className="p-4 bg-amber-500/10 rounded-lg border border-amber-500/20">
-            <div className="flex items-center gap-2 mb-2">
-              <Trophy className="h-4 w-4 text-amber-500" />
-              <span className="text-sm font-medium">
-                Rating
-              </span>
-            </div>
-            <p className="text-2xl font-bold">
-              {performanceMetrics.rating}
-            </p>
-            <div className="flex items-center gap-1 mt-1">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className={cn(
-                    "h-3 w-3",
-                    i <
-                      Math.floor(
-                        performanceMetrics.rating / 20,
-                      )
-                      ? "text-amber-500 fill-amber-500"
-                      : "text-muted-foreground",
-                  )}
-                />
-              ))}
-            </div>
-          </div>
+      {submissionResult.logs.length > 0 && (
+        <div className="rounded-lg border bg-muted/20">
+          <p className="flex items-center gap-2 px-4 pt-3 text-sm font-medium">
+            <Terminal className="h-4 w-4 text-primary" aria-hidden="true" />
+            Console
+          </p>
+          <pre className="px-4 pb-3 pt-2 text-xs font-mono whitespace-pre-wrap break-all max-h-48 overflow-auto">
+            {submissionResult.logs.join("\n")}
+          </pre>
         </div>
       )}
     </motion.div>

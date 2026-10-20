@@ -7,6 +7,7 @@ import {
   normalizePath,
   parseStoredProgress,
   recordChallenge,
+  recordChallengeAttempt,
   recordDay,
   recordQuiz,
   recordTime,
@@ -116,6 +117,55 @@ describe("recordChallenge / recordTime", () => {
 
     expect(recordTime(p, "/a", 0)).toBe(p);
     expect(recordTime(p, "/a", -5)).toBe(p);
+  });
+});
+
+describe("recordChallengeAttempt", () => {
+  it("counts every submission and remembers the best result", () => {
+    let p = recordChallengeAttempt(emptyProgress(NOW), "1", 2, 4, NOW);
+    p = recordChallengeAttempt(p, "1", 1, 4, NOW);
+    p = recordChallengeAttempt(p, "1", 3, 4, at("2026-10-21T10:00:00Z"));
+
+    expect(p.challengeAttempts["1"]).toEqual({ attempts: 3, bestPassed: 3, total: 4, lastAt: "2026-10-21T10:00:00.000Z" });
+    expect(p.challengesCompleted).toEqual([]);
+  });
+
+  it("a full pass completes the challenge, once", () => {
+    let p = recordChallengeAttempt(emptyProgress(NOW), "1", 4, 4, NOW);
+    p = recordChallengeAttempt(p, "1", 4, 4, NOW);
+
+    expect(p.challengesCompleted).toEqual(["1"]);
+    expect(p.challengeAttempts["1"].attempts).toBe(2);
+    expect(p.activityLog.filter((entry) => entry.type === "challenge")).toHaveLength(1);
+  });
+
+  it.each([
+    [0, 0],
+    [5, 4],
+    [-1, 4],
+  ])("rejects the impossible result %i/%i", (passed, total) => {
+    const start = emptyProgress(NOW);
+    expect(recordChallengeAttempt(start, "1", passed, total, NOW)).toBe(start);
+  });
+
+  it("is read back from storage, and impossible entries are dropped", () => {
+    const parsed = parseStoredProgress(
+      {
+        challengeAttempts: {
+          ok: { attempts: 2, bestPassed: 1, total: 3, lastAt: "2026-10-20T00:00:00Z" },
+          noAttempts: { attempts: 0, bestPassed: 0, total: 3, lastAt: "x" },
+          tooMany: { attempts: 1, bestPassed: 5, total: 3, lastAt: "x" },
+          junk: "x",
+        },
+      },
+      NOW,
+    );
+
+    expect(Object.keys(parsed.challengeAttempts)).toEqual(["ok"]);
+  });
+
+  it("an older stored progress without attempts still loads", () => {
+    expect(parseStoredProgress({ challengesCompleted: ["1"] }, NOW).challengeAttempts).toEqual({});
   });
 });
 

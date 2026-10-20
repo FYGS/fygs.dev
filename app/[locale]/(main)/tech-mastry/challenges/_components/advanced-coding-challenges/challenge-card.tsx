@@ -8,23 +8,33 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { Target } from "lucide-react";
+import { CheckCircle, Target } from "lucide-react";
 import { DifficultyBadge } from "./difficulty-badge";
 import type { Challenge } from "./types";
 
 interface ChallengeCardProps {
   challenge: Challenge;
   onSelect: (challenge: Challenge) => void;
+  solved?: boolean;
 }
 
-export function ChallengeCard({ challenge, onSelect }: ChallengeCardProps) {
+export function ChallengeCard({ challenge, onSelect, solved = false }: ChallengeCardProps) {
   return (
     <motion.div
       key={challenge.id}
       whileHover={{ y: -5 }}
-      className="cursor-pointer"
+      className="cursor-pointer rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+      role="button"
+      tabIndex={0}
+      aria-label={`${challenge.title}${solved ? " (solved)" : ""}`}
       onClick={() => {
         onSelect(challenge);
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onSelect(challenge);
+        }
       }}
     >
       <Card className="h-full border border-border/50 hover:shadow-lg transition-all duration-300 backdrop-blur-xl bg-background/80">
@@ -33,9 +43,7 @@ export function ChallengeCard({ challenge, onSelect }: ChallengeCardProps) {
             <CardTitle className="text-lg">
               {challenge.title}
             </CardTitle>
-            <div className="h-4 w-4 rounded-full">
-              <div className="h-4 w-4 rounded-full"></div>
-            </div>
+            {solved && <CheckCircle className="h-5 w-5 text-green-500" aria-hidden="true" />}
           </div>
           <CardDescription className="flex items-center gap-2">
             <span>{challenge.category}</span>

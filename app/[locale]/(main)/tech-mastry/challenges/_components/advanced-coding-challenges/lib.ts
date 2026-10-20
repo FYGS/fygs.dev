@@ -1,74 +1,98 @@
-import type {
-  Challenge,
-  PerformanceMetrics,
-  SubmissionResult,
-  TestCase,
-} from "./types";
+import { functionNameOf, runInSandbox, type SandboxResult, type SandboxTest } from "@/app/_lib/code-sandbox";
+import type { Challenge, SubmissionResult, TestCase } from "./types";
 
-// Mock result - in a real implementation this would run the code and compare outputs
-export const createMockSubmissionResult = (
-  selectedChallenge: Challenge
-): SubmissionResult => ({
-  passed: Math.random() > 0.3, // 70% chance of passing for demo
-  output: "Execution completed successfully",
-  executionTime: Math.floor(Math.random() * 500) + 50, // 50-550 ms
-  memoryUsed: parseFloat((Math.random() * 10 + 5).toFixed(2)), // 5-15 MB
-  testCasesPassed:
-    Math.floor(Math.random() * selectedChallenge.testCases.length) + 1,
-  totalTestCases: selectedChallenge.testCases.length,
-  detailedResults: selectedChallenge.testCases.map((testCase: TestCase) => ({
-    testCaseId: testCase.id,
-    passed: Math.random() > 0.4, // 60% chance of passing each test case
-    input: testCase.input,
-    expected: testCase.expectedOutput,
-    actual:
-      Math.random() > 0.4 ? testCase.expectedOutput : "different output",
-    executionTime: Math.floor(Math.random() * 100) + 10, // 10-110 ms per test
-  })),
-});
+/** `function twoSum(nums, target) {…}` -> `twoSum`: the function the learner has to write */
+export function entryPointOf(challenge: Pick<Challenge, "starterCode">): string {
+  const name = functionNameOf(challenge.starterCode);
+  if (!name) throw new Error("The starter code of the challenge has no function to complete");
+  return name;
+}
 
-// Calculate performance metrics
-export const computePerformanceMetrics = (
-  mockResult: SubmissionResult,
-  selectedChallenge: Challenge
-): PerformanceMetrics => {
-  const accuracy = Math.round(
-    (mockResult.testCasesPassed / mockResult.totalTestCases) * 100,
-  );
-  const efficiency = Math.max(0, 100 - mockResult.executionTime / 10); // Lower execution time = higher efficiency
-
-  return {
-    accuracy,
-    efficiency,
-    timeTaken:
-      selectedChallenge.estimatedTime - Math.floor(Math.random() * 5), // Time taken compared to estimate
-    attempts: 1,
-    rating: Math.floor((accuracy + efficiency) / 2),
-  };
-};
-
-// Mock result for a single test case
-export const createMockTestCaseResult = (
-  testCase: TestCase,
-  testCaseId: string
-): SubmissionResult => ({
-  passed: Math.random() > 0.4, // 60% chance of passing
-  output: "Test executed",
-  executionTime: Math.floor(Math.random() * 100) + 10,
-  memoryUsed: parseFloat((Math.random() * 5 + 2).toFixed(2)),
-  testCasesPassed: Math.random() > 0.4 ? 1 : 0,
-  totalTestCases: 1,
-  detailedResults: [
-    {
-      testCaseId,
-      passed: Math.random() > 0.4,
+export function toSandboxTests(challenge: Challenge, only?: string[]): SandboxTest[] {
+  return challenge.testCases
+    .filter((testCase) => !only || only.includes(testCase.id))
+    .map((testCase) => ({
+      id: testCase.id,
       input: testCase.input,
       expected: testCase.expectedOutput,
-      actual:
-        Math.random() > 0.4
-          ? testCase.expectedOutput
-          : "incorrect output",
-      executionTime: Math.floor(Math.random() * 100) + 10,
-    },
-  ],
-});
+      ...(challenge.adapter ? { adapter: challenge.adapter } : {}),
+    }));
+}
+
+/** What the learner may see of a test: hidden tests keep their data to themselves. */
+export function visibleTest(testCase: TestCase) {
+  return testCase.isHidden
+    ? { input: "Hidden test", expectedOutput: "Hidden test" }
+    : { input: testCase.input, expectedOutput: testCase.expectedOutput };
+}
+
+export function toSubmissionResult(challenge: Challenge, outcome: SandboxResult): SubmissionResult {
+  const detailedResults = outcome.results.map((result) => {
+    const testCase = challenge.testCases.find((candidate) => candidate.id === result.id);
+    // a hidden test never reveals the value the function returned either: it could be the expected one
+    const hidden = testCase?.isHidden === true;
+    return {
+      testCaseId: result.id,
+      passed: result.passed,
+      actual: hidden ? (result.passed ? "Passed" : "Failed") : result.actual,
+      ...(result.error && !hidden ? { error: result.error } : {}),
+      executionTime: result.timeMs,
+    };
+  });
+  return {
+    passed: outcome.passed,
+    compileError: outcome.compileError,
+    timedOut: outcome.timedOut,
+    logs: outcome.logs,
+    executionTime: detailedResults.reduce((sum, result) => sum + result.executionTime, 0),
+    testCasesPassed: detailedResults.filter((result) => result.passed).length,
+    totalTestCases: challenge.testCases.length,
+    detailedResults,
+  };
+}
+
+/**
+ * Runs the learner's code against the challenge's tests (all of them, or `only` those ids) in the
+ * code sandbox. Rejects with a SandboxUnavailableError when the sandbox cannot be reached.
+ */
+export async function runChallenge(challenge: Challenge, code: string, only?: string[]): Promise<SubmissionResult> {
+  const outcome = await runInSandbox({
+    code,
+    entry: entryPointOf(challenge),
+    tests: toSandboxTests(challenge, only),
+  });
+  return toSubmissionResult(challenge, outcome);
+}
+
+export interface ChallengeStats {
+  total: number;
+  solved: number;
+  attempted: number;
+  attempts: number;
+  byCategory: { category: string; solved: number; total: number }[];
+}
+
+/** The learner's own figures, from what they really submitted. */
+export function challengeStats(
+  challenges: Challenge[],
+  progress: {
+    challengesCompleted: string[];
+    challengeAttempts: Record<string, { attempts: number }>;
+  },
+): ChallengeStats {
+  const categories = new Map<string, { solved: number; total: number }>();
+  for (const challenge of challenges) {
+    const entry = categories.get(challenge.category) ?? { solved: 0, total: 0 };
+    entry.total++;
+    if (progress.challengesCompleted.includes(challenge.id)) entry.solved++;
+    categories.set(challenge.category, entry);
+  }
+  const known = challenges.map((challenge) => challenge.id);
+  return {
+    total: challenges.length,
+    solved: challenges.filter((challenge) => progress.challengesCompleted.includes(challenge.id)).length,
+    attempted: known.filter((id) => progress.challengeAttempts[id]).length,
+    attempts: known.reduce((sum, id) => sum + (progress.challengeAttempts[id]?.attempts ?? 0), 0),
+    byCategory: [...categories].map(([category, counts]) => ({ category, ...counts })),
+  };
+}

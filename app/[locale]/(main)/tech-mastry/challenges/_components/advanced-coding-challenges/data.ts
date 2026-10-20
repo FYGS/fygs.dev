@@ -144,6 +144,7 @@ export const challenges: Challenge[] = [
   },
   {
     id: "3",
+    adapter: "tree",
     title: "Binary Tree Level Order Traversal",
     description:
       "Given the root of a binary tree, return the level order traversal of its nodes' values. (i.e., from left to right, level by level)",
@@ -167,7 +168,7 @@ export const challenges: Challenge[] = [
       {
         id: "3",
         input: "[]",
-        expectedOutput: "[[]]",
+        expectedOutput: "[]",
         isHidden: true,
       },
     ],

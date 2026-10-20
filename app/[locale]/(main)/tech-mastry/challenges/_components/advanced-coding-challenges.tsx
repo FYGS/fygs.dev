@@ -1,120 +1,104 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, FileCode, Trophy } from "lucide-react";
+import { BarChart3, FileCode } from "lucide-react";
+import { useProgress } from "../../_hooks/use-progress";
 import { AnalyticsCard } from "./advanced-coding-challenges/analytics-card";
 import { ChallengeCard } from "./advanced-coding-challenges/challenge-card";
 import { ChallengeDetail } from "./advanced-coding-challenges/challenge-detail";
-import { challenges as challengeData } from "./advanced-coding-challenges/data";
-import { LeaderboardCard } from "./advanced-coding-challenges/leaderboard-card";
-import {
-  computePerformanceMetrics,
-  createMockSubmissionResult,
-  createMockTestCaseResult,
-} from "./advanced-coding-challenges/lib";
-import type {
-  Challenge,
-  Hint,
-  PerformanceMetrics,
-  SubmissionResult,
-} from "./advanced-coding-challenges/types";
+import { challenges } from "./advanced-coding-challenges/data";
+import { challengeStats, runChallenge } from "./advanced-coding-challenges/lib";
+import type { Challenge, Hint, SubmissionResult } from "./advanced-coding-challenges/types";
+
+const STARTING_POINTS = 100;
 
 export function AdvancedCodingChallenges() {
+  const { progress, trackChallengeAttempt } = useProgress();
   const [activeTab, setActiveTab] = useState("challenges");
-  const [challenges] = useState(challengeData);
-
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
+  // what the learner typed, per challenge, kept while they browse the others
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [editorKey, setEditorKey] = useState(0);
   const [submissionResult, setSubmissionResult] = useState<SubmissionResult | null>(null);
-  const [performanceMetrics, setPerformanceMetrics] =
-    useState<PerformanceMetrics | null>(null);
+  const [runnerError, setRunnerError] = useState<string | null>(null);
   const [revealedHints, setRevealedHints] = useState<string[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [userPoints, setUserPoints] = useState(100);
+  const [isRunning, setIsRunning] = useState(false);
+  const [userPoints, setUserPoints] = useState(STARTING_POINTS);
 
-  // Handle code submission
-  const submitCode = async () => {
-    if (!selectedChallenge) return;
+  const codeOf = (challenge: Challenge) => drafts[challenge.id] ?? challenge.starterCode;
 
-    setIsSubmitting(true);
-
-    // Simulate code execution
-    setTimeout(() => {
-      const mockResult = createMockSubmissionResult(selectedChallenge);
-
-      setSubmissionResult(mockResult);
-      setIsSubmitting(false);
-
-      // Calculate performance metrics
-      setPerformanceMetrics(
-        computePerformanceMetrics(mockResult, selectedChallenge)
-      );
-    }, 1500);
+  // Runs the learner's code against the tests, all of them (a submission) or one
+  const run = async (only?: string[]) => {
+    if (!selectedChallenge || isRunning) return;
+    const challenge = selectedChallenge;
+    setIsRunning(true);
+    setRunnerError(null);
+    try {
+      const result = await runChallenge(challenge, codeOf(challenge), only);
+      setSubmissionResult(result);
+      if (!only) {
+        trackChallengeAttempt(challenge.id, result.testCasesPassed, result.totalTestCases);
+        const firstSolve = result.passed && !progress.challengesCompleted.includes(challenge.id);
+        if (firstSolve) toast.success(`Challenge solved: ${challenge.title}`);
+      }
+    } catch (error) {
+      setSubmissionResult(null);
+      setRunnerError(error instanceof Error ? error.message : "Le moteur d'exécution est indisponible");
+    } finally {
+      setIsRunning(false);
+    }
   };
 
-  // Run test cases individually
-  const runTestCase = async (testCaseId: string) => {
-    if (!selectedChallenge) return;
+  const select = (challenge: Challenge | null) => {
+    setSelectedChallenge(challenge);
+    setSubmissionResult(null);
+    setRunnerError(null);
+    setRevealedHints([]);
+  };
 
-    setIsSubmitting(true);
-
-    // Simulate test execution
-    setTimeout(() => {
-      const testCase = selectedChallenge.testCases.find(
-        (tc) => tc.id === testCaseId,
-      );
-      if (!testCase) return;
-
-      const mockResult = createMockTestCaseResult(testCase, testCaseId);
-
-      setSubmissionResult(mockResult);
-      setIsSubmitting(false);
-    }, 1000);
-  }; // Reveal a hint
+  // Reveal a hint
   const revealHint = (hint: Hint) => {
     if (userPoints >= hint.revealCost) {
       setRevealedHints((prev) => [...prev, hint.id]);
       setUserPoints((prev) => prev - hint.revealCost);
     } else {
-      alert(
-        `You need ${hint.revealCost} points to reveal this hint. You currently have ${userPoints} points.`,
-      );
+      toast.error(`You need ${hint.revealCost} points to reveal this hint. You currently have ${userPoints} points.`);
     }
   };
 
-  // Reset challenge
+  // Start over from the starter code
   const resetChallenge = () => {
-    if (selectedChallenge) {
-      setSubmissionResult(null);
-      setPerformanceMetrics(null);
-    }
+    if (!selectedChallenge) return;
+    setDrafts((prev) => {
+      const next = { ...prev };
+      delete next[selectedChallenge.id];
+      return next;
+    });
+    setEditorKey((key) => key + 1);
+    setSubmissionResult(null);
+    setRunnerError(null);
   };
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">
-          Advanced Coding Challenges
-        </h1>
+        <h1 className="text-3xl font-bold tracking-tight">Advanced Coding Challenges</h1>
         <p className="text-muted-foreground mt-2">
-          Practice with real-time feedback, performance metrics, and
-          comprehensive test suites
+          Write your solution, run it against the tests and see what each one returns
         </p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-3 w-full max-w-sm mx-auto">
+        <TabsList className="grid grid-cols-2 w-full max-w-xs mx-auto">
           <TabsTrigger value="challenges" className="flex items-center gap-2">
-            <FileCode className="h-4 w-4" />
+            <FileCode className="h-4 w-4" aria-hidden="true" />
             Challenges
           </TabsTrigger>
-          <TabsTrigger value="leaderboard" className="flex items-center gap-2">
-            <Trophy className="h-4 w-4" />
-            Leaderboard
-          </TabsTrigger>
           <TabsTrigger value="analytics" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            Analytics
+            <BarChart3 className="h-4 w-4" aria-hidden="true" />
+            Your Progress
           </TabsTrigger>
         </TabsList>
 
@@ -125,33 +109,35 @@ export function AdvancedCodingChallenges() {
                 <ChallengeCard
                   key={challenge.id}
                   challenge={challenge}
-                  onSelect={setSelectedChallenge}
+                  onSelect={select}
+                  solved={progress.challengesCompleted.includes(challenge.id)}
                 />
               ))}
             </div>
           ) : (
             <ChallengeDetail
               selectedChallenge={selectedChallenge}
+              initialCode={codeOf(selectedChallenge)}
+              editorKey={editorKey}
               userPoints={userPoints}
-              isSubmitting={isSubmitting}
+              isRunning={isRunning}
+              isSolved={progress.challengesCompleted.includes(selectedChallenge.id)}
+              attempts={progress.challengeAttempts[selectedChallenge.id]?.attempts ?? 0}
               submissionResult={submissionResult}
-              performanceMetrics={performanceMetrics}
+              runnerError={runnerError}
               revealedHints={revealedHints}
-              onBack={() => setSelectedChallenge(null)}
+              onBack={() => select(null)}
+              onCodeChange={(code) => setDrafts((prev) => ({ ...prev, [selectedChallenge.id]: code }))}
               resetChallenge={resetChallenge}
-              submitCode={submitCode}
-              runTestCase={runTestCase}
+              submitCode={() => run()}
+              runTestCase={(testCaseId) => run([testCaseId])}
               revealHint={revealHint}
             />
           )}
         </TabsContent>
 
-        <TabsContent value="leaderboard" className="space-y-6">
-          <LeaderboardCard />
-        </TabsContent>
-
         <TabsContent value="analytics" className="space-y-6">
-          <AnalyticsCard />
+          <AnalyticsCard stats={challengeStats(challenges, progress)} />
         </TabsContent>
       </Tabs>
     </div>

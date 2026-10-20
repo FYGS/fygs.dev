@@ -18,8 +18,19 @@ export interface ActivityEntry {
   total?: number;
 }
 
+/** What the learner did on one coding challenge */
+export interface ChallengeAttempt {
+  attempts: number;
+  /** Most tests passed in a single submission */
+  bestPassed: number;
+  total: number;
+  lastAt: string;
+}
+
 export interface UserProgress {
   challengesCompleted: string[];
+  /** Per challenge id, every submission counts (the challenge is completed by a full pass) */
+  challengeAttempts: Record<string, ChallengeAttempt>;
   quizScores: Record<string, { score: number; total: number; date: string }>;
   visitedPages: string[];
   /** UTC days (yyyy-mm-dd) on which the learner opened the section */
@@ -38,6 +49,7 @@ export const MAX_ACTIVITY = 100;
 export function emptyProgress(now: Date = new Date()): UserProgress {
   return {
     challengesCompleted: [],
+    challengeAttempts: {},
     quizScores: {},
     visitedPages: [],
     streakDates: [],
@@ -74,6 +86,30 @@ export function parseStoredProgress(raw: unknown, now: Date = new Date()): UserP
     }
   }
 
+  const challengeAttempts: UserProgress["challengeAttempts"] = {};
+  if (isRecord(raw.challengeAttempts)) {
+    for (const [id, value] of Object.entries(raw.challengeAttempts)) {
+      if (
+        isRecord(value) &&
+        typeof value.attempts === "number" &&
+        value.attempts > 0 &&
+        typeof value.bestPassed === "number" &&
+        typeof value.total === "number" &&
+        value.total > 0 &&
+        value.bestPassed >= 0 &&
+        value.bestPassed <= value.total &&
+        typeof value.lastAt === "string"
+      ) {
+        challengeAttempts[id] = {
+          attempts: value.attempts,
+          bestPassed: value.bestPassed,
+          total: value.total,
+          lastAt: value.lastAt,
+        };
+      }
+    }
+  }
+
   const timeSpent: Record<string, number> = {};
   if (isRecord(raw.timeSpent)) {
     for (const [path, minutes] of Object.entries(raw.timeSpent)) {
@@ -104,6 +140,7 @@ export function parseStoredProgress(raw: unknown, now: Date = new Date()): UserP
 
   return {
     challengesCompleted: strings(raw.challengesCompleted),
+    challengeAttempts,
     quizScores,
     visitedPages: strings(raw.visitedPages),
     streakDates: strings(raw.streakDates),
@@ -189,6 +226,34 @@ export function recordChallenge(prev: UserProgress, challengeId: string, now: Da
     { ...prev, challengesCompleted: [...prev.challengesCompleted, challengeId] },
     { type: "challenge", ref: challengeId, at: now.toISOString() },
   );
+}
+
+/**
+ * One submission of a coding challenge. A full pass also completes the challenge (once).
+ * Impossible counts are ignored.
+ */
+export function recordChallengeAttempt(
+  prev: UserProgress,
+  challengeId: string,
+  passed: number,
+  total: number,
+  now: Date,
+): UserProgress {
+  if (!(total > 0) || passed < 0 || passed > total) return prev;
+  const before = prev.challengeAttempts[challengeId];
+  const next: UserProgress = {
+    ...prev,
+    challengeAttempts: {
+      ...prev.challengeAttempts,
+      [challengeId]: {
+        attempts: (before?.attempts ?? 0) + 1,
+        bestPassed: Math.max(before?.bestPassed ?? 0, passed),
+        total,
+        lastAt: now.toISOString(),
+      },
+    },
+  };
+  return passed === total ? recordChallenge(next, challengeId, now) : next;
 }
 
 export function recordTime(prev: UserProgress, path: string, minutes: number): UserProgress {
