@@ -21,7 +21,7 @@ describe("topics data", () => {
       })),
     }));
     expect(flat.length).toBe(15);
-    expect(flat.reduce((n, s) => n + s.items.length, 0)).toMatchInlineSnapshot(`105`);
+    expect(flat.reduce((n, s) => n + s.items.length, 0)).toMatchInlineSnapshot(`104`);
     expect(flat.map((s) => [s.title, s.items.length])).toMatchInlineSnapshot(`
       [
         [
@@ -82,11 +82,11 @@ describe("topics data", () => {
         ],
         [
           "Pratique",
-          15,
+          14,
         ],
       ]
     `);
-    expect(createHash("md5").update(JSON.stringify(flat)).digest("hex")).toMatchInlineSnapshot(`"10899217b9c1454b9d46dab0afc121a6"`);
+    expect(createHash("md5").update(JSON.stringify(flat)).digest("hex")).toMatchInlineSnapshot(`"c06a34035d73a7ea30cfb60b42a86a61"`);
   });
 });
 
@@ -111,22 +111,22 @@ describe("TopicsNav rendering", () => {
         "03576528",
         "4235004a",
         "18e0c460",
-        "4fb55c56",
-        "4fb55c56",
-        "4fb55c56",
-        "4fb55c56",
-        "4fb55c56",
-        "4fb55c56",
-        "4fb55c56",
-        "4fb55c56",
-        "4fb55c56",
-        "4fb55c56",
-        "4fb55c56",
-        "4fb55c56",
-        "4fb55c56",
-        "4fb55c56",
-        "4fb55c56",
-        "4fb55c56",
+        "85ac98a1",
+        "85ac98a1",
+        "85ac98a1",
+        "85ac98a1",
+        "85ac98a1",
+        "85ac98a1",
+        "85ac98a1",
+        "85ac98a1",
+        "85ac98a1",
+        "85ac98a1",
+        "85ac98a1",
+        "85ac98a1",
+        "85ac98a1",
+        "85ac98a1",
+        "85ac98a1",
+        "85ac98a1",
       ]
     `);
   });

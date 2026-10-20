@@ -140,7 +140,7 @@ describe("InterviewSimulator rendering", () => {
         "292bf120",
         "5b7faf30",
         "5b7faf30",
-        "7598bd16",
+        "b4e9c254",
         "3188148b",
         "f22deec3",
         "6e19b683",
@@ -182,7 +182,7 @@ describe("InterviewSimulator rendering", () => {
         "620f2ac2",
         "3d7b441f",
         "3d7b441f",
-        "7598bd16",
+        "b4e9c254",
         "3188148b",
         "43ae204e",
         "ed9c4b8a",
@@ -218,7 +218,7 @@ describe("InterviewSimulator rendering", () => {
         "c03b06b0",
         "8461aeb1",
         "8461aeb1",
-        "7598bd16",
+        "b4e9c254",
       ]
     `);
   });
