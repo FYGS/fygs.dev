@@ -74,10 +74,10 @@ e2e green when a user flow changes, CHANGELOG entry, committed on `feature/refac
 
 | ID | Task | Owner | Acceptance | Status |
 |----|------|-------|------------|--------|
-| P6-1 | Refresh `C:\dev\PR-description.md` (Prisma 7, e2e, Stripe, a11y, the tasks above) | DEV | text matches the branch | TODO |
-| P6-2 | Final gate: tsc, eslint, unit, integration, e2e on a fresh production build, audit | DEV | all green, numbers recorded here | TODO |
+| P6-1 | Refresh the pull request description (Prisma 7, e2e, Stripe, a11y, phase 7) | DEV | text matches the branch | DONE |
+| P6-2 | Final gate at 9cae6bf (code) / 2446b6a (head): tsc 0, eslint 0, unit 1959 (182 files), integration 668 (53 files), e2e 51 on a fresh production build, smoke crawl and six accessibility passes | DEV | all green, numbers recorded here | DONE |
 | P6-3 | Open the PR on github.com (no gh auth for it) | OWNER | PR URL | TODO |
-| P6-4 | Update the memory backlog and CHANGELOG | DEV | in sync | TODO |
+| P6-4 | Update the memory backlog and CHANGELOG | DEV | in sync | DONE |
 
 ## Phase 7: Functional completeness of every interface
 
@@ -97,7 +97,7 @@ Origin: "is the application complete, without holes?" The answer was no. This ph
 | P7-10 | Student side: quick links to schedule, downloads, challenges; two best-practices cards; collaboration page "coming soon"; progress grid showed "Cours #a1b2c3" and linked to a missing page; reply "Report" item without backend; dead newsletter and booking components that faked success | schedule, downloads, 2 cards, collaboration, report item, dead components removed; challenges -> /tech-mastry/challenges; grid shows the title and opens the course | link scan, unit tests | DONE |
 | P7-11 | Forms inventory: all 31 forms are wired to a backend (contact, profile, password, reviews, community, admin CRUD, auth) | none needed | grep audit | DONE |
 | P7-12 | Translations inventory: dictionaries (fr/en/es) are complete, but only ~10 of ~600 files with text read from one; the rest of the app (formations, dashboard, billing, profile, admin, TechMastry) is written in French, the community in English | DECISION for the owner: keep the app area French-only and hide the switcher there, or fund a translation project (see docs/i18n-inventory.md) | inventory written | DECISION |
-| P7-13 | Empty-state and error smoke: every route crawled on the seeded platform and on a platform with only accounts | fix what the crawl finds | crawl report in the log | DOING |
+| P7-13 | Smoke crawl of 170 routes (admin 20, student 150, visitor 150) on the seeded platform and again on a platform holding only accounts. Found and fixed: `[object Object]` on a course page (visual-support slides saved as structured sections), `NaN%` in the course revenue share, `NaN%` in the billing progress with no published course. All three fixes came after the crawl that found them and the crawl was not re-run on them (the slide conversion has unit tests, the two percentages are one-line guards); every other route of the seeded and the empty platform was clean | DEV | `scripts/audit/smoke-crawl.mjs` clean | DONE |
 
 ## Log
 
@@ -110,3 +110,4 @@ Origin: "is the application complete, without holes?" The answer was no. This ph
 - 2026-10-20: P3-3, P3-6, P3-8, P3-9 done. Content bugs found by the new regression tests: the reference solution of the jump search reassigned a `const`, the sorting exercises asked for `bubblesort` while the function to write is `bubbleSort`, the empty tree test expected `[[]]`. All verified in Chrome on a production build (38 e2e tests).
 - 2026-10-20: P3-10, P3-11 done. Two validation traps found and fixed in the process: the validation worktree had silently stayed on an older commit, and the `node_modules` it used predated the lockfile changes (see the log of the next entry).
 - 2026-10-20: final validation at 2499090: unit 179 files / 1942 tests green, e2e 46 passed on a fresh production build, accessibility audits on admin, student, mobile, light, dark and es. Remaining axe findings (to schedule, none blocks release): contrast in light theme (blog code, admin courses/analytics, sorting, scalability), unnamed icon buttons (community, blog, admin users, searching), heading order (dashboard, profile, qa, scalability), scrollable code regions without keyboard focus, playground without h1 on mobile.
+- 2026-10-21: phase 7 done (see the table). The branch was pushed and the 23 superseded dependabot branches deleted after the owner's go-ahead. Remaining: owner items (P2-6 Sentry, Stripe dashboard events, production DATABASE_URL/TLS, CSP promotion, ANTHROPIC_API_KEY, screen-reader tests, the translation decision P7-12) and the accessibility leftovers listed in the audit addendum.
