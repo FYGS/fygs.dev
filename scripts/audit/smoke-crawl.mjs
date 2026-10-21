@@ -25,7 +25,8 @@ const SUSPICIOUS = [
   [/\bnull\b(?!\s*[:,)])/, "null"],
 ];
 // Noise that is not the site's: the browser asking for things a dev server or an extension owns
-const IGNORED_CONSOLE = [/favicon/i, /Download the React DevTools/i, /Failed to load resource.*(401|403|404)/i];
+// (429: the crawl is faster than a visitor and meets the rate limiter; it is the limiter working)
+const IGNORED_CONSOLE = [/favicon/i, /Download the React DevTools/i, /Failed to load resource.*(401|403|404|429)/i];
 
 const browser = await chromium.launch({ channel: "chrome", headless: true });
 
@@ -61,7 +62,8 @@ for (const route of routes) {
     if (!IGNORED_CONSOLE.some((rule) => rule.test(text))) entry.problems.push(`console: ${text.slice(0, 200)}`);
   });
   page.on("requestfailed", (request) => {
-    if (request.url().startsWith(origin) && !/_next\/static|\.map$|rsc=/.test(request.url())) {
+    // ERR_ABORTED: the page moved on while the request was in flight (a server action, a prefetch)
+    if (request.url().startsWith(origin) && !/_next\/static|\.map$|rsc=/.test(request.url()) && request.failure()?.errorText !== "net::ERR_ABORTED") {
       entry.problems.push(`request failed: ${request.method()} ${request.url().replace(origin, "")} ${request.failure()?.errorText ?? ""}`);
     }
   });
@@ -77,8 +79,14 @@ for (const route of routes) {
     if (entry.status && entry.status >= 400) entry.problems.push(`HTTP ${entry.status} on the page itself`);
 
     const body = await page.evaluate(() => {
-      const main = document.querySelector("main") ?? document.body;
-      return { text: main.innerText ?? "", length: (document.body.innerText ?? "").trim().length, h1: document.querySelectorAll("h1").length };
+      const main = (document.querySelector("main") ?? document.body).cloneNode(true);
+      // code samples legitimately say null, undefined and Infinity: only prose is checked
+      main.querySelectorAll("pre, code, kbd, samp, script, style").forEach((node) => node.remove());
+      main.style.position = "absolute"; // innerText needs the node in the page to know what is visible
+      document.body.appendChild(main);
+      const text = main.innerText ?? "";
+      main.remove();
+      return { text, length: (document.body.innerText ?? "").trim().length, h1: document.querySelectorAll("h1").length };
     });
     entry.length = body.length;
     if (body.length < 40) entry.problems.push("nearly empty page");

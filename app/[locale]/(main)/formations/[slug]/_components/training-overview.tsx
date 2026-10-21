@@ -19,6 +19,8 @@ import {
   ExternalLink,
 } from "lucide-react";
 
+import { slideContentToHtml } from "@/lib/visual-support-slide";
+
 interface VisualSupportData {
   id: string;
   moduleId: number;
@@ -27,7 +29,8 @@ interface VisualSupportData {
   content: {
     slides: Array<{
       title: string;
-      content: string;
+      /** An HTML string, or the structured sections the seed writes (see slideContentToHtml) */
+      content: string | Record<string, unknown>;
     }>;
   };
 }
@@ -345,8 +348,9 @@ export function TrainingOverview({
                       <div
                         className="prose prose-slate prose-sm max-w-none text-center prose-headings:text-slate-800 prose-p:text-slate-700 prose-strong:text-slate-900"
                         dangerouslySetInnerHTML={{
-                          __html:
+                          __html: slideContentToHtml(
                             currentModule.content.slides[currentSlide].content,
+                          ),
                         }}
                       />
                     </div>

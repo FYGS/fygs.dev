@@ -172,7 +172,7 @@ export function CourseAnalytics({ courses }: CourseAnalyticsProps) {
                       
                       <div className="flex items-center gap-1">
                         <TrendingUp className="h-3 w-3 text-muted-foreground" />
-                        <span>{((course.totalRevenue / totalRevenue) * 100).toFixed(1)}%</span>
+                        <span>{(totalRevenue > 0 ? (course.totalRevenue / totalRevenue) * 100 : 0).toFixed(1)}%</span>
                       </div>
                     </div>
                   </div>

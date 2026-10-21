@@ -11,6 +11,7 @@ import { generateSampleVisualSupports } from "@/lib/loaders/visual-supports-load
 import { VisualSupportsEditor } from "./visual-supports-editor";
 import { toast } from "sonner";
 import { createVisualSupport, updateVisualSupport, deleteVisualSupport } from "../../_actions/visual-support-actions";
+import { slideContentToHtml } from "@/lib/visual-support-slide";
 
 // Types for the props
 type VisualSupportModule = {
@@ -119,11 +120,11 @@ function loadVisualSupportData(
   return generateSampleVisualSupports(title, slug);
 }
 
-export function VisualSupportsManagement({ 
+export function VisualSupportsManagement({
   course,
   modules = [],
   initialVisualSupports = NO_VISUAL_SUPPORTS
-}: Pick<VisualSupportsManagementProps, 'course'> & { 
+}: Pick<VisualSupportsManagementProps, 'course'> & {
   modules?: VisualSupportModule[];
   initialVisualSupports?: VisualSupport[];
 }) {
@@ -200,9 +201,9 @@ export function VisualSupportsManagement({
           order: data.order,
           content: { slides: data.slides }
         });
-        
+
         if (result.success) {
-          setVisualSupports(prev => prev.map(vs => 
+          setVisualSupports(prev => prev.map(vs =>
             vs.id === editingSupport.id ? { ...data, id: vs.id, content: { slides: data.slides } } : vs
           ));
           toast.success('Support visuel mis à jour avec succès.');
@@ -218,7 +219,7 @@ export function VisualSupportsManagement({
           order: data.order,
           content: { slides: data.slides }
         });
-        
+
         if (result.success && result.visualSupport) {
           const newSupport = {
             id: result.visualSupport.id,
@@ -344,11 +345,11 @@ export function VisualSupportsManagement({
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {visualSupports.map((vs) => (
-              <Card 
-                key={vs.id} 
+              <Card
+                key={vs.id}
                 className={`cursor-pointer transition-all duration-200 ${
-                  selectedModule === vs.moduleId 
-                    ? 'ring-2 ring-primary bg-primary/5' 
+                  selectedModule === vs.moduleId
+                    ? 'ring-2 ring-primary bg-primary/5'
                     : 'hover:shadow-md'
                 }`}
                 onClick={() => setSelectedModule(vs.moduleId)}
@@ -440,7 +441,7 @@ export function VisualSupportsManagement({
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
-              
+
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
@@ -472,7 +473,7 @@ export function VisualSupportsManagement({
 
             {/* Slide Progress Bar */}
             <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
-              <div 
+              <div
                 className="bg-primary h-2 rounded-full transition-all duration-300"
                 style={{ width: `${((currentSlide + 1) / totalSlides) * 100}%` }}
               />
@@ -487,12 +488,12 @@ export function VisualSupportsManagement({
                   </h3>
                   <Separator className="mb-6" />
                 </div>
-                
+
                 {/* Slide Content with HTML rendering */}
-                <div 
+                <div
                   className="prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ 
-                    __html: currentModule.content.slides[currentSlide].content 
+                  dangerouslySetInnerHTML={{
+                    __html: slideContentToHtml(currentModule.content.slides[currentSlide].content)
                   }}
                 />
               </div>
