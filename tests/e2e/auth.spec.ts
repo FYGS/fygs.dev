@@ -37,6 +37,9 @@ test.describe("authentication (fr)", () => {
     await page.locator("header").getByRole("button").filter({ has: page.locator("[data-slot=avatar], span.rounded-full") }).first().click();
     await page.getByRole("menuitem", { name: "Se déconnecter" }).click();
     await expect.poll(async () => (await page.request.get("/api/auth/get-session")).json()).toBeNull();
+    // signing out sends the browser to the catalogue: let that navigation finish before starting another one
+    await expect(page).not.toHaveURL(/\/fr\/profile$/);
+    await page.waitForLoadState("load");
     await page.goto("/fr/profile");
     await expect(page).toHaveURL(/\/fr\/auth\/login/);
   });
