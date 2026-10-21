@@ -650,6 +650,7 @@
  * so the suffix is ignored and the token itself, which is tested, is used.
  */
 @layer utilities {
+  .text-muted-foreground\/40,
   .text-muted-foreground\/50,
   .text-muted-foreground\/60,
   .text-muted-foreground\/70,
@@ -733,75 +734,76 @@
 
 /*
  * Contrast (WCAG 1.4.3) on the light theme: a badge drawn for the dark theme (a tinted background of one hue and the
- * 400 or 500 shade of the same hue as text) becomes pale text on a pale tint. Its text uses the 700 shade there.
+ * 400 or 500 shade of the same hue as text) becomes pale text on a pale tint. Its text uses the 700 shade there,
+ * unless it sits on a surface that is dark in both themes.
  */
 @layer utilities {
-  .light .text-red-400:where([class*="bg-red-900"], [class*="bg-red-500/"], [class*="bg-red-400/"]),
-  .light .text-red-500:where([class*="bg-red-900"], [class*="bg-red-500/"], [class*="bg-red-400/"]) {
+  .light .text-red-400:where([class*="bg-red-900"], [class*="bg-red-500/"], [class*="bg-red-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-red-500:where([class*="bg-red-900"], [class*="bg-red-500/"], [class*="bg-red-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
     color: var(--color-red-700);
   }
-  .light .text-orange-400:where([class*="bg-orange-900"], [class*="bg-orange-500/"], [class*="bg-orange-400/"]),
-  .light .text-orange-500:where([class*="bg-orange-900"], [class*="bg-orange-500/"], [class*="bg-orange-400/"]) {
+  .light .text-orange-400:where([class*="bg-orange-900"], [class*="bg-orange-500/"], [class*="bg-orange-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-orange-500:where([class*="bg-orange-900"], [class*="bg-orange-500/"], [class*="bg-orange-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
     color: var(--color-orange-700);
   }
-  .light .text-amber-400:where([class*="bg-amber-900"], [class*="bg-amber-500/"], [class*="bg-amber-400/"]),
-  .light .text-amber-500:where([class*="bg-amber-900"], [class*="bg-amber-500/"], [class*="bg-amber-400/"]) {
+  .light .text-amber-400:where([class*="bg-amber-900"], [class*="bg-amber-500/"], [class*="bg-amber-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-amber-500:where([class*="bg-amber-900"], [class*="bg-amber-500/"], [class*="bg-amber-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
     color: var(--color-amber-700);
   }
-  .light .text-yellow-400:where([class*="bg-yellow-900"], [class*="bg-yellow-500/"], [class*="bg-yellow-400/"]),
-  .light .text-yellow-500:where([class*="bg-yellow-900"], [class*="bg-yellow-500/"], [class*="bg-yellow-400/"]) {
+  .light .text-yellow-400:where([class*="bg-yellow-900"], [class*="bg-yellow-500/"], [class*="bg-yellow-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-yellow-500:where([class*="bg-yellow-900"], [class*="bg-yellow-500/"], [class*="bg-yellow-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
     color: var(--color-yellow-700);
   }
-  .light .text-lime-400:where([class*="bg-lime-900"], [class*="bg-lime-500/"], [class*="bg-lime-400/"]),
-  .light .text-lime-500:where([class*="bg-lime-900"], [class*="bg-lime-500/"], [class*="bg-lime-400/"]) {
+  .light .text-lime-400:where([class*="bg-lime-900"], [class*="bg-lime-500/"], [class*="bg-lime-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-lime-500:where([class*="bg-lime-900"], [class*="bg-lime-500/"], [class*="bg-lime-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
     color: var(--color-lime-700);
   }
-  .light .text-green-400:where([class*="bg-green-900"], [class*="bg-green-500/"], [class*="bg-green-400/"]),
-  .light .text-green-500:where([class*="bg-green-900"], [class*="bg-green-500/"], [class*="bg-green-400/"]) {
+  .light .text-green-400:where([class*="bg-green-900"], [class*="bg-green-500/"], [class*="bg-green-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-green-500:where([class*="bg-green-900"], [class*="bg-green-500/"], [class*="bg-green-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
     color: var(--color-green-700);
   }
-  .light .text-emerald-400:where([class*="bg-emerald-900"], [class*="bg-emerald-500/"], [class*="bg-emerald-400/"]),
-  .light .text-emerald-500:where([class*="bg-emerald-900"], [class*="bg-emerald-500/"], [class*="bg-emerald-400/"]) {
+  .light .text-emerald-400:where([class*="bg-emerald-900"], [class*="bg-emerald-500/"], [class*="bg-emerald-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-emerald-500:where([class*="bg-emerald-900"], [class*="bg-emerald-500/"], [class*="bg-emerald-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
     color: var(--color-emerald-700);
   }
-  .light .text-teal-400:where([class*="bg-teal-900"], [class*="bg-teal-500/"], [class*="bg-teal-400/"]),
-  .light .text-teal-500:where([class*="bg-teal-900"], [class*="bg-teal-500/"], [class*="bg-teal-400/"]) {
+  .light .text-teal-400:where([class*="bg-teal-900"], [class*="bg-teal-500/"], [class*="bg-teal-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-teal-500:where([class*="bg-teal-900"], [class*="bg-teal-500/"], [class*="bg-teal-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
     color: var(--color-teal-700);
   }
-  .light .text-cyan-400:where([class*="bg-cyan-900"], [class*="bg-cyan-500/"], [class*="bg-cyan-400/"]),
-  .light .text-cyan-500:where([class*="bg-cyan-900"], [class*="bg-cyan-500/"], [class*="bg-cyan-400/"]) {
+  .light .text-cyan-400:where([class*="bg-cyan-900"], [class*="bg-cyan-500/"], [class*="bg-cyan-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-cyan-500:where([class*="bg-cyan-900"], [class*="bg-cyan-500/"], [class*="bg-cyan-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
     color: var(--color-cyan-700);
   }
-  .light .text-sky-400:where([class*="bg-sky-900"], [class*="bg-sky-500/"], [class*="bg-sky-400/"]),
-  .light .text-sky-500:where([class*="bg-sky-900"], [class*="bg-sky-500/"], [class*="bg-sky-400/"]) {
+  .light .text-sky-400:where([class*="bg-sky-900"], [class*="bg-sky-500/"], [class*="bg-sky-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-sky-500:where([class*="bg-sky-900"], [class*="bg-sky-500/"], [class*="bg-sky-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
     color: var(--color-sky-700);
   }
-  .light .text-blue-400:where([class*="bg-blue-900"], [class*="bg-blue-500/"], [class*="bg-blue-400/"]),
-  .light .text-blue-500:where([class*="bg-blue-900"], [class*="bg-blue-500/"], [class*="bg-blue-400/"]) {
+  .light .text-blue-400:where([class*="bg-blue-900"], [class*="bg-blue-500/"], [class*="bg-blue-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-blue-500:where([class*="bg-blue-900"], [class*="bg-blue-500/"], [class*="bg-blue-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
     color: var(--color-blue-700);
   }
-  .light .text-indigo-400:where([class*="bg-indigo-900"], [class*="bg-indigo-500/"], [class*="bg-indigo-400/"]),
-  .light .text-indigo-500:where([class*="bg-indigo-900"], [class*="bg-indigo-500/"], [class*="bg-indigo-400/"]) {
+  .light .text-indigo-400:where([class*="bg-indigo-900"], [class*="bg-indigo-500/"], [class*="bg-indigo-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-indigo-500:where([class*="bg-indigo-900"], [class*="bg-indigo-500/"], [class*="bg-indigo-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
     color: var(--color-indigo-700);
   }
-  .light .text-violet-400:where([class*="bg-violet-900"], [class*="bg-violet-500/"], [class*="bg-violet-400/"]),
-  .light .text-violet-500:where([class*="bg-violet-900"], [class*="bg-violet-500/"], [class*="bg-violet-400/"]) {
+  .light .text-violet-400:where([class*="bg-violet-900"], [class*="bg-violet-500/"], [class*="bg-violet-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-violet-500:where([class*="bg-violet-900"], [class*="bg-violet-500/"], [class*="bg-violet-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
     color: var(--color-violet-700);
   }
-  .light .text-purple-400:where([class*="bg-purple-900"], [class*="bg-purple-500/"], [class*="bg-purple-400/"]),
-  .light .text-purple-500:where([class*="bg-purple-900"], [class*="bg-purple-500/"], [class*="bg-purple-400/"]) {
+  .light .text-purple-400:where([class*="bg-purple-900"], [class*="bg-purple-500/"], [class*="bg-purple-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-purple-500:where([class*="bg-purple-900"], [class*="bg-purple-500/"], [class*="bg-purple-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
     color: var(--color-purple-700);
   }
-  .light .text-fuchsia-400:where([class*="bg-fuchsia-900"], [class*="bg-fuchsia-500/"], [class*="bg-fuchsia-400/"]),
-  .light .text-fuchsia-500:where([class*="bg-fuchsia-900"], [class*="bg-fuchsia-500/"], [class*="bg-fuchsia-400/"]) {
+  .light .text-fuchsia-400:where([class*="bg-fuchsia-900"], [class*="bg-fuchsia-500/"], [class*="bg-fuchsia-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-fuchsia-500:where([class*="bg-fuchsia-900"], [class*="bg-fuchsia-500/"], [class*="bg-fuchsia-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
     color: var(--color-fuchsia-700);
   }
-  .light .text-pink-400:where([class*="bg-pink-900"], [class*="bg-pink-500/"], [class*="bg-pink-400/"]),
-  .light .text-pink-500:where([class*="bg-pink-900"], [class*="bg-pink-500/"], [class*="bg-pink-400/"]) {
+  .light .text-pink-400:where([class*="bg-pink-900"], [class*="bg-pink-500/"], [class*="bg-pink-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-pink-500:where([class*="bg-pink-900"], [class*="bg-pink-500/"], [class*="bg-pink-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
     color: var(--color-pink-700);
   }
-  .light .text-rose-400:where([class*="bg-rose-900"], [class*="bg-rose-500/"], [class*="bg-rose-400/"]),
-  .light .text-rose-500:where([class*="bg-rose-900"], [class*="bg-rose-500/"], [class*="bg-rose-400/"]) {
+  .light .text-rose-400:where([class*="bg-rose-900"], [class*="bg-rose-500/"], [class*="bg-rose-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-rose-500:where([class*="bg-rose-900"], [class*="bg-rose-500/"], [class*="bg-rose-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
     color: var(--color-rose-700);
   }
 }

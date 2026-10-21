@@ -158,7 +158,7 @@ export function TagCreateForm() {
                 <Badge
                   style={{
                     backgroundColor: (customColor || color) + "20",
-                    color: `color-mix(in srgb, ${customColor || color} 50%, hsl(var(--foreground)))`,
+                    color: `color-mix(in srgb, ${customColor || color} 35%, hsl(var(--foreground)))`,
                     borderColor: (customColor || color) + "40",
                   }}
                   className="border"

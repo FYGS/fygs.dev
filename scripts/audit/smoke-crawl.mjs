@@ -79,7 +79,9 @@ for (const route of routes) {
     if (entry.status && entry.status >= 400) entry.problems.push(`HTTP ${entry.status} on the page itself`);
 
     const body = await page.evaluate(() => {
-      const main = (document.querySelector("main") ?? document.body).cloneNode(true);
+      const source = document.querySelector("main") ?? document.body;
+      if (!source) return { text: "", length: 0, h1: 0 }; // the page was replaced while we looked (a redirect)
+      const main = source.cloneNode(true);
       // code samples legitimately say null, undefined and Infinity: only prose is checked
       main.querySelectorAll("pre, code, kbd, samp, script, style").forEach((node) => node.remove());
       main.style.position = "absolute"; // innerText needs the node in the page to know what is visible

@@ -197,7 +197,7 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
                                   className="text-xs h-5"
                                   style={{ 
                                     borderColor: tag.color + '40', 
-                                    color: `color-mix(in srgb, ${tag.color} 50%, hsl(var(--foreground)))` 
+                                    color: `color-mix(in srgb, ${tag.color} 35%, hsl(var(--foreground)))` 
                                   }}
                                 >
                                   {tag.name}

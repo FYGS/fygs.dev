@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { GitMerge, RotateCcw, ArrowRight, Eye, Zap, Code2 } from "lucide-react";
@@ -12,30 +12,21 @@ interface LLNode {
   highlight?: "normal" | "active" | "found" | "removed";
 }
 
-let nodeIdCounter = 0;
+const INITIAL_VALUES = [5, 12, 8, 3, 17];
+
+// The same ids on the server and in the browser: a counter shared by every render made the page differ at hydration
+const freshNodes = (): LLNode[] => INITIAL_VALUES.map((value, id) => ({ id, value }));
 
 function LinkedListVisualizer() {
-  const initialNodes: LLNode[] = [
-    { id: nodeIdCounter++, value: 5 },
-    { id: nodeIdCounter++, value: 12 },
-    { id: nodeIdCounter++, value: 8 },
-    { id: nodeIdCounter++, value: 3 },
-    { id: nodeIdCounter++, value: 17 },
-  ];
-  const [nodes, setNodes] = useState<LLNode[]>(initialNodes);
+  const nextId = useRef(INITIAL_VALUES.length);
+  const [nodes, setNodes] = useState<LLNode[]>(freshNodes);
   const [message, setMessage] = useState(
     "Cliquez sur une opération pour visualiser",
   );
 
   const resetAll = () => {
-    nodeIdCounter = 0;
-    const fresh: LLNode[] = [
-      { id: nodeIdCounter++, value: 5 },
-      { id: nodeIdCounter++, value: 12 },
-      { id: nodeIdCounter++, value: 8 },
-      { id: nodeIdCounter++, value: 3 },
-      { id: nodeIdCounter++, value: 17 },
-    ];
+    nextId.current = INITIAL_VALUES.length;
+    const fresh = freshNodes();
     setNodes(fresh);
     setMessage("Liste réinitialisée");
   };
@@ -43,7 +34,7 @@ function LinkedListVisualizer() {
   const prepend = () => {
     const val = Math.floor(Math.random() * 30) + 1;
     const newNode: LLNode = {
-      id: nodeIdCounter++,
+      id: nextId.current++,
       value: val,
       highlight: "active",
     };
@@ -59,7 +50,7 @@ function LinkedListVisualizer() {
   const append = () => {
     const val = Math.floor(Math.random() * 30) + 1;
     const newNode: LLNode = {
-      id: nodeIdCounter++,
+      id: nextId.current++,
       value: val,
       highlight: "active",
     };

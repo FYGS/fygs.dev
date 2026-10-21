@@ -50,7 +50,7 @@ export function InterviewQuestions({ title, questions }: InterviewQuestionsProps
           <div key={index} className="border rounded-md overflow-hidden">
             <button
               onClick={() => toggleQuestion(index)}
-              className="w-full flex justify-between items-start p-4 text-left bg-gray-800 hover:bg-gray-700"
+              className="w-full flex justify-between items-start p-4 text-left bg-gray-800 hover:bg-gray-700 text-white"
             >
               <div className="flex flex-col items-start gap-2">
                 <div className="font-medium">{q.question}</div>
