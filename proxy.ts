@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { AccessService } from "@/lib/access-service";
 import { AnalyticsHelper } from "@/lib/analytics-helper";
 import { auth } from "@/lib/auth";
+import { isTranslatedPath } from "@/lib/locale-utils";
 
 
 // Available locales from intlayer config
@@ -239,6 +240,16 @@ export async function proxy(request: NextRequest) {
       status: 301,
       headers: { "Cache-Control": "public, max-age=31536000, immutable" },
     });
+  }
+
+  // The application area is French only: /en/dashboard and /es/formations go to the French page
+  if (currentLocale !== DEFAULT_LOCALE) {
+    const rest = pathname.slice(currentLocale.length + 1) || "/";
+    if (!isTranslatedPath(rest)) {
+      const url = nextUrl.clone();
+      url.pathname = `/${DEFAULT_LOCALE}${rest === "/" ? "" : rest}`;
+      return NextResponse.redirect(url, { status: 307 });
+    }
   }
 
   // Maintenance check before auth DB reads

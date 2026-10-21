@@ -1,5 +1,5 @@
 import { getBlogPostsMeta } from "@/lib/mdx";
-import { getMultilingualUrls } from "intlayer";
+import { localizedUrls } from "./localized-urls";
 import type { MetadataRoute } from "next";
 
 const SITE_URL = "https://fygs.dev";
@@ -34,7 +34,7 @@ export async function generateSitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Helper to convert relative multilingual URLs to absolute
   const toAbsoluteUrls = (path: string) => {
-    const urls = getMultilingualUrls(path);
+    const urls = localizedUrls(path);
     const absoluteUrls: Record<string, string> = {};
     for (const [locale, localePath] of Object.entries(urls)) {
       absoluteUrls[locale] = `${SITE_URL}${localePath}`;

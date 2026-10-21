@@ -113,13 +113,40 @@ describe("auth gate", () => {
     );
   });
 
-  it.each(["/en/profile", "/en/settings", "/en/certificates", "/en/admin/users"])(
+  it.each(["/fr/profile", "/fr/settings", "/fr/certificates", "/fr/admin/users"])(
     "protects %s",
     async (path) => {
       const res = await proxy(req(path));
-      expect(location(res)).toMatch(/^\/en\/auth\/login\?/);
+      expect(location(res)).toMatch(/^\/fr\/auth\/login\?/);
     },
   );
+
+  describe("the application area is French only", () => {
+    it.each([
+      ["/en/dashboard", "/fr/dashboard"],
+      ["/es/formations?level=beginner", "/fr/formations?level=beginner"],
+      ["/en/profile", "/fr/profile"],
+      ["/es/tech-mastry/algorithms/sorting", "/fr/tech-mastry/algorithms/sorting"],
+      ["/en/admin/users", "/fr/admin/users"],
+    ])("sends %s to %s", async (path, expected) => {
+      const res = await proxy(req(path));
+      expect(res.status).toBe(307);
+      expect(location(res)).toBe(expected);
+    });
+
+    it.each(["/en", "/es", "/en/contact", "/es/blog", "/en/blog/some-post", "/en/me", "/es/projects", "/en/auth/login"])(
+      "keeps the pages that have translations: %s",
+      async (path) => {
+        const res = await proxy(req(path));
+        expect(res.headers.get("location")).toBeNull();
+      },
+    );
+
+    it("does not mistake a longer word for a translated page", async () => {
+      const res = await proxy(req("/en/blogger"));
+      expect(location(res)).toBe("/fr/blogger");
+    });
+  });
 
   it("treats a failing session lookup as anonymous", async () => {
     m.getSession.mockRejectedValue(new Error("boom"));
