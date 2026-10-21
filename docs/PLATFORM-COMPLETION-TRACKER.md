@@ -79,6 +79,26 @@ e2e green when a user flow changes, CHANGELOG entry, committed on `feature/refac
 | P6-3 | Open the PR on github.com (no gh auth for it) | OWNER | PR URL | TODO |
 | P6-4 | Update the memory backlog and CHANGELOG | DEV | in sync | TODO |
 
+## Phase 7: Functional completeness of every interface
+
+Origin: "is the application complete, without holes?" The answer was no. This phase is the inventory (dead links, controls that do nothing, invented figures, forms, translations, empty states) and the decision taken for each finding: **deliver** the function or **remove** the control.
+
+| ID | Finding | Decision | Acceptance | Status |
+|----|---------|----------|------------|--------|
+| P7-1 | No way to cancel a subscription from the billing page (the cancel action had no UI) | Deliver: "Annuler l'abonnement" with confirmation, end of period | unit test, action tested | DONE |
+| P7-2 | Plan switching had an action but no UI; the action recorded invented proration amounts (+50 EUR / -30 EUR) in the audit trail and analytics | Deliver the UI (cycle keyword, never a raw price id); stop inventing amounts (Stripe's own are audited as PRORATION); strict price validation | contract + unit tests | DONE |
+| P7-3 | Cancelling recorded a REFUND_ISSUED event of 0 EUR although nothing is refunded there | Remove the event (requestRefund records the real one); refund offer shown for any subscription in its 14 days | tests | DONE |
+| P7-4 | Admin: 14 links to pages that do not exist (users/new, users/invite, emails, blog, projects, progress, revenue, pages, settings, database, security, analytics/export) and a user profile page linked from 2 places that did not exist | users/[id] delivered (role, suspension, enrollments, payments); analytics/export delivered (CSV); the others removed (the features do not exist) | link scan finds none | DONE |
+| P7-5 | Admin users and courses: search, filters, bulk menus, import, export, duplicate, selection bars did nothing | Real filters (URL, server side) for users and courses; the rest removed | integration tests | DONE |
+| P7-6 | Role change action accepted roles that do not exist (USER, MENTOR, MODERATOR): it always failed; nothing protected the last administrator | One service: valid roles only, no self change, last admin kept (advisory lock, concurrent test) | integration tests | DONE |
+| P7-7 | The community ban (isBanned) was stored but never enforced: a banned account kept posting | Enforced on every community write; lifted bans restore access | integration tests | DONE |
+| P7-8 | Admin review detail page showed one fabricated review for id "1" and a 404 for every real review | Rewritten on the database: content, replies, reports, moderation history, decision with note | tsc, e2e path | DONE |
+| P7-9 | Invented figures: admin growth chart (hard-coded 12 months), analytics "+15.2% / +8.7% / +12.4%", visitors = users x 10, random rating distribution, hard-coded 75/15/10 "sentiment", fake notifications (Next.js 15 Mastery, 129 EUR), simulated refresh | All replaced by real queries or removed; month-over-month change shown only when there is a previous month; funnel counts distinct people | integration tests (analytics) | DONE |
+| P7-10 | Student side: quick links to schedule, downloads, challenges; two best-practices cards; collaboration page "coming soon"; progress grid showed "Cours #a1b2c3" and linked to a missing page; reply "Report" item without backend; dead newsletter and booking components that faked success | schedule, downloads, 2 cards, collaboration, report item, dead components removed; challenges -> /tech-mastry/challenges; grid shows the title and opens the course | link scan, unit tests | DONE |
+| P7-11 | Forms inventory: all 31 forms are wired to a backend (contact, profile, password, reviews, community, admin CRUD, auth) | none needed | grep audit | DONE |
+| P7-12 | Translations inventory: dictionaries (fr/en/es) are complete, but only ~10 of ~600 files with text read from one; the rest of the app (formations, dashboard, billing, profile, admin, TechMastry) is written in French, the community in English | DECISION for the owner: keep the app area French-only and hide the switcher there, or fund a translation project (see docs/i18n-inventory.md) | inventory written | DECISION |
+| P7-13 | Empty-state and error smoke: every route crawled on the seeded platform and on a platform with only accounts | fix what the crawl finds | crawl report in the log | DOING |
+
 ## Log
 
 - 2026-10-20: tracker created. P0-1 done (owner approved), P0-3 done (owner moved the folder), P1-1 decided: follow the spec (revoke premium access after cancellation).
