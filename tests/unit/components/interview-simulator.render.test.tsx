@@ -77,19 +77,19 @@ describe("InterviewSimulator rendering", () => {
     expect(states).toBeGreaterThanOrEqual(3);
     expect(hashes).toMatchInlineSnapshot(`
       [
-        "b4e9c254",
-        "b4e9c254",
-        "b4e9c254",
-        "b4e9c254",
-        "b4e9c254",
-        "b4e9c254",
-        "b4e9c254",
-        "b4e9c254",
-        "b4e9c254",
-        "b4e9c254",
-        "b9724f3d",
-        "485d3090",
-        "9e1ce3f4",
+        "9480d10d",
+        "9480d10d",
+        "9480d10d",
+        "9480d10d",
+        "9480d10d",
+        "9480d10d",
+        "9480d10d",
+        "9480d10d",
+        "9480d10d",
+        "9480d10d",
+        "841f23c1",
+        "4d0eae92",
+        "a614c5b6",
       ]
     `);
   });
@@ -140,7 +140,7 @@ describe("InterviewSimulator rendering", () => {
         "292bf120",
         "5b7faf30",
         "5b7faf30",
-        "b4e9c254",
+        "9480d10d",
         "3188148b",
         "f22deec3",
         "6e19b683",
@@ -182,7 +182,7 @@ describe("InterviewSimulator rendering", () => {
         "620f2ac2",
         "3d7b441f",
         "3d7b441f",
-        "b4e9c254",
+        "9480d10d",
         "3188148b",
         "43ae204e",
         "ed9c4b8a",
@@ -218,7 +218,7 @@ describe("InterviewSimulator rendering", () => {
         "c03b06b0",
         "8461aeb1",
         "8461aeb1",
-        "b4e9c254",
+        "9480d10d",
       ]
     `);
   });

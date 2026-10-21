@@ -8,21 +8,21 @@ describe("LoadBalancerVisualization rendering", () => {
     expect(states).toBeGreaterThanOrEqual(5);
     expect(hashes).toMatchInlineSnapshot(`
       [
-        "f52e6058",
-        "4d276d48",
-        "86ebae63",
-        "1e35f170",
-        "b3ad9ce6",
-        "23b80aaa",
-        "b3ad9ce6",
-        "ce03f018",
-        "e44be5ad",
-        "b3ad9ce6",
-        "1e35f170",
-        "73281da3",
-        "1e35f170",
-        "cc081b5e",
-        "8f3fcb63",
+        "9cb547cc",
+        "457fdf40",
+        "11e61f0f",
+        "bbe79da4",
+        "fe966559",
+        "35e33d8b",
+        "fe966559",
+        "707d99a0",
+        "cbaa93b5",
+        "fe966559",
+        "bbe79da4",
+        "1a9543db",
+        "bbe79da4",
+        "366f6da1",
+        "e8893bf3",
       ]
     `);
   });

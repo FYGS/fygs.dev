@@ -15,10 +15,10 @@ exports[`PerformanceChart rendering > draws the same chart: memory 1`] = `
 
 exports[`PerformanceChart rendering > draws the same chart: performance / bar 1`] = `
 {
-  "hoverIn": "7e618b8d",
-  "hovered": "45760d55",
-  "initial": "a02970c6",
-  "settled": "74015807",
+  "hoverIn": "16fcf0ce",
+  "hovered": "4f88f21b",
+  "initial": "55d2c46c",
+  "settled": "738eb688",
   "textCount": 53,
   "texts": "54d5164a",
   "titleCount": 7,
@@ -28,10 +28,10 @@ exports[`PerformanceChart rendering > draws the same chart: performance / bar 1`
 
 exports[`PerformanceChart rendering > draws the same chart: performance / line 1`] = `
 {
-  "hoverIn": "c84f9307",
-  "hovered": "19ba09b9",
-  "initial": "e4da9259",
-  "settled": "19ba09b9",
+  "hoverIn": "6e1385ed",
+  "hovered": "48cccb2d",
+  "initial": "d414e180",
+  "settled": "48cccb2d",
   "textCount": 52,
   "texts": "c55127c7",
   "titleCount": 35,

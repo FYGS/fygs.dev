@@ -16,17 +16,17 @@ exports[`tech-mastry components rewritten for the lint rules > exponential-searc
 
 exports[`tech-mastry components rewritten for the lint rules > fibonacci renders the same markup in every state reachable by clicking 1`] = `
 [
-  "b0931371",
-  "b0931371",
-  "b0931371",
-  "4d080352",
-  "01963cca",
-  "5cd2e830",
-  "5cd2e830",
-  "4d080352",
-  "01963cca",
-  "7e74de38",
-  "b46be94f",
+  "aa116612",
+  "aa116612",
+  "aa116612",
+  "e4f01002",
+  "33eaf5f0",
+  "817e69b2",
+  "817e69b2",
+  "e4f01002",
+  "33eaf5f0",
+  "32f9ef28",
+  "8343b2b9",
 ]
 `;
 
@@ -160,19 +160,19 @@ exports[`tech-mastry components rewritten for the lint rules > realtime-performa
 
 exports[`tech-mastry components rewritten for the lint rules > search-algorithms renders the same markup in every state reachable by clicking 1`] = `
 [
-  "afb886c1",
-  "f3f9b3e2",
-  "f3f9b3e2",
-  "f3f9b3e2",
-  "c4cd045c",
-  "bd0fa40e",
-  "bce95eb3",
-  "bce95eb3",
-  "bce95eb3",
-  "340d1da7",
-  "85160b37",
-  "1b7d5a04",
-  "1dd4a889",
+  "8c85939f",
+  "938b7bb8",
+  "938b7bb8",
+  "938b7bb8",
+  "476fe29a",
+  "6211e762",
+  "ac2fd50b",
+  "ac2fd50b",
+  "ac2fd50b",
+  "4b2240a2",
+  "1b5f7d73",
+  "5870aca7",
+  "39b082cd",
 ]
 `;
 
@@ -200,19 +200,19 @@ exports[`tech-mastry components rewritten for the lint rules > sorting-algorithm
 
 exports[`tech-mastry components rewritten for the lint rules > sorting-exercises renders the same markup in every state reachable by clicking 1`] = `
 [
-  "ee8cc296",
-  "ee8cc296",
-  "ee8cc296",
-  "7b4b3161",
-  "5532c0cd",
-  "5532c0cd",
-  "5532c0cd",
-  "ee8cc296",
-  "a8d8b3a3",
-  "a8d8b3a3",
-  "2d27b915",
-  "5c8d05b0",
-  "ba287ae6",
+  "1892fbda",
+  "1892fbda",
+  "1892fbda",
+  "bc679f3e",
+  "ccc37248",
+  "ccc37248",
+  "ccc37248",
+  "1892fbda",
+  "40ee75a6",
+  "40ee75a6",
+  "c91424f5",
+  "e0d3f148",
+  "32fdd9fa",
 ]
 `;
 

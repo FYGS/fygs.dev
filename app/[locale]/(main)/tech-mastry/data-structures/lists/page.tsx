@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { GitMerge, RotateCcw, ArrowRight, Eye, Zap, Code2 } from "lucide-react";
@@ -17,15 +17,16 @@ const INITIAL_VALUES = [5, 12, 8, 3, 17];
 // The same ids on the server and in the browser: a counter shared by every render made the page differ at hydration
 const freshNodes = (): LLNode[] => INITIAL_VALUES.map((value, id) => ({ id, value }));
 
+/** A key no node of the list uses. */
+const nextNodeId = (list: LLNode[]) => list.reduce((max, node) => Math.max(max, node.id), -1) + 1;
+
 function LinkedListVisualizer() {
-  const nextId = useRef(INITIAL_VALUES.length);
   const [nodes, setNodes] = useState<LLNode[]>(freshNodes);
   const [message, setMessage] = useState(
     "Cliquez sur une opération pour visualiser",
   );
 
   const resetAll = () => {
-    nextId.current = INITIAL_VALUES.length;
     const fresh = freshNodes();
     setNodes(fresh);
     setMessage("Liste réinitialisée");
@@ -34,7 +35,7 @@ function LinkedListVisualizer() {
   const prepend = () => {
     const val = Math.floor(Math.random() * 30) + 1;
     const newNode: LLNode = {
-      id: nextId.current++,
+      id: nextNodeId(nodes),
       value: val,
       highlight: "active",
     };
@@ -50,7 +51,7 @@ function LinkedListVisualizer() {
   const append = () => {
     const val = Math.floor(Math.random() * 30) + 1;
     const newNode: LLNode = {
-      id: nextId.current++,
+      id: nextNodeId(nodes),
       value: val,
       highlight: "active",
     };

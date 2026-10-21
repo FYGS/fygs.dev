@@ -23,16 +23,16 @@ describe("/me page rendering (server component, real intlayer dictionaries)", ()
     expect(result).toMatchInlineSnapshot(`
       {
         "en": [
-          112378,
-          "2b5e9f6d",
+          112666,
+          "b046d124",
         ],
         "es": [
-          112610,
-          "61c686c4",
+          112898,
+          "82b27ffd",
         ],
         "fr": [
-          112745,
-          "4f43ea18",
+          113033,
+          "b46c2fec",
         ],
       }
     `);
