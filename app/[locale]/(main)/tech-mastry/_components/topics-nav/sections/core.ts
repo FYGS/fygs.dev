@@ -31,6 +31,12 @@ export const coreTopics: TopicSection[] = [
         icon: BarChart3,
         description: "Tableau de bord de progression",
       },
+      {
+        title: "Ressources",
+        href: "/tech-mastry/resources",
+        icon: Book,
+        description: "Livres, cours, chaînes et communautés choisis",
+      },
     ],
   },
   {
@@ -76,6 +82,12 @@ export const coreTopics: TopicSection[] = [
         icon: Code2,
         description: "N-Queens, Sudoku, permutations",
         badge: "Nouveau",
+      },
+      {
+        title: "Programmation Dynamique",
+        href: "/tech-mastry/algorithms/dynamic-programming",
+        icon: Layers,
+        description: "Sous-problèmes, mémoïsation, tabulation",
       },
       {
         title: "Algorithmes de Graphes",
@@ -190,6 +202,12 @@ export const coreTopics: TopicSection[] = [
         icon: BrainCircuit,
         description: "Microservices, Event-Driven, Service Mesh",
         badge: "Avancé",
+      },
+      {
+        title: "Stockage & Bases de Données",
+        href: "/tech-mastry/system-design/storage",
+        icon: Database,
+        description: "SQL ou NoSQL, réplication, sharding, ACID et CAP",
       },
       {
         title: "Scalabilité",
