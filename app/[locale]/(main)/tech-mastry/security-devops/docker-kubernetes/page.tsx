@@ -96,7 +96,7 @@ export default function DockerKubernetesPage() {
 
       <section className="space-y-4">
         <h2 className="text-3xl font-bold">Dockerfile Multi-Stage</h2>
-        <pre className="bg-muted/50 rounded-lg p-4 overflow-x-auto text-sm">
+        <pre className="bg-muted/50 rounded-lg p-4 overflow-x-auto text-sm" tabIndex={0}>
           <code>{`# Stage 1: Build
 FROM node:20-alpine AS builder
 WORKDIR /app

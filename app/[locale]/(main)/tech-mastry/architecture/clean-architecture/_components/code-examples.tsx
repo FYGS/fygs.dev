@@ -123,7 +123,7 @@ export function CodeExamples() {
 
       <Card className="p-6 space-y-4 border-border/40">
         <p className="text-muted-foreground">{active.description}</p>
-        <pre className="bg-muted/50 rounded-lg p-4 overflow-x-auto text-sm">
+        <pre className="bg-muted/50 rounded-lg p-4 overflow-x-auto text-sm" tabIndex={0}>
           <code>{active.code}</code>
         </pre>
       </Card>

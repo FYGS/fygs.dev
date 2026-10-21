@@ -274,7 +274,7 @@ export function SearchAlgorithms() {
 
                 <div>
                   <h4 className="font-medium mb-2">Implémentation</h4>
-                  <pre className="p-4 rounded-lg bg-muted overflow-x-auto">
+                  <pre className="p-4 rounded-lg bg-muted overflow-x-auto" tabIndex={0}>
                     <code className="text-sm">{algo.code}</code>
                   </pre>
                 </div>

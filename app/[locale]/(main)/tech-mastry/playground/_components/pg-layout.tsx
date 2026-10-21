@@ -44,7 +44,7 @@ function MobileGuard({ children }: { children: React.ReactNode }) {
 
   if (isMobile) {
     return (
-      <div className="flex h-[calc(100vh-64px)] flex-col items-center justify-center gap-6 bg-[#1e1e1e] px-6 text-center text-white">
+      <div className="dark flex h-[calc(100vh-64px)] flex-col items-center justify-center gap-6 bg-[#1e1e1e] px-6 text-center text-white">
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-600/20">
           <svg
             className="h-8 w-8 text-blue-400"
@@ -61,9 +61,9 @@ function MobileGuard({ children }: { children: React.ReactNode }) {
           </svg>
         </div>
         <div>
-          <h2 className="text-xl font-bold tracking-tight">
+          <h1 className="text-xl font-bold tracking-tight">
             Desktop Experience Required
-          </h2>
+          </h1>
           <p className="mt-2 max-w-sm text-sm text-muted-foreground">
             The Playground is optimized for desktop and large screens. Please
             switch to a device with a screen width of at least 1024px for the
@@ -194,7 +194,7 @@ export function PgLayout() {
   return (
     <MobileGuard>
       <TooltipProvider delayDuration={200}>
-        <div className="flex h-[calc(100vh-64px)] flex-col overflow-hidden bg-[#1e1e1e] text-white">
+        <div className="dark flex h-[calc(100vh-64px)] flex-col overflow-hidden bg-[#1e1e1e] text-white">
           <h1 className="sr-only">Playground</h1>
           {/* Top Toolbar */}
           <PgToolbar />

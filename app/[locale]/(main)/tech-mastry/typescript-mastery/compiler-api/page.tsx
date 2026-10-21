@@ -393,7 +393,7 @@ export default function CompilerApiPage() {
                   </TabsList>
                   {t.content.map(c => (
                     <TabsContent key={c.tab} value={c.tab}>
-                      <pre className="rounded-xl bg-muted/50 p-4 font-mono text-xs whitespace-pre-wrap overflow-x-auto">
+                      <pre className="rounded-xl bg-muted/50 p-4 font-mono text-xs whitespace-pre-wrap overflow-x-auto" tabIndex={0}>
                         {c.code}
                       </pre>
                     </TabsContent>

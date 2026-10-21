@@ -455,7 +455,7 @@ export default function GraphsPage() {
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground">{r.pros}</p>
-              <pre className="bg-muted/30 rounded-lg p-3 text-xs overflow-x-auto">
+              <pre className="bg-muted/30 rounded-lg p-3 text-xs overflow-x-auto" tabIndex={0}>
                 <code>{r.code}</code>
               </pre>
             </Card>
@@ -467,7 +467,7 @@ export default function GraphsPage() {
       <section className="space-y-4">
         <h2 className="text-2xl font-bold">Implémentations</h2>
         <Card className="border-border/40">
-          <pre className="p-4 overflow-x-auto text-xs bg-muted/30 rounded-lg">
+          <pre className="p-4 overflow-x-auto text-xs bg-muted/30 rounded-lg" tabIndex={0}>
             <code>{`// BFS — Breadth First Search
 function bfs(graph: Map<number, number[]>, start: number): number[] {
   const visited = new Set<number>([start]);

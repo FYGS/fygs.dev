@@ -71,7 +71,8 @@ export function SortingAlgorithmsOverview() {
                     }
                     className={cn(
                       "w-full justify-start text-left font-normal mb-1 relative overflow-hidden group",
-                      selectedAlgorithm === algo.id && `bg-${algo.color}-500`
+                      // the dark overlay keeps white text above 4.5:1 on every colour
+                      selectedAlgorithm === algo.id && `bg-${algo.color}-500 after:absolute after:inset-0 after:bg-black/25 after:content-['']`
                     )}
                     onClick={() => setSelectedAlgorithm(algo.id)}
                   >
@@ -85,7 +86,7 @@ export function SortingAlgorithmsOverview() {
                       <div className="absolute inset-y-0 right-0 flex items-center pr-3 z-10">
                         <Badge
                           variant="outline"
-                          className="bg-white/20 text-white"
+                          className="bg-black/30 text-white border-white/30"
                         >
                           {algo.complexity.time.average}
                         </Badge>

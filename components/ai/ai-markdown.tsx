@@ -184,7 +184,7 @@ function CodeBlock({ code, language, light }: { code: string; language: string; 
           {code}
         </SyntaxHighlighter>
       ) : (
-        <pre className="m-0 overflow-x-auto whitespace-pre-wrap break-words px-3 py-2.5 font-mono text-xs">
+        <pre className="m-0 overflow-x-auto whitespace-pre-wrap break-words px-3 py-2.5 font-mono text-xs" tabIndex={0}>
           <code>{code}</code>
         </pre>
       )}

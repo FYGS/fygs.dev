@@ -88,7 +88,7 @@ function ETLPipelineViz() {
             </div>
           </div>
         </div>
-        <pre className="bg-muted/30 rounded-lg p-3 text-xs font-mono text-foreground overflow-x-auto">
+        <pre className="bg-muted/30 rounded-lg p-3 text-xs font-mono text-foreground overflow-x-auto" tabIndex={0}>
           {steps[activeStep].code}
         </pre>
       </div>
@@ -390,7 +390,7 @@ export default function DataEngineeringPage() {
                 <h3 className="font-semibold text-sm">{s.name}</h3>
                 <span className="text-xs text-muted-foreground">{s.desc}</span>
               </div>
-              <pre className="bg-muted/30 rounded p-2 text-xs font-mono text-primary overflow-x-auto">
+              <pre className="bg-muted/30 rounded p-2 text-xs font-mono text-primary overflow-x-auto" tabIndex={0}>
                 {s.code}
               </pre>
             </Card>
@@ -438,7 +438,7 @@ export default function DataEngineeringPage() {
       <section className="space-y-6">
         <h2 className="text-2xl font-bold">Apache Airflow — DAG exemple</h2>
         <Card className="p-5">
-          <pre className="bg-muted/30 rounded-lg p-4 text-xs overflow-x-auto font-mono text-foreground">
+          <pre className="bg-muted/30 rounded-lg p-4 text-xs overflow-x-auto font-mono text-foreground" tabIndex={0}>
             {`from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator

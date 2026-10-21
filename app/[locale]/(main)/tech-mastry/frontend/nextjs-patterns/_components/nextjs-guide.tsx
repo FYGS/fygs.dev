@@ -216,7 +216,7 @@ export function NextjsGuide() {
 
       <Card className="p-6 space-y-6">
         <h2 className="text-2xl font-bold">{patterns[activePattern].name}</h2>
-        <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+        <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
           <code>{patterns[activePattern].code}</code>
         </pre>
         <div>

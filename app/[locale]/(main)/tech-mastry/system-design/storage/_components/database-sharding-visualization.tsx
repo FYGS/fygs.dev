@@ -509,7 +509,7 @@ export function DatabaseShardingVisualization() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <h5 className="text-sm font-medium mb-2">MongoDB</h5>
-                    <pre className="text-xs p-3 bg-slate-800 rounded border overflow-auto">
+                    <pre className="text-xs p-3 bg-slate-800 rounded border overflow-auto" tabIndex={0}>
                       {`// Création d'une collection sharded
 sh.enableSharding("myDatabase")
 
@@ -526,7 +526,7 @@ sh.shardCollection(
 
                   <div>
                     <h5 className="text-sm font-medium mb-2">MySQL</h5>
-                    <pre className="text-xs p-3 bg-slate-800 rounded border overflow-auto">
+                    <pre className="text-xs p-3 bg-slate-800 rounded border overflow-auto" tabIndex={0}>
                       {`-- Création de tables partitionnées par plage
 CREATE TABLE orders (
   order_id INT,

@@ -234,19 +234,19 @@ export default function TypeChallengesPage() {
               </TabsList>
 
               <TabsContent value="starter">
-                <pre className="rounded-xl bg-muted/50 p-4 font-mono text-xs whitespace-pre-wrap overflow-x-auto">
+                <pre className="rounded-xl bg-muted/50 p-4 font-mono text-xs whitespace-pre-wrap overflow-x-auto" tabIndex={0}>
                   {c.starter}
                 </pre>
               </TabsContent>
 
               <TabsContent value="tests">
-                <pre className="rounded-xl bg-muted/50 p-4 font-mono text-xs whitespace-pre-wrap overflow-x-auto">
+                <pre className="rounded-xl bg-muted/50 p-4 font-mono text-xs whitespace-pre-wrap overflow-x-auto" tabIndex={0}>
                   {c.tests}
                 </pre>
               </TabsContent>
 
               <TabsContent value="solution">
-                <pre className="rounded-xl bg-muted/50 p-4 font-mono text-xs whitespace-pre-wrap overflow-x-auto">
+                <pre className="rounded-xl bg-muted/50 p-4 font-mono text-xs whitespace-pre-wrap overflow-x-auto" tabIndex={0}>
                   {c.solution}
                 </pre>
               </TabsContent>

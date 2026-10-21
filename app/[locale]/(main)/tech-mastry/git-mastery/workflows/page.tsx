@@ -269,7 +269,7 @@ export default function WorkflowsPage() {
               {copied ? "Copié" : "Copier"}
             </button>
           </div>
-          <pre className="rounded-lg bg-muted/50 p-4 font-mono text-xs whitespace-pre-wrap overflow-x-auto">
+          <pre className="rounded-lg bg-muted/50 p-4 font-mono text-xs whitespace-pre-wrap overflow-x-auto" tabIndex={0}>
             {prTemplate}
           </pre>
         </Card>

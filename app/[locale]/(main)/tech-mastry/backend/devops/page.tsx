@@ -166,7 +166,7 @@ on:
             </Badge>
           ))}
         </div>
-        <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-border/20">
+        <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-border/20" tabIndex={0}>
           <code>{current.yaml}</code>
         </pre>
       </Card>
@@ -311,7 +311,7 @@ COPY . .                              # Changes often (cache busted)
           </button>
         ))}
       </div>
-      <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-border/20 max-h-[400px] overflow-y-auto">
+      <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-border/20 max-h-[400px] overflow-y-auto" tabIndex={0}>
         <code>{sections[activeSection].code}</code>
       </pre>
     </div>

@@ -2,55 +2,55 @@
 
 exports[`tech-mastry components split into smaller files > aria-section renders the same markup in every state reachable by clicking 1`] = `
 [
-  "c6c3256a",
-  "c6c3256a",
-  "c6c3256a",
-  "c6c3256a",
-  "220bdd81",
-  "c5ae7576",
-  "0c7fe307",
-  "abdd47dd",
-  "abdd47dd",
-  "abdd47dd",
-  "abdd47dd",
-  "6da2dd98",
-  "64c0e6d9",
-  "f37f511c",
-  "c6c3256a",
-  "26b669f0",
-  "f014fe66",
-  "eb3af449",
-  "c45a7e7b",
-  "060fcea1",
-  "110e59e8",
-  "446118bf",
+  "507415ef",
+  "507415ef",
+  "507415ef",
+  "507415ef",
+  "87449ed7",
+  "c7a6b877",
+  "22d8511a",
+  "942b3e65",
+  "942b3e65",
+  "942b3e65",
+  "942b3e65",
+  "16195bda",
+  "fbe1a2b9",
+  "20d27185",
+  "507415ef",
+  "c8ef362d",
+  "10f64c24",
+  "5d28677a",
+  "58642f43",
+  "ffec714c",
+  "f4dd2401",
+  "2e445dc3",
   "07cde888",
 ]
 `;
 
 exports[`tech-mastry components split into smaller files > arrays-page renders the same markup in every state reachable by clicking 1`] = `
 [
-  "abba2932",
-  "2598c909",
-  "f4a49751",
-  "ed455dc5",
-  "093909da",
-  "290641db",
-  "7c32a972",
-  "41d88c45",
-  "41d88c45",
-  "bf6e2757",
-  "516d5545",
-  "3b36b189",
-  "3b36b189",
-  "3b36b189",
-  "3b36b189",
-  "3b36b189",
-  "3b36b189",
-  "3b36b189",
-  "29e776b8",
-  "3b36b189",
-  "3b36b189",
+  "36dc7752",
+  "b38b9996",
+  "088231a4",
+  "feae74a8",
+  "eba3a6bf",
+  "9b7a6736",
+  "4c468509",
+  "7d954ee2",
+  "7d954ee2",
+  "692d3e7c",
+  "d79247e8",
+  "7f793202",
+  "7f793202",
+  "7f793202",
+  "7f793202",
+  "7f793202",
+  "7f793202",
+  "7f793202",
+  "8fbc7b21",
+  "7f793202",
+  "7f793202",
 ]
 `;
 
@@ -87,7 +87,7 @@ exports[`tech-mastry components split into smaller files > dp-real-world renders
   "fbb9e11d",
   "59519264",
   "40bd4272",
-  "014af1e4",
+  "f338e230",
 ]
 `;
 
@@ -97,7 +97,7 @@ exports[`tech-mastry components split into smaller files > dynamic-programming-g
   "e7009524",
   "1a100835",
   "8e835d3f",
-  "f2515551",
+  "540d5b97",
   "9fd2b82b",
   "04c505b1",
 ]
@@ -105,77 +105,77 @@ exports[`tech-mastry components split into smaller files > dynamic-programming-g
 
 exports[`tech-mastry components split into smaller files > filesystem-case renders the same markup in every state reachable by clicking 1`] = `
 [
-  "a2b922d6",
-  "a2b922d6",
-  "a2b922d6",
-  "882303f8",
-  "2b83262d",
-  "7c34af13",
+  "35eabf72",
+  "35eabf72",
+  "35eabf72",
+  "67eb6bbe",
+  "86863bf3",
+  "bffa2b45",
 ]
 `;
 
 exports[`tech-mastry components split into smaller files > graph-database-aggregation renders the same markup in every state reachable by clicking 1`] = `
 [
-  "bed9aea6",
+  "ff9aaa01",
 ]
 `;
 
 exports[`tech-mastry components split into smaller files > graph-database-complex renders the same markup in every state reachable by clicking 1`] = `
 [
-  "17f45942",
+  "2d9a5ce6",
 ]
 `;
 
 exports[`tech-mastry components split into smaller files > graph-database-simple renders the same markup in every state reachable by clicking 1`] = `
 [
-  "acfaa892",
+  "e79ab5b0",
 ]
 `;
 
 exports[`tech-mastry components split into smaller files > graph-database-update renders the same markup in every state reachable by clicking 1`] = `
 [
-  "1104cdfb",
+  "58f9fc8b",
 ]
 `;
 
 exports[`tech-mastry components split into smaller files > machine-learning-page renders the same markup in every state reachable by clicking 1`] = `
 [
-  "03ac3bd3",
-  "03ac3bd3",
-  "788c5180",
-  "0e0feb70",
-  "03ac3bd3",
-  "788c5180",
-  "0e0feb70",
+  "ccfc6580",
+  "ccfc6580",
+  "db0422a1",
+  "8105a3bb",
+  "ccfc6580",
+  "db0422a1",
+  "8105a3bb",
 ]
 `;
 
 exports[`tech-mastry components split into smaller files > memoization-section renders the same markup in every state reachable by clicking 1`] = `
 [
-  "7dc623ef",
-  "7dc623ef",
-  "7dc623ef",
-  "7dc623ef",
-  "2492ebf0",
-  "d6799087",
-  "ae35bdc3",
-  "93870a46",
-  "93870a46",
-  "93870a46",
-  "93870a46",
-  "7b3bedd1",
-  "3d631909",
-  "72479ed5",
-  "7dc623ef",
-  "fce750f2",
-  "bc57c13e",
-  "b382d3ce",
-  "3a46f26d",
-  "d5e5d576",
-  "28914e32",
-  "eafa813b",
-  "136ff5e0",
-  "472129e9",
+  "cc09ca66",
+  "cc09ca66",
+  "cc09ca66",
+  "cc09ca66",
+  "58b242cf",
+  "b861f4e8",
+  "475288aa",
+  "76d788e8",
+  "76d788e8",
+  "76d788e8",
+  "76d788e8",
+  "e9b4c9c5",
+  "4525c9c4",
+  "bde1176e",
+  "cc09ca66",
+  "a9c1564e",
+  "7a7f2960",
+  "9fbccefa",
+  "1667e683",
+  "e0f600d1",
+  "7cd0fcc0",
+  "f03df84f",
+  "2ae4a8f1",
+  "d051bf11",
   "095a9c44",
   "b56cc592",
   "33bb05e1",
@@ -202,30 +202,30 @@ exports[`tech-mastry components split into smaller files > practice-exercises re
 
 exports[`tech-mastry components split into smaller files > searching-algorithms-overview renders the same markup in every state reachable by clicking 1`] = `
 [
-  "b4f40555",
-  "b4f40555",
-  "0ee72888",
-  "b4f40555",
-  "b4f40555",
-  "0ee72888",
-  "b4f40555",
-  "d5df1809",
-  "ab600f35",
-  "6097d0aa",
-  "719562b8",
-  "06f6fc77",
-  "783160d3",
+  "e408229a",
+  "e408229a",
+  "3469ce29",
+  "e408229a",
+  "e408229a",
+  "3469ce29",
+  "e408229a",
+  "c4bc10b7",
+  "588b3c3f",
+  "a5ade5ba",
+  "63e52f88",
+  "ce878bfa",
+  "95e8d479",
 ]
 `;
 
 exports[`tech-mastry components split into smaller files > server-case renders the same markup in every state reachable by clicking 1`] = `
 [
-  "d4a108cb",
-  "d4a108cb",
-  "d4a108cb",
-  "eb23b693",
-  "ae6be8fd",
-  "5e0aff64",
+  "ce0fdaa1",
+  "ce0fdaa1",
+  "ce0fdaa1",
+  "f07ae01b",
+  "1cdf5bcb",
+  "bacf4fe1",
 ]
 `;
 
@@ -255,21 +255,21 @@ exports[`tech-mastry components split into smaller files > service-mesh-explanat
 
 exports[`tech-mastry components split into smaller files > sorting-algorithms-overview renders the same markup in every state reachable by clicking 1`] = `
 [
-  "486ed414",
-  "486ed414",
-  "021968c4",
-  "2928569f",
-  "a4a398a9",
-  "b40e4deb",
-  "2ee879be",
-  "415d3070",
-  "0f778946",
-  "021968c4",
-  "2928569f",
-  "a4a398a9",
-  "b40e4deb",
-  "2ee879be",
-  "415d3070",
+  "f935f214",
+  "f935f214",
+  "f7116856",
+  "b6663b38",
+  "232ef9a1",
+  "6d17094d",
+  "c3c3519e",
+  "9b2fa216",
+  "1b1b289a",
+  "f7116856",
+  "b6663b38",
+  "232ef9a1",
+  "6d17094d",
+  "c3c3519e",
+  "9b2fa216",
 ]
 `;
 
@@ -287,7 +287,7 @@ exports[`tech-mastry components split into smaller files > sorting-quizzes rende
   "f9c0db43",
   "12f92150",
   "e4e3d4cf",
-  "3db9b606",
+  "f95efb73",
   "27876810",
 ]
 `;

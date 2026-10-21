@@ -282,7 +282,7 @@ export function NotificationsDropdown({
   return (
     <DropdownMenu open={isOpen} onOpenChange={handleDropdownOpenChange}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="relative">
+        <Button variant="ghost" size="sm" className="relative" aria-label={unreadCount > 0 ? `Notifications (${unreadCount > 99 ? "99+" : unreadCount} non lues)` : "Notifications"}>
           {unreadCount > 0 ? (
             <BellDot className="h-5 w-5" />
           ) : (

@@ -103,7 +103,7 @@ export function CodeExample({
         <CardContent className="p-0">
           <TabsContent value="code" className="m-0">
             <div className="relative">
-              <pre className="language-jsx p-4 overflow-x-auto text-sm">
+              <pre className="language-jsx p-4 overflow-x-auto text-sm" tabIndex={0}>
                 <code>{code}</code>
               </pre>
               <Button

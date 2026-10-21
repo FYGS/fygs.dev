@@ -352,7 +352,7 @@ export function SearchingExercises() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+            <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
               <code>{currentExercise.solution}</code>
             </pre>
           </CardContent>

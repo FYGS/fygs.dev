@@ -185,7 +185,7 @@ export function PipelineGuide() {
             </Badge>
           ))}
         </div>
-        <pre className="bg-muted/50 rounded-lg p-4 overflow-x-auto text-sm">
+        <pre className="bg-muted/50 rounded-lg p-4 overflow-x-auto text-sm" tabIndex={0}>
           <code>{detail.code}</code>
         </pre>
       </Card>

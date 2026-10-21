@@ -403,7 +403,7 @@ export function DPChallenge() {
               <DialogHeader>
                 <DialogTitle>Solution</DialogTitle>
               </DialogHeader>
-              <pre className="p-4 bg-muted rounded-lg overflow-x-auto text-sm">
+              <pre className="p-4 bg-muted rounded-lg overflow-x-auto text-sm" tabIndex={0}>
                 <code>{selectedChallenge.solution}</code>
               </pre>
             </DialogContent>

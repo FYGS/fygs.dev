@@ -241,7 +241,7 @@ function ApiStyleExplorer() {
               />
             </button>
           </div>
-          <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-border/20">
+          <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-border/20" tabIndex={0}>
             <code>{api.request}</code>
           </pre>
           {showResponse && (
@@ -249,7 +249,7 @@ function ApiStyleExplorer() {
               <Badge className="bg-green-500/10 text-green-400 text-[10px]">
                 RESPONSE
               </Badge>
-              <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-green-500/10">
+              <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-green-500/10" tabIndex={0}>
                 <code>{api.response}</code>
               </pre>
             </>
@@ -354,7 +354,7 @@ function HttpMethodVisualizer() {
         </div>
       </div>
       <p className="text-sm text-muted-foreground">{current.desc}</p>
-      <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-border/20">
+      <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-border/20" tabIndex={0}>
         <code>{current.example}</code>
       </pre>
     </div>

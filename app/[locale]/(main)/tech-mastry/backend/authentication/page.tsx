@@ -150,7 +150,7 @@ function RbacDemo() {
           );
         })}
       </div>
-      <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-border/20"><code>{`// Middleware d'autorisation
+      <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-border/20" tabIndex={0}><code>{`// Middleware d'autorisation
 function requirePermission(permission: string) {
   return (req, res, next) => {
     const userRole = req.user.role; // "${selectedRole}"

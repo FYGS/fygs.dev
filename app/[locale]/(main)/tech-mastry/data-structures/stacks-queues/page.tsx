@@ -374,7 +374,7 @@ export default function StacksQueuesPage() {
           Implémentations
         </h2>
         <Card className="border-border/40">
-          <pre className="p-4 overflow-x-auto text-xs bg-muted/30 rounded-lg">
+          <pre className="p-4 overflow-x-auto text-xs bg-muted/30 rounded-lg" tabIndex={0}>
             <code>{`// Monotonic Stack — Next Greater Element
 function nextGreater(arr: number[]): number[] {
   const result = new Array(arr.length).fill(-1);

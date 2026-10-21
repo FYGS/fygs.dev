@@ -19,7 +19,7 @@ export function CleaningPipelineSection() {
             </div>
           ))}
         </div>
-        <pre className="mt-4 bg-muted/30 rounded-lg p-4 text-xs overflow-x-auto font-mono text-foreground">
+        <pre className="mt-4 bg-muted/30 rounded-lg p-4 text-xs overflow-x-auto font-mono text-foreground" tabIndex={0}>
           {CLEANING_PIPELINE_CODE}
         </pre>
       </Card>

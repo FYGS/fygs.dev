@@ -97,7 +97,7 @@ describe("DatabaseReplicationVisualization rendering", () => {
         "52e4464f",
         "4d87c44d",
         "8e4ea2e4",
-        "59669852",
+        "c71f8367",
       ]
     `);
   });

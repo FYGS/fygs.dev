@@ -10,7 +10,7 @@ export function QueryResultsPanel({ queryType }: {
       </div>
       <div className="flex-1 border rounded-md overflow-auto flex flex-col">
         <div className="bg-slate-800 p-2 border-b">
-          <pre className="text-xs overflow-auto whitespace-pre-wrap">
+          <pre className="text-xs overflow-auto whitespace-pre-wrap" tabIndex={0}>
             {queryType === "simple" &&
               `// Récupération par clé de ligne
 SELECT * FROM users

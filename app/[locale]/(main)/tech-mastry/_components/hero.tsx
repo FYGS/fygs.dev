@@ -28,7 +28,7 @@ export function InterviewPrepHero() {
 
       <div className="container max-w-6xl mx-auto px-4 text-center relative z-10">
         {/* Badge */}
-        <div className="inline-flex items-center justify-center mb-6 bg-primary/10 text-primary px-4 py-1.5 rounded-full border border-primary/20 backdrop-blur-xs animate-pulse-slow">
+        <div className="inline-flex items-center justify-center mb-6 bg-primary/10 text-primary px-4 py-1.5 rounded-full border border-primary/20 backdrop-blur-xs">
           <Sparkles className="w-4 h-4 mr-2" />
           <span className="text-sm font-medium">
             Plateforme d&apos;Excellence Technique

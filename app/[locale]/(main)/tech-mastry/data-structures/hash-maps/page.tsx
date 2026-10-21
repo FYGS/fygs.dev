@@ -419,7 +419,7 @@ export default function HashMapsPage() {
           Implémentation TypeScript
         </h2>
         <Card className="border-border/40">
-          <pre className="p-4 overflow-x-auto text-xs bg-muted/30 rounded-lg">
+          <pre className="p-4 overflow-x-auto text-xs bg-muted/30 rounded-lg" tabIndex={0}>
             <code>{`class HashMap<K, V> {
   private buckets: Array<Array<[K, V]>>;
   private size = 0;

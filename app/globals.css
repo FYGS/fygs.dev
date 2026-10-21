@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* Import specialized CSS files */
 @import "../styles/editor.css";
@@ -484,7 +485,7 @@
     --border: 217 19% 27%; /* #334155 - Slate 700 */
     --input: 217 19% 27%; /* #334155 */
     --primary: 239 84% 65%; /* Indigo, white text 5.0:1 */
-    --primary-text: 239 84% 74%; /* Indigo as TEXT on dark surfaces, >= 4.5:1 */
+    --primary-text: 239 84% 79%; /* Indigo as TEXT on dark surfaces, >= 4.5:1 */
     --primary-foreground: 0 0% 100%; /* White */
     --secondary: 217 19% 27%; /* #334155 - Slate 700 */
     --secondary-foreground: 210 40% 98%; /* #F8FAFC */
@@ -641,5 +642,90 @@
   .hover\:text-primary:hover,
   .group:hover .group-hover\:text-primary {
     color: hsl(var(--primary-text));
+  }
+}
+
+/*
+ * Contrast (WCAG 1.4.3): "muted" text with an opacity suffix (/60, /70, /80) falls under 4.5:1 on both themes,
+ * so the suffix is ignored and the token itself, which is tested, is used.
+ */
+@layer utilities {
+  .text-muted-foreground\/60,
+  .text-muted-foreground\/70,
+  .text-muted-foreground\/80 {
+    color: hsl(var(--muted-foreground));
+  }
+}
+
+/*
+ * Contrast (WCAG 1.4.3) on the dark theme: the 500 shade of Tailwind's palette is 3.5:1 to 4.3:1 as text on the dark
+ * surfaces (coloured badges, icon buttons). The 400 shade is above 4.5:1 on all of them.
+ */
+@layer utilities {
+  .dark .text-red-500 {
+    color: var(--color-red-400);
+  }
+  .dark .text-orange-500 {
+    color: var(--color-orange-400);
+  }
+  .dark .text-amber-500 {
+    color: var(--color-amber-400);
+  }
+  .dark .text-yellow-500 {
+    color: var(--color-yellow-400);
+  }
+  .dark .text-lime-500 {
+    color: var(--color-lime-400);
+  }
+  .dark .text-green-500 {
+    color: var(--color-green-400);
+  }
+  .dark .text-emerald-500 {
+    color: var(--color-emerald-400);
+  }
+  .dark .text-teal-500 {
+    color: var(--color-teal-400);
+  }
+  .dark .text-cyan-500 {
+    color: var(--color-cyan-400);
+  }
+  .dark .text-sky-500 {
+    color: var(--color-sky-400);
+  }
+  .dark .text-blue-500 {
+    color: var(--color-blue-400);
+  }
+  .dark .text-indigo-500 {
+    color: var(--color-indigo-400);
+  }
+  .dark .text-violet-500 {
+    color: var(--color-violet-400);
+  }
+  .dark .text-purple-500 {
+    color: var(--color-purple-400);
+  }
+  .dark .text-fuchsia-500 {
+    color: var(--color-fuchsia-400);
+  }
+  .dark .text-pink-500 {
+    color: var(--color-pink-400);
+  }
+  .dark .text-rose-500 {
+    color: var(--color-rose-400);
+  }
+}
+
+/*
+ * Contrast (WCAG 1.4.3) on the light theme: the community screens were written with the pale slate shades meant
+ * for a dark surface. Inside the community area, on the light theme, they use the dark ones.
+ */
+@layer utilities {
+  .light .community-area .text-slate-500,
+  .light .community-area .text-slate-400 {
+    color: var(--color-slate-600);
+  }
+  .light .community-area .text-slate-300,
+  .light .community-area .text-slate-200 {
+    color: var(--color-slate-700);
   }
 }

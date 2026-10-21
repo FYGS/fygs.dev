@@ -132,7 +132,7 @@ ORDER BY first_name;`,
                         )}
                       </Button>
                     </div>
-                    <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+                    <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
                       <code className="text-xs">
                         {`CREATE INDEX idx_users_lastname ON users(last_name, first_name);
 
@@ -266,7 +266,7 @@ ORDER BY price DESC;`,
                         )}
                       </Button>
                     </div>
-                    <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+                    <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
                       <code className="text-xs">
                         {`-- Requête avec ORDER BY simple
 SELECT * FROM products
@@ -303,7 +303,7 @@ ORDER BY price DESC;`}
                   dans MySQL :
                 </p>
                 <div className="relative mt-2">
-                  <pre className="bg-blue-900/50 p-3 rounded-lg text-xs overflow-x-auto">
+                  <pre className="bg-blue-900/50 p-3 rounded-lg text-xs overflow-x-auto" tabIndex={0}>
                     <code>
                       {`// Extrait simplifié du code de MySQL pour le tri
 bool filesort(THD *thd, QEP_TAB *qep_tab) {
@@ -451,7 +451,7 @@ async function mergeChunks(chunkFiles, outputFile) {
                         )}
                       </Button>
                     </div>
-                    <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto max-h-96">
+                    <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto max-h-96" tabIndex={0}>
                       <code className="text-xs">
                         {`// Implémentation simplifiée d'un tri externe en JavaScript
 async function externalSort(inputFile, outputFile, memoryLimit) {

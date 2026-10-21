@@ -305,12 +305,12 @@ export default function DesignPatternsPage() {
                     <TabsTrigger value="usage">Utilisation</TabsTrigger>
                   </TabsList>
                   <TabsContent value="impl">
-                    <pre className="rounded-xl bg-muted/50 p-4 font-mono text-xs whitespace-pre-wrap overflow-x-auto">
+                    <pre className="rounded-xl bg-muted/50 p-4 font-mono text-xs whitespace-pre-wrap overflow-x-auto" tabIndex={0}>
                       {p.code}
                     </pre>
                   </TabsContent>
                   <TabsContent value="usage">
-                    <pre className="rounded-xl bg-muted/50 p-4 font-mono text-xs whitespace-pre-wrap overflow-x-auto">
+                    <pre className="rounded-xl bg-muted/50 p-4 font-mono text-xs whitespace-pre-wrap overflow-x-auto" tabIndex={0}>
                       {p.usage}
                     </pre>
                   </TabsContent>

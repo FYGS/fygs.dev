@@ -562,7 +562,7 @@ export function PracticeExercises() {
                         Solution
                       </h4>
                       <div className="relative">
-                        <pre className="p-4 rounded-lg bg-muted font-mono text-sm overflow-x-auto whitespace-pre-wrap">
+                        <pre className="p-4 rounded-lg bg-muted font-mono text-sm overflow-x-auto whitespace-pre-wrap" tabIndex={0}>
                           <code>{exercise.solution}</code>
                         </pre>
                       </div>

@@ -430,7 +430,7 @@ function EventDrivenArchitecture() {
       <div className="p-5 rounded-xl bg-muted/20 border border-border/20">
         <p className="text-sm">{steps[activeStep].desc}</p>
       </div>
-      <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-border/20">
+      <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-border/20" tabIndex={0}>
         <code>{`// Event-Driven Pattern
 class OrderService {
   async createOrder(data: OrderData) {

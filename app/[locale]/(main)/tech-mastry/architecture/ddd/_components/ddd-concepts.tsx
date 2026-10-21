@@ -278,7 +278,7 @@ export function DDDConcepts() {
         </div>
 
         {concept.code && (
-          <pre className="bg-muted/50 rounded-lg p-4 overflow-x-auto text-sm">
+          <pre className="bg-muted/50 rounded-lg p-4 overflow-x-auto text-sm" tabIndex={0}>
             <code>{concept.code}</code>
           </pre>
         )}

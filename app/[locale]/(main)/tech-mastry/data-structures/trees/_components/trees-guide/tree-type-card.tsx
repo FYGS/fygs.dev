@@ -147,7 +147,7 @@ export function TreeTypeCard({ type }: TreeTypeCardProps) {
             Implémentation
           </h3>
           <div className="relative">
-            <pre className="p-4 rounded-lg bg-muted font-mono text-sm overflow-x-auto">
+            <pre className="p-4 rounded-lg bg-muted font-mono text-sm overflow-x-auto" tabIndex={0}>
               <code>{type.code}</code>
             </pre>
           </div>

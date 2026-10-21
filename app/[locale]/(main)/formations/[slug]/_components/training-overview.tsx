@@ -178,10 +178,10 @@ export function TrainingOverview({
                     <ExternalLink className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-slate-900">
+                    <h3 className="font-semibold text-slate-900">
                       Expérience Complète
-                    </h4>
-                    <p className="text-sm text-slate-500">
+                    </h3>
+                    <p className="text-sm text-slate-600">
                       Accédez à tous les supports visuels en mode immersif
                     </p>
                   </div>

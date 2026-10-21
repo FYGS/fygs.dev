@@ -89,7 +89,7 @@ export function SubmissionResults({ submissionResult, attempts, estimatedTime }:
             <Terminal className="h-4 w-4 text-primary" aria-hidden="true" />
             Console
           </p>
-          <pre className="px-4 pb-3 pt-2 text-xs font-mono whitespace-pre-wrap break-all max-h-48 overflow-auto">
+          <pre className="px-4 pb-3 pt-2 text-xs font-mono whitespace-pre-wrap break-all max-h-48 overflow-auto" tabIndex={0}>
             {submissionResult.logs.join("\n")}
           </pre>
         </div>

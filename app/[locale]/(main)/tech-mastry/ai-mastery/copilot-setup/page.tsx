@@ -132,7 +132,7 @@ function CopilotModes() {
           <label className="text-xs font-medium text-primary">
             Configuration / Exemples
           </label>
-          <pre className="p-3 rounded-lg bg-muted/50 text-xs whitespace-pre-wrap border font-mono overflow-x-auto min-h-[200px]">
+          <pre className="p-3 rounded-lg bg-muted/50 text-xs whitespace-pre-wrap border font-mono overflow-x-auto min-h-[200px]" tabIndex={0}>
             {mode.config}
           </pre>
         </div>
@@ -267,7 +267,7 @@ function CustomInstructions() {
         </div>
         <div className="space-y-1">
           <label className="text-xs font-medium text-primary">Exemple</label>
-          <pre className="p-3 rounded-lg bg-muted/50 text-xs whitespace-pre-wrap border font-mono overflow-x-auto">
+          <pre className="p-3 rounded-lg bg-muted/50 text-xs whitespace-pre-wrap border font-mono overflow-x-auto" tabIndex={0}>
             {file.example}
           </pre>
         </div>

@@ -321,7 +321,7 @@ export function DataStructuresGuide() {
                   <Code2 className="w-4 h-4" />
                   Implémentation
                 </h3>
-                <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+                <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
                   <code>{structure.code}</code>
                 </pre>
               </div>

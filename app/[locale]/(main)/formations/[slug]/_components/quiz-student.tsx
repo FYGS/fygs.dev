@@ -320,7 +320,7 @@ export function QuizStudent({
       {/* Main Quiz Card */}
       <Card className="border border-slate-700 shadow-sm">
         <CardHeader className="border-b border-slate-700 bg-gradient-to-r from-slate-800 to-slate-900">
-          <CardTitle className="flex items-center justify-between text-slate-100">
+          <CardTitle as="h1" className="flex items-center justify-between text-slate-100">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
                 <Target className="h-5 w-5 text-white" />

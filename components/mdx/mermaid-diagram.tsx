@@ -87,15 +87,15 @@ export function MermaidDiagram({
         <div className="flex items-start gap-3">
           <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-amber-300">
+            <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
               Erreur de rendu du diagramme
             </p>
-            <pre className="mt-2 text-xs text-amber-400/70 whitespace-pre-wrap break-words overflow-hidden">
+            <pre className="mt-2 text-xs text-amber-800 dark:text-amber-300 whitespace-pre-wrap break-words overflow-hidden" tabIndex={0}>
               {error}
             </pre>
             <button
               onClick={() => setRetryCount((c) => c + 1)}
-              className="mt-3 text-xs font-medium text-amber-300 hover:text-amber-200 underline underline-offset-2 transition-colors"
+              className="mt-3 text-xs font-medium text-amber-700 hover:text-amber-900 dark:text-amber-300 dark:hover:text-amber-200 underline underline-offset-2 transition-colors"
             >
               Réessayer le rendu
             </button>

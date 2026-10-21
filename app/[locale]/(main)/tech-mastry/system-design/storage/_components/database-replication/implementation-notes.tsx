@@ -11,7 +11,7 @@ export function ImplementationNotes() {
             <h5 className="text-sm font-medium mb-2">
               MySQL (Master-Slave)
             </h5>
-            <pre className="text-xs p-3 bg-slate-800 rounded border overflow-auto">
+            <pre className="text-xs p-3 bg-slate-800 rounded border overflow-auto" tabIndex={0}>
               {`# Configuration sur le master (my.cnf)
 server-id=1
 log_bin=mysql-bin
@@ -37,7 +37,7 @@ START SLAVE;`}
             <h5 className="text-sm font-medium mb-2">
               PostgreSQL (Streaming Replication)
             </h5>
-            <pre className="text-xs p-3 bg-slate-800 rounded border overflow-auto">
+            <pre className="text-xs p-3 bg-slate-800 rounded border overflow-auto" tabIndex={0}>
               {`# Configuration sur le primary (postgresql.conf)
 wal_level = replica
 max_wal_senders = 10

@@ -102,9 +102,9 @@ export function ScalabilityHero() {
                   <path d="m19 9-5 5-4-4-3 3" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold group-hover:text-indigo-500 transition-colors duration-300">
+              <h2 className="text-lg font-semibold group-hover:text-indigo-500 transition-colors duration-300">
                 Visualisations Interactives
-              </h3>
+              </h2>
             </div>
             <ArrowUpRight className="h-4 w-4 text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </div>
@@ -136,9 +136,9 @@ export function ScalabilityHero() {
                   <path d="M22 2h-8v8h8V2Z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold group-hover:text-purple-500 transition-colors duration-300">
+              <h2 className="text-lg font-semibold group-hover:text-purple-500 transition-colors duration-300">
                 Principes Fondamentaux
-              </h3>
+              </h2>
             </div>
             <ArrowUpRight className="h-4 w-4 text-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </div>
@@ -174,9 +174,9 @@ export function ScalabilityHero() {
                   <path d="m16.24 7.76 2.83-2.83" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold group-hover:text-blue-500 transition-colors duration-300">
+              <h2 className="text-lg font-semibold group-hover:text-blue-500 transition-colors duration-300">
                 Techniques Avancées
-              </h3>
+              </h2>
             </div>
             <ArrowUpRight className="h-4 w-4 text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </div>

@@ -22,7 +22,7 @@ export function DocumentStoreView({ queryType }: {
             </div>
             <div className="border border-t-0 border-slate-700 rounded-b-md overflow-hidden">
               <div className="p-2 bg-slate-900">
-                <pre className="text-xs overflow-auto whitespace-pre-wrap">
+                <pre className="text-xs overflow-auto whitespace-pre-wrap" tabIndex={0}>
                   {`// Document 1
 {
   "_id": "507f1f77bcf86cd799439011",
@@ -55,7 +55,7 @@ export function DocumentStoreView({ queryType }: {
             </div>
             <div className="border border-t-0 border-slate-700 rounded-b-md overflow-hidden">
               <div className="p-2 bg-slate-900">
-                <pre className="text-xs overflow-auto whitespace-pre-wrap">
+                <pre className="text-xs overflow-auto whitespace-pre-wrap" tabIndex={0}>
                   {`// Document 1
 {
   "_id": "60a6f35d9f15f32d2c256236",
@@ -125,7 +125,7 @@ export function DocumentStoreView({ queryType }: {
                 Exemple: Documents avec structures différentes
               </div>
               <div className="p-2 bg-slate-900">
-                <pre className="text-xs overflow-auto whitespace-pre-wrap">
+                <pre className="text-xs overflow-auto whitespace-pre-wrap" tabIndex={0}>
                   {`// Document 1 dans la collection "users"
 {
   "_id": "507f1f77bcf86cd799439011",
@@ -157,7 +157,7 @@ export function DocumentStoreView({ queryType }: {
                 Bien que flexible, il est possible
                 d&apos;ajouter des règles de validation:
               </p>
-              <pre className="text-xs overflow-auto whitespace-pre-wrap bg-slate-900 p-2 rounded border">
+              <pre className="text-xs overflow-auto whitespace-pre-wrap bg-slate-900 p-2 rounded border" tabIndex={0}>
                 {`db.createCollection("users", {
   validator: {
     $jsonSchema: {
@@ -182,7 +182,7 @@ export function DocumentStoreView({ queryType }: {
         </div>
         <div className="flex-1 border rounded-md overflow-auto flex flex-col">
           <div className="bg-slate-800 p-2 border-b">
-            <pre className="text-xs overflow-auto whitespace-pre-wrap">
+            <pre className="text-xs overflow-auto whitespace-pre-wrap" tabIndex={0}>
               {queryType === "simple" &&
                 `// Recherche simple
 db.users.find({

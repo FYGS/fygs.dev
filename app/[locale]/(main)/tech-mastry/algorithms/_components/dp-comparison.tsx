@@ -219,7 +219,7 @@ export function DPComparison() {
                 <h4 className="text-sm font-semibold mb-2">
                   Exemple : Fibonacci avec mémoïsation
                 </h4>
-                <pre className="text-sm overflow-auto p-2 bg-background rounded">
+                <pre className="text-sm overflow-auto p-2 bg-background rounded" tabIndex={0}>
                   {`function fibonacci(n, memo = {}) {
   // Cas de base
   if (n <= 1) return n;
@@ -289,7 +289,7 @@ export function DPComparison() {
                 <h4 className="text-sm font-semibold mb-2">
                   Modèle général de mémoïsation
                 </h4>
-                <pre className="text-sm overflow-auto p-2 bg-background rounded">
+                <pre className="text-sm overflow-auto p-2 bg-background rounded" tabIndex={0}>
                   {`function solveProblem(params, memo = {}) {
   // Créer une clé unique basée sur les paramètres
   const key = createKey(params);
@@ -328,7 +328,7 @@ export function DPComparison() {
                 <h4 className="text-sm font-semibold mb-2">
                   Exemple : Fibonacci avec tabulation
                 </h4>
-                <pre className="text-sm overflow-auto p-2 bg-background rounded">
+                <pre className="text-sm overflow-auto p-2 bg-background rounded" tabIndex={0}>
                   {`function fibonacci(n) {
   // Cas spéciaux
   if (n <= 1) return n;
@@ -407,7 +407,7 @@ export function DPComparison() {
                 <h4 className="text-sm font-semibold mb-2">
                   Modèle général de tabulation
                 </h4>
-                <pre className="text-sm overflow-auto p-2 bg-background rounded">
+                <pre className="text-sm overflow-auto p-2 bg-background rounded" tabIndex={0}>
                   {`function solveProblem(params) {
   // Déterminer la taille de la table
   const dp = initializeTable(params);
@@ -440,7 +440,7 @@ export function DPComparison() {
               </p>
 
               <div className="bg-muted p-4 rounded-md mt-2">
-                <pre className="text-sm overflow-auto p-2 bg-background rounded">
+                <pre className="text-sm overflow-auto p-2 bg-background rounded" tabIndex={0}>
                   {`function fibonacciOptimized(n) {
   if (n <= 1) return n;
 

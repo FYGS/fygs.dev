@@ -196,7 +196,7 @@ ORDER BY mutual DESC LIMIT 5;`,
           <Badge className="bg-primary/10 text-primary text-[10px]">
             CODE EXAMPLE
           </Badge>
-          <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-border/20 h-[300px] overflow-y-auto">
+          <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-border/20 h-[300px] overflow-y-auto" tabIndex={0}>
             <code>{current.schema}</code>
           </pre>
         </div>
@@ -311,10 +311,10 @@ SELECT * FROM orders WHERE created_at > '2024-01-01';`,
         </div>
       </div>
       <p className="text-sm text-muted-foreground">{current.desc}</p>
-      <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-cyan-500/10">
+      <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-cyan-500/10" tabIndex={0}>
         <code>{current.visual}</code>
       </pre>
-      <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-border/20">
+      <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-border/20" tabIndex={0}>
         <code>{current.example}</code>
       </pre>
     </div>
@@ -390,7 +390,7 @@ LIMIT 20;
           <Badge className="bg-red-500/10 text-red-400 text-[10px]">
             AVANT (Mauvaise pratique)
           </Badge>
-          <pre className="bg-red-500/5 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-red-500/10">
+          <pre className="bg-red-500/5 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-red-500/10" tabIndex={0}>
             <code>{current.bad}</code>
           </pre>
         </div>
@@ -398,7 +398,7 @@ LIMIT 20;
           <Badge className="bg-green-500/10 text-green-400 text-[10px]">
             APRÈS (Bonne pratique)
           </Badge>
-          <pre className="bg-green-500/5 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-green-500/10">
+          <pre className="bg-green-500/5 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-green-500/10" tabIndex={0}>
             <code>{current.good}</code>
           </pre>
         </div>

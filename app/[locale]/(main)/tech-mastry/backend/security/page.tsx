@@ -163,7 +163,7 @@ function AuthFlowVisualizer() {
 
       <Card className={`p-6 space-y-4 border-2 ${flow.color}`}>
         <p className="text-sm text-muted-foreground">{step.desc}</p>
-        <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-border/20">
+        <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-border/20" tabIndex={0}>
           <code>{step.code}</code>
         </pre>
       </Card>
@@ -471,7 +471,7 @@ if (req.headers["x-csrf-token"] !== req.cookies.csrf) {
           <Badge className="bg-red-500/10 text-red-400 text-[10px]">
             VULNERABLE
           </Badge>
-          <pre className="bg-red-500/5 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-red-500/10 max-h-[280px] overflow-y-auto">
+          <pre className="bg-red-500/5 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-red-500/10 max-h-[280px] overflow-y-auto" tabIndex={0}>
             <code>{current.bad}</code>
           </pre>
         </div>
@@ -479,7 +479,7 @@ if (req.headers["x-csrf-token"] !== req.cookies.csrf) {
           <Badge className="bg-green-500/10 text-green-400 text-[10px]">
             SECURE
           </Badge>
-          <pre className="bg-green-500/5 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-green-500/10 max-h-[280px] overflow-y-auto">
+          <pre className="bg-green-500/5 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-green-500/10 max-h-[280px] overflow-y-auto" tabIndex={0}>
             <code>{current.good}</code>
           </pre>
         </div>

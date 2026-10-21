@@ -278,7 +278,7 @@ export function ArrayChallenge() {
                     Voici une solution possible pour ce défi :
                   </DialogDescription>
                 </DialogHeader>
-                <pre className="bg-muted p-4 rounded-lg overflow-x-auto">
+                <pre className="bg-muted p-4 rounded-lg overflow-x-auto" tabIndex={0}>
                   <code className="text-sm">{challenge.solution}</code>
                 </pre>
               </DialogContent>

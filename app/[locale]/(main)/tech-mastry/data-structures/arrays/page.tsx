@@ -134,7 +134,7 @@ export default function ArraysPage() {
         <h2 className="text-2xl font-bold">Implémentations Clés</h2>
         <Card className="p-5 border-border/40 space-y-4">
           <h3 className="font-semibold text-blue-500">Binary Search</h3>
-          <pre className="bg-muted/50 rounded-lg p-4 overflow-x-auto text-xs">
+          <pre className="bg-muted/50 rounded-lg p-4 overflow-x-auto text-xs" tabIndex={0}>
             <code>{`function binarySearch(arr: number[], target: number): number {
   let lo = 0, hi = arr.length - 1;
   while (lo <= hi) {

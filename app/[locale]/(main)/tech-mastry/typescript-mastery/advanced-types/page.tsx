@@ -174,7 +174,7 @@ function ConceptCard({ concept }: { concept: TypeConcept }) {
       {expanded && (
         <div className="space-y-4 animate-in fade-in duration-300">
           <div className="relative group">
-            <pre className="rounded-xl bg-muted/50 p-4 font-mono text-xs whitespace-pre-wrap overflow-x-auto">
+            <pre className="rounded-xl bg-muted/50 p-4 font-mono text-xs whitespace-pre-wrap overflow-x-auto" tabIndex={0}>
               {concept.code}
             </pre>
             <button

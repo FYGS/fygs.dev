@@ -122,7 +122,7 @@ app.get('/api/products', (req, res) => {
                   )}
                 </Button>
               </div>
-              <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto max-h-96">
+              <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto max-h-96" tabIndex={0}>
                 <code className="text-xs">
                   {`// Exemple d'API Express.js avec tri côté serveur
 app.get('/api/products', (req, res) => {
@@ -191,7 +191,7 @@ app.get('/api/products', (req, res) => {
             les opérations de tri. Par exemple, avec MongoDB :
           </p>
           <div className="relative mt-2">
-            <pre className="bg-blue-900/50 p-3 rounded-lg text-xs overflow-x-auto">
+            <pre className="bg-blue-900/50 p-3 rounded-lg text-xs overflow-x-auto" tabIndex={0}>
               <code>
                 {`// Créer un index pour optimiser le tri
 db.products.createIndex({ price: 1 }); // Index ascendant sur le prix

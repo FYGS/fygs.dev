@@ -100,7 +100,7 @@ export function LessonContentRenderer({
 
           if (!block) {
             return (
-              <pre className="rounded-lg bg-muted/50 p-4 overflow-x-auto">
+              <pre className="rounded-lg bg-muted/50 p-4 overflow-x-auto" tabIndex={0}>
                 {children}
               </pre>
             );

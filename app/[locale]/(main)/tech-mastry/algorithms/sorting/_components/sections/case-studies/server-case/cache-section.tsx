@@ -127,7 +127,7 @@ cache.put('route4', { data: 'Page de blog' });`,
                   )}
                 </Button>
               </div>
-              <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto max-h-96">
+              <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto max-h-96" tabIndex={0}>
                 <code className="text-xs">
                   {`// Implémentation d'un cache LRU (Least Recently Used) en JavaScript
 class LRUCache {

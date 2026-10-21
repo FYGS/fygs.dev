@@ -42,13 +42,13 @@ export function AlgorithmExplanation({
                   </svg>
                 </div>
                 <div>
-                  <h4 className="text-base font-medium text-indigo-500 mb-1">
+                  <h3 className="text-base font-medium text-indigo-500 mb-1">
                     {algorithm === "round-robin"
                       ? "Round Robin"
                       : algorithm === "least-connections"
                       ? "Least Connections"
                       : "IP Hash"}
-                  </h4>
+                  </h3>
                   <p className="text-sm text-muted-foreground">
                     {getAlgorithmExplanation(algorithm)}
                   </p>

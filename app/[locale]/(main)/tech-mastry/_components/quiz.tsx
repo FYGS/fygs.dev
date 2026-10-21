@@ -141,7 +141,7 @@ export function Quiz({
           <Trophy className={cn("w-10 h-10", getScoreColor(pct))} />
         </div>
         <div className="space-y-2">
-          <h3 className="text-2xl font-bold">Quiz Terminé !</h3>
+          <h2 className="text-2xl font-bold">Quiz Terminé !</h2>
           <p className={cn("text-4xl font-bold", getScoreColor(pct))}>
             {score} / {filteredQuestions.length}
           </p>
@@ -164,7 +164,7 @@ export function Quiz({
 
         {/* Review */}
         <div className="text-left space-y-3 mt-6">
-          <h4 className="font-semibold text-sm">Revue des réponses</h4>
+          <h3 className="font-semibold text-sm">Revue des réponses</h3>
           {filteredQuestions.map((q, i) => (
             <div
               key={q.id}
@@ -267,7 +267,7 @@ export function Quiz({
             </Badge>
             <Badge variant="outline">{currentQuestion.category}</Badge>
           </div>
-          <h3 className="text-lg font-semibold">{currentQuestion.question}</h3>
+          <h2 className="text-lg font-semibold">{currentQuestion.question}</h2>
         </div>
 
         <div className="space-y-3">

@@ -107,9 +107,9 @@ export async function EnrolledCourses({ userId }: EnrolledCoursesProps) {
             </div>
             
             <div className="flex-1 space-y-2">
-              <h4 className="font-medium text-sm leading-tight">
+              <h3 className="font-medium text-sm leading-tight">
                 {enrollment.course.title}
-              </h4>
+              </h3>
               
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">

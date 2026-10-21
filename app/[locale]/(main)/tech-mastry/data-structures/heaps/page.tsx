@@ -397,7 +397,7 @@ export default function HeapsPage() {
           Implémentation Min-Heap
         </h2>
         <Card className="border-border/40">
-          <pre className="p-4 overflow-x-auto text-xs bg-muted/30 rounded-lg">
+          <pre className="p-4 overflow-x-auto text-xs bg-muted/30 rounded-lg" tabIndex={0}>
             <code>{`class MinHeap<T extends number> {
   private heap: T[] = [];
 

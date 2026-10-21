@@ -185,7 +185,7 @@ export default function GenericsDeepDivePage() {
 
             {openIdx === idx && (
               <div className="space-y-4 animate-in fade-in duration-300">
-                <pre className="rounded-xl bg-muted/50 p-4 font-mono text-xs whitespace-pre-wrap overflow-x-auto">
+                <pre className="rounded-xl bg-muted/50 p-4 font-mono text-xs whitespace-pre-wrap overflow-x-auto" tabIndex={0}>
                   {p.code}
                 </pre>
                 <div className="flex items-start gap-2 p-3 rounded-lg bg-purple-500/5 border border-purple-500/20">

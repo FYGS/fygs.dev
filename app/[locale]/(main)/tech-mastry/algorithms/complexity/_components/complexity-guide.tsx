@@ -291,7 +291,7 @@ export function ComplexityGuide() {
                           {solution.complexity}
                         </Badge>
                       </div>
-                      <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+                      <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
                         <code>{solution.code}</code>
                       </pre>
                       <div className="grid grid-cols-2 gap-4">

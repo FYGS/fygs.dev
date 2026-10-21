@@ -64,7 +64,7 @@ export function InterviewQuestion({
 
           <div>
             <div className="text-sm font-medium">Exemple</div>
-            <pre className="text-xs bg-muted p-2 rounded overflow-auto whitespace-pre-wrap">
+            <pre className="text-xs bg-muted p-2 rounded overflow-auto whitespace-pre-wrap" tabIndex={0}>
               {example}
             </pre>
           </div>
@@ -78,7 +78,7 @@ export function InterviewQuestion({
 
               <div>
                 <div className="text-sm font-medium">Solution</div>
-                <pre className="text-xs bg-muted p-2 rounded overflow-auto">
+                <pre className="text-xs bg-muted p-2 rounded overflow-auto" tabIndex={0}>
                   {code}
                 </pre>
               </div>

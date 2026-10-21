@@ -139,7 +139,7 @@ function TestPyramid() {
         </div>
       </div>
       <p className="text-sm text-muted-foreground">{current.desc}</p>
-      <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-border/20">
+      <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-border/20" tabIndex={0}>
         <code>{current.example}</code>
       </pre>
     </div>

@@ -125,7 +125,7 @@ const searchResults = sortSearchResults(files, "rapport");`,
                   )}
                 </Button>
               </div>
-              <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto max-h-96">
+              <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto max-h-96" tabIndex={0}>
                 <code className="text-xs">
                   {`// Implémentation d'un tri par pertinence pour les résultats de recherche
 function sortSearchResults(files, searchQuery) {

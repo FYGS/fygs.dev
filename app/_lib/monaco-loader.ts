@@ -73,6 +73,14 @@ export async function loadMonaco() {
       monaco.typescript.typescriptDefaults.setEagerModelSync(true);
     }
 
+    // The stock dark theme writes comments in #6A9955, 4.2:1 on its #1e1e1e background (WCAG 1.4.3 asks 4.5:1)
+    monaco.editor.defineTheme("vs-dark", {
+      base: "vs-dark",
+      inherit: true,
+      rules: [{ token: "comment", foreground: "7CA668" }],
+      colors: {},
+    });
+
     return monaco;
   } catch (error) {
     console.error("Failed to load Monaco Editor:", error);

@@ -56,7 +56,7 @@ export default function CommunityLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="community-area min-h-screen bg-background">
       <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
     </div>
   );

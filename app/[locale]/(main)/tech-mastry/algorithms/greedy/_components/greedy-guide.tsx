@@ -191,7 +191,7 @@ export function GreedyGuide() {
             <Code2 className="w-4 h-4 text-primary" />
             Implémentation
           </h3>
-          <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+          <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
             <code>{greedyAlgorithms[activeAlgo].code}</code>
           </pre>
         </div>

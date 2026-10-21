@@ -264,7 +264,7 @@ export function ReviewInteractions({
             <Button
               variant="outline"
               size="sm"
-              className="gap-1.5 text-red-600 hover:text-red-700"
+              className="gap-1.5 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
             >
               <Flag className="h-3.5 w-3.5" />
               Signaler

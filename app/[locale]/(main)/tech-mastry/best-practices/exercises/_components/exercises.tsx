@@ -243,7 +243,7 @@ export function BestPracticesExercises() {
             <XCircle className="w-4 h-4 text-red-500" />
             Code à améliorer
           </h3>
-          <pre className="bg-red-500/5 border border-red-500/20 p-4 rounded-lg text-sm overflow-x-auto">
+          <pre className="bg-red-500/5 border border-red-500/20 p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
             <code>{exercises[activeExercise].badCode}</code>
           </pre>
         </div>
@@ -280,7 +280,7 @@ export function BestPracticesExercises() {
               <CheckCircle2 className="w-4 h-4 text-green-500" />
               Solution
             </h3>
-            <pre className="bg-green-500/5 border border-green-500/20 p-4 rounded-lg text-sm overflow-x-auto">
+            <pre className="bg-green-500/5 border border-green-500/20 p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
               <code>{exercises[activeExercise].goodCode}</code>
             </pre>
           </div>

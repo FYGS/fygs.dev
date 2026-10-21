@@ -132,7 +132,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             return (
               <Card className="my-4 bg-slate-900 border border-slate-800">
                 <CardContent className="p-4">
-                  <pre className="text-sm font-mono text-slate-200 whitespace-pre-wrap overflow-x-auto">
+                  <pre className="text-sm font-mono text-slate-200 whitespace-pre-wrap overflow-x-auto" tabIndex={0}>
                     <code {...props}>{children}</code>
                   </pre>
                 </CardContent>

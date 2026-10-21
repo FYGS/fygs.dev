@@ -420,7 +420,7 @@ export function DynamicProgrammingGuide() {
 
                     <div>
                       <h4 className="font-medium mb-2">Implémentation :</h4>
-                      <pre className="p-4 rounded-lg bg-background/50 backdrop-blur-xs overflow-x-auto border border-indigo-500/10 hover:border-indigo-500/20 transition-colors duration-300">
+                      <pre className="p-4 rounded-lg bg-background/50 backdrop-blur-xs overflow-x-auto border border-indigo-500/10 hover:border-indigo-500/20 transition-colors duration-300" tabIndex={0}>
                         <code className="text-sm">{problem.code}</code>
                       </pre>
                     </div>

@@ -90,9 +90,9 @@ async function RecommendedCoursesServer({ userId }: RecommendedCoursesProps) {
               {/* Course Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
-                  <h4 className="font-medium text-sm leading-tight group-hover:text-primary transition-colors line-clamp-2">
+                  <h3 className="font-medium text-sm leading-tight group-hover:text-primary transition-colors line-clamp-2">
                     {course.title}
-                  </h4>
+                  </h3>
                   {course.featured && (
                     <Badge variant="secondary" className="text-xs bg-primary/10 text-primary">
                       <TrendingUp className="h-3 w-3 mr-1" />

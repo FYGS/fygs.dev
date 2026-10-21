@@ -282,7 +282,7 @@ export function SortingRealWorldCases() {
                             <Code2 className="h-4 w-4" />
                           </Button>
                         </div>
-                        <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto max-h-60">
+                        <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto max-h-60" tabIndex={0}>
                           <code>{example.code}</code>
                         </pre>
                       </div>

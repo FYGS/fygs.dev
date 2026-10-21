@@ -264,7 +264,7 @@ export function BacktrackingGuide() {
           <Lightbulb className="w-5 h-5 text-primary" />
           Template Universel du Backtracking
         </h2>
-        <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+        <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
           <code>{templateCode}</code>
         </pre>
         <p className="text-sm text-muted-foreground mt-3">
@@ -318,7 +318,7 @@ export function BacktrackingGuide() {
             <Code2 className="w-4 h-4 text-primary" />
             Implémentation
           </h3>
-          <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+          <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
             <code>{problems[activeProblem].code}</code>
           </pre>
         </div>

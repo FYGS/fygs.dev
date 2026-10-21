@@ -306,7 +306,7 @@ function getStateAt(events: DomainEvent[], date: Date) {
         </div>
       </Card>
 
-      <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-border/20 max-h-[400px] overflow-y-auto">
+      <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-border/20 max-h-[400px] overflow-y-auto" tabIndex={0}>
         <code>{current.code}</code>
       </pre>
     </div>

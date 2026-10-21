@@ -335,12 +335,12 @@ export default function RuntimeSafetyPage() {
                     </TabsTrigger>
                   </TabsList>
                   <TabsContent value="unsafe">
-                    <pre className="rounded-xl bg-red-500/5 border border-red-500/20 p-4 font-mono text-xs whitespace-pre-wrap overflow-x-auto">
+                    <pre className="rounded-xl bg-red-500/5 border border-red-500/20 p-4 font-mono text-xs whitespace-pre-wrap overflow-x-auto" tabIndex={0}>
                       {t.unsafe}
                     </pre>
                   </TabsContent>
                   <TabsContent value="safe">
-                    <pre className="rounded-xl bg-green-500/5 border border-green-500/20 p-4 font-mono text-xs whitespace-pre-wrap overflow-x-auto">
+                    <pre className="rounded-xl bg-green-500/5 border border-green-500/20 p-4 font-mono text-xs whitespace-pre-wrap overflow-x-auto" tabIndex={0}>
                       {t.safe}
                     </pre>
                   </TabsContent>

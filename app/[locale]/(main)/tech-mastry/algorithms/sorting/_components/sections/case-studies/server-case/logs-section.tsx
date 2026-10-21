@@ -129,7 +129,7 @@ function analyzeServerLogs(logs) {
                   )}
                 </Button>
               </div>
-              <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto max-h-96">
+              <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto max-h-96" tabIndex={0}>
                 <code className="text-xs">
                   {`// Analyse de logs avec tri et agrégation en JavaScript
 function analyzeServerLogs(logs) {

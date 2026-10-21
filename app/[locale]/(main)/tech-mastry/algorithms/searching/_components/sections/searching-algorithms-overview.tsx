@@ -162,6 +162,7 @@ export function SearchingAlgorithmsOverview() {
                       variant="ghost"
                       size="sm"
                       onClick={() => copyCode(currentAlgo.code, currentAlgo.id)}
+                      aria-label="Copier le code"
                       className="h-8 w-8 p-0"
                     >
                       {copiedCode === currentAlgo.id ? (
@@ -171,7 +172,7 @@ export function SearchingAlgorithmsOverview() {
                       )}
                     </Button>
                   </div>
-                  <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+                  <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
                     <code>{currentAlgo.code}</code>
                   </pre>
                 </div>

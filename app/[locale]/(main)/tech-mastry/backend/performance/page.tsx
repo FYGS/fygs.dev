@@ -449,7 +449,7 @@ async function destroySession(sessionId: string) {
           </button>
         ))}
       </div>
-      <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-border/20 max-h-[350px] overflow-y-auto">
+      <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-border/20 max-h-[350px] overflow-y-auto" tabIndex={0}>
         <code>{patterns[activePattern].code}</code>
       </pre>
     </div>

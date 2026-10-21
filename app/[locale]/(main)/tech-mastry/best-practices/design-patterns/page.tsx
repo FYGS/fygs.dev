@@ -377,7 +377,7 @@ export default function DesignPatternsPage() {
             <h3 className="font-semibold text-sm flex items-center gap-2 mb-2">
               <Code2 className="w-4 h-4 text-primary" /> Implémentation TypeScript
             </h3>
-            <pre className="bg-muted/30 rounded-lg p-4 overflow-x-auto text-xs max-h-[500px] overflow-y-auto">
+            <pre className="bg-muted/30 rounded-lg p-4 overflow-x-auto text-xs max-h-[500px] overflow-y-auto" tabIndex={0}>
               <code>{selectedPattern.code}</code>
             </pre>
           </div>

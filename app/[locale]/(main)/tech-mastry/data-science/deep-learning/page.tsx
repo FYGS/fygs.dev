@@ -501,7 +501,7 @@ export default function DeepLearningPage() {
       <section className="space-y-6">
         <h2 className="text-2xl font-bold">PyTorch — Exemple complet</h2>
         <Card className="p-5">
-          <pre className="bg-muted/30 rounded-lg p-4 text-xs overflow-x-auto font-mono text-foreground">
+          <pre className="bg-muted/30 rounded-lg p-4 text-xs overflow-x-auto font-mono text-foreground" tabIndex={0}>
             {`import torch
 import torch.nn as nn
 import torch.optim as optim

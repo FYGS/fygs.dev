@@ -214,7 +214,7 @@ export function CodeQualityGuide() {
                       <Badge className="bg-green-500/10 text-green-500 mb-2">
                         Bon exemple
                       </Badge>
-                      <pre className="p-4 rounded-lg bg-muted overflow-x-auto">
+                      <pre className="p-4 rounded-lg bg-muted overflow-x-auto" tabIndex={0}>
                         <code className="text-sm">{principle.example.good}</code>
                       </pre>
                     </div>
@@ -222,7 +222,7 @@ export function CodeQualityGuide() {
                       <Badge className="bg-red-500/10 text-red-500 mb-2">
                         À éviter
                       </Badge>
-                      <pre className="p-4 rounded-lg bg-muted overflow-x-auto">
+                      <pre className="p-4 rounded-lg bg-muted overflow-x-auto" tabIndex={0}>
                         <code className="text-sm">{principle.example.bad}</code>
                       </pre>
                     </div>

@@ -236,7 +236,7 @@ export function SortingQuizzes() {
                   {/* Code (si présent) */}
                   {currentQuestion.code && (
                     <div className="relative">
-                      <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto max-h-60">
+                      <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto max-h-60" tabIndex={0}>
                         <code>{currentQuestion.code}</code>
                       </pre>
                     </div>

@@ -304,7 +304,7 @@ export function ChallengeSolutions() {
           {showBrute && (
             <div className="mt-4 space-y-3">
               <p className="text-sm text-muted-foreground">{ch.bruteForce.explanation}</p>
-              <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+              <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
                 <code>{ch.bruteForce.code}</code>
               </pre>
             </div>
@@ -322,7 +322,7 @@ export function ChallengeSolutions() {
           {showOptimal && (
             <div className="mt-4 space-y-3">
               <p className="text-sm text-muted-foreground">{ch.optimal.explanation}</p>
-              <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+              <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
                 <code>{ch.optimal.code}</code>
               </pre>
               <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">

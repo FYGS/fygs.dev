@@ -296,7 +296,7 @@ export function SolidExplorer() {
             <Badge variant="destructive" className="text-xs">
               {principle.violation.label}
             </Badge>
-            <pre className="bg-red-500/5 border border-red-500/20 rounded-lg p-4 overflow-x-auto text-sm">
+            <pre className="bg-red-500/5 border border-red-500/20 rounded-lg p-4 overflow-x-auto text-sm" tabIndex={0}>
               <code>{principle.violation.code}</code>
             </pre>
           </div>
@@ -304,7 +304,7 @@ export function SolidExplorer() {
             <Badge className="bg-green-500/10 text-green-500 text-xs">
               {principle.correct.label}
             </Badge>
-            <pre className="bg-green-500/5 border border-green-500/20 rounded-lg p-4 overflow-x-auto text-sm">
+            <pre className="bg-green-500/5 border border-green-500/20 rounded-lg p-4 overflow-x-auto text-sm" tabIndex={0}>
               <code>{principle.correct.code}</code>
             </pre>
           </div>

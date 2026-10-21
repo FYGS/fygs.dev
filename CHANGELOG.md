@@ -30,6 +30,7 @@
 - Stripe webhook events are processed once per event id (duplicate deliveries are acknowledged, failed handlers can be retried).
 
 ### Changed
+- The application area (courses, dashboard, billing, profile, community, TechMastery, admin) is French only: `/en/...` and `/es/...` on those pages redirect to `/fr/...`, the language switcher is hidden there and the sitemap no longer announces English or Spanish alternates that redirect. The home page, sign-in, contact, blog, portfolio and projects stay in three languages.
 - Prisma 6.19 -> 7.10: `prisma-client` generator (`lib/generated/prisma`), `prisma.config.ts`, `pg` driver adapter in `lib/db.ts`.
 - Integration tests run on a disposable embedded PostgreSQL (`pnpm test:integration`, no Docker); new DB-backed suites for auth, access control, quiz grading, refunds, community limits and the seed; CI job for it.
 - Dependencies moved to the latest stable majors (Next 16, zod 4, Stripe SDK 23, better-auth 1.7, vitest 5…); see docs/modernization-2026-10.md. Build and dev run on webpack; `middleware.ts` is now `proxy.ts`; CI runs on Node 22.
@@ -39,6 +40,7 @@
 - Security and ops: CSP report-only candidate and `/api/csp-report`, `/api/health` with the rate-limit degradation status, daily AI budgets, PII redaction in logs, `pnpm test:e2e` (32 browser tests on a production build, also in CI).
 
 ### Fixed
+- Accessibility: heading order on the dashboard, profile, course, payment, Q&A and scalability pages; accessible names on the video player controls, the blog sort menu, the community notifications menu, the playground history menu and the code copy button; a level-one heading on the quiz page and the mobile playground; every scrollable code block (133) reachable with the keyboard; the blog progress markers are at least 24 px; low-contrast text in the muted opacity variants, on the dark theme's coloured badges, on the sorting selection, in the code-block header, in the playground comments and in the admin tag badges; the playground and the community area follow the theme they are drawn for. A `dark:` variant now follows the `.dark` class.
 - Community: a suspended account (`isBanned`) could still post, reply, vote and follow; the ban is now enforced on every community write.
 - Role changes: the action accepted roles that do not exist (USER, MENTOR, MODERATOR) and always failed; it now shares one service with the back office (valid roles only, no change of one's own role, the last administrator is kept, concurrency-safe).
 - Admin review page: it showed one fabricated review for id "1" and a 404 for every real review; it now reads the database (content, replies, reports, moderation history, decision with a note).

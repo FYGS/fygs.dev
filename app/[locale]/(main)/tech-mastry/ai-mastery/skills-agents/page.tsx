@@ -272,7 +272,7 @@ await server.connect(transport);
       <div className="space-y-3">
         <h3 className="font-semibold">{steps[step].title}</h3>
         <p className="text-sm text-muted-foreground">{steps[step].desc}</p>
-        <pre className="p-3 rounded-lg bg-muted/50 text-xs whitespace-pre-wrap border font-mono overflow-x-auto max-h-[300px] overflow-y-auto">
+        <pre className="p-3 rounded-lg bg-muted/50 text-xs whitespace-pre-wrap border font-mono overflow-x-auto max-h-[300px] overflow-y-auto" tabIndex={0}>
           {steps[step].code}
         </pre>
       </div>

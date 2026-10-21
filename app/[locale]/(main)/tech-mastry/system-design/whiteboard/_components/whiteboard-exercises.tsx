@@ -379,7 +379,7 @@ export function WhiteboardExercises() {
                           {isSolutionVisible ? "Masquer" : "Voir"} la solution
                         </button>
                         {isSolutionVisible && (
-                          <pre className="mt-2 bg-muted p-3 rounded-lg text-xs overflow-x-auto">
+                          <pre className="mt-2 bg-muted p-3 rounded-lg text-xs overflow-x-auto" tabIndex={0}>
                             <code>{step.solution}</code>
                           </pre>
                         )}

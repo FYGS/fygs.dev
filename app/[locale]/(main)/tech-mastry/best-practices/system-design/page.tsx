@@ -221,7 +221,7 @@ export default function SystemDesignPage() {
           Formules d&apos;Estimation
         </h2>
         <Card className="border-border/40">
-          <pre className="p-4 overflow-x-auto text-xs bg-muted/30 rounded-lg">
+          <pre className="p-4 overflow-x-auto text-xs bg-muted/30 rounded-lg" tabIndex={0}>
             <code>{`// Back-of-envelope calculations
 const DAU = 10_000_000;                    // 10M Daily Active Users
 const avgRequestsPerDay = 10;              // requêtes/jour/user

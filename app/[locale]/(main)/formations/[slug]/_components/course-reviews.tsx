@@ -415,7 +415,7 @@ function CourseReviewsContent({
 
               {/* Rating Distribution */}
               <div className="space-y-3">
-                <h4 className="font-medium text-sm">Répartition des notes</h4>
+                <h3 className="font-medium text-sm">Répartition des notes</h3>
                 {renderRatingDistribution()}
               </div>
             </div>

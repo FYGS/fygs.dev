@@ -209,7 +209,7 @@ export function CSSAdvancedGuide() {
               <Badge variant="outline">CSS</Badge>
             </div>
             <p className="text-muted-foreground">{ex.description}</p>
-            <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+            <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
               <code>{ex.css}</code>
             </pre>
           </Card>

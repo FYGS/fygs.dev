@@ -149,7 +149,7 @@ function SetupSteps() {
               <label className="text-xs font-medium text-primary">
                 Code / Config
               </label>
-              <pre className="p-3 rounded-lg bg-muted/50 text-xs whitespace-pre-wrap border font-mono overflow-x-auto">
+              <pre className="p-3 rounded-lg bg-muted/50 text-xs whitespace-pre-wrap border font-mono overflow-x-auto" tabIndex={0}>
                 {step.code}
               </pre>
             </div>

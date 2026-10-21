@@ -328,9 +328,9 @@ export function CoursePaymentForm({
         <Separator />
 
         <div className="space-y-4">
-          <h4 className="font-semibold text-center">
+          <h3 className="font-semibold text-center">
             Cette formation inclut :
-          </h4>
+          </h3>
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <Check className="h-5 w-5 text-green-600 shrink-0" />

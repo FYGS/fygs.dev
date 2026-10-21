@@ -424,6 +424,7 @@ export function VideoPlayer({
           {/* Center Play Button */}
           <div className="absolute inset-0 flex items-center justify-center">
             <Button
+                aria-label={isPlaying ? "Pause" : "Lecture"}
               variant="ghost"
               size="icon"
               className="h-20 w-20 text-white hover:bg-white/20 rounded-full backdrop-blur-xs bg-black/30 transition-all duration-200 hover:scale-110"
@@ -455,6 +456,7 @@ export function VideoPlayer({
                 </div>
                 {isPiPSupported && (
                   <Button
+                aria-label={"Image dans l'image"}
                     variant="ghost"
                     size="sm"
                     className="h-6 px-2 text-white/80 hover:text-white hover:bg-white/20"
@@ -471,6 +473,7 @@ export function VideoPlayer({
 
             <div className="flex items-center gap-2">
               <Button
+                aria-label={"Paramètres de lecture"}
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-white hover:bg-white/20"
@@ -483,6 +486,7 @@ export function VideoPlayer({
               </Button>
 
               <Button
+                aria-label={isFullscreen ? "Quitter le plein écran" : "Plein écran"}
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-white hover:bg-white/20"
@@ -551,6 +555,7 @@ export function VideoPlayer({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Button
+                aria-label={isPlaying ? "Pause" : "Lecture"}
                   variant="ghost"
                   size="icon"
                   className="h-9 w-9 text-white hover:bg-white/20"
@@ -595,6 +600,7 @@ export function VideoPlayer({
                 {/* Volume Control */}
                 <div className="flex items-center gap-2">
                   <Button
+                aria-label={isMuted || volume === 0 ? "Activer le son" : "Couper le son"}
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 text-white hover:bg-white/20"

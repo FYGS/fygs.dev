@@ -26,11 +26,13 @@ Files that contain user-visible text, and how many read it from a dictionary (me
 So `/en/...` and `/es/...` translate the marketing pages and the sign-in flow, and show French (or English, for the community) everywhere
 else. Course content itself is stored in the database in French.
 
-## Decision needed (P7-12)
+## Decision taken (P7-12): the application area is French only
 
-1. **French-only application area (recommended for now).** The marketing pages and sign-in stay trilingual; the switcher is hidden once
-   the visitor is signed in, or the application pages redirect to `/fr`. Cost: small. No false promise.
-2. **Translate the application.** About 600 files, several hundred strings, plus the database content (courses, lessons). A project of
-   its own: start with dashboard, billing, formations and community (the screens every student sees), then the rest. Admin can stay French.
+The owner chose option 1. What it does:
 
-Nothing was changed in the code for this item: it is a product decision, not a defect.
+- `proxy.ts`: a request for `/en/...` or `/es/...` on a page that has no translation is redirected (307) to the same page under `/fr`, query included.
+- The pages that stay in three languages are the home page, sign-in and the auth pages, contact, blog, portfolio (`/me`) and projects. The list is `TRANSLATED_PREFIXES` in `lib/locale-utils.ts`; add a prefix there when a section gets its dictionaries.
+- The language switcher is not shown on the other pages (there is nothing to switch to).
+- Sitemap and hreflang list a French-only page in French only (`app/_lib/localized-urls.ts`): no alternate that redirects.
+
+Translating the application remains possible later, section by section: write the dictionaries, then add the prefix to the list.

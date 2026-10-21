@@ -1,10 +1,8 @@
-# The Spanish locale, which the first accessibility pass did not render (lang comes from the same URL parameter)
+# The Spanish locale: only the pages that have translations (the application area is French only)
 /es
-/es/pricing
 /es/contact
 /es/auth/login
 /es/auth/register
 /es/blog
-/es/tech-mastry
-/es/privacy
-/es/terms
+/es/me
+/es/projects

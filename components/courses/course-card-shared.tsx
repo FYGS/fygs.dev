@@ -239,7 +239,7 @@ export function CourseCardShared({
             {accessState === "LOCKED" &&
               course.requiredTier &&
               course.requiredTier !== "FREE" && (
-                <p className="text-[10px] font-semibold text-amber-300 flex items-center gap-1 tracking-tight">
+                <p className="text-[10px] font-semibold text-amber-700 dark:text-amber-300 flex items-center gap-1 tracking-tight">
                   <Crown className="h-3 w-3 text-amber-500" />{" "}
                   {content.includedWith.value}{" "}
                   <span className="underline decoration-dotted">

@@ -100,7 +100,7 @@ export function RecentActivity({ userId }: RecentActivityProps) {
           </div>
 
           <div className="flex-1 min-w-0">
-            <h4 className="font-medium truncate">{enrollment.course.title}</h4>
+            <h3 className="font-medium truncate">{enrollment.course.title}</h3>
             <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
               <Calendar className="h-3 w-3" />
               <span>
