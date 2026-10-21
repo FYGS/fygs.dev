@@ -40,6 +40,8 @@
 - Security and ops: CSP report-only candidate and `/api/csp-report`, `/api/health` with the rate-limit degradation status, daily AI budgets, PII redaction in logs, `pnpm test:e2e` (32 browser tests on a production build, also in CI).
 
 ### Fixed
+- The linked-list demo of TechMastery was hydrated with node ids that differed from the server's (a counter shared by every render), which made React discard the server page; it keys its nodes from its own list.
+- Radix tabs pointed `aria-controls` at panels that are not in the page (invalid reference); the attribute is now only set while the panel exists.
 - Accessibility: heading order on the dashboard, profile, course, payment, Q&A and scalability pages; accessible names on the video player controls, the blog sort menu, the community notifications menu, the playground history menu and the code copy button; a level-one heading on the quiz page and the mobile playground; every scrollable code block (133) reachable with the keyboard; the blog progress markers are at least 24 px; low-contrast text in the muted opacity variants, on the dark theme's coloured badges, on the sorting selection, in the code-block header, in the playground comments and in the admin tag badges; the playground and the community area follow the theme they are drawn for. A `dark:` variant now follows the `.dark` class.
 - Community: a suspended account (`isBanned`) could still post, reply, vote and follow; the ban is now enforced on every community write.
 - Role changes: the action accepted roles that do not exist (USER, MENTOR, MODERATOR) and always failed; it now shares one service with the back office (valid roles only, no change of one's own role, the last administrator is kept, concurrency-safe).

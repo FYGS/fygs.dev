@@ -98,6 +98,8 @@ Origin: "is the application complete, without holes?" The answer was no. This ph
 | P7-11 | Forms inventory: all 31 forms are wired to a backend (contact, profile, password, reviews, community, admin CRUD, auth) | none needed | grep audit | DONE |
 | P7-12 | Translations: dictionaries (fr/en/es) are complete, but only ~10 of ~600 files with text read from one | Owner chose French only for the application area: redirect from /en and /es, no switcher there, no false hreflang (docs/i18n-inventory.md) | proxy, switcher and sitemap tests | DONE |
 | P7-13 | Smoke crawl of 170 routes (admin 20, student 150, visitor 150) on the seeded platform and again on a platform holding only accounts. Found and fixed: `[object Object]` on a course page (visual-support slides saved as structured sections), `NaN%` in the course revenue share, `NaN%` in the billing progress with no published course. All three fixes came after the crawl that found them and the crawl was not re-run on them (the slide conversion has unit tests, the two percentages are one-line guards); every other route of the seeded and the empty platform was clean | DEV | `scripts/audit/smoke-crawl.mjs` clean | DONE |
+| P7-14 | Accessibility leftovers of the audit addendum (contrast, heading order, names, keyboard access to code, tabs) | Fixed; two items stay, both explained in the addendum | axe on six passes: admin 0, dark 0, es 0 | DONE |
+| P7-15 | Re-crawl after the last fixes: 170 routes x (visitor, student, admin) on the seeded platform and on a platform with only accounts | Found and fixed a hydration mismatch (linked-list demo used a counter shared by every render) | 0 problems on all five crawls | DONE |
 
 ## Log
 

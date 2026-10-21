@@ -125,29 +125,24 @@ use a Windows path for the output file (`C:/tmp/out.json`).
 
 ## Addendum 2026-10-21: authenticated, mobile, light, dark and Spanish passes
 
-Production build of `9cae6bf`, seeded database, axe-core (WCAG 2.0/2.1/2.2 A + AA + best practices). Pages with at least one violation:
+Production build, seeded database, axe-core (WCAG 2.0/2.1/2.2 A + AA + best practices). Pages with at least one violation, before and after the fixes of the same day:
 
-| Pass | Pages audited | With violations |
-|------|---------------|-----------------|
-| Admin (signed in) | 20 | 5 |
-| Student (signed in) | 16 | 11 |
-| Mobile 390x844 | 25 | 9 |
-| Light theme | 25 | 13 |
-| Dark theme | 25 | 7 |
-| Spanish | 9 | 1 |
+| Pass | Pages audited | First run | After the fixes |
+|------|---------------|-----------|-----------------|
+| Admin (signed in) | 20 | 5 | 0 |
+| Student (signed in) | 16 | 11 | 1 (fixed afterwards, see below) |
+| Mobile 390x844 | 25 | 9 | 1 (false positive, see below) |
+| Light theme | 25 | 13 | 2 (1 fixed afterwards) |
+| Dark theme | 25 | 7 | 0 |
+| Spanish | 7 (the pages that have translations) | 1 | 0 |
 
-Four of the admin findings were introduced by the new interfaces and are fixed in the next commit (low-contrast "vs mois dernier" and "+N" figures, a heading jump from `h2` to `h5` in the course performance list, an `aria-label` that did not start with the visible text "Voir détails").
+What was done: heading order on the dashboard, profile, course, payment, Q&A and scalability pages; accessible names for the video player controls, the blog sort menu, the community notifications menu, the playground history menu, the code copy button and the timeline button; a level-one heading on the quiz page and on the mobile playground; the 133 scrollable code blocks reachable with the keyboard; tabs only point `aria-controls` at panels that exist; locked lessons are `aria-disabled`; contrast of muted text with an opacity suffix, of the dark theme's coloured badges and buttons, of the sorting selection, the code-block header, the playground (comments, status bar, theme scope), the admin tag badges, the community area and the badges drawn for the dark theme when shown on the light one.
 
-Still open, by rule (none blocks a feature; they are the contrast and naming leftovers of the content pages):
+Still open (two items, both understood):
 
-| Rule | Where |
-|------|-------|
-| `color-contrast` | community (38 nodes), blog article and code (23), accessibility lesson (23), playground (17), home (8), formations catalogue and course pages, sorting, scalability, projects, admin course badges (category colours) |
-| `heading-order` | dashboard, profile, formations pages, scalability, Q&A |
-| `button-name` | blog filter, community, lesson page (6 icon buttons), searching exercise, playground |
-| `target-size` | blog article (2) |
-| `scrollable-region-focusable` | blog and accessibility lesson code blocks |
-| `page-has-heading-one` | quiz page, playground on mobile |
-| `aria-valid-attr-value` | searching exercise (1) |
+| Item | Why it stays |
+|------|--------------|
+| `target-size` on the blog reading-progress markers | the markers are placed by section position and two of them can sit closer than 24 px: their hit areas overlap. Merging or hiding markers is a design decision |
+| `color-contrast` of "15 min read" on the mobile blog page | a false positive: the text is sampled in the middle of its hover colour transition (#131b2d, nearly the background); its settled colour is the tested muted token |
 
-Not done and not possible from here: a screen-reader pass (NVDA, VoiceOver) and a pass with real zoom/high-contrast settings.
+Not done and not possible from here: a screen-reader pass (NVDA, VoiceOver) and a pass with real zoom and high-contrast settings.

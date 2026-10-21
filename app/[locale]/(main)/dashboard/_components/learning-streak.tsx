@@ -79,10 +79,10 @@ export async function LearningStreak({ userId }: LearningStreakProps) {
   const weeklyProgressPercent = Math.min(100, (thisWeekProgress / (weeklyGoalMinutes * 60)) * 100);
 
   const getStreakBadge = (streak: number) => {
-    if (streak >= 30) return { text: "🔥 Légende", color: "bg-red-500" };
-    if (streak >= 14) return { text: "⭐ Expert", color: "bg-yellow-500" };
-    if (streak >= 7) return { text: "🚀 Champion", color: "bg-blue-500" };
-    if (streak >= 3) return { text: "💪 Motivé", color: "bg-green-500" };
+    if (streak >= 30) return { text: "🔥 Légende", color: "bg-red-700" };
+    if (streak >= 14) return { text: "⭐ Expert", color: "bg-yellow-700" };
+    if (streak >= 7) return { text: "🚀 Champion", color: "bg-blue-700" };
+    if (streak >= 3) return { text: "💪 Motivé", color: "bg-green-700" };
     return { text: "🌱 Débutant", color: "bg-gray-500" };
   };
 

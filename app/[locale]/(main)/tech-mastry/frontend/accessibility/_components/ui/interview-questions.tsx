@@ -61,7 +61,7 @@ export function InterviewQuestions({ title, questions }: InterviewQuestionsProps
                     </Badge>
                   )}
                   {q.tags?.map((tag, tagIndex) => (
-                    <Badge key={tagIndex} variant="outline">
+                    <Badge key={tagIndex} variant="outline" className="text-slate-100 border-slate-600">
                       {tag}
                     </Badge>
                   ))}
