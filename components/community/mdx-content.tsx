@@ -55,7 +55,7 @@ export function MDXContent({ content, className = "" }: MDXContentProps) {
 
   return (
     <div
-      className={`mdx-content prose prose-sm prose-invert max-w-none ${className}`}
+      className={`mdx-content prose prose-sm dark:prose-invert max-w-none ${className}`}
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}

@@ -250,6 +250,7 @@ export function CourseCurriculum({
                       return (
                         <div
                           key={lesson.id}
+                          aria-disabled={status.accessible ? undefined : true}
                           className={
                             status.accessible
                               ? "cursor-pointer"

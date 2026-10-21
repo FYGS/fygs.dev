@@ -19,7 +19,7 @@ export function CachingStrategyBar({
         className={
           cache.strategy === "lru"
             ? "bg-linear-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white border-none shadow-md shadow-indigo-500/20"
-            : "border-indigo-500/30 text-indigo-500 hover:bg-indigo-500/10 hover:text-indigo-600 transition-all duration-300"
+            : "border-indigo-500/30 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-500/10 hover:text-indigo-800 dark:hover:text-indigo-300 transition-all duration-300"
         }
       >
         <svg
@@ -47,7 +47,7 @@ export function CachingStrategyBar({
         className={
           cache.strategy === "fifo"
             ? "bg-linear-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-none shadow-md shadow-purple-500/20"
-            : "border-purple-500/30 text-purple-500 hover:bg-purple-500/10 hover:text-purple-600 transition-all duration-300"
+            : "border-purple-500/30 text-purple-700 dark:text-purple-400 hover:bg-purple-500/10 hover:text-purple-800 dark:hover:text-purple-300 transition-all duration-300"
         }
       >
         <svg
@@ -74,7 +74,7 @@ export function CachingStrategyBar({
         className={
           cache.strategy === "random"
             ? "bg-linear-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white border-none shadow-md shadow-blue-500/20"
-            : "border-blue-500/30 text-blue-500 hover:bg-blue-500/10 hover:text-blue-600 transition-all duration-300"
+            : "border-blue-500/30 text-blue-700 dark:text-blue-400 hover:bg-blue-500/10 hover:text-blue-800 dark:hover:text-blue-300 transition-all duration-300"
         }
       >
         <svg
@@ -119,7 +119,7 @@ export function CachingStrategyBar({
           className={
             cache.enabled
               ? "bg-linear-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white border-none shadow-md shadow-emerald-500/20"
-              : "border-red-500/30 text-red-500 hover:bg-red-500/10 hover:text-red-600 transition-all duration-300"
+              : "border-red-500/30 text-red-700 dark:text-red-400 hover:bg-red-500/10 hover:text-red-800 dark:hover:text-red-300 transition-all duration-300"
           }
         >
           {cache.enabled ? (

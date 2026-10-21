@@ -378,9 +378,9 @@ export function QuizStudent({
                   className="space-y-6"
                 >
                   <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold mb-4 text-gray-900">
+                    <h2 className="text-lg font-semibold mb-4 text-gray-900">
                       {currentQuestion.question}
-                    </h3>
+                    </h2>
                     <div className="space-y-4">
                       {currentQuestion.options.map((option, index) => {
                         let buttonClass =
