@@ -1,12 +1,8 @@
-import { Metadata } from "next";
 import { Suspense } from "react";
 import { CommunicationGuide } from "./_components/communication-guide";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Communication Skills | Interview Best Practices",
-  description:
-    "Learn effective communication techniques for technical interviews.",
-};
+export const metadata = topicMetadata("/tech-mastry/best-practices/communication");
 
 export default function CommunicationPage() {
   return (

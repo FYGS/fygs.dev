@@ -1,12 +1,8 @@
-import { Metadata } from "next";
 import { ChallengeHeader } from "../_components/challenge-header";
 import { StringChallenge } from "./_components/string-challenge";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "String Manipulation | Coding Challenges",
-  description:
-    "Pratiquez les algorithmes de manipulation de chaînes avec des défis interactifs",
-};
+export const metadata = topicMetadata("/tech-mastry/coding-challenges/strings");
 
 const challengeData = {
   title: "String Manipulation",

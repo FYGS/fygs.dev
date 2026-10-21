@@ -31,19 +31,19 @@ export function SkillsTab({ progressData }: { progressData: ProgressStats }) {
           <CardHeader>
             <CardTitle className="text-xl flex items-center gap-2">
               <Brain className="h-5 w-5 text-primary" aria-hidden="true" />
-              Skill Breakdown
+              Détail des compétences
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {skills.map(([skill, level]) => (
               <div key={skill} className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="capitalize">{skillLabel(skill)}</span>
+                  <span>{skillLabel(skill)}</span>
                   <span className="text-sm font-medium">{level}%</span>
                 </div>
                 <Progress
                   value={level}
-                  aria-label={`${skillLabel(skill)} level`}
+                  aria-label={`${skillLabel(skill)} : niveau`}
                   className={cn(
                     "h-2",
                     tone(level) === "red" && "bg-red-500/20",
@@ -59,8 +59,8 @@ export function SkillsTab({ progressData }: { progressData: ProgressStats }) {
               </div>
             ))}
             <p className="text-xs text-muted-foreground pt-2">
-              Each level is the share of the topics you opened in that area. Problem solving also counts your
-              challenges and your quiz scores.
+              Chaque niveau compte les sujets terminés dans le domaine, et un peu les sujets simplement ouverts. La
+              résolution de problèmes compte aussi vos défis et vos scores d&apos;auto-évaluation.
             </p>
           </CardContent>
         </Card>
@@ -69,7 +69,7 @@ export function SkillsTab({ progressData }: { progressData: ProgressStats }) {
           <CardHeader>
             <CardTitle className="text-xl flex items-center gap-2">
               <Target className="h-5 w-5 text-primary" aria-hidden="true" />
-              Recommended Focus Areas
+              À travailler en priorité
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -91,16 +91,16 @@ export function SkillsTab({ progressData }: { progressData: ProgressStats }) {
                     </div>
                   </div>
                   <div>
-                    <h4 className="font-medium capitalize">{skillLabel(skill)}</h4>
+                    <h3 className="font-medium">{skillLabel(skill)}</h3>
                     <p className="text-sm text-foreground/70">
                       {level < 40
-                        ? "Needs significant improvement. Focus on fundamentals."
+                        ? "Beaucoup de marge : commencez par les fondamentaux."
                         : level < 70
-                          ? "Good progress, but more practice needed."
-                          : "Strong skills. Consider advanced topics."}
+                          ? "Bonne progression, mais il faut encore pratiquer."
+                          : "Solide. Passez aux sujets avancés."}
                     </p>
                     <Button asChild variant="link" className="p-0 h-auto text-primary text-sm mt-1">
-                      <Link href={SKILL_LINKS[skill]}>View recommended resources</Link>
+                      <Link href={SKILL_LINKS[skill]}>Voir les sujets du domaine</Link>
                     </Button>
                   </div>
                 </div>

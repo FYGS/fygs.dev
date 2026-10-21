@@ -11,6 +11,8 @@ import {
   recordDay,
   recordQuiz,
   recordTime,
+  recordTopicCompleted,
+  recordTopicReopened,
   recordVisit,
   type UserProgress,
 } from "../_utils/progress-model";
@@ -85,11 +87,24 @@ function loadOnMount() {
   setStore({ progress: loaded, isLoaded: true });
 }
 
+let listeningToOtherTabs = false;
+
+/** The progress is shared by every tab of the browser: when another tab saves, read what it saved. */
+function listenToOtherTabs() {
+  if (listeningToOtherTabs || typeof window === "undefined") return;
+  listeningToOtherTabs = true;
+  window.addEventListener("storage", (event) => {
+    if (event.key !== STORAGE_KEY) return;
+    setStore({ progress: loadProgress(), isLoaded: true });
+  });
+}
+
 export function useProgress() {
   const { progress, isLoaded } = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   useEffect(() => {
     loadOnMount();
+    listenToOtherTabs();
   }, []);
 
   const trackPageVisit = useCallback((path: string) => {
@@ -106,6 +121,14 @@ export function useProgress() {
 
   const trackChallengeAttempt = useCallback((challengeId: string, passed: number, total: number) => {
     updateProgress((prev) => recordChallengeAttempt(prev, challengeId, passed, total, new Date()));
+  }, []);
+
+  const completeTopic = useCallback((route: string) => {
+    updateProgress((prev) => recordTopicCompleted(prev, route, new Date()));
+  }, []);
+
+  const reopenTopic = useCallback((route: string) => {
+    updateProgress((prev) => recordTopicReopened(prev, route));
   }, []);
 
   const trackTimeSpent = useCallback((path: string, minutes: number) => {
@@ -131,6 +154,8 @@ export function useProgress() {
     trackChallengeComplete,
     trackChallengeAttempt,
     trackTimeSpent,
+    completeTopic,
+    reopenTopic,
     getStreakDays,
     resetProgress,
   };

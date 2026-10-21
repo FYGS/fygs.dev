@@ -8,6 +8,8 @@ import { Breadcrumbs } from "./_components/breadcrumbs";
 import { ProgressTracker } from "./_components/progress-tracker";
 import { SearchBar } from "./_components/search-bar";
 import { TopicsNav } from "./_components/topics-nav";
+import { TopicFooter, TopicHeader } from "./_components/topic/topic-chrome";
+import { TopicStructuredData } from "./_components/topic/topic-structured-data";
 import { generateRouteMetadata } from "../_lib/metadata-helpers";
 import { sectionSEO } from "@/app/_lib/seo-config";
 import type { LocalesValues } from "intlayer";
@@ -171,7 +173,10 @@ export default function InterviewPrepLayout({
                 </div>
               }
             >
+              <TopicStructuredData />
+              <TopicHeader />
               {children}
+              <TopicFooter />
             </Suspense>
           </div>
         </div>

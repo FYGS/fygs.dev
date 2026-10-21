@@ -2,6 +2,7 @@
 
 import { useTheme } from "@/providers/theme-provider";
 import { useMounted } from "../../_hooks/use-mounted";
+import { skillLabel } from "./progress-dashboard/icons";
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -22,7 +23,7 @@ export function SkillRadarChart({ skills }: SkillRadarChartProps) {
 
   // Format the skills data for the radar chart
   const data = Object.entries(skills).map(([key, value]) => ({
-    subject: key.replace(/([A-Z])/g, " $1").trim(),
+    subject: skillLabel(key),
     value,
     fullMark: 100,
   }));
@@ -59,7 +60,7 @@ export function SkillRadarChart({ skills }: SkillRadarChartProps) {
           stroke={isDark ? "hsl(var(--muted))" : "hsl(var(--border))"}
         />
         <Radar
-          name="Skill Level"
+          name="Niveau"
           dataKey="value"
           stroke="hsl(var(--primary))"
           fill="hsl(var(--primary))"
@@ -76,7 +77,7 @@ export function SkillRadarChart({ skills }: SkillRadarChartProps) {
             boxShadow:
               "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
           }}
-          formatter={(value) => [`${value}%`, "Skill Level"]}
+          formatter={(value) => [`${value} %`, "Niveau"]}
         />
       </RadarChart>
     </ResponsiveContainer>

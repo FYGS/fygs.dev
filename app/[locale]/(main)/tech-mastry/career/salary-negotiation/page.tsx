@@ -1,11 +1,8 @@
-import { Metadata } from "next";
 import { NegotiationGuide } from "./_components/negotiation-guide";
 import { DollarSign } from "lucide-react";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Négociation Salariale | TechMastry",
-  description: "Framework de négociation en 5 étapes, scripts et stratégies pour maximiser votre package",
-};
+export const metadata = topicMetadata("/tech-mastry/career/salary-negotiation");
 
 export default function SalaryNegotiationPage() {
   return (

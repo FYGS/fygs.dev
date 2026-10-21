@@ -1,12 +1,9 @@
-import { Metadata } from "next";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Shield } from "lucide-react";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Sécurité | System Design",
-  description: "Authentification, chiffrement, OWASP et sécurité dans le system design",
-};
+export const metadata = topicMetadata("/tech-mastry/system-design/security");
 
 const securityLayers = [
   {

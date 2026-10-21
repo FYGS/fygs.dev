@@ -1,5 +1,8 @@
 import { BackendTopics } from "./_components/backend-topics";
 import { BackendHero } from "./_components/hero";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
+
+export const metadata = topicMetadata("/tech-mastry/backend");
 
 export default function BackendPage() {
   return (

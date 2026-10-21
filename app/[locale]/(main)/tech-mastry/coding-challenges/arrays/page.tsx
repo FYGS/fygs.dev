@@ -1,12 +1,8 @@
-import { Metadata } from "next";
 import { ChallengeHeader } from "../_components/challenge-header";
 import { ArrayChallenge } from "./_components/array-challenge";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Array Operations | Coding Challenges",
-  description:
-    "Pratiquez les algorithmes de manipulation de tableaux et les techniques de résolution",
-};
+export const metadata = topicMetadata("/tech-mastry/coding-challenges/arrays");
 
 const challengeData = {
   title: "Array Operations",

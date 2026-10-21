@@ -1,10 +1,7 @@
-import type { Metadata } from "next";
 import { BacktrackingGuide } from "./_components/backtracking-guide";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Backtracking | Tech-Mastry",
-  description: "Guide complet du backtracking : N-Queens, Sudoku solver, permutations, et patterns de résolution systématique.",
-};
+export const metadata = topicMetadata("/tech-mastry/algorithms/backtracking");
 
 export default function BacktrackingPage() {
   return (

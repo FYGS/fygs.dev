@@ -1,10 +1,7 @@
-import type { Metadata } from "next";
 import { TestingGuide } from "./_components/testing-guide";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Testing Frontend | Tech-Mastry",
-  description: "Tests unitaires, d'intégration et E2E pour applications React : Vitest, Testing Library, Playwright.",
-};
+export const metadata = topicMetadata("/tech-mastry/frontend/testing");
 
 export default function TestingPage() {
   return (

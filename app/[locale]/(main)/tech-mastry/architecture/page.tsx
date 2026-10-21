@@ -1,12 +1,8 @@
-import { Metadata } from "next";
 import { ArchitectureHero } from "./_components/hero";
 import { ArchitectureTopics } from "./_components/architecture-topics";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Architecture & Design Patterns | TechMastry",
-  description:
-    "Clean Architecture, SOLID, DDD et patterns de conception modernes pour les entretiens techniques",
-};
+export const metadata = topicMetadata("/tech-mastry/architecture");
 
 export default function ArchitecturePage() {
   return (

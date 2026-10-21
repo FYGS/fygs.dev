@@ -1,12 +1,8 @@
-import { Metadata } from "next";
 import { PerformanceContent } from "./_components/content";
 import { PerformanceHero } from "./_components/hero";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Performance & Optimization | TechMastry",
-  description:
-    "Techniques d'optimisation des applications React: Memoization, Code Splitting, Bundle Size, et Virtualization",
-};
+export const metadata = topicMetadata("/tech-mastry/frontend/performance");
 
 export default function PerformancePage() {
   return (

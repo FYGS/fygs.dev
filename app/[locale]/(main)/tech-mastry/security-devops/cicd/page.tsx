@@ -1,11 +1,8 @@
-import { Metadata } from "next";
 import { PipelineGuide } from "./_components/pipeline-guide";
 import { GitBranch } from "lucide-react";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "CI/CD Pipelines | TechMastry",
-  description: "Conception de pipelines CI/CD avec GitHub Actions, stratégies de déploiement et bonnes pratiques",
-};
+export const metadata = topicMetadata("/tech-mastry/security-devops/cicd");
 
 export default function CICDPage() {
   return (

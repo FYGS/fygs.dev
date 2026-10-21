@@ -1,10 +1,7 @@
-import type { Metadata } from "next";
 import { QuestionBank } from "./_components/question-bank";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Banque de Questions | Tech-Mastry",
-  description: "Banque exhaustive de questions d'entretien technique classées par catégorie, difficulté et entreprise.",
-};
+export const metadata = topicMetadata("/tech-mastry/interview-simulation/question-bank");
 
 export default function QuestionBankPage() {
   return (

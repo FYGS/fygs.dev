@@ -1,12 +1,8 @@
-import { Metadata } from "next";
 import { Card } from "@/components/ui/card";
 import { MessageSquare } from "lucide-react";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Mock Interviews | TechMastry",
-  description:
-    "Simulations d'entretiens techniques avec timer, questions et feedback structuré",
-};
+export const metadata = topicMetadata("/tech-mastry/preparation/mock-interviews");
 
 const interviewTypes = [
   {

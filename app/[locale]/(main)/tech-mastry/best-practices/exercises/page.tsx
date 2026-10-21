@@ -1,10 +1,7 @@
-import type { Metadata } from "next";
 import { BestPracticesExercises } from "./_components/exercises";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Exercices Situationnels | Tech-Mastry",
-  description: "Mettez en pratique les bonnes pratiques avec des exercices de refactoring, code review et design.",
-};
+export const metadata = topicMetadata("/tech-mastry/best-practices/exercises");
 
 export default function ExercisesPage() {
   return (

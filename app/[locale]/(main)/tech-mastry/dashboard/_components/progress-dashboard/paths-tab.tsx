@@ -27,7 +27,7 @@ export function PathsTab({ progressData }: { progressData: ProgressStats }) {
           <CardHeader>
             <CardTitle className="text-xl flex items-center gap-2">
               <GraduationCap className="h-5 w-5 text-primary" aria-hidden="true" />
-              Recommended Learning Paths
+              Par où continuer
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -40,11 +40,11 @@ export function PathsTab({ progressData }: { progressData: ProgressStats }) {
                   <h4 className="font-medium">{path.title}</h4>
                   <p className="text-sm text-foreground/70">
                     {path.completedModules === 0
-                      ? `You have not started yet. ${path.description}.`
-                      : `${path.totalModules - path.completedModules} topics left to finish this path.`}
+                      ? `Pas encore commencé. ${path.description}.`
+                      : `Il reste ${path.totalModules - path.completedModules} sujet${path.totalModules - path.completedModules > 1 ? "s" : ""} (environ ${path.minutesLeft} min).`}
                   </p>
                   <Button asChild variant="link" className="p-0 h-auto text-primary text-sm mt-1">
-                    <Link href={path.href}>{path.completedModules === 0 ? "Start this path" : "Continue this path"}</Link>
+                    <Link href={path.href}>{path.completedModules === 0 ? "Commencer ce domaine" : "Continuer ce domaine"}</Link>
                   </Button>
                 </div>
               </div>

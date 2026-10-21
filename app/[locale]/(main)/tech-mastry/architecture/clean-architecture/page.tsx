@@ -1,15 +1,11 @@
-import { Metadata } from "next";
 import { LayersDiagram } from "./_components/layers-diagram";
 import { CodeExamples } from "./_components/code-examples";
 import { Card } from "@/components/ui/card";
 import { Layers, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Clean Architecture | TechMastry",
-  description:
-    "Comprendre et appliquer les principes de Clean Architecture pour créer des systèmes maintenables",
-};
+export const metadata = topicMetadata("/tech-mastry/architecture/clean-architecture");
 
 export default function CleanArchitecturePage() {
   return (

@@ -19,7 +19,7 @@ export function OverviewTab({ progressData, now = new Date() }: { progressData: 
           <CardHeader>
             <CardTitle className="text-xl flex items-center gap-2">
               <Brain className="h-5 w-5 text-primary" aria-hidden="true" />
-              Skill Assessment
+              Niveau par compétence
             </CardTitle>
           </CardHeader>
           <CardContent className="h-[350px]">
@@ -27,12 +27,12 @@ export function OverviewTab({ progressData, now = new Date() }: { progressData: 
           </CardContent>
         </Card>
 
-        {/* Recent Activities */}
+        {/* Activité récente */}
         <Card className={CARD}>
           <CardHeader>
             <CardTitle className="text-xl flex items-center gap-2">
               <ListTodo className="h-5 w-5 text-primary" aria-hidden="true" />
-              Recent Activities
+              Activité récente
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -47,7 +47,7 @@ export function OverviewTab({ progressData, now = new Date() }: { progressData: 
           <CardHeader>
             <CardTitle className="text-xl flex items-center gap-2">
               <Calendar className="h-5 w-5 text-primary" aria-hidden="true" />
-              Activity Streak
+              Régularité
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -64,7 +64,7 @@ export function OverviewTab({ progressData, now = new Date() }: { progressData: 
           <CardHeader>
             <CardTitle className="text-xl flex items-center gap-2">
               <BookOpen className="h-5 w-5 text-primary" aria-hidden="true" />
-              Learning Paths
+              Avancement par domaine
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -76,10 +76,10 @@ export function OverviewTab({ progressData, now = new Date() }: { progressData: 
                     <span className="font-medium">{path.title}</span>
                   </div>
                   <span className="text-sm text-foreground/70">
-                    {path.completedModules}/{path.totalModules} topics
+                    {path.completedModules}/{path.totalModules} sujets
                   </span>
                 </div>
-                <Progress value={path.progress} className="h-2" aria-label={`${path.title} progress`} />
+                <Progress value={path.progress} className="h-2" aria-label={`${path.title} : avancement`} />
               </div>
             ))}
           </CardContent>

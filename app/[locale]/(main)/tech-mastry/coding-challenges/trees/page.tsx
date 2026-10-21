@@ -1,12 +1,8 @@
-import { Metadata } from "next";
 import { ChallengeHeader } from "../_components/challenge-header";
 import { TreeChallenge } from "./_components/tree-challenge";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Tree Traversal | Coding Challenges",
-  description:
-    "Maîtrisez les algorithmes de parcours d'arbres binaires avec DFS et BFS",
-};
+export const metadata = topicMetadata("/tech-mastry/coding-challenges/trees");
 
 const challengeData = {
   title: "Tree Traversal",

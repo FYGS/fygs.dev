@@ -1,12 +1,8 @@
-import { Metadata } from "next";
 import { Card } from "@/components/ui/card";
 import { Cloud } from "lucide-react";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Cloud Native | TechMastry",
-  description:
-    "Architecture 12-Factor, Serverless et bonnes pratiques Cloud Native",
-};
+export const metadata = topicMetadata("/tech-mastry/security-devops/cloud-native");
 
 const twelveFactor = [
   {

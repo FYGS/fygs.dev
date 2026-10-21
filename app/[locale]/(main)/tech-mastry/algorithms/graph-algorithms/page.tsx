@@ -1,10 +1,7 @@
-import type { Metadata } from "next";
 import { GraphAlgorithmsGuide } from "./_components/graph-algorithms-guide";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Algorithmes de Graphes | Tech-Mastry",
-  description: "BFS, DFS, Dijkstra, Bellman-Ford, tri topologique et algorithmes de graphes essentiels pour les entretiens.",
-};
+export const metadata = topicMetadata("/tech-mastry/algorithms/graph-algorithms");
 
 export default function GraphAlgorithmsPage() {
   return (

@@ -15,9 +15,9 @@ interface StreakCalendarProps {
 const DAYS_SHOWN = 30;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-const formatDay = (date: Date) => date.toLocaleDateString("en-US", { weekday: "short", timeZone: "UTC" }).charAt(0);
+const formatDay = (date: Date) => date.toLocaleDateString("fr-FR", { weekday: "short", timeZone: "UTC" }).charAt(0);
 const formatDate = (date: Date) =>
-  date.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+  date.toLocaleDateString("fr-FR", { month: "short", day: "numeric", timeZone: "UTC" });
 
 /** 0 = nothing, 1 = opened the section, 2 = a few things, 3 = a busy day */
 const intensity = (count: number) => (count <= 0 ? 0 : count === 1 ? 1 : count <= 3 ? 2 : 3);
@@ -38,7 +38,7 @@ export function StreakCalendar({ streakDays, activityByDay, today = new Date() }
         </div>
         <div className="flex items-center gap-1 text-sm">
           <span className="font-medium">
-            {streakDays} day{streakDays === 1 ? "" : "s"} streak
+            Série de {streakDays} jour{streakDays <= 1 ? "" : "s"}
           </span>
           {streakDays > 0 && <CheckCircle2 className="h-4 w-4 text-green-500" aria-hidden="true" />}
         </div>
@@ -60,7 +60,7 @@ export function StreakCalendar({ streakDays, activityByDay, today = new Date() }
                 day.level === 2 && "bg-green-500/40 text-foreground",
                 day.level === 3 && "bg-green-500/60 text-foreground",
               )}
-              title={`${formatDate(day.date)}: ${day.count > 0 ? `${day.count} activit${day.count === 1 ? "y" : "ies"}` : "no activity"}`}
+              title={`${formatDate(day.date)} : ${day.count > 0 ? `${day.count} activité${day.count === 1 ? "" : "s"}` : "aucune activité"}`}
             >
               {day.date.getUTCDate()}
             </div>
@@ -70,10 +70,10 @@ export function StreakCalendar({ streakDays, activityByDay, today = new Date() }
 
       <div className="flex items-center justify-center gap-2 pt-2">
         {[
-          ["bg-muted/30", "No activity"],
-          ["bg-green-500/20", "Light"],
-          ["bg-green-500/40", "Medium"],
-          ["bg-green-500/60", "Heavy"],
+          ["bg-muted/30", "Aucune"],
+          ["bg-green-500/20", "Légère"],
+          ["bg-green-500/40", "Moyenne"],
+          ["bg-green-500/60", "Forte"],
         ].map(([color, label]) => (
           <div key={label} className="flex items-center gap-1">
             <div className={cn("w-3 h-3 rounded-sm", color)}></div>

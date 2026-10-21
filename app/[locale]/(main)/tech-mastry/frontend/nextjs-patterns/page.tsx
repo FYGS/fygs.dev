@@ -1,10 +1,7 @@
-import type { Metadata } from "next";
 import { NextjsGuide } from "./_components/nextjs-guide";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Next.js Patterns | Tech-Mastry",
-  description: "Patterns avancés Next.js 14+ : App Router, Server Components, Server Actions, streaming et caching.",
-};
+export const metadata = topicMetadata("/tech-mastry/frontend/nextjs-patterns");
 
 export default function NextjsPatternsPage() {
   return (

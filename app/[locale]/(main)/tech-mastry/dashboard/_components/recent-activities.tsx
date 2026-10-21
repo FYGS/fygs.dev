@@ -24,16 +24,16 @@ export function RecentActivities({ activities, now = new Date() }: RecentActivit
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
     
     if (diffInSeconds < 60) {
-      return "just now";
+      return "à l'instant";
     } else if (diffInSeconds < 3600) {
       const minutes = Math.floor(diffInSeconds / 60);
-      return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+      return `il y a ${minutes} minute${minutes > 1 ? "s" : ""}`;
     } else if (diffInSeconds < 86400) {
       const hours = Math.floor(diffInSeconds / 3600);
-      return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+      return `il y a ${hours} heure${hours > 1 ? "s" : ""}`;
     } else {
       const days = Math.floor(diffInSeconds / 86400);
-      return `${days} day${days > 1 ? "s" : ""} ago`;
+      return `il y a ${days} jour${days > 1 ? "s" : ""}`;
     }
   };
 
@@ -68,7 +68,7 @@ export function RecentActivities({ activities, now = new Date() }: RecentActivit
   if (activities.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
-        Nothing yet. Open a topic, take a quiz or solve a challenge and it will show up here.
+        Rien pour l&apos;instant. Ouvrez un sujet, faites une auto-évaluation ou résolvez un défi : cela apparaîtra ici.
       </p>
     );
   }
@@ -94,7 +94,7 @@ export function RecentActivities({ activities, now = new Date() }: RecentActivit
           
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h4 className="font-medium text-sm truncate">{activity.title}</h4>
+              <h3 className="font-medium text-sm truncate">{activity.title}</h3>
               {getResultIcon(activity.result)}
             </div>
             

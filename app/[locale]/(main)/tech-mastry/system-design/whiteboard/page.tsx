@@ -1,10 +1,7 @@
-import type { Metadata } from "next";
 import { WhiteboardExercises } from "./_components/whiteboard-exercises";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Whiteboard Interactif | Tech-Mastry",
-  description: "Exercices de design système sur whiteboard : URL shortener, chat system, e-commerce et plus.",
-};
+export const metadata = topicMetadata("/tech-mastry/system-design/whiteboard");
 
 export default function WhiteboardPage() {
   return (

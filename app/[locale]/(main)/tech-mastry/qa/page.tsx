@@ -1,15 +1,11 @@
-import type { Metadata } from "next";
 import { QAGuide } from "./_components/qa-guide";
 import { QAQuiz } from "./_components/qa-quiz";
 import { HelpCircle, Brain, BookOpen } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Questions & Réponses | Tech-Mastry",
-  description:
-    "Quiz interactif et guide complet des questions courantes lors des entretiens techniques. Testez vos connaissances avec scoring en temps réel.",
-};
+export const metadata = topicMetadata("/tech-mastry/qa");
 
 export default function QAPage() {
   return (

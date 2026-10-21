@@ -28,6 +28,8 @@ export interface ChallengeAttempt {
 }
 
 export interface UserProgress {
+  /** Routes of the topics the learner marked as done (see _catalog) */
+  completedTopics: string[];
   challengesCompleted: string[];
   /** Per challenge id, every submission counts (the challenge is completed by a full pass) */
   challengeAttempts: Record<string, ChallengeAttempt>;
@@ -48,6 +50,7 @@ export const MAX_ACTIVITY = 100;
 
 export function emptyProgress(now: Date = new Date()): UserProgress {
   return {
+    completedTopics: [],
     challengesCompleted: [],
     challengeAttempts: {},
     quizScores: {},
@@ -139,6 +142,7 @@ export function parseStoredProgress(raw: unknown, now: Date = new Date()): UserP
   }
 
   return {
+    completedTopics: [...new Set(strings(raw.completedTopics))],
     challengesCompleted: strings(raw.challengesCompleted),
     challengeAttempts,
     quizScores,
@@ -218,6 +222,21 @@ export function recordQuiz(prev: UserProgress, quizId: string, score: number, to
     },
     { type: "quiz", ref: quizId, at: now.toISOString(), score, total },
   );
+}
+
+/** The learner marks a topic as done (once; a second call changes nothing). */
+export function recordTopicCompleted(prev: UserProgress, route: string, now: Date): UserProgress {
+  if (prev.completedTopics.includes(route)) return prev;
+  return withActivity(
+    { ...prev, completedTopics: [...prev.completedTopics, route] },
+    { type: "learning", ref: route, at: now.toISOString() },
+  );
+}
+
+/** The learner takes the mark back. */
+export function recordTopicReopened(prev: UserProgress, route: string): UserProgress {
+  if (!prev.completedTopics.includes(route)) return prev;
+  return { ...prev, completedTopics: prev.completedTopics.filter((done) => done !== route) };
 }
 
 export function recordChallenge(prev: UserProgress, challengeId: string, now: Date): UserProgress {

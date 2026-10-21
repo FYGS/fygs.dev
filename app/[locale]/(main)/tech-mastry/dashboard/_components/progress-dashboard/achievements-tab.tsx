@@ -7,7 +7,7 @@ import { ACHIEVEMENT_ICONS } from "./icons";
 import type { ProgressStats } from "./types";
 
 const formatDate = (date: Date) =>
-  date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" });
+  date.toLocaleDateString("fr-FR", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" });
 
 export function AchievementsTab({ progressData }: { progressData: ProgressStats }) {
   return (
@@ -33,18 +33,18 @@ export function AchievementsTab({ progressData }: { progressData: ProgressStats 
               {achievement.isUnlocked ? (
                 <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
                   <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
-                  <span>Unlocked{achievement.unlockedAt ? ` ${formatDate(achievement.unlockedAt)}` : ""}</span>
+                  <span>Débloqué{achievement.unlockedAt ? ` ${formatDate(achievement.unlockedAt)}` : ""}</span>
                 </div>
               ) : (
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Progress</span>
+                    <span>Avancement</span>
                     <span>{achievement.progress}%</span>
                   </div>
                   <Progress
                     value={achievement.progress}
                     className="h-1.5"
-                    aria-label={`${achievement.title} progress`}
+                    aria-label={`${achievement.title} : avancement`}
                   />
                 </div>
               )}

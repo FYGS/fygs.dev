@@ -1,11 +1,8 @@
-import { Metadata } from "next";
 import { CareerLadder } from "./_components/career-ladder";
 import { TrendingUp } from "lucide-react";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Progression de Carrière | TechMastry",
-  description: "Échelle de carrière Junior → Principal, matrice de compétences et IC vs Management track",
-};
+export const metadata = topicMetadata("/tech-mastry/career/progression");
 
 export default function ProgressionPage() {
   return (

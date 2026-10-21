@@ -54,7 +54,7 @@ const queryClient = new QueryClient({
     queries: {
       refetchOnWindowFocus: true, // refetch automatique quand la fenêtre reprend le focus
       staleTime: 1000 * 60 * 5, // considérer les données comme périmées après 5 minutes
-      cacheTime: 1000 * 60 * 30, // garder les données en cache pendant 30 minutes
+      gcTime: 1000 * 60 * 30, // garder les données inutilisées en mémoire 30 minutes (cacheTime avant la v5)
       retry: 3, // réessayer 3 fois en cas d'échec
     },
   },
@@ -197,14 +197,14 @@ function UserDetails({ userId }) {
         }
         tips={[
           "Utilisez des queryKeys structurées pour une meilleure organisation et invalidation",
-          "Ajustez staleTime et cacheTime en fonction des besoins de fraîcheur des données",
+          "Ajustez staleTime et gcTime (cacheTime avant la v5) en fonction des besoins de fraîcheur des données",
           "Utilisez enabled pour contrôler quand une requête doit s'exécuter",
           "Exploitez les DevTools pour comprendre le comportement du cache"
         ]}
         interviewQuestions={[
           {
-            question: "Quelle est la différence entre staleTime et cacheTime dans React Query?",
-            answer: "Dans React Query, staleTime et cacheTime contrôlent différents aspects du cycle de vie des données: 1) staleTime détermine combien de temps les données restent 'fraîches'. Tant que les données sont fraîches, React Query ne déclenchera pas de refetch automatique lors d'un nouveau montage ou focus de fenêtre. Par défaut, staleTime est 0, ce qui signifie que les données sont immédiatement considérées comme périmées. 2) cacheTime détermine combien de temps les données inactives (non utilisées par un composant) restent en cache avant d'être supprimées. Par défaut, cacheTime est de 5 minutes. Exemple: Avec staleTime=60000 (1 minute) et cacheTime=300000 (5 minutes), les données seront considérées comme fraîches pendant 1 minute (pas de refetch automatique), puis resteront en cache pendant 5 minutes après que le dernier composant ait cessé de les utiliser.",
+            question: "Quelle est la différence entre staleTime et gcTime (anciennement cacheTime) dans React Query?",
+            answer: "Dans React Query, staleTime et gcTime (cacheTime avant la v5) contrôlent différents aspects du cycle de vie des données: 1) staleTime détermine combien de temps les données restent 'fraîches'. Tant que les données sont fraîches, React Query ne déclenchera pas de refetch automatique lors d'un nouveau montage ou focus de fenêtre. Par défaut, staleTime est 0, ce qui signifie que les données sont immédiatement considérées comme périmées. 2) cacheTime détermine combien de temps les données inactives (non utilisées par un composant) restent en cache avant d'être supprimées. Par défaut, cacheTime est de 5 minutes. Exemple: Avec staleTime=60000 (1 minute) et cacheTime=300000 (5 minutes), les données seront considérées comme fraîches pendant 1 minute (pas de refetch automatique), puis resteront en cache pendant 5 minutes après que le dernier composant ait cessé de les utiliser.",
             difficulty: "medium",
             tags: ["React Query", "Caching"]
           },
@@ -502,7 +502,7 @@ function TodoList() {
           },
           {
             question: "Comment optimiser les performances avec React Query dans une application à grande échelle?",
-            answer: "Pour optimiser React Query dans une application à grande échelle: 1) Ajustez staleTime et cacheTime en fonction des besoins de fraîcheur des données. 2) Utilisez des queryKeys structurées pour une meilleure organisation et invalidation ciblée. 3) Implémentez la pagination ou les requêtes infinies pour les grandes listes. 4) Utilisez select pour transformer et filtrer les données côté client. 5) Préchargez les données importantes avec prefetchQuery. 6) Utilisez placeholderData ou initialData pour éviter les états de chargement. 7) Implémentez des sélecteurs partiels pour éviter les re-rendus inutiles. 8) Utilisez keepPreviousData pour les transitions de page fluides. 9) Configurez des fenêtres de synchronisation (synchronization windows) pour regrouper les mises à jour. 10) Utilisez suspense pour une meilleure UX pendant le chargement. 11) Optimisez la taille du cache avec removeQueries pour les données non essentielles. 12) Utilisez des queryFilters précis pour l'invalidation.",
+            answer: "Pour optimiser React Query dans une application à grande échelle: 1) Ajustez staleTime et gcTime (cacheTime avant la v5) en fonction des besoins de fraîcheur des données. 2) Utilisez des queryKeys structurées pour une meilleure organisation et invalidation ciblée. 3) Implémentez la pagination ou les requêtes infinies pour les grandes listes. 4) Utilisez select pour transformer et filtrer les données côté client. 5) Préchargez les données importantes avec prefetchQuery. 6) Utilisez placeholderData ou initialData pour éviter les états de chargement. 7) Implémentez des sélecteurs partiels pour éviter les re-rendus inutiles. 8) Utilisez keepPreviousData pour les transitions de page fluides. 9) Configurez des fenêtres de synchronisation (synchronization windows) pour regrouper les mises à jour. 10) Utilisez suspense pour une meilleure UX pendant le chargement. 11) Optimisez la taille du cache avec removeQueries pour les données non essentielles. 12) Utilisez des queryFilters précis pour l'invalidation.",
             difficulty: "hard",
             tags: ["React Query", "Performance", "Scaling"]
           },

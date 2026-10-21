@@ -1,12 +1,9 @@
-import { Metadata } from "next";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Heart } from "lucide-react";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Gestion du Stress | TechMastry",
-  description: "Techniques de gestion du stress, exercices de respiration et préparation mentale",
-};
+export const metadata = topicMetadata("/tech-mastry/preparation/stress-management");
 
 const techniques = [
   {

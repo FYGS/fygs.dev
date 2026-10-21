@@ -1,12 +1,8 @@
-import { Metadata } from "next";
 import { ChallengeHeader } from "../_components/challenge-header";
 import { DPChallenge } from "./_components/dp-challenge";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Dynamic Programming | Coding Challenges",
-  description:
-    "Maîtrisez les techniques de programmation dynamique avec mémoïzation et tabulation",
-};
+export const metadata = topicMetadata("/tech-mastry/coding-challenges/dp");
 
 const challengeData = {
   title: "Dynamic Programming",

@@ -1,12 +1,9 @@
-import { Metadata } from "next";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FileText } from "lucide-react";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Études de Cas | System Design",
-  description: "Analyses détaillées de systèmes réels : URL Shortener, Chat, Social Network, Video Streaming",
-};
+export const metadata = topicMetadata("/tech-mastry/system-design/case-studies");
 
 const caseStudies = [
   {

@@ -1,13 +1,9 @@
-import { Metadata } from "next";
 import { CachingVisualization } from "./_components/caching-visualization";
 import { ScalabilityHero } from "./_components/hero";
 import { LoadBalancerVisualization } from "./_components/load-balancer-visualization";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Scalabilité & Performance | System Design",
-  description:
-    "Techniques pour concevoir des systèmes hautement évolutifs et performants",
-};
+export const metadata = topicMetadata("/tech-mastry/system-design/scalability");
 
 export default function ScalabilityPage() {
   return (

@@ -1,10 +1,7 @@
-import type { Metadata } from "next";
 import { GreedyGuide } from "./_components/greedy-guide";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Algorithmes Gloutons | Tech-Mastry",
-  description: "Guide complet des algorithmes gloutons : sélection d'activités, Huffman, Kruskal, et stratégies de résolution.",
-};
+export const metadata = topicMetadata("/tech-mastry/algorithms/greedy");
 
 export default function GreedyPage() {
   return (

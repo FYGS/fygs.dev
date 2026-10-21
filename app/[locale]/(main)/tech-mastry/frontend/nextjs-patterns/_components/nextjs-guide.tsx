@@ -92,9 +92,12 @@ export async function updateProfile(prevState, formData) {
     name: "Caching & Revalidation",
     code: `// Stratégies de cache Next.js
 
-// 1. Static (build time) — par défaut
+// 1. Static (build time) — à demander explicitement
+// Depuis Next.js 15, fetch n'est plus mis en cache par défaut
 async function getStaticData() {
-  const res = await fetch('https://api.example.com/data');
+  const res = await fetch('https://api.example.com/data', {
+    cache: 'force-cache'
+  });
   return res.json();
 }
 
@@ -136,7 +139,8 @@ async function getDynamicData() {
   return res.json();
 }`,
     keyPoints: [
-      "4 stratégies : Static, ISR, On-demand, Dynamic",
+      "4 stratégies : Static (force-cache), ISR, On-demand, Dynamic (no-store)",
+      "Depuis Next.js 15, fetch n'est plus mis en cache par défaut",
       "Tags pour invalidation granulaire",
       "revalidatePath vs revalidateTag",
       "Partial Prerendering (PPR) en expérimental",

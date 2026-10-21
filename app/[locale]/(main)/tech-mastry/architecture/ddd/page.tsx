@@ -1,13 +1,9 @@
-import { Metadata } from "next";
 import { DDDConcepts } from "./_components/ddd-concepts";
 import { Card } from "@/components/ui/card";
 import { Boxes } from "lucide-react";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Domain-Driven Design | TechMastry",
-  description:
-    "Bounded Contexts, Aggregates, Entities, Value Objects et patterns stratégiques du DDD",
-};
+export const metadata = topicMetadata("/tech-mastry/architecture/ddd");
 
 export default function DDDPage() {
   return (

@@ -1,12 +1,8 @@
-import { Metadata } from "next";
 import { SolidExplorer } from "./_components/solid-explorer";
 import { Target } from "lucide-react";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Principes SOLID | TechMastry",
-  description:
-    "Les 5 principes SOLID expliqués avec des exemples avant/après en TypeScript",
-};
+export const metadata = topicMetadata("/tech-mastry/architecture/solid");
 
 export default function SolidPage() {
   return (

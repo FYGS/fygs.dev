@@ -1,11 +1,8 @@
-import { Metadata } from "next";
 import { Card } from "@/components/ui/card";
 import { Container } from "lucide-react";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Docker & Kubernetes | TechMastry",
-  description: "Conteneurisation avec Docker et orchestration avec Kubernetes",
-};
+export const metadata = topicMetadata("/tech-mastry/security-devops/docker-kubernetes");
 
 const concepts = [
   {
@@ -44,7 +41,7 @@ const k8sResources = [
   },
   {
     name: "ConfigMap/Secret",
-    desc: "Configuration externalisée et gestion des secrets (chiffrés au repos).",
+    desc: "Configuration externalisée et gestion des secrets. Un Secret n'est qu'encodé en base64 : le chiffrement au repos (etcd) se configure sur le cluster.",
   },
   {
     name: "HPA",

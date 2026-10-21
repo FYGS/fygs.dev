@@ -1,12 +1,8 @@
-import { Metadata } from "next";
 import { ResourcesHero } from "./_components/hero";
 import { ResourcesList } from "./_components/resources-list";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Ressources & Documentation | TechMastry",
-  description:
-    "Sélection curatée de livres, cours, chaînes YouTube, podcasts et outils pour la préparation aux entretiens techniques",
-};
+export const metadata = topicMetadata("/tech-mastry/resources");
 
 export default function ResourcesPage() {
   return (

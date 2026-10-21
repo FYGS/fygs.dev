@@ -1,12 +1,8 @@
-import { Metadata } from "next";
 import { PatternsCatalog } from "./_components/patterns-catalog";
 import { Workflow } from "lucide-react";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Design Patterns | TechMastry",
-  description:
-    "Catalogue interactif des design patterns : Creational, Structural et Behavioral avec exemples TypeScript",
-};
+export const metadata = topicMetadata("/tech-mastry/architecture/design-patterns");
 
 export default function DesignPatternsPage() {
   return (

@@ -1,11 +1,7 @@
-import { Metadata } from "next";
 import { DynamicProgrammingGuide } from "../_components/dynamic-programming-guide";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Programmation Dynamique | TechMastry",
-  description:
-    "Guide complet sur la programmation dynamique : concepts, problèmes classiques, visualisations interactives et techniques d'optimisation",
-};
+export const metadata = topicMetadata("/tech-mastry/algorithms/dynamic-programming");
 
 export default function DynamicProgrammingPage() {
   return (

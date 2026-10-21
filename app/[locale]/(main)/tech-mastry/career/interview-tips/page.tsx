@@ -1,11 +1,8 @@
-import { Metadata } from "next";
 import { InterviewGuide } from "./_components/interview-guide";
 import { UserCheck } from "lucide-react";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Conseils d'Entretien | TechMastry",
-  description: "Méthode STAR, présentation technique et checklist pour réussir vos entretiens",
-};
+export const metadata = topicMetadata("/tech-mastry/career/interview-tips");
 
 export default function InterviewTipsPage() {
   return (

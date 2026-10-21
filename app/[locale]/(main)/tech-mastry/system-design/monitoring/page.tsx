@@ -1,12 +1,9 @@
-import { Metadata } from "next";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Activity } from "lucide-react";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Monitoring & Fiabilité | System Design",
-  description: "Observabilité, alerting, SLO/SLI/SLA et métriques pour des systèmes fiables",
-};
+export const metadata = topicMetadata("/tech-mastry/system-design/monitoring");
 
 const pillars = [
   {

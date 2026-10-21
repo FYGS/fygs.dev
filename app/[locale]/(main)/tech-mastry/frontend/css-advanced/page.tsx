@@ -1,10 +1,7 @@
-import type { Metadata } from "next";
 import { CSSAdvancedGuide } from "./_components/css-advanced-guide";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "CSS Avancé | Tech-Mastry",
-  description: "Grid, Flexbox avancé, animations CSS, Container Queries, et techniques modernes de layout.",
-};
+export const metadata = topicMetadata("/tech-mastry/frontend/css-advanced");
 
 export default function CSSAdvancedPage() {
   return (

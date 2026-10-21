@@ -1,16 +1,12 @@
-import type { Metadata } from "next";
 import { PreparationGuide } from "./_components/preparation-guide";
 import { PreparationTimeline } from "./_components/preparation-timeline";
 import { InterviewChecklist } from "./_components/interview-checklist";
 import { Badge } from "@/components/ui/badge";
 import { Target, Clock, CheckSquare, BookOpen } from "lucide-react";
 import Link from "next/link";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Guide de Préparation | Tech-Mastry",
-  description:
-    "Guide complet pour se préparer efficacement aux entretiens techniques : timeline, checklist, mock interviews et gestion du stress.",
-};
+export const metadata = topicMetadata("/tech-mastry/preparation");
 
 export default function PreparationPage() {
   return (

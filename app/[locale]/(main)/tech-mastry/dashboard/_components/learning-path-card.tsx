@@ -44,12 +44,12 @@ export function LearningPathCard({ path }: LearningPathCardProps) {
         
         <div className="space-y-1">
           <div className="flex justify-between text-sm">
-            <span className="font-medium">Progress</span>
+            <span className="font-medium">Avancement</span>
             <span>{path.progress}%</span>
           </div>
-          <Progress value={path.progress} className="h-2" aria-label={`${path.title} progress`} />
+          <Progress value={path.progress} className="h-2" aria-label={`${path.title} : avancement`} />
           <div className="text-xs text-muted-foreground">
-            {path.completedModules} of {path.totalModules} modules completed
+            {path.completedModules} sujet{path.completedModules > 1 ? "s" : ""} terminé{path.completedModules > 1 ? "s" : ""} sur {path.totalModules}
           </div>
         </div>
       </CardContent>
@@ -58,7 +58,7 @@ export function LearningPathCard({ path }: LearningPathCardProps) {
         <Button asChild className="w-full gap-2">
           <Link href={path.href}>
             <BookOpen className="h-4 w-4" aria-hidden="true" />
-            {path.completedModules === 0 ? "Start Learning" : isCompleted ? "Review Path" : "Continue Learning"}
+            {path.completedModules === 0 ? "Commencer" : isCompleted ? "Revoir le domaine" : "Continuer"}
           </Link>
         </Button>
       </CardFooter>

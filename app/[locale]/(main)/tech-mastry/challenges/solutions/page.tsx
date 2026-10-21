@@ -1,10 +1,7 @@
-import type { Metadata } from "next";
 import { ChallengeSolutions } from "./_components/challenge-solutions";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Solutions Expliquées | Tech-Mastry",
-  description: "Solutions détaillées et expliquées pas à pas des défis de code avec indices progressifs.",
-};
+export const metadata = topicMetadata("/tech-mastry/challenges/solutions");
 
 export default function SolutionsPage() {
   return (

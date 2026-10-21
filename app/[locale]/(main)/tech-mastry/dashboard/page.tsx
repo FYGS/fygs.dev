@@ -2,9 +2,9 @@ import { Metadata } from "next";
 import { ProgressDashboard } from "./_components/progress-dashboard";
 
 export const metadata: Metadata = {
-  title: "Learning Progress Dashboard | TechMastry",
+  title: "Tableau de bord de progression | TechMastery",
   description:
-    "Track your progress, identify strengths and weaknesses, and plan your learning journey.",
+    "Suivez votre progression, repérez vos points forts et vos lacunes, et planifiez votre apprentissage.",
 };
 
 export default function DashboardPage() {
@@ -12,11 +12,11 @@ export default function DashboardPage() {
     <div className="space-y-6 animate-fadeIn">
       <div>
         <h1 className="text-3xl font-bold tracking-tight mb-2">
-          Learning Dashboard
+          Tableau de bord
         </h1>
         <p className="text-muted-foreground">
-          Track your progress, identify strengths and weaknesses, and plan your
-          learning journey.
+          Suivez votre progression, repérez vos points forts et vos lacunes, et
+          planifiez votre apprentissage.
         </p>
       </div>
 

@@ -1,15 +1,11 @@
-import { Metadata } from "next";
 import { DistributedCaseStudies } from "./_components/case-studies";
 import { EventDrivenVisualization } from "./_components/event-driven-visualization";
 import { DistributedHero } from "./_components/hero";
 import { MicroservicesVisualization } from "./_components/microservices-visualization";
 import { ServiceMeshVisualization } from "./_components/service-mesh-visualization";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Architecture Distribuée | System Design",
-  description:
-    "Principes et patterns pour concevoir des systèmes distribués robustes et évolutifs",
-};
+export const metadata = topicMetadata("/tech-mastry/system-design/distributed");
 
 export default function DistributedArchitecturePage() {
   return (

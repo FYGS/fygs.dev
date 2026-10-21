@@ -1,10 +1,7 @@
-import { Metadata } from "next";
 import { SortingVisualizations } from "../sorting/_components/sorting-visualizations";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Algorithm Visualizations | TechMastery",
-  description: "Interactive visualizations to help you understand how different algorithms work",
-};
+export const metadata = topicMetadata("/tech-mastry/algorithms/visualizations");
 
 export default function AlgorithmVisualizationsPage() {
   return (
