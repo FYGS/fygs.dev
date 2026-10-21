@@ -121,6 +121,8 @@ export default async function BillingPage() {
   }
 
   const hasActiveSubscription = await AccessService.hasActiveSubscription(session.user.id);
+  // no published course yet: 0%, not NaN
+  const progressPercent = totalCourseCount > 0 ? Math.round((enrolledCourseCount / totalCourseCount) * 100) : 0;
   const subscription = user.subscriptions;
   
   const prices = getSubscriptionPrices();
@@ -419,13 +421,13 @@ export default async function BillingPage() {
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm font-medium">Progression</span>
                       <span className="text-sm text-muted-foreground">
-                        {Math.round((enrolledCourseCount / totalCourseCount) * 100)}%
+                        {progressPercent}%
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div 
                         className="bg-linear-to-r from-blue-600 to-purple-600 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${Math.round((enrolledCourseCount / totalCourseCount) * 100)}%` }}
+                        style={{ width: `${progressPercent}%` }}
                       />
                     </div>
                   </div>
