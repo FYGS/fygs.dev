@@ -232,7 +232,7 @@ export const careerSections: Section[] = [
       {
         title: "Banque de Questions",
         href: "/tech-mastry/interview-simulation/question-bank",
-        description: "50+ questions par catégorie",
+        description: "20+ questions par catégorie",
       },
     ],
   },

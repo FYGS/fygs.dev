@@ -283,7 +283,7 @@ export const subpagesItems: SearchIndexItem[] = [
   {
     title: "Banque de Questions",
     description:
-      "50+ questions d'entretien technique réelles classées par catégorie et difficulté.",
+      "20+ questions d'entretien technique classées par catégorie et difficulté.",
     href: "/tech-mastry/interview-simulation/question-bank",
     category: "Pratique",
     subcategory: "Interview",

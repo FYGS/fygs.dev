@@ -89,7 +89,7 @@ export function ResourcesHero() {
 
       <div className="flex justify-center gap-8 text-sm text-muted-foreground">
         <div>
-          <span className="text-2xl font-bold text-primary">50+</span>{" "}
+          <span className="text-2xl font-bold text-primary">30+</span>{" "}
           <span className="block">Ressources</span>
         </div>
         <div>

@@ -86,7 +86,7 @@ describe("topics data", () => {
         ],
       ]
     `);
-    expect(createHash("md5").update(JSON.stringify(flat)).digest("hex")).toMatchInlineSnapshot(`"c06a34035d73a7ea30cfb60b42a86a61"`);
+    expect(createHash("md5").update(JSON.stringify(flat)).digest("hex")).toMatchInlineSnapshot(`"d18cf8813e56874517f1d110dc547ded"`);
   });
 });
 
@@ -111,22 +111,22 @@ describe("TopicsNav rendering", () => {
         "03576528",
         "4235004a",
         "18e0c460",
-        "85ac98a1",
-        "85ac98a1",
-        "85ac98a1",
-        "85ac98a1",
-        "85ac98a1",
-        "85ac98a1",
-        "85ac98a1",
-        "85ac98a1",
-        "85ac98a1",
-        "85ac98a1",
-        "85ac98a1",
-        "85ac98a1",
-        "85ac98a1",
-        "85ac98a1",
-        "85ac98a1",
-        "85ac98a1",
+        "3603e64c",
+        "3603e64c",
+        "3603e64c",
+        "3603e64c",
+        "3603e64c",
+        "3603e64c",
+        "3603e64c",
+        "3603e64c",
+        "3603e64c",
+        "3603e64c",
+        "3603e64c",
+        "3603e64c",
+        "3603e64c",
+        "3603e64c",
+        "3603e64c",
+        "3603e64c",
       ]
     `);
   });

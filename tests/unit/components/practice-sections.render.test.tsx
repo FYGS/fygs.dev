@@ -22,7 +22,7 @@ describe("practice sections data", () => {
     const flat = sections.map((s) => ({ ...s, icon: (s.icon as unknown as { displayName?: string }).displayName }));
     expect(sections).toHaveLength(20);
     expect(sections.reduce((n, s) => n + (s.subsections?.length ?? 0), 0)).toBe(85);
-    expect(createHash("md5").update(JSON.stringify(flat)).digest("hex")).toBe("362e289e12518f0a340228b4e7589fa1");
+    expect(createHash("md5").update(JSON.stringify(flat)).digest("hex")).toBe("9c2c4bee7370538cbc58ebd9ece18950");
   });
 });
 

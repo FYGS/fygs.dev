@@ -197,7 +197,7 @@ export const practiceTopics: TopicSection[] = [
         title: "Banque de Questions",
         href: "/tech-mastry/interview-simulation/question-bank",
         icon: HelpCircle,
-        description: "50+ questions classées par catégorie",
+        description: "20+ questions classées par catégorie",
         badge: "Nouveau",
       },
       {

@@ -98,7 +98,7 @@ exports[`tech-mastry search-index (pinned) > derived helpers are stable 3`] = `
 
 exports[`tech-mastry search-index (pinned) > has the same size, content hash and order 1`] = `52`;
 
-exports[`tech-mastry search-index (pinned) > has the same size, content hash and order 2`] = `"a2eceb88ea4a30197e8b71074b2b9564faa457f1ba2c8ad04ed4e791c15f29c3"`;
+exports[`tech-mastry search-index (pinned) > has the same size, content hash and order 2`] = `"044a5de1df56b14e46ae850d4a07d228d0389f5d7fd1182acd2880f8e6f44636"`;
 
 exports[`tech-mastry search-index (pinned) > has the same size, content hash and order 3`] = `
 [
