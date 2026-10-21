@@ -213,7 +213,7 @@ export default async function AdminReviewsAnalyticsPage() {
                 <p className="text-sm text-muted-foreground">Note moyenne</p>
               </div>
               <div>
-                <div className="text-2xl font-bold text-blue-600">
+                <div className="text-2xl font-bold text-blue-400">
                   {globalStats.totalReviews}
                 </div>
                 <p className="text-sm text-muted-foreground">Total avis</p>

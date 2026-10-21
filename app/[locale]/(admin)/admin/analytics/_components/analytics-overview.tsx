@@ -106,7 +106,7 @@ function MetricCard({
               <span className="ml-1">
                 {change.value > 0 ? '+' : ''}{change.value}%
               </span>
-              <span className="ml-1 text-xs opacity-75">
+              <span className="ml-1 text-xs">
                 {change.period}
               </span>
             </Badge>

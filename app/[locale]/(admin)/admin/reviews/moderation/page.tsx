@@ -187,7 +187,7 @@ export default async function AdminReviewsModerationPage() {
                       <Button variant="outline" size="sm" asChild>
                         <Link
                           href={`/admin/reviews/${review.id}`}
-                          aria-label={`Voir les détails de l'avis de ${review.user?.name} sur ${review.course?.title}`}
+                          aria-label={`Voir détails de l'avis de ${review.user?.name} sur ${review.course?.title}`}
                         >
                           <Eye className="h-4 w-4 mr-1" aria-hidden="true" />
                           Voir détails

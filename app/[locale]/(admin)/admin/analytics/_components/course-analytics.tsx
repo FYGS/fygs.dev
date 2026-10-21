@@ -138,9 +138,9 @@ export function CourseAnalytics({ courses }: CourseAnalyticsProps) {
                   {/* Course info */}
                   <div className="flex-1 min-w-0 space-y-2">
                     <div className="flex items-start justify-between gap-2">
-                      <h5 className="font-medium text-sm leading-tight line-clamp-1">
+                      <h3 className="font-medium text-sm leading-tight line-clamp-1">
                         {course.title}
-                      </h5>
+                      </h3>
                       <div className="flex gap-1">
                         <Badge className={getLevelColor(course.level)}>
                           {formatLevel(course.level)}

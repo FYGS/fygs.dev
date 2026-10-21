@@ -122,3 +122,32 @@ node scripts/audit/widgets-check.mjs http://localhost:3600
 
 Under Git Bash set `MSYS_NO_PATHCONV=1` (a leading `/` in a route is otherwise rewritten to a Windows path) and
 use a Windows path for the output file (`C:/tmp/out.json`).
+
+## Addendum 2026-10-21: authenticated, mobile, light, dark and Spanish passes
+
+Production build of `9cae6bf`, seeded database, axe-core (WCAG 2.0/2.1/2.2 A + AA + best practices). Pages with at least one violation:
+
+| Pass | Pages audited | With violations |
+|------|---------------|-----------------|
+| Admin (signed in) | 20 | 5 |
+| Student (signed in) | 16 | 11 |
+| Mobile 390x844 | 25 | 9 |
+| Light theme | 25 | 13 |
+| Dark theme | 25 | 7 |
+| Spanish | 9 | 1 |
+
+Four of the admin findings were introduced by the new interfaces and are fixed in the next commit (low-contrast "vs mois dernier" and "+N" figures, a heading jump from `h2` to `h5` in the course performance list, an `aria-label` that did not start with the visible text "Voir détails").
+
+Still open, by rule (none blocks a feature; they are the contrast and naming leftovers of the content pages):
+
+| Rule | Where |
+|------|-------|
+| `color-contrast` | community (38 nodes), blog article and code (23), accessibility lesson (23), playground (17), home (8), formations catalogue and course pages, sorting, scalability, projects, admin course badges (category colours) |
+| `heading-order` | dashboard, profile, formations pages, scalability, Q&A |
+| `button-name` | blog filter, community, lesson page (6 icon buttons), searching exercise, playground |
+| `target-size` | blog article (2) |
+| `scrollable-region-focusable` | blog and accessibility lesson code blocks |
+| `page-has-heading-one` | quiz page, playground on mobile |
+| `aria-valid-attr-value` | searching exercise (1) |
+
+Not done and not possible from here: a screen-reader pass (NVDA, VoiceOver) and a pass with real zoom/high-contrast settings.

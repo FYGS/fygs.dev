@@ -54,7 +54,7 @@ export function UserAnalytics({ data, months }: UserAnalyticsProps) {
             </div>
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Ce mois</p>
-              <p className="text-xl font-bold text-blue-600">+{newUsersThisMonth}</p>
+              <p className="text-xl font-bold text-blue-400">+{newUsersThisMonth}</p>
             </div>
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Sur {months} mois</p>
