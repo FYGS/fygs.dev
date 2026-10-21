@@ -31,7 +31,8 @@ export function normalizePaginationParams(params: PaginationParams): Required<Pa
     pageSize: Math.min(Math.max(1, params.pageSize || 25), 100), // Limite à 100 pour la performance
     search: params.search?.trim() || '',
     sortBy: params.sortBy || 'createdAt',
-    sortOrder: params.sortOrder || 'desc',
+    // comes from the URL: anything but 'asc' is 'desc' (the database would refuse any other word)
+    sortOrder: params.sortOrder === 'asc' ? 'asc' : 'desc',
     filters: params.filters || {},
   };
 }

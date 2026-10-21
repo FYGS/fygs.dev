@@ -31,7 +31,7 @@ async function getCoursesData(searchParams: URLSearchParams, session: { user: { 
   // Extraire les filtres spécifiques
   // the values come from the URL: anything the schema does not know is ignored, never handed to the query
   const category = (COURSE_CATEGORY_FILTERS.find((option) => option.value === searchParams.get('category'))?.value) ?? '';
-  const level = searchParams.get('level') || '';
+  const level = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'].find((value) => value === searchParams.get('level')) ?? '';
   const status = searchParams.get('status') || '';
   
   // Construire les filtres
