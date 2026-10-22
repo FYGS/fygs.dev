@@ -139,7 +139,7 @@ describe("ArchitectureDiagrammingTool rendering", () => {
         "f30c8681",
         "80c7f426",
         "417208d4",
-        "54bdd23f",
+        "51a71af2",
       ]
     `);
   });
@@ -191,7 +191,7 @@ describe("ArchitectureDiagrammingTool rendering", () => {
         "0e693842",
         "417208d4",
         "d41d8cd9",
-        "54bdd23f",
+        "51a71af2",
         "f2955895",
         "2a08e229",
         "0e693842",

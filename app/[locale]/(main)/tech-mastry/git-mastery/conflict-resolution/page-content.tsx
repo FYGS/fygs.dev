@@ -45,7 +45,7 @@ const preventionTips = [
   {
     icon: Shield,
     title: "Branches courtes",
-    desc: "Fusionnez fréquemment. Les branches de plus de 2-3 jours génèrent exponentiellement plus de conflits.",
+    desc: "Fusionnez fréquemment. Les branches de plus de 2-3 jours génèrent nettement plus de conflits.",
   },
   {
     icon: ArrowRight,

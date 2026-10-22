@@ -59,12 +59,13 @@ on:
   services:
     postgres:
       image: postgres:16
-      env: { POSTGRES_DB: test }
+      env: { POSTGRES_DB: test, POSTGRES_PASSWORD: postgres }
+      ports: ["5432:5432"]
   steps:
     - run: pnpm test:unit --coverage
     - run: pnpm test:integration
     - run: pnpm lint
-    - uses: codecov/codecov-action@v3`,
+    - uses: codecov/codecov-action@v5`,
     },
     {
       name: "Security",
@@ -76,10 +77,12 @@ on:
   needs: build
   steps:
     - run: pnpm audit --audit-level=high
-    - uses: aquasecurity/trivy-action@master
+    # Épinglez une version ou un SHA de commit, évitez @master
+    - uses: aquasecurity/trivy-action@0.28.0
       with:
         scan-type: 'fs'
         severity: 'CRITICAL,HIGH'
+        exit-code: '1' # sinon le scan n'échoue jamais le job
     - uses: snyk/actions/node@master
       env: { SNYK_TOKEN: \${{ secrets.SNYK_TOKEN }} }`,
     },
@@ -94,7 +97,7 @@ on:
   runs-on: ubuntu-latest
   environment: staging
   steps:
-    - run: docker build -t app:$GITHUB_SHA .
+    - run: docker build -t registry/app:$GITHUB_SHA .
     - run: docker push registry/app:$GITHUB_SHA
     - run: kubectl set image deployment/app app=registry/app:$GITHUB_SHA
     - run: kubectl rollout status deployment/app`,
@@ -227,7 +230,7 @@ USER app
 EXPOSE 3000
 CMD ["node", "server.js"]
 
-# Result: ~150MB vs ~1.5GB (90% smaller)`,
+# Résultat : image finale bien plus légère (sans sources, devDependencies ni outils de build)`,
     },
     {
       name: "Docker Compose",
@@ -272,7 +275,7 @@ volumes:
 FROM node:20.11.1-alpine3.19
 
 # 2. Multi-stage builds (reduce image size)
-# Build stage → 1.5GB  |  Production stage → 150MB
+# Seule la dernière stage est livrée : sans outils de build
 
 # 3. .dockerignore (don't COPY unnecessary files)
 # node_modules, .git, .env, *.md, tests/
@@ -282,7 +285,8 @@ USER app  # Never run as root in production
 
 # 5. Health checks
 HEALTHCHECK --interval=30s --timeout=3s \\
-  CMD curl -f http://localhost:3000/api/health || exit 1
+  CMD wget -q --spider http://localhost:3000/api/health || exit 1
+# (curl n'est pas installé dans les images node:alpine)
 
 # 6. Layer caching (order matters!)
 COPY package.json pnpm-lock.yaml ./  # Changes rarely

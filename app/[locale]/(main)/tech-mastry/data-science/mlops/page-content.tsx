@@ -400,7 +400,7 @@ export default function MLOpsPage() {
                   Description
                 </th>
                 <th className="px-4 py-3 text-left font-semibold">
-                  Seuil d&#39;alerte
+                  Seuil d&#39;alerte (exemple à calibrer)
                 </th>
               </tr>
             </thead>
@@ -456,7 +456,7 @@ class PredictResponse(BaseModel):
     probability: float
 
 @app.post("/predict", response_model=PredictResponse)
-async def predict(req: PredictRequest):
+def predict(req: PredictRequest):  # def (pas async) : l'inférence sklearn est bloquante
     X = np.array(req.features).reshape(1, -1)
     pred = model.predict(X)[0]
     prob = model.predict_proba(X)[0].max()

@@ -29,7 +29,7 @@ const sections = [
       },
       {
         type: "dont",
-        text: "Ne mentionnez pas vos attentes salariales en premier",
+        text: "Évitez, si possible, de donner un chiffre en premier : demandez d'abord la fourchette prévue pour le poste",
       },
     ],
     example: {

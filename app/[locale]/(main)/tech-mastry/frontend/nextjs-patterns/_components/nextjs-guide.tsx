@@ -10,6 +10,7 @@ const patterns = [
   {
     name: "Server Components",
     code: `// app/dashboard/page.tsx — Server Component (default)
+import { Suspense } from 'react';
 import { db } from '@/lib/db';
 
 export default async function DashboardPage() {
@@ -83,7 +84,7 @@ export async function updateProfile(prevState, formData) {
 }`,
     keyPoints: [
       "Mutations côté serveur type-safe",
-      "Revalidation automatique",
+      "Revalidation explicite (revalidatePath / revalidateTag)",
       "Progressive enhancement (fonctionne sans JS)",
       "Validation Zod intégrée",
     ],
@@ -128,7 +129,7 @@ async function getTaggedData() {
 
 export async function updatePost() {
   await db.post.update();
-  revalidateTag('posts'); // Invalide toutes les fetches taguées
+  revalidateTag('posts', 'max'); // Invalide les fetches taguées (Next.js 16 : 2e argument = profil cacheLife)
 }
 
 // 4. No cache

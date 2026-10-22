@@ -241,16 +241,15 @@ const results = index.search("rapport 2023");`}
           <p className="text-sm text-blue-400">
             <strong>Elasticsearch</strong>, utilisé pour l&apos;indexation
             de fichiers dans de nombreuses applications, utilise des
-            structures de données optimisées comme les index inversés et
-            les B-trees. Il implémente des algorithmes de tri sophistiqués
-            pour organiser les résultats par pertinence.
+            structures de données optimisées comme les index inversés
+            (dont les listes de termes sont triées) de la bibliothèque
+            Lucene. Il calcule un score de pertinence (BM25 par défaut)
+            pour ordonner les résultats.
           </p>
           <p className="text-sm text-blue-400 mt-2">
-            <strong>Windows Search Index</strong> utilise une combinaison
-            de tables de hachage et de B-trees pour indexer les fichiers.
-            Il implémente également un système de tri par pertinence basé
-            sur plusieurs critères, dont la fréquence des termes et
-            l&apos;historique d&apos;utilisation.
+            <strong>Windows Search Index</strong> maintient un index
+            persistant des noms, métadonnées et contenus de fichiers, et
+            classe les résultats selon plusieurs critères de pertinence.
           </p>
         </div>
       </div>

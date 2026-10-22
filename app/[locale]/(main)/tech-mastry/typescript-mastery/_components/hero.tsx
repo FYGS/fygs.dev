@@ -105,7 +105,7 @@ export function TypeScriptMasteryHero() {
           <span className="block">Modules</span>
         </div>
         <div>
-          <span className="text-2xl font-bold text-primary">50+</span>{" "}
+          <span className="text-2xl font-bold text-primary">25+</span>{" "}
           <span className="block">Patterns</span>
         </div>
         <div>

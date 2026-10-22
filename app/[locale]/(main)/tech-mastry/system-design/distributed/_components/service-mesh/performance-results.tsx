@@ -5,7 +5,7 @@ export function PerformanceResults() {
     <Card>
       <CardHeader>
         <CardTitle className="text-xl">
-          Résultats et Performances
+          Résultats et Performances (ordres de grandeur indicatifs)
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">

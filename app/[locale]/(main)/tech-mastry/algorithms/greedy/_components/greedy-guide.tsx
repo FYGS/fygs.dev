@@ -12,16 +12,17 @@ const greedyAlgorithms = [
     complexity: "O(n log n)",
     description: "Sélectionner le maximum d'activités non-chevauchantes. Trier par fin, puis sélectionner gloutonement.",
     code: `function activitySelection(activities) {
-  // Trier par temps de fin
-  activities.sort((a, b) => a.end - b.end);
-  
-  const selected = [activities[0]];
-  let lastEnd = activities[0].end;
-  
-  for (let i = 1; i < activities.length; i++) {
-    if (activities[i].start >= lastEnd) {
-      selected.push(activities[i]);
-      lastEnd = activities[i].end;
+  if (activities.length === 0) return [];
+  // Trier par temps de fin (sur une copie, sans muter l'entrée)
+  const sorted = [...activities].sort((a, b) => a.end - b.end);
+
+  const selected = [sorted[0]];
+  let lastEnd = sorted[0].end;
+
+  for (let i = 1; i < sorted.length; i++) {
+    if (sorted[i].start >= lastEnd) {
+      selected.push(sorted[i]);
+      lastEnd = sorted[i].end;
     }
   }
   
@@ -52,7 +53,8 @@ function buildHuffmanTree(text) {
   const nodes = Object.entries(freq)
     .map(([char, f]) => new HuffmanNode(char, f));
   
-  // Construire l'arbre (min-heap simplifié)
+  // Construire l'arbre (version simplifiée : le tri à chaque tour coûte
+  // O(n² log n) ; avec un vrai min-heap on obtient O(n log n))
   while (nodes.length > 1) {
     nodes.sort((a, b) => a.freq - b.freq);
     const left = nodes.shift();
@@ -66,7 +68,7 @@ function buildHuffmanTree(text) {
   return nodes[0];
 }`,
     whenToUse: "Compression de fichiers, encodage de données",
-    proof: "Les caractères les moins fréquents sont les plus profonds — optimal par l'inégalité de Kraft.",
+    proof: "Les caractères les moins fréquents sont les plus profonds ; fusionner à chaque étape les deux plus faibles fréquences est optimal (argument d'échange).",
   },
   {
     name: "Algorithme de Kruskal",
@@ -96,11 +98,11 @@ function buildHuffmanTree(text) {
 }
 
 function kruskal(n, edges) {
-  edges.sort((a, b) => a.weight - b.weight);
+  const sortedEdges = [...edges].sort((a, b) => a.weight - b.weight);
   const uf = new UnionFind(n);
   const mst = [];
   
-  for (const edge of edges) {
+  for (const edge of sortedEdges) {
     if (uf.union(edge.u, edge.v)) {
       mst.push(edge);
       if (mst.length === n - 1) break;
@@ -118,12 +120,12 @@ function kruskal(n, edges) {
     description: "Maximiser la valeur dans un sac en pouvant prendre des fractions d'objets. Trier par ratio valeur/poids.",
     code: `function fractionalKnapsack(capacity, items) {
   // Trier par ratio valeur/poids décroissant
-  items.sort((a, b) => (b.value / b.weight) - (a.value / a.weight));
+  const sorted = [...items].sort((a, b) => (b.value / b.weight) - (a.value / a.weight));
   
   let totalValue = 0;
   let remaining = capacity;
   
-  for (const item of items) {
+  for (const item of sorted) {
     if (remaining <= 0) break;
     
     if (item.weight <= remaining) {
@@ -251,7 +253,7 @@ export function GreedyGuide() {
             "Prouvez l'optimalité : échange d'arguments (exchange argument) ou contradiction",
             "Vérifiez la sous-structure optimale : la solution optimale contient des sous-solutions optimales",
             "Si Greedy ne fonctionne pas, pensez DP (ex: sac à dos 0/1 → DP, fractionnaire → Greedy)",
-            "Commencez toujours par trier les données selon un critère pertinent",
+            "Souvent, un tri selon un critère pertinent est la première étape (fin, ratio, poids...)",
           ].map((tip, i) => (
             <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />

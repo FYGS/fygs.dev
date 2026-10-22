@@ -51,7 +51,7 @@ const topics = [
   gap: 1.5rem;
 }
 
-/* Masonry-like avec subgrid */
+/* Pseudo-masonry : chaque item occupe N lignes de 10px (pas de subgrid ici) */
 .masonry {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -158,8 +158,11 @@ const topics = [
 }
 
 @layer utilities {
-  .text-xl { font-size: 1.25rem !important; }
+  .text-xl { font-size: 1.25rem; }
 }
+/* Attention : avec !important, l'ordre des layers s'inverse
+   (base l'emporte sur utilities). Et le CSS hors layer
+   l'emporte toujours sur le CSS en layer. */
 
 /* :has() — Parent selector enfin ! */
 .card:has(img) {

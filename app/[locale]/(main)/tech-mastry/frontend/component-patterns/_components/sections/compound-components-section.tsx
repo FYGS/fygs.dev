@@ -234,6 +234,8 @@ function App() {
 }
 
 // 8. Avec TypeScript, vous pouvez typer le contexte et les props
+// (version typée à utiliser À LA PLACE de la déclaration de l'étape 1 :
+// TabsContext ne doit être déclaré qu'une seule fois)
 interface TabsContextType {
   activeTab: string;
   setActiveTab: (tab: string) => void;
@@ -477,7 +479,7 @@ function App() {
                 <strong>Accessibilité</strong>: L&apos;implémentation inclut des attributs ARIA comme <code>aria-expanded</code> pour l&apos;accessibilité.
               </li>
               <li>
-                <strong>API contrôlée</strong>: L&apos;Accordion peut être contrôlé via <code>defaultValue</code> et <code>onChange</code>, permettant à l&apos;utilisateur de gérer l&apos;état s&apos;il le souhaite.
+                <strong>API non contrôlée avec notification</strong>: l&apos;Accordion gère son état en interne à partir de <code>defaultValue</code> et notifie l&apos;utilisateur des changements via <code>onChange</code> (pour un mode réellement contrôlé, il faudrait ajouter une prop <code>value</code>).
               </li>
             </ol>
             <p className="mt-3">

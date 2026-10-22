@@ -140,6 +140,8 @@ function Counter({
   const [state, dispatch] = useReducer(reducer, { count: initialCount });
   
   // 5. Appeler le callback onChange lorsque l'état change
+  // (onChange est une dépendance : s'il est défini inline par le parent,
+  // l'effet se ré-exécute à chaque rendu ; mémorisez-le avec useCallback)
   React.useEffect(() => {
     onChange?.(state.count);
   }, [state.count, onChange]);

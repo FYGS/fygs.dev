@@ -460,15 +460,18 @@ export function TernarySearch() {
           <div className="mt-2 text-sm">
             <span className="font-medium">Complexité temporelle:</span>{" "}
             <span className="text-muted-foreground">
-              O(log₃ n), légèrement meilleure que la recherche binaire en
-              théorie.
+              O(log₃ n) = O(log n), la même classe que la recherche binaire.
+              Avec 2 comparaisons par itération, elle fait en pratique plus de
+              comparaisons (environ 1,26 fois plus) que la recherche binaire.
             </span>
           </div>
           <div className="text-sm">
             <span className="font-medium">Avantages:</span>{" "}
             <span className="text-muted-foreground">
-              Moins de comparaisons que la recherche binaire dans le pire des
-              cas, mais plus de comparaisons par itération.
+              Moins d&apos;itérations que la recherche binaire, mais plus de
+              comparaisons par itération : elle n&apos;est pas plus efficace
+              pour chercher dans un tableau trié (son vrai usage est la
+              recherche de l&apos;extremum d&apos;une fonction unimodale).
             </span>
           </div>
         </div>

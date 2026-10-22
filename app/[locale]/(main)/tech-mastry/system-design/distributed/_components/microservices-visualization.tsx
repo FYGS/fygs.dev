@@ -110,7 +110,7 @@ export function MicroservicesVisualization() {
               <p className="text-sm text-muted-foreground">
                 {selectedArchitecture === "monolithic"
                   ? selectedScenario === "normal"
-                    ? "Dans une architecture monolithique sous charge normale, toutes les fonctionnalités sont gérées par une seule application. Les requêtes sont traitées de manière séquentielle, ce qui est efficace pour des applications simples avec un trafic modéré."
+                    ? "Dans une architecture monolithique sous charge normale, toutes les fonctionnalités sont gérées par une seule application. Les requêtes sont traitées dans un même processus, sans appel réseau interne, ce qui est efficace pour des applications simples avec un trafic modéré."
                     : selectedScenario === "high-load"
                     ? "Sous charge élevée, une architecture monolithique peut devenir un goulot d'étranglement. Toute l'application doit être mise à l'échelle ensemble, même si seule une partie spécifique est sous pression, ce qui entraîne une utilisation inefficace des ressources."
                     : "En cas de défaillance dans une architecture monolithique, l'ensemble de l'application peut être affecté. Un bug dans n'importe quelle partie du code peut potentiellement faire tomber tout le système."

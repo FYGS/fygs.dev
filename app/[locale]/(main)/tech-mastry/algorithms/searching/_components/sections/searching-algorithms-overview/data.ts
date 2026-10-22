@@ -102,7 +102,8 @@ export const searchAlgorithms: SearchAlgorithm[] = [
   let high = arr.length - 1;
 
   while (low <= high && target >= arr[low] && target <= arr[high]) {
-    if (low === high) {
+    // Évite une division par zéro (valeurs identiques dans [low, high])
+    if (arr[low] === arr[high]) {
       return arr[low] === target ? low : -1;
     }
 
@@ -151,7 +152,8 @@ export const searchAlgorithms: SearchAlgorithm[] = [
     },
     code: `function hashSearch(arr, target) {
   const hashMap = new Map();
-  // Construction de la table de hachage
+  // Construction de la table en O(n) : à faire une seule fois,
+  // puis à réutiliser pour les recherches suivantes en O(1)
   for (let i = 0; i < arr.length; i++) {
     hashMap.set(arr[i], i);
   }
@@ -246,13 +248,14 @@ function searchBST(root, target) {
     },
     code: `function jumpSearch(arr, target) {
   const n = arr.length;
-  const step = Math.floor(Math.sqrt(n));
+  const block = Math.floor(Math.sqrt(n));
+  let step = block;
 
   // Trouver le bloc
   let prev = 0;
   while (arr[Math.min(step, n) - 1] < target) {
     prev = step;
-    step += Math.floor(Math.sqrt(n));
+    step += block;
     if (prev >= n) return -1;
   }
 

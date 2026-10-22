@@ -247,13 +247,13 @@ function BrokerComparison() {
       cons: [
         "Complexe a operer",
         "Latence plus elevee",
-        "Necessite Zookeeper/KRaft",
+        "Mode KRaft (ZooKeeper retire depuis Kafka 4.0)",
       ],
     },
     rabbitmq: {
       name: "RabbitMQ",
       type: "Message Broker",
-      throughput: "~50K/sec",
+      throughput: "Dizaines de milliers/sec",
       latency: "~1ms",
       ordering: "Par queue",
       persistence: "Optionnelle",
@@ -266,14 +266,14 @@ function BrokerComparison() {
       ],
       cons: [
         "Throughput limite",
-        "Pas de replay",
-        "Scaling horizontal difficile",
+        "Pas de replay (hors RabbitMQ Streams)",
+        "Scaling horizontal plus delicat",
       ],
     },
     redis: {
       name: "Redis Streams",
       type: "In-Memory Streaming",
-      throughput: "~100K/sec",
+      throughput: "Tres eleve (en RAM)",
       latency: "< 1ms",
       ordering: "Par stream",
       persistence: "Optionnelle (AOF/RDB)",
@@ -289,7 +289,7 @@ function BrokerComparison() {
     sqs: {
       name: "AWS SQS",
       type: "Managed Queue",
-      throughput: "Illimite",
+      throughput: "Quasi illimite (Standard)",
       latency: "~10ms",
       ordering: "FIFO optionnel",
       persistence: "4 jours (max 14)",
@@ -437,6 +437,8 @@ class OrderService {
     const order = await db.order.create({ data });
 
     // Emit event instead of calling services directly
+    // ⚠️ Écriture DB + publication ne sont pas atomiques :
+    // utilisez le pattern Transactional Outbox en production
     await eventBus.publish("order.created", {
       orderId: order.id,
       userId: order.userId,
@@ -450,6 +452,7 @@ class OrderService {
 }
 
 // Each service handles its own concern
+// Livraison « at-least-once » : les handlers doivent être idempotents
 eventBus.subscribe("order.created", async (event) => {
   await emailService.sendConfirmation(event);
 });

@@ -65,7 +65,7 @@ function generateBubbleSortSteps(arr: number[]): SortingStep[] {
           array: [...array],
           highlighted: [j, j + 1],
           comparing: [],
-          sorted: Array.from({ length: n }, (_, idx) => idx >= n - i - 1)
+          sorted: Array.from({ length: n }, (_, idx) => idx >= n - i)
             .map((v, i) => (v ? i : -1))
             .filter(v => v !== -1)
         });
@@ -268,7 +268,7 @@ export function SortingAlgorithmsVisualization({
         setIsCompleted(true);
         setIsPlaying(false);
       }
-    }, 100 - (speed * 9)); // Speed calculation: 10ms to 910ms per step
+    }, 1000 - (speed * 9.9)); // Speed calculation: ~990ms (speed 1) to 10ms (speed 100) per step
 
     return () => clearTimeout(timer);
   }, [isPlaying, currentStep, steps.length, speed]);

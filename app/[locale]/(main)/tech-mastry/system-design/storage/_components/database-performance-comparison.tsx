@@ -42,7 +42,7 @@ export function DatabasePerformanceComparison() {
                     Comparaison de Performance des Bases de Données
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Temps de réponse moyen pour différentes opérations (ms)
+                    Ordres de grandeur illustratifs (ms), non issus d&apos;un benchmark réel
                   </p>
                 </div>
 

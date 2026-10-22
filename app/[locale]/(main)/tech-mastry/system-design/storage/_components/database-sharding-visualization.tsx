@@ -527,7 +527,9 @@ sh.shardCollection(
                   <div>
                     <h5 className="text-sm font-medium mb-2">MySQL</h5>
                     <pre className="text-xs p-3 bg-slate-800 rounded border overflow-auto" tabIndex={0}>
-                      {`-- Création de tables partitionnées par plage
+                      {`-- Partitionnement par plage au sein d'une seule instance MySQL
+-- (ce n'est pas du sharding : MySQL n'en propose pas en natif,
+-- il faut un middleware comme Vitess ou un sharding applicatif)
 CREATE TABLE orders (
   order_id INT,
   customer_id INT,

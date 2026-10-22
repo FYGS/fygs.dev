@@ -146,7 +146,7 @@ const challenges: Challenge[] = [
   return maxSum;
 }`,
       complexity: "O(n²) temps, O(1) espace",
-      explanation: "Vérifier toutes les sous-tableaux possibles. On peut faire mieux avec l'algorithme de Kadane.",
+      explanation: "Vérifier tous les sous-tableaux possibles. On peut faire mieux avec l'algorithme de Kadane.",
     },
     optimal: {
       code: `function maxSubArray(nums) {
@@ -189,21 +189,21 @@ const challenges: Challenge[] = [
       code: `function merge(intervals) {
   if (intervals.length <= 1) return intervals;
   
-  // Trier par début
-  intervals.sort((a, b) => a[0] - b[0]);
+  // Trier une copie par début (sans modifier l'entrée)
+  const sorted = [...intervals].sort((a, b) => a[0] - b[0]);
   
-  const result = [intervals[0]];
+  const result = [[...sorted[0]]];
   
-  for (let i = 1; i < intervals.length; i++) {
+  for (let i = 1; i < sorted.length; i++) {
     const last = result[result.length - 1];
-    const current = intervals[i];
+    const current = sorted[i];
     
     if (current[0] <= last[1]) {
       // Chevauchement → fusionner
       last[1] = Math.max(last[1], current[1]);
     } else {
       // Pas de chevauchement → ajouter
-      result.push(current);
+      result.push([...current]);
     }
   }
   

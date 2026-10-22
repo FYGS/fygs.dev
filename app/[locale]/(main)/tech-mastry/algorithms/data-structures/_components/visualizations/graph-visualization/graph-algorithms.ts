@@ -246,7 +246,7 @@ export function generateDijkstraSteps(
     activeNodeIds: [startNodeId],
     activeEdgeIds: [],
     visitedNodeIds: [],
-    message: `Début de l&apos;algorithme de Dijkstra depuis "${
+    message: `Début de l'algorithme de Dijkstra depuis "${
           currentNodes.find((n) => n.id === startNodeId)?.label
         }" vers "${currentNodes.find((n) => n.id === endNodeId)?.label}"`,
     operation: "dijkstra",

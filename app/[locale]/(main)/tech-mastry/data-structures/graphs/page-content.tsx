@@ -300,7 +300,7 @@ const algorithms = [
     name: "Prim",
     complexity: "O(E log V)",
     space: "O(V)",
-    use: "MST (graphes denses)",
+    use: "MST (avec tas binaire ; version O(V²) pour graphes denses)",
     category: "MST",
   },
   {
@@ -507,6 +507,8 @@ function dfs(graph: Map<number, number[]>, start: number): number[] {
 function dijkstra(graph: Map<number, [number, number][]>, start: number, V: number): number[] {
   const dist = new Array(V).fill(Infinity);
   dist[start] = 0;
+  // File de priorité simplifiée (tableau retrié à chaque itération, pédagogique) :
+  // avec un vrai tas binaire on obtient O((V+E) log V)
   const pq: [number, number][] = [[0, start]]; // [distance, node]
   while (pq.length > 0) {
     pq.sort((a, b) => a[0] - b[0]);

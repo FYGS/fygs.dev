@@ -131,7 +131,7 @@ function formatDate(date) {
 }
 
 // Lighter alternative
-import { format } from 'date-fns'; // ~13KB minified for this import
+import { format } from 'date-fns'; // bien plus léger car tree-shakable (seules les fonctions importées sont embarquées)
 
 function formatDateOptimized(date) {
   return format(date, 'MMMM do yyyy');
@@ -148,7 +148,7 @@ function formatDateNative(date) {
 
 // Another example: using a lightweight alternative to a full UI library
 // Instead of importing all of Material-UI
-import Button from '@material-ui/core/Button'; // Pulls in core dependencies
+import Button from '@mui/material/Button'; // Pulls in core dependencies
 
 // Consider smaller, focused libraries
 import Button from 'tiny-ui-lib/Button'; // Hypothetical smaller library
@@ -194,7 +194,7 @@ function SimpleButton({ children, onClick }) {
             </p>
             
             <ul className="list-disc pl-6 mt-2 space-y-1">
-              <li>Moment.js is a popular date library but is quite large (~300KB). Date-fns provides similar functionality but allows for tree-shaking and is much smaller.</li>
+              <li>Moment.js is a popular date library but is quite large (~300KB). Date-fns provides similar functionality but allows for tree-shaking and is usually much smaller.</li>
               <li>The native <code>toLocaleDateString</code> method provides good date formatting capabilities with no additional bundle size.</li>
               <li>Large UI libraries can significantly increase bundle size. Consider smaller alternatives or building simple components yourself when appropriate.</li>
             </ul>
@@ -237,13 +237,13 @@ function SimpleButton({ children, onClick }) {
           },
           {
             question: "How do you analyze the bundle size of a React application?",
-            answer: "To analyze React application bundle size: 1) webpack-bundle-analyzer: Visualizes bundle content as an interactive treemap: `npm install --save-dev webpack-bundle-analyzer` and add to webpack config. 2) source-map-explorer: Analyzes JavaScript bundles using source maps: `npx source-map-explorer build/static/js/*.js`. 3) Lighthouse: Provides overall performance metrics including JavaScript size. 4) Chrome DevTools: Coverage tab shows unused JavaScript. Network tab shows download sizes. 5) Next.js built-in analyzer: For Next.js apps, use `ANALYZE=true next build`. 6) Create React App: Use `npm run build -- --stats` and then `npx webpack-bundle-analyzer build/bundle-stats.json`. 7) Bundlephobia: Check individual package sizes: bundlephobia.com. 8) Import Cost VSCode extension: Shows inline size of imported packages. 9) Performance budget tools: bundlewatch or webpack performance hints. 10) Custom scripts: Create scripts to track bundle size over time. 11) CI/CD integration: Implement size checks in your CI pipeline. These tools help identify large dependencies, duplicate code, and opportunities for code splitting, enabling targeted optimizations.",
+            answer: "To analyze React application bundle size: 1) webpack-bundle-analyzer: Visualizes bundle content as an interactive treemap: `npm install --save-dev webpack-bundle-analyzer` and add to webpack config. 2) source-map-explorer: Analyzes JavaScript bundles using source maps: `npx source-map-explorer build/static/js/*.js`. 3) Lighthouse: Provides overall performance metrics including JavaScript size. 4) Chrome DevTools: Coverage tab shows unused JavaScript. Network tab shows download sizes. 5) Next.js built-in analyzer: For Next.js apps, install @next/bundle-analyzer and run `ANALYZE=true next build`. 6) Create React App: Use `npm run build -- --stats` and then `npx webpack-bundle-analyzer build/bundle-stats.json`. 7) Bundlephobia: Check individual package sizes: bundlephobia.com. 8) Import Cost VSCode extension: Shows inline size of imported packages. 9) Performance budget tools: bundlewatch or webpack performance hints. 10) Custom scripts: Create scripts to track bundle size over time. 11) CI/CD integration: Implement size checks in your CI pipeline. These tools help identify large dependencies, duplicate code, and opportunities for code splitting, enabling targeted optimizations.",
             difficulty: "medium",
             tags: ["React", "Tools", "Analysis"]
           },
           {
             question: "What are some common causes of large bundle sizes in React applications and how would you address them?",
-            answer: "Common causes of large React bundles and solutions: 1) Large dependencies: Use smaller alternatives (date-fns instead of moment.js), import only needed parts, or use native APIs. 2) Importing entire libraries: Import specific components/functions instead of entire libraries. 3) Unused code: Regularly audit dependencies with depcheck or npm-check. 4) Duplicate dependencies: Use tools like duplicate-package-checker-webpack-plugin to find and eliminate duplicates. 5) Unoptimized images: Compress images, use WebP format, and implement lazy loading. 6) Development bundles in production: Ensure you're using production builds of React and other libraries. 7) No code splitting: Implement dynamic imports and React.lazy for route-based or component-based splitting. 8) Inefficient code: Refactor complex components and eliminate unnecessary re-renders. 9) Large polyfills: Use targeted polyfills or service like polyfill.io instead of including all polyfills. 10) CSS bloat: Use CSS-in-JS with code splitting or PurgeCSS to eliminate unused styles. 11) Unminified code: Ensure proper minification is configured. 12) No compression: Enable Gzip or Brotli compression on your server. 13) Third-party scripts: Audit and optimize third-party scripts, load non-critical scripts asynchronously.",
+            answer: "Common causes of large React bundles and solutions: 1) Large dependencies: Use smaller alternatives (date-fns instead of moment.js), import only needed parts, or use native APIs. 2) Importing entire libraries: Import specific components/functions instead of entire libraries. 3) Unused code: Regularly audit dependencies with depcheck or npm-check. 4) Duplicate dependencies: Use tools like duplicate-package-checker-webpack-plugin to find and eliminate duplicates. 5) Unoptimized images: Compress images, use WebP format, and implement lazy loading. 6) Development bundles in production: Ensure you're using production builds of React and other libraries. 7) No code splitting: Implement dynamic imports and React.lazy for route-based or component-based splitting. 8) Inefficient code: Refactor complex components and eliminate unnecessary re-renders. 9) Large polyfills: Use targeted polyfills (browserslist + core-js) instead of including all polyfills, and avoid third-party polyfill CDNs such as polyfill.io (compromised in 2024). 10) CSS bloat: Use CSS-in-JS with code splitting or PurgeCSS to eliminate unused styles. 11) Unminified code: Ensure proper minification is configured. 12) No compression: Enable Gzip or Brotli compression on your server. 13) Third-party scripts: Audit and optimize third-party scripts, load non-critical scripts asynchronously.",
             difficulty: "hard",
             tags: ["React", "Performance", "Optimization"]
           }

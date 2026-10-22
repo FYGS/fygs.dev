@@ -69,8 +69,8 @@ ORDER BY AVG(salary) DESC;`,
       {
         title: "Tri côté client avec JavaScript",
         description:
-          "Les navigateurs implémentent des algorithmes de tri optimisés pour la méthode Array.sort() en JavaScript.",
-        algorithm: "Timsort (hybride de Merge Sort et Insertion Sort)",
+          "Les moteurs JavaScript implémentent des algorithmes de tri optimisés pour la méthode Array.sort() (V8 utilise Timsort, et le tri est stable depuis ES2019).",
+        algorithm: "Timsort dans V8 (hybride de Merge Sort et Insertion Sort)",
         code: `// Tri d'un tableau d'objets par propriété
 const users = [
   { name: 'Alice', age: 25 },
@@ -104,8 +104,11 @@ app.get('/api/products', (req, res) => {
   }
 
   // Pagination
-  const startIndex = (page - 1) * limit;
-  const paginatedProducts = sortedProducts.slice(startIndex, startIndex + limit);
+  // (req.query fournit des chaînes : conversion en nombres)
+  const pageNum = Number(page) || 1;
+  const limitNum = Number(limit) || 10;
+  const startIndex = (pageNum - 1) * limitNum;
+  const paginatedProducts = sortedProducts.slice(startIndex, startIndex + limitNum);
 
   res.json(paginatedProducts);
 });`,
@@ -129,7 +132,7 @@ function sortFilesByDate(files) {
   return files.sort((a, b) => a.modificationDate - b.modificationDate);
 }
 
-// Tri par nom de fichier (sensible à la casse)
+// Tri par nom de fichier (ordre alphabétique selon la locale)
 function sortFilesByName(files) {
   return files.sort((a, b) => a.name.localeCompare(b.name));
 }`,
@@ -138,7 +141,7 @@ function sortFilesByName(files) {
         title: "Ordonnancement des processus",
         description:
           "Les algorithmes d'ordonnancement des processus utilisent souvent le tri pour déterminer quel processus exécuter ensuite.",
-        algorithm: "Heap Sort (pour les files de priorité)",
+        algorithm: "Tas binaire (file de priorité)",
         code: `// Pseudo-code pour un ordonnanceur de processus
 class ProcessScheduler {
   constructor() {
@@ -191,7 +194,8 @@ fun <T : Comparable<T>> sortList(list: MutableList<T>) {
         // Pour les petites listes, utiliser Insertion Sort
         insertionSort(list)
     } else {
-        // Pour les grandes listes, utiliser Merge Sort
+        // Pour les grandes listes, utiliser le tri de la bibliothèque
+        // (sur la JVM : Timsort, hybride Merge Sort / Insertion Sort)
         list.sort()
     }
 }`,

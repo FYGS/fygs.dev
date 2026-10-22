@@ -17,7 +17,7 @@ const interviewTypes = [
     ],
     tips: [
       "Pensez à voix haute",
-      "Commencez par la force brute",
+      "Énoncez d'abord une solution simple (force brute), puis améliorez-la",
       "Analysez la complexité",
       "Testez avec des edge cases",
     ],

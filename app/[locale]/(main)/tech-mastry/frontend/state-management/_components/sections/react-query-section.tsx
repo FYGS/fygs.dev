@@ -204,7 +204,7 @@ function UserDetails({ userId }) {
         interviewQuestions={[
           {
             question: "Quelle est la différence entre staleTime et gcTime (anciennement cacheTime) dans React Query?",
-            answer: "Dans React Query, staleTime et gcTime (cacheTime avant la v5) contrôlent différents aspects du cycle de vie des données: 1) staleTime détermine combien de temps les données restent 'fraîches'. Tant que les données sont fraîches, React Query ne déclenchera pas de refetch automatique lors d'un nouveau montage ou focus de fenêtre. Par défaut, staleTime est 0, ce qui signifie que les données sont immédiatement considérées comme périmées. 2) cacheTime détermine combien de temps les données inactives (non utilisées par un composant) restent en cache avant d'être supprimées. Par défaut, cacheTime est de 5 minutes. Exemple: Avec staleTime=60000 (1 minute) et cacheTime=300000 (5 minutes), les données seront considérées comme fraîches pendant 1 minute (pas de refetch automatique), puis resteront en cache pendant 5 minutes après que le dernier composant ait cessé de les utiliser.",
+            answer: "Dans React Query, staleTime et gcTime (cacheTime avant la v5) contrôlent différents aspects du cycle de vie des données: 1) staleTime détermine combien de temps les données restent 'fraîches'. Tant que les données sont fraîches, React Query ne déclenchera pas de refetch automatique lors d'un nouveau montage ou focus de fenêtre. Par défaut, staleTime est 0, ce qui signifie que les données sont immédiatement considérées comme périmées. 2) gcTime (nommé cacheTime avant la v5) détermine combien de temps les données inactives (non utilisées par un composant) restent en cache avant d'être supprimées. Par défaut, gcTime est de 5 minutes. Exemple: Avec staleTime=60000 (1 minute) et gcTime=300000 (5 minutes), les données seront considérées comme fraîches pendant 1 minute (pas de refetch automatique), puis resteront en cache pendant 5 minutes après que le dernier composant ait cessé de les utiliser.",
             difficulty: "medium",
             tags: ["React Query", "Caching"]
           },
@@ -263,6 +263,14 @@ export const deleteTodo = async (id) => {
   }
   
   return true;
+};
+
+export const fetchTodos = async () => {
+  const response = await fetch('https://jsonplaceholder.typicode.com/todos?_limit=10');
+  if (!response.ok) {
+    throw new Error('Failed to fetch todos');
+  }
+  return response.json();
 };
 
 // TodoList.jsx - Utilisation de useMutation
@@ -502,7 +510,7 @@ function TodoList() {
           },
           {
             question: "Comment optimiser les performances avec React Query dans une application à grande échelle?",
-            answer: "Pour optimiser React Query dans une application à grande échelle: 1) Ajustez staleTime et gcTime (cacheTime avant la v5) en fonction des besoins de fraîcheur des données. 2) Utilisez des queryKeys structurées pour une meilleure organisation et invalidation ciblée. 3) Implémentez la pagination ou les requêtes infinies pour les grandes listes. 4) Utilisez select pour transformer et filtrer les données côté client. 5) Préchargez les données importantes avec prefetchQuery. 6) Utilisez placeholderData ou initialData pour éviter les états de chargement. 7) Implémentez des sélecteurs partiels pour éviter les re-rendus inutiles. 8) Utilisez keepPreviousData pour les transitions de page fluides. 9) Configurez des fenêtres de synchronisation (synchronization windows) pour regrouper les mises à jour. 10) Utilisez suspense pour une meilleure UX pendant le chargement. 11) Optimisez la taille du cache avec removeQueries pour les données non essentielles. 12) Utilisez des queryFilters précis pour l'invalidation.",
+            answer: "Pour optimiser React Query dans une application à grande échelle: 1) Ajustez staleTime et gcTime (cacheTime avant la v5) en fonction des besoins de fraîcheur des données. 2) Utilisez des queryKeys structurées pour une meilleure organisation et invalidation ciblée. 3) Implémentez la pagination ou les requêtes infinies pour les grandes listes. 4) Utilisez select pour transformer et filtrer les données côté client. 5) Préchargez les données importantes avec prefetchQuery. 6) Utilisez placeholderData ou initialData pour éviter les états de chargement. 7) Implémentez des sélecteurs partiels pour éviter les re-rendus inutiles. 8) Utilisez placeholderData: keepPreviousData (l'option keepPreviousData a été supprimée en v5) pour les transitions de page fluides. 9) Profitez du partage structurel (structuralSharing, activé par défaut) pour limiter les re-rendus. 10) Utilisez suspense pour une meilleure UX pendant le chargement. 11) Optimisez la taille du cache avec removeQueries pour les données non essentielles. 12) Utilisez des queryFilters précis pour l'invalidation.",
             difficulty: "hard",
             tags: ["React Query", "Performance", "Scaling"]
           },
@@ -514,7 +522,7 @@ function TodoList() {
           },
           {
             question: "Comment React Query s'intègre-t-il avec d'autres solutions de gestion d'état comme Redux ou Zustand?",
-            answer: "React Query peut coexister et s'intégrer avec d'autres solutions de gestion d'état comme Redux ou Zustand: 1) Séparation des responsabilités: Utilisez React Query pour l'état serveur (données d'API) et Redux/Zustand pour l'état client (préférences utilisateur, état UI). 2) Synchronisation avec Redux: Utilisez onSuccess dans useMutation pour dispatcher des actions Redux: `onSuccess: (data) => { dispatch(addTodoSuccess(data)); }` 3) Utilisation des données de Redux dans queryFn: `queryFn: () => fetchData(store.getState().auth.token)` 4) Persistance du cache React Query dans Redux: Créez un middleware personnalisé. 5) Avec Zustand: Créez des hooks personnalisés qui combinent les deux: `const useTodos = () => { const token = useAuthStore(state => state.token); return useQuery(['todos', token], () => fetchTodos(token)); }` 6) Invalidation basée sur l'état global: `useEffect(() => { if (authStore.isLoggedOut) queryClient.clear(); }, [authStore.isLoggedOut]);` Cette approche hybride permet d'exploiter les forces de chaque bibliothèque.",
+            answer: "React Query peut coexister et s'intégrer avec d'autres solutions de gestion d'état comme Redux ou Zustand: 1) Séparation des responsabilités: Utilisez React Query pour l'état serveur (données d'API) et Redux/Zustand pour l'état client (préférences utilisateur, état UI). 2) Synchronisation avec Redux: Utilisez onSuccess dans useMutation pour dispatcher des actions Redux: `onSuccess: (data) => { dispatch(addTodoSuccess(data)); }` 3) Utilisation des données de Redux dans queryFn: `queryFn: () => fetchData(store.getState().auth.token)` 4) Persistance du cache React Query dans Redux: Créez un middleware personnalisé. 5) Avec Zustand: Créez des hooks personnalisés qui combinent les deux: `const useTodos = () => { const token = useAuthStore(state => state.token); return useQuery({ queryKey: ['todos', token], queryFn: () => fetchTodos(token) }); }` 6) Invalidation basée sur l'état global: `useEffect(() => { if (authStore.isLoggedOut) queryClient.clear(); }, [authStore.isLoggedOut]);` Cette approche hybride permet d'exploiter les forces de chaque bibliothèque.",
             difficulty: "hard",
             tags: ["React Query", "Integration", "Architecture"]
           }

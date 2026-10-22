@@ -19,7 +19,7 @@ const algorithms = [
   const order = [];
   
   while (queue.length > 0) {
-    const node = queue.shift();
+    const node = queue.shift(); // shift() est O(n) : utiliser un index de tête en production
     order.push(node);
     
     for (const neighbor of graph[node] || []) {
@@ -121,13 +121,14 @@ function hasCycle(graph, n) {
     category: "Plus courts chemins",
     complexity: "O((V+E) log V)",
     space: "O(V)",
-    description: "Plus court chemin depuis une source dans un graphe pondéré positif. Utilise un min-heap.",
+    description: "Plus court chemin depuis une source dans un graphe dont les poids sont positifs ou nuls. Utilise un min-heap.",
     code: `function dijkstra(graph, start, n) {
   const dist = new Array(n).fill(Infinity);
   const visited = new Set();
   dist[start] = 0;
   
-  // Min-heap simplifié (utiliser une vraie PQ en production)
+  // File de priorité simplifiée : le tri à chaque tour est plus lent que
+  // la complexité annoncée, qui suppose un vrai min-heap (à utiliser en production)
   const pq = [[0, start]]; // [distance, node]
   
   while (pq.length > 0) {

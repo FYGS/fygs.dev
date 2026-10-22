@@ -289,13 +289,13 @@ function UserProfileTyped({ name, role, avatar, theme }: UserProfileProps) {
           {
             question: "Quelle est la différence entre props et state?",
             answer:
-              "Les props sont passées au composant par son parent et sont en lecture seule. Le state est géré à l&apos;intérieur du composant et peut être modifié par le composant lui-même. Les changements de props ou de state déclenchent un re-rendu du composant.",
+              "Les props sont passées au composant par son parent et sont en lecture seule. Le state est géré à l'intérieur du composant et peut être modifié par le composant lui-même. Les changements de props ou de state déclenchent un re-rendu du composant.",
           },
           {
             question:
               "Comment passer une fonction comme prop à un composant enfant?",
             answer:
-              "Vous pouvez passer une fonction comme prop de la même manière que vous passez d&apos;autres types de données. Par exemple: <ChildComponent onClick={handleClick} />. Dans le composant enfant, vous pouvez appeler cette fonction comme n&apos;importe quelle autre prop: props.onClick() ou avec la déstructuration: { onClick } => onClick().",
+              "Vous pouvez passer une fonction comme prop de la même manière que vous passez d'autres types de données. Par exemple: <ChildComponent onClick={handleClick} />. Dans le composant enfant, vous pouvez appeler cette fonction comme n'importe quelle autre prop: props.onClick() ou avec la déstructuration: { onClick } => onClick().",
           },
         ]}
       />
@@ -399,23 +399,23 @@ function TodoApp() {
           </div>
         }
         tips={[
-          "Ne modifiez jamais directement l&apos;état, utilisez toujours la fonction de mise à jour",
+          "Ne modifiez jamais directement l'état, utilisez toujours la fonction de mise à jour",
           "Pour les objets et tableaux, créez toujours une nouvelle copie lors de la mise à jour",
-          "Utilisez la forme fonctionnelle de setState lorsque le nouvel état dépend de l&apos;état précédent",
-          "Divisez l&apos;état complexe en plusieurs variables d&apos;état plus petites et indépendantes",
+          "Utilisez la forme fonctionnelle de setState lorsque le nouvel état dépend de l'état précédent",
+          "Divisez l'état complexe en plusieurs variables d'état plus petites et indépendantes",
         ]}
         interviewQuestions={[
           {
             question:
-              "Pourquoi ne devriez-vous pas modifier directement l&apos;état en React?",
+              "Pourquoi ne devriez-vous pas modifier directement l'état en React?",
             answer:
-              "Modifier directement l&apos;état (par exemple, this.state.count = 1 ou directement modifier un objet dans useState) ne déclenchera pas de re-rendu et peut causer des bugs subtils. React compare l&apos;ancienne et la nouvelle valeur de l&apos;état par référence pour déterminer si un re-rendu est nécessaire. De plus, les modifications directes peuvent interférer avec les optimisations de performance de React et rendre le débogage plus difficile.",
+              "Modifier directement l'état (par exemple, this.state.count = 1 ou directement modifier un objet dans useState) ne déclenchera pas de re-rendu et peut causer des bugs subtils. React compare l'ancienne et la nouvelle valeur de l'état par référence pour déterminer si un re-rendu est nécessaire. De plus, les modifications directes peuvent interférer avec les optimisations de performance de React et rendre le débogage plus difficile.",
           },
           {
             question:
-              "Comment mettre à jour correctement un objet imbriqué dans l&apos;état?",
+              "Comment mettre à jour correctement un objet imbriqué dans l'état?",
             answer:
-              "Pour mettre à jour un objet imbriqué, vous devez créer une copie profonde de l&apos;objet en utilisant la syntaxe de décomposition (...) à chaque niveau. Par exemple: setUser(prevUser => ({ ...prevUser, address: { ...prevUser.address, city: &apos;Paris&apos; } })). Pour des structures plus complexes, vous pouvez utiliser des bibliothèques comme Immer qui simplifient les mises à jour immuables.",
+              "Pour mettre à jour un objet imbriqué, vous devez créer une nouvelle copie (superficielle) de chaque niveau modifié, en utilisant la syntaxe de décomposition (...) à chaque niveau; il n'est pas nécessaire de cloner tout l'objet en profondeur. Par exemple: setUser(prevUser => ({ ...prevUser, address: { ...prevUser.address, city: 'Paris' } })). Pour des structures plus complexes, vous pouvez utiliser des bibliothèques comme Immer qui simplifient les mises à jour immuables.",
           },
         ]}
       />
@@ -426,15 +426,15 @@ function TodoApp() {
           {
             question: "Expliquez le flux de données unidirectionnel en React.",
             answer:
-              "Le flux de données unidirectionnel signifie que les données circulent dans une seule direction: du composant parent vers les composants enfants via les props. Cela rend l&apos;application plus prévisible et plus facile à comprendre, car vous savez toujours d&apos;où viennent les données. Si un enfant a besoin de communiquer avec un parent, il doit le faire via des callbacks passés en tant que props par le parent.",
+              "Le flux de données unidirectionnel signifie que les données circulent dans une seule direction: du composant parent vers les composants enfants via les props. Cela rend l'application plus prévisible et plus facile à comprendre, car vous savez toujours d'où viennent les données. Si un enfant a besoin de communiquer avec un parent, il doit le faire via des callbacks passés en tant que props par le parent.",
             difficulty: "medium",
             tags: ["Fondamentaux", "Architecture"],
           },
           {
             question:
-              "Qu&apos;est-ce que le prop drilling et comment l&apos;éviter?",
+              "Qu'est-ce que le prop drilling et comment l'éviter?",
             answer:
-              "Le prop drilling se produit lorsque vous devez passer des props à travers plusieurs niveaux de composants imbriqués, même si certains composants intermédiaires n&apos;utilisent pas ces props. Cela peut rendre le code difficile à maintenir. Pour éviter le prop drilling, vous pouvez utiliser: 1) Context API pour partager des données accessibles à de nombreux composants à différents niveaux. 2) Des bibliothèques de gestion d&apos;état comme Redux. 3) La composition de composants pour restructurer votre hiérarchie de composants.",
+              "Le prop drilling se produit lorsque vous devez passer des props à travers plusieurs niveaux de composants imbriqués, même si certains composants intermédiaires n'utilisent pas ces props. Cela peut rendre le code difficile à maintenir. Pour éviter le prop drilling, vous pouvez utiliser: 1) Context API pour partager des données accessibles à de nombreux composants à différents niveaux. 2) Des bibliothèques de gestion d'état comme Redux. 3) La composition de composants pour restructurer votre hiérarchie de composants.",
             difficulty: "medium",
             tags: ["Architecture", "Patterns"],
           },
@@ -442,7 +442,7 @@ function TodoApp() {
             question:
               "Comment implémenter le state lifting en React et pourquoi est-ce utile?",
             answer:
-              "Le state lifting consiste à déplacer l&apos;état d&apos;un composant enfant vers un composant parent commun. Cela permet à plusieurs composants de partager et de modifier le même état. Pour l&apos;implémenter: 1) Déplacez l&apos;état vers le plus proche ancêtre commun. 2) Passez l&apos;état aux composants enfants via les props. 3) Passez des fonctions de mise à jour aux enfants pour qu&apos;ils puissent modifier l&apos;état. C&apos;est utile pour maintenir un état cohérent entre plusieurs composants et respecter le flux de données unidirectionnel de React.",
+              "Le state lifting consiste à déplacer l'état d'un composant enfant vers un composant parent commun. Cela permet à plusieurs composants de partager et de modifier le même état. Pour l'implémenter: 1) Déplacez l'état vers le plus proche ancêtre commun. 2) Passez l'état aux composants enfants via les props. 3) Passez des fonctions de mise à jour aux enfants pour qu'ils puissent modifier l'état. C'est utile pour maintenir un état cohérent entre plusieurs composants et respecter le flux de données unidirectionnel de React.",
             difficulty: "medium",
             tags: ["Patterns", "Architecture"],
           },
@@ -450,7 +450,7 @@ function TodoApp() {
             question:
               "Quand devriez-vous utiliser les props.children en React?",
             answer:
-              "Utilisez props.children lorsque vous créez des composants wrapper ou des composants de mise en page qui ne connaissent pas à l&apos;avance leur contenu. Cela permet une plus grande flexibilité et réutilisabilité. Exemples d&apos;utilisation: 1) Composants de mise en page (Layout, Card, Modal). 2) Composants d&apos;UI réutilisables (Button, Panel). 3) Composants de contexte qui fournissent des données à leurs enfants. 4) Composants de rendu conditionnel qui affichent ou masquent leur contenu en fonction de certaines conditions.",
+              "Utilisez props.children lorsque vous créez des composants wrapper ou des composants de mise en page qui ne connaissent pas à l'avance leur contenu. Cela permet une plus grande flexibilité et réutilisabilité. Exemples d'utilisation: 1) Composants de mise en page (Layout, Card, Modal). 2) Composants d'UI réutilisables (Button, Panel). 3) Composants de contexte qui fournissent des données à leurs enfants. 4) Composants de rendu conditionnel qui affichent ou masquent leur contenu en fonction de certaines conditions.",
             difficulty: "easy",
             tags: ["Fondamentaux", "Composition"],
           },

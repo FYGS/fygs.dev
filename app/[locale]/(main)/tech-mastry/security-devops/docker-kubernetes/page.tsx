@@ -12,7 +12,7 @@ const concepts = [
   },
   {
     title: "Dockerfile Best Practices",
-    desc: "Multi-stage builds, .dockerignore, non-root user, layer caching. Chaque instruction crée un layer — minimisez-les.",
+    desc: "Multi-stage builds, .dockerignore, non-root user, layer caching. Les instructions RUN, COPY et ADD créent chacune un layer — regroupez-les et ordonnez-les pour tirer parti du cache.",
     color: "border-blue-500/30",
   },
   {
@@ -106,7 +106,9 @@ RUN pnpm build
 FROM node:20-alpine AS runner
 WORKDIR /app
 RUN addgroup --system app && adduser --system --ingroup app app
+# Nécessite output: "standalone" dans next.config
 COPY --from=builder --chown=app:app /app/.next/standalone ./
+COPY --from=builder --chown=app:app /app/.next/static ./.next/static
 COPY --from=builder --chown=app:app /app/public ./public
 USER app
 EXPOSE 3000

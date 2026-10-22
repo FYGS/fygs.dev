@@ -33,7 +33,7 @@ const quizQuestions: QuizQuestion[] = [
     options: ["BFS", "DFS", "Dijkstra", "Bellman-Ford"],
     correctIndex: 2,
     explanation:
-      "L'algorithme de Dijkstra est optimal pour les graphes avec des poids positifs (complexité O((V+E) log V) avec un min-heap). Bellman-Ford gère les poids négatifs mais est plus lent O(VE). BFS est pour les graphes non pondérés.",
+      "L'algorithme de Dijkstra est optimal pour les graphes avec des poids positifs ou nuls (complexité O((V+E) log V) avec un min-heap). Bellman-Ford gère les poids négatifs mais est plus lent O(VE). BFS est pour les graphes non pondérés.",
     difficulty: "medium",
     category: "Algorithmes",
   },
@@ -60,7 +60,7 @@ const quizQuestions: QuizQuestion[] = [
     ],
     correctIndex: 2,
     explanation:
-      "Le problème du sac à dos 0/1 se résout par programmation dynamique avec tabulation bottom-up, construisant une table dp[i][w] où i est l'item considéré et w la capacité restante. La complexité est O(nW) où n est le nombre d'items et W la capacité.",
+      "Le problème du sac à dos 0/1 se résout par programmation dynamique avec tabulation bottom-up, construisant une table dp[i][w] où i est l'item considéré et w la capacité restante. La complexité est O(nW) où n est le nombre d'items et W la capacité (pseudo-polynomiale : le problème reste NP-difficile).",
     difficulty: "hard",
     category: "Algorithmes",
   },
@@ -173,7 +173,7 @@ const quizQuestions: QuizQuestion[] = [
     options: ["CSP", "CORS", "HSTS", "X-Frame-Options"],
     correctIndex: 1,
     explanation:
-      "CORS (Cross-Origin Resource Sharing) permet au serveur de spécifier quelles origines peuvent accéder à ses ressources via les headers Access-Control-Allow-Origin. Les requêtes preflight (OPTIONS) vérifient les permissions avant la requête réelle.",
+      "Par défaut, la Same-Origin Policy empêche un script d'une origine de lire les réponses d'une autre origine. CORS (Cross-Origin Resource Sharing) permet au serveur d'assouplir cette règle pour certaines origines via les headers Access-Control-Allow-Origin. Les requêtes preflight (OPTIONS) vérifient les permissions avant certaines requêtes. Attention : CORS contrôle la lecture de la réponse par le navigateur, il ne remplace pas l'authentification côté serveur ni la protection CSRF.",
     difficulty: "easy",
     category: "Sécurité",
   },

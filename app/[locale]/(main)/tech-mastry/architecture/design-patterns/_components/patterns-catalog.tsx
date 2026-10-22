@@ -55,6 +55,8 @@ class SMSNotification implements Notification {
   send(message: string) { console.log(\`SMS: \${message}\`); }
 }
 
+// Variante « Simple Factory » : dans le Factory Method du GoF,
+// la création est déléguée à des sous-classes (méthode redéfinie)
 class NotificationFactory {
   static create(type: "email" | "sms"): Notification {
     switch (type) {
@@ -174,7 +176,7 @@ class StripeAdapter implements PaymentProcessor {
 
   async charge(amount: number, currency: string) {
     const result = await this.stripe.createCharge({
-      amount_cents: amount * 100,
+      amount_cents: Math.round(amount * 100),
       currency,
     });
     return { id: result.id };

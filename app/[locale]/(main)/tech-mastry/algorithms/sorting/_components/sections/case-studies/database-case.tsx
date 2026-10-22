@@ -81,16 +81,16 @@ export function DatabaseCaseStudy() {
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5" />
                       <span>
-                        Lors de l&apos;insertion, les algorithmes de tri par
-                        insertion sont souvent utilisés pour maintenir
-                        l&apos;ordre
+                        Lors de l&apos;insertion, la nouvelle clé est placée à sa
+                        position triée dans le nœud (décalage des clés, comme
+                        dans un tri par insertion)
                       </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5" />
                       <span>
-                        Les recherches utilisent des algorithmes de recherche
-                        binaire (O(log n))
+                        Les recherches descendent l&apos;arbre en O(log n), avec
+                        une recherche binaire des clés dans chaque nœud
                       </span>
                     </li>
                     <li className="flex items-start gap-2">
@@ -157,18 +157,20 @@ ORDER BY first_name;`}
                   Implémentation dans PostgreSQL
                 </h4>
                 <p className="text-sm text-blue-400">
-                  PostgreSQL utilise une variante du tri fusion pour créer des
-                  index B-tree. Le code source dans
+                  Pour créer un index B-tree, PostgreSQL trie d&apos;abord les
+                  lignes avec son module de tri (tuplesort : quicksort en
+                  mémoire, tri fusion externe au-delà de la mémoire allouée),
+                  puis construit l&apos;arbre. Le code de construction se
+                  trouve dans
                   <code className="mx-1 px-1 py-0.5 bg-blue-900/50 rounded">
-                    src/backend/access/nbtree/nbtree.c
+                    src/backend/access/nbtree/nbtsort.c
                   </code>
-                  implémente un algorithme de tri qui peut fonctionner
-                  efficacement avec une mémoire limitée en utilisant des
-                  fichiers temporaires pour les données intermédiaires.
+                  et s&apos;appuie sur des fichiers temporaires pour les
+                  données intermédiaires lorsque la mémoire est limitée.
                 </p>
                 <div className="mt-2">
                   <a
-                    href="https://github.com/postgres/postgres/blob/master/src/backend/access/nbtree/nbtree.c"
+                    href="https://github.com/postgres/postgres/blob/master/src/backend/access/nbtree/nbtsort.c"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 text-xs text-blue-400 hover:underline"
@@ -200,8 +202,8 @@ ORDER BY first_name;`}
                       <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5" />
                       <span>
                         <strong>Tri en mémoire</strong> : Pour les petits
-                        ensembles de résultats, utilisation de QuickSort ou
-                        TimSort
+                        ensembles de résultats, utilisation d&apos;un QuickSort
+                        (ou d&apos;une variante comme l&apos;introsort)
                       </span>
                     </li>
                     <li className="flex items-start gap-2">
@@ -286,8 +288,9 @@ ORDER BY price DESC;`}
                   </div>
 
                   <p className="text-xs text-muted-foreground">
-                    La commande EXPLAIN ANALYZE permet de voir quel algorithme
-                    de tri est utilisé par le SGBD pour exécuter la requête.
+                    La commande EXPLAIN ANALYZE permet de voir quelle méthode
+                    de tri est utilisée (dans PostgreSQL : quicksort, top-N
+                    heapsort ou external merge).
                   </p>
                 </div>
               </div>
@@ -297,8 +300,9 @@ ORDER BY price DESC;`}
                   Optimisation des requêtes ORDER BY
                 </h4>
                 <p className="text-sm text-blue-400">
-                  MySQL utilise une implémentation de QuickSort pour les tris en
-                  mémoire et une variante du tri fusion pour les tris externes.
+                  MySQL utilise un tri en mémoire de type QuickSort/introsort
+                  (std::sort) et un tri fusion sur fichiers temporaires pour
+                  les tris externes.
                   Voici un extrait simplifié de l&apos;implémentation du tri
                   dans MySQL :
                 </p>
@@ -397,7 +401,8 @@ async function externalSort(inputFile, outputFile, memoryLimit) {
   let chunk = [];
   let chunkSize = 0;
   
-  const inputStream = createReadStream(inputFile);
+  // readline lit le fichier ligne par ligne (createReadStream seul renvoie des blocs d'octets)
+  const inputStream = createInterface({ input: createReadStream(inputFile) });
   for await (const line of inputStream) {
     chunk.push(line);
     chunkSize += line.length;
@@ -460,7 +465,8 @@ async function externalSort(inputFile, outputFile, memoryLimit) {
   let chunk = [];
   let chunkSize = 0;
   
-  const inputStream = createReadStream(inputFile);
+  // readline lit le fichier ligne par ligne (createReadStream seul renvoie des blocs d'octets)
+  const inputStream = createInterface({ input: createReadStream(inputFile) });
   for await (const line of inputStream) {
     chunk.push(line);
     chunkSize += line.length;
@@ -513,13 +519,15 @@ async function mergeChunks(chunkFiles, outputFile) {
                   Application dans les SGBD
                 </h4>
                 <p className="text-sm text-blue-400">
-                  Oracle Database utilise un algorithme de tri externe appelé
-                  &quot;Sort-Merge&quot; pour les grandes opérations de tri. La
-                  base de données ajuste automatiquement les paramètres comme{" "}
+                  Oracle Database utilise un tri externe (écriture de
+                  séquences triées dans la zone temporaire, puis fusion) pour
+                  les grandes opérations de tri. Avec la gestion automatique de
+                  la mémoire, la taille des zones de tri est pilotée par{" "}
                   <code className="mx-1 px-1 py-0.5 bg-blue-900/50 rounded">
-                    SORT_AREA_SIZE
+                    PGA_AGGREGATE_TARGET
                   </code>{" "}
-                  pour optimiser les performances.
+                  (le paramètre historique SORT_AREA_SIZE ne s&apos;applique
+                  qu&apos;en gestion manuelle).
                 </p>
                 <p className="text-sm text-blue-400 mt-2">
                   SQL Server utilise également le tri externe pour les grandes

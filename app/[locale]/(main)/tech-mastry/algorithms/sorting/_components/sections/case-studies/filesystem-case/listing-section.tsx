@@ -55,10 +55,11 @@ export function ListingSection({ copiedCode, copyCode }: {
 
             <div className="bg-amber-950/30 p-3 rounded-lg border border-amber-800">
               <p className="text-xs text-amber-400">
-                <strong>Note :</strong> La plupart des explorateurs de
-                fichiers modernes utilisent des variantes de QuickSort ou
-                TimSort pour le tri des listes de fichiers, avec des
-                comparateurs personnalisés pour chaque critère de tri.
+                <strong>Note :</strong> Les explorateurs de fichiers
+                s&apos;appuient en général sur le tri de la bibliothèque
+                standard de leur plateforme (de type QuickSort/introsort ou
+                tri fusion), avec des comparateurs personnalisés pour chaque
+                critère de tri.
               </p>
             </div>
           </div>
@@ -112,8 +113,9 @@ function sortByType(files) {
     if (!a.isDirectory && b.isDirectory) return 1;
     
     // Extraire les extensions
-    const extA = a.name.split('.').pop().toLowerCase();
-    const extB = b.name.split('.').pop().toLowerCase();
+    // (chaîne vide si le nom n'a pas d'extension)
+    const extA = a.name.includes('.') ? a.name.split('.').pop().toLowerCase() : '';
+    const extB = b.name.includes('.') ? b.name.split('.').pop().toLowerCase() : '';
     
     // Comparer les extensions
     return extA.localeCompare(extB);
@@ -171,8 +173,9 @@ function sortByType(files) {
     if (!a.isDirectory && b.isDirectory) return 1;
     
     // Extraire les extensions
-    const extA = a.name.split('.').pop().toLowerCase();
-    const extB = b.name.split('.').pop().toLowerCase();
+    // (chaîne vide si le nom n'a pas d'extension)
+    const extA = a.name.includes('.') ? a.name.split('.').pop().toLowerCase() : '';
+    const extB = b.name.includes('.') ? b.name.split('.').pop().toLowerCase() : '';
     
     // Comparer les extensions
     return extA.localeCompare(extB);
@@ -198,9 +201,7 @@ function sortByType(files) {
           <p className="text-sm text-blue-400 mt-2">
             macOS Finder utilise également un tri naturel, mais avec des
             optimisations supplémentaires pour gérer les caractères
-            spéciaux et les différentes langues. Il utilise une
-            implémentation de TimSort pour de meilleures performances sur
-            des listes partiellement triées.
+            spéciaux et les différentes langues.
           </p>
         </div>
       </div>

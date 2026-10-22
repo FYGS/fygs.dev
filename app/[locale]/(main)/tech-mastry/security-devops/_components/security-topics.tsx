@@ -18,7 +18,7 @@ const topics = [
   {
     title: "OWASP Top 10",
     description:
-      "Les 10 vulnérabilités web les plus critiques avec code vulnérable vs sécurisé.",
+      "Les principales catégories de l'OWASP Top 10 (2021) avec code vulnérable vs sécurisé.",
     icon: ShieldAlert,
     color: "text-red-500",
     gradient: "from-red-500/10 to-red-500/5",

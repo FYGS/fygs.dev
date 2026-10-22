@@ -44,7 +44,7 @@ export function DocumentationCard() {
                 Horizontal Scaling
               </h4>
               <p className="text-sm text-muted-foreground">
-                Adding more machines to handle increased load. This is more cost-effective and fault-tolerant than vertical scaling.
+                Adding more machines to handle increased load. It usually scales further and tolerates failures better than vertical scaling, at the cost of added complexity (shared state, coordination, load balancing).
               </p>
             </div>
             <div className="p-4 bg-muted/30 rounded-lg border border-border/50">

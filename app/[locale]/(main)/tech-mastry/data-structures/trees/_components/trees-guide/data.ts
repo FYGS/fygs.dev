@@ -111,7 +111,7 @@ export const treeTypes: TreeType[] = [
       access: "O(1)",
       search: "O(V+E)",
       insertion: "O(1)",
-      deletion: "O(V)",
+      deletion: "O(V+E)",
     },
     advantages: [
       "Modélisation flexible des relations",
@@ -157,7 +157,7 @@ export const interviewQuestions: InterviewQuestion[] = [
     question:
       "Comment implémenter un algorithme de détection de cycle dans un graphe ?",
     answer:
-      "Pour détecter un cycle dans un graphe non orienté, on peut utiliser un parcours DFS ou BFS en gardant trace des nœuds visités. Si on rencontre un nœud déjà visité qui n'est pas le parent direct du nœud actuel, alors un cycle existe. Pour un graphe orienté, on peut utiliser l'algorithme de détection de cycle de Tarjan ou maintenir deux ensembles : les nœuds en cours de visite et les nœuds complètement visités.",
+      "Pour détecter un cycle dans un graphe non orienté, on peut utiliser un parcours DFS ou BFS en gardant trace des nœuds visités. Si on rencontre un nœud déjà visité qui n'est pas le parent direct du nœud actuel, alors un cycle existe. Pour un graphe orienté, on peut utiliser un DFS avec deux ensembles (ou trois couleurs) : les nœuds en cours de visite et les nœuds complètement visités ; rencontrer un nœud « en cours » révèle un cycle. Un tri topologique (algorithme de Kahn) permet aussi de le détecter.",
   },
   {
     question:

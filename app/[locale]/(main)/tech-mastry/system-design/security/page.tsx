@@ -79,7 +79,7 @@ export default function SystemDesignSecurityPage() {
             <ul className="space-y-1 text-sm text-muted-foreground">
               <li>✅ Scalable (pas de stockage serveur)</li>
               <li>✅ Microservices-friendly</li>
-              <li>⚠️ Impossible à révoquer avant expiration</li>
+              <li>⚠️ Difficile à révoquer avant expiration (liste de révocation requise)</li>
               <li>⚠️ Payload visible (signer, ne pas chiffrer les secrets)</li>
             </ul>
           </Card>

@@ -28,7 +28,7 @@ const twelveFactor = [
   {
     num: "V",
     name: "Build, Release, Run",
-    desc: "Séparez strictement les étapes de build et d'exécution.",
+    desc: "Séparez strictement les étapes de build, de release et d'exécution (run).",
   },
   {
     num: "VI",

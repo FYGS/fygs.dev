@@ -65,6 +65,7 @@ spec:
   hosts:
   - mon-service
   http:
+  # Les subsets v1/v2 doivent être déclarés dans une DestinationRule
   - route:
     - destination:
         host: mon-service
@@ -139,8 +140,8 @@ sum(rate(istio_requests_total{destination_service="mon-service.mon-namespace.svc
               Airbnb avec Istio
             </h5>
             <p className="text-xs text-muted-foreground mb-2">
-              Airbnb a déployé Istio pour gérer plus de 1000
-              microservices. Ils ont utilisé une approche progressive:
+              Exemple illustratif d&apos;adoption d&apos;Istio sur un
+              grand parc de microservices, avec une approche progressive:
             </p>
             <ul className="text-xs list-disc pl-4 text-muted-foreground">
               <li>
@@ -164,15 +165,15 @@ sum(rate(istio_requests_total{destination_service="mon-service.mon-namespace.svc
             </h5>
             <p className="text-xs text-muted-foreground mb-2">
               Nordstrom a choisi Linkerd pour sa légèreté et sa
-              simplicité. Résultats obtenus:
+              simplicité. Bénéfices typiques:
             </p>
             <ul className="text-xs list-disc pl-4 text-muted-foreground">
               <li>
-                Réduction de 99.9% des erreurs grâce aux retries
+                Moins d&apos;erreurs transitoires grâce aux retries
                 automatiques
               </li>
               <li>
-                Amélioration de la latence de 10x dans certains cas
+                mTLS automatique entre les services
               </li>
               <li>
                 Visibilité accrue sur les dépendances entre services

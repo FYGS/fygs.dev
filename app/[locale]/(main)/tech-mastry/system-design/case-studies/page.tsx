@@ -48,7 +48,7 @@ const caseStudies = [
   {
     title: "Video Streaming (Netflix/YouTube)",
     difficulty: "Expert",
-    requirements: ["1B vidéos/jour", "Adaptive bitrate", "Global CDN", "< 2s start time"],
+    requirements: ["Millions de flux simultanés", "Adaptive bitrate", "Global CDN", "< 2s start time"],
     components: ["Transcoding Pipeline", "CDN (multi-tier)", "Recommendation Engine", "DRM"],
     keyDecisions: [
       "Transcoding asynchrone multi-résolution (DAG)",

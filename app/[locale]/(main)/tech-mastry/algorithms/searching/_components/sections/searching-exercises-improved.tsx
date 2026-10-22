@@ -248,7 +248,8 @@ console.log(interpolationSearch([1, 3, 5, 7, 9, 11, 13, 15, 17, 19], 4));  // De
   let high = arr.length - 1;
 
   while (low <= high && target >= arr[low] && target <= arr[high]) {
-    if (low === high) {
+    // Évite une division par zéro (valeurs identiques dans [low, high])
+    if (arr[low] === arr[high]) {
       return arr[low] === target ? low : -1;
     }
 

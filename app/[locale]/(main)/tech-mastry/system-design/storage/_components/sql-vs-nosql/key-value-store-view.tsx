@@ -325,7 +325,8 @@ GET user:1001`}
                 `// Opérations multiples
 MGET user:1001 user:1002 user:1003
 
-// Ou avec pattern matching
+// Ou avec pattern matching (KEYS bloque le serveur :
+// à éviter en production, préférer SCAN)
 KEYS user:*`}
               {queryType === "aggregation" &&
                 `// Incrémentation atomique
@@ -339,7 +340,8 @@ SCARD active:users`}
 SET session:xyz123 '{"userId":1001,"lastActive":"2023-06-10T15:30:00Z"}'
 EXPIRE session:xyz123 3600
 
-// Mise à jour conditionnelle
+// Mise à jour conditionnelle (en pratique, préférer
+// SET product:5001:lock 1 NX EX 30 pour avoir une expiration)
 SETNX product:5001:lock 1
 // Exécuter opération si verrouillage réussi
 DEL product:5001:lock`}

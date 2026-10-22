@@ -38,8 +38,8 @@ describe("ServiceMeshVisualization rendering", () => {
         "d3351c81",
         "b42e6f3a",
         "5cf058c4",
-        "f942e0ad",
-        "b67d6c8d",
+        "c9f8eb90",
+        "a561b6c6",
       ]
     `);
   });

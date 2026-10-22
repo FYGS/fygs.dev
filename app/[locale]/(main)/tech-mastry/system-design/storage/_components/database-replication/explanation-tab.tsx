@@ -21,7 +21,7 @@ export function ExplanationTab() {
             <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
               <li>Haute disponibilité et tolérance aux pannes</li>
               <li>Répartition de la charge de lecture</li>
-              <li>Sauvegarde des données en temps réel</li>
+              <li>Copies à jour des données (ne remplace pas une sauvegarde)</li>
               <li>
                 Réduction de la latence pour les utilisateurs
                 géographiquement dispersés

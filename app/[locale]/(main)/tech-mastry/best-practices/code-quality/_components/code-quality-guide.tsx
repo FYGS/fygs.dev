@@ -22,11 +22,11 @@ const principles = [
       },
       {
         do: false,
-        text: "Utiliser des noms de variables d'une seule lettre",
+        text: "Utiliser des noms cryptiques (une seule lettre, hors courtes boucles)",
       },
       {
         do: false,
-        text: "Créer des fonctions de plus de 20 lignes",
+        text: "Écrire de longues fonctions qui mélangent plusieurs responsabilités",
       },
     ],
     example: {
@@ -161,7 +161,7 @@ const bestPractices = [
       "Utilisez des messages de commit descriptifs",
       "Créez des branches pour chaque fonctionnalité",
       "Faites des commits atomiques et fréquents",
-      "Utilisez le rebase pour maintenir un historique propre",
+      "Utilisez le rebase pour un historique propre, uniquement sur vos branches non partagées",
     ],
   },
   {

@@ -43,11 +43,11 @@ export function InterviewResults({
           </div>
 
           <Badge variant="outline">
-            Score: {feedback?.overallScore}/100
+            Sample score: {feedback?.overallScore}/100
           </Badge>
         </CardTitle>
         <CardDescription>
-          Review your performance and get personalized recommendations
+          Illustrative sample feedback: your answers are not scored automatically. Compare them with the model answers and the recommendations below
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -58,7 +58,7 @@ export function InterviewResults({
             </div>
             <h2 className="text-2xl font-bold">Interview Complete!</h2>
             <p className="text-muted-foreground mt-2">
-              Your overall score:{" "}
+              Sample score (not computed from your answers):{" "}
               <span className="font-bold text-primary">
                 {feedback?.overallScore}/100
               </span>

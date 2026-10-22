@@ -20,7 +20,10 @@ export function layoutServers(servers: Server[]): Server[] {
 }
 
 // Select a server based on the current algorithm
-export const selectServer = (state: LoadBalancerState): Server | undefined => {
+export const selectServer = (
+  state: LoadBalancerState,
+  request?: Request
+): Server | undefined => {
   const onlineServers = state.servers.filter((s) => s.status !== "offline");
 
   if (onlineServers.length === 0) return undefined;
@@ -39,9 +42,10 @@ export const selectServer = (state: LoadBalancerState): Server | undefined => {
       );
 
     case "ip-hash":
-      // Simulate IP hash by using a random but consistent server for each request
-      const randomIndex = Math.floor(Math.random() * onlineServers.length);
-      return onlineServers[randomIndex];
+      // Simulate IP hash: 8 simulated clients, each client always maps to
+      // the same server (as long as the set of online servers is unchanged)
+      const simulatedClient = request ? request.id % 8 : 0;
+      return onlineServers[simulatedClient % onlineServers.length];
 
     default:
       return onlineServers[0];
@@ -70,7 +74,7 @@ export function dispatchRequest(
   newRequest: Request
 ): LoadBalancerState {
   // Determine target server based on algorithm
-  const targetServer = selectServer(prev);
+  const targetServer = selectServer(prev, newRequest);
 
   if (targetServer) {
     // Update server load
@@ -214,7 +218,7 @@ export const getAlgorithmExplanation = (algorithm: Algorithm): string => {
     case "least-connections":
       return "L'algorithme Least Connections dirige les requêtes vers le serveur ayant le moins de connexions actives. Idéal pour des requêtes de durée variable, car il équilibre dynamiquement la charge en fonction de la capacité disponible.";
     case "ip-hash":
-      return "L'algorithme IP Hash utilise l'adresse IP du client pour déterminer quel serveur recevra la requête. Cela garantit que les requêtes d'un même client sont toujours dirigées vers le même serveur, ce qui est utile pour maintenir les sessions.";
+      return "L'algorithme IP Hash utilise l'adresse IP du client pour déterminer quel serveur recevra la requête. Cela garantit que les requêtes d'un même client sont toujours dirigées vers le même serveur, ce qui est utile pour maintenir les sessions (tant que l'ensemble des serveurs ne change pas : l'ajout ou le retrait d'un serveur redistribue les clients, d'où l'intérêt du hachage cohérent).";
     default:
       return "";
   }

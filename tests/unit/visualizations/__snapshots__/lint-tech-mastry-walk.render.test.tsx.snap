@@ -103,33 +103,33 @@ exports[`tech-mastry components rewritten for the lint rules > lcs renders the s
 
 exports[`tech-mastry components rewritten for the lint rules > messaging renders the same markup in every state reachable by clicking 1`] = `
 [
-  "388616f3",
-  "fddfa23c",
-  "388616f3",
-  "a4461dec",
-  "6df916f6",
-  "7f78f402",
-  "388616f3",
-  "092a1558",
-  "a08bcf42",
-  "e0ddfa70",
-  "e0ddfa70",
-  "373851e1",
-  "6edd1491",
-  "05442856",
-  "43db90ec",
-  "05442856",
-  "9a14cd6a",
-  "66adfefc",
-  "429ea60e",
-  "ceb9520a",
-  "ec133560",
-  "b5eb5ede",
-  "05442856",
-  "e0ddfa70",
-  "373851e1",
-  "6edd1491",
-  "05442856",
+  "391f3f9d",
+  "dd172d09",
+  "391f3f9d",
+  "f8805578",
+  "0e6a0ed1",
+  "d3be19d0",
+  "391f3f9d",
+  "a8bfb2ea",
+  "9753d4f0",
+  "61746d85",
+  "61746d85",
+  "2c31fb8b",
+  "c3931427",
+  "0bd848a0",
+  "735a1ad3",
+  "0bd848a0",
+  "e37daf14",
+  "6f43aa4b",
+  "4202b192",
+  "144a988e",
+  "ff04042b",
+  "62235d99",
+  "0bd848a0",
+  "61746d85",
+  "2c31fb8b",
+  "c3931427",
+  "0bd848a0",
 ]
 `;
 
@@ -218,20 +218,20 @@ exports[`tech-mastry components rewritten for the lint rules > sorting-exercises
 
 exports[`tech-mastry components rewritten for the lint rules > streak-calendar renders the same markup in every state reachable by clicking 1`] = `
 [
-  "3454ac1b",
+  "470b539e",
 ]
 `;
 
 exports[`tech-mastry components rewritten for the lint rules > ternary-search renders the same markup in every state reachable by clicking 1`] = `
 [
-  "57e4e0e4",
-  "57e4e0e4",
-  "a5367d11",
-  "5fcc5267",
-  "7a9881d8",
-  "d4c5a6e0",
-  "c320f0db",
-  "82a230d4",
-  "119e98e5",
+  "0202c75e",
+  "0202c75e",
+  "4af06d0a",
+  "68f4d758",
+  "f7207cd6",
+  "708929ca",
+  "f17b472a",
+  "5c62f562",
+  "4c5be256",
 ]
 `;

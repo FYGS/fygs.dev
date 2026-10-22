@@ -42,7 +42,7 @@ export function ZustandSection() {
 import { create } from 'zustand';
 
 // Création d'un store
-const useCounterStore = create((set) => ({
+export const useCounterStore = create((set) => ({
   // État initial
   count: 0,
   
@@ -134,7 +134,7 @@ function App() {
           },
           {
             question: "Comment gérer les opérations asynchrones avec Zustand?",
-            answer: "Zustand permet de gérer les opérations asynchrones de manière simple et directe: 1) Méthode directe: Ajoutez simplement des fonctions asynchrones à votre store qui utilisent 'set' pour mettre à jour l'état une fois l'opération terminée: `fetchUsers: async () => { const response = await fetch('/api/users'); const users = await response.json(); set({ users, loading: false }); }`. 2) Avec gestion d'état de chargement: `fetchUsers: async () => { set({ loading: true, error: null }); try { const response = await fetch('/api/users'); const users = await response.json(); set({ users, loading: false }); } catch (error) { set({ error: error.message, loading: false }); } }`. 3) Avec getState: Vous pouvez accéder à l'état actuel dans vos fonctions asynchrones: `addUser: async (userData) => { const response = await fetch('/api/users', { method: 'POST', body: JSON.stringify(userData) }); const newUser = await response.json(); set((state) => ({ users: [...state.users, newUser] })); }`. Zustand ne nécessite pas de middleware spécial comme Redux Thunk pour gérer l'asynchronicité.",
+            answer: "Zustand permet de gérer les opérations asynchrones de manière simple et directe: 1) Méthode directe: Ajoutez simplement des fonctions asynchrones à votre store qui utilisent 'set' pour mettre à jour l'état une fois l'opération terminée: `fetchUsers: async () => { const response = await fetch('/api/users'); const users = await response.json(); set({ users, loading: false }); }`. 2) Avec gestion d'état de chargement: `fetchUsers: async () => { set({ loading: true, error: null }); try { const response = await fetch('/api/users'); const users = await response.json(); set({ users, loading: false }); } catch (error) { set({ error: error.message, loading: false }); } }`. 3) Avec un set fonctionnel (ou get()): Vous pouvez accéder à l'état actuel dans vos fonctions asynchrones: `addUser: async (userData) => { const response = await fetch('/api/users', { method: 'POST', body: JSON.stringify(userData) }); const newUser = await response.json(); set((state) => ({ users: [...state.users, newUser] })); }`. Zustand ne nécessite pas de middleware spécial comme Redux Thunk pour gérer l'asynchronicité.",
             difficulty: "medium",
             tags: ["Zustand", "Async"]
           }
@@ -216,7 +216,12 @@ const useStore = create(
     {
       name: 'app-storage', // nom unique pour le stockage
       storage: createJSONStorage(() => localStorage), // type de stockage
-      partialize: (state) => ({ todos: state.todos }), // ne persister que les todos
+      partialize: (state) => ({ todos: { items: state.todos.items } }), // ne persister que les données (pas les fonctions)
+      // Le merge par défaut est superficiel : sans ceci, la slice todos réhydratée écraserait les actions
+      merge: (persisted, current) => ({
+        ...current,
+        todos: { ...current.todos, ...persisted.todos },
+      }),
     }
   )
 );
@@ -363,7 +368,7 @@ function TodoList() {
           },
           {
             question: "Comparez les middlewares disponibles dans Zustand et expliquez quand les utiliser.",
-            answer: "Zustand offre plusieurs middlewares intégrés: 1) immer: Permet d'écrire des mises à jour d'état de manière 'mutable' qui sont en réalité immuables. Utilisez-le pour simplifier les mises à jour d'objets et tableaux imbriqués. 2) persist: Sauvegarde automatiquement l'état dans localStorage, sessionStorage ou un autre stockage. Idéal pour persister l'état entre les sessions ou pour le mode hors ligne. 3) devtools: Intègre Redux DevTools pour le débogage. Utilisez-le en développement pour inspecter l'état et les actions. 4) subscribeWithSelector: Permet de s'abonner à des parties spécifiques de l'état. Utile pour les réactions aux changements d'état spécifiques. 5) combine: Combine plusieurs stores en un seul. Utile pour la composition de stores. Vous pouvez également créer des middlewares personnalisés pour des besoins spécifiques comme la journalisation, la validation, ou l'intégration avec d'autres bibliothèques.",
+            answer: "Zustand offre plusieurs middlewares intégrés: 1) immer: Permet d'écrire des mises à jour d'état de manière 'mutable' qui sont en réalité immuables. Utilisez-le pour simplifier les mises à jour d'objets et tableaux imbriqués. 2) persist: Sauvegarde automatiquement l'état dans localStorage, sessionStorage ou un autre stockage. Idéal pour persister l'état entre les sessions ou pour le mode hors ligne. 3) devtools: Intègre Redux DevTools pour le débogage. Utilisez-le en développement pour inspecter l'état et les actions. 4) subscribeWithSelector: Permet de s'abonner à des parties spécifiques de l'état. Utile pour les réactions aux changements d'état spécifiques. 5) combine: Crée un store à partir d'un état initial et d'un créateur d'actions; utile surtout pour l'inférence de types TypeScript. Vous pouvez également créer des middlewares personnalisés pour des besoins spécifiques comme la journalisation, la validation, ou l'intégration avec d'autres bibliothèques.",
             difficulty: "medium",
             tags: ["Zustand", "Middleware"]
           }
@@ -381,7 +386,7 @@ function TodoList() {
           },
           {
             question: "Comment Zustand évite-t-il les re-rendus inutiles?",
-            answer: "Zustand évite les re-rendus inutiles grâce à plusieurs mécanismes: 1) Sélection automatique: Lorsque vous utilisez un sélecteur avec useStore((state) => state.count), Zustand ne re-rend le composant que si la valeur sélectionnée change. 2) Égalité par référence: Zustand utilise Object.is pour comparer les valeurs avant et après une mise à jour. 3) Middleware subscribeWithSelector: Permet de s'abonner uniquement à des parties spécifiques de l'état. 4) Memoization intégrée: Les sélecteurs sont automatiquement mémoïsés. 5) Mise à jour par lots (batching): Les mises à jour multiples dans le même cycle d'événements sont regroupées. Pour optimiser davantage, vous pouvez: 1) Utiliser des sélecteurs granulaires pour n'extraire que ce dont vous avez besoin. 2) Utiliser shallow pour une comparaison peu profonde des objets. 3) Créer des hooks personnalisés qui sélectionnent des parties spécifiques de l'état.",
+            answer: "Zustand évite les re-rendus inutiles grâce à plusieurs mécanismes: 1) Sélection automatique: Lorsque vous utilisez un sélecteur avec useStore((state) => state.count), Zustand ne re-rend le composant que si la valeur sélectionnée change. 2) Égalité par référence: Zustand utilise Object.is pour comparer les valeurs avant et après une mise à jour. 3) Middleware subscribeWithSelector: Permet de s'abonner hors React (store.subscribe) à des parties spécifiques de l'état. 4) Attention: les sélecteurs ne sont pas mémoïsés; un sélecteur qui retourne un nouvel objet ou tableau à chaque appel provoque des re-rendus (et, en v5, une boucle infinie). Pour optimiser davantage, vous pouvez: 1) Utiliser des sélecteurs granulaires pour n'extraire que ce dont vous avez besoin. 2) Utiliser useShallow (zustand/react/shallow) pour une comparaison peu profonde des objets ou tableaux retournés. 3) Créer des hooks personnalisés qui sélectionnent des parties spécifiques de l'état.",
             difficulty: "hard",
             tags: ["Zustand", "Performance", "Optimisation"]
           },

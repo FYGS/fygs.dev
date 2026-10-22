@@ -68,13 +68,13 @@ const exercises: DesignExercise[] = [
         questions: [
           "100M URLs/jour → ~1200/sec écriture, ~12000/sec lecture",
           "Stockage : 100M × 365 × 5 ans × 500 bytes ≈ 90 TB",
-          "Cache : 20% des URLs = 80% du trafic → ~20GB en mémoire",
+          "Cache : 20% des URLs = 80% du trafic → ~100GB en mémoire",
         ],
         tips: ["Round les chiffres pour simplifier", "Montrer votre raisonnement"],
         solution: `QPS écriture : 100M / (24 × 3600) ≈ 1200/s
 QPS lecture : 1200 × 10 = 12000/s
 Stockage 5 ans : 100M × 365 × 5 × 500B = 91.25 TB
-Cache (règle 80/20) : 12000/s × 86400 × 0.2 × 500B ≈ 20 GB`,
+Cache (règle 80/20) : 12000/s × 86400 × 0.2 × 500B ≈ 100 GB (répartis sur quelques nœuds Redis)`,
       },
       {
         title: "3. API Design",
@@ -212,7 +212,7 @@ Cache (règle 80/20) : 12000/s × 86400 × 0.2 × 500B ≈ 20 GB`,
           "Retry avec idempotency (message ID unique)",
           "Stockage offline → sync au reconnect",
         ],
-        tips: ["At-least-once delivery + idempotency = exactly-once semantics"],
+        tips: ["At-least-once delivery + consommateur idempotent = effet « exactly-once » (le vrai exactly-once de bout en bout n'existe pas)"],
       },
       {
         title: "5. Scalabilité",
@@ -220,11 +220,11 @@ Cache (règle 80/20) : 12000/s × 86400 × 0.2 × 500B ≈ 20 GB`,
         duration: "10 min",
         questions: [
           "Consistent hashing pour distribuer les connexions WebSocket",
-          "Cassandra : partitionnement par (conversation_id, message_timestamp)",
+          "Cassandra : partition key = conversation_id (+ bucket temporel), clustering key = message_id/timestamp",
           "Redis : cache des derniers messages + session mapping",
           "CDN pour les médias (S3 + CloudFront)",
         ],
-        tips: ["1 serveur WebSocket ≈ 50K connexions → calcul du nombre de serveurs"],
+        tips: ["1 serveur WebSocket ≈ 50K connexions (hypothèse prudente) → calcul du nombre de serveurs"],
       },
     ],
   },

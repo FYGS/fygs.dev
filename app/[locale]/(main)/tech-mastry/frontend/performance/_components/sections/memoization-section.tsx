@@ -118,7 +118,7 @@ const MemoizedWithCustomComparison = React.memo(
               </li>
               <li>
                 <strong>Function components only</strong>: It works only with
-                function components, not class components (use{" "}
+                function components and is not meant for class components (use{" "}
                 <code>PureComponent</code> for those).
               </li>
               <li>
@@ -127,10 +127,10 @@ const MemoizedWithCustomComparison = React.memo(
                 expensive to render and re-renders often with the same props.
               </li>
               <li>
-                <strong>Doesn&apos;t prevent children renders</strong>: If a
-                parent component re-renders, React will still attempt to
-                re-render the children, but <code>React.memo</code> can skip the
-                actual DOM update if props haven&apos;t changed.
+                <strong>Props only</strong>: <code>React.memo</code> only skips
+                the re-render caused by a parent re-rendering with equal props.
+                It does not prevent re-renders caused by the component&apos;s
+                own state or by a context it consumes.
               </li>
             </ol>
 
@@ -164,7 +164,7 @@ const MemoizedWithCustomComparison = React.memo(
           {
             question: "What are the limitations of React.memo?",
             answer:
-              "Limitations of React.memo include: 1) It only performs shallow comparison of props by default. 2) It doesn't prevent renders when the context changes. 3) It doesn't help with state changes within the component. 4) It adds overhead for the comparison, which might not be worth it for simple components. 5) It doesn't work with class components (use PureComponent instead). 6) It doesn't prevent the function component from being called, it just potentially skips the reconciliation. 7) It can be ineffective if you pass new object references or inline functions as props on each render.",
+              "Limitations of React.memo include: 1) It only performs shallow comparison of props by default. 2) It doesn't prevent renders when the context changes. 3) It doesn't help with state changes within the component. 4) It adds overhead for the comparison, which might not be worth it for simple components. 5) It is designed for function components (use PureComponent for class components). 6) It is only a performance optimization: React may still re-render the component in some cases, so your code must not rely on it for correctness. 7) It can be ineffective if you pass new object references or inline functions as props on each render.",
             difficulty: "hard",
             tags: ["React", "Performance", "Limitations"],
           },
@@ -309,7 +309,7 @@ function App() {
           {
             question: "When would you use useMemo vs. useCallback?",
             answer:
-              "Use useMemo vs. useCallback in these scenarios: 1) useMemo: For memoizing expensive calculated values like filtered arrays, sorted data, or complex objects. Example: `const sortedItems = useMemo(() => items.sort(), [items])`. 2) useCallback: For memoizing function references to prevent unnecessary re-renders of child components that receive functions as props. Example: `const handleClick = useCallback(() => console.log(value), [value])`. The key difference is that useMemo returns a memoized value from a function, while useCallback returns a memoized function itself. Both accept a dependency array and only recompute when dependencies change. A simplified way to think about it: useCallback(fn, deps) is equivalent to useMemo(() => fn, deps).",
+              "Use useMemo vs. useCallback in these scenarios: 1) useMemo: For memoizing expensive calculated values like filtered arrays, sorted data, or complex objects. Example: `const sortedItems = useMemo(() => [...items].sort(), [items])`. 2) useCallback: For memoizing function references to prevent unnecessary re-renders of child components that receive functions as props. Example: `const handleClick = useCallback(() => console.log(value), [value])`. The key difference is that useMemo returns a memoized value from a function, while useCallback returns a memoized function itself. Both accept a dependency array and only recompute when dependencies change. A simplified way to think about it: useCallback(fn, deps) is equivalent to useMemo(() => fn, deps).",
             difficulty: "hard",
             tags: ["React", "Hooks", "Best Practices"],
           },
@@ -494,7 +494,7 @@ function ParentComponent() {
             question:
               "How does the dependency array in useMemo and useCallback work, and what happens if you provide an empty array?",
             answer:
-              "The dependency array in useMemo and useCallback works as follows: 1) Purpose: It tells React when to recalculate the memoized value or recreate the memoized function. 2) Comparison: React uses Object.is comparison on each dependency to determine if any have changed since the last render. 3) Behavior: If any dependency has changed, the memoized value is recalculated or the function is recreated. 4) Empty array []: This means the value or function should never be recalculated/recreated after the initial render. It's equivalent to componentDidMount in class components. 5) No array: If you omit the dependency array entirely, the value/function will be recalculated on every render, defeating the purpose of memoization. 6) Incorrect dependencies: If you don't include all values used in the calculation, you may get stale values or unexpected behavior. The ESLint rule 'exhaustive-deps' can help catch missing dependencies. When you provide an empty array, the memoized value is calculated only once during the initial render and then reused for the component's lifetime, regardless of any state or prop changes.",
+              "The dependency array in useMemo and useCallback works as follows: 1) Purpose: It tells React when to recalculate the memoized value or recreate the memoized function. 2) Comparison: React uses Object.is comparison on each dependency to determine if any have changed since the last render. 3) Behavior: If any dependency has changed, the memoized value is recalculated or the function is recreated. 4) Empty array []: This means the value or function should never be recalculated/recreated after the initial render. (This is not an equivalent of componentDidMount, which is what useEffect with [] is closer to.) 5) No array: If you omit the dependency array entirely, the value/function will be recalculated on every render, defeating the purpose of memoization. 6) Incorrect dependencies: If you don't include all values used in the calculation, you may get stale values or unexpected behavior. The ESLint rule 'exhaustive-deps' can help catch missing dependencies. When you provide an empty array, the memoized value is calculated only once during the initial render and then reused for the component's lifetime, regardless of any state or prop changes.",
             difficulty: "medium",
             tags: ["React", "Hooks", "Dependencies"],
           },

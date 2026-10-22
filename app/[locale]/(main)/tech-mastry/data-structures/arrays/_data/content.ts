@@ -4,7 +4,7 @@ export const operations = [
     op: "Accès (arr[i])",
     time: "O(1)",
     space: "—",
-    note: "Calcul direct d&apos;adresse mémoire",
+    note: "Calcul direct d'adresse mémoire",
   },
   { op: "Recherche", time: "O(n)", space: "O(1)", note: "Parcours linéaire" },
   {
@@ -29,8 +29,8 @@ export const operations = [
   {
     op: "sort()",
     time: "O(n log n)",
-    space: "O(log n)",
-    note: "TimSort en V8",
+    space: "O(n)",
+    note: "TimSort en V8 (stable, tampon auxiliaire)",
   },
   {
     op: "map / filter / reduce",
@@ -75,7 +75,7 @@ export const techniques = [
   },
   {
     name: "Kadane's Algorithm",
-    desc: "Trouve la sous-séquence contiguë de somme maximale en un seul passage.",
+    desc: "Trouve la sous-tableau contigu de somme maximale en un seul passage.",
     examples: [
       "Maximum Subarray",
       "Max Circular Subarray",
@@ -85,7 +85,7 @@ export const techniques = [
   },
   {
     name: "Binary Search",
-    desc: "Division récursive de l'espace de recherche. Nécessite un tableau trié ou une propriété monotone.",
+    desc: "Division par deux de l'espace de recherche. Nécessite un tableau trié ou une propriété monotone.",
     examples: [
       "Search Rotated Array",
       "Find Peak Element",

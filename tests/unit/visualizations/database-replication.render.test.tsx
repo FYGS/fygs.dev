@@ -97,7 +97,7 @@ describe("DatabaseReplicationVisualization rendering", () => {
         "fd13c4b6",
         "c9ceb117",
         "0a32aed2",
-        "0407e538",
+        "0fc55bfa",
       ]
     `);
   });
@@ -198,7 +198,7 @@ describe("DatabaseReplicationVisualization rendering", () => {
         "4ff19ab9",
         "4aaefeb1",
         "69a0b3bf",
-        "97f61720",
+        "61b46540",
         "5a59ad6a",
       ]
     `);

@@ -484,7 +484,8 @@ export function SearchingRealWorldCases() {
                         </span>
                         <p className="text-sm text-muted-foreground mt-1">
                           Utilisée dans les systèmes de fichiers comme NTFS,
-                          ext4 et HFS+ pour indexer les fichiers.
+                          HFS+ ou Btrfs pour indexer les fichiers (ext4 utilise
+                          un HTree pour ses répertoires).
                         </p>
                       </div>
                     </li>
@@ -535,22 +536,26 @@ export function SearchingRealWorldCases() {
                     données de tous les fichiers du système
                   </li>
                   <li>
-                    • <strong>Recherche par préfixe</strong> : Utilise des
-                    arbres de préfixes pour accélérer les recherches par nom
+                    • <strong>Chemins triés</strong> : Stocke les chemins dans
+                    un index trié, relu séquentiellement et bien plus compact
+                    que l&apos;arborescence
                   </li>
                   <li>
-                    • <strong>Compression</strong> : Utilise des techniques de
-                    compression pour réduire la taille de l&apos;index
+                    • <strong>Compression</strong> : Compresse les préfixes
+                    communs des chemins consécutifs pour réduire la taille de
+                    l&apos;index
                   </li>
                   <li>
-                    • <strong>Recherche parallèle</strong> : Exploite les
-                    processeurs multi-cœurs pour accélérer les recherches
+                    • <strong>Filtrage par droits</strong> : mlocate vérifie
+                    les permissions des répertoires pour ne montrer que les
+                    fichiers accessibles à l&apos;utilisateur
                   </li>
                 </ul>
                 <p className="text-sm text-amber-400 mt-2">
-                  Ces outils permettent de trouver des fichiers en quelques
-                  millisecondes, contre plusieurs minutes avec une recherche
-                  linéaire traditionnelle comme <code>find</code>, démontrant
+                  Ces outils trouvent des fichiers généralement bien plus
+                  vite qu&apos;un parcours complet de l&apos;arborescence
+                  comme <code>find</code> (au prix d&apos;un index parfois
+                  périmé), démontrant
                   l&apos;importance des algorithmes de recherche optimisés dans
                   les systèmes d&apos;exploitation.
                 </p>

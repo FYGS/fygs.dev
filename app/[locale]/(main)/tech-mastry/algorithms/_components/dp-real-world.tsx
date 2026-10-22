@@ -74,7 +74,7 @@ export function DPRealWorld() {
                   {
                     name: "Compression de données",
                     description:
-                      "Algorithmes comme Huffman et Lempel-Ziv utilisent la programmation dynamique pour optimiser la compression.",
+                      "Le découpage optimal (optimal parsing) de certains compresseurs de type Lempel-Ziv, comme LZMA, s'appuie sur la programmation dynamique. Attention : le codage de Huffman est un algorithme glouton, pas de la programmation dynamique.",
                   },
                   {
                     name: "Routage de réseaux",
@@ -115,7 +115,7 @@ export function DPRealWorld() {
                   {
                     name: "Problème du voyageur de commerce",
                     description:
-                      "Trouver le chemin le plus court pour visiter plusieurs villes et revenir au point de départ.",
+                      "Trouver le chemin le plus court pour visiter plusieurs villes et revenir au point de départ (algorithme de Held-Karp en O(n² · 2ⁿ), exact mais exponentiel).",
                   },
                   {
                     name: "Planification de routes",
@@ -138,7 +138,7 @@ export function DPRealWorld() {
                   {
                     name: "Apprentissage par renforcement",
                     description:
-                      "Algorithmes comme Q-learning et Value Iteration pour apprendre des politiques optimales.",
+                      "Value Iteration et Policy Iteration sont de la programmation dynamique sur un modèle connu ; Q-learning en est une variante sans modèle, apprise par échantillonnage.",
                   },
                   {
                     name: "Planification de trajectoires",
@@ -158,11 +158,11 @@ export function DPRealWorld() {
           <TabsContent value="case-studies" className="space-y-6 pt-4">
             <div className="space-y-6">
               <CaseStudy
-                title="Optimisation des Recommandations sur Netflix"
+                title="Scénario illustratif : Recommandations d'un service de streaming"
                 industry="Streaming Vidéo"
                 problem="Comment recommander efficacement des films et séries à des millions d'utilisateurs avec des préférences différentes."
-                solution="Netflix utilise la programmation dynamique pour optimiser son système de recommandation. L'algorithme décompose le problème en sous-problèmes pour prédire les préférences des utilisateurs en fonction de leur historique de visionnage et des similitudes avec d'autres utilisateurs."
-                results="Amélioration significative de la pertinence des recommandations, augmentation du temps passé sur la plateforme et réduction du taux d'abandon."
+                solution="Scénario pédagogique, non une description du système réel d'une entreprise (les systèmes de recommandation en production reposent surtout sur le machine learning, par exemple la factorisation de matrices). La programmation dynamique peut y servir pour des sous-tâches, comme l'optimisation de l'ordre d'affichage sous contraintes, en mémorisant les résultats de sous-problèmes répétés."
+                results="Gain attendu : moins de calculs redondants dans les sous-tâches d'optimisation."
                 dpConcepts={[
                   "Mémoïsation pour stocker les calculs intermédiaires",
                   "Optimisation de fonctions de similarité",
@@ -171,11 +171,11 @@ export function DPRealWorld() {
               />
 
               <CaseStudy
-                title="Planification de Production chez Toyota"
+                title="Scénario illustratif : Planification de production industrielle"
                 industry="Automobile"
                 problem="Optimiser la chaîne de production pour minimiser les coûts tout en respectant les contraintes de temps et de ressources."
-                solution="Toyota a implémenté un système basé sur la programmation dynamique pour planifier la production de véhicules. Le système décompose le processus de fabrication en étapes et optimise chaque étape en fonction des décisions précédentes."
-                results="Réduction des coûts de production de 15%, diminution des délais de livraison et amélioration de l'utilisation des ressources."
+                solution="Scénario pédagogique, non un cas documenté d'un constructeur précis. Les problèmes de dimensionnement de lots et de planification multi-étapes se formulent souvent en programmation dynamique : on décompose le processus en étapes et on optimise chaque étape en fonction des décisions précédentes."
+                results="Gains potentiels : coûts de production réduits, meilleure utilisation des ressources (l'ampleur dépend entièrement du contexte)."
                 dpConcepts={[
                   "Tabulation pour construire un plan de production optimal",
                   "Optimisation sous contraintes",
@@ -184,11 +184,11 @@ export function DPRealWorld() {
               />
 
               <CaseStudy
-                title="Routage de Paquets chez Cisco"
+                title="Routage à vecteur de distance (Bellman-Ford)"
                 industry="Réseaux"
-                problem="Déterminer les chemins optimaux pour le routage de paquets dans des réseaux complexes avec des contraintes de bande passante et de latence."
-                solution="Cisco utilise des algorithmes de programmation dynamique comme Bellman-Ford pour calculer les chemins les plus courts dans leurs routeurs. L'algorithme décompose le problème en calculant les chemins optimaux pour des sous-ensembles de nœuds."
-                results="Amélioration significative des performances réseau, réduction de la congestion et optimisation de l'utilisation de la bande passante."
+                problem="Déterminer les chemins optimaux pour le routage de paquets dans des réseaux complexes."
+                solution="Les protocoles de routage à vecteur de distance (comme RIP) reposent sur le principe de Bellman-Ford : chaque routeur met à jour ses distances à partir de celles de ses voisins, ce qui revient à calculer les chemins optimaux en au plus k arêtes. D'autres protocoles (OSPF, IS-IS) utilisent plutôt Dijkstra."
+                results="Calcul décentralisé des plus courts chemins et adaptation aux changements de topologie, avec une convergence parfois lente."
                 dpConcepts={[
                   "Algorithme de Bellman-Ford",
                   "Calcul incrémental des chemins optimaux",
@@ -197,11 +197,11 @@ export function DPRealWorld() {
               />
 
               <CaseStudy
-                title="Optimisation de Portefeuille chez BlackRock"
+                title="Scénario illustratif : Allocation d'actifs multi-périodes"
                 industry="Finance"
                 problem="Construire des portefeuilles d'investissement optimaux qui maximisent le rendement pour un niveau de risque donné."
-                solution="BlackRock utilise la programmation dynamique pour son système d'allocation d'actifs. L'algorithme décompose le problème d'optimisation en sous-problèmes pour différentes classes d'actifs et horizons temporels."
-                results="Amélioration des rendements ajustés au risque, réduction de la volatilité des portefeuilles et meilleure adaptation aux conditions changeantes du marché."
+                solution="Scénario pédagogique, non la description du système d'une société précise. En théorie, l'allocation multi-périodes se formule comme un problème de contrôle stochastique résolu par programmation dynamique (équation de Bellman), qui décompose le problème par horizon temporel ; en pratique, la dimension de l'état oblige souvent à recourir à des approximations."
+                results="Permet de raisonner sur le compromis risque-rendement à chaque période ; les résultats dépendent fortement du modèle de marché choisi."
                 dpConcepts={[
                   "Optimisation stochastique",
                   "Programmation dynamique multi-périodes",
@@ -274,7 +274,7 @@ export function DPRealWorld() {
                 title="Chemin à Somme Maximale dans une Grille"
                 difficulty="Intermédiaire"
                 companies={["Amazon", "Microsoft", "ByteDance"]}
-                description="Étant donné une grille m x n remplie de nombres non négatifs, trouvez un chemin de haut en bas qui maximise la somme des nombres le long du chemin."
+                description="Étant donné une grille m x n remplie de nombres non négatifs, trouvez un chemin du coin supérieur gauche au coin inférieur droit (déplacements vers la droite ou vers le bas uniquement) qui maximise la somme des nombres le long du chemin."
                 example="Input: [\n  [1, 3, 1],\n  [1, 5, 1],\n  [4, 2, 1]\n]\nOutput: 12\nExplication: Le chemin 1→3→5→2→1 a la somme maximale."
                 approach="Utilisez la programmation dynamique en définissant dp[i][j] comme la somme maximale pour atteindre la cellule (i,j). Pour chaque cellule, prenez le maximum entre venir d'en haut ou de gauche."
                 code={`function maxPathSum(grid) {

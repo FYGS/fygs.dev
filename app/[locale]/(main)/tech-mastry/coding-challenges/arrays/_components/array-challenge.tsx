@@ -20,24 +20,27 @@ const challenges = [
     id: 1,
     title: "Two Sum",
     description: "Trouvez deux nombres dans le tableau qui donnent une somme cible.",
-    technique: "Two Pointers",
+    technique: "Hash Map",
     examples: [
       { input: "2,7,11,15 | 9", output: "0,1" },
       { input: "3,2,4 | 6", output: "1,2" },
     ],
-    hint: "Triez le tableau et utilisez deux pointeurs qui se déplacent l'un vers l'autre.",
+    hint: "Pour chaque nombre, cherchez son complément (cible - nombre) dans une table de hachage des valeurs déjà vues : un seul passage, en O(n).",
     solution: `function twoSum(nums, target) {
-  // Parcourir le tableau avec deux pointeurs
+  // Table valeur -> indice des éléments déjà parcourus
+  const seen = new Map();
   for (let i = 0; i < nums.length; i++) {
-    for (let j = i + 1; j < nums.length; j++) {
-      // Si la somme des deux nombres égale la cible
-      if (nums[i] + nums[j] === target) {
-        return [i, j];  // Retourner les indices
-      }
+    const complement = target - nums[i];
+    // Le complément a-t-il déjà été vu ?
+    if (seen.has(complement)) {
+      return [seen.get(complement), i];  // Retourner les indices
     }
+    seen.set(nums[i], i);
   }
   return null;  // Aucune solution trouvée
-}`,
+}
+// Complexité : O(n) en temps, O(n) en espace
+// (la force brute à deux boucles imbriquées est en O(n²))`,
     verify: (input: string) => {
       const [arr, target] = input.split("|").map(s => s.trim());
       const nums = arr.split(",").map(Number);
@@ -57,13 +60,14 @@ const challenges = [
     id: 2,
     title: "Maximum Subarray Sum",
     description: "Trouvez la somme maximale d'un sous-tableau contigu.",
-    technique: "Sliding Window",
+    technique: "Kadane (programmation dynamique)",
     examples: [
       { input: "-2,1,-3,4,-1,2,1,-5,4", output: "6" },
       { input: "1,2,3,-2,5", output: "9" },
     ],
     hint: "Utilisez l'algorithme de Kadane pour suivre la somme maximale locale et globale.",
     solution: `function maxSubArray(nums) {
+  // Suppose un tableau non vide (sinon nums[0] est undefined)
   // Initialiser les variables de suivi
   let maxSoFar = nums[0];
   let maxEndingHere = nums[0];
@@ -102,12 +106,12 @@ const challenges = [
     ],
     hint: "Utilisez un Set pour un accès O(1) et cherchez le début de chaque séquence.",
     solution: `function longestConsecutive(nums) {
-  // Créer un Set pour un accès O(1)
+  // Créer un Set pour un accès O(1) (élimine aussi les doublons)
   const numSet = new Set(nums);
   let maxLength = 0;
   
-  // Parcourir chaque nombre
-  for (const num of nums) {
+  // Parcourir chaque valeur distincte
+  for (const num of numSet) {
     // Vérifier si c'est le début d'une séquence
     if (!numSet.has(num - 1)) {
       let currentNum = num;

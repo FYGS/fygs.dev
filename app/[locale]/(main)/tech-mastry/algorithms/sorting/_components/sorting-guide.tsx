@@ -17,11 +17,14 @@ const sortingAlgorithms = [
     code: `function bubbleSort(arr) {
   const n = arr.length;
   for (let i = 0; i < n - 1; i++) {
+    let swapped = false;
     for (let j = 0; j < n - i - 1; j++) {
       if (arr[j] > arr[j + 1]) {
         [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+        swapped = true;
       }
     }
+    if (!swapped) break; // déjà trié : meilleur cas O(n)
   }
   return arr;
 }`,
@@ -183,7 +186,7 @@ const optimizationTips = [
     title: "Choix de l'Algorithme",
     tips: [
       "Petits tableaux (n < 50) : Tri par insertion",
-      "Mémoire limitée : Tri rapide",
+      "Mémoire limitée : Tri par tas ou tri rapide",
       "Stabilité requise : Tri fusion",
       "Presque trié : Tri par insertion",
     ],

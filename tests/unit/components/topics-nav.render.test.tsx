@@ -21,16 +21,16 @@ describe("topics data", () => {
       })),
     }));
     expect(flat.length).toBe(15);
-    expect(flat.reduce((n, s) => n + s.items.length, 0)).toMatchInlineSnapshot(`104`);
+    expect(flat.reduce((n, s) => n + s.items.length, 0)).toMatchInlineSnapshot(`107`);
     expect(flat.map((s) => [s.title, s.items.length])).toMatchInlineSnapshot(`
       [
         [
           "Outils Pratiques",
-          2,
+          3,
         ],
         [
           "Algorithmes",
-          7,
+          8,
         ],
         [
           "Structures de Données",
@@ -42,7 +42,7 @@ describe("topics data", () => {
         ],
         [
           "System Design",
-          6,
+          7,
         ],
         [
           "Frontend",
@@ -86,7 +86,7 @@ describe("topics data", () => {
         ],
       ]
     `);
-    expect(createHash("md5").update(JSON.stringify(flat)).digest("hex")).toMatchInlineSnapshot(`"d18cf8813e56874517f1d110dc547ded"`);
+    expect(createHash("md5").update(JSON.stringify(flat)).digest("hex")).toMatchInlineSnapshot(`"dc2ab761618207961403f78c1ec19527"`);
   });
 });
 
@@ -97,36 +97,36 @@ describe("TopicsNav rendering", () => {
     expect(hashes).toMatchInlineSnapshot(`
       [
         "51c32eb5",
-        "27766433",
-        "9f440c0f",
-        "a995bb4b",
-        "41803065",
-        "9c92075c",
-        "71980770",
-        "64a8a69a",
-        "a01ce095",
-        "60c39852",
-        "8e7459e9",
-        "848af879",
-        "03576528",
-        "4235004a",
-        "18e0c460",
-        "3603e64c",
-        "3603e64c",
-        "3603e64c",
-        "3603e64c",
-        "3603e64c",
-        "3603e64c",
-        "3603e64c",
-        "3603e64c",
-        "3603e64c",
-        "3603e64c",
-        "3603e64c",
-        "3603e64c",
-        "3603e64c",
-        "3603e64c",
-        "3603e64c",
-        "3603e64c",
+        "516e309d",
+        "89c0f247",
+        "6b38af2d",
+        "9ac352a5",
+        "bc4ff7bf",
+        "5ba39618",
+        "57817015",
+        "3c08521b",
+        "eaab100e",
+        "21dd4bca",
+        "4d7d44e2",
+        "1cf0d2f0",
+        "2c4a0f1e",
+        "b8b98b51",
+        "abd186fd",
+        "abd186fd",
+        "abd186fd",
+        "abd186fd",
+        "abd186fd",
+        "abd186fd",
+        "abd186fd",
+        "abd186fd",
+        "abd186fd",
+        "abd186fd",
+        "abd186fd",
+        "abd186fd",
+        "abd186fd",
+        "abd186fd",
+        "abd186fd",
+        "abd186fd",
       ]
     `);
   });

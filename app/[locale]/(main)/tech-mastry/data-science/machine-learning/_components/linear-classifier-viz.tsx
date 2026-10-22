@@ -107,7 +107,7 @@ export function LinearClassifierViz() {
 
       <div className="flex items-center gap-3">
         <Badge variant="outline">
-          Précision : {Math.round((correct / points.length) * 100)}%
+          Exactitude (accuracy) : {Math.round((correct / points.length) * 100)}%
         </Badge>
         <span className="text-xs text-muted-foreground">
           {correct}/{points.length} correctement classé(s)

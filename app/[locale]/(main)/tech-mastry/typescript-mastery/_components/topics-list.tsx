@@ -41,13 +41,13 @@ const topics = [
   },
   {
     title: "Design Patterns Typés",
-    description: "Builder, Strategy, Observer, State Machine typés. Patterns qui exploitent le système de types.",
+    description: "Builder, Strategy, State Machine, Repository typés. Patterns qui exploitent le système de types.",
     icon: Layers,
     color: "text-orange-500",
     gradient: "from-orange-500/10 to-orange-500/5",
     href: "/tech-mastry/typescript-mastery/design-patterns",
     level: "Avancé" as Level,
-    tags: ["Builder", "Strategy", "State Machine", "Branded Types", "Phantom Types"],
+    tags: ["Builder", "Strategy", "State Machine", "Repository", "Generics"],
   },
   {
     title: "Sécurité au Runtime",

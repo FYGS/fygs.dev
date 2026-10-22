@@ -67,7 +67,7 @@ const complexityClasses = [
     name: "O(2ⁿ)",
     type: "Exponentielle",
     description: "Croissance explosive, souvent impraticable",
-    examples: ["Fibonacci récursif naïf", "Problème du voyageur de commerce"],
+    examples: ["Fibonacci récursif naïf", "Énumération de tous les sous-ensembles"],
     realWorld: "Générer toutes les combinaisons possibles",
   },
 ];
@@ -131,7 +131,7 @@ const practicalExamples = [
       {
         name: "Recherche binaire",
         complexity: "O(log n)",
-        code: "let l = 0, r = arr.length - 1;\nwhile (l <= r) {\n  let m = (l + r) / 2;\n  if (arr[m] === target) return m;\n  if (arr[m] < target) l = m + 1;\n  else r = m - 1;\n}",
+        code: "let l = 0, r = arr.length - 1;\nwhile (l <= r) {\n  let m = Math.floor((l + r) / 2);\n  if (arr[m] === target) return m;\n  if (arr[m] < target) l = m + 1;\n  else r = m - 1;\n}",
         pros: "Très efficace pour les grands tableaux",
         cons: "Nécessite un tableau trié",
       },

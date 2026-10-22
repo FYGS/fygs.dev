@@ -197,10 +197,10 @@ function analyzeServerLogs(logs) {
             Des outils comme <strong>Elasticsearch</strong> et{" "}
             <strong>Logstash</strong> utilisent des algorithmes de tri
             optimisés pour traiter des volumes massifs de logs.
-            Elasticsearch implémente des structures de données
-            spécialisées comme les index inversés et les B-trees pour
-            permettre des tris et des recherches rapides sur des
-            téraoctets de données de logs.
+            Elasticsearch repose sur des structures de données
+            spécialisées (index inversés, valeurs de colonnes triables sur
+            disque appelées doc values) pour permettre des tris et des
+            recherches rapides sur de très gros volumes de logs.
           </p>
           <p className="text-sm text-blue-400 mt-2">
             Pour les analyses en temps réel, ces outils utilisent souvent

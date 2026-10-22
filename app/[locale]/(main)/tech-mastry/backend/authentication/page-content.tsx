@@ -53,7 +53,7 @@ function JwtFlow() {
           </div>
           <div className="grid grid-cols-3 gap-2 text-[10px]">
             <div className="p-2 rounded bg-red-500/5 border border-red-500/10"><p className="font-bold text-red-400">Header</p><p className="text-muted-foreground">Algorithm + Type</p></div>
-            <div className="p-2 rounded bg-purple-500/5 border border-purple-500/10"><p className="font-bold text-purple-400">Payload</p><p className="text-muted-foreground">Claims (userId, exp...)</p></div>
+            <div className="p-2 rounded bg-purple-500/5 border border-purple-500/10"><p className="font-bold text-purple-400">Payload</p><p className="text-muted-foreground">Claims (userId, exp...) : encode, non chiffre</p></div>
             <div className="p-2 rounded bg-cyan-500/5 border border-cyan-500/10"><p className="font-bold text-cyan-400">Signature</p><p className="text-muted-foreground">HMAC(header.payload, secret)</p></div>
           </div>
         </div>
@@ -79,7 +79,7 @@ function OAuthFlow() {
     },
     pkce: {
       name: "Authorization Code + PKCE",
-      desc: "Flow securise pour SPA et apps mobiles (pas de client_secret)",
+      desc: "Flow securise pour SPA et apps mobiles (clients publics, pas de client_secret) ; recommande aussi pour les clients confidentiels",
       steps: [
         { from: "Client", to: "Client", label: "1. Genere code_verifier + code_challenge", color: "text-blue-400" },
         { from: "Client", to: "Auth Server", label: "2. Redirect /authorize + code_challenge", color: "text-yellow-400" },

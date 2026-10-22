@@ -25,9 +25,9 @@ function SetupSteps() {
       icon: Key,
       color: "text-blue-500",
       content: [
-        "Allez sur console.anthropic.com",
-        "Créez un compte avec email ou SSO Google/GitHub",
-        "Vérifiez votre email et activez la double authentification",
+        "Allez sur la console développeur Anthropic (console.anthropic.com, adresse à vérifier sur le site officiel)",
+        "Créez un compte avec email ou SSO",
+        "Vérifiez votre email et sécurisez le compte (mot de passe fort, authentification renforcée si proposée)",
         "Accédez au Dashboard principal",
       ],
       code: null,
@@ -51,10 +51,10 @@ function SetupSteps() {
       content: [
         "Installez le SDK : npm install @anthropic-ai/sdk",
         "Ou utilisez l'API REST directement via fetch",
-        "Choisissez le modèle : claude-sonnet-4-20250514 (recommandé)",
+        "Choisissez le modèle : identifiant à relever dans la documentation officielle des modèles (les versions évoluent)",
         "Configurez la temperature selon votre cas d'usage",
       ],
-      code: "import Anthropic from '@anthropic-ai/sdk';\n\nconst client = new Anthropic({\n  apiKey: process.env.ANTHROPIC_API_KEY,\n});\n\nconst message = await client.messages.create({\n  model: 'claude-sonnet-4-20250514',\n  max_tokens: 1024,\n  messages: [\n    { role: 'user', content: 'Bonjour Claude !' }\n  ],\n});",
+      code: "import Anthropic from '@anthropic-ai/sdk';\n\nconst client = new Anthropic({\n  apiKey: process.env.ANTHROPIC_API_KEY,\n});\n\nconst message = await client.messages.create({\n  model: 'MODEL_ID', // identifiant à vérifier sur le site officiel\n  max_tokens: 1024,\n  messages: [\n    { role: 'user', content: 'Bonjour Claude !' }\n  ],\n});",
     },
     {
       title: "4. Configurer un Project",
@@ -66,7 +66,7 @@ function SetupSteps() {
         "Définissez un system prompt spécifique au projet",
         "Les fichiers sont disponibles dans toutes les conversations du projet",
       ],
-      code: "// System prompt pour un projet Next.js\n// -> Settings > Custom Instructions\n\nTu es un expert Next.js 15+ avec App Router.\nTu utilises TypeScript strict, shadcn/ui, et Tailwind.\nTu suis les patterns RSC (React Server Components).\nTu privilégies les Server Actions pour les mutations.\nTu valides avec Zod et utilises Prisma pour la BDD.",
+      code: "// System prompt pour un projet Next.js\n// -> Project > Instructions du projet\n\nTu es un expert Next.js 15+ avec App Router.\nTu utilises TypeScript strict, shadcn/ui, et Tailwind.\nTu suis les patterns RSC (React Server Components).\nTu privilégies les Server Actions pour les mutations.\nTu valides avec Zod et utilises Prisma pour la BDD.",
     },
     {
       title: "5. Configurer MCP Servers",
@@ -78,7 +78,7 @@ function SetupSteps() {
         "Configuration via claude_desktop_config.json",
         "Permet à Claude d'interagir avec votre système local",
       ],
-      code: '// ~/Library/Application Support/Claude/claude_desktop_config.json\n// (macOS) ou %APPDATA%\\Claude\\ (Windows)\n\n{\n  "mcpServers": {\n    "filesystem": {\n      "command": "npx",\n      "args": [\n        "-y",\n        "@modelcontextprotocol/server-filesystem",\n        "/Users/you/projects"\n      ]\n    },\n    "github": {\n      "command": "npx",\n      "args": ["-y", "@modelcontextprotocol/server-github"],\n      "env": {\n        "GITHUB_PERSONAL_ACCESS_TOKEN": "ghp_xxx"\n      }\n    }\n  }\n}',
+      code: '// ~/Library/Application Support/Claude/claude_desktop_config.json\n// (macOS) ou %APPDATA%\\Claude\\ (Windows)\n// Les lignes // sont des commentaires : à retirer dans le vrai fichier JSON.\n// @modelcontextprotocol/server-github est déprécié : préférez le serveur MCP officiel de GitHub.\n\n{\n  "mcpServers": {\n    "filesystem": {\n      "command": "npx",\n      "args": [\n        "-y",\n        "@modelcontextprotocol/server-filesystem",\n        "/Users/you/projects"\n      ]\n    },\n    "github": {\n      "command": "npx",\n      "args": ["-y", "@modelcontextprotocol/server-github"],\n      "env": {\n        "GITHUB_PERSONAL_ACCESS_TOKEN": "ghp_xxx"\n      }\n    }\n  }\n}',
     },
     {
       title: "6. Claude Code (CLI)",
@@ -183,21 +183,21 @@ function SetupSteps() {
 function ModelComparison() {
   const models = [
     {
-      name: "Claude Opus 4",
+      name: "Claude Opus (gamme haute)",
       speed: 35,
       intel: 98,
       cost: 95,
       best: "Raisonnement complexe, recherche, analyse profonde",
     },
     {
-      name: "Claude Sonnet 4",
+      name: "Claude Sonnet (gamme intermédiaire)",
       speed: 70,
       intel: 92,
       cost: 50,
       best: "Développement, tâches quotidiennes, meilleur rapport qualité/prix",
     },
     {
-      name: "Claude Haiku 3.5",
+      name: "Claude Haiku (gamme rapide)",
       speed: 95,
       intel: 80,
       cost: 15,
@@ -209,7 +209,7 @@ function ModelComparison() {
     <Card className="p-5 space-y-4">
       <div className="flex items-center gap-2 text-lg font-semibold">
         <Sparkles className="w-5 h-5 text-violet-500" />
-        Comparatif des Modèles Claude
+        Comparatif des Modèles Claude (valeurs indicatives, versions et tarifs à vérifier sur le site officiel)
       </div>
 
       <div className="space-y-4">
@@ -277,7 +277,7 @@ function ClaudeBestPractices() {
       tips: [
         "Définissez un rôle précis et des contraintes claires",
         "Spécifiez le format de sortie attendu (JSON, Markdown, etc.)",
-        "Ajoutez des règles négatives : 'Ne fais JAMAIS...'",
+        "Préférez dire ce qu'il faut faire plutôt qu'empiler des interdictions en majuscules",
         "Utilisez des exemples few-shot dans le system prompt",
       ],
     },

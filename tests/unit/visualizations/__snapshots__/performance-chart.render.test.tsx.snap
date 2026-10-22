@@ -15,27 +15,27 @@ exports[`PerformanceChart rendering > draws the same chart: memory 1`] = `
 
 exports[`PerformanceChart rendering > draws the same chart: performance / bar 1`] = `
 {
-  "hoverIn": "16fcf0ce",
-  "hovered": "4f88f21b",
-  "initial": "55d2c46c",
-  "settled": "738eb688",
+  "hoverIn": "655ec9a4",
+  "hovered": "08b2a9d9",
+  "initial": "2bc7b371",
+  "settled": "4d6f781a",
   "textCount": 53,
   "texts": "54d5164a",
   "titleCount": 7,
-  "titles": "a82a775d",
+  "titles": "37e4e0ca",
 }
 `;
 
 exports[`PerformanceChart rendering > draws the same chart: performance / line 1`] = `
 {
-  "hoverIn": "6e1385ed",
-  "hovered": "48cccb2d",
-  "initial": "d414e180",
-  "settled": "48cccb2d",
+  "hoverIn": "7fb47e6e",
+  "hovered": "82b30425",
+  "initial": "b38e4bfd",
+  "settled": "82b30425",
   "textCount": 52,
   "texts": "c55127c7",
   "titleCount": 35,
-  "titles": "7a5b8ed6",
+  "titles": "195d5434",
 }
 `;
 

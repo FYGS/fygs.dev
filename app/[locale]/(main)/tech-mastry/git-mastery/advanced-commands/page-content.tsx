@@ -93,14 +93,14 @@ const categories: { id: string; label: string; commands: Command[] }[] = [
         syntax: "git reflog",
         description: "Journal local de TOUTES les modifications de HEAD. Votre filet de sécurité ultime.",
         examples: [
-          { cmd: "git reflog", explanation: "Voir les 30 dernières actions" },
+          { cmd: "git reflog", explanation: "Voir les derniers déplacements de HEAD" },
           { cmd: "git reflog show feature-branch", explanation: "Reflog d'une branche spécifique" },
-          { cmd: "git checkout HEAD@{5}", explanation: "Revenir 5 actions en arrière" },
+          { cmd: "git checkout HEAD@{5}", explanation: "Se placer là où était HEAD il y a 5 actions (HEAD détaché)" },
           { cmd: "git branch recovery HEAD@{3}", explanation: "Récupérer une branche supprimée" },
         ],
         tips: [
           "Le reflog est LOCAL uniquement (pas partagé)",
-          "Expire après 90 jours par défaut",
+          "Entrées expirées après 90 jours par défaut (30 jours pour les commits inaccessibles)",
           "Sauve des rebase ou reset --hard accidentels",
         ],
       },
@@ -147,7 +147,7 @@ const categories: { id: string; label: string; commands: Command[] }[] = [
         syntax: "git worktree add <path> <branch>",
         description: "Travailler sur plusieurs branches simultanément dans des répertoires séparés.",
         examples: [
-          { cmd: "git worktree add ../hotfix main", explanation: "Créer un worktree sur main" },
+          { cmd: "git worktree add -b hotfix ../hotfix main", explanation: "Créer un worktree sur une nouvelle branche hotfix issue de main" },
           { cmd: "git worktree list", explanation: "Lister tous les worktrees" },
           { cmd: "git worktree remove ../hotfix", explanation: "Supprimer un worktree" },
         ],

@@ -135,7 +135,8 @@ class Eagle implements FlyingBird {
 
 class Penguin implements Bird {
   move() { return "Swimming!"; }
-  // Pas de méthode fly() — correct !`,
+  // Pas de méthode fly() — correct !
+}`,
     },
     color: "text-yellow-500",
   },

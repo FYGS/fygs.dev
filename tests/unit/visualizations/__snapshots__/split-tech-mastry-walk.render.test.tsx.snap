@@ -2,55 +2,55 @@
 
 exports[`tech-mastry components split into smaller files > aria-section renders the same markup in every state reachable by clicking 1`] = `
 [
-  "1bed44bf",
-  "1bed44bf",
-  "1bed44bf",
-  "1bed44bf",
-  "2632f073",
-  "65749189",
-  "46373fef",
-  "c5d0a4b7",
-  "c5d0a4b7",
-  "c5d0a4b7",
-  "c5d0a4b7",
-  "a1a9d182",
-  "e2739cc9",
-  "fe538d7c",
-  "1bed44bf",
-  "b09f51b6",
-  "95d1bfd3",
-  "2bdab3bb",
+  "215bab74",
+  "215bab74",
+  "215bab74",
+  "215bab74",
+  "4a147a7a",
+  "c93d8fe6",
+  "7cfacd18",
+  "22d19079",
+  "22d19079",
+  "22d19079",
+  "22d19079",
+  "a814f66d",
+  "e1b42ed1",
+  "97f67e50",
+  "215bab74",
+  "3270b20a",
+  "fc5be9e8",
+  "b0bdc026",
   "aecbebf4",
   "eb6827e9",
-  "8aacb174",
-  "3bff33ff",
-  "225e42bb",
+  "d15970be",
+  "27da3e5e",
+  "46855829",
 ]
 `;
 
 exports[`tech-mastry components split into smaller files > arrays-page renders the same markup in every state reachable by clicking 1`] = `
 [
-  "36dc7752",
-  "b38b9996",
-  "088231a4",
-  "feae74a8",
-  "eba3a6bf",
-  "9b7a6736",
-  "4c468509",
-  "7d954ee2",
-  "7d954ee2",
-  "692d3e7c",
-  "d79247e8",
-  "7f793202",
-  "7f793202",
-  "7f793202",
-  "7f793202",
-  "7f793202",
-  "7f793202",
-  "7f793202",
-  "8fbc7b21",
-  "7f793202",
-  "7f793202",
+  "ebd5d3de",
+  "3656cbe2",
+  "eb81c7c4",
+  "9ebe1198",
+  "690b1434",
+  "5e1e4866",
+  "b6b30ad4",
+  "9565c4ef",
+  "9565c4ef",
+  "99ccdcb3",
+  "b5ed1b87",
+  "4a136dbd",
+  "4a136dbd",
+  "4a136dbd",
+  "4a136dbd",
+  "4a136dbd",
+  "4a136dbd",
+  "4a136dbd",
+  "5960ef1e",
+  "4a136dbd",
+  "4a136dbd",
 ]
 `;
 
@@ -72,22 +72,22 @@ exports[`tech-mastry components split into smaller files > binary-search-3d rend
 
 exports[`tech-mastry components split into smaller files > dp-real-world renders the same markup in every state reachable by clicking 1`] = `
 [
-  "e986e337",
-  "a03b241c",
-  "aca110dc",
-  "ab3b086d",
-  "ac1a9513",
-  "a4dc1976",
-  "06b09919",
-  "83ca3897",
-  "22d6d197",
-  "d7ad1471",
-  "b6cb75d1",
-  "dc4956fa",
-  "e986e337",
-  "68f47c99",
-  "9d00d148",
-  "c1c585a4",
+  "3a74d25e",
+  "5f4f6a98",
+  "2917d57a",
+  "14f11e13",
+  "60cda750",
+  "28063c60",
+  "1afe67a7",
+  "a3452b33",
+  "1dcb4c37",
+  "b93fd3fd",
+  "1ee23eea",
+  "30b66b9b",
+  "3a74d25e",
+  "ed97b2e1",
+  "238b8b86",
+  "987acdc6",
 ]
 `;
 
@@ -97,20 +97,20 @@ exports[`tech-mastry components split into smaller files > dynamic-programming-g
   "6f36160e",
   "e4d4d74d",
   "26120d80",
-  "057fd70b",
-  "2bffe1d2",
+  "98ac509f",
+  "5e88b551",
   "c8dfc5dc",
 ]
 `;
 
 exports[`tech-mastry components split into smaller files > filesystem-case renders the same markup in every state reachable by clicking 1`] = `
 [
-  "d1e906e3",
-  "d1e906e3",
-  "d1e906e3",
-  "29c2023e",
+  "3fe134b4",
+  "3fe134b4",
+  "3fe134b4",
+  "161fb8e6",
   "388ae648",
-  "48ac30be",
+  "9a11905c",
 ]
 `;
 
@@ -140,13 +140,13 @@ exports[`tech-mastry components split into smaller files > graph-database-update
 
 exports[`tech-mastry components split into smaller files > machine-learning-page renders the same markup in every state reachable by clicking 1`] = `
 [
-  "ccfc6580",
-  "ccfc6580",
-  "db0422a1",
-  "8105a3bb",
-  "ccfc6580",
-  "db0422a1",
-  "8105a3bb",
+  "ba122f7d",
+  "ba122f7d",
+  "df0f78c8",
+  "aae874ca",
+  "ba122f7d",
+  "df0f78c8",
+  "aae874ca",
 ]
 `;
 
@@ -159,26 +159,26 @@ exports[`tech-mastry components split into smaller files > memoization-section r
   "48a39b17",
   "539c8899",
   "a63c6fae",
-  "fed802e3",
-  "fed802e3",
-  "fed802e3",
-  "fed802e3",
-  "ed162764",
-  "13975b83",
-  "f525a3cb",
+  "a66ec6f3",
+  "a66ec6f3",
+  "a66ec6f3",
+  "a66ec6f3",
+  "a1c7f9f1",
+  "6178f7a4",
+  "9053b9eb",
   "1e126b2b",
   "350aff2b",
   "cdd36586",
-  "f3456775",
-  "342d3094",
-  "252de682",
-  "cef5a648",
-  "b2ff303e",
-  "bd8cc924",
-  "1f399a89",
-  "b7ab9c55",
-  "1553d861",
-  "bd555dd8",
+  "3fc9ceeb",
+  "0e019dd9",
+  "47252246",
+  "3c9b1cd3",
+  "c03e6524",
+  "7bc96892",
+  "63cee05c",
+  "560abfe1",
+  "1e8ec9c0",
+  "4550f5c8",
 ]
 `;
 
@@ -204,52 +204,52 @@ exports[`tech-mastry components split into smaller files > searching-algorithms-
 [
   "d7bfe920",
   "d7bfe920",
-  "84ae88ef",
+  "6b8be066",
   "d7bfe920",
   "d7bfe920",
-  "84ae88ef",
+  "6b8be066",
   "d7bfe920",
   "6887e84a",
   "cd7f76a4",
-  "3a5de20f",
-  "428ddfc7",
+  "f0603c2b",
+  "e69812d0",
   "4f4b6ffa",
-  "267ec9a1",
+  "5382c697",
 ]
 `;
 
 exports[`tech-mastry components split into smaller files > server-case renders the same markup in every state reachable by clicking 1`] = `
 [
-  "12528c1e",
-  "12528c1e",
-  "12528c1e",
-  "8620b154",
-  "c0e8fee0",
-  "b80be971",
+  "a24700d5",
+  "a24700d5",
+  "a24700d5",
+  "cf442b76",
+  "4f21cc42",
+  "be5e1ec1",
 ]
 `;
 
 exports[`tech-mastry components split into smaller files > service-mesh-explanation-app-mesh renders the same markup in every state reachable by clicking 1`] = `
 [
-  "aff5410d",
+  "92873617",
 ]
 `;
 
 exports[`tech-mastry components split into smaller files > service-mesh-explanation-consul renders the same markup in every state reachable by clicking 1`] = `
 [
-  "8d488beb",
+  "92135fc4",
 ]
 `;
 
 exports[`tech-mastry components split into smaller files > service-mesh-explanation-istio renders the same markup in every state reachable by clicking 1`] = `
 [
-  "31dcf52a",
+  "1ef964bd",
 ]
 `;
 
 exports[`tech-mastry components split into smaller files > service-mesh-explanation-linkerd renders the same markup in every state reachable by clicking 1`] = `
 [
-  "129c9745",
+  "973e4895",
 ]
 `;
 
@@ -288,6 +288,6 @@ exports[`tech-mastry components split into smaller files > sorting-quizzes rende
   "320ef97b",
   "634cf149",
   "0a80a5bf",
-  "a1a445fe",
+  "f75f57a8",
 ]
 `;

@@ -244,11 +244,11 @@ export function ModernSortingGuide() {
                 Le saviez-vous ?
               </h3>
               <p className="text-sm text-blue-400">
-                Les navigateurs web modernes utilisent des algorithmes de tri
-                hybrides comme <strong>Timsort</strong> (combinaison de Merge
-                Sort et Insertion Sort) pour leur méthode{" "}
-                <code>Array.sort()</code>, offrant d&apos;excellentes
-                performances dans presque tous les cas.
+                Le moteur V8 (Chrome, Node.js) utilise l&apos;algorithme hybride{" "}
+                <strong>Timsort</strong> (combinaison de Merge Sort et
+                Insertion Sort) pour <code>Array.sort()</code>, qui est stable
+                depuis ES2019 et offre d&apos;excellentes performances sur les
+                données partiellement triées.
               </p>
             </div>
           </div>

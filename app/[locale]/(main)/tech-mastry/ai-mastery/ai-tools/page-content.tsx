@@ -28,15 +28,15 @@ const tools: AITool[] = [
   {
     name: "Google Gemini / AI Studio",
     category: "LLM Platform",
-    desc: "Suite IA de Google : Gemini 2.5 Pro/Flash, Google AI Studio pour le prototypage, et API Vertex AI pour la production.",
+    desc: "Suite IA de Google : modèles Gemini (gammes Pro/Flash), Google AI Studio pour le prototypage, et API Vertex AI pour la production.",
     features: [
-      "Gemini 2.5 Pro : contexte 1M tokens",
+      "Gemini Pro : contexte très long (jusqu'à 1M tokens selon le modèle, à vérifier)",
       "Google AI Studio : interface gratuite de test",
       "Multimodal : texte, images, vidéo, audio",
       "Grounding avec Google Search",
       "Intégration Google Workspace",
     ],
-    pricing: "Gratuit (AI Studio) / Pay-per-use (API)",
+    pricing: "Offre gratuite (AI Studio) / paiement à l'usage (API), tarifs à vérifier sur le site officiel",
     bestFor: "Prototypage rapide, applications multimodales, long contexte",
     rating: 90,
     url: "aistudio.google.com",
@@ -50,10 +50,10 @@ const tools: AITool[] = [
       "Completions contextuelles avec codebase complète",
       "Chat avec @ références (fichiers, docs, web)",
       "Composer : édition multi-fichiers en agent mode",
-      ".cursorrules pour instructions personnalisées",
+      "Règles projet (.cursor/rules ; l'ancien .cursorrules est déprécié)",
       "Support MCP natif",
     ],
-    pricing: "$20/mois Pro / $40/mois Business",
+    pricing: "Offre gratuite limitée + abonnements payants (tarifs à vérifier sur le site officiel)",
     bestFor: "Développeurs voulant l'IA nativement dans l'IDE",
     rating: 92,
     url: "cursor.com",
@@ -62,15 +62,15 @@ const tools: AITool[] = [
   {
     name: "Windsurf (Codeium)",
     category: "IDE IA",
-    desc: "IDE IA par Codeium avec Cascade (agent flow), Supercomplete, et intégration profonde.",
+    desc: "IDE IA initialement développé par Codeium (éditeur actuel à vérifier sur le site officiel), avec Cascade (agent flow), Supercomplete, et intégration profonde.",
     features: [
       "Cascade : flux agentique multi-étapes",
       "Supercomplete : suggestions multi-lignes intelligentes",
       "Flows : workflows automatisés pour le développement",
-      "Gratuit avec limites généreuses",
+      "Offre gratuite avec limites (à vérifier)",
       "Support de nombreux langages",
     ],
-    pricing: "Gratuit / $10/mois Pro",
+    pricing: "Offre gratuite + abonnement payant (tarifs à vérifier sur le site officiel)",
     bestFor: "Alternative gratuite à Cursor, développeurs budget-conscious",
     rating: 85,
     url: "windsurf.com",
@@ -79,18 +79,18 @@ const tools: AITool[] = [
   {
     name: "ChatGPT (OpenAI)",
     category: "LLM Platform",
-    desc: "Le chatbot IA le plus connu. GPT-4o, o1/o3 pour le raisonnement, DALL-E, plugins.",
+    desc: "Chatbot IA très répandu. Modèles GPT, modèles de raisonnement, génération d'images, GPTs personnalisés.",
     features: [
-      "GPT-4o : rapide et multimodal",
-      "o1/o3 : raisonnement avancé (chain-of-thought)",
+      "Modèles GPT généralistes et multimodaux",
+      "Modèles de raisonnement dédiés (versions à vérifier)",
       "Custom GPTs : créez vos assistants spécialisés",
       "Code Interpreter : exécution Python",
       "API avec function calling",
     ],
-    pricing: "Gratuit / $20/mois Plus / $200/mois Pro",
+    pricing: "Offre gratuite + abonnements payants (tarifs à vérifier sur le site officiel)",
     bestFor: "Usage général, raisonnement complexe, prototypage rapide",
     rating: 88,
-    url: "chat.openai.com",
+    url: "chatgpt.com",
     color: "border-green-500/30",
   },
   {
@@ -104,7 +104,7 @@ const tools: AITool[] = [
       "Export direct vers votre projet",
       "Support Next.js App Router natif",
     ],
-    pricing: "Gratuit (limites) / $20/mois Premium",
+    pricing: "Offre gratuite limitée + abonnements payants (tarifs à vérifier sur le site officiel)",
     bestFor: "Prototypage UI rapide, composants React/Next.js",
     rating: 87,
     url: "v0.dev",
@@ -121,7 +121,7 @@ const tools: AITool[] = [
       "Multi-frameworks (React, Vue, Svelte...)",
       "Collaboration en temps réel",
     ],
-    pricing: "Gratuit / $20/mois Pro",
+    pricing: "Offre gratuite + abonnement payant (tarifs à vérifier sur le site officiel)",
     bestFor: "Prototypage rapide full-stack, démos, MVPs",
     rating: 83,
     url: "bolt.new",
@@ -138,7 +138,7 @@ const tools: AITool[] = [
       "Collections pour organiser les recherches",
       "API pour intégration",
     ],
-    pricing: "Gratuit / $20/mois Pro",
+    pricing: "Offre gratuite + abonnement payant (tarifs à vérifier sur le site officiel)",
     bestFor: "Recherche technique, veille technologique, documentation",
     rating: 86,
     url: "perplexity.ai",
@@ -271,7 +271,7 @@ function ToolsGrid() {
             </div>
             <div className="space-y-2">
               <label className="text-xs font-medium text-muted-foreground">
-                Score global
+                Score indicatif (subjectif)
               </label>
               <div className="flex items-center gap-2">
                 <div className="h-3 flex-1 rounded-full bg-muted overflow-hidden">
@@ -356,7 +356,7 @@ function ComparisonTable() {
     <Card className="p-5 space-y-4">
       <div className="flex items-center gap-2 text-lg font-semibold">
         <BarChart3 className="w-5 h-5 text-blue-500" />
-        Tableau Comparatif
+        Tableau Comparatif (évaluation subjective)
       </div>
 
       <div className="overflow-x-auto">

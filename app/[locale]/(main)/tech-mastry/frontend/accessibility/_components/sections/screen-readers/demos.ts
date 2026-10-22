@@ -21,7 +21,7 @@ export const headingStructureDemo = `
 `;
 
 export const ariaLiveDemo = `
-<div role="alert" aria-live="polite" id="notification">
+<div role="status" aria-live="polite" id="notification">
   <!-- Content will be updated dynamically -->
 </div>
 
@@ -45,7 +45,7 @@ export const formAccessibilityDemo = `
   </div>
 
   <div class="form-group">
-    <label for="newsletter">Email Preferences</label>
+    <span id="newsletter-label">Email Preferences</span>
     <div role="group" aria-labelledby="newsletter-label">
       <input 
         type="checkbox" 

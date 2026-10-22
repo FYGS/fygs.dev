@@ -75,7 +75,7 @@ export function DistributedCaseStudies() {
         "ElasticSearch",
       ],
       results:
-        "Amazon peut désormais traiter plus de 300 millions de commandes par jour lors des périodes de pointe, avec une disponibilité de 99,99% et des recommandations personnalisées qui augmentent significativement les ventes croisées.",
+        "Amazon peut désormais absorber des pics de commandes considérables (Prime Day, Black Friday) avec une très haute disponibilité et des recommandations personnalisées qui augmentent significativement les ventes croisées.",
       lessons: [
         "Concevoir pour l'élasticité et la scalabilité horizontale",
         "Utiliser des bases de données NoSQL pour les charges de travail à grande échelle",
@@ -107,7 +107,7 @@ export function DistributedCaseStudies() {
         "Chaos Monkey",
       ],
       results:
-        "Netflix peut désormais servir plus de 200 millions d'abonnés dans 190 pays, avec une disponibilité de 99,99% et une expérience utilisateur fluide même pendant les pics d'utilisation.",
+        "Netflix peut désormais servir plus de 300 millions d'abonnés dans plus de 190 pays, avec une très haute disponibilité et une expérience utilisateur fluide même pendant les pics d'utilisation.",
       lessons: [
         "Adopter une architecture de microservices pour une scalabilité indépendante",
         "Concevoir pour les pannes avec des disjoncteurs et l'ingénierie du chaos",
@@ -140,7 +140,7 @@ export function DistributedCaseStudies() {
         "TensorFlow",
       ],
       results:
-        "Google peut désormais traiter plus de 8,5 milliards de requêtes de recherche par jour avec des temps de réponse inférieurs à 200ms, tout en indexant des centaines de milliards de pages web et en analysant des exaoctets de données.",
+        "Google peut désormais traiter plusieurs milliards de requêtes de recherche par jour avec des temps de réponse de l'ordre de quelques centaines de millisecondes, tout en indexant des centaines de milliards de pages web et en analysant des exaoctets de données.",
       lessons: [
         "Concevoir des systèmes distribués pour une échelle massive",
         "Utiliser des modèles de programmation simplifiés pour le traitement parallèle (MapReduce)",
@@ -166,13 +166,13 @@ export function DistributedCaseStudies() {
         "Kafka",
         "Cassandra",
         "Redis",
-        "PostgreSQL/PostGIS",
+        "H3 (index géospatial)",
         "Elasticsearch",
         "Go",
         "Node.js",
       ],
       results:
-        "Uber peut désormais traiter plus de 100 millions de requêtes de géolocalisation par jour avec une latence inférieure à 100 ms, permettant une mise en relation rapide entre chauffeurs et passagers.",
+        "Uber peut désormais traiter un très grand volume de mises à jour et de requêtes de géolocalisation avec une faible latence, permettant une mise en relation rapide entre chauffeurs et passagers.",
       lessons: [
         "Partitionner les données géographiquement pour réduire la latence",
         "Utiliser des bases de données spécialisées pour les requêtes géospatiales",
@@ -200,12 +200,12 @@ export function DistributedCaseStudies() {
         "Event Hub",
         "Azure Front Door",
         "Azure CDN",
-        "Azure Active Directory",
+        "Microsoft Entra ID",
         ".NET Core",
         "Service Fabric",
       ],
       results:
-        "Microsoft Azure peut désormais offrir un SLA de 99,99% pour la plupart de ses services, avec une présence dans plus de 60 régions et une capacité à traiter des milliards de requêtes par jour.",
+        "Microsoft Azure peut désormais offrir des SLA pouvant atteindre 99,99% ou plus selon le service et la configuration (zones de disponibilité, multi-régions), avec une présence dans plus de 60 régions et une capacité à traiter des milliards de requêtes par jour.",
       lessons: [
         "Concevoir pour la résilience multi-régions dès le départ",
         "Utiliser des bases de données géo-répliquées pour la continuité des activités",
@@ -237,7 +237,7 @@ export function DistributedCaseStudies() {
         "Ruby on Rails",
       ],
       results:
-        "Airbnb peut désormais traiter des requêtes de recherche complexes sur plus de 7 millions de logements en moins de 200 ms, avec des recommandations personnalisées qui augmentent significativement les taux de conversion.",
+        "Airbnb peut désormais traiter des requêtes de recherche complexes sur plus de 7 millions de logements avec une latence compatible avec une expérience interactive, avec des recommandations personnalisées qui augmentent significativement les taux de conversion.",
       lessons: [
         "Optimiser les index de recherche pour des requêtes complexes",
         "Utiliser l'apprentissage automatique pour améliorer la pertinence des résultats",

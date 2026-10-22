@@ -3,8 +3,9 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronRight } from "lucide-react";
+import { CheckCircle2, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { useProgress } from "../../_hooks/use-progress";
 import { getBadgeVariant } from "./lib";
 import type { TopicSection as TopicSectionData } from "./types";
 
@@ -21,6 +22,8 @@ export function TopicSection({
   expandedSection,
   setExpandedSection,
 }: TopicSectionProps) {
+  const { progress } = useProgress();
+  const done = section.items.filter((item) => progress.completedTopics.includes(item.href)).length;
   return (
     <div className="px-3">
       <button
@@ -36,6 +39,12 @@ export function TopicSection({
           <span className="text-sm font-semibold tracking-tight transition-colors group-hover:text-primary">
             {section.title}
           </span>
+          {done > 0 && (
+            <span className="text-xs text-muted-foreground">
+              {done}/{section.items.length}
+              <span className="sr-only"> sujets terminés</span>
+            </span>
+          )}
         </div>
         <ChevronRight
           className={cn(
@@ -68,6 +77,9 @@ export function TopicSection({
                   <div className="flex items-center gap-3">
                     <item.icon className="h-4 w-4 transition-transform group-hover:scale-110" />
                     <span className="font-medium">{item.title}</span>
+                    {progress.completedTopics.includes(item.href) && (
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-green-700 dark:text-green-400" aria-label="Terminé" role="img" />
+                    )}
                     {item.badge && (
                       <Badge
                         variant={getBadgeVariant(item.badge) as any}

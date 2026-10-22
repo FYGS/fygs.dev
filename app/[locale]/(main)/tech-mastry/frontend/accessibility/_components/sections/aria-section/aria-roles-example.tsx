@@ -35,8 +35,8 @@ export function AriaRolesExample() {
 
 // Widget roles
 <div role="tablist">
-  <button role="tab" aria-selected="true" aria-controls="panel-1">Tab 1</button>
-  <button role="tab" aria-selected="false" aria-controls="panel-2">Tab 2</button>
+  <button role="tab" id="tab-1" aria-selected="true" aria-controls="panel-1">Tab 1</button>
+  <button role="tab" id="tab-2" aria-selected="false" aria-controls="panel-2" tabindex="-1">Tab 2</button>
 </div>
 
 <div id="panel-1" role="tabpanel" aria-labelledby="tab-1">

@@ -173,7 +173,7 @@ export function interpolationSearch(array: ArrayElement[], target: number) {
   ) {
     // Calculer la position estimée
     let pos;
-    if (low === high) {
+    if (array[low].value === array[high].value) {
       pos = low;
     } else {
       pos =

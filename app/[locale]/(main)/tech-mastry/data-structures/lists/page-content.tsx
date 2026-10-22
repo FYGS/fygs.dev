@@ -206,7 +206,7 @@ function LinkedListVisualizer() {
 /* ─── Complexity ─── */
 const operations = [
   { op: "prepend", singly: "O(1)", doubly: "O(1)", desc: "Insertion en tête" },
-  { op: "append", singly: "O(n)", doubly: "O(1)", desc: "Insertion en queue" },
+  { op: "append", singly: "O(n)", doubly: "O(1)", desc: "Insertion en queue (O(1) si pointeur tail conservé)" },
   {
     op: "removeFirst",
     singly: "O(1)",
@@ -217,7 +217,7 @@ const operations = [
     op: "removeLast",
     singly: "O(n)",
     doubly: "O(1)",
-    desc: "Suppression en queue",
+    desc: "Suppression en queue (doubly : via pointeur tail)",
   },
   {
     op: "search",

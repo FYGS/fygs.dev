@@ -237,7 +237,7 @@ console.log(isValidSyntax("const obj = { key: 'value' };")); // true`,
       {
         title: "Systèmes de messagerie",
         description:
-          "Les systèmes comme RabbitMQ ou Kafka utilisent des files pour stocker et traiter les messages de manière asynchrone.",
+          "Les systèmes comme RabbitMQ (files de messages) ou Kafka (journal ordonné consommé comme une file) stockent et traitent les messages de manière asynchrone.",
       },
       {
         title: "Gestion des requêtes HTTP",

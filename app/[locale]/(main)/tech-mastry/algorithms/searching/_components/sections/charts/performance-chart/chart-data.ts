@@ -77,11 +77,11 @@ export const performanceData = [
     complexity: "O(log₃ n)",
     color: "#06b6d4", // cyan-500
     values: [
-      { size: 10, time: 0.03 },
-      { size: 100, time: 0.06 },
-      { size: 1000, time: 0.09 },
-      { size: 10000, time: 0.12 },
-      { size: 100000, time: 0.15 },
+      { size: 10, time: 0.042 },
+      { size: 100, time: 0.084 },
+      { size: 1000, time: 0.126 },
+      { size: 10000, time: 0.168 },
+      { size: 100000, time: 0.21 },
     ],
   },
 ];

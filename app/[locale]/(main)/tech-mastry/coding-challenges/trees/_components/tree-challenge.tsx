@@ -41,10 +41,7 @@ const challenges = [
   traverse(root);
   return result;
 }`,
-    verify: (input: string) => {
-      // Simplified verification
-      return input ? "Correct" : "Incorrect";
-    },
+    verify: (input: string): string => verifyAgainstExamples(1, input),
   },
   {
     id: 2,
@@ -65,9 +62,7 @@ const challenges = [
   
   return Math.max(leftDepth, rightDepth) + 1;
 }`,
-    verify: (input: string) => {
-      return input ? "Correct" : "Incorrect";
-    },
+    verify: (input: string): string => verifyAgainstExamples(2, input),
   },
   {
     id: 3,
@@ -102,9 +97,7 @@ const challenges = [
   
   return result;
 }`,
-    verify: (input: string) => {
-      return input ? "Correct" : "Incorrect";
-    },
+    verify: (input: string): string => verifyAgainstExamples(3, input),
   },
   {
     id: 4,
@@ -128,9 +121,7 @@ const challenges = [
   return isValidBST(root.left, min, root.val) &&
          isValidBST(root.right, root.val, max);
 }`,
-    verify: (input: string) => {
-      return input ? "Correct" : "Incorrect";
-    },
+    verify: (input: string): string => verifyAgainstExamples(4, input),
   },
   {
     id: 5,
@@ -156,16 +147,19 @@ const challenges = [
   // Retourner le côté non-null
   return left || right;
 }`,
-    verify: (input: string) => {
-      return input ? "Correct" : "Incorrect";
-    },
+    verify: (input: string): string => verifyAgainstExamples(5, input),
   },
   {
     id: 6,
     title: "Serialize and Deserialize Binary Tree",
     description: "Convertir un arbre binaire en chaîne et vice-versa.",
     technique: "BFS/DFS Encoding",
-    examples: [{ input: "1,2,3,null,null,4,5", output: "1,2,3,null,null,4,5" }],
+    examples: [
+      {
+        input: "1,2,3,null,null,4,5",
+        output: "1,2,null,null,3,4,null,null,5,null,null",
+      },
+    ],
     hint: "Utilisez un délimiteur (ex: ',') et un marqueur pour les nœuds null.",
     solution: `function serialize(root) {
   if (!root) return "null";
@@ -176,12 +170,13 @@ const challenges = [
 
 function deserialize(data) {
   const nodes = data.split(',');
+  let index = 0; // index de lecture : évite shift(), en O(n)
   
   function buildTree() {
-    const val = nodes.shift();
+    const val = nodes[index++];
     if (val === "null") return null;
     
-    const node = { val: parseInt(val), left: null, right: null };
+    const node = { val: Number(val), left: null, right: null };
     node.left = buildTree();
     node.right = buildTree();
     return node;
@@ -189,11 +184,20 @@ function deserialize(data) {
   
   return buildTree();
 }`,
-    verify: (input: string) => {
-      return input ? "Correct" : "Incorrect";
-    },
+    verify: (input: string): string => verifyAgainstExamples(6, input),
   },
 ];
+
+// Vérifie la réponse saisie en la comparant aux sorties attendues des exemples
+// du défi (sans tenir compte des espaces ni de la casse).
+function verifyAgainstExamples(id: number, input: string): string {
+  const normalize = (value: string) => value.replace(/s+/g, "").toLowerCase();
+  const challenge = challenges.find((c) => c.id === id);
+  const isCorrect = (challenge?.examples ?? []).some(
+    (example) => normalize(example.output) === normalize(input),
+  );
+  return isCorrect ? "Correct" : "Incorrect";
+}
 
 export function TreeChallenge() {
   const [selectedChallenge, setSelectedChallenge] = useState(challenges[0]);

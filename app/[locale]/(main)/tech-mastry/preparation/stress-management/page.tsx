@@ -36,7 +36,7 @@ const techniques = [
   },
   {
     name: "Power Posing",
-    description: "Adoptez une posture ouverte et confiante pendant 2 minutes. Augmente la testostérone et réduit le cortisol.",
+    description: "Adoptez une posture ouverte et redressée pendant 2 minutes. Les effets hormonaux (testostérone, cortisol) annoncés par les premières études n'ont pas été confirmés ; l'intérêt est surtout de relâcher les épaules et de vous sentir plus à l'aise.",
     when: "5 minutes avant l'entretien (en privé)",
     color: "text-red-500",
     bgColor: "bg-red-500/10",
@@ -68,7 +68,7 @@ export default function StressManagementPage() {
         <div className="space-y-4">
           <h1 className="text-4xl font-bold tracking-tight">Gestion du Stress</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Techniques éprouvées pour gérer le stress avant et pendant vos entretiens.
+            Techniques courantes pour gérer le stress avant et pendant vos entretiens.
             Le stress est naturel — apprenez à le transformer en allié.
           </p>
         </div>

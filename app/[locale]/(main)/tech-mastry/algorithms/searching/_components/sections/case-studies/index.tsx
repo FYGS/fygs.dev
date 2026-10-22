@@ -109,14 +109,14 @@ export function DetailedCaseStudies() {
                 <pre className="bg-muted p-3 rounded-md text-xs">
                   {`-- Sans index sur la colonne email
 SELECT * FROM users WHERE email = 'user@example.com';
--- Temps d'exécution: ~500ms (parcours séquentiel de la table)
+-- Temps d'exécution: élevé, proportionnel à n (parcours séquentiel de la table)
 
 -- Après création d'un index
 CREATE INDEX idx_users_email ON users(email);
 
 -- Même requête avec index
 SELECT * FROM users WHERE email = 'user@example.com';
--- Temps d'exécution: ~1ms (recherche binaire dans l'index B-Tree)`}
+-- Temps d'exécution: très faible, en O(log n) (descente dans l'index B-Tree)`}
                 </pre>
 
                 <h3>Fonctionnement Interne</h3>
@@ -291,11 +291,11 @@ SELECT * FROM users WHERE email = 'user@example.com';
                 <p>Cette architecture permet à Google de:</p>
                 <ul>
                   <li>
-                    Traiter plus de 8,5 milliards de recherches par jour (plus
-                    de 100 000 par seconde)
+                    Traiter plusieurs milliards de recherches par jour (de
+                    l&apos;ordre de 100 000 par seconde)
                   </li>
                   <li>
-                    Fournir des résultats en moins de 0,5 seconde en moyenne
+                    Fournir des résultats en une fraction de seconde
                   </li>
                   <li>
                     Maintenir un index de centaines de milliards de pages web

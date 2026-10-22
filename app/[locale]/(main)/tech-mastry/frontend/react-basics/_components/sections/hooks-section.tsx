@@ -196,22 +196,22 @@ function Counter() {
           </div>
         }
         tips={[
-          "Utilisez la déstructuration d&apos;array pour nommer vos variables d&apos;état et fonctions de mise à jour",
-          "Pour mettre à jour un état basé sur l&apos;état précédent, utilisez la forme fonctionnelle: setCount(prevCount => prevCount + 1)",
-          "Pour les objets et les tableaux, n&apos;oubliez pas de préserver les valeurs que vous ne mettez pas à jour",
-          "React peut regrouper les mises à jour d&apos;état pour des raisons de performance, donc ne comptez pas sur les valeurs précédentes sans utiliser la forme fonctionnelle",
+          "Utilisez la déstructuration d'array pour nommer vos variables d'état et fonctions de mise à jour",
+          "Pour mettre à jour un état basé sur l'état précédent, utilisez la forme fonctionnelle: setCount(prevCount => prevCount + 1)",
+          "Pour les objets et les tableaux, n'oubliez pas de préserver les valeurs que vous ne mettez pas à jour",
+          "React peut regrouper les mises à jour d'état pour des raisons de performance, donc ne comptez pas sur les valeurs précédentes sans utiliser la forme fonctionnelle",
         ]}
         interviewQuestions={[
           {
             question:
-              "Pourquoi devriez-vous utiliser la forme fonctionnelle de setState lorsque vous mettez à jour l&apos;état basé sur l&apos;état précédent?",
+              "Pourquoi devriez-vous utiliser la forme fonctionnelle de setState lorsque vous mettez à jour l'état basé sur l'état précédent?",
             answer:
-              "React peut regrouper plusieurs mises à jour d&apos;état pour des raisons de performance. Si vous utilisez l&apos;état actuel pour calculer le nouvel état, vous pourriez utiliser une valeur obsolète. La forme fonctionnelle (prevState => newState) garantit que vous travaillez toujours avec la valeur la plus récente, même si plusieurs mises à jour sont regroupées.",
+              "React peut regrouper plusieurs mises à jour d'état pour des raisons de performance. Si vous utilisez l'état actuel pour calculer le nouvel état, vous pourriez utiliser une valeur obsolète. La forme fonctionnelle (prevState => newState) garantit que vous travaillez toujours avec la valeur la plus récente, même si plusieurs mises à jour sont regroupées.",
           },
           {
             question: "Comment gérer des objets complexes avec useState?",
             answer:
-              "Pour les objets complexes, vous devez créer une nouvelle copie de l&apos;objet et mettre à jour uniquement les propriétés nécessaires. Utilisez la syntaxe de décomposition (...prevState) pour copier toutes les propriétés existantes, puis remplacez celles que vous souhaitez mettre à jour. Par exemple: setUser(prevUser => ({ ...prevUser, name: &apos;Nouveau nom&apos; })).",
+              "Pour les objets complexes, vous devez créer une nouvelle copie de l'objet et mettre à jour uniquement les propriétés nécessaires. Utilisez la syntaxe de décomposition (...prevState) pour copier toutes les propriétés existantes, puis remplacez celles que vous souhaitez mettre à jour. Par exemple: setUser(prevUser => ({ ...prevUser, name: 'Nouveau nom' })).",
           },
         ]}
       />
@@ -307,7 +307,7 @@ function WindowSizeTracker() {
         tips={[
           "Utilisez la fonction de nettoyage (return) pour éviter les fuites de mémoire",
           "Séparez les préoccupations en utilisant plusieurs effets",
-          "Incluez toutes les valeurs du composant utilisées dans l&apos;effet dans le tableau de dépendances",
+          "Incluez toutes les valeurs du composant utilisées dans l'effet dans le tableau de dépendances",
           "Utilisez des outils comme eslint-plugin-react-hooks pour éviter les bugs liés aux dépendances manquantes",
         ]}
         interviewQuestions={[
@@ -315,12 +315,12 @@ function WindowSizeTracker() {
             question:
               "Quelle est la différence entre useEffect avec un tableau de dépendances vide et useEffect sans tableau de dépendances?",
             answer:
-              "useEffect sans tableau de dépendances s&apos;exécute après chaque rendu du composant. useEffect avec un tableau de dépendances vide ([]) s&apos;exécute une seule fois après le premier rendu (équivalent à componentDidMount dans les composants de classe). Cette différence est cruciale pour les performances, car exécuter des effets inutilement peut ralentir votre application.",
+              "useEffect sans tableau de dépendances s'exécute après chaque rendu du composant. useEffect avec un tableau de dépendances vide ([]) s'exécute une seule fois après le premier rendu (équivalent à componentDidMount dans les composants de classe). Cette différence est cruciale pour les performances, car exécuter des effets inutilement peut ralentir votre application.",
           },
           {
             question: "Comment nettoyer les ressources dans useEffect?",
             answer:
-              "Pour nettoyer des ressources (comme des abonnements ou des timers), retournez une fonction de nettoyage depuis votre effet. Cette fonction sera appelée avant que le composant soit retiré du DOM et avant que l&apos;effet soit ré-exécuté si les dépendances changent. Par exemple: useEffect(() => { const subscription = source.subscribe(); return () => { subscription.unsubscribe(); }; }, [source]);",
+              "Pour nettoyer des ressources (comme des abonnements ou des timers), retournez une fonction de nettoyage depuis votre effet. Cette fonction sera appelée avant que le composant soit retiré du DOM et avant que l'effet soit ré-exécuté si les dépendances changent. Par exemple: useEffect(() => { const subscription = source.subscribe(); return () => { subscription.unsubscribe(); }; }, [source]);",
           },
         ]}
       />

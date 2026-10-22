@@ -415,7 +415,7 @@ export function ColorContrastSection() {
   --cb-green: #009E73;     /* Green */
   --cb-red: #D55E00;       /* Red/orange */
   --cb-purple: #CC79A7;    /* Purple/pink */
-  --cb-grey: #56B4E9;      /* Sky blue */
+  --cb-sky: #56B4E9;       /* Sky blue */
   --cb-black: #000000;     /* Black */
 }`}
         explanation={

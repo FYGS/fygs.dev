@@ -22,6 +22,7 @@ server-id=2
 relay-log=relay-bin
 
 # Commande sur le slave pour démarrer la réplication
+# (MySQL 8.0.23+ : CHANGE REPLICATION SOURCE TO / START REPLICA)
 CHANGE MASTER TO
   MASTER_HOST='master_ip',
   MASTER_USER='repl_user',
@@ -41,11 +42,12 @@ START SLAVE;`}
               {`# Configuration sur le primary (postgresql.conf)
 wal_level = replica
 max_wal_senders = 10
-wal_keep_segments = 64
+wal_keep_size = 1GB   # remplace wal_keep_segments (PostgreSQL 13+)
 
-# Configuration sur le standby (recovery.conf)
+# Configuration sur le standby (postgresql.conf, PostgreSQL 12+)
 primary_conninfo = 'host=primary_ip port=5432 user=repl_user password=password'
-standby_mode = 'on'`}
+# + créer un fichier vide standby.signal dans le data directory
+# (recovery.conf / standby_mode ont été supprimés en PostgreSQL 12)`}
             </pre>
           </div>
         </div>

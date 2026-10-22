@@ -65,7 +65,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v2
+      - uses: pnpm/action-setup@v4
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint`,
   },
@@ -78,6 +78,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:unit
       - run: pnpm test:e2e
@@ -97,10 +98,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        # Épinglez une version (ou un SHA de commit), jamais @master
+        uses: aquasecurity/trivy-action@0.28.0
         with:
           scan-type: 'fs'
-          severity: 'HIGH,CRITICAL'`,
+          severity: 'HIGH,CRITICAL'
+          exit-code: '1' # sans cela, le job n'échoue pas sur une vulnérabilité`,
   },
   build: {
     description:
@@ -109,9 +112,17 @@ jobs:
     code: `  build:
     needs: security
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: $\{{ github.actor }}
+          password: $\{{ secrets.GITHUB_TOKEN }}
       - uses: docker/build-push-action@v5
         with:
           push: true
@@ -130,7 +141,7 @@ jobs:
     steps:
       - name: Deploy to staging
         run: |
-          kubectl set image deployment/app \
+          kubectl set image deployment/app \\
             app=ghcr.io/org/app:$\{{ github.sha }}
       - name: Run smoke tests
         run: pnpm test:smoke --url $STAGING_URL

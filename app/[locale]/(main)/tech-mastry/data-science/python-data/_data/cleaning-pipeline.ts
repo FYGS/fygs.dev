@@ -19,8 +19,10 @@ print(df.describe())
 print(df.isnull().sum())
 
 # 3. Valeurs manquantes
-df["age"].fillna(df["age"].median(), inplace=True)
-df.dropna(subset=["target"], inplace=True)
+# (pas de inplace=True sur une colonne : copy-on-write, pandas 3)
+# Si le but est du ML : calculer la médiane sur le train uniquement
+df["age"] = df["age"].fillna(df["age"].median())
+df = df.dropna(subset=["target"])
 
 # 4. Types
 df["date"] = pd.to_datetime(df["date"])

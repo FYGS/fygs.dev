@@ -110,7 +110,7 @@ function TemperatureVisualizer() {
             <div className="flex justify-between text-sm">
               <span>Temperature: <strong>{temp.toFixed(1)}</strong></span>
               <span className="text-muted-foreground">
-                {temp < 0.3 ? "Déterministe" : temp < 0.7 ? "Équilibré" : "Créatif"}
+                {temp < 0.3 ? "Quasi déterministe" : temp < 0.7 ? "Équilibré" : "Créatif"}
               </span>
             </div>
             <input type="range" min="0" max="1" step="0.1" value={temp}
@@ -176,7 +176,7 @@ const techniques = [
   },
   {
     name: "Chain-of-Thought (CoT)",
-    desc: "Demander au modèle de réfléchir étape par étape avant de répondre.",
+    desc: "Demander au modèle de réfléchir étape par étape avant de répondre. Moins utile avec les modèles de raisonnement natifs, qui le font déjà en interne.",
     example: "Résous pas à pas : Si j'ai 23 pommes et j'en donne 7, puis j'en achète 12...",
     level: "intermédiaire",
     icon: Brain,
@@ -184,7 +184,7 @@ const techniques = [
   },
   {
     name: "Tree-of-Thought",
-    desc: "Explorer plusieurs chemins de raisonnement en parallèle et choisir le meilleur.",
+    desc: "Explorer plusieurs chemins de raisonnement et choisir le meilleur. La méthode d'origine repose sur une recherche pilotée par du code ; l'exemple ci-contre en est une version simplifiée en un seul prompt.",
     example: "Explore 3 approches différentes pour résoudre ce problème, évalue chacune, puis choisis la meilleure.",
     level: "avancé",
     icon: Layers,
@@ -192,8 +192,8 @@ const techniques = [
   },
   {
     name: "Self-Consistency",
-    desc: "Générer N réponses et prendre la plus fréquente (vote majoritaire).",
-    example: "Réponds 5 fois à cette question, puis donne la réponse la plus fréquente.",
+    desc: "Générer N réponses indépendantes (appels séparés, temperature > 0) et retenir la plus fréquente (vote majoritaire). Coûte N fois plus de tokens.",
+    example: "Côté code : envoyer 5 fois le même prompt (temperature > 0), puis extraire la réponse majoritaire.",
     level: "avancé",
     icon: RefreshCw,
     color: "text-cyan-500",
@@ -264,12 +264,12 @@ function SystemPromptPatterns() {
     {
       name: "Output Controller",
       prompt: "Réponds toujours en JSON valide avec cette structure :\n{\n  \"answer\": string,\n  \"confidence\": number (0-1),\n  \"sources\": string[]\n}",
-      why: "Force un format de sortie prédictible et parsable.",
+      why: "Force un format de sortie prédictible et parsable. La confiance auto-déclarée n'est pas calibrée et les sources citées doivent être vérifiées.",
     },
     {
       name: "Guardrails",
-      prompt: "Règles impératives :\n1. Ne réponds JAMAIS avec du code non testé\n2. Cite tes sources\n3. Si tu n'es pas sûr, dis-le explicitement\n4. Privilégie la sécurité sur la performance",
-      why: "Pose des limites claires pour éviter les hallucinations.",
+      prompt: "Règles impératives :\n1. N'affirme jamais qu'un code est testé si tu ne l'as pas exécuté\n2. Cite tes sources\n3. Si tu n'es pas sûr, dis-le explicitement\n4. Privilégie la sécurité sur la performance",
+      why: "Pose des limites claires pour réduire les hallucinations (sans les éliminer).",
     },
     {
       name: "Chain-of-Thought Forcé",
@@ -350,7 +350,7 @@ export default function PromptEngineeringPage() {
           {[
             { title: "Soyez spécifique", desc: "Plus votre prompt est précis, meilleure sera la réponse." },
             { title: "Donnez du contexte", desc: "Le modèle ne connaît pas votre situation sans contexte." },
-            { title: "Utilisez des exemples", desc: "Few-shot learning améliore drastiquement la qualité." },
+            { title: "Utilisez des exemples", desc: "Quelques exemples bien choisis améliorent souvent nettement la qualité." },
             { title: "Itérez", desc: "Affinez vos prompts basé sur les réponses obtenues." },
             { title: "Séparez les rôles", desc: "System prompt vs User prompt vs Assistant prompt." },
             { title: "Testez les limites", desc: "Essayez des cas edge pour valider la robustesse." },

@@ -41,7 +41,7 @@ function map<T, U>(arr: T[], fn: (item: T) => U): U[] {
 }
 const lengths = map(["a", "bb", "ccc"], s => s.length); // number[]
 
-// ASTUCE : forcer l'inférence avec satisfies
+// ASTUCE : valider avec satisfies sans élargir le type inféré
 const config = {
   port: 3000,
   host: "localhost",
@@ -111,9 +111,9 @@ type ConfigPaths = Path<Config>;
 
 // Type-safe get function
 function get<T, P extends Path<T>>(obj: T, path: P): any {
-  return path.split(".").reduce((o: any, k) => o?.[k], obj);
+  return (path as string).split(".").reduce((o: any, k) => o?.[k], obj);
 }`,
-    insight: "Les types récursifs s'appellent eux-mêmes. Attention : TypeScript a une limite de profondeur (~50 niveaux). Utilisez des heuristiques de court-circuit.",
+    insight: "Les types récursifs s'appellent eux-mêmes. Attention : TypeScript limite la profondeur d'instanciation (environ 50 niveaux, davantage pour les conditional types récursifs terminaux). Évitez les récursions inutilement profondes.",
   },
   {
     title: "Higher-Kinded Types (simulés)",
@@ -121,6 +121,7 @@ function get<T, P extends Path<T>>(obj: T, path: P): any {
     code: `// TypeScript n'a pas de HKT natifs, mais on peut les simuler
 
 // Le pattern "Type Class" via interface
+// (Kind<F, A> est à définir : fp-ts le fait via une table d'URI)
 interface Functor<F> {
   map: <A, B>(fa: Kind<F, A>, f: (a: A) => B) => Kind<F, B>;
 }

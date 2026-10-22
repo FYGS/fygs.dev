@@ -57,9 +57,9 @@ const conventionalTypes = [
   },
   {
     type: "perf",
-    desc: "Amélioration des performances",
+    desc: "Amélioration des performances (PATCH selon la config de semantic-release)",
     color: "text-orange-500",
-    semver: "PATCH",
+    semver: "-",
   },
   {
     type: "ci",
@@ -69,7 +69,7 @@ const conventionalTypes = [
   },
   {
     type: "BREAKING CHANGE",
-    desc: "Changement non rétrocompatible",
+    desc: "Changement non rétrocompatible (footer BREAKING CHANGE: ou ! après le type)",
     color: "text-red-600",
     semver: "MAJOR",
   },
@@ -190,7 +190,7 @@ export default function WorkflowsPage() {
         </h2>
         <Card className="p-6">
           <div className="rounded-lg bg-muted/50 p-4 font-mono text-sm mb-4">
-            <code className="text-primary">{`<type>(<scope>): <description>`}</code>
+            <code className="text-primary">{`<type>[(<scope>)][!]: <description>`}</code>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {conventionalTypes.map((ct) => (

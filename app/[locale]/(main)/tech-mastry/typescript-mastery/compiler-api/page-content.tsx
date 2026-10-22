@@ -75,14 +75,14 @@ const topics: Topic[] = [
     "isolatedModules": true,
     "skipLibCheck": true,
     // skipLibCheck: ne type-check pas node_modules
-    // Accélère la compilation de 30-50%
+    // Accélère sensiblement la compilation (surtout sur les gros projets)
   },
   "include": ["src/**/*", "next-env.d.ts"],
   "exclude": ["node_modules", "dist", ".next"]
 }`,
       },
     ],
-    insight: "noUncheckedIndexedAccess est la seule option non incluse dans strict qui attrape des bugs critiques. Activez-la systématiquement.",
+    insight: "noUncheckedIndexedAccess n'est pas incluse dans strict et attrape de vrais bugs (accès hors bornes, clés absentes). Elle vaut le coup d'être activée sur les nouveaux projets.",
   },
   {
     title: "Project References",
@@ -148,7 +148,7 @@ const topics: Topic[] = [
 // tsc --build --clean      → Nettoyer les outputs`,
       },
     ],
-    insight: "Les project references permettent à tsc de ne recompiler que les packages modifiés et leurs dépendants. Gain de 60-80% sur les gros monorepos.",
+    insight: "Les project references permettent à tsc de ne recompiler que les packages modifiés et leurs dépendants. Le gain de temps peut être important sur les gros monorepos.",
   },
   {
     title: "AST et Transformers",
@@ -250,6 +250,7 @@ const output = printer.printFile(result.transformed[0]);
       {
         tab: "Analyse",
         code: `import ts from "typescript";
+import path from "node:path";
 
 function analyzeProject(configPath: string) {
   // Lire le tsconfig

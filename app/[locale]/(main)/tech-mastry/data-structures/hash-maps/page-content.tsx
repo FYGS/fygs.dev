@@ -229,7 +229,7 @@ const operations = [
 const collisionStrategies = [
   {
     name: "Chaînage (Chaining)",
-    desc: "Chaque bucket contient une liste chaînée. Nouvelle entrée ajoutée en tête de liste en cas de collision.",
+    desc: "Chaque bucket contient une liste chaînée. En cas de collision, la nouvelle entrée est ajoutée à la liste du bucket.",
     pros: [
       "Simple à implémenter",
       "Supporte load factor > 1",

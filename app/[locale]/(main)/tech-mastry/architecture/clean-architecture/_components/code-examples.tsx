@@ -17,7 +17,7 @@ app.post("/orders", async (req, res) => {
   }
 
   // Accès DB direct dans le controller
-  const user = await db.query(
+  const { rows: [user] } = await db.query(
     "SELECT * FROM users WHERE id = $1",
     [req.body.userId]
   );

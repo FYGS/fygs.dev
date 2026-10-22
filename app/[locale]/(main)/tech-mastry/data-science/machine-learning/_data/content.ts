@@ -90,7 +90,7 @@ export const pipeline = [
   },
   {
     step: "3. Preprocessing",
-    desc: "Nettoyage, encoding, scaling, feature engineering",
+    desc: "Nettoyage, encoding, feature engineering (scaling ajusté sur le train seul, après le split)",
   },
   {
     step: "4. Splitting",

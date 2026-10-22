@@ -253,11 +253,11 @@ function OptimizationLayers() {
       tips: [
         {
           tip: "Index les colonnes WHERE / JOIN / ORDER BY",
-          impact: "10-100x faster",
+          impact: "Évite les full scans",
         },
-        { tip: "Connection pooling (PgBouncer)", impact: "5-10x connections" },
-        { tip: "Cursor-based pagination", impact: "Constant time" },
-        { tip: "Read replicas pour les lectures", impact: "2x throughput" },
+        { tip: "Connection pooling (PgBouncer)", impact: "Moins de connexions DB" },
+        { tip: "Cursor-based pagination", impact: "Coût stable" },
+        { tip: "Read replicas pour les lectures", impact: "Plus de capacité en lecture" },
         {
           tip: "EXPLAIN ANALYZE pour chaque query lente",
           impact: "Debug tool",
@@ -271,7 +271,7 @@ function OptimizationLayers() {
       tips: [
         {
           tip: "Response compression (Brotli > gzip)",
-          impact: "60-80% smaller",
+          impact: "Texte bien plus léger",
         },
         { tip: "HTTP/2 multiplexing", impact: "Parallel requests" },
         { tip: "Async processing (job queues)", impact: "Non-blocking" },
@@ -284,13 +284,13 @@ function OptimizationLayers() {
       icon: Server,
       color: "text-purple-400",
       tips: [
-        { tip: "CDN pour les assets statiques", impact: "~5ms latency" },
+        { tip: "CDN pour les assets statiques", impact: "Latence réduite" },
         { tip: "Auto-scaling horizontal", impact: "Handle spikes" },
         {
           tip: "Load balancer (least-connections)",
           impact: "Even distribution",
         },
-        { tip: "Edge computing (Cloudflare Workers)", impact: "Global ~20ms" },
+        { tip: "Edge computing (Cloudflare Workers)", impact: "Proche des utilisateurs" },
         { tip: "Container orchestration (K8s)", impact: "Auto-healing" },
       ],
     },
@@ -389,11 +389,9 @@ async function updateWithWriteThrough(id: string, data: UpdateData) {
       name: "Rate Limiting",
       code: `async function rateLimit(ip: string, limit = 100, window = 60) {
   const key = \`rate:\${ip}\`;
+  // Crée la clé avec son TTL si elle n'existe pas (évite une clé sans expiration)
+  await redis.set(key, 0, "EX", window, "NX");
   const requests = await redis.incr(key);
-
-  if (requests === 1) {
-    await redis.expire(key, window); // Set TTL on first request
-  }
 
   if (requests > limit) {
     const ttl = await redis.ttl(key);

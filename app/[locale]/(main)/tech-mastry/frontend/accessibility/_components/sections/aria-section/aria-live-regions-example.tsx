@@ -137,11 +137,13 @@ export function AriaLiveRegionsExample() {
             </li>
             <li>
               <code>role=&quot;progressbar&quot;</code>: An element that
-              displays the progress of a task
+              displays the progress of a task (not a live region: updates are
+              exposed through <code>aria-valuenow</code>)
             </li>
             <li>
               <code>role=&quot;timer&quot;</code>: A countdown timer or
-              stopwatch
+              stopwatch (a live region with implicit{" "}
+              <code>aria-live=&quot;off&quot;</code>)
             </li>
           </ul>
 

@@ -102,13 +102,14 @@ console.log(jumpSearch([1, 3, 5, 7, 9, 11, 13, 15, 17, 19], 13)); // Devrait ret
 console.log(jumpSearch([1, 3, 5, 7, 9, 11, 13, 15, 17, 19], 4));  // Devrait retourner -1`,
     solution: `function jumpSearch(arr, target) {
   const n = arr.length;
-  const step = Math.floor(Math.sqrt(n));
+  const block = Math.floor(Math.sqrt(n));
+  let step = block;
 
   // Trouver le bloc
   let prev = 0;
   while (arr[Math.min(step, n) - 1] < target) {
     prev = step;
-    step += Math.floor(Math.sqrt(n));
+    step += block;
     if (prev >= n) return -1;
   }
 
@@ -146,7 +147,8 @@ console.log(interpolationSearch([1, 3, 5, 7, 9, 11, 13, 15, 17, 19], 4));  // De
   let high = arr.length - 1;
 
   while (low <= high && target >= arr[low] && target <= arr[high]) {
-    if (low === high) {
+    // Évite une division par zéro (valeurs identiques dans [low, high])
+    if (arr[low] === arr[high]) {
       return arr[low] === target ? low : -1;
     }
 

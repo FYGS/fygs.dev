@@ -23,7 +23,7 @@ export const dpProblems = [
     name: "Sac à Dos (Knapsack)",
     difficulty: "Intermédiaire",
     description:
-      "Maximiser la valeur des objets dans un sac avec une capacité limitée.",
+      "Maximiser la valeur des objets dans un sac avec une capacité limitée (version 0/1 : chaque objet est pris entièrement ou pas du tout). Complexité pseudo-polynomiale : elle dépend de la valeur numérique de W.",
     approach: [
       "Table 2D pour stocker les sous-problèmes",
       "Considère chaque objet avec sa valeur et son poids",

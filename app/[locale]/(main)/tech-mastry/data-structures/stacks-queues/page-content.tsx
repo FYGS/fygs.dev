@@ -248,7 +248,7 @@ const advancedVariants = [
   },
   {
     name: "Monotonic Queue (Deque)",
-    desc: "Sliding window min/max en O(1). Implémenté avec un deque.",
+    desc: "Sliding window min/max en O(1) amorti par élément (O(n) au total). Implémenté avec un deque.",
     color: "text-green-500",
     border: "border-green-500/30",
   },

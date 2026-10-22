@@ -277,7 +277,7 @@ CREATE INDEX idx_orders_composite ON orders(status, created_at DESC, user_id);
 SELECT * FROM orders WHERE status = 'pending';
 SELECT * FROM orders WHERE status = 'pending' AND created_at > '2024-01-01';
 
--- ❌ N'utilise PAS l'index (skip la première colonne)
+-- ❌ N'utilise pas efficacement l'index (colonne de tête ignorée)
 SELECT * FROM orders WHERE created_at > '2024-01-01';`,
     },
   };
@@ -334,12 +334,12 @@ for (const user of users) {
   });
   // 1 query pour users + N queries pour orders
 }`,
-      good: `// ✅ Single query with include
+      good: `// ✅ Chargement groupé avec include
 const users = await prisma.user.findMany({
   include: { orders: true }
 });
-// 1 seule query avec JOIN automatique`,
-      impact: "100 users = 101 queries → 1 query",
+// 2 requêtes au total (par défaut), quel que soit N`,
+      impact: "100 users = 101 queries → 2 queries",
     },
     {
       label: "Select *",
@@ -351,7 +351,7 @@ const users = await prisma.user.findMany({
   select: { id: true, name: true, email: true }
 });
 // Retourne uniquement les champs nécessaires`,
-      impact: "Réduit la bande passante de ~60%",
+      impact: "Réduit la bande passante et évite d'exposer des champs sensibles",
     },
     {
       label: "Pagination",
@@ -360,13 +360,14 @@ SELECT * FROM posts
 ORDER BY created_at DESC
 OFFSET 10000 LIMIT 20;
 // Scanne 10020 rows pour en retourner 20`,
-      good: `// ✅ Cursor-based pagination (constant time)
+      good: `// ✅ Cursor-based pagination (keyset)
 SELECT * FROM posts
 WHERE created_at < $last_cursor
 ORDER BY created_at DESC
 LIMIT 20;
-// Utilise l'index directement, O(1)`,
-      impact: "Page 500: 15s → 2ms",
+// Se positionne directement via l'index (created_at indexé)
+// Astuce : ajoutez l'id au curseur pour départager les égalités`,
+      impact: "Coût stable quelle que soit la profondeur de page",
     },
   ];
   const current = queries[activeQuery];

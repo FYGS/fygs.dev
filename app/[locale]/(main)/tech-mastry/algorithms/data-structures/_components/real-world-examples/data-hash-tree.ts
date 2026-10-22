@@ -66,11 +66,11 @@ const memoizedFibonacci = memoize(function(n) {
 
 // Comparaison des performances
 console.time("Sans mémoïsation");
-fibonacci(35); // Très lent
+fibonacci(35); // Lent : complexité exponentielle
 console.timeEnd("Sans mémoïsation");
 
 console.time("Avec mémoïsation");
-memoizedFibonacci(35); // Beaucoup plus rapide
+memoizedFibonacci(35); // Rapide : O(n) calculs distincts
 console.timeEnd("Avec mémoïsation");`,
       explanation:
         "Ce code implémente une fonction de mémoïsation qui utilise une table de hachage (Map en JavaScript) pour stocker les résultats de fonctions coûteuses. La fonction 'memoize' prend une fonction en paramètre et retourne une nouvelle fonction qui vérifie d'abord si le résultat pour les arguments donnés est déjà dans le cache. Si c'est le cas, elle retourne le résultat du cache, sinon elle calcule le résultat, le stocke dans le cache et le retourne. L'exemple montre comment cette technique peut considérablement améliorer les performances du calcul de la suite de Fibonacci.",
@@ -91,7 +91,7 @@ console.timeEnd("Avec mémoïsation");`,
     title: "Moteurs de recherche",
     category: "binary-trees",
     description:
-      "Les arbres binaires, en particulier les arbres B et B+, sont utilisés dans les moteurs de recherche et les bases de données pour indexer et rechercher efficacement de grandes quantités de données.",
+      "Les arbres de recherche, en particulier les arbres B et B+ (des arbres équilibrés à plusieurs enfants par nœud, donc non binaires), sont utilisés dans les moteurs de recherche et les bases de données pour indexer et rechercher efficacement de grandes quantités de données.",
     useCases: [
       {
         title: "Indexation de bases de données",
@@ -211,7 +211,7 @@ searchIndex.inOrderTraversal((key, value) => {
   console.log(key + ":", value);
 });`,
       explanation:
-        "Ce code implémente un arbre binaire de recherche simple en JavaScript. L'arbre est utilisé pour créer un index de recherche qui associe des mots-clés à des documents. La méthode 'insert' ajoute une nouvelle paire clé-valeur à l'arbre, en plaçant les clés plus petites à gauche et les clés plus grandes à droite. La méthode 'search' permet de rechercher une valeur par sa clé en O(log n) en moyenne. La méthode 'inOrderTraversal' parcourt l'arbre en ordre (gauche-racine-droite), ce qui donne les clés dans l'ordre croissant. Cette structure est similaire à celle utilisée par les moteurs de recherche et les bases de données pour indexer et rechercher des données.",
+        "Ce code implémente un arbre binaire de recherche simple en JavaScript. L'arbre est utilisé pour créer un index de recherche qui associe des mots-clés à des documents. La méthode 'insert' ajoute une nouvelle paire clé-valeur à l'arbre, en plaçant les clés plus petites à gauche et les clés plus grandes à droite. La méthode 'search' permet de rechercher une valeur par sa clé en O(log n) en moyenne (O(n) dans le pire cas si l'arbre est déséquilibré). La méthode 'inOrderTraversal' parcourt l'arbre en ordre (gauche-racine-droite), ce qui donne les clés dans l'ordre croissant. Cette structure est similaire à celle utilisée par les moteurs de recherche et les bases de données pour indexer et rechercher des données.",
     },
     references: [
       {

@@ -480,7 +480,10 @@ export default function StatisticsPage() {
           <div className="grid md:grid-cols-2 gap-4">
             {[
               { name: "Moyenne", formula: "x̄ = Σxᵢ / n" },
-              { name: "Variance", formula: "σ² = Σ(xᵢ - x̄)² / n" },
+              {
+                name: "Variance",
+                formula: "σ² = Σ(xᵢ - μ)² / N (échantillon : s² = Σ(xᵢ - x̄)² / (n-1))",
+              },
               { name: "Écart-type", formula: "σ = √(σ²)" },
               { name: "Bayes", formula: "P(A|B) = P(B|A)·P(A) / P(B)" },
               { name: "Z-score", formula: "z = (x - μ) / σ" },

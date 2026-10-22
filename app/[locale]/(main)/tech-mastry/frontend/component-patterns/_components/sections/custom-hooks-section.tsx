@@ -95,6 +95,8 @@ export function CustomHooksSection() {
 // 1. Création d'un custom hook
 function useWindowSize() {
   // 2. Définition de l'état local
+  // (window n'existe pas côté serveur : avec SSR/Next.js, initialisez à 0
+  // puis mettez à jour dans l'effet, comme dans la démo ci-dessus)
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -144,10 +146,10 @@ function useForm(initialValues) {
   
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setValues({
-      ...values,
+    setValues(prev => ({
+      ...prev,
       [name]: value,
-    });
+    }));
   };
   
   const reset = () => {
@@ -255,13 +257,13 @@ function LoginForm() {
         interviewQuestions={[
           {
             question: "Quels sont les avantages des Custom Hooks par rapport aux autres patterns de réutilisation de code?",
-            answer: "Avantages des Custom Hooks par rapport aux autres patterns: 1) Simplicité: Les hooks sont des fonctions JavaScript simples, sans abstraction complexe. 2) Composition: Faciles à composer et à combiner pour créer des abstractions plus complexes. 3) Lisibilité: Le code utilisant des hooks est généralement plus lisible que celui utilisant des HOCs ou des Render Props. 4) Pas de nesting: Évitent le 'wrapper hell' des HOCs ou le 'callback hell' des Render Props. 5) Isolation: Chaque appel à un hook a son propre état isolé. 6) Typage: Plus faciles à typer avec TypeScript que les HOCs. 7) Testabilité: Étant des fonctions pures, ils sont plus faciles à tester. 8) Optimisation: Permettent d'utiliser facilement des optimisations comme useMemo et useCallback. 9) Découvrabilité: La convention de nommage 'use' rend les hooks facilement identifiables. Ces avantages font des Custom Hooks le pattern privilégié pour la réutilisation de logique d'état dans les applications React modernes.",
+            answer: "Avantages des Custom Hooks par rapport aux autres patterns: 1) Simplicité: Les hooks sont des fonctions JavaScript simples, sans abstraction complexe. 2) Composition: Faciles à composer et à combiner pour créer des abstractions plus complexes. 3) Lisibilité: Le code utilisant des hooks est généralement plus lisible que celui utilisant des HOCs ou des Render Props. 4) Pas de nesting: Évitent le 'wrapper hell' des HOCs ou le 'callback hell' des Render Props. 5) Isolation: Chaque appel à un hook a son propre état isolé. 6) Typage: Plus faciles à typer avec TypeScript que les HOCs. 7) Testabilité: Étant de simples fonctions isolées du rendu, ils sont plus faciles à tester (avec renderHook). 8) Optimisation: Permettent d'utiliser facilement des optimisations comme useMemo et useCallback. 9) Découvrabilité: La convention de nommage 'use' rend les hooks facilement identifiables. Ces avantages font des Custom Hooks le pattern privilégié pour la réutilisation de logique d'état dans les applications React modernes.",
             difficulty: "medium",
             tags: ["React", "Hooks", "Comparison"]
           },
           {
             question: "Comment testeriez-vous un custom hook?",
-            answer: "Pour tester un custom hook: 1) Utiliser @testing-library/react-hooks: Cette bibliothèque fournit renderHook() pour tester les hooks isolément. Exemple: `const { result } = renderHook(() => useCounter())` puis `expect(result.current.count).toBe(0)`. 2) Tester les mises à jour: Utiliser act() pour simuler les changements d'état. Exemple: `act(() => { result.current.increment() })` puis vérifier le nouvel état. 3) Tester les effets de nettoyage: Utiliser unmount() pour vérifier que les effets sont bien nettoyés. 4) Mocker les dépendances: Pour les hooks qui dépendent d'APIs externes, utiliser jest.mock(). 5) Tester les erreurs: Vérifier que les hooks lancent les erreurs appropriées dans les cas limites. 6) Tester avec différents arguments: Vérifier le comportement avec différentes valeurs initiales. 7) Tester la réexécution: Utiliser rerender() pour simuler des changements de props. 8) Intégration dans des composants: Tester également le hook dans le contexte d'un composant réel. Cette approche permet de tester efficacement la logique isolée des hooks tout en vérifiant leur comportement dans différents scénarios.",
+            answer: "Pour tester un custom hook: 1) Utiliser renderHook() de @testing-library/react (depuis la v13.1; l'ancien paquet @testing-library/react-hooks est déprécié et ne supporte pas React 18+) pour tester les hooks isolément. Exemple: `const { result } = renderHook(() => useCounter())` puis `expect(result.current.count).toBe(0)`. 2) Tester les mises à jour: Utiliser act() pour simuler les changements d'état. Exemple: `act(() => { result.current.increment() })` puis vérifier le nouvel état. 3) Tester les effets de nettoyage: Utiliser unmount() pour vérifier que les effets sont bien nettoyés. 4) Mocker les dépendances: Pour les hooks qui dépendent d'APIs externes, utiliser jest.mock(). 5) Tester les erreurs: Vérifier que les hooks lancent les erreurs appropriées dans les cas limites. 6) Tester avec différents arguments: Vérifier le comportement avec différentes valeurs initiales. 7) Tester la réexécution: Utiliser rerender() pour simuler des changements de props. 8) Intégration dans des composants: Tester également le hook dans le contexte d'un composant réel. Cette approche permet de tester efficacement la logique isolée des hooks tout en vérifiant leur comportement dans différents scénarios.",
             difficulty: "hard",
             tags: ["Testing", "React", "Jest"]
           }

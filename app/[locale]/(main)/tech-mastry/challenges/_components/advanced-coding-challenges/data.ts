@@ -9,7 +9,7 @@ export const challenges: Challenge[] = [
     difficulty: "beginner",
     category: "Arrays",
     estimatedTime: 15,
-    tags: ["array", "hash-map", "two-pointers"],
+    tags: ["array", "hash-map"],
     testCases: [
       {
         id: "1",
@@ -151,7 +151,7 @@ export const challenges: Challenge[] = [
     difficulty: "intermediate",
     category: "Trees",
     estimatedTime: 25,
-    tags: ["tree", "bfs", "recursion"],
+    tags: ["tree", "bfs", "queue"],
     testCases: [
       {
         id: "1",

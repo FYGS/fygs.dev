@@ -108,7 +108,8 @@ export async function POST(req: Request) {
   }
 
   // result.data est typé User ✅
-  return db.users.create({ data: result.data });
+  const created = await db.users.create({ data: result.data });
+  return Response.json(created, { status: 201 });
 }
 
 // Composition de schémas
@@ -235,7 +236,7 @@ type Shape = "circle" | "square" | "triangle";
 function area(shape: Shape): number {
   if (shape === "circle") return Math.PI * 10 * 10;
   if (shape === "square") return 10 * 10;
-  // "triangle" oublié ! Retourne undefined → NaN à runtime
+  // "triangle" oublié ! Le compilateur ne dit rien et la fonction renvoie 0 silencieusement
   return 0;
 }`,
     safe: `// ✅ Exhaustive check avec never

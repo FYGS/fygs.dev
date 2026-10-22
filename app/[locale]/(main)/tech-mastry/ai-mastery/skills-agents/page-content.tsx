@@ -39,7 +39,7 @@ function MCPProtocolVisualizer() {
       examples: [
         "JSON-RPC 2.0",
         "stdio transport",
-        "SSE transport",
+        "Streamable HTTP transport (SSE : ancien transport, déprécié)",
         "Lifecycle management",
       ],
       color: "text-amber-500",
@@ -186,9 +186,10 @@ server.resource(
 );
 
 // Resource template (dynamique)
+// (import { ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js")
 server.resource(
   "user-profile",
-  "users://{userId}/profile",
+  new ResourceTemplate("users://{userId}/profile", { list: undefined }),
   async (uri, { userId }) => {
     const user = await getUser(userId);
     return { contents: [{ uri: uri.href, text: JSON.stringify(user) }] };
@@ -213,7 +214,7 @@ await server.connect(transport);
     "start": "node dist/index.js"
   }
 }`,
-      desc: "Connectez le serveur via un transport (stdio pour les IDE, SSE pour le web). Compilez et testez.",
+      desc: "Connectez le serveur via un transport (stdio pour les IDE, Streamable HTTP pour le web). Avec stdio, n'écrivez jamais de logs sur stdout (console.log) : utilisez console.error. Compilez et testez.",
     },
     {
       title: "5. Configurer dans le client",

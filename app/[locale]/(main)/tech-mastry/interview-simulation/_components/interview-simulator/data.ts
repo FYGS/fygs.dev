@@ -205,7 +205,7 @@ export const technicalQuestions: Question[] = [
     answer:
       "var is function-scoped and can be redeclared, let is block-scoped and can be reassigned but not redeclared in the same scope, const is block-scoped and cannot be reassigned or redeclared.",
     explanation:
-      "Understanding variable declarations is fundamental to JavaScript development. var has function scope and can be hoisted, while let and const have block scope and temporal dead zones.",
+      "Understanding variable declarations is fundamental to JavaScript development. var has function scope and is hoisted and initialized to undefined, while let and const have block scope and are hoisted but not initialized: accessing them before their declaration throws a ReferenceError (temporal dead zone).",
     hints: [
       "Consider scoping differences",
       "Think about redeclaration rules",
@@ -222,7 +222,7 @@ export const technicalQuestions: Question[] = [
     answer:
       "In class components, lifecycle methods include componentDidMount, componentDidUpdate, and componentWillUnmount. With hooks, useEffect replaces these methods based on its dependencies.",
     explanation:
-      "Modern React development uses functional components with hooks. useEffect can replicate the behavior of componentDidMount (empty deps array), componentDidUpdate (with dependencies), and componentWillUnmount (cleanup function).",
+      "Modern React development uses functional components with hooks. useEffect can approximate componentDidMount (empty deps array), componentDidUpdate (with dependencies; note that the effect also runs after the first render) and componentWillUnmount (cleanup function). The mapping is not one-to-one: hooks are best thought of as synchronizing with state rather than as lifecycle events.",
     hints: [
       "Consider useEffect hook",
       "Think about dependency arrays",
@@ -239,7 +239,7 @@ export const technicalQuestions: Question[] = [
     answer:
       "Use a min-heap of size k. Iterate through the array, adding elements to the heap. If the heap size exceeds k, remove the smallest element. The root of the heap will be the kth largest element.",
     explanation:
-      "This approach has O(n log k) time complexity and O(k) space complexity, which is more efficient than sorting the entire array (O(n log n)).",
+      "This approach has O(n log k) time complexity and O(k) space complexity, which is more efficient than sorting the entire array (O(n log n)) when k is small. Quickselect finds the kth element in O(n) on average (O(n^2) worst case).",
     hints: [
       "Consider using a heap data structure",
       "Think about maintaining only k elements",

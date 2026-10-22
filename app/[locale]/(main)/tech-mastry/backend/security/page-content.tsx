@@ -94,7 +94,7 @@ function AuthFlowVisualizer() {
         {
           label: "Redirect",
           desc: "App redirige vers le provider (Google/GitHub)",
-          code: "GET https://accounts.google.com/o/oauth2/auth\n  ?client_id=YOUR_CLIENT_ID\n  &redirect_uri=https://app.com/callback\n  &scope=openid email profile\n  &response_type=code",
+          code: "GET https://accounts.google.com/o/oauth2/v2/auth\n  ?client_id=YOUR_CLIENT_ID\n  &redirect_uri=https://app.com/callback\n  &scope=openid%20email%20profile\n  &response_type=code\n  &state=RANDOM_ANTI_CSRF\n  &code_challenge=BASE64URL(SHA256(code_verifier))\n  &code_challenge_method=S256",
         },
         {
           label: "User Consents",
@@ -104,12 +104,12 @@ function AuthFlowVisualizer() {
         {
           label: "Auth Code",
           desc: "Provider redirige avec un code temporaire",
-          code: "GET https://app.com/callback?code=4/0AeaYSH...\n// Code valide ~10 minutes, usage unique",
+          code: "GET https://app.com/callback?code=4/0AeaYSH...&state=RANDOM_ANTI_CSRF\n// Code de courte durée (RFC 6749 : 10 min max recommandé), usage unique\n// Vérifier que state correspond à celui envoyé à l'étape 1",
         },
         {
           label: "Token Exchange",
           desc: "Serveur échange le code contre des tokens (server-side)",
-          code: 'POST https://oauth2.googleapis.com/token\n{ code, client_id, client_secret, redirect_uri, grant_type: "authorization_code" }',
+          code: 'POST https://oauth2.googleapis.com/token\n{ code, client_id, client_secret, redirect_uri, code_verifier, grant_type: "authorization_code" }',
         },
         {
           label: "User Info",
@@ -221,7 +221,7 @@ function SecurityChecklist() {
     },
     {
       category: "Rate",
-      text: "Rate limiting (100 req/min par IP pour les APIs publiques)",
+      text: "Rate limiting (ex. 100 req/min par IP, à adapter à votre API)",
       severity: "high",
     },
     {
@@ -246,7 +246,7 @@ function SecurityChecklist() {
     },
     {
       category: "Secrets",
-      text: "Secrets dans variables d'environnement (jamais dans le code)",
+      text: "Secrets hors du code (variables d'environnement ou gestionnaire de secrets)",
       severity: "critical",
     },
     {
@@ -434,7 +434,8 @@ res.cookie("csrf", csrfToken, { httpOnly: false });
 // X-CSRF-Token: <token from cookie>
 
 // ✅ Vérification côté serveur
-if (req.headers["x-csrf-token"] !== req.cookies.csrf) {
+const token = req.headers["x-csrf-token"];
+if (!token || token !== req.cookies.csrf) {
   throw new ForbiddenError("CSRF token mismatch");
 }`,
     },

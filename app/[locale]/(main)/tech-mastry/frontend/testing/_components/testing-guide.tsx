@@ -10,7 +10,7 @@ const testTypes = [
     name: "Tests Unitaires (Vitest)",
     description: "Tester des fonctions et modules isolés. Rapides et nombreux.",
     code: `import { describe, it, expect, vi } from 'vitest';
-import { formatCurrency, validateEmail } from './utils';
+import { formatCurrency, validateEmail, fetchUser } from './utils';
 
 describe('formatCurrency', () => {
   it('formats positive amounts', () => {
@@ -22,7 +22,8 @@ describe('formatCurrency', () => {
   });
 
   it('formats with custom locale', () => {
-    expect(formatCurrency(1234.56, 'fr-FR')).toBe('1 234,56 €');
+    // Intl insère des espaces insécables (U+202F, U+00A0) : on les normalise
+    expect(formatCurrency(1234.56, 'fr-FR').replace(/\\s/g, ' ')).toBe('1 234,56 €');
   });
 });
 
@@ -153,7 +154,7 @@ test.describe('Search Feature', () => {
     // Wait for results
     const results = page.getByTestId('search-results');
     await expect(results).toBeVisible();
-    await expect(results.getByRole('link')).toHaveCount.greaterThan(0);
+    await expect(results.getByRole('link').first()).toBeVisible();
     
     // Click first result
     await results.getByRole('link').first().click();
@@ -209,7 +210,7 @@ describe('useDebounce', () => {
     rerender({ value: 'updated' });
     expect(result.current).toBe('initial'); // Not yet updated
     
-    act(() => vi.advanceTimersByTime(500));
+    act(() => { vi.advanceTimersByTime(500); });
     expect(result.current).toBe('updated'); // Now updated
   });
 });`,
@@ -258,7 +259,7 @@ export function TestingGuide() {
                   level.color,
                 )}
               >
-                {level.name} ({level.pct}%)
+                {level.name} (~{level.pct}%)
               </div>
               <span className="text-xs text-muted-foreground whitespace-nowrap">
                 {level.desc}

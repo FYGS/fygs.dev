@@ -26,7 +26,7 @@ export function AriaStatesExample() {
 <div aria-hidden="true">This content is hidden from screen readers</div>
 
 // Relationships
-<div role="listbox" aria-activedescendant="option-2">
+<div role="listbox" tabindex="0" aria-activedescendant="option-2">
   <div id="option-1" role="option">Option 1</div>
   <div id="option-2" role="option">Option 2</div>
   <div id="option-3" role="option">Option 3</div>
@@ -183,7 +183,7 @@ export function AriaStatesExample() {
           question:
             "Explain the difference between aria-labelledby and aria-describedby.",
           answer:
-            'aria-labelledby and aria-describedby both reference other elements to provide information about an element, but they serve different purposes: 1) aria-labelledby: Provides the primary accessible name for an element. It\'s equivalent to a label and should be concise. Screen readers typically announce this information immediately when focusing an element. Example: `<div id="heading">User Profile</div><section aria-labelledby="heading">...</section>` 2) aria-describedby: Provides additional descriptive information about an element. It supplements the accessible name with more details. Screen readers typically announce this after the label, and some may require a specific command to read it. Example: `<button aria-describedby="tooltip">Save</button><div id="tooltip">Saves your current progress</div>` Key differences: aria-labelledby is for essential, identifying information (what the element is), while aria-describedby is for supplementary information (what the element does or additional context). Both can reference multiple elements by providing a space-separated list of IDs, and both take precedence over their counterparts (aria-label and native content) in the accessibility tree.',
+            'aria-labelledby and aria-describedby both reference other elements to provide information about an element, but they serve different purposes: 1) aria-labelledby: Provides the primary accessible name for an element. It\'s equivalent to a label and should be concise. Screen readers typically announce this information immediately when focusing an element. Example: `<div id="heading">User Profile</div><section aria-labelledby="heading">...</section>` 2) aria-describedby: Provides additional descriptive information about an element. It supplements the accessible name with more details. Screen readers typically announce this after the label, and some may require a specific command to read it. Example: `<button aria-describedby="tooltip">Save</button><div id="tooltip">Saves your current progress</div>` Key differences: aria-labelledby is for essential, identifying information (what the element is), while aria-describedby is for supplementary information (what the element does or additional context). Both can reference multiple elements by providing a space-separated list of IDs, and aria-labelledby takes precedence over aria-label and native content when computing the accessible name.',
           difficulty: "medium",
           tags: ["Accessibility", "ARIA", "Screen Readers"],
         },

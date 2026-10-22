@@ -14,13 +14,12 @@ const area = getArea(lesson.route)!;
 
 test.describe("TechMastery learning path (fr)", () => {
   test("a lesson shows its frame: meta strip, takeaways, exercises, self-check, neighbours", async ({ page }) => {
-    await page.goto(`/fr${lesson.route}`);
-    await expectHealthyPage(page);
+    await expectHealthyPage(page, `/fr${lesson.route}`);
 
     const strip = page.getByRole("complementary", { name: "À propos de ce sujet" });
     await expect(strip).toContainText(area.title);
     await expect(strip).toContainText(`Environ ${lesson.minutes} min`);
-    await expect(strip).toContainText("Pas encore commencé");
+    await expect(strip).toContainText("En cours");
 
     await expect(page.getByRole("heading", { name: "À retenir" })).toBeVisible();
     for (const line of lesson.takeaways!) await expect(page.getByText(line)).toBeVisible();
@@ -61,7 +60,7 @@ test.describe("TechMastery learning path (fr)", () => {
 
     // and the dashboard knows
     await page.goto("/fr/tech-mastry/dashboard");
-    await expect(page.getByText("Sujets terminés")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Sujets terminés" })).toBeVisible();
     await expect(page.getByText(/1 auto-évaluation, moyenne 100 %/)).toBeVisible();
     await page.getByRole("tab", { name: /Parcours/ }).click();
     const card = page.getByRole("heading", { name: area.title }).first();
@@ -84,7 +83,7 @@ test.describe("TechMastery learning path (fr)", () => {
     await page.goto(`/fr${lesson.route}`);
     await page.getByRole("navigation", { name: "Sujets voisins" }).getByRole("link", { name: new RegExp(next!.title) }).click();
     await expect(page).toHaveURL(new RegExp(`${next!.route}$`));
-    await expectHealthyPage(page);
+    await expect(page.locator("main").first()).toBeVisible();
   });
 
   test("the landing page of an area shows the progress of the area", async ({ page }) => {

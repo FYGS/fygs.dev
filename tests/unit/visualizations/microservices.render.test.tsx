@@ -8,8 +8,8 @@ describe("MicroservicesVisualization rendering", () => {
     expect(states).toBeGreaterThanOrEqual(5);
     expect(hashes).toMatchInlineSnapshot(`
       [
-        "11e8bc45",
-        "11e8bc45",
+        "2af3b028",
+        "2af3b028",
         "98ff70b5",
         "a458407f",
         "15ed561f",

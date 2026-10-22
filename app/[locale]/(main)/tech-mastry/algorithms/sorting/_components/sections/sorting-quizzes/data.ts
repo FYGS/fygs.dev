@@ -180,7 +180,7 @@ function partition(arr, low, high) {
       {
         id: "q5",
         question:
-          "Quelle technique est utilisée dans Timsort, l'algorithme de tri utilisé par défaut dans Python et Java ?",
+          "Quelle technique est utilisée dans Timsort, l'algorithme de tri utilisé par défaut dans Python et, pour les objets, dans Java ?",
         options: [
           "Combinaison de tri rapide et tri par tas",
           "Combinaison de tri fusion et tri par insertion",
@@ -203,7 +203,7 @@ function partition(arr, low, high) {
       {
         id: "q1",
         question:
-          "Quel algorithme de tri a la meilleure complexité temporelle dans le pire des cas ?",
+          "Lequel de ces algorithmes garantit O(n log n) dans le pire des cas tout en étant stable ?",
         options: [
           "Tri rapide (Quick Sort)",
           "Tri fusion (Merge Sort)",
@@ -212,7 +212,7 @@ function partition(arr, low, high) {
         ],
         correctAnswer: 1,
         explanation:
-          "Le tri fusion et le tri par tas ont tous deux une complexité temporelle de O(n log n) dans le pire des cas, mais le tri fusion est généralement considéré comme ayant une constante plus petite et une meilleure localité de référence.",
+          "Le tri fusion et le tri par tas ont tous deux une complexité temporelle de O(n log n) dans le pire des cas, mais seul le tri fusion est stable (le tri par tas ne l'est pas). Le tri fusion a en outre une meilleure localité de référence, au prix de O(n) mémoire supplémentaire.",
         difficulty: "medium",
       },
       {

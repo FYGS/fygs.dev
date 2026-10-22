@@ -32,7 +32,7 @@ const challenges = [
   if (n <= 1) return n;
   
   // Si déjà calculé, retourner la valeur mémorisée
-  if (memo[n]) return memo[n];
+  if (memo[n] !== undefined) return memo[n];
   
   // Calculer et mémoriser
   memo[n] = fibonacci(n - 1, memo) + fibonacci(n - 2, memo);
@@ -40,11 +40,12 @@ const challenges = [
 }`,
     verify: (input: string) => {
       const n = parseInt(input);
-      const fib = (x: number): number => {
-        if (x <= 1) return x;
-        return fib(x - 1) + fib(x - 2);
-      };
-      return fib(n).toString();
+      if (!Number.isInteger(n) || n < 0) return "Entrez un entier n >= 0";
+      // Itératif : la version récursive naïve est en O(2^n) et gèlerait la page
+      let a = 0,
+        b = 1;
+      for (let i = 0; i < n; i++) [a, b] = [b, a + b];
+      return a.toString();
     },
   },
   {
@@ -223,7 +224,7 @@ const challenges = [
     description: "Maximiser la valeur dans un sac à dos avec capacité limitée.",
     technique: "2D DP Table",
     examples: [
-      { input: "1,3,4,5 | 4,5,8,10 | 7", output: "15" },
+      { input: "1,3,4,5 | 4,5,8,10 | 7", output: "14" },
       { input: "2,3,4 | 3,4,5 | 5", output: "7" },
     ],
     hint: "dp[i][w] = valeur max avec les i premiers items et capacité w.",

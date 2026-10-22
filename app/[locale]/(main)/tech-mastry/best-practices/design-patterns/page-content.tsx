@@ -24,7 +24,7 @@ const patterns: Pattern[] = [
     name: "Singleton",
     category: "Création",
     intent: "Garantir qu'une classe n'a qu'une seule instance globalement accessible.",
-    problem: "Accès partagé à une ressource unique (config, DB pool, logger).",
+    problem: "Accès partagé à une ressource unique (config, DB pool, logger). À utiliser avec parcimonie : état global, tests plus difficiles.",
     solution: "Instance privée + méthode statique getInstance().",
     realWorld: "Prisma Client, Connection Pool, Configuration globale.",
     code: `class Database {
@@ -68,6 +68,7 @@ class PushNotification implements Notification {
   send(msg: string) { console.log(\`Push: \${msg}\`); }
 }
 
+// Simple Factory (variante courante) ; le Factory Method du GoF passe par des sous-classes
 function createNotification(type: "email" | "sms" | "push"): Notification {
   const map = { email: EmailNotification, sms: SMSNotification, push: PushNotification };
   return new map[type]();
@@ -110,7 +111,7 @@ const q = new QueryBuilder()
     intent: "Notifier automatiquement les dépendants lors d'un changement d'état.",
     problem: "Plusieurs objets doivent réagir quand un objet change.",
     solution: "Subscribe/unsubscribe + notify. Publication d'événements.",
-    realWorld: "addEventListener, React useState, RxJS, EventEmitter, Zustand.",
+    realWorld: "addEventListener, RxJS, EventEmitter, Zustand.",
     code: `type Listener<T> = (data: T) => void;
 
 class EventEmitter<Events extends Record<string, unknown>> {
@@ -203,7 +204,7 @@ displayUser(new UserAdapter(legacyUserService.getUser()));`,
     intent: "Ajouter dynamiquement des responsabilités à un objet sans héritage.",
     problem: "Extension de fonctionnalité sans modifier la classe de base.",
     solution: "Wrapper qui implémente la même interface et délègue + enrichit.",
-    realWorld: "Express middleware, Next.js HOC, TypeScript decorators, logging.",
+    realWorld: "Express middleware, React HOC, TypeScript decorators, logging.",
     code: `interface Logger {
   log(message: string): void;
 }
@@ -231,7 +232,7 @@ const logger = new PrefixLogger(
   new TimestampLogger(new ConsoleLogger()),
   "APP"
 );
-logger.log("Hello"); // [APP] [2024-...] Hello`,
+logger.log("Hello"); // [2024-...] [APP] Hello`,
     relatedPatterns: ["Adapter", "Proxy", "Strategy"],
   },
   {
@@ -240,7 +241,7 @@ logger.log("Hello"); // [APP] [2024-...] Hello`,
     intent: "Fournir un substitut contrôlant l'accès à un objet.",
     problem: "Contrôle d'accès, caching, lazy loading, logging.",
     solution: "Objet intermédiaire avec la même interface qui intercepte les appels.",
-    realWorld: "ES6 Proxy, API rate limiting, caching layer, virtual DOM.",
+    realWorld: "ES6 Proxy, API rate limiting, caching layer, lazy loading.",
     code: `interface DataService {
   fetchData(id: string): Promise<unknown>;
 }

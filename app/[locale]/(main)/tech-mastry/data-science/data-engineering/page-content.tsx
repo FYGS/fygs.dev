@@ -38,7 +38,7 @@ function ETLPipelineViz() {
       color: "text-green-500 bg-green-500/10",
       sources: ["Data Warehouse", "Data Lake", "Feature Store", "Dashboard"],
       desc: "Chargement dans les systèmes cibles — optimisé et partitionné",
-      code: `# Chargement partitionné\ndf_agg.write.mode("overwrite").partitionBy("date").parquet("s3a://warehouse/users/")\n# Ou vers un DWH\ndf_agg.write.format("bigquery").option("table", "analytics.user_stats").save()`,
+      code: `# Chargement partitionné\ndf_agg.write.mode("overwrite").partitionBy("country").parquet("s3a://warehouse/users/")\n# Ou vers un DWH\ndf_agg.write.format("bigquery").option("table", "analytics.user_stats").save()`,
     },
   ];
 
@@ -454,7 +454,7 @@ default_args = {
 with DAG(
     "daily_etl_pipeline",
     default_args=default_args,
-    schedule_interval="0 6 * * *",  # 6h UTC chaque jour
+    schedule="0 6 * * *",  # 6h UTC chaque jour (schedule_interval est déprécié)
     start_date=datetime(2024, 1, 1),
     catchup=False,
     tags=["etl", "production"],

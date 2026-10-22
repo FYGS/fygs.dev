@@ -209,7 +209,7 @@ function ActivationFunctionsViz() {
     sigmoid: "f(x) = 1 / (1 + e⁻ˣ)",
     tanh: "f(x) = (eˣ - e⁻ˣ) / (eˣ + e⁻ˣ)",
     leaky: "f(x) = x if x>0 else 0.01x",
-    softmax: "f(xᵢ) = eˣⁱ / Σeˣʲ",
+    softmax: "f(xᵢ) = eˣⁱ / Σeˣʲ (courbe : 2 classes, ≡ sigmoïde)",
   };
 
   return (
@@ -354,7 +354,7 @@ const frameworks = [
   },
   {
     name: "Keras",
-    desc: "API haut niveau, prototypage rapide, intégré à TF",
+    desc: "API haut niveau, prototypage rapide, multi-backend (TF, JAX, PyTorch) depuis Keras 3",
     color: "text-red-400",
   },
   {
@@ -392,7 +392,7 @@ const trainingTips = [
   },
   {
     tip: "Mixed precision",
-    detail: "FP16 pour accélérer x2 le training avec moins de VRAM",
+    detail: "FP16/BF16 pour accélérer le training et réduire la VRAM (gain variable selon le GPU)",
   },
 ];
 

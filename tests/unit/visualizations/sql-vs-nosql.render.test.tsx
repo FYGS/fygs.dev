@@ -28,7 +28,7 @@ describe("SqlVsNoSqlVisualization rendering", () => {
         "b0ca4088",
         "c4202847",
         "5da408c8",
-        "16a3537c",
+        "cda4ce69",
         "c800dd2e",
         "c4202847",
         "7e9e1c45",

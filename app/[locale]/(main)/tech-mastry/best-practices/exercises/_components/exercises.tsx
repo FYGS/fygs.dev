@@ -84,7 +84,7 @@ function calculateAge(birthday: Date): number {
       "== au lieu de ===",
       "Pas de typage TypeScript",
       "Calcul d'âge incorrect (ne considère pas le mois/jour)",
-      "Pas d'encodage de l'ID dans l'URL (injection possible)",
+      "Pas d'encodage de l'ID dans l'URL (caractères spéciaux : /, ?, # peuvent altérer l'URL)",
       "localStorage dans une fonction de service (couplage)",
       "console.log au lieu de gestion d'erreur propre",
       "Concaténation de strings au lieu de template literals",
@@ -164,6 +164,7 @@ class OrderService {
     private calculator: PriceCalculator,
     private notifier: OrderNotifier,
     private repository: OrderRepository,
+    private userRepo: UserRepository,
   ) {}
   
   async create(items: OrderItem[], userId: string): Promise<Order> {

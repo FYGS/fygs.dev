@@ -86,7 +86,7 @@ app.get('/api/products', (req, res) => {
         case 'name':
           return direction * a.name.localeCompare(b.name);
         case 'popularity':
-          return direction * (b.views - a.views); // Tri par popularité (vues)
+          return direction * (a.views - b.views); // Tri par popularité (vues)
         default:
           return 0;
       }
@@ -145,7 +145,7 @@ app.get('/api/products', (req, res) => {
         case 'name':
           return direction * a.name.localeCompare(b.name);
         case 'popularity':
-          return direction * (b.views - a.views); // Tri par popularité (vues)
+          return direction * (a.views - b.views); // Tri par popularité (vues)
         default:
           return 0;
       }

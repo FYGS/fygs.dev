@@ -106,7 +106,7 @@ function permuteOptimized(nums) {
 }`,
     pattern: "Génération exhaustive",
     tips: [
-      "n! permutations → O(n!) en temps",
+      "n! permutations de taille n → O(n × n!) en temps (copie de chaque résultat)",
       "Variante : permutations avec doublons → trier + skip",
     ],
   },
@@ -155,7 +155,7 @@ function permuteOptimized(nums) {
     return true; // Tout rempli
   }
   
-  solve();
+  solve(); // modifie la grille board en place
   return board;
 }`,
     pattern: "Satisfaction de contraintes (CSP)",
@@ -214,7 +214,7 @@ function combine(n, k) {
 }`,
     pattern: "Génération de sous-ensembles",
     tips: [
-      "2^n sous-ensembles → O(2^n)",
+      "2^n sous-ensembles → O(n × 2^n) en temps (copie de chaque résultat)",
       "Le pruning réduit drastiquement l'espace de recherche",
     ],
   },
@@ -357,13 +357,13 @@ export function BacktrackingGuide() {
             <tbody>
               <tr className="border-b">
                 <td className="p-3">Permutations</td>
-                <td className="p-3 font-mono text-xs">O(n!)</td>
+                <td className="p-3 font-mono text-xs">O(n × n!)</td>
                 <td className="p-3 font-mono text-xs">O(n)</td>
                 <td className="p-3">Génération</td>
               </tr>
               <tr className="border-b">
                 <td className="p-3">Sous-ensembles</td>
-                <td className="p-3 font-mono text-xs">O(2ⁿ)</td>
+                <td className="p-3 font-mono text-xs">O(n × 2ⁿ)</td>
                 <td className="p-3 font-mono text-xs">O(n)</td>
                 <td className="p-3">Génération</td>
               </tr>
@@ -374,7 +374,7 @@ export function BacktrackingGuide() {
                 <td className="p-3">Contraintes</td>
               </tr>
               <tr className="border-b">
-                <td className="p-3">Sudoku</td>
+                <td className="p-3">Sudoku (n = cases vides)</td>
                 <td className="p-3 font-mono text-xs">O(9ⁿ)</td>
                 <td className="p-3 font-mono text-xs">O(1)</td>
                 <td className="p-3">CSP</td>

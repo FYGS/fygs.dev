@@ -105,8 +105,8 @@ export function CapView({ activeCapProperty, databaseType, setActiveCapProperty,
                 Théorème CAP
               </h3>
               <p className="text-sm text-muted-foreground">
-                Un système distribué ne peut garantir que deux des
-                trois propriétés à la fois
+                Pendant une partition réseau, il faut choisir entre
+                cohérence et disponibilité
               </p>
             </div>
 
@@ -347,7 +347,7 @@ export function CapView({ activeCapProperty, databaseType, setActiveCapProperty,
                           lecture/écriture)
                         </li>
                         <li>HBase</li>
-                        <li>Redis (avec Sentinel ou Cluster)</li>
+                        <li>CockroachDB, TiKV</li>
                         <li>etcd, ZooKeeper, Consul</li>
                         <li>Google Cloud Spanner</li>
                       </ul>

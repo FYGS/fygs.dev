@@ -17,7 +17,7 @@ const categories = [
     questions: [
       {
         q: "Quelle est la différence entre un tableau et une liste chaînée ?",
-        a: "Un tableau offre un accès direct aux éléments (O(1)) mais une insertion/suppression coûteuse (O(n)), tandis qu'une liste chaînée permet une insertion/suppression efficace (O(1)) mais un accès séquentiel aux éléments (O(n)).",
+        a: "Un tableau offre un accès direct aux éléments (O(1)) mais une insertion/suppression au milieu coûteuse (O(n), à cause du décalage des éléments), tandis qu'une liste chaînée permet une insertion/suppression en O(1) une fois le nœud repéré, mais un accès séquentiel aux éléments (O(n)) et une moins bonne localité mémoire.",
         followUp: [
           "Quand préféreriez-vous utiliser l'un plutôt que l'autre ?",
           "Comment implémenteriez-vous une liste doublement chaînée ?",
@@ -25,7 +25,7 @@ const categories = [
       },
       {
         q: "Expliquez le fonctionnement du tri rapide (QuickSort)",
-        a: "QuickSort est un algorithme de tri par division-et-conquête qui choisit un pivot, partitionne les éléments autour de ce pivot (plus petits à gauche, plus grands à droite), puis récursivement trie les sous-tableaux. Sa complexité moyenne est O(n log n).",
+        a: "QuickSort est un algorithme de tri par division-et-conquête qui choisit un pivot, partitionne les éléments autour de ce pivot (plus petits à gauche, plus grands à droite), puis récursivement trie les sous-tableaux. Sa complexité moyenne est O(n log n), mais elle est O(n²) dans le pire cas (pivot systématiquement mal choisi, par exemple sur un tableau déjà trié avec un pivot en bout) ; le tri est en place mais non stable.",
         followUp: [
           "Comment choisir un bon pivot ?",
           "Quelle est sa complexité dans le pire des cas ?",
@@ -83,7 +83,7 @@ const categories = [
     questions: [
       {
         q: "Comment prévenir les attaques XSS ?",
-        a: "Pour prévenir les XSS : 1) Échapper les données utilisateur, 2) Utiliser des en-têtes de sécurité comme Content-Security-Policy, 3) Valider les entrées côté serveur, 4) Utiliser des frameworks qui échappent automatiquement le contenu.",
+        a: "Pour prévenir les XSS : 1) Encoder/échapper les données utilisateur à l'affichage, selon le contexte (HTML, attribut, JavaScript, URL), 2) Utiliser des en-têtes de sécurité comme Content-Security-Policy, 3) Valider les entrées côté serveur, 4) Utiliser des frameworks qui échappent automatiquement le contenu.",
         followUp: [
           "Différence entre XSS réfléchi et stocké ?",
           "Rôle des cookies HttpOnly ?",
@@ -113,7 +113,7 @@ const categories = [
       },
       {
         q: "Qu'est-ce que le CI/CD ?",
-        a: "CI/CD signifie Intégration Continue / Déploiement Continu. La CI automatise l'intégration du code (tests, build), tandis que le CD automatise le déploiement en production. Cela permet des livraisons plus rapides et plus fiables.",
+        a: "CI/CD signifie Intégration Continue / Livraison Continue (Continuous Delivery) ou Déploiement Continu (Continuous Deployment). La CI automatise l'intégration du code (tests, build) ; le CD garantit que chaque version validée est déployable (livraison) ou la déploie automatiquement en production (déploiement). Cela permet des livraisons plus rapides et plus fiables.",
         followUp: [
           "Outils populaires de CI/CD ?",
           "Meilleures pratiques pour le pipeline CI/CD ?",

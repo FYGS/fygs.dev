@@ -90,10 +90,10 @@ class LinkedList {
   {
     name: "Arbres Binaires de Recherche",
     complexity: {
-      access: "O(log n)",
-      search: "O(log n)",
-      insertion: "O(log n)",
-      deletion: "O(log n)",
+      access: "O(log n)* / O(n) pire cas",
+      search: "O(log n)* / O(n) pire cas",
+      insertion: "O(log n)* / O(n) pire cas",
+      deletion: "O(log n)* / O(n) pire cas",
     },
     code: `class TreeNode {
   constructor(data) {
@@ -149,7 +149,7 @@ class BinarySearchTree {
       "Maintien de données triées",
       "Implémentation de dictionnaires",
     ],
-    pros: ["Recherche efficace", "Maintient l'ordre", "Équilibré: performances garanties"],
+    pros: ["Recherche efficace", "Maintient l'ordre", "O(log n) garanti si équilibré (AVL, rouge-noir)"],
     cons: ["Complexité d'implémentation", "Peut devenir déséquilibré", "Overhead mémoire"],
   },
   {
@@ -170,7 +170,7 @@ class BinarySearchTree {
     const PRIME = 31;
     for (let i = 0; i < Math.min(key.length, 100); i++) {
       const char = key[i];
-      const value = char.charCodeAt(0) - 96;
+      const value = char.charCodeAt(0);
       total = (total * PRIME + value) % this.keyMap.length;
     }
     return total;
@@ -235,7 +235,7 @@ const commonQuestions = [
   },
   {
     question: "Quand utiliser un BST ?",
-    answer: "Pour maintenir des données triées avec recherche, insertion et suppression efficaces en O(log n).",
+    answer: "Pour maintenir des données triées avec recherche, insertion et suppression en O(log n) si l'arbre est équilibré (sinon O(n) dans le pire cas).",
   },
   {
     question: "Comment gérer les collisions dans une HashTable ?",

@@ -291,7 +291,7 @@ function Content() {
       <CodeExample
         title="Combinaison de Context et useReducer"
         description="Utiliser Context avec useReducer pour une gestion d'état plus complexe"
-        code={`import React, { createContext, useContext, useReducer } from 'react';
+        code={`import React, { createContext, useContext, useReducer, useState } from 'react';
 
 // Définir les types d'actions
 const ADD_TODO = 'ADD_TODO';
@@ -474,7 +474,7 @@ function TodoApp() {
             question:
               "Quels sont les avantages de combiner Context et useReducer par rapport à useState?",
             answer:
-              "La combinaison de Context et useReducer offre plusieurs avantages par rapport à useState pour des états complexes: 1) Centralisation de la logique de mise à jour d'état dans un reducer, ce qui la rend plus prévisible et testable. 2) Réduction du nombre de re-rendus car vous n'avez qu'un seul dispatch au lieu de multiples fonctions setState. 3) Facilité à implémenter des fonctionnalités comme l'annulation/rétablissement ou la journalisation des changements d'état. 4) Meilleure séparation des préoccupations entre la logique d'état et les composants d'UI.",
+              "La combinaison de Context et useReducer offre plusieurs avantages par rapport à useState pour des états complexes: 1) Centralisation de la logique de mise à jour d'état dans un reducer, ce qui la rend plus prévisible et testable. 2) Une fonction dispatch à l'identité stable, que l'on peut exposer via le Context sans la recréer à chaque rendu (contrairement à plusieurs callbacks qui enveloppent des setState). 3) Facilité à implémenter des fonctionnalités comme l'annulation/rétablissement ou la journalisation des changements d'état. 4) Meilleure séparation des préoccupations entre la logique d'état et les composants d'UI.",
           },
           {
             question:

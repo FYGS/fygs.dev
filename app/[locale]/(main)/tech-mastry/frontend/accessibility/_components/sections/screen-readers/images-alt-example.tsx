@@ -12,7 +12,7 @@ export function ImagesAltExample() {
 <img src="decorative-divider.png" alt="">
 
 <!-- Another way to mark decorative images -->
-<img src="background-pattern.png" role="presentation">
+<img src="background-pattern.png" alt="" role="presentation">
 
 <!-- Image that is a link needs alt text describing the destination -->
 <a href="/home">
@@ -34,7 +34,7 @@ export function ImagesAltExample() {
 </figure>
 
 <!-- SVG with accessible text -->
-<svg width="100" height="100" aria-labelledby="svg-title svg-desc">
+<svg width="100" height="100" role="img" aria-labelledby="svg-title svg-desc">
   <title id="svg-title">Company Logo</title>
   <desc id="svg-desc">A blue circle with the letter C in the center</desc>
   <circle cx="50" cy="50" r="40" fill="blue" />

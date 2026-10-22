@@ -59,12 +59,11 @@ export function PopularImplementations({ serviceMeshType }: {
         </p>
         <ul className="text-xs space-y-1 list-disc pl-4 mb-3">
           <li>
-            Faible empreinte mémoire et CPU (10x plus léger
-            qu&apos;Istio)
+            Faible empreinte mémoire et CPU (nettement plus léger
+            qu&apos;Istio en mode sidecar)
           </li>
           <li>
-            Retries automatiques basés sur la latence et le taux
-            d&apos;erreur
+            Retries automatiques encadrés par un budget de retries
           </li>
           <li>Proxy écrit en Rust pour des performances optimales</li>
           <li>Installation et configuration simplifiées</li>
@@ -143,7 +142,8 @@ export function PopularImplementations({ serviceMeshType }: {
         </h4>
         <p className="text-sm text-muted-foreground mb-2">
           Solution native pour AWS basée sur Envoy, entièrement gérée
-          par AWS.
+          par AWS (AWS a annoncé la fin de son support au 30
+          septembre 2026 : à éviter pour de nouveaux projets).
         </p>
         <ul className="text-xs space-y-1 list-disc pl-4 mb-3">
           <li>

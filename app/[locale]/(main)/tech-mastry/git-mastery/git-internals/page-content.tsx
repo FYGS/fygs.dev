@@ -11,14 +11,14 @@ const objects = [
     icon: FileText,
     color: "text-blue-500",
     bg: "bg-blue-500/10",
-    description: "Contenu brut d'un fichier. Stocké par hash SHA-1 du contenu.",
+    description: "Contenu brut d'un fichier. Identifié par le hash SHA-1 de son contenu (SHA-256 en option dans les dépôts récents).",
     details: [
       "Un blob ne contient PAS le nom du fichier",
       "Même contenu = même hash = un seul blob (déduplication)",
       "Stocké dans .git/objects/ en format zlib compressé",
       "Commande : git hash-object -w fichier.txt",
     ],
-    example: "$ echo \"Hello\" | git hash-object --stdin\nce013625030ba8dba906f756967f9e9ca394464a",
+    example: "$ echo \"Hello\" | git hash-object --stdin\ne965047ad7c57865823c7d992b1d046ea66edf78",
   },
   {
     type: "tree",
@@ -46,7 +46,7 @@ const objects = [
       "Un merge commit a 2+ parents",
       "L'historique Git est un DAG (Directed Acyclic Graph)",
     ],
-    example: "$ git cat-file -p HEAD\ntree a1b2c3d...\nparent e4f5g6h...\nauthor Fernand SOUALO\ncommitter Fernand SOUALO\n\nfeat: implement auth",
+    example: "$ git cat-file -p HEAD\ntree a1b2c3d...\nparent e4f5a6b...\nauthor Fernand SOUALO\ncommitter Fernand SOUALO\n\nfeat: implement auth",
   },
   {
     type: "tag (annotated)",

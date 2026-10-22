@@ -30,7 +30,7 @@ function CopilotModes() {
         "Suggestions contextuelles ligne par ligne",
         "Complétion de fonctions entières",
         "Tab pour accepter, Esc pour rejeter",
-        "Ctrl+] / Ctrl+[ pour naviguer les suggestions",
+        "Alt+] / Alt+[ pour naviguer les suggestions",
       ],
       config:
         '// settings.json\n{\n  "github.copilot.enable": {\n    "*": true,\n    "plaintext": true,\n    "markdown": true,\n    "scminput": false\n  },\n  "github.copilot.inlineSuggest.enable": true\n}',
@@ -42,9 +42,9 @@ function CopilotModes() {
       desc: "Posez des questions sur votre code, obtenez des explications et des suggestions.",
       features: [
         "Ctrl+I pour ouvrir le chat inline",
-        "Ctrl+Shift+I pour le panneau chat",
-        "@ pour référencer fichiers, symbols, workspace",
-        "# pour référencer des fichiers spécifiques",
+        "Ctrl+Alt+I pour le panneau chat (VS Code, Windows/Linux)",
+        "@ pour invoquer un participant (@workspace, @vscode, @terminal)",
+        "# pour référencer fichiers, symboles ou sélection (#file, #selection)",
       ],
       config:
         "// Commandes utiles dans le chat\n@workspace Comment fonctionne l'auth ?\n@vscode Comment configurer le debug ?\n#file:auth.ts Explique cette fonction\n/explain  Sélection > Expliquer\n/fix      Sélection > Corriger\n/tests    Sélection > Générer des tests",
@@ -55,10 +55,10 @@ function CopilotModes() {
       name: "Edit Mode",
       desc: "Demandez des modifications précises sur votre code avec diff intégré.",
       features: [
-        "Sélectionnez du code + Ctrl+I",
+        "Sélectionnez du code + Ctrl+I (chat inline) ou utilisez le mode Edits du panneau chat",
         "Prévisualisation diff avant application",
         "Accepter/Rejeter chaque modification",
-        "Multi-fichier avec références @",
+        "Multi-fichier : ajoutez les fichiers concernés avec #",
       ],
       config:
         '// Exemples de requêtes Edit\n"Refactore en utilisant async/await"\n"Ajoute la gestion d\'erreurs"\n"Convertis en TypeScript strict"\n"Optimise les performances"\n"Ajoute des commentaires JSDoc"',
@@ -150,7 +150,7 @@ function KeybindingsRef() {
     { action: "Suggestion précédente", keys: "Alt+[", category: "Inline" },
     { action: "Déclencher suggestion", keys: "Alt+\\", category: "Inline" },
     { action: "Chat inline", keys: "Ctrl+I", category: "Chat" },
-    { action: "Panneau chat", keys: "Ctrl+Shift+I", category: "Chat" },
+    { action: "Panneau chat", keys: "Ctrl+Alt+I", category: "Chat" },
     { action: "Quick chat", keys: "Ctrl+Shift+Alt+L", category: "Chat" },
     { action: "New chat", keys: "Ctrl+L", category: "Chat" },
     { action: "Expliquer", keys: "/explain", category: "Commande" },
@@ -227,8 +227,8 @@ function CustomInstructions() {
         '{\n  "github.copilot.chat.codeGeneration.instructions": [\n    { "file": ".github/copilot-instructions.md" }\n  ],\n  "github.copilot.chat.testGeneration.instructions": [\n    {\n      "text": "Use Vitest with describe/it blocks."\n    }\n  ]\n}',
     },
     {
-      name: ".copilot/skills/",
-      desc: "Dossier de skills custom. Chaque skill est un fichier .md avec des instructions spécifiques.",
+      name: ".github/skills/",
+      desc: "Dossier de skills custom (Agent Skills). Chaque skill est un sous-dossier contenant un fichier SKILL.md avec des instructions spécifiques ; fonctionnalité récente, à vérifier dans la documentation officielle.",
       example:
         "# SKILL.md\n\n## Description\nSkill pour créer des composants shadcn/ui\n\n## Instructions\n1. Utilisez les composants de @/components/ui\n2. Appliquez les variants avec cva()\n3. Exportez avec displayName\n4. Ajoutez les props TypeScript",
     },
@@ -328,7 +328,7 @@ function CopilotMCP() {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-github"],
       "env": {
-        "GITHUB_TOKEN": "\${env:GITHUB_TOKEN}"
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "\${env:GITHUB_TOKEN}"
       }
     }
   }

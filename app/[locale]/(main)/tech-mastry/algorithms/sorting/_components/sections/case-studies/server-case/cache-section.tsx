@@ -200,8 +200,8 @@ cache.put('route4', { data: 'Page de blog' });`}
             <strong>Redis</strong>, un serveur de cache populaire,
             implémente plusieurs politiques de remplacement basées sur des
             algorithmes de tri, notamment LRU (Least Recently Used) et LFU
-            (Least Frequently Used), avec des optimisations pour minimiser
-            l&apos;impact sur les performances.
+            (Least Frequently Used), approximées par échantillonnage de
+            clés pour minimiser l&apos;impact sur les performances.
           </p>
         </div>
       </div>

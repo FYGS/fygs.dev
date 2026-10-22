@@ -118,7 +118,7 @@ User {
   name: "Alice"
   email: "alice@example.com"
   role: ADMIN
-  // ~3x smaller than JSON equivalent
+  // Généralement plus compact que l'équivalent JSON
 }`,
   },
   {

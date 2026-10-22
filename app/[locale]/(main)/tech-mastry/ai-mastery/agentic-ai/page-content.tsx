@@ -116,7 +116,7 @@ function FrameworksComparison() {
   const frameworks = [
     {
       name: "LangChain / LangGraph",
-      desc: "Framework Python/JS le plus populaire. Chaînes, agents, RAG, graph-based workflows.",
+      desc: "Framework Python/JS très répandu. Chaînes, agents, RAG, graph-based workflows.",
       pros: ["Écosystème riche", "Communauté massive", "LangSmith pour le debug"],
       cons: ["Complexité croissante", "Abstractions parfois lourdes"],
       useCases: "RAG, chatbots, workflows complexes",
@@ -132,17 +132,17 @@ function FrameworksComparison() {
     },
     {
       name: "AutoGen (Microsoft)",
-      desc: "Conversations multi-agents asynchrones avec exécution de code.",
+      desc: "Conversations multi-agents avec exécution de code.",
       pros: ["Conversations naturelles", "Code execution intégrée", "Flexible"],
-      cons: ["Configuration complexe", "Documentation en évolution"],
+      cons: ["Configuration complexe", "Évolution du projet à vérifier sur le site officiel (successeur Microsoft Agent Framework)"],
       useCases: "Développement, analyse de données, recherche",
       color: "border-amber-500/30",
     },
     {
       name: "Claude + MCP",
       desc: "Anthropic’s Model Context Protocol : agents via outils et serveurs MCP.",
-      pros: ["Standard ouvert", "Intégration native Claude", "Sécurité renforcée"],
-      cons: ["Écosystème encore jeune", "Lié à l'écosystème Anthropic"],
+      pros: ["Standard ouvert", "Intégration native Claude", "Permissions contrôlées côté client"],
+      cons: ["Écosystème encore jeune", "Risques d'injection de prompt via les outils à maîtriser"],
       useCases: "Dev tools, IDE intégration, automatisation",
       color: "border-orange-500/30",
     },

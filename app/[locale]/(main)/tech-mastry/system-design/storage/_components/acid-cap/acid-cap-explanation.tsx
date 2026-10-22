@@ -73,9 +73,11 @@ export function AcidCapExplanation() {
         <h3 className="text-lg font-semibold">Théorème CAP</h3>
         <p className="text-muted-foreground">
           Le théorème CAP stipule qu&apos;un système de base de données
-          distribuée ne peut garantir simultanément que deux des trois
-          propriétés suivantes : Cohérence, Disponibilité et Tolérance
-          au Partitionnement.
+          distribuée ne peut garantir simultanément les trois propriétés
+          suivantes : Cohérence (linéarisable), Disponibilité et Tolérance
+          au Partitionnement. Les partitions réseau étant inévitables, le
+          vrai choix se fait, pendant une partition, entre cohérence et
+          disponibilité.
         </p>
         <div className="space-y-2">
           <h4 className="font-medium flex items-center gap-1">
@@ -95,9 +97,9 @@ export function AcidCapExplanation() {
             Disponibilité (Availability)
           </h4>
           <p className="text-sm text-muted-foreground">
-            Le système répond à chaque requête, réussie ou non. Chaque
-            nœud non défaillant retourne une réponse raisonnable dans un
-            délai raisonnable.
+            Chaque requête adressée à un nœud non défaillant reçoit une
+            réponse (non-erreur), sans garantie que cette réponse
+            reflète l&apos;écriture la plus récente.
           </p>
         </div>
 
