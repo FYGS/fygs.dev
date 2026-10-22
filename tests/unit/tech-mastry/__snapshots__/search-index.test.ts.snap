@@ -1,8 +1,8 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`tech-mastry search-index (pinned) > derived helpers are stable 1`] = `460`;
+exports[`tech-mastry search-index (pinned) > derived helpers are stable 1`] = `716`;
 
-exports[`tech-mastry search-index (pinned) > derived helpers are stable 2`] = `"55688f2324b93494837a39b1871321e5b82287c3c64b761fc0c7af1f4b161924"`;
+exports[`tech-mastry search-index (pinned) > derived helpers are stable 2`] = `"cb3ba9cb1a9d5b47b17a34fc9c8ef0df93a54ddb108f9c785241d793587259df"`;
 
 exports[`tech-mastry search-index (pinned) > derived helpers are stable 3`] = `
 {
@@ -20,6 +20,15 @@ exports[`tech-mastry search-index (pinned) > derived helpers are stable 3`] = `
     "Structures de Données",
     "Best Practices",
     "Pratique",
+    "Structures de données",
+    "Architecture & design",
+    "System design",
+    "TypeScript",
+    "Git",
+    "Data science & engineering",
+    "IA & prompt engineering",
+    "Bonnes pratiques",
+    "Carrière & préparation",
   ],
   "subcategories": {
     "Algorithmes": [
@@ -29,6 +38,7 @@ exports[`tech-mastry search-index (pinned) > derived helpers are stable 3`] = `
       "Greedy",
       "Backtracking",
       "Graphes",
+      "Vue d'ensemble",
     ],
     "Architecture": [
       "Avancé",
@@ -36,20 +46,40 @@ exports[`tech-mastry search-index (pinned) > derived helpers are stable 3`] = `
       "Fondamentaux",
       "Expert",
     ],
+    "Architecture & design": [
+      "Vue d'ensemble",
+    ],
     "Backend": [
       "Fondamentaux",
       "Intermédiaire",
       "Architecture",
       "Performance",
       "DevOps",
+      "Vue d'ensemble",
+      "Débutant",
     ],
     "Best Practices": [
       "Exercices",
+    ],
+    "Bonnes pratiques": [
+      "Vue d'ensemble",
+      "Débutant",
+      "Intermédiaire",
+      "Avancé",
     ],
     "Carrière": [
       "Négociation",
       "Développement",
       "Entretiens",
+    ],
+    "Carrière & préparation": [
+      "Vue d'ensemble",
+    ],
+    "Data science & engineering": [
+      "Vue d'ensemble",
+      "Débutant",
+      "Intermédiaire",
+      "Avancé",
     ],
     "Frontend": [
       "Fondamentaux",
@@ -58,6 +88,18 @@ exports[`tech-mastry search-index (pinned) > derived helpers are stable 3`] = `
       "CSS",
       "Testing",
       "Next.js",
+      "Vue d'ensemble",
+    ],
+    "Git": [
+      "Vue d'ensemble",
+      "Intermédiaire",
+      "Débutant",
+    ],
+    "IA & prompt engineering": [
+      "Vue d'ensemble",
+      "Débutant",
+      "Intermédiaire",
+      "Avancé",
     ],
     "Outils": [
       "Pratique",
@@ -65,6 +107,9 @@ exports[`tech-mastry search-index (pinned) > derived helpers are stable 3`] = `
     "Pratique": [
       "Interview",
       "Solutions",
+      "Intermédiaire",
+      "Débutant",
+      "Avancé",
     ],
     "Préparation": [
       "Stratégie",
@@ -78,6 +123,11 @@ exports[`tech-mastry search-index (pinned) > derived helpers are stable 3`] = `
       "Avancé",
       "Fondamentaux",
     ],
+    "Structures de données": [
+      "Vue d'ensemble",
+      "Débutant",
+      "Intermédiaire",
+    ],
     "System Design": [
       "Fondamentaux",
       "Avancé",
@@ -87,18 +137,27 @@ exports[`tech-mastry search-index (pinned) > derived helpers are stable 3`] = `
       "Opérations",
       "Whiteboard",
     ],
+    "System design": [
+      "Vue d'ensemble",
+    ],
     "Sécurité & DevOps": [
       "Sécurité",
       "DevOps",
       "Cloud",
+      "Vue d'ensemble",
+    ],
+    "TypeScript": [
+      "Vue d'ensemble",
+      "Intermédiaire",
+      "Avancé",
     ],
   },
 }
 `;
 
-exports[`tech-mastry search-index (pinned) > has the same size, content hash and order 1`] = `52`;
+exports[`tech-mastry search-index (pinned) > has the same size, content hash and order 1`] = `113`;
 
-exports[`tech-mastry search-index (pinned) > has the same size, content hash and order 2`] = `"044a5de1df56b14e46ae850d4a07d228d0389f5d7fd1182acd2880f8e6f44636"`;
+exports[`tech-mastry search-index (pinned) > has the same size, content hash and order 2`] = `"8f6368ff4348b0e7c4298c4fa74d25403072fa401db652994d388921a2cfd320"`;
 
 exports[`tech-mastry search-index (pinned) > has the same size, content hash and order 3`] = `
 [
@@ -154,23 +213,93 @@ exports[`tech-mastry search-index (pinned) > has the same size, content hash and
   "/tech-mastry/system-design/whiteboard",
   "/tech-mastry/interview-simulation/question-bank",
   "/tech-mastry/challenges/solutions",
+  "/tech-mastry/algorithms",
+  "/tech-mastry/data-structures",
+  "/tech-mastry/data-structures/arrays",
+  "/tech-mastry/data-structures/lists",
+  "/tech-mastry/data-structures/trees",
+  "/tech-mastry/architecture",
+  "/tech-mastry/system-design",
+  "/tech-mastry/frontend",
+  "/tech-mastry/backend",
+  "/tech-mastry/backend/authentication",
+  "/tech-mastry/backend/messaging",
+  "/tech-mastry/backend/testing",
+  "/tech-mastry/typescript-mastery",
+  "/tech-mastry/typescript-mastery/advanced-types",
+  "/tech-mastry/typescript-mastery/generics-deep-dive",
+  "/tech-mastry/typescript-mastery/type-challenges",
+  "/tech-mastry/typescript-mastery/design-patterns",
+  "/tech-mastry/typescript-mastery/runtime-safety",
+  "/tech-mastry/typescript-mastery/compiler-api",
+  "/tech-mastry/git-mastery",
+  "/tech-mastry/git-mastery/branching-strategies",
+  "/tech-mastry/git-mastery/advanced-commands",
+  "/tech-mastry/git-mastery/git-internals",
+  "/tech-mastry/git-mastery/workflows",
+  "/tech-mastry/git-mastery/conflict-resolution",
+  "/tech-mastry/git-mastery/git-hooks",
+  "/tech-mastry/security-devops",
+  "/tech-mastry/data-science",
+  "/tech-mastry/data-science/python-data",
+  "/tech-mastry/data-science/statistics",
+  "/tech-mastry/data-science/machine-learning",
+  "/tech-mastry/data-science/deep-learning",
+  "/tech-mastry/data-science/data-engineering",
+  "/tech-mastry/data-science/mlops",
+  "/tech-mastry/ai-mastery",
+  "/tech-mastry/ai-mastery/prompt-engineering",
+  "/tech-mastry/ai-mastery/agentic-ai",
+  "/tech-mastry/ai-mastery/claude-setup",
+  "/tech-mastry/ai-mastery/copilot-setup",
+  "/tech-mastry/ai-mastery/ai-tools",
+  "/tech-mastry/ai-mastery/skills-agents",
+  "/tech-mastry/best-practices",
+  "/tech-mastry/best-practices/code-quality",
+  "/tech-mastry/best-practices/communication",
+  "/tech-mastry/best-practices/design-patterns",
+  "/tech-mastry/best-practices/negotiation",
+  "/tech-mastry/best-practices/problem-solving",
+  "/tech-mastry/best-practices/system-design",
+  "/tech-mastry/career",
+  "/tech-mastry/challenges",
+  "/tech-mastry/coding-challenges",
+  "/tech-mastry/interview-simulation",
+  "/tech-mastry/coding-challenges/arrays",
+  "/tech-mastry/coding-challenges/strings",
+  "/tech-mastry/coding-challenges/trees",
+  "/tech-mastry/coding-challenges/graphs",
+  "/tech-mastry/coding-challenges/dp",
+  "/tech-mastry/coding-challenges/system-design",
+  "/tech-mastry/system-design/architecture",
+  "/tech-mastry/algorithms/visualizations",
+  "/tech-mastry/qa",
 ]
 `;
 
 exports[`tech-mastry search-index (pinned) > keeps the per-category counts 1`] = `
 {
-  "Algorithmes": 8,
+  "Algorithmes": 9,
   "Architecture": 4,
-  "Backend": 6,
+  "Architecture & design": 1,
+  "Backend": 10,
   "Best Practices": 1,
+  "Bonnes pratiques": 7,
   "Carrière": 3,
-  "Frontend": 8,
+  "Carrière & préparation": 1,
+  "Data science & engineering": 7,
+  "Frontend": 9,
+  "Git": 7,
+  "IA & prompt engineering": 7,
   "Outils": 1,
-  "Pratique": 2,
+  "Pratique": 14,
   "Préparation": 3,
   "Ressources": 1,
   "Structures de Données": 4,
+  "Structures de données": 4,
   "System Design": 7,
-  "Sécurité & DevOps": 4,
+  "System design": 1,
+  "Sécurité & DevOps": 5,
+  "TypeScript": 7,
 }
 `;

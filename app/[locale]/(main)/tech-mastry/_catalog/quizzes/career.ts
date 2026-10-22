@@ -22,7 +22,7 @@ export const careerQuizzes: AreaQuizzes = {
       question:
         "Face à un énoncé d'algorithme, vous avez l'idée générale et êtes tenté de coder immédiatement. Quelle est la meilleure décision ?",
       options: [
-        "Coder tout de suite pour montrer votre rapidité à l'intervieweur",
+        "Coder tout de suite pour montrer votre rapidité et corriger les erreurs au fil de l'eau",
         "Comprendre le problème, poser des questions et planifier l'approche d'abord",
         "Rester silencieux pour ne pas dire de bêtises avant d'avoir la solution",
         "Écrire la version la plus optimisée possible dès la première ligne",
@@ -37,9 +37,9 @@ export const careerQuizzes: AreaQuizzes = {
       question:
         "À une semaine de l'entretien, vous réalisez que la programmation dynamique reste fragile. Quelle est la meilleure stratégie ?",
       options: [
-        "Résoudre dix problèmes Hard par jour jusqu'à la veille de l'entretien",
+        "Résoudre dix problèmes Hard par jour, en doublant le chrono, jusqu'à la veille de l'entretien",
         "Reporter l'entretien en inventant une excuse pour gagner un mois",
-        "Révision légère et ciblée, repos mental et logistique prête, en acceptant l'imperfection",
+        "Révision légère et ciblée, repos mental et logistique prête, sans viser la perfection",
         "Abandonner les révisions techniques et ne travailler que le behavioral",
       ],
       correctIndex: 2,
@@ -52,10 +52,10 @@ export const careerQuizzes: AreaQuizzes = {
       question:
         "Pendant un exercice, votre première solution fonctionne mais est en O(n²) et vous ne voyez pas mieux. Que faites-vous ?",
       options: [
-        "Vous cherchez en silence la solution optimale jusqu'à la fin du temps",
+        "Vous cherchez en silence la solution optimale sans rien montrer jusqu'à la fin du temps imparti",
         "Vous déclarez le problème impossible et demandez à passer à la suite",
         "Vous codez sans commenter pour économiser les minutes restantes",
-        "Vous présentez la solution correcte, annoncez sa complexité et proposez des pistes d'optimisation",
+        "Vous présentez la solution correcte, annoncez sa complexité et proposez des optimisations",
       ],
       correctIndex: 3,
       explanation:
@@ -70,7 +70,7 @@ export const careerQuizzes: AreaQuizzes = {
         "Les problèmes Easy ne servent à rien pour construire les bases",
         "Il sera trop reposé et manquera de stress le jour de l'entretien",
         "Il ne s'entraîne ni au temps limité ni à la communication, ni ne reçoit de retours",
-        "Il connaîtra trop de patterns et risquera de les confondre entre eux",
+        "Il connaîtra trop de patterns et risquera de les confondre entre eux lors de l'entretien final",
       ],
       correctIndex: 2,
       explanation:
@@ -82,7 +82,7 @@ export const careerQuizzes: AreaQuizzes = {
       question:
         "Il vous reste 8 semaines et vous êtes faible en system design, correct en algorithmes, moyen en behavioral. Quel plan est le plus défendable ?",
       options: [
-        "Consacrer tout le temps aux algorithmes, car ils sont plus faciles à mesurer",
+        "Consacrer tout le temps aux algorithmes, car ils sont plus faciles à mesurer et à chronométrer seul",
         "Répartir le temps à parts égales sans tenir compte du diagnostic initial",
         "Ne travailler que le system design et ignorer les deux autres épreuves",
         "Cibler le system design, entretenir les autres épreuves et multiplier les mock à l'approche",
@@ -160,7 +160,7 @@ export const careerQuizzes: AreaQuizzes = {
         "Après un mock, votre partenaire dit : 'Ton code marchait, mais je n'ai pas compris ta démarche.' Que travailler au prochain essai ?",
       options: [
         "Penser à voix haute et structurer : clarifier, annoncer l'approche, puis coder",
-        "Coder plus vite pour dégager du temps de réflexion à la fin",
+        "Coder plus vite pour dégager du temps de réflexion à la fin de la session chronométrée",
         "Écrire moins de tests pour que le code paraisse plus lisible",
         "Mémoriser davantage de solutions toutes faites pour gagner en confiance",
       ],
@@ -174,7 +174,7 @@ export const careerQuizzes: AreaQuizzes = {
       question:
         "En mock chronométré, vous avez consommé 20 minutes sur l'approche (budget : 10) et rien n'est encore codé. Quel est le meilleur réflexe ?",
       options: [
-        "Continuer à chercher l'approche idéale quel que soit le temps restant",
+        "Continuer à chercher l'approche idéale quel que soit le temps restant dans la session",
         "Demander à recommencer l'exercice depuis zéro avec un nouveau chrono",
         "Sauter l'implémentation et décrire seulement la solution à l'oral",
         "Annoncer le compromis, retenir l'approche correcte la plus simple et l'implémenter",
@@ -190,7 +190,7 @@ export const careerQuizzes: AreaQuizzes = {
       id: "career-stress-management-1",
       question: "Quelle est la séquence de la respiration 4-7-8 ?",
       options: [
-        "Inspirer 8 s, retenir 7 s, expirer 4 s",
+        "Inspirer 8 s, retenir 7 s, puis expirer 4 s",
         "Inspirer 4 s, retenir 7 s, expirer 8 s",
         "Inspirer 4 s, retenir 4 s, expirer 4 s",
         "Inspirer 7 s, retenir 4 s, expirer 8 s",
@@ -220,10 +220,10 @@ export const careerQuizzes: AreaQuizzes = {
       question:
         "En visio, une montée d'angoisse intense survient en plein exercice. Quelle réaction est la plus adaptée ?",
       options: [
-        "Un grounding 5-4-3-2-1 ou une respiration lente discrète, puis reprendre en verbalisant",
+        "Un grounding 5-4-3-2-1 ou une respiration lente discrète, puis reprise orale",
         "Un power posing debout devant la caméra pendant deux minutes",
         "Une visualisation positive les yeux fermés pendant cinq minutes",
-        "Parler plus vite pour finir avant que l'angoisse ne s'installe",
+        "Parler plus vite pour finir l'exercice avant que l'angoisse ne s'installe vraiment",
       ],
       correctIndex: 0,
       explanation:
@@ -235,7 +235,7 @@ export const careerQuizzes: AreaQuizzes = {
       question:
         "La veille d'un entretien important, vous songez à réviser jusqu'à 3 h du matin. Quel choix est le meilleur ?",
       options: [
-        "Réviser toute la nuit et compenser avec plusieurs cafés le matin",
+        "Réviser toute la nuit et compenser avec plusieurs cafés le matin avant l'entretien",
         "Relire passivement vos notes au lit pour vous endormir plus tard",
         "Dormir 7-8 h après un exercice, un repas léger et une bonne hydratation",
         "Sauter le repas du soir pour garder l'esprit plus alerte",
@@ -251,9 +251,9 @@ export const careerQuizzes: AreaQuizzes = {
         "Le matin de l'entretien, vous vous répétez 'Je vais échouer'. Quelle technique cible directement cette pensée ?",
       options: [
         "Vous forcez la pensée à disparaître en pensant très fort à autre chose",
-        "Vous la niez en répétant 'tout ira bien' sans rien changer à votre état",
+        "Vous la niez en répétant 'tout ira bien' sans rien changer à votre état ni à votre préparation",
         "Vous attendez qu'elle passe sans rien faire, en évitant tout rituel",
-        "Vous la recadrez en opportunité d'apprentissage et dirigez l'énergie du stress vers la préparation",
+        "Vous la recadrez en opportunité d'apprentissage et redirigez l'énergie du stress",
       ],
       correctIndex: 3,
       explanation:
@@ -265,9 +265,9 @@ export const careerQuizzes: AreaQuizzes = {
       question:
         "Pendant que vous codez, l'intervieweur reste silencieux et impassible. Quelle interprétation et quelle réaction sont les plus saines ?",
       options: [
-        "Il observe ma démarche ; je continue à verbaliser et pose une question de clarification si besoin",
+        "Il observe ma démarche ; je continue à verbaliser et clarifie si besoin",
         "Il me juge mal ; je dois accélérer pour rattraper mon retard",
-        "Il attend des excuses ; je m'arrête pour m'excuser de mon rythme",
+        "Il attend des excuses ; je m'arrête pour m'excuser de mon rythme et de mes hésitations",
         "Il cache la bonne réponse ; j'essaie de la deviner à son expression",
       ],
       correctIndex: 0,
@@ -344,7 +344,7 @@ export const careerQuizzes: AreaQuizzes = {
         "Accepter 58 k€ sans rien demander en échange pour éviter le conflit",
         "Menacer de partir chez un concurrent pour forcer l'exception",
         "Négocier bonus, equity, remote ou formation, avec une revue salariale à 6 mois écrite",
-        "Refuser l'offre et critiquer la politique salariale auprès de l'équipe",
+        "Refuser l'offre et critiquer la politique salariale auprès de l'équipe et des recruteurs",
       ],
       correctIndex: 2,
       explanation:
@@ -387,7 +387,7 @@ export const careerQuizzes: AreaQuizzes = {
       question:
         "Senior depuis 3 ans, vous visez Staff. Quel dossier est le plus convaincant ?",
       options: [
-        "Un problème ambigu transverse résolu entre plusieurs équipes, aligné sur les objectifs business",
+        "Un problème ambigu transverse résolu entre équipes, aligné sur le business",
         "Un nombre record de tickets livrés dans votre équipe sur l'année",
         "Une expertise très pointue sur un seul composant que personne d'autre ne touche",
         "Un grand nombre de revues de code réalisées pour votre propre équipe",
@@ -405,7 +405,7 @@ export const careerQuizzes: AreaQuizzes = {
         "Mettre en avant votre ancienneté, qui suffit dans la plupart des cas",
         "Évoquer une offre concurrente sans réelle intention de partir",
         "Rassembler des preuves d'impact au niveau visé et discuter des attentes du niveau",
-        "Attendre en silence que votre travail soit remarqué par la direction",
+        "Attendre en silence que votre travail soit remarqué par la direction lors des revues annuelles",
       ],
       correctIndex: 2,
       explanation:
@@ -417,8 +417,8 @@ export const careerQuizzes: AreaQuizzes = {
       question:
         "Un collègue avec 10 ans d'expérience, toujours au scope équipe, demande le niveau Staff 'à l'ancienneté'. Quelle analyse est la plus juste ?",
       options: [
-        "Dix ans dépassent la fourchette du Staff, la promotion est donc de droit",
-        "Le niveau se juge sur le scope et l'impact démontrés ; les années ne sont qu'indicatives",
+        "Dix ans dépassent la fourchette du Staff, la promotion est donc de droit et automatique",
+        "Le niveau se juge sur le scope et l'impact ; les années sont indicatives",
         "Seule la fonction de manager permet d'atteindre le niveau Staff",
         "Il faut d'abord refuser, puis lui faire repasser un niveau mid pour valider",
       ],
@@ -496,8 +496,8 @@ export const careerQuizzes: AreaQuizzes = {
       options: [
         "'Rien, le projet s'est déroulé de façon parfaite.'",
         "Reprocher à l'équipe les décisions qui ont causé les difficultés",
-        "Énumérer longuement tout ce qui n'a pas fonctionné dans le projet",
-        "Nommer un vrai compromis, l'alternative envisagée et ce que vous appliqueriez aujourd'hui",
+        "Énumérer longuement tout ce qui n'a pas fonctionné dans le projet et chez les autres",
+        "Nommer un vrai compromis, l'alternative et ce que vous changeriez",
       ],
       correctIndex: 3,
       explanation:
