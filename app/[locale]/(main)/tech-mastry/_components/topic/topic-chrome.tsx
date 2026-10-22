@@ -8,9 +8,11 @@ import { ArrowLeft, ArrowRight, CheckCircle2, Circle, Clock, Lightbulb, Undo2 } 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LEVEL_LABEL, getArea, getTopic, lessonsOf, neighbours, relatedTo, type Topic } from "../../_catalog";
+import { exercisesFor } from "../../_catalog/exercises";
 import { questionsFor } from "../../_catalog/quizzes";
 import { useProgress } from "../../_hooks/use-progress";
 import { areaProgress, missingPrerequisites, topicStatus } from "../../_utils/catalog-progress";
+import { Exercises } from "./exercises";
 import { SelfCheck } from "./self-check";
 
 function ProgressBar({ percent, label }: { percent: number; label: string }) {
@@ -148,6 +150,7 @@ export function TopicFooter() {
   if (!topic || !area || topic.kind === "hub") return null;
 
   const questions = questionsFor(topic.route);
+  const exercises = exercisesFor(topic.route);
   const { previous, next } = neighbours(topic.route);
   const related = relatedTo(topic.route, 3);
   const done = progress.completedTopics.includes(topic.route);
@@ -168,6 +171,8 @@ export function TopicFooter() {
           </ul>
         </Card>
       )}
+
+      {exercises.length > 0 && <Exercises exercises={exercises} />}
 
       {questions.length > 0 && <SelfCheck key={topic.route} route={topic.route} questions={questions} completed={done} />}
 

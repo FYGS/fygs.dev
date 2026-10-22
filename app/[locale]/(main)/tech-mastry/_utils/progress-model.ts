@@ -30,6 +30,8 @@ export interface ChallengeAttempt {
 export interface UserProgress {
   /** Routes of the topics the learner marked as done (see _catalog) */
   completedTopics: string[];
+  /** Ids of the hands-on exercises solved (see _catalog/exercises) */
+  exercisesSolved: string[];
   challengesCompleted: string[];
   /** Per challenge id, every submission counts (the challenge is completed by a full pass) */
   challengeAttempts: Record<string, ChallengeAttempt>;
@@ -51,6 +53,7 @@ export const MAX_ACTIVITY = 100;
 export function emptyProgress(now: Date = new Date()): UserProgress {
   return {
     completedTopics: [],
+    exercisesSolved: [],
     challengesCompleted: [],
     challengeAttempts: {},
     quizScores: {},
@@ -143,6 +146,7 @@ export function parseStoredProgress(raw: unknown, now: Date = new Date()): UserP
 
   return {
     completedTopics: [...new Set(strings(raw.completedTopics))],
+    exercisesSolved: [...new Set(strings(raw.exercisesSolved))],
     challengesCompleted: strings(raw.challengesCompleted),
     challengeAttempts,
     quizScores,
@@ -231,6 +235,12 @@ export function recordTopicCompleted(prev: UserProgress, route: string, now: Dat
     { ...prev, completedTopics: [...prev.completedTopics, route] },
     { type: "learning", ref: route, at: now.toISOString() },
   );
+}
+
+/** An exercise solved (once). */
+export function recordExerciseSolved(prev: UserProgress, exerciseId: string): UserProgress {
+  if (prev.exercisesSolved.includes(exerciseId)) return prev;
+  return { ...prev, exercisesSolved: [...prev.exercisesSolved, exerciseId] };
 }
 
 /** The learner takes the mark back. */

@@ -9,6 +9,7 @@ import {
   recordChallenge,
   recordChallengeAttempt,
   recordDay,
+  recordExerciseSolved,
   recordQuiz,
   recordTime,
   recordTopicCompleted,
@@ -127,6 +128,10 @@ export function useProgress() {
     updateProgress((prev) => recordTopicCompleted(prev, route, new Date()));
   }, []);
 
+  const solveExercise = useCallback((exerciseId: string) => {
+    updateProgress((prev) => recordExerciseSolved(prev, exerciseId));
+  }, []);
+
   const reopenTopic = useCallback((route: string) => {
     updateProgress((prev) => recordTopicReopened(prev, route));
   }, []);
@@ -156,6 +161,7 @@ export function useProgress() {
     trackTimeSpent,
     completeTopic,
     reopenTopic,
+    solveExercise,
     getStreakDays,
     resetProgress,
   };

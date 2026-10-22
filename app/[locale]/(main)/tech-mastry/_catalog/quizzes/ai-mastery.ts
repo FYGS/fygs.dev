@@ -329,8 +329,8 @@ export const aiMasteryQuizzes: AreaQuizzes = {
       question: "Quel contenu rend un fichier copilot-instructions.md le plus efficace ?",
       options: [
         "Un long historique du projet avec l'organisation de l'équipe",
-        "Les mots de passe des environnements, pour éviter des demandes répétées",
-        "Stack et règles concrètes et vérifiables (par exemple validation Zod obligatoire), de façon concise",
+        "Les mots de passe des environnements, pour éviter des demandes répétées à l'équipe",
+        "Stack et règles concrètes et vérifiables (Zod obligatoire, pas de console.log)",
         "Une demande ponctuelle liée à la tâche du jour, rédigée comme un ticket",
       ],
       correctIndex: 2,
@@ -463,10 +463,10 @@ export const aiMasteryQuizzes: AreaQuizzes = {
       id: "ai-mastery-skills-agents-2",
       question: "Sur quel protocole de messages repose MCP ?",
       options: [
-        "JSON-RPC 2.0, via stdio en local ou HTTP/SSE à distance",
-        "gRPC binaire, uniquement sur UDP",
-        "GraphQL, avec un schéma unique partagé",
-        "REST OpenAPI, sans notion de notification",
+        "JSON-RPC 2.0, via stdio ou HTTP/SSE",
+        "gRPC binaire, transporté uniquement sur UDP",
+        "GraphQL, avec un schéma unique partagé par tous",
+        "REST OpenAPI, sans aucune notion de notification",
       ],
       correctIndex: 0,
       explanation:
@@ -480,7 +480,7 @@ export const aiMasteryQuizzes: AreaQuizzes = {
         "Un Tool est en lecture seule, une Resource exécute du code",
         "Il n'y en a pas : ce sont deux noms pour le même concept",
         "Une Resource est réservée à l'utilisateur, un Tool au développeur du serveur",
-        "Un Tool réalise une action appelée par le modèle ; une Resource expose des données de contexte",
+        "Un Tool réalise une action ; une Resource expose des données de contexte",
       ],
       correctIndex: 3,
       explanation:
@@ -493,7 +493,7 @@ export const aiMasteryQuizzes: AreaQuizzes = {
         "Dans la définition d'un outil, pourquoi décrire ses paramètres avec un schéma Zod et une description claire ?",
       options: [
         "Pour accélérer l'exécution du serveur",
-        "Pour que le modèle sache comment appeler l'outil et que les entrées invalides soient rejetées avant le handler",
+        "Pour que le modèle sache appeler l'outil et que les entrées invalides soient rejetées",
         "Pour chiffrer les arguments échangés avec le client",
         "Pour que le client n'ait plus besoin de configuration",
       ],
@@ -508,9 +508,9 @@ export const aiMasteryQuizzes: AreaQuizzes = {
         "Un agent doit contrôler le travail de plusieurs agents workers avant de rendre la réponse finale. Quel pattern correspond ?",
       options: [
         "Supervisor : il coordonne les workers et vérifie leurs résultats",
-        "Single Agent + Tools : un agent unique appelle des outils",
-        "Router Agent : il redirige vers un spécialiste sans vérifier",
-        "Pipeline : la sortie de chaque agent alimente le suivant",
+        "Single Agent + Tools : un agent unique qui appelle plusieurs outils",
+        "Router Agent : il redirige la requête vers un spécialiste sans vérifier",
+        "Pipeline : la sortie de chaque agent alimente directement le suivant",
       ],
       correctIndex: 0,
       explanation:
@@ -524,8 +524,8 @@ export const aiMasteryQuizzes: AreaQuizzes = {
       options: [
         "Aucune : le protocole MCP exécute les serveurs dans un bac à sable",
         "Seulement vérifier s'il est gratuit, car les serveurs payants sont plus sûrs",
-        "Vérifier source et mainteneur, figer la version et limiter permissions et secrets accessibles",
-        "Ne s'en préoccuper que si le serveur expose plus de trois outils",
+        "Vérifier source et mainteneur, figer la version, limiter permissions et secrets",
+        "Ne s'en préoccuper que si le serveur expose plus de trois outils au modèle",
       ],
       correctIndex: 2,
       explanation:

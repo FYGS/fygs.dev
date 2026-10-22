@@ -19,14 +19,15 @@ Status: `TODO` · `DOING` · `DONE` · `DECISION`. Definition of done: `tsc` 0, 
 
 | ID | Task | Status |
 |----|------|--------|
-| TM-1 | **Catalog**: one typed source of truth (area, title, description, level, minutes, kind, tags, prerequisites, takeaways) for all pages; tests that fail when a page, the navigation, the search index or the catalog drift | TODO |
-| TM-2 | Navigation, search, breadcrumbs and home cards use or are checked against the catalog (11 + 63 + 10 gaps closed) | TODO |
-| TM-3 | **Topic shell** in the section layout, for every page: breadcrumb with real names, meta strip (level, time, prerequisites), "Marquer comme terminé", previous / next topic, related topics, "À retenir", area progress | TODO |
-| TM-4 | **Learning layer**: a data-driven self-check (quiz with explanations and retries, scores saved) for every learning topic, authored per area and validated by tests; flashcards for vocabulary-heavy topics | TODO |
-| TM-5 | **SEO and robustness**: server metadata for the 41 client pages (page split into server wrapper + client content), `loading.tsx` / `error.tsx` boundaries for the section, structured data per topic | TODO |
-| TM-6 | **Dashboard**: progress per area from the catalog (completed, quiz average, time), next recommended topic, streak; consistent with TM-3 and TM-4 | TODO |
-| TM-7 | Thin topics (45 pages under 350 lines): add the missing practice (guided exercise or runnable example) where the self-check alone is not enough | TODO |
-| TM-8 | Verification: unit tests (catalog, quiz data, shell, progress), e2e (open a topic, answer, complete, see the dashboard move), axe on the shell, smoke crawl, docs and changelog | TODO |
+| TM-1 | **Catalog**: one typed source of truth (area, title, description, level, minutes, kind, tags, prerequisites, takeaways) for the 113 pages, with tests that fail when a page, the navigation or the search index drift | DONE |
+| TM-2 | Navigation (3 topics added), search (60 topics added from the catalog), breadcrumbs (names from the catalog), Playground description and "collaboration" claims honest | DONE |
+| TM-3 | **Topic shell** in the section layout, for every page: meta strip (area, level, time, prerequisites with their state), takeaways, "Marquer comme terminé" (saved, reversible), previous / next topic along the whole path, related topics, area progress; progress shared between tabs | DONE |
+| TM-4 | **Learning layer**: a self-check of 5 to 6 questions per lesson (explanations, retry of the missed ones, best score kept) and 2 to 3 hands-on exercises per lesson (put in order, match, fill the code, classify; checked on the spot, explained, remembered); authored per area and validated by tests | DOING (data in progress) |
+| TM-5 | **SEO and robustness**: server metadata for the 41 client pages (server wrapper + client content) and one title format for all 113; section `loading.tsx` and `error.tsx`; `LearningResource` structured data per lesson | DONE |
+| TM-6 | **Dashboard** in French, on the catalog: topics done (not just opened), per-area progress, "next topic" card, self-check average, 8 achievements | DONE |
+| TM-7 | Content accuracy review of the pages by area (errors found so far: OWASP numbering of XSS, Kubernetes Secrets "encrypted", `exactOptionalProperties`, `fetch` cached by default in Next.js 15+, `cacheTime` in React Query v5; more to check: git object hash, uncited performance figures) | DOING |
+| TM-8 | Verification: unit tests (catalog, quizzes, exercises, shell, progress, dashboard), e2e (open, complete, self-check, dashboard moves), axe on the shell, smoke crawl, docs, changelog | TODO |
 
 ## 3. Log
 - 2026-10-22: analysis done, tracker created.
+- 2026-10-22: TM-1, TM-2, TM-3, TM-5, TM-6 done; quizzes and takeaways written for the 100 lessons by area agents and checked by tests; exercises engine and tests done, exercise data in progress; five factual errors fixed on the pages, accuracy review launched.
