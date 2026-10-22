@@ -190,7 +190,7 @@ const sortingAlgorithmsUsage: UsageData[] = [
         name: "Environnements contraints",
         description: "Systèmes avec peu de mémoire disponible",
         suitability: "good",
-        reason: "Utilise O(log n) mémoire pour la pile d'appels",
+        reason: "Pile d'appels en O(log n) en moyenne (bornée à O(log n) en récursant sur la plus petite partition)",
       },
       {
         name: "Tri multi-critères",

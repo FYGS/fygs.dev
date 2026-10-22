@@ -91,7 +91,7 @@ const quizQuestions: QuizQuestion[] = [
   {
     id: "sys-3",
     question:
-      "Quelle stratégie de cache est la plus adaptée quand les lectures sont beaucoup plus fréquentes que les écritures ?",
+      "Pour une charge dominée par la lecture, quelle stratégie laisse l'application remplir le cache elle-même, uniquement à la demande lors d'un cache miss ?",
     options: [
       "Write-Through",
       "Write-Behind",
@@ -100,7 +100,7 @@ const quizQuestions: QuizQuestion[] = [
     ],
     correctIndex: 2,
     explanation:
-      "Cache-Aside est idéal pour les workloads read-heavy : on charge les données dans le cache uniquement à la demande (cache miss). Write-Through écrit simultanément dans le cache et la DB, ce qui est meilleur quand les données lues sont souvent les mêmes que celles récemment écrites.",
+      "Dans Cache-Aside (Lazy Loading), l'application lit d'abord le cache, puis la base en cas de miss, et remplit le cache à ce moment-là : c'est le schéma classique des workloads read-heavy. Write-Through, Write-Behind et Write-Around décrivent la gestion des écritures, pas le chargement à la demande. Write-Through écrit simultanément dans le cache et la DB, ce qui est meilleur quand les données lues sont souvent les mêmes que celles récemment écrites.",
     difficulty: "hard",
     category: "System Design",
   },

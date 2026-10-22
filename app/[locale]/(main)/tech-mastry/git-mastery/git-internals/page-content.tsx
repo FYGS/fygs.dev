@@ -64,6 +64,37 @@ const objects = [
   },
 ];
 
+const packCommands = `# Objets "loose" (un fichier zlib par objet) vs objets empaquetés
+git count-objects -vH
+# count: objets loose | size: leur taille
+# in-pack: objets dans des packfiles | packs: nombre de packfiles
+# size-pack: taille des packfiles | garbage: fichiers inattendus
+
+# Empaqueter les objets loose et nettoyer les inaccessibles
+git gc
+
+# Inspecter un packfile (hash, type, taille, taille compressée, delta)
+git verify-pack -v .git/objects/pack/pack-*.idx | head`;
+
+const modernGit = [
+  {
+    title: "SHA-256 en option",
+    desc: "git init --object-format=sha256 crée un dépôt dont les objets sont identifiés par SHA-256. Les dépôts SHA-1 et SHA-256 ne sont pas interopérables, et le support par les forges reste limité : SHA-1 reste le défaut.",
+  },
+  {
+    title: "git switch / git restore",
+    desc: "Depuis Git 2.23, git switch change de branche et git restore restaure des fichiers, là où git checkout cumulait les deux rôles.",
+  },
+  {
+    title: "git maintenance",
+    desc: "git maintenance start planifie en tâche de fond le prefetch, le commit-graph, le repack incrémental et le gc, sans lancer git gc à la main.",
+  },
+  {
+    title: "Backend reftable",
+    desc: "Depuis Git 2.45, git init --ref-format=reftable stocke les références dans un format binaire compact plutôt que dans des fichiers séparés : utile pour les dépôts avec un très grand nombre de références.",
+  },
+];
+
 function DAGVisualization() {
   const nodes = [
     { id: "c1", label: "Initial", x: 50, y: 140, parents: [] },
@@ -194,6 +225,46 @@ export default function GitInternalsPage() {
       </div>
 
       <DAGVisualization />
+
+      <section className="space-y-4">
+        <h2 className="text-2xl font-bold">Pack Files et Garbage Collection</h2>
+        <Card className="p-6 space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Au départ, chaque objet est un fichier <em>loose</em> compressé dans{" "}
+            <code>.git/objects/</code>. Pour économiser de la place et accélérer
+            les transferts, Git regroupe les objets dans des{" "}
+            <strong>packfiles</strong> (<code>.pack</code> + un index{" "}
+            <code>.idx</code>). Dans un pack, les objets proches (par exemple
+            deux versions d&apos;un même fichier) sont stockés sous forme de{" "}
+            <strong>deltas</strong> : seule la différence avec un objet de base
+            est conservée, ce qui est la principale source de compression.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            <code>git gc</code> empaquette les objets loose et supprime les
+            objets inaccessibles devenus assez anciens ; Git le déclenche
+            automatiquement de temps en temps. Les push et fetch échangent
+            également des packs.
+          </p>
+          <pre
+            className="rounded-lg bg-muted/50 p-4 font-mono text-xs whitespace-pre-wrap overflow-x-auto"
+            tabIndex={0}
+          >
+            {packCommands}
+          </pre>
+        </Card>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-2xl font-bold">Git Moderne (2.x)</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {modernGit.map((m) => (
+            <Card key={m.title} className="p-5 space-y-2">
+              <h3 className="font-semibold">{m.title}</h3>
+              <p className="text-sm text-muted-foreground">{m.desc}</p>
+            </Card>
+          ))}
+        </div>
+      </section>
 
       <Card className="p-6 space-y-4">
         <h3 className="text-lg font-bold">Résumé des Relations</h3>

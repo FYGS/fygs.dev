@@ -103,14 +103,14 @@ db.users.aggregate([
 SET user:123 '{"name":"Alice","role":"admin"}' EX 3600
 GET user:123
 
-// Compteur atomique (rate limiting)
+// Compteur (rate limiting) : SET NX EX puis INCR, jamais INCR puis EXPIRE (non atomique)
+SET api:requests:192.168.1.1 0 EX 60 NX  # pose le TTL de façon atomique, seulement si la clé est absente
 INCR api:requests:192.168.1.1
-EXPIRE api:requests:192.168.1.1 60
 
 // Sorted Set (leaderboard)
 ZADD leaderboard 1500 "alice"
 ZADD leaderboard 2300 "bob"
-ZREVRANGE leaderboard 0 9 WITHSCORES
+ZRANGE leaderboard 0 9 REV WITHSCORES
 
 // Pub/Sub
 PUBLISH notifications '{"type":"order","userId":"123"}'

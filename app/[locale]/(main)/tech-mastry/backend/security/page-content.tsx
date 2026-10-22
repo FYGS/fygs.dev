@@ -84,7 +84,7 @@ function AuthFlowVisualizer() {
         },
       ],
       pros: ["Révocable instantanément", "Données côté serveur", "Simple"],
-      cons: ["Sticky sessions / stockage centralisé", "CSRF si mal configuré"],
+      cons: ["Store partagé requis (Redis) pour scaler", "CSRF si mal configuré"],
     },
     {
       name: "OAuth 2.0 (Authorization Code)",

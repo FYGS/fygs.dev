@@ -192,14 +192,21 @@ function merge(left, right) {
         average: "O(n log n)",
         worst: "O(n²)",
       },
-      space: "O(log n)",
+      space: "O(log n) moyen · O(n) pire cas",
     },
     stable: false,
     code: `function quickSort(arr, low = 0, high = arr.length - 1) {
-  if (low < high) {
+  // On récurse sur la plus PETITE partition et on boucle sur la plus grande :
+  // la profondeur de pile reste en O(log n), même dans le pire cas
+  while (low < high) {
     const pi = partition(arr, low, high);
-    quickSort(arr, low, pi - 1);
-    quickSort(arr, pi + 1, high);
+    if (pi - low < high - pi) {
+      quickSort(arr, low, pi - 1);
+      low = pi + 1;
+    } else {
+      quickSort(arr, pi + 1, high);
+      high = pi - 1;
+    }
   }
   return arr;
 }
@@ -219,7 +226,7 @@ function partition(arr, low, high) {
   return i + 1;
 }`,
     description:
-      "Choisit un pivot, partitionne les éléments autour, puis trie récursivement. L'un des algorithmes de tri les plus utilisés en pratique.",
+      "Choisit un pivot, partitionne les éléments autour, puis trie récursivement. L'un des algorithmes de tri les plus utilisés en pratique. Espace auxiliaire = pile de récursion : O(log n) en moyenne, O(n) au pire cas avec une récursion naïve sur les deux parties ; en récursant d'abord sur la plus petite partition (comme ci-dessous), la pile reste en O(log n).",
     pros: [
       "Très rapide en pratique",
       "Peu de mémoire supplémentaire",

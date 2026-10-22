@@ -11,10 +11,15 @@ export function DataStructurePanel() {
               Organisation des Données
             </h4>
             <div className="text-xs mb-3">
-              Les bases de données orientées colonne
-              stockent les données par colonne plutôt que
-              par ligne, optimisant les requêtes
-              analytiques.
+              Deux notions à ne pas confondre. Le stockage
+              colonnaire (ClickHouse, BigQuery, Parquet)
+              range les valeurs d&apos;une même colonne
+              ensemble pour accélérer l&apos;analytique. Les
+              bases wide-column (Cassandra, HBase, Bigtable)
+              sont des magasins distribués par clé de
+              partition, pensés pour les écritures massives
+              et les accès par clé. Le schéma ci-dessous
+              illustre le stockage colonnaire.
             </div>
             <svg
               width="100%"
@@ -343,7 +348,7 @@ export function DataStructurePanel() {
 
           <div className="p-3 bg-teal-900/20 border border-teal-800 rounded-md">
             <h4 className="text-sm font-medium mb-2 text-teal-300">
-              Avantages Clés
+              Avantages Clés (stockage colonnaire, analytique)
             </h4>
             <ul className="text-xs space-y-1 list-disc pl-4 text-muted-foreground">
               <li>
@@ -355,7 +360,6 @@ export function DataStructurePanel() {
                 les colonnes nécessaires)
               </li>
               <li>Agrégations et analyses rapides</li>
-              <li>Évolutivité horizontale</li>
               <li>
                 Idéal pour les entrepôts de données (data
                 warehouses)
@@ -365,7 +369,7 @@ export function DataStructurePanel() {
 
           <div className="p-3 bg-blue-900/20 border border-blue-800 rounded-md">
             <h4 className="text-sm font-medium mb-2 text-blue-300">
-              Modèle de Données
+              Modèle de Données (wide-column : Cassandra, HBase, Bigtable)
             </h4>
             <div className="text-xs space-y-2">
               <div>
@@ -376,22 +380,26 @@ export function DataStructurePanel() {
               </div>
               <div>
                 <span className="font-medium">
-                  Super colonnes:
+                  Super colonnes (legacy):
                 </span>{" "}
-                Colonnes contenant d&apos;autres colonnes
+                Concept historique de Cassandra, déprécié
+                et remplacé par les clés composites et les
+                types CQL ; à ne plus utiliser
               </div>
               <div>
                 <span className="font-medium">
-                  Clé de ligne:
+                  Clé de ligne / de partition:
                 </span>{" "}
-                Identifiant unique pour chaque ligne
+                Détermine le nœud qui stocke la ligne
               </div>
               <div>
                 <span className="font-medium">
                   Horodatage:
                 </span>{" "}
-                Chaque valeur est versionnée avec un
-                timestamp
+                Chaque cellule porte un timestamp (versions
+                multiples dans HBase/Bigtable, résolution
+                des conflits par dernier écrivain dans
+                Cassandra)
               </div>
             </div>
           </div>

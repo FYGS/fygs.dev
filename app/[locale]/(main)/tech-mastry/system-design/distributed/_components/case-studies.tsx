@@ -88,7 +88,7 @@ export function DistributedCaseStudies() {
     {
       id: "netflix",
       company: "Netflix",
-      title: "Scaling Video Streaming",
+      title: "Passage à l'échelle du streaming vidéo",
       description:
         "Comment Netflix a construit une architecture distribuée pour servir des millions d'utilisateurs simultanément.",
       challenge:
@@ -101,16 +101,16 @@ export function DistributedCaseStudies() {
         "AWS Cloud",
         "Microservices",
         "Cassandra",
-        "Hystrix",
-        "Eureka",
-        "Zuul",
+        "Hystrix (historique, en maintenance ; remplacé par resilience4j)",
+        "Eureka (registre de services, toujours utilisé via Spring Cloud Netflix)",
+        "Zuul (historique ; Spring Cloud Gateway côté Spring)",
         "Chaos Monkey",
       ],
       results:
-        "Netflix peut désormais servir plus de 300 millions d'abonnés dans plus de 190 pays, avec une très haute disponibilité et une expérience utilisateur fluide même pendant les pics d'utilisation.",
+        "Netflix sert plus de 300 millions d'abonnés (dernier chiffre publié début 2025) dans plus de 190 pays, avec une très haute disponibilité et une expérience utilisateur fluide même pendant les pics d'utilisation.",
       lessons: [
         "Adopter une architecture de microservices pour une scalabilité indépendante",
-        "Concevoir pour les pannes avec des disjoncteurs et l'ingénierie du chaos",
+        "Concevoir pour les pannes avec des disjoncteurs (Hystrix à l'époque, aujourd'hui resilience4j ou limites de concurrence adaptatives) et l'ingénierie du chaos",
         "Utiliser des bases de données distribuées pour la résilience des données",
         "Automatiser le déploiement et les tests pour des mises à jour fréquentes",
         "Optimiser la distribution de contenu via un CDN global",

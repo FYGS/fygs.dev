@@ -30,10 +30,10 @@ export function InterviewTemplates({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Users className="h-5 w-5 text-primary" />
-          <span>Interview Templates</span>
+          <span>Modèles d&apos;entretien</span>
         </CardTitle>
         <CardDescription>
-          Choose from pre-built interview templates for different roles
+          Choisissez parmi des modèles d&apos;entretien prédéfinis pour différents rôles
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -79,7 +79,7 @@ export function InterviewTemplates({
                   className="gap-2"
                 >
                   <Play className="h-4 w-4" />
-                  Start
+                  Démarrer
                 </Button>
               </div>
             </motion.div>

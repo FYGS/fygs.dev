@@ -51,9 +51,10 @@ export const getTraversalSteps = (
     ];
 
     visited[startNodeId] = true;
+    let head = 0; // index de tête : défiler en O(1)
 
-    while (queue.length > 0) {
-      const { id: nodeId, parent } = queue.shift()!;
+    while (head < queue.length) {
+      const { id: nodeId, parent } = queue[head++];
       visitedNodes.push(nodeId);
 
       if (parent !== null) {

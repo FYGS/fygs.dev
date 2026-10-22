@@ -65,11 +65,11 @@ const UserView = {
     },
     {
       name: "Clean Architecture",
-      fullName: "Hexagonal / Ports & Adapters",
+      fullName: "Clean Architecture (proche de l'Hexagonal / Ports & Adapters)",
       icon: Layers,
       color: "text-green-400",
       gradient: "from-green-500/10 to-green-500/5 border-green-500/30",
-      desc: "Les dépendances pointent vers le centre (domain). Le domain ne connaît pas l'infrastructure.",
+      desc: "Les dépendances pointent vers le centre (domain). Le domain ne connaît pas l'infrastructure. Clean Architecture (Robert C. Martin) prolonge l'architecture Hexagonale (ports & adapters, Alistair Cockburn) avec des couches concentriques : les deux partagent la règle de dépendance.",
       layers: [
         "Domain (Entities)",
         "Use Cases",
@@ -98,8 +98,21 @@ class CreateOrderUseCase {
   ) {}
 
   async execute(input: CreateOrderInput): Promise<Order> {
+    // 1. Persister d'abord la commande « pending » : on ne perd jamais
+    //    la trace d'une intention, même si le paiement échoue ou plante
     const order = new Order(crypto.randomUUID(), input.items, "pending");
-    await this.paymentGateway.charge(order.total);
+    await this.orderRepo.save(order);
+
+    // 2. Paiement idempotent (clé = id de commande) : rejouable sans double débit
+    try {
+      await this.paymentGateway.charge(order.total, { idempotencyKey: order.id });
+      order.status = "paid";
+    } catch {
+      order.status = "payment_failed"; // compensation (saga) : pas de débit
+    }
+
+    // 3. Enregistrer le résultat. En production : saga + Transactional Outbox
+    //    pour publier l'événement de façon fiable avec cet enregistrement
     await this.orderRepo.save(order);
     return order;
   }
@@ -113,7 +126,11 @@ interface OrderRepository {
 
 // Adapter (infrastructure) — implémente le port
 class PrismaOrderRepository implements OrderRepository {
-  async save(order: Order) { await prisma.order.create({ data: order }); }
+  async save(order: Order) {
+    // upsert : save() est appelé à la création puis à chaque changement de statut
+    const { items, ...data } = order; // (items persistés dans une table liée, omis ici)
+    await prisma.order.upsert({ where: { id: order.id }, create: data, update: data });
+  }
   async findById(id: string) { return prisma.order.findUnique({ where: { id } }); }
 }`,
     },
@@ -169,7 +186,7 @@ class GetOrderSummaryHandler {
     // Lit depuis une vue dénormalisée (rapide)
     return this.readDb.query(\`
       SELECT o.id, o.status, u.name as userName,
-             COUNT(i.id) as itemCount, SUM(i.price) as total
+             COUNT(i.id) as itemCount, SUM(i.price * i.quantity) as total
       FROM order_summaries o
       JOIN users u ON o.user_id = u.id
       JOIN order_items i ON i.order_id = o.id

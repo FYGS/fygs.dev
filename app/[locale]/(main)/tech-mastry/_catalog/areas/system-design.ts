@@ -51,7 +51,7 @@ export const systemDesignTopics: Topic[] = [
     tags: ["études de cas", "case studies", "url shortener", "chat system", "fan-out", "streaming"],
     prerequisites: ["/tech-mastry/system-design/scalability", "/tech-mastry/system-design/storage"],
     takeaways: [
-      "Un raccourcisseur d'URL est dominé par la lecture (environ 100:1) : cache LRU et réplicas en lecture, avec un TTL pour l'expiration.",
+      "Un raccourcisseur d'URL est dominé par la lecture (hypothèse d'exercice : 10:1, souvent bien plus en réalité) : cache LRU et réplicas en lecture, avec un TTL pour l'expiration.",
       "Sept caractères en base62 donnent 62^7, soit environ 3,5 mille milliards d'identifiants, largement assez pour 100 millions de liens par jour.",
       "Pour un fil social, un fan-out hybride évite d'écrire 50 millions de timelines à chaque tweet d'une célébrité.",
       "Un chat ordonne ses messages par numéro de séquence par conversation, car les horloges dérivent ; une timeline se pagine par curseur, pas par offset.",

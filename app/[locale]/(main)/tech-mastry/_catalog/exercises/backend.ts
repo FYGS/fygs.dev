@@ -246,7 +246,7 @@ export const backendExercises: AreaExercises = {
       id: "backend-devops-fill-1",
       type: "fill",
       prompt: "Complétez ce Dockerfile multi-stage : dépendances en cache, image finale minimale, utilisateur non-root.",
-      code: "FROM node:20-alpine AS builder\nWORKDIR /app\nCOPY {{1}} ./\nRUN pnpm install --frozen-lockfile\nCOPY . .\nRUN pnpm build\n\nFROM node:20-alpine AS runner\nRUN addgroup --system app && adduser --system --ingroup app app\nCOPY --from={{2}} /app/.next/standalone ./\nUSER {{3}}",
+      code: "FROM node:24-alpine AS builder\nWORKDIR /app\nCOPY {{1}} ./\nRUN pnpm install --frozen-lockfile\nCOPY . .\nRUN pnpm build\n\nFROM node:24-alpine AS runner\nRUN addgroup --system app && adduser --system --ingroup app app\nCOPY --from={{2}} /app/.next/standalone ./\nUSER {{3}}",
       blanks: [
         { options: ["package.json pnpm-lock.yaml", ".", "node_modules"], answer: 0 },
         { options: ["runner", "builder", "app"], answer: 1 },

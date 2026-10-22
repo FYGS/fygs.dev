@@ -19,29 +19,29 @@ describe("ColumnFamilyView rendering", () => {
         [
           "simple",
           {
-            "hash": "dcf23c78",
-            "length": 8888,
+            "hash": "06b82049",
+            "length": 9592,
           },
         ],
         [
           "complex",
           {
-            "hash": "84383e19",
-            "length": 8830,
+            "hash": "8755b084",
+            "length": 9586,
           },
         ],
         [
           "aggregation",
           {
-            "hash": "20e1a12d",
-            "length": 9115,
+            "hash": "f88eaff3",
+            "length": 9930,
           },
         ],
         [
           "update",
           {
-            "hash": "899f4598",
-            "length": 8751,
+            "hash": "c4b996ae",
+            "length": 9503,
           },
         ],
       ]

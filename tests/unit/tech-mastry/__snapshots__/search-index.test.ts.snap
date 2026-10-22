@@ -1,8 +1,8 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`tech-mastry search-index (pinned) > derived helpers are stable 1`] = `716`;
+exports[`tech-mastry search-index (pinned) > derived helpers are stable 1`] = `728`;
 
-exports[`tech-mastry search-index (pinned) > derived helpers are stable 2`] = `"cb3ba9cb1a9d5b47b17a34fc9c8ef0df93a54ddb108f9c785241d793587259df"`;
+exports[`tech-mastry search-index (pinned) > derived helpers are stable 2`] = `"28a279eb6fa7d6e12a75c7d51b20d79c67372550cd6cf45718e1d8c10f4610e9"`;
 
 exports[`tech-mastry search-index (pinned) > derived helpers are stable 3`] = `
 {
@@ -157,7 +157,7 @@ exports[`tech-mastry search-index (pinned) > derived helpers are stable 3`] = `
 
 exports[`tech-mastry search-index (pinned) > has the same size, content hash and order 1`] = `113`;
 
-exports[`tech-mastry search-index (pinned) > has the same size, content hash and order 2`] = `"8f6368ff4348b0e7c4298c4fa74d25403072fa401db652994d388921a2cfd320"`;
+exports[`tech-mastry search-index (pinned) > has the same size, content hash and order 2`] = `"088f73e2d0893b7efd3cf2cefcf06e01ceb798f49ba82085fb73f050f33280d6"`;
 
 exports[`tech-mastry search-index (pinned) > has the same size, content hash and order 3`] = `
 [

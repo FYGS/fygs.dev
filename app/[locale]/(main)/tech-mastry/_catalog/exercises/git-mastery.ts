@@ -27,7 +27,7 @@ export const gitMasteryExercises: AreaExercises = {
         { text: "Intégration quotidienne dans main, code inachevé masqué par des feature flags", category: 2 },
         { text: "Branche release stabilisée avant chaque livraison mensuelle", category: 0 },
         { text: "main toujours déployable, pas de branche develop", category: 1 },
-        { text: "Branches vivant moins de 24 h", category: 2 },
+        { text: "Branches très courtes (quelques heures à 1-2 jours)", category: 2 },
       ],
       explanation:
         "Git Flow convient aux releases planifiées, GitHub Flow au déploiement continu simple, le trunk-based pousse l'intégration continue à l'extrême avec des feature flags.",

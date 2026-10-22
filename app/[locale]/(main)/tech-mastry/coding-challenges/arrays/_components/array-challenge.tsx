@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Code, CheckCircle, XCircle } from "lucide-react";
+import { evaluateChallengeAnswer } from "@/app/[locale]/(main)/tech-mastry/_utils/challenge-answer";
 import {
   Dialog,
   DialogContent,
@@ -183,11 +184,10 @@ export function ArrayChallenge() {
     if (!timerActive) {
       setTimerActive(true);
     }
-    const output = challenge.verify(input);
-    const isCorrect = challenge.examples.some(ex => 
-      challenge.verify(ex.input) === output
-    );
-    setResult(isCorrect);
+    // Format « input => réponse » : la réponse doit correspondre à la sortie
+    // de référence calculée pour CET input (pas à celle d'un autre exemple).
+    const { correct } = evaluateChallengeAnswer(challenge.verify, input);
+    setResult(correct);
   };
 
   const handleNext = () => {
@@ -240,7 +240,7 @@ export function ArrayChallenge() {
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Entrez votre test..."
+              placeholder="Input puis votre réponse, ex. : 2,7,11,15 | 9 => 0,1"
               className="flex-1"
             />
             <Button onClick={handleSubmit} disabled={input.trim().length === 0}>

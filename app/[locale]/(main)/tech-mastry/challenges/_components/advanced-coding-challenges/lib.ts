@@ -22,7 +22,7 @@ export function toSandboxTests(challenge: Challenge, only?: string[]): SandboxTe
 /** What the learner may see of a test: hidden tests keep their data to themselves. */
 export function visibleTest(testCase: TestCase) {
   return testCase.isHidden
-    ? { input: "Hidden test", expectedOutput: "Hidden test" }
+    ? { input: "Test masqué", expectedOutput: "Test masqué" }
     : { input: testCase.input, expectedOutput: testCase.expectedOutput };
 }
 
@@ -34,7 +34,7 @@ export function toSubmissionResult(challenge: Challenge, outcome: SandboxResult)
     return {
       testCaseId: result.id,
       passed: result.passed,
-      actual: hidden ? (result.passed ? "Passed" : "Failed") : result.actual,
+      actual: hidden ? (result.passed ? "Réussi" : "Échoué") : result.actual,
       ...(result.error && !hidden ? { error: result.error } : {}),
       executionTime: result.timeMs,
     };

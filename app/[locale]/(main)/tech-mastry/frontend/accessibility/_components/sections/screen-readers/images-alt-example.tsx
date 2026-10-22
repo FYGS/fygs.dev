@@ -161,7 +161,7 @@ export function ImagesAltExample() {
           </div>
         }
         tips={[
-          "Keep alt text concise (generally under 125 characters)",
+          "Keep alt text concise and meaningful in context. \"Under 125 characters\" is a common rule of thumb (historically linked to some screen readers), not a WCAG requirement: when an image needs more, give a short alt and a longer description nearby",
           "Test your alt text by turning off images and seeing if you can understand the content",
           'Use empty alt text (alt="") for decorative images',
           "For complex images, provide both short alt text and a longer description",

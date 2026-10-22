@@ -271,6 +271,42 @@ export function ComplexityGuide() {
         </div>
       </div>
 
+      {/* Analyse Amortie et convention d'espace */}
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold flex items-center gap-2">
+          <LineChart className="w-6 h-6" />
+          Analyse Amortie et Convention d&apos;Espace
+        </h2>
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card className="p-6 space-y-3">
+            <h3 className="font-semibold">Coût amorti</h3>
+            <p className="text-muted-foreground text-sm">
+              Le coût amorti est le coût moyen par opération sur une séquence
+              d&apos;opérations, même dans le pire cas (ce n&apos;est pas une
+              moyenne probabiliste). Exemple : <code>push</code> sur un tableau
+              dynamique coûte O(1) amorti, car une réallocation en O(n) n&apos;a
+              lieu qu&apos;après n insertions bon marché (doublement de la
+              capacité).
+            </p>
+            <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
+              <code>{`// n push consécutifs : au plus 1 + 2 + 4 + ... + n recopies
+// = O(n) au total, donc O(1) amorti par push (un push isolé peut coûter O(n))`}</code>
+            </pre>
+          </Card>
+          <Card className="p-6 space-y-3">
+            <h3 className="font-semibold">Convention pour la complexité spatiale</h3>
+            <p className="text-muted-foreground text-sm">
+              Sur ce site, sauf mention contraire, l&apos;espace indiqué est la{" "}
+              <strong>mémoire auxiliaire</strong> : celle que l&apos;algorithme
+              alloue en plus de son entrée (pile de récursion incluse). La
+              taille de l&apos;entrée elle-même n&apos;est pas comptée. Quand
+              une structure construite par l&apos;algorithme (table de hachage,
+              tampon de fusion) occupe O(n), elle est comptée comme auxiliaire.
+            </p>
+          </Card>
+        </div>
+      </div>
+
       {/* Exemples Pratiques */}
       <div className="space-y-6">
         <h2 className="text-2xl font-bold flex items-center gap-2">

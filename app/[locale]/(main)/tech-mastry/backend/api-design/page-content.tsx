@@ -27,7 +27,7 @@ const apiStyles = [
     ],
     cons: [
       "Over-fetching / Under-fetching",
-      "Pas de contrat strict natif",
+      "Contrat non natif : à décrire avec OpenAPI (3.1 ou 3.2)",
       "Versioning complexe",
     ],
     useCase: "APIs publiques, CRUD, microservices",
@@ -92,13 +92,13 @@ Content-Type: application/json
     description:
       "RPC framework haute performance avec Protocol Buffers. Communication inter-services.",
     pros: [
-      "Ultra performant (binaire)",
+      "Performant (binaire, HTTP/2)",
       "Streaming bi-directionnel",
       "Code generation",
       "Contrat strict",
     ],
     cons: [
-      "Pas browser-friendly natif",
+      "Navigateur : nécessite gRPC-Web ou Connect",
       "Debugging plus difficile",
       "Moins de tooling",
     ],

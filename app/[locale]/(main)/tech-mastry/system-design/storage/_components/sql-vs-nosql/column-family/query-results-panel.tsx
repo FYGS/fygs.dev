@@ -6,41 +6,43 @@ export function QueryResultsPanel({ queryType }: {
   return (
     <div className="w-1/3 h-full flex flex-col">
       <div className="text-sm font-medium mb-2 text-center">
-        Requêtes Orientées Colonne
+        Requêtes : CQL (wide-column) et SQL analytique (colonnaire)
       </div>
       <div className="flex-1 border rounded-md overflow-auto flex flex-col">
         <div className="bg-slate-800 p-2 border-b">
           <pre className="text-xs overflow-auto whitespace-pre-wrap" tabIndex={0}>
             {queryType === "simple" &&
-              `// Récupération par clé de ligne
+              `-- CQL (Cassandra) : lecture par clé de partition
 SELECT * FROM users
-WHERE row_key = 'user:1001';`}
+WHERE user_id = 'user:1001';`}
             {queryType === "complex" &&
-              `// Sélection de colonnes spécifiques
-SELECT profile:name, profile:email, access:role
+              `-- CQL (Cassandra) : projection de colonnes
+SELECT name, email, role
 FROM users
-WHERE row_key IN ('user:1001', 'user:1002')
-ORDER BY profile:name;`}
+WHERE user_id IN ('user:1001', 'user:1002');
+-- Pas de ORDER BY sur la clé de partition :
+-- l'ordre n'est pas garanti, tri côté client.`}
             {queryType === "aggregation" &&
-              `// Agrégation sur une colonne
-SELECT COUNT(*), AVG(profile:age)
+              `-- SQL analytique (ClickHouse, stockage colonnaire).
+-- Ce n'est PAS du CQL : un wide-column store comme
+-- Cassandra n'est pas conçu pour ces agrégations.
+SELECT count(), avg(age)
 FROM users
-WHERE access:role = 'user';
+WHERE role = 'user';
 
-// Analyse temporelle
-SELECT COUNT(*)
+-- Analyse temporelle
+SELECT toDate(ts) AS day, count()
 FROM events
-WHERE meta:type = 'login'
-GROUP BY TRUNC(meta:timestamp, 'day');`}
+WHERE type = 'login'
+GROUP BY day;`}
             {queryType === "update" &&
-              `// Mise à jour d'une cellule spécifique
+              `-- CQL (Cassandra) : UPDATE et INSERT sont des upserts
 UPDATE users
-SET access:role = 'premium'
-WHERE row_key = 'user:1002';
+SET role = 'premium'
+WHERE user_id = 'user:1002';
 
-// Insertion avec timestamp
-INSERT INTO events (row_key, meta:type, meta:timestamp, data:user_id)
-VALUES ('event:5004', 'logout', CURRENT_TIMESTAMP, 'user:1001');`}
+INSERT INTO events (event_id, type, ts, user_id)
+VALUES ('event:5004', 'logout', toTimestamp(now()), 'user:1001');`}
           </pre>
         </div>
         <div className="flex-1 p-2 bg-slate-900 overflow-auto">
@@ -52,22 +54,22 @@ VALUES ('event:5004', 'logout', CURRENT_TIMESTAMP, 'user:1001');`}
               <thead>
                 <tr className="bg-slate-800">
                   <th className="p-1 text-left border">
-                    row_key
+                    user_id
                   </th>
                   <th className="p-1 text-left border">
-                    profile:name
+                    name
                   </th>
                   <th className="p-1 text-left border">
-                    profile:email
+                    email
                   </th>
                   <th className="p-1 text-left border">
-                    profile:age
+                    age
                   </th>
                   <th className="p-1 text-left border">
-                    access:last_login
+                    last_login
                   </th>
                   <th className="p-1 text-left border">
-                    access:role
+                    role
                   </th>
                 </tr>
               </thead>
@@ -92,13 +94,13 @@ VALUES ('event:5004', 'logout', CURRENT_TIMESTAMP, 'user:1001');`}
               <thead>
                 <tr className="bg-slate-800">
                   <th className="p-1 text-left border">
-                    profile:name
+                    name
                   </th>
                   <th className="p-1 text-left border">
-                    profile:email
+                    email
                   </th>
                   <th className="p-1 text-left border">
-                    access:role
+                    role
                   </th>
                 </tr>
               </thead>
@@ -131,7 +133,7 @@ VALUES ('event:5004', 'logout', CURRENT_TIMESTAMP, 'user:1001');`}
                       count
                     </th>
                     <th className="p-1 text-left border">
-                      avg(profile:age)
+                      avg(age)
                     </th>
                   </tr>
                 </thead>
@@ -178,14 +180,14 @@ VALUES ('event:5004', 'logout', CURRENT_TIMESTAMP, 'user:1001');`}
             <div className="p-2 bg-green-900/20 border border-green-800 rounded">
               <div className="flex items-center gap-1 text-green-400">
                 <CheckCircle className="h-4 w-4" />
-                <span>Opérations réussies</span>
+                <span>Écritures appliquées</span>
               </div>
               <div className="mt-2 text-xs text-muted-foreground">
                 <div className="mb-1">
-                  Mise à jour: 1 ligne affectée
+                  UPDATE : cellule role écrite (upsert ; CQL ne renvoie pas de nombre de lignes affectées)
                 </div>
                 <div>
-                  Insertion: 1 nouvelle ligne ajoutée
+                  INSERT : ligne écrite dans events (upsert)
                 </div>
               </div>
             </div>

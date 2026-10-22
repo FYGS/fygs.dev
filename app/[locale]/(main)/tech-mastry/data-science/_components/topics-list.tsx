@@ -24,7 +24,6 @@ const topics = [
     icon: FlaskConical,
     level: "fondamental" as const,
     color: "from-blue-500/20 to-blue-600/5",
-    interviewPct: 85,
   },
   {
     slug: "statistics",
@@ -33,7 +32,6 @@ const topics = [
     icon: Sigma,
     level: "fondamental" as const,
     color: "from-green-500/20 to-green-600/5",
-    interviewPct: 75,
   },
   {
     slug: "machine-learning",
@@ -42,7 +40,6 @@ const topics = [
     icon: Brain,
     level: "intermédiaire" as const,
     color: "from-amber-500/20 to-amber-600/5",
-    interviewPct: 95,
   },
   {
     slug: "deep-learning",
@@ -51,7 +48,6 @@ const topics = [
     icon: Cpu,
     level: "avancé" as const,
     color: "from-red-500/20 to-red-600/5",
-    interviewPct: 80,
   },
   {
     slug: "data-engineering",
@@ -60,7 +56,6 @@ const topics = [
     icon: Database,
     level: "intermédiaire" as const,
     color: "from-cyan-500/20 to-cyan-600/5",
-    interviewPct: 70,
   },
   {
     slug: "mlops",
@@ -69,7 +64,6 @@ const topics = [
     icon: GitBranch,
     level: "avancé" as const,
     color: "from-teal-500/20 to-teal-600/5",
-    interviewPct: 65,
   },
 ];
 
@@ -131,17 +125,9 @@ export function DataScienceTopics() {
               </div>
 
               <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/20">
-                <div className="flex items-center gap-2">
-                  <div className="h-1.5 w-24 rounded-full bg-muted overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-primary/60 transition-all"
-                      style={{ width: `${t.interviewPct}%` }}
-                    />
-                  </div>
-                  <span className="text-[10px] text-muted-foreground">
-                    {t.interviewPct}% interview
-                  </span>
-                </div>
+                <span className="text-[10px] text-muted-foreground">
+                  Explorer le module
+                </span>
                 <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
               </div>
             </Card>

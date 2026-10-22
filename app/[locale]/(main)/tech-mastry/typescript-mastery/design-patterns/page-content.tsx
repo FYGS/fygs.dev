@@ -100,7 +100,7 @@ const mergeSort: SortStrategy<number> = {
     const mid = Math.floor(items.length / 2);
     const left = this.sort(items.slice(0, mid));
     const right = this.sort(items.slice(mid));
-    return merge(left, right);
+    return merge(left, right); // merge : fusion de deux tableaux triés (non détaillée ici)
   },
 };
 

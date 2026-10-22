@@ -258,8 +258,8 @@ export function ChallengeSolutions() {
           <div className="space-y-3">
             {ch.examples.map((ex, i) => (
               <div key={i} className="p-3 bg-muted rounded-lg text-sm space-y-1">
-                <div><strong>Input:</strong> <code>{ex.input}</code></div>
-                <div><strong>Output:</strong> <code>{ex.output}</code></div>
+                <div><strong>Entrée :</strong> <code>{ex.input}</code></div>
+                <div><strong>Sortie :</strong> <code>{ex.output}</code></div>
                 {ex.explanation && <div className="text-muted-foreground">{ex.explanation}</div>}
               </div>
             ))}

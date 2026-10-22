@@ -7,9 +7,15 @@ export const essentialLibs = [
   },
   {
     name: "Pandas",
-    desc: "DataFrames, séries temporelles, nettoyage de données",
+    desc: "DataFrames, séries temporelles, nettoyage de données (pandas 3 : copy-on-write et dtype texte str par défaut)",
     usage: "import pandas as pd",
     color: "text-green-400",
+  },
+  {
+    name: "Polars",
+    desc: "DataFrames en Rust, évaluation paresseuse (lazy) et multithread, alternative à Pandas sur gros volumes",
+    usage: "import polars as pl",
+    color: "text-yellow-400",
   },
   {
     name: "Matplotlib",

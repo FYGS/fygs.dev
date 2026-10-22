@@ -210,7 +210,13 @@ function HeapVisualizer() {
         <button
           onClick={() => {
             const v = prompt("Valeur ?");
-            if (v) insert(Number(v));
+            if (v === null) return;
+            const n = Number(v.trim());
+            if (v.trim() === "" || !Number.isFinite(n)) {
+              setMessage("Valeur invalide : saisissez un nombre fini");
+              return;
+            }
+            insert(n);
           }}
           className="px-4 py-2 rounded-full text-xs font-medium bg-blue-500/10 text-blue-500 border border-blue-500/30 hover:scale-105 transition-all"
         >
@@ -250,12 +256,12 @@ const operations = [
   {
     op: "decreaseKey",
     complexity: "O(log n)",
-    desc: "Réduire une clé + bubble up",
+    desc: "Réduire une clé + bubble up (O(log n) seulement si la position de l'élément est connue, ex. via une table de hachage valeur → indice ; sinon O(n) pour le retrouver)",
   },
   {
     op: "delete(i)",
     complexity: "O(log n)",
-    desc: "decreaseKey(-inf) + extract",
+    desc: "decreaseKey(-inf) + extract (même condition : position connue, sinon O(n) pour localiser l'élément)",
   },
 ];
 
@@ -275,6 +281,10 @@ const useCases = [
   {
     name: "Merge K Sorted Lists",
     desc: "Min-heap avec le head de chaque liste. O(n log k).",
+  },
+  {
+    name: "File de priorité indexée",
+    desc: "Tas + table de hachage clé → indice : decreaseKey et delete en O(log n) sans recherche linéaire. Utile pour Dijkstra et Prim.",
   },
   {
     name: "Huffman Coding",

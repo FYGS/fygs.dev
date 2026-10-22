@@ -145,7 +145,7 @@ export function NetflixArchitectureDiagram() {
         strokeWidth="2"
       />
       <text x="225" y="175" textAnchor="middle" fontSize="10" fill="#1e293b">
-        Hystrix
+        Disjoncteur
       </text>
 
       <rect

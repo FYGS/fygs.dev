@@ -30,27 +30,27 @@ exports[`tech-mastry components split into smaller files > aria-section renders 
 
 exports[`tech-mastry components split into smaller files > arrays-page renders the same markup in every state reachable by clicking 1`] = `
 [
-  "ebd5d3de",
-  "3656cbe2",
-  "eb81c7c4",
-  "9ebe1198",
-  "690b1434",
-  "5e1e4866",
-  "b6b30ad4",
-  "9565c4ef",
-  "9565c4ef",
-  "99ccdcb3",
-  "b5ed1b87",
-  "4a136dbd",
-  "4a136dbd",
-  "4a136dbd",
-  "4a136dbd",
-  "4a136dbd",
-  "4a136dbd",
-  "4a136dbd",
-  "5960ef1e",
-  "4a136dbd",
-  "4a136dbd",
+  "b2628115",
+  "e8f350e3",
+  "0fa78e6d",
+  "d349127f",
+  "799a6326",
+  "655f128a",
+  "e4182a6d",
+  "2848e8eb",
+  "2848e8eb",
+  "6f12bd2a",
+  "67bcb2ee",
+  "3179fee9",
+  "3179fee9",
+  "3179fee9",
+  "3179fee9",
+  "3179fee9",
+  "3179fee9",
+  "3179fee9",
+  "304318ed",
+  "3179fee9",
+  "3179fee9",
 ]
 `;
 
@@ -97,7 +97,7 @@ exports[`tech-mastry components split into smaller files > dynamic-programming-g
   "6f36160e",
   "e4d4d74d",
   "26120d80",
-  "98ac509f",
+  "ced68e63",
   "5e88b551",
   "c8dfc5dc",
 ]
@@ -140,45 +140,45 @@ exports[`tech-mastry components split into smaller files > graph-database-update
 
 exports[`tech-mastry components split into smaller files > machine-learning-page renders the same markup in every state reachable by clicking 1`] = `
 [
-  "ba122f7d",
-  "ba122f7d",
-  "df0f78c8",
-  "aae874ca",
-  "ba122f7d",
-  "df0f78c8",
-  "aae874ca",
+  "9b4c109b",
+  "9b4c109b",
+  "1c1864d1",
+  "f7f280d9",
+  "9b4c109b",
+  "1c1864d1",
+  "f7f280d9",
 ]
 `;
 
 exports[`tech-mastry components split into smaller files > memoization-section renders the same markup in every state reachable by clicking 1`] = `
 [
-  "1e126b2b",
-  "1e126b2b",
-  "1e126b2b",
-  "1e126b2b",
-  "48a39b17",
-  "539c8899",
-  "a63c6fae",
-  "a66ec6f3",
-  "a66ec6f3",
-  "a66ec6f3",
-  "a66ec6f3",
-  "a1c7f9f1",
-  "6178f7a4",
-  "9053b9eb",
-  "1e126b2b",
-  "350aff2b",
-  "cdd36586",
-  "3fc9ceeb",
-  "0e019dd9",
-  "47252246",
-  "3c9b1cd3",
-  "c03e6524",
-  "7bc96892",
-  "63cee05c",
-  "560abfe1",
-  "1e8ec9c0",
-  "4550f5c8",
+  "f988a71b",
+  "f988a71b",
+  "f988a71b",
+  "f988a71b",
+  "961ff768",
+  "3d33f646",
+  "e6e8a4a6",
+  "6a41fef7",
+  "6a41fef7",
+  "6a41fef7",
+  "6a41fef7",
+  "709bb374",
+  "faafbf5c",
+  "7fbd0a54",
+  "f988a71b",
+  "73a4c6e5",
+  "76a1582e",
+  "bb87a96e",
+  "026b7b6f",
+  "a19932dc",
+  "0ba67c5b",
+  "9a6b6981",
+  "2fb3c8c0",
+  "a4762bae",
+  "097c3ffa",
+  "568e66f0",
+  "012f61da",
 ]
 `;
 
@@ -212,8 +212,8 @@ exports[`tech-mastry components split into smaller files > searching-algorithms-
   "6887e84a",
   "cd7f76a4",
   "f0603c2b",
-  "e69812d0",
-  "4f4b6ffa",
+  "4e3c56a4",
+  "07ed89c0",
   "5382c697",
 ]
 `;
@@ -225,31 +225,31 @@ exports[`tech-mastry components split into smaller files > server-case renders t
   "a24700d5",
   "cf442b76",
   "4f21cc42",
-  "be5e1ec1",
+  "d23cc7a0",
 ]
 `;
 
 exports[`tech-mastry components split into smaller files > service-mesh-explanation-app-mesh renders the same markup in every state reachable by clicking 1`] = `
 [
-  "92873617",
+  "bd4c0ae2",
 ]
 `;
 
 exports[`tech-mastry components split into smaller files > service-mesh-explanation-consul renders the same markup in every state reachable by clicking 1`] = `
 [
-  "92135fc4",
+  "18be97d0",
 ]
 `;
 
 exports[`tech-mastry components split into smaller files > service-mesh-explanation-istio renders the same markup in every state reachable by clicking 1`] = `
 [
-  "1ef964bd",
+  "5702e1c5",
 ]
 `;
 
 exports[`tech-mastry components split into smaller files > service-mesh-explanation-linkerd renders the same markup in every state reachable by clicking 1`] = `
 [
-  "973e4895",
+  "27df6924",
 ]
 `;
 
@@ -260,14 +260,14 @@ exports[`tech-mastry components split into smaller files > sorting-algorithms-ov
   "6fa9be35",
   "5f0058c5",
   "14dfe3dd",
-  "4f1f1be8",
+  "afb36e14",
   "6ee74088",
   "16dd1159",
   "1036a418",
   "6fa9be35",
   "5f0058c5",
   "14dfe3dd",
-  "4f1f1be8",
+  "afb36e14",
   "6ee74088",
   "16dd1159",
 ]

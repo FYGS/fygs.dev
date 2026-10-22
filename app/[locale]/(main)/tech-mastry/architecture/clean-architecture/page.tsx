@@ -21,7 +21,10 @@ export default function CleanArchitecturePage() {
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Proposée par Robert C. Martin (Uncle Bob), la Clean Architecture
             organise le code en couches concentriques avec une règle de
-            dépendance stricte pointant vers l&apos;intérieur.
+            dépendance stricte pointant vers l&apos;intérieur. Elle reprend
+            l&apos;idée de l&apos;architecture hexagonale (ports et adaptateurs,
+            Alistair Cockburn) et de l&apos;architecture en oignon : le domaine
+            ne dépend de rien, l&apos;infrastructure dépend du domaine.
           </p>
         </div>
       </section>

@@ -75,7 +75,7 @@ function CopilotModes() {
         "MCP servers pour des outils externes",
       ],
       config:
-        "// .github/copilot-instructions.md\n// Instructions globales pour tous les modes\n\n# Instructions Copilot\n\n## Stack technique\n- Next.js 15+ avec App Router\n- TypeScript strict\n- Prisma + PostgreSQL\n- Tailwind CSS + shadcn/ui\n\n## Conventions\n- Utilise des Server Components par défaut\n- Valide avec Zod\n- Tests avec Vitest\n- Pas de `any` en TypeScript",
+        "// .github/copilot-instructions.md\n// Instructions globales pour tous les modes\n\n# Instructions Copilot\n\n## Stack technique\n- Next.js (version récente) avec App Router\n- TypeScript strict\n- Prisma + PostgreSQL\n- Tailwind CSS + shadcn/ui\n\n## Conventions\n- Utilise des Server Components par défaut\n- Valide avec Zod\n- Tests avec Vitest\n- Pas de `any` en TypeScript",
       icon: Bot,
       color: "text-violet-500",
     },
@@ -216,21 +216,45 @@ function CustomInstructions() {
   const files = [
     {
       name: ".github/copilot-instructions.md",
-      desc: "Instructions globales pour tout le repo. Tous les modes lisent ce fichier.",
+      desc: "Instructions globales pour tout le repo, ajoutées automatiquement au contexte des requêtes de chat et d'agent.",
       example:
-        "# Copilot Instructions\n\n## Stack\n- Next.js 15+ App Router\n- TypeScript strict (no any)\n- Prisma + PostgreSQL\n- Tailwind CSS + shadcn/ui\n\n## Conventions\n- Server Components par défaut\n- Validation Zod obligatoire\n- Pas de console.log en production\n- Tests Vitest pour chaque feature",
+        "# Copilot Instructions\n\n## Stack\n- Next.js App Router\n- TypeScript strict (no any)\n- Prisma + PostgreSQL\n- Tailwind CSS + shadcn/ui\n\n## Conventions\n- Server Components par défaut\n- Validation Zod obligatoire\n- Pas de console.log en production\n- Tests Vitest pour chaque feature",
     },
     {
-      name: ".vscode/settings.json",
-      desc: "Configuration VS Code pour le workspace. Affecte le comportement de Copilot.",
+      name: ".github/instructions/*.instructions.md",
+      desc: "Instructions ciblées : un frontmatter applyTo (glob) limite le fichier aux fichiers concernés. Complète copilot-instructions.md sans le surcharger.",
       example:
-        '{\n  "github.copilot.chat.codeGeneration.instructions": [\n    { "file": ".github/copilot-instructions.md" }\n  ],\n  "github.copilot.chat.testGeneration.instructions": [\n    {\n      "text": "Use Vitest with describe/it blocks."\n    }\n  ]\n}',
+        "---\napplyTo: \"**/*.test.ts\"\n---\n\n# Tests\n- Vitest avec describe/it\n- Un test = un comportement\n- Pas de mock inutile",
     },
     {
-      name: ".github/skills/",
-      desc: "Dossier de skills custom (Agent Skills). Chaque skill est un sous-dossier contenant un fichier SKILL.md avec des instructions spécifiques ; fonctionnalité récente, à vérifier dans la documentation officielle.",
+      name: "AGENTS.md",
+      desc: "Format ouvert d'instructions pour agents, lu par Copilot (et par d'autres outils comme Codex ou Cursor). Placé à la racine, et dans des sous-dossiers si besoin (les fichiers imbriqués sont encore expérimentaux dans VS Code).",
       example:
-        "# SKILL.md\n\n## Description\nSkill pour créer des composants shadcn/ui\n\n## Instructions\n1. Utilisez les composants de @/components/ui\n2. Appliquez les variants avec cva()\n3. Exportez avec displayName\n4. Ajoutez les props TypeScript",
+        "# AGENTS.md\n\n## Commandes\n- pnpm test : tests unitaires\n- pnpm lint : ESLint\n\n## Conventions\n- TypeScript strict, pas de any\n- Validation Zod en entrée d'API",
+    },
+    {
+      name: ".github/prompts/*.prompt.md",
+      desc: "Prompt files : tâches réutilisables lancées avec /nom dans le chat. Le frontmatter peut définir description, agent, model et tools.",
+      example:
+        "---\ndescription: Générer des tests Vitest\nagent: agent\n---\n\nGénère des tests Vitest pour #selection.\nCouvre les cas limites et les erreurs.",
+    },
+    {
+      name: ".github/agents/*.agent.md",
+      desc: "Agents personnalisés (custom agents) : un rôle avec ses instructions et la liste des outils autorisés, sélectionnable dans le chat.",
+      example:
+        "---\nname: Planner\ndescription: Planifie sans modifier le code\ntools: ['read', 'search']\n---\n\nAnalyse la demande et retourne un plan en Markdown.\nNe modifie aucun fichier.",
+    },
+    {
+      name: ".github/skills/<nom>/SKILL.md",
+      desc: "Agent Skills : un dossier par skill contenant un SKILL.md (frontmatter name = nom du dossier, et description) plus d'éventuels scripts et ressources. Copilot charge le skill quand la description correspond à la tâche. VS Code lit aussi .claude/skills/ et .agents/skills/.",
+      example:
+        "---\nname: shadcn-component\ndescription: Crée un composant shadcn/ui. À utiliser pour tout nouveau composant d'interface.\n---\n\n# Instructions\n1. Utilisez les composants de @/components/ui\n2. Appliquez les variants avec cva()\n3. Typez les props en TypeScript",
+    },
+    {
+      name: "Réglages VS Code",
+      desc: "Les réglages github.copilot.chat.codeGeneration.instructions et testGeneration.instructions sont obsolètes depuis VS Code 1.102 : utilisez des fichiers d'instructions. Restent actifs les réglages pour la revue, les messages de commit et les descriptions de PR.",
+      example:
+        '// settings.json\n{\n  "github.copilot.chat.commitMessageGeneration.instructions": [\n    { "text": "Conventional Commits, en anglais." }\n  ],\n  "github.copilot.chat.reviewSelection.instructions": [\n    { "text": "Vérifier la gestion des erreurs." }\n  ]\n}',
     },
   ];
 
@@ -294,11 +318,11 @@ function CopilotMCP() {
 
           <div className="space-y-2">
             {[
-              "Ajoutez des serveurs MCP dans .vscode/mcp.json",
+              "Ajoutez des serveurs MCP dans .vscode/mcp.json (clé servers ; type stdio, http ou sse)",
               "Les outils MCP sont disponibles en mode Agent",
               "Accédez à des APIs, bases de données, services externes",
               "Créez vos propres serveurs MCP avec le SDK",
-              "Partagez les configs MCP via le repo",
+              "Secrets : ${input:id} (promptString, demandé une fois et stocké de façon sécurisée) ou envFile non versionné ; jamais en clair",
             ].map((tip, i) => (
               <div key={i} className="flex items-start gap-2 text-sm">
                 <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
@@ -314,22 +338,32 @@ function CopilotMCP() {
           </label>
           <pre className="p-3 rounded-lg bg-muted/50 text-xs whitespace-pre-wrap border font-mono">
             {`{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "api-key",
+      "description": "Clé API du serveur",
+      "password": true
+    }
+  ],
   "servers": {
     "my-api": {
       "type": "stdio",
       "command": "node",
       "args": ["./mcp-server/index.js"],
       "env": {
-        "API_KEY": "\${env:MY_API_KEY}"
+        "API_KEY": "\${input:api-key}"
       }
     },
     "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/"
+    },
+    "local-tools": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "\${env:GITHUB_TOKEN}"
-      }
+      "args": ["-y", "my-mcp-package"],
+      "envFile": "\${workspaceFolder}/.env"
     }
   }
 }`}

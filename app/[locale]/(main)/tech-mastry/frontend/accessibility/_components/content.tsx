@@ -6,12 +6,14 @@ import { AriaSection } from "./sections/aria-section";
 import { KeyboardNavigationSection } from "./sections/keyboard-navigation-section";
 import { ColorContrastSection } from "./sections/color-contrast-section";
 import { ScreenReadersSection } from "./sections/screen-readers-section";
+import { Wcag22Card } from "./sections/wcag-22-card";
 
 export function AccessibilityContent() {
   const [activeTab, setActiveTab] = useState("aria");
 
   return (
     <div className="space-y-8">
+      <Wcag22Card />
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-2 md:grid-cols-4 w-full">
           <TabsTrigger value="aria">ARIA</TabsTrigger>

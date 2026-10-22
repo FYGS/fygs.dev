@@ -13,13 +13,13 @@ export const securityDevopsTopics: Topic[] = [
   {
     route: "/tech-mastry/security-devops/owasp-top-10",
     title: "OWASP Top 10",
-    description: "Contrôle d'accès, cryptographie, injection et XSS : vulnérabilités critiques avec code vulnérable et corrigé",
+    description: "Contrôle d'accès (dont SSRF et CSRF), cryptographie, injection et XSS : vulnérabilités critiques avec code vulnérable et corrigé",
     kind: "guide",
     level: "intermediate",
     minutes: 15,
-    tags: ["owasp", "xss", "sql injection", "contrôle d'accès", "bcrypt", "vulnérabilité"],
+    tags: ["owasp", "xss", "sql injection", "contrôle d'accès", "ssrf", "csrf", "bcrypt", "vulnérabilité"],
     takeaways: [
-      "Broken Access Control arrive en tête de l'OWASP Top 10 2021 : vérifiez côté serveur, pour chaque requête, que l'utilisateur peut accéder à cette ressource précise.",
+      "Broken Access Control reste en tête de l'OWASP Top 10 (éditions 2021 et 2025) : vérifiez côté serveur, pour chaque requête, que l'utilisateur peut accéder à cette ressource précise.",
       "Les mots de passe se hachent avec un algorithme lent et salé (bcrypt, Argon2) ; le chiffrement réversible et le hash rapide sont inadaptés.",
       "L'injection se prévient avec des requêtes paramétrées qui séparent code et données, pas en échappant ou filtrant à la main.",
       "Contre le XSS, laissez le framework échapper la sortie ; innerHTML et dangerouslySetInnerHTML exigent une sanitization stricte.",

@@ -13,8 +13,8 @@ export default function QuestionBankPage() {
         <h1 className="text-4xl font-bold">Banque de Questions</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
           Une vingtaine de questions d&apos;entretien technique classiques, classées par catégorie
-          et difficulté, avec réponses détaillées. Les entreprises indiquées sont données
-          à titre d&apos;exemple (types de questions courants), pas comme source officielle.
+          et difficulté, avec réponses détaillées. Ce sont des questions typiques fréquemment posées,
+          sans attribution à une entreprise précise.
         </p>
       </div>
       <QuestionBank />

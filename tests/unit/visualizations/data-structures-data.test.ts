@@ -29,7 +29,7 @@ describe("data structures comparison data", () => {
 
   it("keeps the content unchanged", () => {
     const digest = createHash("md5").update(JSON.stringify(dataStructures)).digest("hex");
-    // md5 of the data object taken before the file was split
-    expect(digest).toBe("e2aba9b2343d2540e20fe9f64b850c8b");
+    // md5 of the data object (refreshed after the complexity-table accuracy review)
+    expect(digest).toBe("d82688be961cc0e51db240ec3569a121");
   });
 });

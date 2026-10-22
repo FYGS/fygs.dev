@@ -5,17 +5,17 @@ export const securityDevopsExercises: AreaExercises = {
     {
       id: "security-devops-owasp-top-10-match-1",
       type: "match",
-      prompt: "Associez chaque catégorie de l'OWASP Top 10 2021 à ce qu'elle recouvre.",
+      prompt: "Associez chaque catégorie de l'OWASP Top 10 2025 à ce qu'elle recouvre.",
       pairs: [
         { term: "A01 Broken Access Control", definition: "Accéder au profil d'un autre utilisateur faute de contrôle d'autorisation" },
-        { term: "A02 Cryptographic Failures", definition: "Mots de passe en clair ou chiffrement faible des données sensibles" },
-        { term: "A03 Injection", definition: "Données non fiables interprétées comme du code (SQL, XSS)" },
-        { term: "A05 Security Misconfiguration", definition: "Configuration par défaut, en-têtes manquants, erreurs trop verbeuses" },
-        { term: "A06 Vulnerable and Outdated Components", definition: "Dépendances contenant des CVE connues et non mises à jour" },
-        { term: "A07 Identification and Authentication Failures", definition: "Mots de passe faibles ou gestion de session défaillante" },
+        { term: "A04 Cryptographic Failures", definition: "Mots de passe en clair ou chiffrement faible des données sensibles" },
+        { term: "A05 Injection", definition: "Données non fiables interprétées comme du code (SQL, XSS)" },
+        { term: "A02 Security Misconfiguration", definition: "Configuration par défaut, en-têtes manquants, erreurs trop verbeuses" },
+        { term: "A03 Software Supply Chain Failures", definition: "Dépendances, outils de build ou chaîne de distribution compromis ou non maîtrisés" },
+        { term: "A07 Authentication Failures", definition: "Mots de passe faibles ou gestion de session défaillante" },
       ],
       explanation:
-        "Depuis 2021, le XSS est rattaché à A03 Injection, et A07 désigne les défaillances d'identification et d'authentification. Broken Access Control est passé en tête du classement.",
+        "Dans l'édition 2025, le XSS reste rattaché à A05 Injection, A03 couvre toute la chaîne d'approvisionnement logicielle (dépendances et build) et le SSRF est intégré à A01. Broken Access Control est en tête du classement.",
     },
     {
       id: "security-devops-owasp-top-10-classify-1",
@@ -117,11 +117,11 @@ export const securityDevopsExercises: AreaExercises = {
       type: "order",
       prompt: "Remettez dans l'ordre les instructions d'un Dockerfile multi-stage optimisé pour le cache.",
       steps: [
-        "FROM node:20-alpine AS builder",
+        "FROM node:24-alpine AS builder",
         "COPY package.json pnpm-lock.yaml ./",
         "RUN pnpm install --frozen-lockfile",
         "COPY . . puis RUN pnpm build",
-        "FROM node:20-alpine AS runner (nouvelle image minimale)",
+        "FROM node:24-alpine AS runner (nouvelle image minimale)",
         "COPY --from=builder du seul résultat du build",
         "USER app puis CMD du serveur",
       ],

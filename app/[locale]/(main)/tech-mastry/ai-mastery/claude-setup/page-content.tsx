@@ -66,7 +66,7 @@ function SetupSteps() {
         "Définissez un system prompt spécifique au projet",
         "Les fichiers sont disponibles dans toutes les conversations du projet",
       ],
-      code: "// System prompt pour un projet Next.js\n// -> Project > Instructions du projet\n\nTu es un expert Next.js 15+ avec App Router.\nTu utilises TypeScript strict, shadcn/ui, et Tailwind.\nTu suis les patterns RSC (React Server Components).\nTu privilégies les Server Actions pour les mutations.\nTu valides avec Zod et utilises Prisma pour la BDD.",
+      code: "// System prompt pour un projet Next.js\n// -> Project > Instructions du projet\n\nTu es un expert Next.js (version récente) avec App Router.\nTu utilises TypeScript strict, shadcn/ui, et Tailwind.\nTu suis les patterns RSC (React Server Components).\nTu privilégies les Server Actions pour les mutations.\nTu valides avec Zod et utilises Prisma pour la BDD.",
     },
     {
       title: "5. Configurer MCP Servers",
@@ -75,7 +75,7 @@ function SetupSteps() {
       content: [
         "MCP (Model Context Protocol) connecte Claude à des outils externes",
         "Filesystem, GitHub, PostgreSQL, Brave Search, etc.",
-        "Configuration via claude_desktop_config.json",
+        "Claude Desktop : claude_desktop_config.json ; Claude Code : claude mcp add ou .mcp.json",
         "Permet à Claude d'interagir avec votre système local",
       ],
       code: '// ~/Library/Application Support/Claude/claude_desktop_config.json\n// (macOS) ou %APPDATA%\\Claude\\ (Windows)\n// Les lignes // sont des commentaires : à retirer dans le vrai fichier JSON.\n// @modelcontextprotocol/server-github est déprécié : préférez le serveur MCP officiel de GitHub.\n\n{\n  "mcpServers": {\n    "filesystem": {\n      "command": "npx",\n      "args": [\n        "-y",\n        "@modelcontextprotocol/server-filesystem",\n        "/Users/you/projects"\n      ]\n    },\n    "github": {\n      "command": "npx",\n      "args": ["-y", "@modelcontextprotocol/server-github"],\n      "env": {\n        "GITHUB_PERSONAL_ACCESS_TOKEN": "ghp_xxx"\n      }\n    }\n  }\n}',
@@ -86,11 +86,59 @@ function SetupSteps() {
       color: "text-cyan-500",
       content: [
         "Claude Code est un agent de développement en ligne de commande",
-        "Installation : npm install -g @anthropic-ai/claude-code",
+        "Installation recommandée : l'installateur natif (mise à jour automatique) ; Homebrew et WinGet existent aussi",
+        "npm reste valide (npm install -g @anthropic-ai/claude-code, Node.js 22+) mais les mises à jour sont à votre charge",
         "Naviguez dans votre repo et lancez 'claude'",
-        "Il peut lire/écrire des fichiers, exécuter des commandes, faire du git",
       ],
-      code: "# Installation\nnpm install -g @anthropic-ai/claude-code\n\n# Utilisation\ncd mon-projet\nclaude\n\n# Commandes utiles dans Claude Code\n> /init          # Créer un CLAUDE.md\n> /compact       # Compresser le contexte\n> /cost          # Voir le coût de la session\n> /memory        # Gérer la mémoire persistante",
+      code: `# Installation native (macOS, Linux, WSL)
+curl -fsSL https://claude.ai/install.sh | bash
+
+# Windows PowerShell
+irm https://claude.ai/install.ps1 | iex
+
+# Alternative : npm (Node.js 22+)
+npm install -g @anthropic-ai/claude-code
+
+# Utilisation
+cd mon-projet
+claude
+claude doctor   # diagnostic de l'installation
+
+# Commandes utiles dans Claude Code
+> /init          # Créer un CLAUDE.md
+> /compact       # Compresser le contexte
+> /memory        # Éditer les fichiers de mémoire
+> /mcp           # Gérer les serveurs MCP`,
+    },
+    {
+      title: "7. Personnaliser Claude Code",
+      icon: Settings2,
+      color: "text-indigo-500",
+      content: [
+        "CLAUDE.md : instructions et conventions du projet, lues au démarrage de chaque session",
+        ".claude/settings.json : permissions, variables d'environnement et hooks (settings.local.json pour le perso, non versionné)",
+        "Hooks : commandes exécutées par Claude Code à des événements précis (avant/après un outil, etc.), par exemple pour formater ou bloquer",
+        "Subagents (.claude/agents/*.md) et skills (.claude/skills/<nom>/SKILL.md) : rôles et savoir-faire réutilisables",
+        "MCP : 'claude mcp add' ou un fichier .mcp.json à la racine du projet, partageable via git",
+      ],
+      code: `# CLAUDE.md (extrait)
+## Commandes
+- pnpm test : tests unitaires
+- pnpm lint : ESLint
+
+## Conventions
+- TypeScript strict, pas de any
+
+// .claude/settings.json (extrait)
+{
+  "permissions": {
+    "allow": ["Bash(pnpm test:*)"],
+    "deny": ["Read(./.env)"]
+  }
+}
+
+# Ajouter un serveur MCP
+claude mcp add --transport http mon-serveur https://example.com/mcp`,
     },
   ];
 
@@ -181,36 +229,65 @@ function SetupSteps() {
 
 /* ========== MODEL COMPARISON ========== */
 function ModelComparison() {
+  // Niveaux relatifs (1 à 4) : ils servent uniquement à remplir la jauge,
+  // l'affichage est qualitatif. Source : page « Models overview » d'Anthropic.
   const models = [
     {
+      name: "Claude Fable (gamme la plus capable)",
+      speed: "Plus lente",
+      speedLevel: 1,
+      intel: "Très élevée",
+      intelLevel: 4,
+      cost: "Très élevé",
+      costLevel: 4,
+      best: "Raisonnement exigeant, tâches agentiques longues",
+    },
+    {
       name: "Claude Opus (gamme haute)",
-      speed: 35,
-      intel: 98,
-      cost: 95,
-      best: "Raisonnement complexe, recherche, analyse profonde",
+      speed: "Modérée",
+      speedLevel: 2,
+      intel: "Élevée",
+      intelLevel: 3,
+      cost: "Élevé",
+      costLevel: 3,
+      best: "Développement agentique de longue durée, travail de connaissance complexe",
     },
     {
       name: "Claude Sonnet (gamme intermédiaire)",
-      speed: 70,
-      intel: 92,
-      cost: 50,
-      best: "Développement, tâches quotidiennes, meilleur rapport qualité/prix",
+      speed: "Rapide",
+      speedLevel: 3,
+      intel: "Élevée",
+      intelLevel: 3,
+      cost: "Modéré",
+      costLevel: 2,
+      best: "Développement, tâches quotidiennes, meilleur compromis vitesse / intelligence",
     },
     {
       name: "Claude Haiku (gamme rapide)",
-      speed: 95,
-      intel: 80,
-      cost: 15,
-      best: "Classification, extraction, tâches simples et rapides",
+      speed: "La plus rapide",
+      speedLevel: 4,
+      intel: "Correcte",
+      intelLevel: 2,
+      cost: "Faible",
+      costLevel: 1,
+      best: "Classification, extraction, routage : gros volumes et faible latence",
     },
   ];
+
+  const bar = (level: number) => `${level * 25}%`;
 
   return (
     <Card className="p-5 space-y-4">
       <div className="flex items-center gap-2 text-lg font-semibold">
         <Sparkles className="w-5 h-5 text-violet-500" />
-        Comparatif des Modèles Claude (valeurs indicatives, versions et tarifs à vérifier sur le site officiel)
+        Comparatif des Modèles Claude (niveaux relatifs, sans chiffres)
       </div>
+      <p className="text-xs text-muted-foreground">
+        Les gammes (Fable, Opus, Sonnet, Haiku) existent en plusieurs
+        générations. Les versions, identifiants, tarifs et fenêtres de contexte
+        changent : vérifiez la page officielle « Models overview » de la
+        documentation Anthropic avant de choisir un modèle.
+      </p>
 
       <div className="space-y-4">
         {models.map((m) => (
@@ -221,42 +298,24 @@ function ModelComparison() {
             <h3 className="font-semibold">{m.name}</h3>
 
             <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-1">
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Vitesse</span>
-                  <span>{m.speed}%</span>
+              {[
+                { label: "Vitesse", text: m.speed, level: m.speedLevel, color: "bg-green-500" },
+                { label: "Intelligence", text: m.intel, level: m.intelLevel, color: "bg-blue-500" },
+                { label: "Coût", text: m.cost, level: m.costLevel, color: "bg-amber-500" },
+              ].map((metric) => (
+                <div key={metric.label} className="space-y-1">
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>{metric.label}</span>
+                    <span>{metric.text}</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${metric.color} transition-all`}
+                      style={{ width: bar(metric.level) }}
+                    />
+                  </div>
                 </div>
-                <div className="h-2 rounded-full bg-muted overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-green-500 transition-all"
-                    style={{ width: `${m.speed}%` }}
-                  />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Intelligence</span>
-                  <span>{m.intel}%</span>
-                </div>
-                <div className="h-2 rounded-full bg-muted overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-blue-500 transition-all"
-                    style={{ width: `${m.intel}%` }}
-                  />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Coût</span>
-                  <span>{m.cost}%</span>
-                </div>
-                <div className="h-2 rounded-full bg-muted overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-amber-500 transition-all"
-                    style={{ width: `${m.cost}%` }}
-                  />
-                </div>
-              </div>
+              ))}
             </div>
 
             <p className="text-xs text-muted-foreground">
@@ -286,7 +345,7 @@ function ClaudeBestPractices() {
       tips: [
         "Utilisez Projects pour organiser par domaine/projet",
         "Uploadez les fichiers de référence dans le Project",
-        "Compressez le contexte avec /compact dans Claude Code",
+        "Compressez le contexte avec /compact dans Claude Code et décrivez le projet dans CLAUDE.md",
         "Préférez des conversations courtes et focalisées",
       ],
     },

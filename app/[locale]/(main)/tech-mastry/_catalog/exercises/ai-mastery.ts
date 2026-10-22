@@ -236,7 +236,7 @@ export const aiMasteryExercises: AreaExercises = {
       type: "match",
       prompt: "Associez chaque notion MCP à son rôle.",
       pairs: [
-        { term: "Host (client)", definition: "Application qui initie la connexion, comme un IDE" },
+        { term: "Host", definition: "Application qui initie la connexion et crée les clients, comme un IDE" },
         { term: "Tool", definition: "Action que le modèle peut appeler" },
         { term: "Resource", definition: "Donnée de contexte identifiée par une URI" },
         { term: "Prompt", definition: "Modèle de requête réutilisable" },

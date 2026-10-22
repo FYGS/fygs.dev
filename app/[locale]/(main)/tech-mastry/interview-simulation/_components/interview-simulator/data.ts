@@ -4,10 +4,10 @@ import type { InterviewFeedback, Question } from "./types";
 export const interviewTemplates = [
   {
     id: "full-stack",
-    title: "Full Stack Developer Interview",
+    title: "Entretien développeur Full Stack",
     description:
-      "Technical, behavioral, and system design questions for full stack positions",
-    categories: ["React", "Node.js", "Database", "System Design"],
+      "Questions techniques, comportementales et de System Design pour les postes full stack",
+    categories: ["React", "Node.js", "Base de données", "System Design"],
     duration: 90,
     questions: [
       {
@@ -16,11 +16,11 @@ export const interviewTemplates = [
         category: "React",
         difficulty: "medium",
         question:
-          "Explain the difference between controlled and uncontrolled components in React. When would you use each approach?",
+          "Expliquez la différence entre les composants contrôlés et non contrôlés dans React. Quand utiliseriez-vous chaque approche ?",
         hints: [
-          "Think about form handling",
-          "Consider state management implications",
-          "Think about accessibility",
+          "Pensez à la gestion des formulaires",
+          "Réfléchissez aux implications sur la gestion d'état",
+          "Pensez à l'accessibilité",
         ],
       },
       {
@@ -29,20 +29,20 @@ export const interviewTemplates = [
         category: "Node.js",
         difficulty: "medium",
         question:
-          "How would you implement rate limiting in a Node.js application?",
+          "Comment implémenteriez-vous une limitation de débit (rate limiting) dans une application Node.js ?",
         hints: [
-          "Consider using middleware",
-          "Think about storing request counts",
-          "Consider memory vs persistent storage",
+          "Envisagez d'utiliser un middleware",
+          "Pensez au stockage des compteurs de requêtes",
+          "Comparez stockage en mémoire et stockage persistant",
         ],
       },
       {
         id: "3",
         type: "behavioral",
-        category: "Behavioral",
+        category: "Comportemental",
         difficulty: "medium",
         question:
-          "Tell me about a time when you had to work with a difficult team member. How did you handle it?",
+          "Parlez-moi d'une situation où vous avez dû travailler avec un collègue difficile. Comment l'avez-vous gérée ?",
       },
       {
         id: "4",
@@ -50,28 +50,29 @@ export const interviewTemplates = [
         category: "System Design",
         difficulty: "hard",
         question:
-          "Design a URL shortening service like Bit.ly. Consider scalability, reliability, and performance.",
+          "Concevez un service de raccourcissement d'URL comme Bit.ly. Tenez compte de la scalabilité, de la fiabilité et des performances.",
         timeLimit: 30,
       },
       {
         id: "5",
         type: "technical",
-        category: "Database",
+        category: "Base de données",
         difficulty: "hard",
         question:
-          "How would you optimize a slow SQL query? What tools and techniques would you use?",
+          "Comment optimiseriez-vous une requête SQL lente ? Quels outils et techniques utiliseriez-vous ?",
         hints: [
-          "Consider indexing strategies",
-          "Look at query execution plan",
-          "Think about normalization vs denormalization",
+          "Envisagez des stratégies d'indexation",
+          "Examinez le plan d'exécution de la requête",
+          "Pensez à la normalisation par rapport à la dénormalisation",
         ],
       },
     ],
   },
   {
     id: "frontend",
-    title: "Frontend Developer Interview",
-    description: "Technical and behavioral questions for frontend positions",
+    title: "Entretien développeur Frontend",
+    description:
+      "Questions techniques et comportementales pour les postes frontend",
     categories: ["JavaScript", "React", "CSS", "Performance"],
     duration: 60,
     questions: [
@@ -80,10 +81,11 @@ export const interviewTemplates = [
         type: "technical",
         category: "JavaScript",
         difficulty: "easy",
-        question: "What is the difference between == and === in JavaScript?",
+        question:
+          "Quelle est la différence entre == et === en JavaScript ?",
         hints: [
-          "Think about type coercion",
-          "Consider the implicit conversions",
+          "Pensez à la coercition de types",
+          "Réfléchissez aux conversions implicites",
         ],
       },
       {
@@ -92,11 +94,11 @@ export const interviewTemplates = [
         category: "React",
         difficulty: "medium",
         question:
-          "Explain the React reconciliation process and how the virtual DOM works.",
+          "Expliquez le processus de réconciliation de React et le fonctionnement du DOM virtuel.",
         hints: [
-          "Consider how React compares elements",
-          "Think about the fiber algorithm",
-          "Understand the diffing algorithm",
+          "Réfléchissez à la façon dont React compare les éléments",
+          "Pensez à l'algorithme Fiber",
+          "Comprenez l'algorithme de différenciation (diffing)",
         ],
       },
       {
@@ -105,20 +107,20 @@ export const interviewTemplates = [
         category: "CSS",
         difficulty: "medium",
         question:
-          "How would you center an element both horizontally and vertically in CSS? Provide multiple approaches.",
+          "Comment centreriez-vous un élément horizontalement et verticalement en CSS ? Proposez plusieurs approches.",
         hints: [
-          "Flexbox approach",
-          "Grid approach",
-          "Absolute positioning approach",
+          "Approche avec Flexbox",
+          "Approche avec Grid",
+          "Approche avec positionnement absolu",
         ],
       },
       {
         id: "4",
         type: "behavioral",
-        category: "Behavioral",
+        category: "Comportemental",
         difficulty: "medium",
         question:
-          "Describe a situation where you had to learn a new technology quickly. How did you approach it?",
+          "Décrivez une situation où vous avez dû apprendre rapidement une nouvelle technologie. Comment vous y êtes-vous pris ?",
       },
       {
         id: "5",
@@ -126,43 +128,43 @@ export const interviewTemplates = [
         category: "Performance",
         difficulty: "hard",
         question:
-          "How would you optimize a React application that's rendering thousands of list items?",
+          "Comment optimiseriez-vous une application React qui affiche des milliers d'éléments de liste ?",
         hints: [
-          "Consider virtualization",
-          "Think about memoization",
-          "Consider pagination",
+          "Envisagez la virtualisation",
+          "Pensez à la mémoïsation",
+          "Envisagez la pagination",
         ],
       },
     ],
   },
   {
     id: "backend",
-    title: "Backend Developer Interview",
+    title: "Entretien développeur Backend",
     description:
-      "Technical and system design questions for backend positions",
-    categories: ["API Design", "Database", "System Design", "Security"],
+      "Questions techniques et de System Design pour les postes backend",
+    categories: ["Conception d'API", "Base de données", "System Design", "Sécurité"],
     duration: 75,
     questions: [
       {
         id: "1",
         type: "technical",
-        category: "API Design",
+        category: "Conception d'API",
         difficulty: "medium",
         question:
-          "What are the key differences between REST and GraphQL? When would you choose one over the other?",
+          "Quelles sont les principales différences entre REST et GraphQL ? Quand choisiriez-vous l'un plutôt que l'autre ?",
         hints: [
-          "Consider flexibility",
-          "Think about over-fetching and under-fetching",
-          "Consider caching strategies",
+          "Pensez à la flexibilité",
+          "Réfléchissez au sur-chargement et au sous-chargement de données (over-fetching et under-fetching)",
+          "Envisagez les stratégies de cache",
         ],
       },
       {
         id: "2",
         type: "technical",
-        category: "Database",
+        category: "Base de données",
         difficulty: "hard",
         question:
-          "How would you design a database schema for a social media platform with posts, comments, and likes?",
+          "Comment concevriez-vous un schéma de base de données pour une plateforme de réseau social avec des publications, des commentaires et des mentions J'aime ?",
         timeLimit: 20,
       },
       {
@@ -171,20 +173,20 @@ export const interviewTemplates = [
         category: "System Design",
         difficulty: "hard",
         question:
-          "Design a distributed caching system for a high-traffic application.",
+          "Concevez un système de cache distribué pour une application à fort trafic.",
         timeLimit: 25,
       },
       {
         id: "4",
         type: "technical",
-        category: "Security",
+        category: "Sécurité",
         difficulty: "medium",
         question:
-          "How would you implement authentication and authorization in a microservices architecture?",
+          "Comment implémenteriez-vous l'authentification et l'autorisation dans une architecture de microservices ?",
         hints: [
-          "Consider JWT tokens",
-          "Think about centralized auth service",
-          "Consider OAuth patterns",
+          "Envisagez les jetons JWT",
+          "Pensez à un service d'authentification centralisé",
+          "Envisagez les schémas OAuth",
         ],
       },
     ],
@@ -201,15 +203,15 @@ export const technicalQuestions: Question[] = [
     category: "JavaScript",
     difficulty: "easy",
     question:
-      "What is the difference between var, let, and const in JavaScript?",
+      "Quelle est la différence entre var, let et const en JavaScript ?",
     answer:
-      "var is function-scoped and can be redeclared, let is block-scoped and can be reassigned but not redeclared in the same scope, const is block-scoped and cannot be reassigned or redeclared.",
+      "var a une portée de fonction et peut être redéclarée ; let a une portée de bloc, peut être réaffectée mais pas redéclarée dans la même portée ; const a une portée de bloc et ne peut être ni réaffectée ni redéclarée.",
     explanation:
-      "Understanding variable declarations is fundamental to JavaScript development. var has function scope and is hoisted and initialized to undefined, while let and const have block scope and are hoisted but not initialized: accessing them before their declaration throws a ReferenceError (temporal dead zone).",
+      "Comprendre les déclarations de variables est fondamental pour le développement JavaScript. var a une portée de fonction, est hissée (hoisting) et initialisée à undefined, tandis que let et const ont une portée de bloc et sont hissées mais non initialisées : y accéder avant leur déclaration lève une ReferenceError (zone morte temporelle).",
     hints: [
-      "Consider scoping differences",
-      "Think about redeclaration rules",
-      "Consider hoisting behavior",
+      "Pensez aux différences de portée",
+      "Réfléchissez aux règles de redéclaration",
+      "Pensez au comportement du hoisting",
     ],
   },
   {
@@ -218,32 +220,32 @@ export const technicalQuestions: Question[] = [
     category: "React",
     difficulty: "medium",
     question:
-      "Explain the React lifecycle methods and their modern equivalents with hooks.",
+      "Expliquez les méthodes de cycle de vie de React et leurs équivalents modernes avec les hooks.",
     answer:
-      "In class components, lifecycle methods include componentDidMount, componentDidUpdate, and componentWillUnmount. With hooks, useEffect replaces these methods based on its dependencies.",
+      "Dans les composants de classe, les méthodes de cycle de vie incluent componentDidMount, componentDidUpdate et componentWillUnmount. Avec les hooks, useEffect remplace ces méthodes en fonction de ses dépendances.",
     explanation:
-      "Modern React development uses functional components with hooks. useEffect can approximate componentDidMount (empty deps array), componentDidUpdate (with dependencies; note that the effect also runs after the first render) and componentWillUnmount (cleanup function). The mapping is not one-to-one: hooks are best thought of as synchronizing with state rather than as lifecycle events.",
+      "Le développement React moderne repose sur des composants fonctionnels avec des hooks. useEffect peut approcher componentDidMount (tableau de dépendances vide), componentDidUpdate (avec des dépendances ; notez que l'effet s'exécute aussi après le premier rendu) et componentWillUnmount (fonction de nettoyage). La correspondance n'est pas un pour un : il vaut mieux voir les hooks comme une synchronisation avec l'état plutôt que comme des événements de cycle de vie.",
     hints: [
-      "Consider useEffect hook",
-      "Think about dependency arrays",
-      "Remember the cleanup function",
+      "Pensez au hook useEffect",
+      "Réfléchissez aux tableaux de dépendances",
+      "N'oubliez pas la fonction de nettoyage",
     ],
   },
   {
     id: "t3",
     type: "technical",
-    category: "Algorithms",
+    category: "Algorithmes",
     difficulty: "hard",
     question:
-      "How would you implement a function to find the kth largest element in an unsorted array?",
+      "Comment implémenteriez-vous une fonction qui trouve le k-ième plus grand élément d'un tableau non trié ?",
     answer:
-      "Use a min-heap of size k. Iterate through the array, adding elements to the heap. If the heap size exceeds k, remove the smallest element. The root of the heap will be the kth largest element.",
+      "Utilisez un min-heap de taille k. Parcourez le tableau en ajoutant les éléments au tas. Si la taille du tas dépasse k, retirez le plus petit élément. La racine du tas sera le k-ième plus grand élément.",
     explanation:
-      "This approach has O(n log k) time complexity and O(k) space complexity, which is more efficient than sorting the entire array (O(n log n)) when k is small. Quickselect finds the kth element in O(n) on average (O(n^2) worst case).",
+      "Cette approche a une complexité temporelle en O(n log k) et une complexité spatiale en O(k), ce qui est plus efficace que le tri complet du tableau (O(n log n)) lorsque k est petit. Quickselect trouve le k-ième élément en O(n) en moyenne (O(n^2) dans le pire cas).",
     hints: [
-      "Consider using a heap data structure",
-      "Think about maintaining only k elements",
-      "Remember to use a min-heap for kth largest",
+      "Pensez à utiliser une structure de données de type tas",
+      "Réfléchissez à ne conserver que k éléments",
+      "N'oubliez pas d'utiliser un min-heap pour le k-ième plus grand",
     ],
   },
 ];
@@ -256,43 +258,43 @@ export const behavioralQuestions: Question[] = [
     category: "Leadership",
     difficulty: "medium",
     question:
-      "Tell me about a time when you had to lead a team through a difficult technical challenge.",
+      "Parlez-moi d'une situation où vous avez dû diriger une équipe face à un défi technique difficile.",
     explanation:
-      "This question assesses leadership skills, problem-solving abilities, and communication skills under pressure.",
+      "Cette question évalue les compétences de leadership, la capacité à résoudre des problèmes et la communication sous pression.",
     hints: [
-      "Use the STAR method (Situation, Task, Action, Result)",
-      "Focus on your specific actions and contributions",
-      "Quantify the results when possible",
+      "Utilisez la méthode STAR (Situation, Tâche, Action, Résultat)",
+      "Concentrez-vous sur vos actions et contributions personnelles",
+      "Chiffrez les résultats lorsque c'est possible",
     ],
   },
   {
     id: "b2",
     type: "behavioral",
-    category: "Conflict Resolution",
+    category: "Résolution de conflits",
     difficulty: "medium",
     question:
-      "Describe a situation where you disagreed with a team member on a technical decision. How did you handle it?",
+      "Décrivez une situation où vous n'étiez pas d'accord avec un collègue sur une décision technique. Comment l'avez-vous gérée ?",
     explanation:
-      "This evaluates collaboration, communication, and conflict resolution skills in a professional setting.",
+      "Cette question évalue la collaboration, la communication et la résolution de conflits en contexte professionnel.",
     hints: [
-      "Emphasize listening and understanding perspectives",
-      "Focus on the process rather than who was right",
-      "Highlight the positive outcome",
+      "Insistez sur l'écoute et la compréhension des points de vue",
+      "Concentrez-vous sur la démarche plutôt que sur qui avait raison",
+      "Mettez en avant l'issue positive",
     ],
   },
   {
     id: "b3",
     type: "behavioral",
-    category: "Adaptability",
+    category: "Adaptabilité",
     difficulty: "easy",
     question:
-      "Give an example of how you handled a major change in project requirements.",
+      "Donnez un exemple de la façon dont vous avez géré un changement majeur dans les exigences d'un projet.",
     explanation:
-      "Tests adaptability and resilience in changing environments.",
+      "Cette question teste l'adaptabilité et la résilience dans des environnements changeants.",
     hints: [
-      "Show how you remained calm under pressure",
-      "Highlight your problem-solving approach",
-      "Focus on positive outcomes despite challenges",
+      "Montrez comment vous êtes resté calme sous pression",
+      "Mettez en avant votre démarche de résolution de problèmes",
+      "Concentrez-vous sur les résultats positifs malgré les difficultés",
     ],
   },
 ];
@@ -302,16 +304,16 @@ export const systemDesignQuestions: Question[] = [
   {
     id: "s1",
     type: "system-design",
-    category: "Scalability",
+    category: "Scalabilité",
     difficulty: "hard",
     question:
-      "Design a system like Instagram that handles millions of users uploading photos daily.",
+      "Concevez un système comme Instagram, capable de gérer des millions d'utilisateurs qui téléversent des photos chaque jour.",
     explanation:
-      "This tests understanding of scalable architecture, storage solutions, caching, and content delivery networks.",
+      "Cette question teste la compréhension des architectures scalables, des solutions de stockage, du cache et des réseaux de diffusion de contenu (CDN).",
     hints: [
-      "Consider image storage and optimization",
-      "Think about feed generation and distribution",
-      "Address scalability and performance concerns",
+      "Pensez au stockage et à l'optimisation des images",
+      "Réfléchissez à la génération et à la distribution du fil d'actualité",
+      "Traitez les enjeux de scalabilité et de performance",
     ],
     timeLimit: 30,
     resources: [
@@ -322,15 +324,16 @@ export const systemDesignQuestions: Question[] = [
   {
     id: "s2",
     type: "system-design",
-    category: "Distributed Systems",
+    category: "Systèmes distribués",
     difficulty: "hard",
-    question: "How would you design a distributed task queue system?",
+    question:
+      "Comment concevriez-vous un système de file de tâches distribuée ?",
     explanation:
-      "This assesses knowledge of distributed systems, fault tolerance, and message passing.",
+      "Cette question évalue la connaissance des systèmes distribués, de la tolérance aux pannes et de l'échange de messages.",
     hints: [
-      "Consider job prioritization",
-      "Think about failure handling and retries",
-      "Address load balancing across workers",
+      "Pensez à la priorisation des tâches",
+      "Réfléchissez à la gestion des échecs et aux nouvelles tentatives",
+      "Traitez la répartition de charge entre les workers",
     ],
     timeLimit: 25,
     resources: [
@@ -344,23 +347,23 @@ export const systemDesignQuestions: Question[] = [
 export const generateMockFeedback = (): InterviewFeedback => ({
   overallScore: 78,
   strengths: [
-    "Strong understanding of React fundamentals",
-    "Good communication skills",
-    "Clear problem-solving approach",
+    "Bonne compréhension des fondamentaux de React",
+    "Bonnes compétences de communication",
+    "Démarche de résolution de problèmes claire",
   ],
   weaknesses: [
-    "Could improve on system design scalability patterns",
-    "More practice needed with advanced algorithms",
+    "Des progrès possibles sur les modèles de scalabilité en System Design",
+    "Davantage de pratique nécessaire sur les algorithmes avancés",
   ],
   recommendations: [
-    "Review scalability patterns like load balancing and caching",
-    "Practice more system design problems focusing on trade-offs",
-    "Study database optimization techniques",
+    "Révisez les modèles de scalabilité comme la répartition de charge et le cache",
+    "Entraînez-vous davantage sur des problèmes de System Design en vous concentrant sur les compromis",
+    "Étudiez les techniques d'optimisation de bases de données",
   ],
   performanceBreakdown: [
     { category: "React", score: 85, maxScore: 100 },
     { category: "JavaScript", score: 75, maxScore: 100 },
     { category: "System Design", score: 65, maxScore: 100 },
-    { category: "Algorithms", score: 70, maxScore: 100 },
+    { category: "Algorithmes", score: 70, maxScore: 100 },
   ],
 });

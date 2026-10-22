@@ -834,7 +834,7 @@ export const practiceQuizzes: AreaQuizzes = {
     },
     {
       id: "practice-system-design-architecture-2",
-      question: "À quoi sert le CDN du template « Scalable Web Application » ?",
+      question: "À quoi sert le CDN du template « Application web scalable » ?",
       options: [
         "À répliquer la base de données dans plusieurs régions",
         "À remplacer le répartiteur de charge pour les requêtes dynamiques",

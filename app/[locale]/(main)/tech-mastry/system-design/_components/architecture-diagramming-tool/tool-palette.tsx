@@ -44,7 +44,7 @@ export function ToolPalette({
       <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
         <h3 className="font-medium mb-3 flex items-center gap-2">
           <Settings className="h-4 w-4 text-primary" />
-          Tools
+          Outils
         </h3>
         <div className="grid grid-cols-3 gap-2">
           <Button
@@ -54,7 +54,7 @@ export function ToolPalette({
             className="flex flex-col items-center gap-1 py-2"
           >
             <Move className="h-4 w-4" />
-            <span className="text-xs">Select</span>
+            <span className="text-xs">Sélection</span>
           </Button>
           <Button
             variant={tool === "pan" ? "default" : "outline"}
@@ -63,7 +63,7 @@ export function ToolPalette({
             className="flex flex-col items-center gap-1 py-2"
           >
             <Eye className="h-4 w-4" />
-            <span className="text-xs">Pan</span>
+            <span className="text-xs">Déplacer</span>
           </Button>
           <Button
             variant={tool === "connect" ? "default" : "outline"}
@@ -73,7 +73,7 @@ export function ToolPalette({
             disabled
           >
             <Link className="h-4 w-4" />
-            <span className="text-xs">Connect</span>
+            <span className="text-xs">Relier</span>
           </Button>
         </div>
       </div>
@@ -81,7 +81,7 @@ export function ToolPalette({
       <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
         <h3 className="font-medium mb-3 flex items-center gap-2">
           <LayoutDashboard className="h-4 w-4 text-primary" />
-          Components
+          Composants
         </h3>
         <div className="grid grid-cols-2 gap-2">
           <Button
@@ -100,7 +100,7 @@ export function ToolPalette({
             className="flex flex-col items-center gap-1 py-2"
           >
             <Server className="h-4 w-4" />
-            <span className="text-xs">Server</span>
+            <span className="text-xs">Serveur</span>
           </Button>
           <Button
             variant="outline"
@@ -109,7 +109,7 @@ export function ToolPalette({
             className="flex flex-col items-center gap-1 py-2"
           >
             <Database className="h-4 w-4" />
-            <span className="text-xs">DB</span>
+            <span className="text-xs">BDD</span>
           </Button>
           <Button
             variant="outline"
@@ -145,11 +145,11 @@ export function ToolPalette({
         <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
           <h3 className="font-medium mb-3 flex items-center gap-2">
             <Settings className="h-4 w-4 text-primary" />
-            Properties
+            Propriétés
           </h3>
           <div className="space-y-3">
             <div>
-              <Label htmlFor="component-name" className="text-xs">Name</Label>
+              <Label htmlFor="component-name" className="text-xs">Nom</Label>
               <Input
                 id="component-name"
                 value={components.find(c => c.id === selectedComponent)?.name || ""}
@@ -174,7 +174,7 @@ export function ToolPalette({
                 className="flex-1"
               >
                 <Trash2 className="h-4 w-4 mr-1" />
-                Delete
+                Supprimer
               </Button>
             </div>
           </div>

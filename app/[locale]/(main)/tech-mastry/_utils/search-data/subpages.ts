@@ -230,7 +230,7 @@ export const subpagesItems: SearchIndexItem[] = [
   {
     title: "Next.js Patterns",
     description:
-      "Patterns avancés Next.js 14+ : Server Components, Server Actions, streaming et caching.",
+      "Patterns avancés Next.js 16 : Server Components, Server Actions, streaming, Cache Components et proxy.",
     href: "/tech-mastry/frontend/nextjs-patterns",
     category: "Frontend",
     subcategory: "Next.js",
@@ -242,6 +242,8 @@ export const subpagesItems: SearchIndexItem[] = [
       "caching",
       "ISR",
       "App Router",
+      "Cache Components",
+      "proxy",
     ],
     importance: "high",
   },

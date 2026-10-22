@@ -22,7 +22,7 @@ function ETLPipelineViz() {
       color: "text-blue-500 bg-blue-500/10",
       sources: ["PostgreSQL", "REST API", "S3 (CSV/JSON)", "Kafka Stream"],
       desc: "Extraction depuis des sources hétérogènes — batch ou streaming",
-      code: `# PySpark - Extraction\ndf = spark.read.format("jdbc").option("url", jdbc_url).option("dbtable", "users").load()\napi_df = spark.read.json("s3a://bucket/raw/events/*.json")`,
+      code: `# PySpark 4 - Extraction (ANSI SQL activé par défaut, Spark Connect disponible)\ndf = spark.read.format("jdbc").option("url", jdbc_url).option("dbtable", "users").load()\napi_df = spark.read.json("s3a://bucket/raw/events/*.json")`,
     },
     {
       name: "Transform",
@@ -30,7 +30,7 @@ function ETLPipelineViz() {
       color: "text-amber-500 bg-amber-500/10",
       sources: ["Nettoyage", "Jointures", "Agrégations", "Feature Engineering"],
       desc: "Transformation : nettoyage, enrichissement, normalisation",
-      code: `# Transformations\ndf_clean = df.dropna(subset=["email"]).filter(col("age") > 0)\ndf_enriched = df_clean.join(dim_country, "country_code", "left")\ndf_agg = df_enriched.groupBy("country").agg(count("*").alias("user_count"))`,
+      code: `# Transformations\nfrom pyspark.sql import functions as F\ndf_clean = df.dropna(subset=["email"]).filter(F.col("age") > 0)\ndf_enriched = df_clean.join(dim_country, "country_code", "left")\ndf_agg = df_enriched.groupBy("country").agg(F.count("*").alias("user_count"))`,
     },
     {
       name: "Load",
@@ -148,14 +148,14 @@ function DataArchitectureViz() {
           color: "bg-violet-500/20 border-violet-500/30",
         },
       ],
-      tech: ["BigQuery", "Snowflake", "Redshift", "dbt"],
+      tech: ["BigQuery", "Snowflake", "Redshift", "Databricks SQL"],
     },
     lake: {
       name: "Data Lake",
       layers: [
         {
           name: "Raw Zone",
-          desc: "Données non structurées brutes",
+          desc: "Données brutes (tous formats)",
           color: "bg-green-500/20 border-green-500/30",
         },
         {
@@ -240,13 +240,13 @@ const bigDataTools = [
   {
     name: "Apache Airflow",
     cat: "Orchestration",
-    desc: "DAGs, scheduling, monitoring de pipelines",
+    desc: "DAGs, assets, scheduling, monitoring de pipelines (Airflow 3)",
     color: "text-teal-400",
   },
   {
     name: "dbt",
     cat: "Transformation",
-    desc: "SQL-first transformations, tests, documentation",
+    desc: "Transformation SQL dans l'entrepôt (le T de ELT), tests, documentation",
     color: "text-green-400",
   },
   {
@@ -439,54 +439,52 @@ export default function DataEngineeringPage() {
         <h2 className="text-2xl font-bold">Apache Airflow — DAG exemple</h2>
         <Card className="p-5">
           <pre className="bg-muted/30 rounded-lg p-4 text-xs overflow-x-auto font-mono text-foreground" tabIndex={0}>
-            {`from airflow import DAG
-from airflow.operators.python import PythonOperator
+            {`# Airflow 3 : l'API d'écriture des DAGs vit dans airflow.sdk
+import pendulum
+from datetime import timedelta
+from airflow.sdk import Asset, dag, task
 from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
-from datetime import datetime, timedelta
 
-default_args = {
-    "owner": "data-team",
-    "retries": 2,
-    "retry_delay": timedelta(minutes=5),
-    "email_on_failure": True,
-}
+users_gold = Asset("s3://warehouse/users/")  # asset : donnée produite par le pipeline
 
-with DAG(
-    "daily_etl_pipeline",
-    default_args=default_args,
-    schedule="0 6 * * *",  # 6h UTC chaque jour (schedule_interval est déprécié)
-    start_date=datetime(2024, 1, 1),
+@dag(
+    dag_id="daily_etl_pipeline",
+    schedule="0 6 * * *",  # 6h UTC chaque jour (schedule_interval a été supprimé)
+    start_date=pendulum.datetime(2024, 1, 1, tz="UTC"),
     catchup=False,
+    default_args={"owner": "data-team", "retries": 2, "retry_delay": timedelta(minutes=5)},
     tags=["etl", "production"],
-) as dag:
-
+)
+def daily_etl_pipeline():
     extract = SparkSubmitOperator(
         task_id="extract_raw_data",
         application="spark_jobs/extract.py",
         conf={"spark.executor.memory": "4g"},
     )
 
-    validate = PythonOperator(
-        task_id="validate_data_quality",
-        python_callable=run_great_expectations,
-    )
+    @task
+    def validate() -> None:
+        run_great_expectations()  # lève une exception si la qualité est insuffisante
 
     transform = SparkSubmitOperator(
         task_id="transform_to_gold",
         application="spark_jobs/transform.py",
     )
 
-    load = PythonOperator(
-        task_id="load_to_warehouse",
-        python_callable=load_to_bigquery,
-    )
+    @task(outlets=[users_gold])
+    def load() -> None:
+        load_to_bigquery()
 
-    notify = PythonOperator(
-        task_id="notify_slack",
-        python_callable=send_slack_notification,
-    )
+    @task
+    def notify() -> None:
+        send_slack_notification()
 
-    extract >> validate >> transform >> load >> notify`}
+    extract >> validate() >> transform >> load() >> notify()
+
+daily_etl_pipeline()
+
+# Un DAG aval peut se déclencher sur l'asset plutôt que sur une heure :
+# @dag(schedule=[users_gold], ...)`}
           </pre>
         </Card>
       </section>

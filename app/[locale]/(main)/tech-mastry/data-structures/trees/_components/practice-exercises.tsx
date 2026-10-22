@@ -205,11 +205,12 @@ function shortestPath(graph, start, end) {
 
   // File d'attente pour BFS, stockant [nœud, distance]
   const queue = [[start, 0]];
+  let head = 0; // index de tête : défiler en O(1) (queue.shift() serait O(n))
   // Ensemble des nœuds visités
   const visited = new Set([start]);
 
-  while (queue.length > 0) {
-    const [node, distance] = queue.shift();
+  while (head < queue.length) {
+    const [node, distance] = queue[head++];
 
     // Parcourir tous les voisins
     for (const neighbor of graph[node]) {

@@ -38,7 +38,7 @@ describe("toSandboxTests", () => {
 describe("visibleTest", () => {
   it("shows a visible test and hides a hidden one", () => {
     expect(visibleTest(twoSum.testCases[0])).toEqual({ input: "[2,7,11,15], 9", expectedOutput: "[0,1]" });
-    expect(visibleTest(twoSum.testCases[2])).toEqual({ input: "Hidden test", expectedOutput: "Hidden test" });
+    expect(visibleTest(twoSum.testCases[2])).toEqual({ input: "Test masqué", expectedOutput: "Test masqué" });
   });
 });
 
@@ -62,9 +62,9 @@ describe("toSubmissionResult", () => {
   it("never reveals what a hidden test returned: it could be the expected value", () => {
     const result = toSubmissionResult(twoSum, sandbox([r("3", false, "[1,1]", "Error: boom"), r("4", true, "[2,4]")]));
 
-    expect(result.detailedResults[0]).toMatchObject({ testCaseId: "3", passed: false, actual: "Failed" });
+    expect(result.detailedResults[0]).toMatchObject({ testCaseId: "3", passed: false, actual: "Échoué" });
     expect(result.detailedResults[0].error).toBeUndefined();
-    expect(result.detailedResults[1]).toMatchObject({ testCaseId: "4", passed: true, actual: "Passed" });
+    expect(result.detailedResults[1]).toMatchObject({ testCaseId: "4", passed: true, actual: "Réussi" });
   });
 
   it("keeps what a visible test returned, and its error", () => {
@@ -86,9 +86,9 @@ describe("challengeStats", () => {
 
     expect(stats).toMatchObject({ total: 3, solved: 0, attempted: 0, attempts: 0 });
     expect(stats.byCategory).toEqual([
-      { category: "Arrays", solved: 0, total: 1 },
-      { category: "Stacks", solved: 0, total: 1 },
-      { category: "Trees", solved: 0, total: 1 },
+      { category: "Tableaux", solved: 0, total: 1 },
+      { category: "Piles", solved: 0, total: 1 },
+      { category: "Arbres", solved: 0, total: 1 },
     ]);
   });
 
@@ -99,7 +99,7 @@ describe("challengeStats", () => {
     });
 
     expect(stats).toMatchObject({ solved: 1, attempted: 2, attempts: 5 });
-    expect(stats.byCategory.find((c) => c.category === "Arrays")).toEqual({ category: "Arrays", solved: 1, total: 1 });
+    expect(stats.byCategory.find((c) => c.category === "Tableaux")).toEqual({ category: "Tableaux", solved: 1, total: 1 });
   });
 
   it("ignores progress about challenges that no longer exist", () => {

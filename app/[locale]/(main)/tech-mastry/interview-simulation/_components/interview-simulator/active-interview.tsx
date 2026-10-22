@@ -25,7 +25,7 @@ import {
   Video,
   VideoOff,
 } from "lucide-react";
-import { formatTime } from "./lib";
+import { difficultyLabels, formatTime } from "./lib";
 import type { InterviewSession, Question } from "./types";
 
 interface ActiveInterviewProps {
@@ -73,12 +73,12 @@ export function ActiveInterview({
               <CardTitle className="flex items-center gap-2">
                 <Trophy className="h-5 w-5 text-primary" />
                 <span>
-                  {interviewSession?.title || "Interview Session"}
+                  {interviewSession?.title || "Session d'entretien"}
                 </span>
               </CardTitle>
               <CardDescription>
                 Question {(interviewSession?.currentQuestionIndex ?? 0) + 1}{" "}
-                of {interviewSession?.questions.length}
+                sur {interviewSession?.questions.length}
               </CardDescription>
             </div>
 
@@ -90,7 +90,12 @@ export function ActiveInterview({
                 </span>
               </div>
 
-              <Badge variant="outline">{currentQuestion?.difficulty}</Badge>
+              <Badge variant="outline">
+                {currentQuestion
+                  ? (difficultyLabels[currentQuestion.difficulty] ??
+                    currentQuestion.difficulty)
+                  : undefined}
+              </Badge>
             </div>
           </div>
         </CardHeader>
@@ -110,7 +115,7 @@ export function ActiveInterview({
                   <div className="mt-4">
                     <div className="flex items-center gap-2 mb-2">
                       <Lightbulb className="h-4 w-4 text-yellow-500" />
-                      <span className="text-sm font-medium">Hints</span>
+                      <span className="text-sm font-medium">Indices</span>
                     </div>
                     <div className="space-y-2">
                       {currentQuestion.hints.map((hint, index) => (
@@ -130,12 +135,12 @@ export function ActiveInterview({
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <MessageSquare className="h-4 w-4 text-primary" />
-                <span className="font-medium">Your Answer</span>
+                <span className="font-medium">Votre réponse</span>
               </div>
               <div className="border rounded-lg overflow-hidden">
                 <div className="bg-muted/30 border-b px-4 py-2 flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
-                    Provide your answer
+                    Saisissez votre réponse
                   </span>
                   <div className="flex items-center gap-2">
                     <Button
@@ -168,12 +173,12 @@ export function ActiveInterview({
                       {isRecording ? (
                         <div className="flex items-center gap-1">
                           <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse"></div>
-                          <span>Stop</span>
+                          <span>Arrêter</span>
                         </div>
                       ) : (
                         <div className="flex items-center gap-1">
                           <div className="h-2 w-2 rounded-full bg-gray-500"></div>
-                          <span>Record</span>
+                          <span>Enregistrer</span>
                         </div>
                       )}
                     </Button>
@@ -183,7 +188,7 @@ export function ActiveInterview({
                 <textarea
                   value={userAnswer}
                   onChange={(e) => setUserAnswer(e.target.value)}
-                  placeholder="Type your answer here..."
+                  placeholder="Saisissez votre réponse ici..."
                   className="w-full min-h-[200px] p-4 font-mono text-sm resize-none focus:outline-hidden bg-background/50"
                 />
               </div>
@@ -196,7 +201,7 @@ export function ActiveInterview({
                 disabled={interviewSession?.currentQuestionIndex === 0}
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Previous
+                Précédent
               </Button>
 
               <div className="flex gap-2">
@@ -209,14 +214,14 @@ export function ActiveInterview({
                       currentQuestion.hints.length > 0
                     ) {
                       // Show first hint if available
-                      toast.success("Hint revealed", {
+                      toast.success("Indice révélé", {
                         description: currentQuestion.hints[0],
                       });
                     }
                   }}
                 >
                   <Lightbulb className="h-4 w-4 mr-2" />
-                  Hint
+                  Indice
                 </Button>
 
                 <Button onClick={nextQuestion} className="gap-2">
@@ -224,12 +229,12 @@ export function ActiveInterview({
                   (interviewSession?.questions.length ?? 0) - 1 ? (
                     <>
                       <Trophy className="h-4 w-4" />
-                      Finish Interview
+                      Terminer l&apos;entretien
                     </>
                   ) : (
                     <>
                       <ArrowRight className="h-4 w-4" />
-                      Next Question
+                      Question suivante
                     </>
                   )}
                 </Button>
@@ -245,7 +250,7 @@ export function ActiveInterview({
                 className="h-2"
               />
               <p className="text-xs text-muted-foreground text-right mt-1">
-                {(interviewSession?.currentQuestionIndex ?? 0) + 1} of{" "}
+                {(interviewSession?.currentQuestionIndex ?? 0) + 1} sur{" "}
                 {interviewSession?.questions.length}
               </p>
             </div>

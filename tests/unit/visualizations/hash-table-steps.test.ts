@@ -79,7 +79,7 @@ describe("hash table step generators", () => {
     const done = last(steps);
     expect(done.buckets).toHaveLength(5);
     expect(done.buckets.reduce((n, b) => n + b.entries.length, 0)).toBe(8);
-    expect(steps.some((s) => s.message === "3 autres entrées réinsérées...")).toBe(true);
+    expect(steps.some((s) => s.message === "3 autres entrées réinsérées (étapes abrégées)")).toBe(true);
     expect(done.message).toBe("Table de hachage redimensionnée avec succès à 5 buckets");
   });
 });

@@ -390,7 +390,7 @@ export const backendQuizzes: AreaQuizzes = {
     {
       id: "backend-devops-1",
       question:
-        "Pourquoi écrire `FROM node:20.11.1-alpine3.19` plutôt que `FROM node:latest` pour une image de production ?",
+        "Pourquoi écrire `FROM node:24.22.1-alpine3.24` plutôt que `FROM node:latest` pour une image de production ?",
       options: [
         "Docker interdit désormais le tag latest sur les registres publics",
         "Une version précise produit des images plus volumineuses et donc plus complètes, ce qui évite d'installer des paquets manquants après coup au démarrage",

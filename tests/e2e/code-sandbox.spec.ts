@@ -32,7 +32,7 @@ async function typeSolution(page: Page, code: string) {
   await page.keyboard.insertText(code.replace(/\s*\n\s*/g, " "));
 }
 
-const submit = (page: Page) => page.getByRole("button", { name: "Submit Solution" }).click();
+const submit = (page: Page) => page.getByRole("button", { name: "Soumettre la solution" }).click();
 
 test.describe("code sandbox", () => {
   test("is served on its own, with a strict policy and nothing else", async ({ request }) => {
@@ -82,27 +82,27 @@ test.describe("code sandbox", () => {
     // a correct solution passes every test, hidden ones included
     await typeSolution(page, TWO_SUM);
     await submit(page);
-    await expect(page.getByText("All Tests Passed!")).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText("Tous les tests réussis !")).toBeVisible({ timeout: 30_000 });
     await expect(page.getByText("4/4").first()).toBeVisible();
-    await expect(page.getByText("Solved", { exact: true })).toBeVisible();
+    await expect(page.getByText("Résolu", { exact: true })).toBeVisible();
 
     // a wrong one fails and shows what it returned
     await typeSolution(page, "function twoSum(nums, target) { return [7, 7]; }");
     await submit(page);
-    await expect(page.getByText("Some Tests Failed")).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText("Certains tests ont échoué")).toBeVisible({ timeout: 30_000 });
     await expect(page.getByText("[7,7]").first()).toBeVisible();
 
     // a syntax error is not a wrong answer
     await typeSolution(page, "function twoSum(nums, target) { return nums ) }");
     await submit(page);
-    await expect(page.getByRole("alert").filter({ hasText: "Your code could not run" })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole("alert").filter({ hasText: "Votre code n'a pas pu s'exécuter" })).toBeVisible({ timeout: 30_000 });
 
     // an endless loop is stopped, and the page stays usable
     await typeSolution(page, "function twoSum(nums, target) { while (true) {} }");
     await submit(page);
-    await expect(page.getByText("Time limit exceeded").first()).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByRole("button", { name: "Submit Solution" })).toBeEnabled();
-    await page.getByRole("button", { name: /Back to Challenges/ }).click();
+    await expect(page.getByText("Délai dépassé").first()).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole("button", { name: "Soumettre la solution" })).toBeEnabled();
+    await page.getByRole("button", { name: /Retour aux défis/ }).click();
     await expect(page.getByRole("button", { name: /Valid Parentheses/ })).toBeVisible();
 
     expect(violations).toEqual([]);
@@ -121,7 +121,7 @@ test.describe("code sandbox", () => {
     await openTwoSum(page);
     await typeSolution(page, TWO_SUM);
     await submit(page);
-    await expect(page.getByText("All Tests Passed!")).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText("Tous les tests réussis !")).toBeVisible({ timeout: 30_000 });
 
     const frame = page.frames().find((candidate) => candidate.url().endsWith("/sandbox/runner.html"));
     expect(frame, "the sandbox iframe exists").toBeTruthy();

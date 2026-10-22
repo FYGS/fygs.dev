@@ -40,11 +40,26 @@ npm run build`,
     trigger: "Avant l'ouverture de l'éditeur de message",
     use: "Template de message automatique, numéro de ticket",
     example: `#!/bin/sh
-# Ajouter le numéro de branche au message
-BRANCH=$(git branch --show-current)
-TICKET=$(echo "$BRANCH" | grep -oE '[A-Z]+-[0-9]+')
-if [ -n "$TICKET" ]; then
-  sed -i.bak -e "1s/^/[$TICKET] /" "$1"
+# Préfixer le message avec le ticket de la branche (ex. feature/PROJ-123-login)
+# $1 = fichier du message, $2 = source (message, template, merge, squash, commit)
+MSG_FILE="$1"
+SOURCE="$2"
+
+# Pas de préfixe pour un merge, un squash ni un commit qui reprend un message
+# existant (--amend, -c, -C) : évite les doublons
+case "$SOURCE" in
+  merge|squash|commit) exit 0 ;;
+esac
+
+TICKET=$(git branch --show-current | grep -oE '[A-Z]+-[0-9]+' | head -n 1)
+[ -z "$TICKET" ] && exit 0
+
+# Idempotent : ne rien faire si le préfixe est déjà présent
+if ! head -n 1 "$MSG_FILE" | grep -qF "[$TICKET]"; then
+  TMP=$(mktemp)
+  { printf '[%s] ' "$TICKET"; cat "$MSG_FILE"; } > "$TMP"
+  cat "$TMP" > "$MSG_FILE"
+  rm -f "$TMP"
 fi`,
   },
   {

@@ -33,8 +33,7 @@ Status: `TODO` · `DOING` · `DONE` · `DECISION`. Definition of done: `tsc` 0, 
 - 2026-10-22: TM-1, TM-2, TM-3, TM-5, TM-6 done; quizzes and takeaways written for the 100 lessons by area agents and checked by tests; exercises engine and tests done, exercise data in progress; five factual errors fixed on the pages, accuracy review launched.
 - 2026-10-22: exercises (2-3 per lesson) and self-checks done for the 100 lessons; sidebar shows completion ticks and per-section counts; the home page has a LearningHome (next topic, global progress, one progress card per area). Accuracy review by 7 area agents: about 150 corrections (see git log), e.g. git blob hash, Dijkstra/Two Sum/Interpolation search samples, CAP wording, OAuth state+PKCE, invented figures made qualitative, deprecated APIs updated. Open doubts are listed below.
 
-## 4. Open doubts (not changed, to decide)
-- Next.js 16 wording on the frontend pages ("Next.js 14+", PPR, middleware vs proxy); Zod v3 samples; Node 20 images (EOL 2026-04).
-- Invented rating/percentage widgets (ai-tools scores, claude-setup bars, data-structures interviewFreq, hero counters "30+").
-- Visualizer behaviours: binary-tree Suppression does nothing, SemVer widget does not reset lower numbers, heap custom insert accepts NaN.
-- Verify upstream: aquasecurity/trivy-action@0.28.0 tag, Copilot .github/skills path, ${env:VAR} in .vscode/mcp.json.
+## 4. Open doubts: all treated (2026-10-22)
+- Frontend: Next.js 16 (Cache Components, proxy, async params), React 19 (use, Actions, ref as prop), react-window 2, WCAG 2.2, Tailwind v4, MSW; TypeScript 6/7 and Zod v4; Node 24 LTS, current GitHub Actions, OWASP Top 10:2025, Gateway API vs Ingress NGINX; Airflow 3, pandas 3, MLflow aliases; MCP spec and Agent frameworks; Copilot/VS Code customization files.
+- Invented figures and scores replaced by qualitative wording; visualizer bugs fixed (BST delete, heap NaN, hash resize, quick/insertion sort marks, Dijkstra heap, BFS head index); SemVer bump logic extracted and tested.
+- Still to verify by a human (no access/unconfirmed): Cursor, Windsurf, Perplexity wording (403 from their sites); Istio ambient maturity label; Eureka status; Airflow 3 import paths and Spark 4 defaults from memory.

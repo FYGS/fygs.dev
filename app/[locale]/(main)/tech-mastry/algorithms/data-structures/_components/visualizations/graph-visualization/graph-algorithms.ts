@@ -1,4 +1,25 @@
+import { MinHeap } from "./min-heap";
 import type { GraphEdge, GraphNode, GraphStep } from "./types";
+
+type Neighbor = { nodeId: string; edgeId: string; weight: number };
+
+// Liste d'adjacence construite une seule fois en O(V+E) : chaque nœud y retrouve
+// ses voisins en O(deg) au lieu de rescanner toutes les arêtes (O(E) par nœud).
+function buildAdjacency(edges: GraphEdge[]): Map<string, Neighbor[]> {
+  const adjacency = new Map<string, Neighbor[]>();
+  const add = (from: string, neighbor: Neighbor) => {
+    const list = adjacency.get(from);
+    if (list) list.push(neighbor);
+    else adjacency.set(from, [neighbor]);
+  };
+  for (const edge of edges) {
+    add(edge.source, { nodeId: edge.target, edgeId: edge.id, weight: edge.weight });
+    if (!edge.directed) {
+      add(edge.target, { nodeId: edge.source, edgeId: edge.id, weight: edge.weight });
+    }
+  }
+  return adjacency;
+}
 
 // Les générateurs d'étapes ci-dessous sont purs : `lastOperationCount` est le
 // compteur d'opérations de la dernière étape déjà enregistrée.
@@ -15,7 +36,11 @@ export function generateBfsSteps(
   const currentEdges = [...edges];
 
   // Initialiser les structures de données pour le BFS
+  // File = tableau + index de tête (head) : défiler est O(1), BFS en O(V+E)
+  // (queue.shift() décalerait tout le tableau à chaque défilement).
+  const adjacency = buildAdjacency(currentEdges);
   const queue: string[] = [startNodeId];
+  let head = 0;
   const visited = new Set<string>([startNodeId]);
   const visitOrder: string[] = [startNodeId];
   const edgesUsed: string[] = [];
@@ -38,19 +63,11 @@ export function generateBfsSteps(
   });
 
   // Exécuter le BFS
-  while (queue.length > 0) {
-    const currentNodeId = queue.shift()!;
+  while (head < queue.length) {
+    const currentNodeId = queue[head++];
 
-    // Trouver tous les voisins du nœud actuel
-    const neighbors: { nodeId: string; edgeId: string }[] = [];
-
-    currentEdges.forEach((edge) => {
-      if (edge.source === currentNodeId) {
-        neighbors.push({ nodeId: edge.target, edgeId: edge.id });
-      } else if (!edge.directed && edge.target === currentNodeId) {
-        neighbors.push({ nodeId: edge.source, edgeId: edge.id });
-      }
-    });
+    // Voisins du nœud actuel (liste d'adjacence)
+    const neighbors = adjacency.get(currentNodeId) ?? [];
 
     // Visiter chaque voisin non visité
     for (const { nodeId, edgeId } of neighbors) {
@@ -133,7 +150,11 @@ export function generateDfsSteps(
     operationCount: lastOperationCount + 1,
   });
 
-  // Fonction récursive pour le DFS
+  // Fonction récursive pour le DFS (les voisins sont explorés dans l'ordre des
+  // arêtes : le premier voisin d'abord, comme dans un DFS récursif classique ;
+  // un DFS itératif avec pile devrait empiler les voisins à l'envers pour
+  // produire le même ordre de visite).
+  const adjacency = buildAdjacency(currentEdges);
   const dfs = (nodeId: string, parentId: string | null = null) => {
     // Marquer comme visité
     visited.add(nodeId);
@@ -170,19 +191,8 @@ export function generateDfsSteps(
         lastOperationCount + 1 + dfsSteps.length,
     });
 
-    // Trouver tous les voisins du nœud actuel
-    const neighbors: { nodeId: string; edgeId: string }[] = [];
-
-    currentEdges.forEach((edge) => {
-      if (edge.source === nodeId) {
-        neighbors.push({ nodeId: edge.target, edgeId: edge.id });
-      } else if (!edge.directed && edge.target === nodeId) {
-        neighbors.push({ nodeId: edge.source, edgeId: edge.id });
-      }
-    });
-
     // Visiter chaque voisin non visité
-    for (const { nodeId: neighborId, edgeId } of neighbors) {
+    for (const { nodeId: neighborId, edgeId } of adjacency.get(nodeId) ?? []) {
       if (!visited.has(neighborId)) {
         edgesUsed.push(edgeId);
         dfs(neighborId, nodeId);
@@ -253,59 +263,42 @@ export function generateDijkstraSteps(
     operationCount: lastOperationCount + 1,
   });
 
-  // Exécuter l'algorithme de Dijkstra
-  while (unvisited.size > 0) {
-    // Trouver le nœud non visité avec la plus petite distance
-    let currentNodeId: string | null = null;
-    let smallestDistance = Infinity;
+  // Exécuter l'algorithme de Dijkstra avec un tas binaire min (file de priorité) :
+  // chaque push/pop coûte O(log n), d'où O((V+E) log V) au total (listes
+  // d'adjacence + suppression paresseuse des entrées périmées).
+  const adjacency = buildAdjacency(currentEdges);
+  const heap = new MinHeap<{ nodeId: string; distance: number }>(
+    (x, y) => x.distance - y.distance
+  );
+  heap.push({ nodeId: startNodeId, distance: 0 });
 
-    unvisited.forEach((nodeId) => {
-      if (distances[nodeId] < smallestDistance) {
-        smallestDistance = distances[nodeId];
-        currentNodeId = nodeId;
-      }
-    });
+  while (heap.size > 0) {
+    const { nodeId: currentNodeId, distance } = heap.pop()!;
 
-    // Si aucun chemin n'est trouvé ou si nous avons atteint le nœud cible
-    if (
-      currentNodeId === null ||
-      distances[currentNodeId] === Infinity ||
-      currentNodeId === endNodeId
-    ) {
+    // Entrée périmée : le nœud est déjà finalisé ou une meilleure distance existe
+    if (!unvisited.has(currentNodeId) || distance > distances[currentNodeId]) {
+      continue;
+    }
+
+    // Nous avons atteint le nœud cible : sa distance est définitive
+    if (currentNodeId === endNodeId) {
       break;
     }
 
-    // Retirer le nœud actuel des non visités
+    // Retirer le nœud actuel des non visités (distance définitive)
     unvisited.delete(currentNodeId);
 
-    // Trouver tous les voisins du nœud actuel
-    const neighbors: { nodeId: string; edgeId: string; weight: number }[] =
-      [];
-
-    currentEdges.forEach((edge) => {
-      if (edge.source === currentNodeId) {
-        neighbors.push({
-          nodeId: edge.target,
-          edgeId: edge.id,
-          weight: edge.weight,
-        });
-      } else if (!edge.directed && edge.target === currentNodeId) {
-        neighbors.push({
-          nodeId: edge.source,
-          edgeId: edge.id,
-          weight: edge.weight,
-        });
-      }
-    });
-
     // Mettre à jour les distances des voisins
-    for (const { nodeId: neighborId, edgeId, weight } of neighbors) {
+    for (const { nodeId: neighborId, edgeId, weight } of adjacency.get(
+      currentNodeId
+    ) ?? []) {
       if (unvisited.has(neighborId)) {
         const tentativeDistance = distances[currentNodeId] + weight;
 
         if (tentativeDistance < distances[neighborId]) {
           distances[neighborId] = tentativeDistance;
           previous[neighborId] = currentNodeId;
+          heap.push({ nodeId: neighborId, distance: tentativeDistance });
 
           // Ajouter une étape pour cette mise à jour
           dijkstraSteps.push({

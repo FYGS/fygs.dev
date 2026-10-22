@@ -21,9 +21,9 @@ export const aiMasteryTopics: Topic[] = [
     takeaways: [
       "Un bon prompt sépare rôle, tâche, format de sortie et contraintes, avec le contexte nécessaire car le modèle ne connaît pas votre situation.",
       "Le few-shot (2 à 5 exemples) fixe le format et le style mieux qu'une longue description.",
-      "Le chain-of-thought aide sur les problèmes à plusieurs étapes ; la self-consistency vote sur plusieurs réponses indépendantes.",
-      "Une température basse rend les sorties plus stables (extraction, code), une haute favorise la variété (idées, créativité).",
-      "Itérez et testez les cas limites : un prompt se valide sur des exemples variés, pas sur un seul essai réussi.",
+      "Le chain-of-thought aide sur les problèmes à plusieurs étapes (inutile à demander aux modèles de raisonnement natifs) ; la self-consistency vote sur plusieurs réponses indépendantes.",
+      "Balises XML, sorties structurées (JSON Schema) et prompt caching (contenu stable en début de prompt) structurent et optimisent les prompts.",
+      "Une température basse rend les sorties plus stables (extraction, code), une haute favorise la variété ; validez le prompt sur des exemples variés et des cas limites, pas sur un seul essai.",
     ],
   },
   {
@@ -39,8 +39,8 @@ export const aiMasteryTopics: Topic[] = [
       "Un agent boucle entre raisonnement, action via un outil et observation du résultat jusqu'à atteindre son objectif.",
       "ReAct décide pas à pas ; Plan & Execute planifie d'abord puis replanifie si besoin ; le multi-agent distribue des rôles via un orchestrateur.",
       "La mémoire court terme est la fenêtre de contexte ; la mémoire long terme passe par un stockage externe (base vectorielle).",
-      "Les outils (shell, fichiers, API, base de données) donnent de la puissance mais aussi des risques : limitez les droits et validez les actions sensibles.",
-      "Commencez simple : un seul agent avec quelques outils suffit souvent avant d'ajouter une architecture multi-agent.",
+      "Les outils (shell, fichiers, API, base de données) donnent de la puissance mais aussi des risques : limitez les droits et validez les actions sensibles ; commencez par un seul agent avec quelques outils avant tout multi-agent.",
+      "Frameworks actuels : LangGraph, OpenAI Agents SDK, Claude Agent SDK, Microsoft Agent Framework (successeur d'AutoGen) ; MCP relie aux outils et A2A relie les agents entre eux.",
     ],
   },
   {
@@ -53,10 +53,10 @@ export const aiMasteryTopics: Topic[] = [
     tags: ["claude", "anthropic", "api", "mcp", "claude code", "claude.md"],
     takeaways: [
       "La clé API se range dans une variable d'environnement (.env.local ignoré par Git), jamais dans le code ni dans le dépôt.",
-      "Le choix du modèle est un compromis qualité, vitesse et coût : un grand modèle pour le raisonnement, un petit pour la classification.",
+      "Le choix du modèle est un compromis qualité, vitesse et coût : une gamme haute pour le raisonnement exigeant, la gamme rapide pour la classification ; les versions changent, vérifiez la page officielle des modèles.",
       "Les Projects regroupent instructions et fichiers de référence réutilisés dans toutes les conversations d'un même contexte.",
       "MCP connecte l'assistant à des outils externes via un fichier de configuration : chaque serveur ajoute des capacités et des droits.",
-      "Dans Claude Code, CLAUDE.md porte le contexte du projet et /compact réduit le contexte quand il se remplit.",
+      "Claude Code s'installe de préférence avec l'installateur natif (npm reste possible) et se personnalise via CLAUDE.md (contexte du projet), settings.json, hooks, subagents et skills ; /compact réduit le contexte quand il se remplit.",
     ],
   },
   {
@@ -69,10 +69,10 @@ export const aiMasteryTopics: Topic[] = [
     tags: ["copilot", "github", "vs code", "agent mode", "instructions", "mcp"],
     takeaways: [
       "Copilot propose quatre usages : complétion inline, chat pour comprendre, edit pour modifier avec diff, agent pour des tâches multi-étapes.",
-      ".github/copilot-instructions.md fixe stack et conventions du dépôt et est lu comme contexte par les requêtes de chat.",
+      ".github/copilot-instructions.md fixe stack et conventions du dépôt ; *.instructions.md (applyTo), AGENTS.md, prompt files, agents personnalisés et skills (.github/skills/) complètent le dispositif.",
       "Dans le chat, @workspace interroge le projet et #file cible un fichier précis : un contexte ciblé améliore la réponse.",
       "En mode Agent, les serveurs MCP déclarés dans .vscode/mcp.json donnent accès à des outils externes.",
-      "Les secrets des serveurs MCP passent par des variables d'environnement (${env:...}), jamais en clair dans un fichier versionné.",
+      "Les secrets des serveurs MCP passent par des inputs promptString (${input:id}) ou un envFile non versionné, jamais en clair dans mcp.json.",
     ],
   },
   {
@@ -86,7 +86,7 @@ export const aiMasteryTopics: Topic[] = [
     takeaways: [
       "Les outils se répartissent en catégories : plateformes LLM, IDE IA, générateurs d'UI, builders full-stack et moteurs de recherche IA.",
       "Choisissez selon le besoin : un IDE IA pour coder au quotidien, un générateur d'UI pour prototyper, un moteur à citations pour la veille.",
-      "Les notes et tarifs d'un comparatif vieillissent vite : vérifiez les fonctionnalités et conditions sur le site officiel.",
+      "Un comparatif vieillit vite et reste qualitatif : vérifiez fonctionnalités, offres et tarifs sur le site officiel.",
       "Un contexte long ou le multimodal sont des critères concrets pour trancher entre plateformes LLM.",
       "Le code généré reste à relire, tester et sécuriser, quel que soit l'outil.",
     ],
@@ -101,7 +101,7 @@ export const aiMasteryTopics: Topic[] = [
     tags: ["mcp", "skills", "agents", "json-rpc", "tools", "resources"],
     prerequisites: ["/tech-mastry/ai-mastery/agentic-ai"],
     takeaways: [
-      "MCP relie un client hôte à des serveurs via JSON-RPC 2.0, par transport stdio (local) ou HTTP/SSE (distant).",
+      "MCP relie un host (qui crée des clients, un par serveur) à des serveurs via JSON-RPC 2.0, par transport stdio (local) ou Streamable HTTP (distant, autorisation OAuth 2.1) ; HTTP+SSE est déprécié.",
       "Un serveur MCP expose trois primitives : Tools (actions), Resources (données de contexte) et Prompts (modèles réutilisables).",
       "Chaque outil est défini par un nom, une description claire et un schéma de paramètres (Zod) validé avant exécution.",
       "Single agent, routeur, pipeline et superviseur sont des patterns de complexité croissante : n'ajoutez de la complexité que si nécessaire.",

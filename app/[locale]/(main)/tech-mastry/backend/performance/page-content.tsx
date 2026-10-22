@@ -180,11 +180,11 @@ function LatencyComparison() {
     { name: "L2 Cache ref", ns: 7, color: "bg-green-400" },
     { name: "RAM read", ns: 100, color: "bg-blue-500" },
     { name: "SSD read (4K)", ns: 150000, color: "bg-yellow-500" },
+    { name: "Redis GET (même datacenter)", ns: 500000, color: "bg-cyan-500" },
+    { name: "Postgres query (indexée)", ns: 5000000, color: "bg-purple-500" },
     { name: "HDD seek", ns: 10000000, color: "bg-orange-500" },
-    { name: "Redis GET", ns: 500000, color: "bg-cyan-500" },
-    { name: "Postgres query", ns: 5000000, color: "bg-purple-500" },
-    { name: "SF → NYC round trip", ns: 40000000, color: "bg-red-500" },
-    { name: "SF → London", ns: 81000000, color: "bg-red-400" },
+    { name: "SF → NYC (aller-retour)", ns: 70000000, color: "bg-red-500" },
+    { name: "SF → Londres (aller-retour)", ns: 140000000, color: "bg-red-400" },
   ];
   const maxLog = Math.log10(items[items.length - 1].ns);
   const displayed = showAll ? items : items.slice(0, 5);
@@ -223,6 +223,11 @@ function LatencyComparison() {
           );
         })}
       </div>
+      <p className="text-xs text-muted-foreground">
+        Ordres de grandeur sur une échelle logarithmique, triés du plus rapide
+        au plus lent (d&apos;après les « latency numbers » de Jeff Dean). Les
+        valeurs réelles varient selon le matériel, la charge et le réseau.
+      </p>
       {!showAll && (
         <button
           onClick={() => setShowAll(true)}
@@ -371,19 +376,21 @@ function RedisPatterns() {
     },
     {
       name: "Invalidation",
-      code: `// Invalidate on write
+      code: `// Cache-aside : écrire en base PUIS supprimer la clé
 async function updateUser(id: string, data: UpdateData) {
   const user = await prisma.user.update({ where: { id }, data });
-  await redis.del(\`user:\${id}\`);  // Invalidate cache
+  await redis.del(\`user:\${id}\`); // la prochaine lecture rechargera depuis la DB
   return user;
 }
 
-// Pattern: Cache + Write-Through
-async function updateWithWriteThrough(id: string, data: UpdateData) {
-  const user = await prisma.user.update({ where: { id }, data });
-  await redis.setex(\`user:\${id}\`, 3600, JSON.stringify(user)); // Re-cache
-  return user;
-}`,
+// Pourquoi supprimer plutôt que réécrire la valeur dans le cache ?
+// Deux écritures concurrentes A puis B peuvent atteindre la DB dans l'ordre
+// A, B mais le cache dans l'ordre B, A : le cache garde alors une valeur
+// périmée jusqu'à l'expiration du TTL. Un DEL est idempotent et sans ordre.
+//
+// Course résiduelle (rare) : un lecteur lit l'ancienne valeur en DB, l'écriture
+// et le DEL passent, puis le lecteur fait son SET : le cache est périmé.
+// Atténuations : TTL court, double suppression différée, ou clé versionnée.`,
     },
     {
       name: "Rate Limiting",
@@ -404,9 +411,9 @@ async function updateWithWriteThrough(id: string, data: UpdateData) {
     {
       name: "Session Store",
       code: `// Store session in Redis
-async function createSession(userId: string): Promise<string> {
+async function createSession(userId: string, ip: string): Promise<string> {
   const sessionId = crypto.randomUUID();
-  const session = { userId, createdAt: Date.now(), ip: req.ip };
+  const session = { userId, createdAt: Date.now(), ip };
 
   await redis.setex(
     \`session:\${sessionId}\`,

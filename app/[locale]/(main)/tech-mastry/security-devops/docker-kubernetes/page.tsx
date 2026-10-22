@@ -17,7 +17,7 @@ const concepts = [
   },
   {
     title: "Kubernetes Architecture",
-    desc: "Control Plane (API Server, Scheduler, Controller Manager, etcd) + Worker Nodes (Kubelet, Kube-Proxy, Container Runtime).",
+    desc: "Control Plane (API Server, Scheduler, Controller Manager, etcd) + Worker Nodes (Kubelet, Kube-Proxy, Container Runtime). Kubernetes sort environ trois versions mineures par an (1.37 à la date de rédaction) : vérifiez celle supportée par votre fournisseur.",
     color: "border-purple-500/30",
   },
 ];
@@ -37,7 +37,7 @@ const k8sResources = [
   },
   {
     name: "Ingress",
-    desc: "Routage HTTP/HTTPS externe vers les Services internes. TLS termination.",
+    desc: "Routage HTTP/HTTPS externe vers les Services internes. TLS termination. Le projet Ingress NGINX est retiré (maintenance arrêtée en mars 2026) : pour de nouveaux déploiements, privilégiez la Gateway API (HTTPRoute) ou un autre contrôleur maintenu.",
   },
   {
     name: "ConfigMap/Secret",
@@ -95,7 +95,7 @@ export default function DockerKubernetesPage() {
         <h2 className="text-3xl font-bold">Dockerfile Multi-Stage</h2>
         <pre className="bg-muted/50 rounded-lg p-4 overflow-x-auto text-sm" tabIndex={0}>
           <code>{`# Stage 1: Build
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 RUN corepack enable && pnpm install --frozen-lockfile
@@ -103,7 +103,7 @@ COPY . .
 RUN pnpm build
 
 # Stage 2: Production
-FROM node:20-alpine AS runner
+FROM node:24-alpine AS runner
 WORKDIR /app
 RUN addgroup --system app && adduser --system --ingroup app app
 # Nécessite output: "standalone" dans next.config

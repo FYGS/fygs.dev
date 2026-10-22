@@ -57,7 +57,7 @@ function scriptedSession() {
       // rename then delete the selected component
       fireEvent.change(container.querySelector("#component-name") as HTMLInputElement, { target: { value: "Edge Client" } });
       record();
-      click(screen.getByText("Delete").closest("button") as Element);
+      click(screen.getByText("Supprimer").closest("button") as Element);
       record();
       // zoom, then pan with the pan tool
       const buttons = () => [...container.querySelectorAll("button")];
@@ -67,14 +67,14 @@ function scriptedSession() {
       click(zoomIn); record();
       click(zoomOut); record();
       click(zoomReset); record();
-      click(screen.getByText("Pan").closest("button") as Element); record();
+      click(screen.getByText("Déplacer").closest("button") as Element); record();
       fireEvent.mouseDown(canvas(), { clientX: 10, clientY: 10 });
       fireEvent.mouseMove(canvas(), { clientX: 60, clientY: 40 });
       fireEvent.mouseUp(canvas());
       record();
       // add every kind of component
-      click(screen.getByText("Select").closest("button") as Element);
-      for (const label of ["Client", "Server", "DB", "API", "Cache", "LB"]) {
+      click(screen.getByText("Sélection").closest("button") as Element);
+      for (const label of ["Client", "Serveur", "BDD", "API", "Cache", "LB"]) {
         click(screen.getByText(label).closest("button") as Element);
         act(() => { vi.advanceTimersByTime(5); });
         record();
@@ -85,17 +85,17 @@ function scriptedSession() {
       record();
       // templates and documentation tabs
       const tabs = screen.getAllByRole("tab");
-      for (const label of ["Templates", "Documentation", "Diagram"]) {
+      for (const label of ["Modèles", "Documentation", "Diagramme"]) {
         click(tabs.find((t) => t.textContent?.includes(label)) as Element);
         record();
       }
-      click(tabs.find((t) => t.textContent?.includes("Templates")) as Element);
-      const useButtons = screen.getAllByText("Use Template");
+      click(tabs.find((t) => t.textContent?.includes("Modèles")) as Element);
+      const useButtons = screen.getAllByText("Utiliser le modèle");
       for (const b of useButtons) {
         fireEvent.click(b.closest(".cursor-pointer") as Element);
-        click(tabs.find((t) => t.textContent?.includes("Diagram")) as Element);
+        click(tabs.find((t) => t.textContent?.includes("Diagramme")) as Element);
         record();
-        click(tabs.find((t) => t.textContent?.includes("Templates")) as Element);
+        click(tabs.find((t) => t.textContent?.includes("Modèles")) as Element);
       }
       cleanup();
       return hashes;
@@ -112,34 +112,34 @@ describe("ArchitectureDiagrammingTool rendering", () => {
     expect(states).toBeGreaterThanOrEqual(5);
     expect(hashes).toMatchInlineSnapshot(`
       [
-        "0b3bda9c",
-        "aa3c9add",
-        "fade72d1",
-        "fade72d1",
-        "fade72d1",
-        "0184f234",
-        "0184f234",
-        "86160e4b",
-        "6f99391d",
-        "7446bf1b",
-        "4bd3c0c9",
-        "0270b5fe",
-        "c0d5003c",
-        "d29b09bb",
-        "c0d5003c",
-        "c0d5003c",
-        "e3c6f368",
-        "c0d5003c",
-        "c0d5003c",
-        "cfe2442b",
-        "69131b93",
-        "499fb197",
-        "c948422e",
-        "952b25f4",
-        "f30c8681",
-        "80c7f426",
-        "417208d4",
-        "51a71af2",
+        "2a95a22d",
+        "aa86dbf8",
+        "0de5bafb",
+        "0de5bafb",
+        "0de5bafb",
+        "b719496d",
+        "b719496d",
+        "9c407ab3",
+        "8a1a2141",
+        "17c94e7f",
+        "1aa5f1e5",
+        "5c63277d",
+        "21de7d54",
+        "426755df",
+        "21de7d54",
+        "21de7d54",
+        "42afe465",
+        "21de7d54",
+        "21de7d54",
+        "4a8675d2",
+        "d1a184d7",
+        "7e21ad9f",
+        "602eb2ee",
+        "be546cfc",
+        "17c2028e",
+        "d9c0f28d",
+        "be1b9843",
+        "8f9f501d",
       ]
     `);
   });
@@ -149,57 +149,57 @@ describe("ArchitectureDiagrammingTool rendering", () => {
     expect(new Set(hashes).size).toBeGreaterThanOrEqual(20);
     expect(hashes).toMatchInlineSnapshot(`
       [
-        "0b3bda9c",
+        "2a95a22d",
         "19a3ba3f",
-        "99265aa2",
+        "7312ceee",
         "19a3ba3f",
-        "d2405818",
+        "d0da7325",
         "e4acf836",
-        "d2405818",
+        "d0da7325",
         "e4acf836",
-        "5b4ed0ad",
+        "d196a219",
         "44a23908",
-        "1ad69a5e",
+        "dd14e2ed",
         "44a23908",
-        "de16e9c5",
+        "07fc7c7d",
         "54a705c7",
-        "1f6acc58",
+        "4e0b455a",
         "54a705c7",
-        "aa06681e",
+        "cc1a3e1f",
         "54a705c7",
-        "1f6acc58",
+        "4e0b455a",
         "54a705c7",
-        "de16e9c5",
+        "07fc7c7d",
         "54a705c7",
-        "492c871f",
+        "6feee3df",
         "54a705c7",
-        "4f300a5c",
+        "d0dc483d",
         "54a705c7",
-        "c999dc77",
+        "b0790cc9",
         "4537567a",
-        "9cd28922",
+        "df8099c6",
         "0e693842",
-        "ec750055",
+        "3ada0aca",
         "0e693842",
-        "2de2d30d",
+        "11ebfa97",
         "0e693842",
-        "bafee474",
+        "55660861",
         "0e693842",
-        "0c52c966",
+        "a2fcdc7d",
         "0e693842",
-        "0c52c966",
+        "a2fcdc7d",
         "0e693842",
-        "417208d4",
+        "be1b9843",
         "d41d8cd9",
-        "51a71af2",
+        "8f9f501d",
         "f2955895",
-        "2a08e229",
+        "bef6962a",
         "0e693842",
-        "b6b1e63a",
+        "fe803195",
         "0a5d843b",
-        "b6b1e63a",
+        "fe803195",
         "0a5d843b",
-        "b6b1e63a",
+        "fe803195",
         "0a5d843b",
       ]
     `);

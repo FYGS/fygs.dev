@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Code, CheckCircle } from "lucide-react";
+import { evaluateChallengeAnswer } from "@/app/[locale]/(main)/tech-mastry/_utils/challenge-answer";
 import {
   Dialog,
   DialogContent,
@@ -283,8 +284,10 @@ export function DPChallenge() {
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
 
   const runTest = () => {
-    const expected = selectedChallenge.verify(userInput);
-    const correct = expected === userInput.split("|").pop()?.trim();
+    const { expected, correct } = evaluateChallengeAnswer(
+      selectedChallenge.verify,
+      userInput,
+    );
     setResult(expected);
     setIsCorrect(correct);
   };
@@ -350,11 +353,11 @@ export function DPChallenge() {
                 className="p-3 bg-muted/50 rounded-lg font-mono text-sm"
               >
                 <div>
-                  <span className="text-muted-foreground">Input:</span>{" "}
+                  <span className="text-muted-foreground">Entrée :</span>{" "}
                   {example.input}
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Output:</span>{" "}
+                  <span className="text-muted-foreground">Sortie :</span>{" "}
                   {example.output}
                 </div>
               </div>
@@ -367,7 +370,7 @@ export function DPChallenge() {
           <Label htmlFor="user-input">Votre réponse:</Label>
           <Input
             id="user-input"
-            placeholder="Entrez votre input (format des exemples)"
+            placeholder="Input puis votre réponse, ex. : 1,2,5 | 11 => 3"
             value={userInput}
             onChange={(e) => setUserInput(e.target.value)}
           />

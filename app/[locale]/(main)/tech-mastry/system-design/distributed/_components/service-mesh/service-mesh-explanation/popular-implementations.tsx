@@ -29,10 +29,15 @@ export function PopularImplementations({ serviceMeshType }: {
             Support pour WebAssembly (Wasm) pour des extensions
             personnalisées
           </li>
+          <li>
+            Mode ambient (stable depuis Istio 1.24) : sans sidecar, avec un
+            ztunnel par nœud (mTLS et L4) et des waypoints Envoy optionnels
+            pour le L7
+          </li>
         </ul>
         <div className="text-xs bg-blue-900/20 p-2 rounded border border-blue-800">
           <span className="font-medium">Architecture:</span> Istiod
-          (plan de contrôle) + Envoy (proxies sidecar)
+          (plan de contrôle) + Envoy (sidecar) ou ztunnel + waypoints (ambient)
           <br />
           <span className="font-medium">Cas d&apos;usage:</span>{" "}
           Grands clusters Kubernetes avec besoins avancés
@@ -54,8 +59,11 @@ export function PopularImplementations({ serviceMeshType }: {
           Linkerd
         </h4>
         <p className="text-sm text-muted-foreground mb-2">
-          Solution légère et facile à utiliser par Buoyant, projet
-          CNCF gradué.
+          Solution légère et facile à utiliser créée par Buoyant, projet
+          CNCF gradué. Depuis Linkerd 2.15, les versions stables
+          sont publiées par Buoyant (Buoyant Enterprise for Linkerd,
+          gratuit sous conditions) ; le code reste open source et les
+          versions « edge » restent publiques.
         </p>
         <ul className="text-xs space-y-1 list-disc pl-4 mb-3">
           <li>
@@ -97,7 +105,7 @@ export function PopularImplementations({ serviceMeshType }: {
           Consul Connect
         </h4>
         <p className="text-sm text-muted-foreground mb-2">
-          Solution par HashiCorp intégrée à Consul, fonctionne au-delà
+          Solution par HashiCorp (désormais filiale d&apos;IBM) intégrée à Consul, fonctionne au-delà
           de Kubernetes.
         </p>
         <ul className="text-xs space-y-1 list-disc pl-4 mb-3">
@@ -142,8 +150,9 @@ export function PopularImplementations({ serviceMeshType }: {
         </h4>
         <p className="text-sm text-muted-foreground mb-2">
           Solution native pour AWS basée sur Envoy, entièrement gérée
-          par AWS (AWS a annoncé la fin de son support au 30
-          septembre 2026 : à éviter pour de nouveaux projets).
+          par AWS. AWS a mis fin à son support le 30 septembre 2026
+          (console et ressources inaccessibles) : migrer, par exemple,
+          vers Amazon ECS Service Connect ou vers Istio/Linkerd sur EKS.
         </p>
         <ul className="text-xs space-y-1 list-disc pl-4 mb-3">
           <li>

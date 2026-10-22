@@ -112,7 +112,7 @@ function AppWithCodeSplitting() {
           "Use dynamic imports for large libraries that aren't needed immediately",
           "Consider adding loading indicators when dynamically importing modules",
           "Combine with React.lazy for component-level code splitting",
-          "Use tools like webpack-bundle-analyzer to identify large dependencies that could benefit from code splitting"
+          "Use a bundle analyzer (next analyze in Next.js 16, rollup-plugin-visualizer, webpack-bundle-analyzer) to identify large dependencies that could benefit from code splitting"
         ]}
       />
       
@@ -161,6 +161,7 @@ function AppWithCodeSplitting() {
 }
 
 // Route-based code splitting in React Router
+// (React Router v7 : importez depuis 'react-router' ; 'react-router-dom' reste disponible)
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 const Home = lazy(() => import('./Home'));
@@ -249,7 +250,7 @@ function AppWithRoutes() {
         questions={[
           {
             question: "How would you implement code splitting in a React application?",
-            answer: "To implement code splitting in a React application: 1) Component-level splitting: Use React.lazy and Suspense: `const LazyComponent = React.lazy(() => import('./LazyComponent')); function App() { return ( <Suspense fallback={<Loading />}> {shouldShow && <LazyComponent />} </Suspense> ); }` 2) Route-based splitting: Split at the route level for page components: `const Home = lazy(() => import('./Home')); const About = lazy(() => import('./About')); function App() { return ( <Suspense fallback={<Loading />}> <Routes> <Route path=\"/\" element={<Home />} /> <Route path=\"/about\" element={<About />} /> </Routes> </Suspense> ); }` 3) Library splitting: Load heavy libraries on demand: `const handleClick = async () => { const { default: moment } = await import('moment'); console.log(moment().format('MMMM Do YYYY')); };` 4) Named exports: For specific exports from a module: `const loadChart = async () => { const { Chart } = await import('chart.js'); return new Chart(ctx, config); };` 5) Prefetching: Load code before it's needed: `const prefetchAbout = () => { import('./About'); };` 6) Webpack magic comments: Control chunk names and loading priorities: `import(/* webpackChunkName: \"about\" */ './About')`. These techniques can be combined based on your application's specific needs.",
+            answer: "To implement code splitting in a React application: 1) Component-level splitting: Use React.lazy and Suspense: `const LazyComponent = React.lazy(() => import('./LazyComponent')); function App() { return ( <Suspense fallback={<Loading />}> {shouldShow && <LazyComponent />} </Suspense> ); }` 2) Route-based splitting: Split at the route level for page components: `const Home = lazy(() => import('./Home')); const About = lazy(() => import('./About')); function App() { return ( <Suspense fallback={<Loading />}> <Routes> <Route path=\"/\" element={<Home />} /> <Route path=\"/about\" element={<About />} /> </Routes> </Suspense> ); }` 3) Library splitting: Load heavy libraries on demand: `const handleClick = async () => { const { format } = await import('date-fns'); console.log(format(new Date(), 'MMMM do yyyy')); };` 4) Named exports: For specific exports from a module: `const loadChart = async () => { const { Chart } = await import('chart.js'); return new Chart(ctx, config); };` 5) Prefetching: Load code before it's needed: `const prefetchAbout = () => { import('./About'); };` 6) Webpack magic comments: Control chunk names and loading priorities: `import(/* webpackChunkName: \"about\" */ './About')`. These techniques can be combined based on your application's specific needs.",
             difficulty: "medium",
             tags: ["React", "Code Splitting", "Implementation"]
           },

@@ -154,9 +154,9 @@ export function ArchitectureDiagrammingTool() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">System Design Studio</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Architecture Studio</h1>
         <p className="text-muted-foreground mt-2">
-          Design and visualize system architectures with our interactive diagramming tools
+          Concevez et visualisez des architectures système avec nos outils de diagramme interactifs
         </p>
       </div>
 
@@ -164,11 +164,11 @@ export function ArchitectureDiagrammingTool() {
         <TabsList className="grid grid-cols-3 w-full max-w-sm mx-auto">
           <TabsTrigger value="diagram" className="flex items-center gap-2">
             <LayoutDashboard className="h-4 w-4" />
-            Diagram
+            Diagramme
           </TabsTrigger>
           <TabsTrigger value="templates" className="flex items-center gap-2">
             <LayoutDashboard className="h-4 w-4" />
-            Templates
+            Modèles
           </TabsTrigger>
           <TabsTrigger value="documentation" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
@@ -182,7 +182,7 @@ export function ArchitectureDiagrammingTool() {
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <LayoutDashboard className="h-5 w-5 text-primary" />
-                  <span>Architecture Canvas</span>
+                  <span>Canevas d&apos;architecture</span>
                 </div>
                 
                 <div className="flex items-center gap-2">
@@ -211,7 +211,7 @@ export function ArchitectureDiagrammingTool() {
                 </div>
               </CardTitle>
               <CardDescription>
-                Drag and drop components to design your system architecture
+                Glissez-déposez les composants pour concevoir l&apos;architecture de votre système
               </CardDescription>
             </CardHeader>
             <CardContent>

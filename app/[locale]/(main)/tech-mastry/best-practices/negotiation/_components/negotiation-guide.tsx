@@ -29,7 +29,7 @@ const sections = [
       },
       {
         type: "dont",
-        text: "Évitez, si possible, de donner un chiffre en premier : demandez d'abord la fourchette prévue pour le poste",
+        text: "Évitez de donner un chiffre en premier ou votre salaire actuel : demandez d'abord la fourchette prévue pour le poste. La directive européenne 2023/970 sur la transparence salariale (échéance de transposition : 7 juin 2026) impose à l'employeur de la communiquer et lui interdit de demander l'historique de rémunération, selon la transposition de chaque pays",
       },
     ],
     example: {

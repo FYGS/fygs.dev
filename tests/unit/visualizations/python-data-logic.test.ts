@@ -52,7 +52,7 @@ describe("python data page - NumPy display", () => {
 
 describe("python data page - content", () => {
   it("keeps the reference data", () => {
-    expect(essentialLibs.map((l) => l.name)).toEqual(["NumPy", "Pandas", "Matplotlib", "Seaborn", "Scikit-learn", "Jupyter"]);
+    expect(essentialLibs.map((l) => l.name)).toEqual(["NumPy", "Pandas", "Polars", "Matplotlib", "Seaborn", "Scikit-learn", "Jupyter"]);
     expect(pandasOps).toHaveLength(10);
     expect(PIPELINE_STEPS).toHaveLength(7);
     expect(CLEANING_PIPELINE_CODE.startsWith("import pandas as pd\n")).toBe(true);

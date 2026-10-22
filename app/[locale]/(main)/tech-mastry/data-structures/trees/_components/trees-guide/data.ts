@@ -108,9 +108,9 @@ export const treeTypes: TreeType[] = [
       "Un graphe est une structure de données non linéaire composée de sommets (nœuds) et d'arêtes qui relient ces sommets. Les graphes peuvent être orientés ou non orientés, pondérés ou non pondérés.",
     icon: Network,
     complexity: {
-      access: "O(1)",
+      access: "O(deg(v))",
       search: "O(V+E)",
-      insertion: "O(1)",
+      insertion: "O(1) amorti",
       deletion: "O(V+E)",
     },
     advantages: [

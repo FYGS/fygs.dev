@@ -86,6 +86,50 @@ export const dpProblems = [
     timeComplexity: "O(m×n)",
   },
   {
+    name: "Distance d'Édition (Edit Distance)",
+    difficulty: "Intermédiaire",
+    description:
+      "Nombre minimal d'insertions, suppressions et substitutions pour transformer une chaîne en une autre (distance de Levenshtein).",
+    approach: [
+      "dp[i][j] = distance entre les i premiers caractères de a et les j premiers de b",
+      "Si les caractères sont égaux : on reprend dp[i-1][j-1]",
+      "Sinon : 1 + le minimum entre suppression, insertion et substitution",
+    ],
+    code: `function editDistance(a: string, b: string): number {
+  const m = a.length;
+  const n = b.length;
+  const dp: number[][] = Array.from({ length: m + 1 }, () =>
+    new Array(n + 1).fill(0)
+  );
+
+  // Cas de base : transformer en/depuis la chaîne vide
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (a[i - 1] === b[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1];
+      } else {
+        dp[i][j] =
+          1 +
+          Math.min(
+            dp[i - 1][j], // suppression
+            dp[i][j - 1], // insertion
+            dp[i - 1][j - 1] // substitution
+          );
+      }
+    }
+  }
+
+  return dp[m][n];
+}
+
+editDistance("kitten", "sitting"); // 3`,
+    spaceComplexity: "O(m×n)",
+    timeComplexity: "O(m×n)",
+  },
+  {
     name: "Chemins dans une Grille",
     difficulty: "Intermédiaire",
     description:

@@ -126,6 +126,12 @@ export default function MachineLearningPage() {
             </tbody>
           </table>
         </div>
+        <p className="text-xs text-muted-foreground">
+          n : échantillons, d : features, k : clusters ou arbres, i : itérations,
+          nsv : vecteurs de support, c : classes ou composantes. Ordres de
+          grandeur usuels des implémentations courantes ; les coûts réels
+          dépendent du solveur et des hyperparamètres.
+        </p>
       </section>
 
       {/* Scikit-learn Code */}
@@ -142,7 +148,7 @@ from sklearn.metrics import classification_report, confusion_matrix
 # 1. Split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
-# 2. Pipeline
+# 2. Pipeline (le scaler est ajusté sur le train seul, dans chaque fold de la CV)
 pipe = Pipeline([
     ("scaler", StandardScaler()),
     ("clf", RandomForestClassifier(random_state=42))

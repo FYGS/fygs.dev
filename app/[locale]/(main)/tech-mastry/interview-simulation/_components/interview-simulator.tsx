@@ -170,11 +170,12 @@ export function InterviewSimulator() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">
-          Interview Simulator
+          Simulateur d&apos;entretien
         </h1>
         <p className="text-muted-foreground mt-2">
-          Practice technical, behavioral, and system design interviews with
-          realistic simulations and personalized feedback
+          Entraînez-vous aux entretiens techniques, comportementaux et de
+          System Design grâce à des simulations réalistes et des retours
+          personnalisés
         </p>
       </div>
 

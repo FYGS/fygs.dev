@@ -97,8 +97,8 @@ export function FrontendHero() {
           <span className="block">Modules</span>
         </div>
         <div>
-          <span className="text-2xl font-bold text-primary">40+</span>{" "}
-          <span className="block">Concepts</span>
+          <span className="text-2xl font-bold text-primary">Exemples</span>{" "}
+          <span className="block">de code commentés</span>
         </div>
         <div>
           <span className="text-2xl font-bold text-primary">Interactif</span>{" "}

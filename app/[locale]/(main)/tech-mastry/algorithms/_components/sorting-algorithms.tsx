@@ -57,7 +57,7 @@ const sortingAlgorithms = [
         average: "O(n log n)",
         worst: "O(n²)",
       },
-      space: "O(log n)",
+      space: "O(log n) moyen · O(n) pire cas",
     },
     characteristics: [
       "Algorithme de tri par division",
@@ -77,10 +77,17 @@ const sortingAlgorithms = [
       "Sensible au choix du pivot",
     ],
     code: `function quickSort(arr: number[], low = 0, high = arr.length - 1): number[] {
-  if (low < high) {
+  // On récurse sur la plus PETITE partition et on boucle sur la plus grande :
+  // la profondeur de pile reste en O(log n), même dans le pire cas
+  while (low < high) {
     const pivot = partition(arr, low, high);
-    quickSort(arr, low, pivot - 1);
-    quickSort(arr, pivot + 1, high);
+    if (pivot - low < high - pivot) {
+      quickSort(arr, low, pivot - 1);
+      low = pivot + 1;
+    } else {
+      quickSort(arr, pivot + 1, high);
+      high = pivot - 1;
+    }
   }
   return arr;
 }

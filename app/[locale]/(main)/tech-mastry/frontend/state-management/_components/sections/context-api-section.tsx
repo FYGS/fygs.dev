@@ -29,9 +29,9 @@ function ThemeProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext value={{ theme, toggleTheme }}>
       {children}
-    </ThemeContext.Provider>
+    </ThemeContext>
   );
 }
 
@@ -118,9 +118,9 @@ function ThemeProvider({ children }) {
   };
   
   return (
-    <ThemeContext.Provider value={value}>
+    <ThemeContext value={value}>
       {children}
-    </ThemeContext.Provider>
+    </ThemeContext>
   );
 }
 
@@ -187,7 +187,7 @@ function Content() {
                 <strong>Context Object</strong>: Créé avec <code>createContext(defaultValue)</code>, il contient un Provider et un Consumer.
               </li>
               <li>
-                <strong>Provider</strong>: Composant qui permet aux composants enfants de s&apos;abonner aux changements de contexte.
+                <strong>Provider</strong>: Composant qui permet aux composants enfants de s&apos;abonner aux changements de contexte. Depuis React 19, on rend directement le Context (<code>{"<ThemeContext value={value}>"}</code>) ; <code>Context.Provider</code> reste supporté mais sera déprécié.
               </li>
               <li>
                 <strong>Consumer</strong>: Permet de consommer la valeur actuelle du contexte. Dans les composants fonctionnels, on utilise généralement le hook <code>useContext</code>.
@@ -284,9 +284,9 @@ function TodoProvider({ children }) {
   };
   
   return (
-    <TodoContext.Provider value={value}>
+    <TodoContext value={value}>
       {children}
-    </TodoContext.Provider>
+    </TodoContext>
   );
 }
 
@@ -420,7 +420,7 @@ function TodoApp() {
           },
           {
             question: "Comment tester des composants qui utilisent Context API?",
-            answer: "Pour tester des composants qui utilisent Context API: 1) Créez un wrapper de test qui fournit le contexte nécessaire: `const wrapper = ({ children }) => <MyContext.Provider value={mockValue}>{children}</MyContext.Provider>;` 2) Utilisez ce wrapper lors du rendu du composant dans vos tests: `render(<MyComponent />, { wrapper });` 3) Pour les hooks personnalisés qui utilisent useContext, vous pouvez soit les tester dans un composant de test, soit mocker le hook useContext lui-même. 4) Utilisez jest.mock pour mocker les hooks personnalisés qui accèdent au contexte: `jest.mock('../hooks/useMyContext', () => ({ useMyContext: () => mockContextValue }));` 5) Pour les tests d'intégration, fournissez un état réaliste au Provider. 6) Testez les interactions en simulant les événements et en vérifiant que le contexte est mis à jour correctement. 7) Utilisez des outils comme React Testing Library qui encouragent à tester le comportement plutôt que l'implémentation.",
+            answer: "Pour tester des composants qui utilisent Context API: 1) Créez un wrapper de test qui fournit le contexte nécessaire: `const wrapper = ({ children }) => <MyContext value={mockValue}>{children}</MyContext>;` 2) Utilisez ce wrapper lors du rendu du composant dans vos tests: `render(<MyComponent />, { wrapper });` 3) Pour les hooks personnalisés qui utilisent useContext, vous pouvez soit les tester dans un composant de test, soit mocker le hook useContext lui-même. 4) Utilisez jest.mock pour mocker les hooks personnalisés qui accèdent au contexte: `jest.mock('../hooks/useMyContext', () => ({ useMyContext: () => mockContextValue }));` 5) Pour les tests d'intégration, fournissez un état réaliste au Provider. 6) Testez les interactions en simulant les événements et en vérifiant que le contexte est mis à jour correctement. 7) Utilisez des outils comme React Testing Library qui encouragent à tester le comportement plutôt que l'implémentation.",
             difficulty: "medium",
             tags: ["Testing", "Best Practices"]
           }

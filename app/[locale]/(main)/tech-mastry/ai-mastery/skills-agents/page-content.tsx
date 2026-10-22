@@ -22,8 +22,8 @@ function MCPProtocolVisualizer() {
 
   const layers = [
     {
-      name: "Client (Host)",
-      desc: "L'application hôte (VS Code, Claude Desktop, IDE) qui initie les connexions MCP.",
+      name: "Host",
+      desc: "L'application LLM (VS Code, Claude Desktop, Cursor, Claude Code) qui initie les connexions, gère le consentement de l'utilisateur et exécute la boucle d'agent.",
       examples: [
         "Claude Desktop",
         "VS Code + Copilot",
@@ -34,20 +34,32 @@ function MCPProtocolVisualizer() {
       icon: Code2,
     },
     {
+      name: "Client",
+      desc: "Connecteur créé par le host : chaque client maintient une connexion avec un serveur MCP (un client par serveur).",
+      examples: [
+        "1 client = 1 serveur",
+        "Découverte des tools, resources, prompts",
+        "Fonctionnalité client : elicitation",
+      ],
+      color: "text-sky-500",
+      icon: MessageSquare,
+    },
+    {
       name: "Protocol Layer",
-      desc: "Couche de communication JSON-RPC 2.0 entre le client et les serveurs. Gère les requêtes, réponses et notifications.",
+      desc: "Couche de communication JSON-RPC 2.0 entre clients et serveurs. Révision actuelle de la spécification : 2026-07-28 (à vérifier sur modelcontextprotocol.io).",
       examples: [
         "JSON-RPC 2.0",
-        "stdio transport",
-        "Streamable HTTP transport (SSE : ancien transport, déprécié)",
-        "Lifecycle management",
+        "stdio (serveur local)",
+        "Streamable HTTP (serveur distant)",
+        "HTTP+SSE : ancien transport, déprécié",
+        "Autorisation HTTP basée sur OAuth 2.1",
       ],
       color: "text-amber-500",
       icon: Workflow,
     },
     {
       name: "MCP Server",
-      desc: "Processus léger qui expose des capabilities : Tools, Resources, et Prompts.",
+      desc: "Service qui expose du contexte et des fonctionnalités : Tools, Resources et Prompts. Il peut tourner en local (stdio) ou à distance (Streamable HTTP).",
       examples: [
         "Filesystem Server",
         "GitHub Server",
@@ -59,11 +71,12 @@ function MCPProtocolVisualizer() {
     },
     {
       name: "Capabilities",
-      desc: "Les 3 primitives MCP : Tools (actions), Resources (données contextuelles), Prompts (templates réutilisables).",
+      desc: "Les 3 primitives côté serveur : Tools (actions exécutées par le modèle), Resources (données contextuelles), Prompts (templates réutilisables). Les tools peuvent déclarer un outputSchema et renvoyer une sortie structurée. Les extensions optionnelles (par exemple Tasks, pour les opérations longues) sont négociées explicitement.",
       examples: [
         "Tools: read_file, search_code",
         "Resources: file://, db://",
         "Prompts: templates prédéfinis",
+        "Sortie structurée : outputSchema + structuredContent",
       ],
       color: "text-purple-500",
       icon: Blocks,
@@ -134,14 +147,13 @@ function CreateMCPServer() {
   const steps = [
     {
       title: "1. Initialiser le projet",
-      code: "mkdir my-mcp-server && cd my-mcp-server\nnpm init -y\nnpm install @modelcontextprotocol/sdk zod\nnpm install -D typescript @types/node\nnpx tsc --init",
-      desc: "Créez un nouveau projet Node.js avec le SDK MCP et les dépendances.",
+      code: "mkdir my-mcp-server && cd my-mcp-server\nnpm init -y\nnpm install @modelcontextprotocol/server zod\nnpm install -D typescript @types/node\nnpx tsc --init",
+      desc: "Créez un nouveau projet Node.js avec le SDK MCP TypeScript (v2 : packages @modelcontextprotocol/server et /client ; l'ancien @modelcontextprotocol/sdk v1 reste maintenu) et Zod.",
     },
     {
       title: "2. Définir les outils (Tools)",
-      code: `import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { z } from "zod";
+      code: `import { McpServer } from "@modelcontextprotocol/server";
+import * as z from "zod/v4";
 
 const server = new McpServer({
   name: "my-tools",
@@ -149,10 +161,15 @@ const server = new McpServer({
 });
 
 // Définir un outil
-server.tool(
+server.registerTool(
   "search_docs",
-  "Recherche dans la documentation",
-  { query: z.string(), limit: z.number().optional() },
+  {
+    description: "Recherche dans la documentation",
+    inputSchema: z.object({
+      query: z.string(),
+      limit: z.number().optional(),
+    }),
+  },
   async ({ query, limit = 5 }) => {
     // Votre logique de recherche ici
     const results = await searchDocumentation(query, limit);
@@ -164,14 +181,17 @@ server.tool(
     };
   }
 );`,
-      desc: "Définissez les outils que votre serveur expose. Chaque outil a un nom, une description, des paramètres Zod et un handler.",
+      desc: "Définissez les outils que votre serveur expose. Chaque outil a un nom, une description, un schéma d'entrée Zod (un outputSchema optionnel permet une sortie structurée) et un handler.",
     },
     {
       title: "3. Ajouter des Resources",
       code: `// Resources = données contextuelles accessibles par l'IA
-server.resource(
+import { ResourceTemplate } from "@modelcontextprotocol/server";
+
+server.registerResource(
   "config",
   "config://app",
+  { title: "Configuration", mimeType: "application/json" },
   async (uri) => ({
     contents: [{
       uri: uri.href,
@@ -186,10 +206,10 @@ server.resource(
 );
 
 // Resource template (dynamique)
-// (import { ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js")
-server.resource(
+server.registerResource(
   "user-profile",
   new ResourceTemplate("users://{userId}/profile", { list: undefined }),
+  { title: "Profil utilisateur", mimeType: "application/json" },
   async (uri, { userId }) => {
     const user = await getUser(userId);
     return { contents: [{ uri: uri.href, text: JSON.stringify(user) }] };
@@ -199,7 +219,9 @@ server.resource(
     },
     {
       title: "4. Lancer le serveur",
-      code: `// Transport stdio (recommandé pour IDE)
+      code: `// Transport stdio (recommandé pour un serveur local lancé par l'IDE)
+import { StdioServerTransport } from "@modelcontextprotocol/server/stdio";
+
 const transport = new StdioServerTransport();
 await server.connect(transport);
 
@@ -214,7 +236,7 @@ await server.connect(transport);
     "start": "node dist/index.js"
   }
 }`,
-      desc: "Connectez le serveur via un transport (stdio pour les IDE, Streamable HTTP pour le web). Avec stdio, n'écrivez jamais de logs sur stdout (console.log) : utilisez console.error. Compilez et testez.",
+      desc: "Connectez le serveur via un transport (stdio pour un serveur local, Streamable HTTP pour un serveur distant, avec autorisation OAuth 2.1). Avec stdio, n'écrivez jamais de logs sur stdout (console.log) : utilisez console.error. Compilez et testez.",
     },
     {
       title: "5. Configurer dans le client",
@@ -225,6 +247,10 @@ await server.connect(transport);
       "type": "stdio",
       "command": "node",
       "args": ["./my-mcp-server/dist/index.js"]
+    },
+    "my-remote-tools": {
+      "type": "http",
+      "url": "https://example.com/mcp"
     }
   }
 }

@@ -1,177 +1,107 @@
 import type { BinaryTreeStep, TreeNode } from "./types";
 
-// Générer les étapes pour l'insertion d'une valeur
-export function generateInsertSteps(currentRoot: TreeNode | null, valueToInsert: number): BinaryTreeStep[] {
+const clone = (node: TreeNode | null): TreeNode | null =>
+  node ? (JSON.parse(JSON.stringify(node)) as TreeNode) : null;
+
+// Générer les étapes pour l'insertion d'une valeur.
+// Chaque étape reçoit son propre instantané de l'arbre (aucune référence
+// partagée) : une étape antérieure montre l'arbre tel qu'il était à ce moment.
+export function generateInsertSteps(
+  currentRoot: TreeNode | null,
+  valueToInsert: number,
+): BinaryTreeStep[] {
   const steps: BinaryTreeStep[] = [];
-  let newRoot = currentRoot
-    ? JSON.parse(JSON.stringify(currentRoot))
-    : null;
+  let work = clone(currentRoot);
+  let operationCount = 0;
 
-  // Étape initiale
-  steps.push({
-    root: newRoot,
-    activeNodes: [],
-    highlightedEdges: [],
-    message: `Insertion de la valeur ${valueToInsert}`,
-    operation: "insert",
-    operationCount: 0,
-    targetValue: valueToInsert,
-  });
-
-  // Fonction récursive pour insérer une valeur et générer les étapes
-  const insertWithSteps = (
-    node: TreeNode | null,
-    value: number,
-    path: TreeNode[] = [],
-    operationCount = 1
-  ): { node: TreeNode; operationCount: number } => {
-    // Si le noeud est null, créer un nouveau noeud
-    if (node === null) {
-      const newNode: TreeNode = {
-        id: `node-${value}-${Date.now()}`,
-        value,
-        left: null,
-        right: null,
-      };
-
-      // Ajouter une étape pour la création du nouveau noeud
-      steps.push({
-        root: newRoot,
-        activeNodes: [newNode.id],
-        highlightedEdges:
-          path.length > 0
-            ? [{ from: path[path.length - 1].id, to: newNode.id }]
-            : [],
-        message: `Création d'un nouveau noeud avec la valeur ${value}`,
-        operation: "insert",
-        operationCount,
-        targetValue: value,
-      });
-
-      return { node: newNode, operationCount: operationCount + 1 };
-    }
-
-    // Ajouter une étape pour la comparaison avec le noeud actuel
+  const push = (
+    message: string,
+    activeNodes: string[] = [],
+    highlightedEdges: { from: string; to: string }[] = [],
+    extra: Partial<BinaryTreeStep> = {},
+  ) => {
     steps.push({
-      root: newRoot,
-      activeNodes: [node.id],
-      highlightedEdges:
-        path.length > 0
-          ? [{ from: path[path.length - 1].id, to: node.id }]
-          : [],
-      message: `Comparaison avec le noeud ${node.value}`,
+      root: clone(work),
+      activeNodes,
+      highlightedEdges,
+      message,
       operation: "insert",
       operationCount,
-      targetValue: value,
+      targetValue: valueToInsert,
+      ...extra,
     });
-
-    // Mettre à jour le chemin
-    const newPath = [...path, node];
-
-    // Insérer dans le sous-arbre gauche ou droit selon la valeur
-    if (value < node.value) {
-      steps.push({
-        root: newRoot,
-        activeNodes: [node.id],
-        highlightedEdges:
-          path.length > 0
-            ? [{ from: path[path.length - 1].id, to: node.id }]
-            : [],
-        message: `${value} < ${node.value}, on va insérer à gauche`,
-        operation: "insert",
-        operationCount: operationCount + 1,
-        targetValue: value,
-      });
-
-      const result = insertWithSteps(
-        node.left,
-        value,
-        newPath,
-        operationCount + 2
-      );
-      node.left = result.node;
-      return { node, operationCount: result.operationCount };
-    } else if (value > node.value) {
-      steps.push({
-        root: newRoot,
-        activeNodes: [node.id],
-        highlightedEdges:
-          path.length > 0
-            ? [{ from: path[path.length - 1].id, to: node.id }]
-            : [],
-        message: `${value} > ${node.value}, on va insérer à droite`,
-        operation: "insert",
-        operationCount: operationCount + 1,
-        targetValue: value,
-      });
-
-      const result = insertWithSteps(
-        node.right,
-        value,
-        newPath,
-        operationCount + 2
-      );
-      node.right = result.node;
-      return { node, operationCount: result.operationCount };
-    } else {
-      // La valeur existe déjà dans l'arbre
-      steps.push({
-        root: newRoot,
-        activeNodes: [node.id],
-        highlightedEdges:
-          path.length > 0
-            ? [{ from: path[path.length - 1].id, to: node.id }]
-            : [],
-        message: `La valeur ${value} existe déjà dans l'arbre`,
-        operation: "insert",
-        operationCount: operationCount + 1,
-        targetValue: value,
-        found: true,
-        completed: true,
-      });
-
-      return { node, operationCount: operationCount + 2 };
-    }
   };
 
-  // Insérer la valeur et générer les étapes
-  if (newRoot === null) {
-    const newNode: TreeNode = {
-      id: `node-${valueToInsert}-${Date.now()}`,
-      value: valueToInsert,
-      left: null,
-      right: null,
-    };
+  push(`Insertion de la valeur ${valueToInsert}`);
 
-    steps.push({
-      root: newNode,
-      activeNodes: [newNode.id],
-      highlightedEdges: [],
-      message: `Création du noeud racine avec la valeur ${valueToInsert}`,
-      operation: "insert",
-      operationCount: 1,
-      targetValue: valueToInsert,
-      completed: true,
-    });
+  const makeNode = (): TreeNode => ({
+    id: `node-${valueToInsert}-${Date.now()}`,
+    value: valueToInsert,
+    left: null,
+    right: null,
+  });
 
-    newRoot = newNode;
-  } else {
-    const result = insertWithSteps(newRoot, valueToInsert, []);
-
-    // Ajouter une étape finale
-    if (!steps[steps.length - 1].completed) {
-      steps.push({
-        root: newRoot,
-        activeNodes: [],
-        highlightedEdges: [],
-        message: `Insertion de la valeur ${valueToInsert} terminée`,
-        operation: "insert",
-        operationCount: result.operationCount,
-        targetValue: valueToInsert,
-        completed: true,
-      });
-    }
+  if (work === null) {
+    const root = makeNode();
+    work = root;
+    operationCount = 1;
+    push(
+      `Création du noeud racine avec la valeur ${valueToInsert}`,
+      [root.id],
+      [],
+      { completed: true },
+    );
+    return steps;
   }
 
+  let parent: TreeNode | null = null;
+  let current: TreeNode = work;
+
+  for (;;) {
+    operationCount++;
+    const edge = parent ? [{ from: parent.id, to: current.id }] : [];
+    push(`Comparaison avec le noeud ${current.value}`, [current.id], edge);
+
+    if (valueToInsert === current.value) {
+      operationCount++;
+      push(
+        `La valeur ${valueToInsert} existe déjà dans l'arbre`,
+        [current.id],
+        edge,
+        { found: true, completed: true },
+      );
+      return steps;
+    }
+
+    const goLeft = valueToInsert < current.value;
+    operationCount++;
+    push(
+      goLeft
+        ? `${valueToInsert} < ${current.value}, on va insérer à gauche`
+        : `${valueToInsert} > ${current.value}, on va insérer à droite`,
+      [current.id],
+      edge,
+    );
+
+    const next: TreeNode | null = goLeft ? current.left : current.right;
+    if (next === null) {
+      const created = makeNode();
+      if (goLeft) current.left = created;
+      else current.right = created;
+      operationCount++;
+      push(
+        `Création d'un nouveau noeud avec la valeur ${valueToInsert}`,
+        [created.id],
+        [{ from: current.id, to: created.id }],
+      );
+      break;
+    }
+    parent = current;
+    current = next;
+  }
+
+  push(`Insertion de la valeur ${valueToInsert} terminée`, [], [], {
+    completed: true,
+  });
   return steps;
 }

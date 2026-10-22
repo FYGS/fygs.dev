@@ -4,11 +4,20 @@ import type { SortingStep } from "../types";
 export function generateQuickSortSteps(array: number[]): SortingStep[] {
   const steps: SortingStep[] = [];
   const arr = [...array];
+  // Positions définitivement triées : cumulées sur TOUTE la durée du tri puis
+  // recopiées dans chaque étape, pour que les marques ne disparaissent jamais.
+  const sorted = new Set<number>();
+  const record = (step: SortingStep) => {
+    steps.push({
+      ...step,
+      sortedIndices: Array.from(sorted).sort((a, b) => a - b),
+    });
+  };
   let comparisons = 0;
   let swaps = 0;
 
   // Étape initiale
-  steps.push({
+  record({
     array: [...arr],
     activeIndices: [],
     comparisons,
@@ -21,7 +30,7 @@ export function generateQuickSortSteps(array: number[]): SortingStep[] {
   const quickSort = (low: number, high: number): void => {
     if (low < high) {
       // Ajouter une étape pour montrer le sous-tableau à trier
-      steps.push({
+      record({
         array: [...arr],
         activeIndices: [],
         comparisons,
@@ -33,7 +42,7 @@ export function generateQuickSortSteps(array: number[]): SortingStep[] {
       // Choisir le pivot (dernier élément)
       const pivot = arr[high];
 
-      steps.push({
+      record({
         array: [...arr],
         activeIndices: [],
         comparisons,
@@ -50,7 +59,7 @@ export function generateQuickSortSteps(array: number[]): SortingStep[] {
         // Comparaison avec le pivot
         comparisons++;
 
-        steps.push({
+        record({
           array: [...arr],
           activeIndices: [j, high],
           comparisons,
@@ -67,7 +76,7 @@ export function generateQuickSortSteps(array: number[]): SortingStep[] {
           if (i !== j) {
             swaps++;
 
-            steps.push({
+            record({
               array: [...arr],
               activeIndices: [i, j],
               comparisons,
@@ -79,7 +88,7 @@ export function generateQuickSortSteps(array: number[]): SortingStep[] {
 
             [arr[i], arr[j]] = [arr[j], arr[i]];
 
-            steps.push({
+            record({
               array: [...arr],
               activeIndices: [i, j],
               comparisons,
@@ -89,7 +98,7 @@ export function generateQuickSortSteps(array: number[]): SortingStep[] {
               pivotIndex: high,
             });
           } else {
-            steps.push({
+            record({
               array: [...arr],
               activeIndices: [i],
               comparisons,
@@ -108,7 +117,7 @@ export function generateQuickSortSteps(array: number[]): SortingStep[] {
       if (pivotPos !== high) {
         swaps++;
 
-        steps.push({
+        record({
           array: [...arr],
           activeIndices: [pivotPos, high],
           comparisons,
@@ -120,7 +129,7 @@ export function generateQuickSortSteps(array: number[]): SortingStep[] {
 
         [arr[pivotPos], arr[high]] = [arr[high], arr[pivotPos]];
 
-        steps.push({
+        record({
           array: [...arr],
           activeIndices: [],
           comparisons,
@@ -134,17 +143,15 @@ export function generateQuickSortSteps(array: number[]): SortingStep[] {
         });
       }
 
-      // Marquer le pivot comme trié
-      const sortedIndices = steps[steps.length - 1].sortedIndices || [];
-      sortedIndices.push(pivotPos);
+      // Marquer le pivot comme trié (la marque persiste dans les étapes suivantes)
+      sorted.add(pivotPos);
 
-      steps.push({
+      record({
         array: [...arr],
         activeIndices: [],
         comparisons,
         swaps,
         message: `L'élément ${arr[pivotPos]} à l'indice ${pivotPos} est maintenant à sa position finale.`,
-        sortedIndices: [...sortedIndices],
         pivotIndex: pivotPos,
       });
 
@@ -153,17 +160,15 @@ export function generateQuickSortSteps(array: number[]): SortingStep[] {
       quickSort(pivotPos + 1, high);
     } else if (low === high) {
       // Un seul élément est déjà trié
-      const sortedIndices = steps[steps.length - 1].sortedIndices || [];
-      if (!sortedIndices.includes(low)) {
-        sortedIndices.push(low);
+      if (!sorted.has(low)) {
+        sorted.add(low);
 
-        steps.push({
+        record({
           array: [...arr],
           activeIndices: [],
           comparisons,
           swaps,
           message: `L'élément unique ${arr[low]} à l'indice ${low} est déjà trié.`,
-          sortedIndices: [...sortedIndices],
         });
       }
     }
@@ -173,7 +178,8 @@ export function generateQuickSortSteps(array: number[]): SortingStep[] {
   quickSort(0, arr.length - 1);
 
   // Étape finale
-  steps.push({
+  for (let k = 0; k < arr.length; k++) sorted.add(k);
+  record({
     array: [...arr],
     activeIndices: [],
     comparisons,

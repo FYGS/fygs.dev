@@ -6,7 +6,7 @@ export const metadata = topicMetadata("/tech-mastry/best-practices/communication
 
 export default function CommunicationPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div>Chargement...</div>}>
       <CommunicationGuide />
     </Suspense>
   );

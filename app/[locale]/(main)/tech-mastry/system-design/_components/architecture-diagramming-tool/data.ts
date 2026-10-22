@@ -61,8 +61,8 @@ export const initialConnections: Connection[] = [
 export const templates: SystemDesignTemplate[] = [
   {
     id: "basic-web-app",
-    title: "Basic Web Application",
-    description: "Simple client-server architecture with database",
+    title: "Application web simple",
+    description: "Architecture client-serveur simple avec base de données",
     thumbnail: "web-app",
     components: [
       {
@@ -109,8 +109,8 @@ export const templates: SystemDesignTemplate[] = [
   },
   {
     id: "microservices",
-    title: "Microservices Architecture",
-    description: "Distributed services with API gateway and load balancer",
+    title: "Architecture microservices",
+    description: "Services distribués avec API gateway et répartiteur de charge",
     thumbnail: "microservices",
     components: [
       {
@@ -222,8 +222,8 @@ export const templates: SystemDesignTemplate[] = [
   },
   {
     id: "scalable-web-app",
-    title: "Scalable Web Application",
-    description: "High-traffic application with caching, CDNs, and load balancers",
+    title: "Application web scalable",
+    description: "Application à fort trafic avec cache, CDN et répartiteurs de charge",
     thumbnail: "scalable",
     components: [
       {

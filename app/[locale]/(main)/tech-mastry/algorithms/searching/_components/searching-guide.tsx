@@ -114,7 +114,8 @@ const searchAlgorithms = [
   // Construction de la table en O(n) : à faire une seule fois,
   // puis à réutiliser pour les recherches suivantes en O(1)
   for (let i = 0; i < arr.length; i++) {
-    hashMap.set(arr[i], i);
+    // On ne définit que si la clé est absente : on garde la PREMIÈRE occurrence
+    if (!hashMap.has(arr[i])) hashMap.set(arr[i], i);
   }
   return hashMap.has(target) ? hashMap.get(target) : -1;
 }`,

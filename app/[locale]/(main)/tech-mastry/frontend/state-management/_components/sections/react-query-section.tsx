@@ -196,6 +196,7 @@ function UserDetails({ userId }) {
           </div>
         }
         tips={[
+          "queryOptions() (v5) regroupe queryKey et queryFn dans un objet typé réutilisable avec useQuery, prefetchQuery, invalidateQueries et getQueryData",
           "Utilisez des queryKeys structurées pour une meilleure organisation et invalidation",
           "Ajustez staleTime et gcTime (cacheTime avant la v5) en fonction des besoins de fraîcheur des données",
           "Utilisez enabled pour contrôler quand une requête doit s'exécuter",
@@ -478,6 +479,7 @@ function TodoList() {
           </div>
         }
         tips={[
+          "TanStack Query v5 propose aussi une variante plus simple de l'UI optimiste : afficher mutation.variables pendant mutation.isPending, sans modifier le cache ni écrire onMutate/onError",
           "Utilisez toujours onMutate pour sauvegarder l'état précédent avant une mise à jour optimiste",
           "Annulez les requêtes en cours avec cancelQueries pour éviter les conflits",
           "Utilisez onSettled pour invalider les requêtes affectées et garantir la cohérence des données",

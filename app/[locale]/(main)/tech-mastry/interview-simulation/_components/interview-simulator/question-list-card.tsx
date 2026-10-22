@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { MessageSquare, type LucideIcon } from "lucide-react";
+import { difficultyLabels } from "./lib";
 import type { Question } from "./types";
 
 interface QuestionListCardProps {
@@ -63,12 +64,12 @@ export function QuestionListCard({
                           : "destructive"
                       }
                     >
-                      {question.difficulty}
+                      {difficultyLabels[question.difficulty] ?? question.difficulty}
                     </Badge>
                   </div>
                   {showTimeLimit && question.timeLimit && (
                     <p className="text-sm text-muted-foreground mt-1">
-                      Time limit: {question.timeLimit} minutes
+                      Durée limite : {question.timeLimit} minutes
                     </p>
                   )}
                 </div>

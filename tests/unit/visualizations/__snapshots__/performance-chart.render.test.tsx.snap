@@ -2,10 +2,10 @@
 
 exports[`PerformanceChart rendering > draws the same chart: memory 1`] = `
 {
-  "hoverIn": "8ffc28a9",
-  "hovered": "3125c681",
-  "initial": "aaeb1667",
-  "settled": "33c4ba76",
+  "hoverIn": "84130d77",
+  "hovered": "17834da5",
+  "initial": "4ec6b7b6",
+  "settled": "e693967e",
   "textCount": 22,
   "texts": "65f52ebd",
   "titleCount": 7,
@@ -15,10 +15,10 @@ exports[`PerformanceChart rendering > draws the same chart: memory 1`] = `
 
 exports[`PerformanceChart rendering > draws the same chart: performance / bar 1`] = `
 {
-  "hoverIn": "655ec9a4",
-  "hovered": "08b2a9d9",
-  "initial": "2bc7b371",
-  "settled": "4d6f781a",
+  "hoverIn": "4d471454",
+  "hovered": "124b5f3b",
+  "initial": "28ae187c",
+  "settled": "35363134",
   "textCount": 53,
   "texts": "54d5164a",
   "titleCount": 7,
@@ -28,10 +28,10 @@ exports[`PerformanceChart rendering > draws the same chart: performance / bar 1`
 
 exports[`PerformanceChart rendering > draws the same chart: performance / line 1`] = `
 {
-  "hoverIn": "7fb47e6e",
-  "hovered": "82b30425",
-  "initial": "b38e4bfd",
-  "settled": "82b30425",
+  "hoverIn": "5b1282b0",
+  "hovered": "a60291c7",
+  "initial": "b67b85e5",
+  "settled": "a60291c7",
   "textCount": 52,
   "texts": "c55127c7",
   "titleCount": 35,
@@ -41,10 +41,10 @@ exports[`PerformanceChart rendering > draws the same chart: performance / line 1
 
 exports[`PerformanceChart rendering > draws the same chart: usage 1`] = `
 {
-  "hoverIn": "3768fe90",
-  "hovered": "3768fe90",
-  "initial": "9ff2d9df",
-  "settled": "3768fe90",
+  "hoverIn": "013e70e3",
+  "hovered": "013e70e3",
+  "initial": "818d872d",
+  "settled": "013e70e3",
   "textCount": 12,
   "texts": "0dc0c419",
   "titleCount": 35,

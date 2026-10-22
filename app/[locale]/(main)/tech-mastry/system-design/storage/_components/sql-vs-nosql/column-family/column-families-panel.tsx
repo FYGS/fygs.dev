@@ -2,8 +2,12 @@ export function ColumnFamiliesPanel() {
   return (
     <div className="w-1/3 h-full flex flex-col">
       <div className="text-sm font-medium mb-2 text-center">
-        Familles de Colonnes
+        Familles de Colonnes (wide-column)
       </div>
+      <p className="text-xs text-muted-foreground mb-2">
+        Modèle HBase/Bigtable (famille:qualifier). En CQL (Cassandra), les mêmes
+        données sont des colonnes de table : name, email, age, last_login, role.
+      </p>
       <div className="flex-1 border rounded-md p-2 overflow-auto bg-slate-900">
         {/* Users Column Family */}
         <div className="mb-4">

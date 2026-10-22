@@ -10,7 +10,7 @@ describe("DistributedCaseStudies rendering", () => {
       [
         "4e17fd55",
         "3c889398",
-        "a7fb3000",
+        "ff567475",
         "eb711b5e",
         "bd428ee2",
         "9fe594f4",

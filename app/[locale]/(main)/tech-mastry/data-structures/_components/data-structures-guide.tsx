@@ -39,8 +39,8 @@ array.splice(2, 1); // O(n)`,
     complexity: {
       access: "O(n)",
       search: "O(n)",
-      insertion: "O(1)",
-      deletion: "O(1)",
+      insertion: "O(1) si le noeud est connu",
+      deletion: "O(1) si le noeud est connu",
     },
     code: `class Node {
   constructor(data) {
@@ -84,7 +84,7 @@ class LinkedList {
       "Taille dynamique",
       "Implémentation de piles/files",
     ],
-    pros: ["Insertions/suppressions efficaces", "Taille dynamique", "Pas de réallocation"],
+    pros: ["Insertion/suppression en O(1) une fois le noeud atteint", "Taille dynamique", "Pas de réallocation"],
     cons: ["Accès séquentiel", "Plus de mémoire utilisée", "Pas d'accès direct"],
   },
   {
@@ -155,10 +155,10 @@ class BinarySearchTree {
   {
     name: "Tables de Hachage",
     complexity: {
-      access: "O(1)*",
-      search: "O(1)*",
-      insertion: "O(1)*",
-      deletion: "O(1)*",
+      access: "O(1) moyen / O(n) pire cas",
+      search: "O(1) moyen / O(n) pire cas",
+      insertion: "O(1) amorti / O(n) pire cas",
+      deletion: "O(1) moyen / O(n) pire cas",
     },
     code: `class HashTable {
   constructor(size = 53) {
@@ -212,7 +212,7 @@ const optimizationTips = [
     title: "Choix de la Structure",
     tips: [
       "Accès fréquent → Tableau/HashTable",
-      "Insertions fréquentes → Liste chaînée",
+      "Insertions fréquentes en tête ou à une position déjà connue → Liste chaînée",
       "Données ordonnées → Arbre binaire",
       "Associations clé-valeur → Table de hachage",
     ],

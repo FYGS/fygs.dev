@@ -8,6 +8,15 @@ import { Badge } from "@/components/ui/badge";
 
 type AlgorithmType = "bubble" | "selection" | "insertion" | "merge" | "quick";
 
+// Libellés affichés (interface en français)
+const ALGORITHM_LABELS: Record<AlgorithmType, string> = {
+  bubble: "Tri à bulles",
+  selection: "Tri par sélection",
+  insertion: "Tri par insertion",
+  merge: "Tri fusion",
+  quick: "Tri rapide",
+};
+
 interface SortingStep {
   array: number[];
   highlighted: number[];
@@ -179,12 +188,13 @@ function generateInsertionSortSteps(arr: number[]): SortingStep[] {
     while (j >= 0 && array[j] > key) {
       array[j + 1] = array[j];
       
-      // Add step during shifting
+      // Pendant le décalage, seul le préfixe [0..j-1] est intact et trié :
+      // la case j+1 vient d'être écrasée et la clé est en attente d'insertion
       steps.push({
         array: [...array],
         highlighted: [j, j + 1],
         comparing: [j, i],
-        sorted: Array.from({ length: n }, (_, idx) => idx <= i)
+        sorted: Array.from({ length: n }, (_, idx) => idx < j)
           .map((v, i) => (v ? i : -1))
           .filter(v => v !== -1)
       });
@@ -317,7 +327,7 @@ export function SortingAlgorithmsVisualization({
       case "merge":
         return { time: "O(n log n)", space: "O(n)" };
       case "quick":
-        return { time: "O(n log n) average", space: "O(log n)" };
+        return { time: "O(n log n) en moyenne", space: "O(log n) en moyenne" };
       default:
         return { time: "O(n²)", space: "O(1)" };
     }
@@ -336,14 +346,14 @@ export function SortingAlgorithmsVisualization({
               size="sm"
               onClick={() => handleAlgorithmChange(algo)}
             >
-              {algo.charAt(0).toUpperCase() + algo.slice(1)} Sort
+              {ALGORITHM_LABELS[algo]}
             </Button>
           ))}
         </div>
         
         <div className="flex items-center gap-2">
-          <Badge variant="outline">Time: {complexity.time}</Badge>
-          <Badge variant="outline">Space: {complexity.space}</Badge>
+          <Badge variant="outline">Temps : {complexity.time}</Badge>
+          <Badge variant="outline">Espace : {complexity.space}</Badge>
         </div>
       </div>
 
@@ -394,29 +404,29 @@ export function SortingAlgorithmsVisualization({
 
       <div className="flex flex-wrap justify-center gap-2">
         <Button variant="outline" onClick={handlePrev} disabled={currentStep === 0}>
-          Prev
+          Précédent
         </Button>
         {!isPlaying ? (
           <Button onClick={handlePlay} disabled={steps.length === 0}>
-            {currentStep === 0 || isCompleted ? "Start" : "Resume"}
+            {currentStep === 0 || isCompleted ? "Démarrer" : "Reprendre"}
           </Button>
         ) : (
           <Button onClick={handlePause}>Pause</Button>
         )}
         <Button variant="outline" onClick={handleNext} disabled={currentStep >= (steps.length - 1)}>
-          Next
+          Suivant
         </Button>
         <Button variant="outline" onClick={handleReset}>
-          Reset
+          Réinitialiser
         </Button>
         <Button variant="outline" onClick={() => initializeArray()}>
-          Randomize
+          Mélanger
         </Button>
       </div>
 
       {steps.length > 0 && (
         <div className="text-center text-sm text-muted-foreground">
-          Step {currentStep + 1} of {steps.length}
+          Étape {currentStep + 1} sur {steps.length}
         </div>
       )}
     </div>

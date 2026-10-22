@@ -19,8 +19,11 @@ export function getGraphStats(currentStep: GraphStep) {
       stats.push({ label: "Note", value: "V = nœuds, E = arêtes" });
       break;
     case "dijkstra":
-      stats.push({ label: "Complexité", value: "O(E log V)" });
-      stats.push({ label: "Note", value: "V = nœuds, E = arêtes" });
+      stats.push({ label: "Complexité", value: "O((V+E) log V)" });
+      stats.push({
+        label: "Note",
+        value: "Avec tas binaire min ; V = nœuds, E = arêtes",
+      });
       break;
   }
 

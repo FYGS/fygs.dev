@@ -202,9 +202,9 @@ export const nonLinearStructures: Pick<
       "Collection de nœuds (sommets) et d'arêtes reliant ces nœuds, représentant des relations entre objets.",
     operations: {
       access: {
-        complexity: "O(1) ou O(n)",
+        complexity: "O(1) ou O(deg(v))",
         rating: "medium",
-        note: "Dépend de l'implémentation (matrice ou liste d'adjacence)",
+        note: "Tester une arête : O(1) avec une matrice d'adjacence, O(deg(v)) avec une liste d'adjacence",
       },
       search: {
         complexity: "O(V+E) ou O(V²)",
@@ -212,14 +212,14 @@ export const nonLinearStructures: Pick<
         note: "BFS/DFS, dépend de l'implémentation",
       },
       insertion: {
-        complexity: "O(1) ou O(V)",
+        complexity: "Arête O(1) ; sommet O(1) ou O(V)",
         rating: "medium",
-        note: "Dépend de l'implémentation",
+        note: "Ajouter une arête : O(1) (sans test de doublon). Ajouter un sommet : O(1) amorti avec une liste d'adjacence ; avec une matrice, ajouter une ligne et une colonne coûte O(V) amorti (redimensionnement), ou O(V²) si l'on réalloue toute la matrice",
       },
       deletion: {
-        complexity: "O(E) ou O(V)",
+        complexity: "Arête O(deg(v)) ou O(1) ; sommet O(V+E) ou O(V)",
         rating: "medium",
-        note: "Dépend de l'implémentation",
+        note: "Supprimer une arête : O(deg(v)) en liste, O(1) en matrice. Supprimer un sommet : O(V+E) en liste (retirer ses arêtes des listes voisines) ; O(V) en matrice en effaçant sa ligne et sa colonne (marquage), O(V²) si l'on compacte la matrice",
       },
       traversal: {
         complexity: "O(V+E) ou O(V²)",

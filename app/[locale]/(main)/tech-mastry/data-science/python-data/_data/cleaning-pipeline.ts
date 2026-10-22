@@ -13,6 +13,7 @@ export const CLEANING_PIPELINE_CODE = `import pandas as pd
 # 1. Chargement
 df = pd.read_csv("data.csv")
 
+# pandas 3 : copy-on-write toujours actif, colonnes texte en dtype "str" par défaut
 # 2. Exploration rapide
 print(df.shape, df.dtypes)
 print(df.describe())
@@ -28,7 +29,7 @@ df = df.dropna(subset=["target"])
 df["date"] = pd.to_datetime(df["date"])
 df["category"] = df["category"].astype("category")
 
-# 5. Outliers (IQR)
+# 5. Outliers (IQR) — pour du ML, calculer Q1/Q3 sur le train seul (comme la médiane)
 Q1, Q3 = df["salary"].quantile([0.25, 0.75])
 IQR = Q3 - Q1
 df = df[(df["salary"] >= Q1 - 1.5*IQR) & (df["salary"] <= Q3 + 1.5*IQR)]

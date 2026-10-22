@@ -39,15 +39,15 @@ export function InterviewResults({
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Trophy className="h-5 w-5 text-primary" />
-            <span>Interview Results</span>
+            <span>Résultats de l&apos;entretien</span>
           </div>
 
           <Badge variant="outline">
-            Sample score: {feedback?.overallScore}/100
+            Score d&apos;exemple : {feedback?.overallScore}/100
           </Badge>
         </CardTitle>
         <CardDescription>
-          Illustrative sample feedback: your answers are not scored automatically. Compare them with the model answers and the recommendations below
+          Retour d&apos;exemple à titre illustratif : vos réponses ne sont pas notées automatiquement. Comparez-les avec les réponses types et les recommandations ci-dessous
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -56,9 +56,9 @@ export function InterviewResults({
             <div className="inline-flex items-center justify-center p-4 bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-full mb-4">
               <Trophy className="h-12 w-12 text-primary" />
             </div>
-            <h2 className="text-2xl font-bold">Interview Complete!</h2>
+            <h2 className="text-2xl font-bold">Entretien terminé !</h2>
             <p className="text-muted-foreground mt-2">
-              Sample score (not computed from your answers):{" "}
+              Score d&apos;exemple (non calculé à partir de vos réponses) :{" "}
               <span className="font-bold text-primary">
                 {feedback?.overallScore}/100
               </span>
@@ -70,7 +70,7 @@ export function InterviewResults({
               <div className="space-y-4">
                 <h3 className="font-medium flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-primary" />
-                  Strengths
+                  Points forts
                 </h3>
                 <div className="space-y-3">
                   {feedback.strengths.map((strength, index) => (
@@ -86,7 +86,7 @@ export function InterviewResults({
 
                 <h3 className="font-medium flex items-center gap-2 mt-6">
                   <Lightbulb className="h-4 w-4 text-primary" />
-                  Areas for Improvement
+                  Axes d&apos;amélioration
                 </h3>
                 <div className="space-y-3">
                   {feedback.weaknesses.map((weakness, index) => (
@@ -104,7 +104,7 @@ export function InterviewResults({
               <div className="space-y-4">
                 <h3 className="font-medium flex items-center gap-2">
                   <Target className="h-4 w-4 text-primary" />
-                  Performance Breakdown
+                  Détail des performances
                 </h3>
                 <div className="space-y-4">
                   {feedback.performanceBreakdown.map(
@@ -130,7 +130,7 @@ export function InterviewResults({
 
                 <h3 className="font-medium flex items-center gap-2 mt-6">
                   <GraduationCap className="h-4 w-4 text-primary" />
-                  Recommendations
+                  Recommandations
                 </h3>
                 <div className="space-y-3">
                   {feedback.recommendations.map((rec, index) => (
@@ -154,11 +154,11 @@ export function InterviewResults({
               className="gap-2"
             >
               <RotateCcw className="h-4 w-4" />
-              Start New
+              Recommencer
             </Button>
             <Button className="gap-2">
               <FileText className="h-4 w-4" />
-              Download Report
+              Télécharger le rapport
             </Button>
           </div>
         </div>

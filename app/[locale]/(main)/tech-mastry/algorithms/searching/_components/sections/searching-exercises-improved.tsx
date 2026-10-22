@@ -334,7 +334,8 @@ console.log(hashSearch([10, 20, 15, 5, 25], 8));  // Devrait retourner -1`,
 
   // Construction de la table de hachage
   for (let i = 0; i < arr.length; i++) {
-    hashMap.set(arr[i], i);
+    // On ne définit que si la clé est absente : on garde la PREMIÈRE occurrence
+    if (!hashMap.has(arr[i])) hashMap.set(arr[i], i);
   }
 
   // Recherche dans la table de hachage
@@ -379,11 +380,11 @@ console.log(hashSearch([10, 20, 15, 5, 25], 8));  // Retourne -1`,
       {
         name: "Tableau avec doublons",
         test: (fn: (...args: unknown[]) => unknown) => {
-          // La fonction devrait retourner l'index de la première occurrence
+          // La fonction doit retourner l'index de la première occurrence
           const result = fn([10, 20, 10, 5, 25], 10);
-          return result === 0 || result === 2;
+          return result === 0;
         },
-        expectedOutput: "0 ou 2",
+        expectedOutput: "0",
       },
     ],
   },

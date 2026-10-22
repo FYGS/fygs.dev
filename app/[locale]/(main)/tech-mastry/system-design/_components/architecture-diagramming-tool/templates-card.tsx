@@ -23,10 +23,10 @@ export function TemplatesCard({ applyTemplate }: TemplatesCardProps) {
     <CardHeader>
       <CardTitle className="flex items-center gap-2">
         <LayoutDashboard className="h-5 w-5 text-primary" />
-        <span>System Design Templates</span>
+        <span>Modèles de conception système</span>
       </CardTitle>
       <CardDescription>
-        Start with pre-built templates for common system design patterns
+        Partez de modèles prêts à l&apos;emploi pour les architectures courantes
       </CardDescription>
     </CardHeader>
     <CardContent>
@@ -46,7 +46,7 @@ export function TemplatesCard({ applyTemplate }: TemplatesCardProps) {
               {template.description}
             </p>
             <Button variant="outline" size="sm" className="mt-3 w-full">
-              Use Template
+              Utiliser le modèle
             </Button>
           </motion.div>
         ))}

@@ -185,23 +185,22 @@ cache.put('route4', { data: 'Page de blog' });`}
 
         <div className="bg-blue-950/30 p-4 rounded-lg border border-blue-800">
           <h4 className="text-sm font-medium text-blue-300 mb-2">
-            Applications dans les CDN et serveurs de cache
+            Applications dans les caches distribués et serveurs de cache
           </h4>
           <p className="text-sm text-blue-400">
-            Les CDN (Content Delivery Networks) comme{" "}
-            <strong>Cloudflare</strong> et <strong>Akamai</strong>{" "}
-            utilisent des algorithmes de tri sophistiqués pour gérer leur
-            cache. Ces algorithmes prennent en compte non seulement la
-            fréquence d&apos;accès, mais aussi d&apos;autres facteurs
-            comme la taille des fichiers, le coût de génération et la
-            localisation géographique.
+            Un cache distribué ou un CDN (Content Delivery Network) doit
+            décider quels objets conserver. Les politiques d&apos;éviction
+            peuvent classer les objets selon la fréquence ou la récence
+            d&apos;accès, mais aussi selon d&apos;autres facteurs comme la
+            taille des fichiers ou le coût de régénération. Les politiques
+            exactes varient selon les produits et ne sont pas détaillées ici.
           </p>
           <p className="text-sm text-blue-400 mt-2">
             <strong>Redis</strong>, un serveur de cache populaire,
-            implémente plusieurs politiques de remplacement basées sur des
-            algorithmes de tri, notamment LRU (Least Recently Used) et LFU
-            (Least Frequently Used), approximées par échantillonnage de
-            clés pour minimiser l&apos;impact sur les performances.
+            propose plusieurs politiques d&apos;éviction, notamment LRU (Least
+            Recently Used) et LFU (Least Frequently Used), approximées par
+            échantillonnage de clés plutôt que par un tri complet, afin de
+            minimiser l&apos;impact sur les performances.
           </p>
         </div>
       </div>

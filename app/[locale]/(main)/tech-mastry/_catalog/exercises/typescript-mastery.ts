@@ -232,7 +232,7 @@ export const typescriptMasteryExercises: AreaExercises = {
         { term: "noUncheckedIndexedAccess", definition: "Ajoute undefined aux accès par index" },
         { term: "skipLibCheck", definition: "Ignore la vérification des fichiers .d.ts" },
         { term: "composite", definition: "Requis pour qu'un projet puisse être référencé" },
-        { term: "isolatedModules", definition: "Impose que chaque fichier soit transformable seul" },
+        { term: "isolatedModules", definition: "Impose que chaque fichier soit transpilable seul (esbuild, SWC, Babel)" },
       ],
       explanation:
         "skipLibCheck porte sur les déclarations, pas sur votre code. composite est le prérequis des project references et du mode tsc --build.",

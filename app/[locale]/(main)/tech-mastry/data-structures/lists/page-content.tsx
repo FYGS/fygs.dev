@@ -206,7 +206,7 @@ function LinkedListVisualizer() {
 /* ─── Complexity ─── */
 const operations = [
   { op: "prepend", singly: "O(1)", doubly: "O(1)", desc: "Insertion en tête" },
-  { op: "append", singly: "O(n)", doubly: "O(1)", desc: "Insertion en queue (O(1) si pointeur tail conservé)" },
+  { op: "append", singly: "O(n)", doubly: "O(1)", desc: "Insertion en queue (singly : O(1) aussi si l'on conserve un pointeur tail)" },
   {
     op: "removeFirst",
     singly: "O(1)",
@@ -217,7 +217,7 @@ const operations = [
     op: "removeLast",
     singly: "O(n)",
     doubly: "O(1)",
-    desc: "Suppression en queue (doubly : via pointeur tail)",
+    desc: "Suppression en queue (doubly : O(1) via tail.prev ; singly : O(n) même avec un pointeur tail, car il faut retrouver le prédécesseur)",
   },
   {
     op: "search",
@@ -229,13 +229,13 @@ const operations = [
     op: "insertAt(i)",
     singly: "O(n)",
     doubly: "O(n)",
-    desc: "Insertion à la position i",
+    desc: "Insertion à la position i (O(n) pour atteindre la position ; le chaînage lui-même est O(1) une fois le noeud connu)",
   },
   {
     op: "deleteAt(i)",
     singly: "O(n)",
     doubly: "O(n)",
-    desc: "Suppression à la position i",
+    desc: "Suppression à la position i (O(n) pour la trouver ; O(1) si l'on détient déjà le noeud en doubly, ou son prédécesseur en singly)",
   },
 ];
 
@@ -253,7 +253,7 @@ const comparisons = [
     winner: "linkedList",
   },
   {
-    feature: "Insertion au milieu",
+    feature: "Insertion au milieu (*si le noeud précédent est déjà connu, sinon O(n) pour le trouver)",
     array: "O(n)",
     linkedList: "O(1)*",
     winner: "linkedList",
@@ -338,8 +338,12 @@ export default function ListsPage() {
             <thead>
               <tr className="border-b bg-muted/30">
                 <th className="text-left py-3 px-4 font-semibold">Opération</th>
-                <th className="text-left py-3 px-4 font-semibold">Singly</th>
-                <th className="text-left py-3 px-4 font-semibold">Doubly</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Singly (head seul)
+                </th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Doubly (head + tail)
+                </th>
                 <th className="text-left py-3 px-4 font-semibold">
                   Description
                 </th>

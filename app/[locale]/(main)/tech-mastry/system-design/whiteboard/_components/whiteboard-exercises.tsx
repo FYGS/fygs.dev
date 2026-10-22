@@ -43,9 +43,9 @@ const exercises: DesignExercise[] = [
         "Analytics : nombre de clics, géolocalisation",
       ],
       nonFunctional: [
-        "Haute disponibilité (99.9%)",
-        "Faible latence de redirection (< 100ms)",
-        "100M URLs créées/jour, 10:1 ratio lecture/écriture",
+        "Haute disponibilité (99,9 % : ~8,8 h d'indisponibilité/an, un lien cassé est visible mais non vital)",
+        "Faible latence de redirection (< 100 ms : la redirection s'ajoute au chargement de la page cible, elle doit rester imperceptible)",
+        "Hypothèse : 100M URLs créées/jour, ratio lecture/écriture de 10:1 (souvent bien supérieur en réalité)",
       ],
     },
     steps: [
@@ -90,7 +90,7 @@ Cache (règle 80/20) : 12000/s × 86400 × 0.2 × 500B ≈ 100 GB (répartis sur
       {
         title: "4. Architecture haut niveau",
         description: "Dessiner les composants principaux et les flux.",
-        duration: "10 min",
+        duration: "7 min",
         questions: [
           "Load Balancer → API Servers (stateless)",
           "Base de données pour le mapping URL",
@@ -154,8 +154,8 @@ Cache (règle 80/20) : 12000/s × 86400 × 0.2 × 500B ≈ 100 GB (répartis sur
         "Historique de messages persistant",
       ],
       nonFunctional: [
-        "Livraison en temps réel (< 200ms)",
-        "Haute disponibilité (99.99%)",
+        "Livraison en temps réel (< 200 ms : seuil en dessous duquel la conversation paraît instantanée)",
+        "Haute disponibilité (99,99 % : ~53 min d'indisponibilité/an, un chat est un service de communication critique)",
         "Cohérence éventuelle acceptable pour le statut",
         "500M utilisateurs actifs, 50M messages/heure",
       ],
@@ -180,7 +180,7 @@ Cache (règle 80/20) : 12000/s × 86400 × 0.2 × 500B ≈ 100 GB (répartis sur
           "Chat Server (WebSocket Gateway) → gère les connexions",
           "Message Queue (Kafka) pour la distribution asynchrone",
           "Session Service → mapping user ↔ serveur",
-          "Database → stockage des messages (Cassandra idéal)",
+          "Database → stockage des messages (base wide-column type Cassandra, par exemple)",
         ],
         tips: ["Séparer le online (WebSocket) du offline (push notifications)"],
         solution: `User A → WS Gateway A → Message Queue (Kafka)
@@ -217,10 +217,10 @@ Cache (règle 80/20) : 12000/s × 86400 × 0.2 × 500B ≈ 100 GB (répartis sur
       {
         title: "5. Scalabilité",
         description: "Comment supporter des millions d'utilisateurs.",
-        duration: "10 min",
+        duration: "15 min",
         questions: [
           "Consistent hashing pour distribuer les connexions WebSocket",
-          "Cassandra : partition key = conversation_id (+ bucket temporel), clustering key = message_id/timestamp",
+          "Exemple avec Cassandra : partition key = conversation_id (+ bucket temporel), clustering key = message_id/timestamp",
           "Redis : cache des derniers messages + session mapping",
           "CDN pour les médias (S3 + CloudFront)",
         ],
@@ -414,7 +414,7 @@ export function WhiteboardExercises() {
         </div>
         <div className="flex justify-between mt-2 text-xs text-muted-foreground">
           <span>Début (0 min)</span>
-          <span>Fin (45 min)</span>
+          <span>Fin (35 à 45 min selon l&apos;exercice)</span>
         </div>
       </Card>
 

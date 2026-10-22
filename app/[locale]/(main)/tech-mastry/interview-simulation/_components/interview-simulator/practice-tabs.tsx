@@ -20,11 +20,11 @@ export function PracticeTabs({ activeTab, setActiveTab }: PracticeTabsProps) {
       <TabsList className="grid grid-cols-3 w-full max-w-md mx-auto">
         <TabsTrigger value="technical" className="flex items-center gap-2">
           <Code className="h-4 w-4" />
-          Technical
+          Technique
         </TabsTrigger>
         <TabsTrigger value="behavioral" className="flex items-center gap-2">
           <User className="h-4 w-4" />
-          Behavioral
+          Comportemental
         </TabsTrigger>
         <TabsTrigger
           value="system-design"
@@ -38,30 +38,30 @@ export function PracticeTabs({ activeTab, setActiveTab }: PracticeTabsProps) {
       <TabsContent value="technical" className="space-y-6">
         <QuestionListCard
           icon={Code}
-          title="Technical Interview Questions"
-          description="Practice coding and technical questions commonly asked in interviews"
+          title="Questions d'entretien techniques"
+          description="Entraînez-vous aux questions de code et aux questions techniques fréquemment posées en entretien"
           questions={technicalQuestions}
-          actionLabel="Try"
+          actionLabel="Essayer"
         />
       </TabsContent>
 
       <TabsContent value="behavioral" className="space-y-6">
         <QuestionListCard
           icon={User}
-          title="Behavioral Interview Questions"
-          description="Prepare for behavioral questions with the STAR method"
+          title="Questions d'entretien comportementales"
+          description="Préparez-vous aux questions comportementales avec la méthode STAR"
           questions={behavioralQuestions}
-          actionLabel="Practice"
+          actionLabel="S'entraîner"
         />
       </TabsContent>
 
       <TabsContent value="system-design" className="space-y-6">
         <QuestionListCard
           icon={GitBranch}
-          title="System Design Interview Questions"
-          description="Practice designing scalable and robust systems"
+          title="Questions d'entretien de System Design"
+          description="Entraînez-vous à concevoir des systèmes scalables et robustes"
           questions={systemDesignQuestions}
-          actionLabel="Design"
+          actionLabel="Concevoir"
           showTimeLimit
         />
       </TabsContent>

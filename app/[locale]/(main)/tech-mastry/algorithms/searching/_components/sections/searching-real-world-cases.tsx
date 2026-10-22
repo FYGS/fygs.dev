@@ -93,9 +93,11 @@ export function SearchingRealWorldCases() {
                     <p className="text-xs text-muted-foreground">
                       MySQL utilise des arbres B pour indexer les données,
                       permettant des recherches en O(log n). Une requête comme{" "}
-                      <code>SELECT * FROM users WHERE id = 42</code> utilise la
-                      recherche binaire dans l&apos;arbre d&apos;index pour
-                      localiser rapidement l&apos;enregistrement.
+                      <code>SELECT * FROM users WHERE id = 42</code> descend
+                      dans l&apos;arbre d&apos;index : à chaque nœud, on compare
+                      la clé aux clés du nœud (souvent par recherche binaire
+                      dans le nœud) pour choisir le bon fils, ce qui localise
+                      l&apos;enregistrement en peu de lectures de pages.
                     </p>
                   </div>
                 </div>
@@ -108,11 +110,12 @@ export function SearchingRealWorldCases() {
                         1
                       </div>
                       <div>
-                        <span className="font-medium">Recherche Binaire</span>
+                        <span className="font-medium">Recherche dans un arbre équilibré</span>
                         <p className="text-sm text-muted-foreground mt-1">
-                          Utilisée dans les index d&apos;arbres équilibrés
-                          (B-Tree, B+Tree) pour les requêtes de correspondance
-                          exacte.
+                          Les index B-Tree et B+Tree descendent de la racine
+                          vers une feuille ; la recherche binaire n&apos;est
+                          utilisée qu&apos;à l&apos;intérieur d&apos;un nœud pour
+                          les requêtes de correspondance exacte.
                         </p>
                       </div>
                     </li>
@@ -157,8 +160,10 @@ export function SearchingRealWorldCases() {
                 </p>
                 <ul className="mt-2 space-y-1 text-sm text-blue-400">
                   <li>
-                    • <strong>B-Tree</strong> : Implémente la recherche binaire
-                    pour les opérations =, &lt;, &gt;, BETWEEN
+                    • <strong>B-Tree</strong> : Descente dans un arbre équilibré
+                    (comparaisons de clés à chaque nœud, souvent par recherche
+                    binaire à l&apos;intérieur du nœud) pour les opérations =,
+                    &lt;, &gt;, BETWEEN
                   </li>
                   <li>
                     • <strong>Hash</strong> : Utilise la recherche par hachage
@@ -369,11 +374,14 @@ export function SearchingRealWorldCases() {
                       </div>
                       <div>
                         <span className="font-medium">
-                          Recherche par Renforcement
+                          Recherche par Simulation et Apprentissage
                         </span>
                         <p className="text-sm text-muted-foreground mt-1">
-                          Explore l&apos;espace des états en apprenant de ses
-                          expériences précédentes (Q-learning, MCTS).
+                          Explore l&apos;espace des états en s&apos;appuyant sur
+                          des simulations (MCTS, une méthode de recherche et de
+                          planification) ou sur l&apos;expérience accumulée.
+                          L&apos;apprentissage par renforcement (Q-learning) est
+                          une approche voisine mais distincte.
                         </p>
                       </div>
                     </li>

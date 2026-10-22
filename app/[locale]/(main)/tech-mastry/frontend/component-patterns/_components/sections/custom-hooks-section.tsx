@@ -36,7 +36,7 @@ function useWindowSize() {
     
     // Remove event listener on cleanup
     return () => window.removeEventListener("resize", handleResize);
-  }, []); // Empty array ensures that effect is only run on mount and unmount
+  }, []); // Empty array: subscribe on mount, clean up on unmount (twice in dev under StrictMode)
   
   return windowSize;
 }
@@ -119,7 +119,7 @@ function useWindowSize() {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, []); // 7. Tableau de dépendances vide = exécution uniquement au montage
+  }, []); // 7. Tableau vide = abonnement au montage, nettoyage au démontage (monté deux fois en dev avec StrictMode)
   
   // 8. Retour des données du hook
   return windowSize;
@@ -263,9 +263,9 @@ function LoginForm() {
           },
           {
             question: "Comment testeriez-vous un custom hook?",
-            answer: "Pour tester un custom hook: 1) Utiliser renderHook() de @testing-library/react (depuis la v13.1; l'ancien paquet @testing-library/react-hooks est déprécié et ne supporte pas React 18+) pour tester les hooks isolément. Exemple: `const { result } = renderHook(() => useCounter())` puis `expect(result.current.count).toBe(0)`. 2) Tester les mises à jour: Utiliser act() pour simuler les changements d'état. Exemple: `act(() => { result.current.increment() })` puis vérifier le nouvel état. 3) Tester les effets de nettoyage: Utiliser unmount() pour vérifier que les effets sont bien nettoyés. 4) Mocker les dépendances: Pour les hooks qui dépendent d'APIs externes, utiliser jest.mock(). 5) Tester les erreurs: Vérifier que les hooks lancent les erreurs appropriées dans les cas limites. 6) Tester avec différents arguments: Vérifier le comportement avec différentes valeurs initiales. 7) Tester la réexécution: Utiliser rerender() pour simuler des changements de props. 8) Intégration dans des composants: Tester également le hook dans le contexte d'un composant réel. Cette approche permet de tester efficacement la logique isolée des hooks tout en vérifiant leur comportement dans différents scénarios.",
+            answer: "Pour tester un custom hook: 1) Utiliser renderHook() de @testing-library/react (depuis la v13.1; l'ancien paquet @testing-library/react-hooks est déprécié et ne supporte pas React 18+) pour tester les hooks isolément. Exemple: `const { result } = renderHook(() => useCounter())` puis `expect(result.current.count).toBe(0)`. 2) Tester les mises à jour: Utiliser act() pour simuler les changements d'état. Exemple: `act(() => { result.current.increment() })` puis vérifier le nouvel état. 3) Tester les effets de nettoyage: Utiliser unmount() pour vérifier que les effets sont bien nettoyés. 4) Mocker les dépendances: Pour les hooks qui dépendent d'APIs externes, utiliser vi.mock() (Vitest) ou jest.mock(). 5) Tester les erreurs: Vérifier que les hooks lancent les erreurs appropriées dans les cas limites. 6) Tester avec différents arguments: Vérifier le comportement avec différentes valeurs initiales. 7) Tester la réexécution: Utiliser rerender() pour simuler des changements de props. 8) Intégration dans des composants: Tester également le hook dans le contexte d'un composant réel. Cette approche permet de tester efficacement la logique isolée des hooks tout en vérifiant leur comportement dans différents scénarios.",
             difficulty: "hard",
-            tags: ["Testing", "React", "Jest"]
+            tags: ["Testing", "React", "Vitest"]
           }
         ]}
       />
@@ -281,7 +281,7 @@ function LoginForm() {
           },
           {
             question: "Comment créeriez-vous un hook personnalisé pour gérer les appels API avec gestion d'état de chargement et d'erreur?",
-            answer: "Pour créer un hook useFetch gérant les appels API: 1) Définir les états: `const [data, setData] = useState(null); const [loading, setLoading] = useState(false); const [error, setError] = useState(null);` 2) Implémenter la fonction fetch: `const fetchData = async (url, options = {}) => { setLoading(true); setError(null); try { const response = await fetch(url, options); if (!response.ok) throw new Error(response.statusText); const result = await response.json(); setData(result); return result; } catch (err) { setError(err.message); throw err; } finally { setLoading(false); } };` 3) Ajouter un effet pour les appels automatiques: `useEffect(() => { if (autoFetch && url) { fetchData(url, options).catch(e => console.error(e)); } }, [url, autoFetch, ...dependencies]);` 4) Retourner les états et fonctions: `return { data, loading, error, fetchData, setData };` 5) Avec TypeScript: `function useFetch<T>(url?: string, options?: RequestInit, autoFetch = true, dependencies: any[] = []): { data: T | null; loading: boolean; error: string | null; fetchData: (url: string, options?: RequestInit) => Promise<T>; setData: (data: T) => void; }`. Ce hook peut être utilisé comme: `const { data, loading, error, fetchData } = useFetch('/api/users');`",
+            answer: "Pour créer un hook useFetch gérant les appels API: 1) Définir un état unique: `const [state, setState] = useState({ data: null, loading: true, error: null });` 2) Dans un useEffect dépendant de l'URL, créer un AbortController, passer son signal à fetch, vérifier response.ok (fetch ne rejette pas la promesse sur un statut 404 ou 500), ignorer l'AbortError et annuler la requête dans la fonction de nettoyage: `useEffect(() => { const controller = new AbortController(); setState(s => ({ ...s, loading: true, error: null })); fetch(url, { signal: controller.signal }).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).then(data => setState({ data, loading: false, error: null })).catch(err => { if (err.name === 'AbortError') return; setState({ data: null, loading: false, error: err }); }); return () => controller.abort(); }, [url]);` 3) Retourner l'état: `return state;`. 4) Avec TypeScript: `function useFetch<T>(url: string): { data: T | null; loading: boolean; error: Error | null }`. 5) L'annulation évite les conditions de course (la réponse d'une ancienne URL qui écrase une plus récente) et rend inoffensif le double appel des effets de StrictMode en développement. 6) En production, préférez une bibliothèque dédiée (TanStack Query, SWR) pour le cache, la déduplication et les relances. Utilisation: `const { data, loading, error } = useFetch('/api/users');`",
             difficulty: "medium",
             tags: ["React", "API", "Implementation"]
           },

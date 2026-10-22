@@ -77,7 +77,7 @@ export const algorithmsTopics: Topic[] = [
   {
     route: "/tech-mastry/algorithms/greedy",
     title: "Algorithmes Gloutons",
-    description: "Sélection d'activités, Huffman, Kruskal",
+    description: "Sélection d'activités, Huffman, Kruskal, sac à dos fractionnaire, ordonnancement de tâches",
     kind: "guide",
     level: "intermediate",
     minutes: 20,
@@ -93,7 +93,7 @@ export const algorithmsTopics: Topic[] = [
   {
     route: "/tech-mastry/algorithms/backtracking",
     title: "Backtracking",
-    description: "N-Queens, Sudoku, permutations",
+    description: "N-Queens, Sudoku, permutations, sous-ensembles, Subset Sum",
     kind: "guide",
     level: "intermediate",
     minutes: 20,
@@ -125,7 +125,7 @@ export const algorithmsTopics: Topic[] = [
   {
     route: "/tech-mastry/algorithms/dynamic-programming",
     title: "Programmation Dynamique",
-    description: "Résoudre un problème en mémorisant ses sous-problèmes qui se chevauchent (Fibonacci, sac à dos, LCS, grilles).",
+    description: "Résoudre un problème en mémorisant ses sous-problèmes qui se chevauchent (Fibonacci, sac à dos, LCS, distance d'édition, grilles).",
     kind: "guide",
     level: "advanced",
     minutes: 45,

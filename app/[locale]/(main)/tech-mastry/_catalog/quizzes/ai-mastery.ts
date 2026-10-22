@@ -317,11 +317,11 @@ export const aiMasteryQuizzes: AreaQuizzes = {
         "En clair dans le fichier mcp.json, puisque le dépôt est privé",
         "Dans copilot-instructions.md, pour que l'agent le retrouve facilement",
         "Encodé en base64 dans le champ args du serveur concerné",
-        "Par référence à une variable d'environnement, ${env:GITHUB_TOKEN}",
+        "Avec ${input:github-token} (promptString) ou un envFile hors git",
       ],
       correctIndex: 3,
       explanation:
-        "Seule la référence est versionnée, la valeur reste dans l'environnement de chaque développeur. Un dépôt privé peut fuiter, et le base64 est un encodage réversible, pas une protection.",
+        "Seule la référence est versionnée : VS Code demande la valeur à l'utilisateur (input promptString) ou la lit dans un envFile ignoré par git. Un dépôt privé peut fuiter, et le base64 est un encodage réversible, pas une protection.",
       difficulty: "medium",
     },
     {
@@ -401,16 +401,16 @@ export const aiMasteryQuizzes: AreaQuizzes = {
     {
       id: "ai-mastery-ai-tools-4",
       question:
-        "Le comparatif de la page affiche des notes, des tarifs et des fonctionnalités. Comment l'utiliser sainement ?",
+        "Le comparatif de la page affiche des tarifs et des fonctionnalités, sans note chiffrée. Comment l'utiliser sainement ?",
       options: [
-        "Comme une vérité définitive : le score global tranche le choix",
+        "Comme une vérité définitive : le comparatif tranche le choix",
         "Comme une liste de fonctionnalités garanties, sans besoin de vérification",
         "Comme un point de départ, à confirmer sur le site officiel : tout évolue vite",
         "Comme une preuve que les outils mal notés ne servent à rien",
       ],
       correctIndex: 2,
       explanation:
-        "Les offres IA changent en quelques mois, et une note résume des critères subjectifs. Le bon réflexe est de s'en servir pour présélectionner, puis d'essayer sur son propre cas d'usage.",
+        "Les offres IA changent en quelques mois, et une comparaison résume des critères en partie subjectifs. Le bon réflexe est de s'en servir pour présélectionner, puis d'essayer sur son propre cas d'usage.",
       difficulty: "medium",
     },
     {
@@ -463,14 +463,14 @@ export const aiMasteryQuizzes: AreaQuizzes = {
       id: "ai-mastery-skills-agents-2",
       question: "Sur quel protocole de messages repose MCP ?",
       options: [
-        "JSON-RPC 2.0, via stdio ou HTTP/SSE",
+        "JSON-RPC 2.0, via stdio ou Streamable HTTP",
         "gRPC binaire, transporté uniquement sur UDP",
         "GraphQL, avec un schéma unique partagé par tous",
         "REST OpenAPI, sans aucune notion de notification",
       ],
       correctIndex: 0,
       explanation:
-        "MCP échange des requêtes, réponses et notifications JSON-RPC 2.0. Le transport stdio convient aux serveurs lancés localement par l'hôte, et HTTP/SSE aux serveurs distants.",
+        "MCP échange des requêtes, réponses et notifications JSON-RPC 2.0. Le transport stdio convient aux serveurs lancés localement par l'hôte, et Streamable HTTP aux serveurs distants (l'ancien transport HTTP+SSE est déprécié).",
       difficulty: "easy",
     },
     {

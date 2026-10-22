@@ -6,3 +6,10 @@ export const formatTime = (seconds: number) => {
     .toString()
     .padStart(2, "0")}`;
 };
+
+// French display labels for question difficulty
+export const difficultyLabels: Record<string, string> = {
+  easy: "facile",
+  medium: "moyen",
+  hard: "difficile",
+};

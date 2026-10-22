@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { createContext, useContext, useState } from "react";
+import { createContext, use, useState } from "react";
 import { CodeExample } from "../ui/code-example";
 import { InterviewQuestions } from "../ui/interview-questions-new";
 
@@ -30,7 +30,7 @@ function ContextDemo() {
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext value={{ theme, toggleTheme }}>
       <div className="space-y-4">
         <div className="text-center mb-2">
           <p className="text-sm text-muted-foreground mb-1">
@@ -39,13 +39,13 @@ function ContextDemo() {
         </div>
         <AppLayout />
       </div>
-    </ThemeContext.Provider>
+    </ThemeContext>
   );
 }
 
 // Components that consume the context
 function AppLayout() {
-  const { theme } = useContext(ThemeContext);
+  const { theme } = use(ThemeContext);
 
   return (
     <div
@@ -65,7 +65,7 @@ function AppLayout() {
 }
 
 function Header() {
-  const { theme, toggleTheme } = useContext(ThemeContext);
+  const { theme, toggleTheme } = use(ThemeContext);
 
   return (
     <header
@@ -91,7 +91,7 @@ function Header() {
 }
 
 function Content() {
-  const { theme } = useContext(ThemeContext);
+  const { theme } = use(ThemeContext);
 
   return (
     <div className={theme === "light" ? "text-gray-800" : "text-gray-200"}>
@@ -108,7 +108,7 @@ function Content() {
 }
 
 function Footer() {
-  const { theme } = useContext(ThemeContext);
+  const { theme } = use(ThemeContext);
 
   return (
     <footer
@@ -118,7 +118,7 @@ function Footer() {
           : "border-gray-700 text-gray-400"
       }`}
     >
-      © 2023 Exemple Context API
+      Exemple Context API
     </footer>
   );
 }
@@ -145,8 +145,8 @@ export function ContextSection() {
           <div className="flex flex-wrap gap-2 mb-4">
             <Badge>createContext</Badge>
             <Badge>useContext</Badge>
-            <Badge>Provider</Badge>
-            <Badge>Consumer</Badge>
+            <Badge>&lt;Context&gt; (React 19)</Badge>
+            <Badge>use(Context)</Badge>
           </div>
         </CardContent>
       </Card>
@@ -154,7 +154,7 @@ export function ContextSection() {
       <CodeExample
         title="Création et Utilisation d'un Context"
         description="Comment créer et utiliser un Context pour partager des données entre composants"
-        code={`import React, { createContext, useContext, useState } from 'react';
+        code={`import { createContext, use, useState } from 'react';
 
 // 1. Créer un Context
 const ThemeContext = createContext({
@@ -170,16 +170,20 @@ function ThemeProvider({ children }) {
     setTheme(theme === 'light' ? 'dark' : 'light');
   };
 
+  // React 19 : le Context se rend directement comme Provider
+  // (<ThemeContext.Provider> reste supporté mais sera déprécié)
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext value={{ theme, toggleTheme }}>
       {children}
-    </ThemeContext.Provider>
+    </ThemeContext>
   );
 }
 
 // 3. Consommer le Context dans un composant
+// React 19 : use(Context) remplace useContext et peut, contrairement à lui,
+// être appelé conditionnellement (après un if ou dans une boucle)
 function ThemedButton() {
-  const { theme, toggleTheme } = useContext(ThemeContext);
+  const { theme, toggleTheme } = use(ThemeContext);
 
   return (
     <button
@@ -211,7 +215,7 @@ function App() {
 
 // Un composant imbriqué qui utilise également le Context
 function Content() {
-  const { theme } = useContext(ThemeContext);
+  const { theme } = use(ThemeContext);
 
   return (
     <div style={{
@@ -234,13 +238,17 @@ function Content() {
                 une valeur par défaut.
               </li>
               <li>
-                <strong>Context.Provider</strong>: Composant qui permet aux
-                composants consommateurs de s&apos;abonner aux changements du
-                contexte.
+                <strong>&lt;Context&gt;</strong> : depuis React 19, le Context se rend
+                directement comme Provider (<code>{"<ThemeContext value={...}>"}</code>) ;
+                <code>Context.Provider</code> fonctionne encore mais sera déprécié.
               </li>
               <li>
-                <strong>useContext</strong>: Hook qui permet de consommer le
-                contexte dans un composant fonctionnel.
+                <strong>use(Context)</strong> (ou <code>useContext</code>) : lit la
+                valeur du contexte. <code>use</code> peut être appelé
+                conditionnellement et sert aussi à lire une promesse :
+                <code>use(promise)</code> suspend le composant jusqu&apos;à sa résolution
+                (la promesse doit venir d&apos;un parent ou d&apos;un cache, pas être créée
+                dans le rendu).
               </li>
             </ol>
             <p className="mt-3">Dans l&apos;exemple ci-dessus:</p>
@@ -255,7 +263,7 @@ function Content() {
               </li>
               <li>
                 Les composants <code>ThemedButton</code> et <code>Content</code>{" "}
-                consomment le contexte avec <code>useContext</code> sans avoir à
+                consomment le contexte avec <code>use</code> sans avoir à
                 recevoir de props.
               </li>
             </ul>
@@ -291,7 +299,7 @@ function Content() {
       <CodeExample
         title="Combinaison de Context et useReducer"
         description="Utiliser Context avec useReducer pour une gestion d'état plus complexe"
-        code={`import React, { createContext, useContext, useReducer, useState } from 'react';
+        code={`import { createContext, use, useReducer, useState } from 'react';
 
 // Définir les types d'actions
 const ADD_TODO = 'ADD_TODO';
@@ -305,7 +313,7 @@ function todoReducer(state, action) {
       return [
         ...state,
         {
-          id: Date.now(),
+          id: crypto.randomUUID(),
           text: action.payload,
           completed: false
         }
@@ -324,7 +332,7 @@ function todoReducer(state, action) {
 }
 
 // Créer le Context
-const TodoContext = createContext();
+const TodoContext = createContext(null);
 
 // Créer un Provider personnalisé
 function TodoProvider({ children }) {
@@ -344,15 +352,15 @@ function TodoProvider({ children }) {
   };
 
   return (
-    <TodoContext.Provider value={{ todos, addTodo, toggleTodo, deleteTodo }}>
+    <TodoContext value={{ todos, addTodo, toggleTodo, deleteTodo }}>
       {children}
-    </TodoContext.Provider>
+    </TodoContext>
   );
 }
 
 // Hook personnalisé pour utiliser le Context
 function useTodo() {
-  const context = useContext(TodoContext);
+  const context = use(TodoContext);
   if (!context) {
     throw new Error('useTodo must be used within a TodoProvider');
   }
@@ -507,7 +515,7 @@ function TodoApp() {
             question:
               "Comment tester des composants qui utilisent le Context API?",
             answer:
-              "Pour tester des composants qui utilisent Context: 1) Créez un wrapper de test qui fournit le contexte avec des valeurs mockées. 2) Utilisez ce wrapper dans vos tests pour envelopper le composant testé. 3) Pour les tests d'intégration, vous pouvez fournir un vrai provider avec un état initial contrôlé. 4) Testez les hooks personnalisés qui utilisent useContext séparément. 5) Utilisez jest.mock() pour mocker les modules de contexte entiers si nécessaire. Exemple: const wrapper = ({ children }) => <MyContext.Provider value={mockValue}>{children}</MyContext.Provider>; render(<MyComponent />, { wrapper });",
+              "Pour tester des composants qui utilisent Context: 1) Créez un wrapper de test qui fournit le contexte avec des valeurs mockées. 2) Utilisez ce wrapper dans vos tests pour envelopper le composant testé. 3) Pour les tests d'intégration, vous pouvez fournir un vrai provider avec un état initial contrôlé. 4) Testez les hooks personnalisés qui utilisent useContext séparément. 5) Utilisez vi.mock() (Vitest) ou jest.mock() pour mocker les modules de contexte entiers si nécessaire. Exemple: const wrapper = ({ children }) => <MyContext value={mockValue}>{children}</MyContext>; render(<MyComponent />, { wrapper });",
             difficulty: "medium",
             tags: ["Tests", "Bonnes Pratiques"],
           },
@@ -515,7 +523,7 @@ function TodoApp() {
             question:
               "Quand devriez-vous créer un hook personnalisé pour un contexte?",
             answer:
-              "Créez un hook personnalisé pour un contexte lorsque: 1) Vous voulez encapsuler la logique d'accès au contexte et cacher les détails d'implémentation. 2) Vous avez besoin d'ajouter une validation ou une logique supplémentaire lors de l'accès au contexte. 3) Vous voulez fournir une meilleure expérience de développement avec l'autocomplétion et la vérification de type. 4) Vous voulez vous assurer que le contexte est utilisé correctement (par exemple, vérifier qu'il est appelé dans un Provider). Un hook personnalisé comme useTheme() est plus expressif et maintenable que useContext(ThemeContext) répété dans plusieurs composants.",
+              "Créez un hook personnalisé pour un contexte lorsque: 1) Vous voulez encapsuler la logique d'accès au contexte et cacher les détails d'implémentation. 2) Vous avez besoin d'ajouter une validation ou une logique supplémentaire lors de l'accès au contexte. 3) Vous voulez fournir une meilleure expérience de développement avec l'autocomplétion et la vérification de type. 4) Vous voulez vous assurer que le contexte est utilisé correctement (par exemple, vérifier qu'il est appelé dans un Provider). Un hook personnalisé comme useTheme() est plus expressif et maintenable que use(ThemeContext) répété dans plusieurs composants.",
             difficulty: "easy",
             tags: ["Hooks", "Bonnes Pratiques"],
           },

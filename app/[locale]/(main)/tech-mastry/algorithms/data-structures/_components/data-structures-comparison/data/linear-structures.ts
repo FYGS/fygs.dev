@@ -23,7 +23,7 @@ export const linearStructures: Pick<
       insertion: {
         complexity: "O(n)",
         rating: "bad",
-        note: "Nécessite de décaler les éléments (O(1) à la fin si dynamique)",
+        note: "Nécessite de décaler les éléments (ajout à la fin : O(1) amorti si tableau dynamique)",
       },
       deletion: {
         complexity: "O(n)",
@@ -223,7 +223,7 @@ export const linearStructures: Pick<
       deletion: {
         complexity: "O(1)",
         rating: "good",
-        note: "Retrait du début (dequeue)",
+        note: "Retrait du début (dequeue) : O(1) avec liste chaînée, deque ou buffer circulaire (O(n) avec un tableau et shift())",
       },
       traversal: {
         complexity: "O(n)",

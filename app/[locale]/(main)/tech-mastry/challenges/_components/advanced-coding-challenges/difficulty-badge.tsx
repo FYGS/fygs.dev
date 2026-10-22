@@ -3,19 +3,19 @@ export function DifficultyBadge({ difficulty }: { difficulty: string }) {
     case "beginner":
       return (
         <span className="px-2 py-1 bg-green-500/10 text-green-500 text-xs rounded border border-green-500/20">
-          Beginner
+          Débutant
         </span>
       );
     case "intermediate":
       return (
         <span className="px-2 py-1 bg-yellow-500/10 text-yellow-500 text-xs rounded border border-yellow-500/20">
-          Intermediate
+          Intermédiaire
         </span>
       );
     case "advanced":
       return (
         <span className="px-2 py-1 bg-orange-500/10 text-orange-500 text-xs rounded border border-orange-500/20">
-          Advanced
+          Avancé
         </span>
       );
     case "expert":
@@ -27,7 +27,7 @@ export function DifficultyBadge({ difficulty }: { difficulty: string }) {
     default:
       return (
         <span className="px-2 py-1 bg-gray-500/10 text-gray-500 text-xs rounded border border-gray-500/20">
-          Unknown
+          Inconnu
         </span>
       );
   }

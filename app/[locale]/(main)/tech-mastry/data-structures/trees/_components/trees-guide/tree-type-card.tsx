@@ -79,6 +79,17 @@ export function TreeTypeCard({ type }: TreeTypeCardProps) {
               </p>
             </Card>
           </div>
+          {type.id === "graphs" && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Liste d&apos;adjacence. Accès = parcourir les voisins d&apos;un
+              sommet (tester une arête : O(deg(v))). Ajouter un sommet ou une
+              arête : O(1) amorti (sans test de doublon). Supprimer un sommet :
+              O(V+E) car il faut retirer ses arêtes dans les listes des autres
+              sommets. Avec une matrice d&apos;adjacence : ajouter une arête
+              O(1), ajouter un sommet O(V) amorti avec redimensionnement
+              (O(V²) si l&apos;on recopie toute la matrice).
+            </p>
+          )}
           {type.id === "bst" && (
             <p className="text-xs text-muted-foreground mt-2">
               * Dans le cas moyen pour un arbre équilibré. Peut

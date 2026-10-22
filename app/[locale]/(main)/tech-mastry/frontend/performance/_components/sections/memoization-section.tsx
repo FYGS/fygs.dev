@@ -31,6 +31,15 @@ export function MemoizationSection() {
             results of expensive function calls and returns the cached result
             when the same inputs occur again.
           </p>
+          <p className="text-muted-foreground mb-4">
+            Note: the React Compiler (stable since version 1.0, opt-in in
+            Next.js 16 with <code>reactCompiler: true</code>) automatically
+            memoizes components and values at build time, so manual{" "}
+            <code>React.memo</code>, <code>useMemo</code> and{" "}
+            <code>useCallback</code> become less necessary in compiled code.
+            Understanding them remains useful for existing code, for escape
+            hatches, and for interviews.
+          </p>
 
           <div className="flex flex-wrap gap-2 mb-4">
             <Badge>React.memo</Badge>

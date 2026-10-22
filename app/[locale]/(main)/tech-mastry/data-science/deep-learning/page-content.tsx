@@ -301,7 +301,7 @@ const architectures = [
     name: "Transformer",
     type: "Attention",
     useCase: "NLP, vision, multimodal (GPT, BERT, ViT)",
-    params: "~100M-1T",
+    params: "~100M à plusieurs centaines de milliards",
     icon: MessageSquare,
   },
 ];
@@ -344,12 +344,12 @@ const concepts = [
 const frameworks = [
   {
     name: "PyTorch",
-    desc: "Graphe dynamique, recherche, flexibilité maximale",
+    desc: "Exécution eager (graphe dynamique), torch.compile pour accélérer, standard de la recherche",
     color: "text-orange-400",
   },
   {
     name: "TensorFlow",
-    desc: "Production, TF Serving, TF Lite, écosystème complet",
+    desc: "Production, TF Serving, LiteRT (ex-TF Lite) pour le mobile et l'embarqué, écosystème complet",
     color: "text-amber-400",
   },
   {
@@ -524,7 +524,7 @@ class Net(nn.Module):
     def forward(self, x):
         return self.net(x)
 
-# 2. Training loop
+# 2. Training loop (train_loader et val_loader : DataLoader définis au préalable)
 model = Net(784, 256, 10)
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
 criterion = nn.CrossEntropyLoss()
@@ -542,7 +542,7 @@ for epoch in range(20):
     # Validation
     model.eval()
     with torch.no_grad():
-        val_loss = sum(criterion(model(X), y) for X, y in val_loader) / len(val_loader)
+        val_loss = sum(criterion(model(X), y).item() for X, y in val_loader) / len(val_loader)
     print(f"Epoch {epoch+1}: val_loss={val_loss:.4f}")`}
           </pre>
         </Card>

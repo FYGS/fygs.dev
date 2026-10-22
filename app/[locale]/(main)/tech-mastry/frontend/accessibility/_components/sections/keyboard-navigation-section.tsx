@@ -227,7 +227,9 @@ function handleKeyDown(event) {
   }
 }
 
-// Managing focus order with tabindex
+// Positive tabindex values override the natural order: avoid them (hard to maintain,
+// they confuse users). Prefer a logical DOM order, and use tabindex="0" / "-1" only.
+// Shown here only to explain how the focus order would be altered:
 <div>
   <button tabindex="1">First focus</button>
   <button tabindex="3">Third focus</button>

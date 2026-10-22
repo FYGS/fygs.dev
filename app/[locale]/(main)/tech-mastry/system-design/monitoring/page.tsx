@@ -27,10 +27,10 @@ const pillars = [
 ];
 
 const slos = [
-  { term: "SLI", full: "Service Level Indicator", desc: "Métrique quantitative du niveau de service (ex: latency p99 < 200ms).", color: "text-blue-500" },
-  { term: "SLO", full: "Service Level Objective", desc: "Objectif interne de qualité (ex: 99.9% des requêtes < 200ms sur 30 jours).", color: "text-green-500" },
-  { term: "SLA", full: "Service Level Agreement", desc: "Engagement contractuel avec le client. SLA < SLO pour avoir une marge.", color: "text-red-500" },
-  { term: "Error Budget", full: "Budget d'Erreur", desc: "100% - SLO = budget pour innover. Ex: SLO 99.9% = 43min/mois de downtime autorisé.", color: "text-orange-500" },
+  { term: "SLI", full: "Service Level Indicator", desc: "Mesure quantitative du niveau de service, sans seuil (ex: la latence p99, ou la proportion de requêtes réussies en moins de 200 ms).", color: "text-blue-500" },
+  { term: "SLO", full: "Service Level Objective", desc: "Objectif interne fixé sur un SLI (ex: latence p99 < 200 ms, ou 99,9 % des requêtes < 200 ms sur 30 jours).", color: "text-green-500" },
+  { term: "SLA", full: "Service Level Agreement", desc: "Engagement contractuel avec le client, avec pénalités. Le SLA est plus souple que le SLO interne (ex: SLO 99,95 %, SLA 99,9 %) pour garder une marge avant de payer.", color: "text-red-500" },
+  { term: "Error Budget", full: "Budget d'Erreur", desc: "100 % - SLO = budget d'erreur pour innover. Ex: SLO 99,9 % sur 30 jours = environ 43 min d'indisponibilité tolérée.", color: "text-orange-500" },
 ];
 
 export default function MonitoringPage() {

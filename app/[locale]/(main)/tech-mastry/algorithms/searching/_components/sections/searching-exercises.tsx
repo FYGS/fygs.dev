@@ -194,7 +194,8 @@ console.log(hashSearch([10, 20, 15, 5, 25], 8));  // Devrait retourner -1`,
 
   // Construction de la table de hachage
   for (let i = 0; i < arr.length; i++) {
-    hashMap.set(arr[i], i);
+    // On ne définit que si la clé est absente : on garde la PREMIÈRE occurrence
+    if (!hashMap.has(arr[i])) hashMap.set(arr[i], i);
   }
 
   // Recherche dans la table de hachage

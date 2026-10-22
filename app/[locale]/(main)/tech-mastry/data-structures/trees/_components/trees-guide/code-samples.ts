@@ -47,10 +47,12 @@ class BinaryTree {
     const result = [];
     if (!this.root) return result;
 
+    // File + index de tête : évite queue.shift() qui coûte O(n)
     const queue = [this.root];
+    let head = 0;
 
-    while (queue.length > 0) {
-      const node = queue.shift();
+    while (head < queue.length) {
+      const node = queue[head++];
       result.push(node.value);
 
       if (node.left) queue.push(node.left);
@@ -61,7 +63,15 @@ class BinaryTree {
   }
 }`;
 
-export const bstCode = `class BinarySearchTree {
+export const bstCode = `class TreeNode {
+  constructor(value) {
+    this.value = value;
+    this.left = null;
+    this.right = null;
+  }
+}
+
+class BinarySearchTree {
   constructor() {
     this.root = null;
   }
@@ -287,13 +297,15 @@ export const graphCode = `class Graph {
 
   // Parcours en largeur (BFS)
   breadthFirst(start) {
+    // File + index de tête : chaque défilement est O(1) (queue.shift() serait O(n))
     const queue = [start];
+    let head = 0;
     const result = [];
     const visited = {};
     visited[start] = true;
 
-    while (queue.length) {
-      const currentVertex = queue.shift();
+    while (head < queue.length) {
+      const currentVertex = queue[head++];
       result.push(currentVertex);
 
       this.adjacencyList[currentVertex].forEach(neighbor => {

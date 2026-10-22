@@ -93,6 +93,9 @@ export function PerformanceChart({ metric }: PerformanceChartProps) {
           className="w-full h-[400px] md:h-[500px]"
           style={{ minHeight: "400px" }}
         ></div>
+        <p className="text-xs text-muted-foreground text-center">
+          Graphique illustratif : valeurs théoriques relatives, pas des mesures.
+        </p>
       </CardContent>
     </Card>
   );

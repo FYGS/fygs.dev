@@ -165,8 +165,10 @@ export function DocumentStructureExample() {
 
             <ul className="list-disc pl-6 mt-2 space-y-1">
               <li>
-                Use only one <code>&lt;h1&gt;</code> per page, typically for the
-                page title
+                Most guidance recommends a single <code>&lt;h1&gt;</code> that
+                describes the page (typically the page title). HTML allows
+                several and WCAG does not require exactly one: what matters is
+                a logical heading hierarchy, with no skipped levels
               </li>
               <li>
                 Ensure heading levels reflect the logical hierarchy of the

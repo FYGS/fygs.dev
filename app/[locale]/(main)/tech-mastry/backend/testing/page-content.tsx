@@ -139,6 +139,12 @@ function TestPyramid() {
         </div>
       </div>
       <p className="text-sm text-muted-foreground">{current.desc}</p>
+      <p className="text-xs text-muted-foreground italic">
+        Les proportions 70/20/10 sont une heuristique, pas une norme : adaptez-les
+        à votre contexte. Le « testing trophy » (Kent C. Dodds) propose un
+        modèle alternatif qui privilégie les tests d&apos;intégration, avec
+        analyse statique (TypeScript, ESLint) à la base.
+      </p>
       <pre className="bg-muted/30 rounded-lg p-4 text-xs font-mono overflow-x-auto border border-border/20" tabIndex={0}>
         <code>{current.example}</code>
       </pre>
@@ -253,6 +259,11 @@ function CoverageDemo() {
       <h3 className="text-xl font-bold flex items-center gap-2">
         <Gauge className="w-5 h-5 text-cyan-400" /> Code Coverage
       </h3>
+      <p className="text-xs text-muted-foreground italic">
+        Valeurs d&apos;exemple illustratives. Les seuils (souvent 80 %) sont des
+        heuristiques d&apos;équipe : la couverture mesure le code exécuté, pas la
+        qualité des assertions. Un seuil sert de garde-fou, pas d&apos;objectif.
+      </p>
       <div className="grid grid-cols-2 gap-4">
         {metrics.map((m) => {
           const passing = m.value >= m.target;
@@ -295,7 +306,7 @@ function TestTypes() {
   const types = [
     {
       name: "Unit",
-      framework: "Vitest / Jest",
+      framework: "Vitest 5 / Jest 30",
       speed: "Rapide",
       isolation: "Totale",
       icon: Code2,
@@ -311,7 +322,7 @@ function TestTypes() {
     },
     {
       name: "E2E",
-      framework: "Playwright / Cypress",
+      framework: "Playwright 1.6x / Cypress",
       speed: "Lent",
       isolation: "Aucune",
       icon: Gauge,
@@ -319,7 +330,7 @@ function TestTypes() {
     },
     {
       name: "Snapshot",
-      framework: "Vitest / Jest",
+      framework: "Vitest 5 / Jest 30",
       speed: "Rapide",
       isolation: "Totale",
       icon: Code2,

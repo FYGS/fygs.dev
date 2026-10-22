@@ -218,6 +218,38 @@ function combine(n, k) {
       "Le pruning réduit drastiquement l'espace de recherche",
     ],
   },
+  {
+    name: "Subset Sum",
+    difficulty: "medium",
+    description:
+      "Trouver un sous-ensemble d'entiers positifs dont la somme vaut exactement une cible.",
+    code: `// Retourne UN sous-ensemble de somme target, ou null s'il n'y en a pas
+function subsetSum(nums, target) {
+  const sorted = [...nums].sort((a, b) => a - b);
+  const current = [];
+
+  function backtrack(start, remaining) {
+    if (remaining === 0) return true; // Cible atteinte
+    for (let i = start; i < sorted.length; i++) {
+      // Pruning : tableau trié, tous les suivants sont aussi trop grands
+      if (sorted[i] > remaining) break;
+      current.push(sorted[i]);
+      if (backtrack(i + 1, remaining - sorted[i])) return true;
+      current.pop(); // Backtrack
+    }
+    return false;
+  }
+
+  return backtrack(0, target) ? [...current] : null;
+}
+
+subsetSum([3, 34, 4, 12, 5, 2], 9); // [2, 3, 4]`,
+    pattern: "Recherche avec élagage (pruning)",
+    tips: [
+      "Pire cas O(2^n) : le problème est NP-complet",
+      "Si la cible est petite, la programmation dynamique (O(n × cible), pseudo-polynomial) est bien plus rapide",
+    ],
+  },
 ];
 
 const templateCode = `function backtrack(state, choices) {
@@ -350,7 +382,9 @@ export function BacktrackingGuide() {
               <tr className="border-b bg-muted/50">
                 <th className="p-3 text-left font-semibold">Problème</th>
                 <th className="p-3 text-left font-semibold">Temps</th>
-                <th className="p-3 text-left font-semibold">Espace</th>
+                <th className="p-3 text-left font-semibold">
+                  Espace (pile + état, hors résultats)
+                </th>
                 <th className="p-3 text-left font-semibold">Pattern</th>
               </tr>
             </thead>
@@ -379,11 +413,17 @@ export function BacktrackingGuide() {
                 <td className="p-3 font-mono text-xs">O(1)</td>
                 <td className="p-3">CSP</td>
               </tr>
-              <tr>
+              <tr className="border-b">
                 <td className="p-3">Combinaisons</td>
-                <td className="p-3 font-mono text-xs">O(C(n,k))</td>
+                <td className="p-3 font-mono text-xs">O(k × C(n,k))</td>
                 <td className="p-3 font-mono text-xs">O(k)</td>
                 <td className="p-3">Sous-ensembles</td>
+              </tr>
+              <tr>
+                <td className="p-3">Subset Sum</td>
+                <td className="p-3 font-mono text-xs">O(2ⁿ) pire cas</td>
+                <td className="p-3 font-mono text-xs">O(n)</td>
+                <td className="p-3">Élagage</td>
               </tr>
             </tbody>
           </table>

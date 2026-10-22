@@ -53,7 +53,7 @@ function MLLifecycleViz() {
         "Performance benchmarks",
       ],
       tools: ["Evidently", "Great Expectations", "Deepchecks"],
-      metrics: ["Accuracy/F1", "Latency p50/p99", "Fairness metrics"],
+      metrics: ["PR-AUC / rappel / F1", "Latency p50/p99", "Fairness metrics"],
     },
     {
       name: "Déploiement",
@@ -79,7 +79,7 @@ function MLLifecycleViz() {
         "Retraining triggers",
       ],
       tools: ["Evidently", "Prometheus", "Grafana"],
-      metrics: ["PSI (data drift)", "Prediction accuracy", "SLA compliance"],
+      metrics: ["PSI (data drift)", "Qualité des prédictions", "SLA compliance"],
     },
   ];
 
@@ -166,27 +166,27 @@ function ModelRegistryViz() {
   const models = [
     {
       name: "fraud-detector-v3",
-      stage: "Production",
+      stage: "@champion",
       version: "3.2.1",
-      metrics: { accuracy: 0.967, f1: 0.943, latency: "12ms" },
+      metrics: { prAuc: 0.812, recall: 0.784, latency: "12ms" },
       created: "2024-01-15",
       framework: "XGBoost",
       stageColor: "bg-green-500/20 text-green-400",
     },
     {
       name: "fraud-detector-v4",
-      stage: "Staging",
+      stage: "@challenger",
       version: "4.0.0-rc1",
-      metrics: { accuracy: 0.971, f1: 0.952, latency: "15ms" },
+      metrics: { prAuc: 0.836, recall: 0.801, latency: "15ms" },
       created: "2024-02-01",
       framework: "LightGBM",
       stageColor: "bg-amber-500/20 text-amber-400",
     },
     {
       name: "fraud-detector-v2",
-      stage: "Archived",
+      stage: "tag : archived",
       version: "2.8.0",
-      metrics: { accuracy: 0.941, f1: 0.912, latency: "18ms" },
+      metrics: { prAuc: 0.742, recall: 0.703, latency: "18ms" },
       created: "2023-11-20",
       framework: "Random Forest",
       stageColor: "bg-gray-500/20 text-gray-400",
@@ -199,6 +199,13 @@ function ModelRegistryViz() {
         <Container className="w-5 h-5 text-purple-500" />
         Model Registry
       </div>
+      <p className="text-xs text-muted-foreground">
+        Dans MLflow 3, les stages (Staging / Production / Archived) sont
+        dépréciés : on utilise des alias (@champion, @challenger) et des tags.
+        Fraude = classe rare : on évalue avec la PR-AUC et le rappel, pas
+        l&#39;accuracy (un modèle qui prédit toujours « légitime » aurait une
+        accuracy très élevée). Valeurs fictives, pour illustration.
+      </p>
 
       <div className="space-y-2">
         {models.map((m, i) => (
@@ -224,15 +231,15 @@ function ModelRegistryViz() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="p-3 rounded-lg bg-primary/5 border border-primary/10 text-center">
           <div className="text-lg font-bold text-primary">
-            {(models[selectedModel].metrics.accuracy * 100).toFixed(1)}%
+            {(models[selectedModel].metrics.prAuc * 100).toFixed(1)}%
           </div>
-          <div className="text-[10px] text-muted-foreground">Accuracy</div>
+          <div className="text-[10px] text-muted-foreground">PR-AUC</div>
         </div>
         <div className="p-3 rounded-lg bg-primary/5 border border-primary/10 text-center">
           <div className="text-lg font-bold text-primary">
-            {(models[selectedModel].metrics.f1 * 100).toFixed(1)}%
+            {(models[selectedModel].metrics.recall * 100).toFixed(1)}%
           </div>
-          <div className="text-[10px] text-muted-foreground">F1-Score</div>
+          <div className="text-[10px] text-muted-foreground">Rappel (fraude)</div>
         </div>
         <div className="p-3 rounded-lg bg-primary/5 border border-primary/10 text-center">
           <div className="text-lg font-bold text-primary">
@@ -280,7 +287,7 @@ const maturityLevels = [
 ];
 
 const cicdSteps = [
-  { step: "Lint & Format", desc: "black, isort, flake8, mypy" },
+  { step: "Lint & Format", desc: "ruff (lint + format), mypy" },
   { step: "Unit Tests", desc: "pytest, mocking des I/O" },
   { step: "Data Validation", desc: "Great Expectations checks" },
   { step: "Train & Evaluate", desc: "Pipeline reproductible, métriques" },
@@ -299,7 +306,7 @@ const monitoring = [
   {
     metric: "Concept Drift",
     desc: "Dégradation de la qualité des prédictions",
-    seuil: "Accuracy -5%",
+    seuil: "Baisse de la métrique métier > 5 %",
   },
   {
     metric: "Latency",
@@ -428,7 +435,7 @@ export default function MLOpsPage() {
         <Card className="p-5">
           <pre className="bg-muted/30 rounded-lg p-4 text-xs overflow-x-auto font-mono text-foreground" tabIndex={0}>
             {`# Dockerfile
-FROM python:3.11-slim AS base
+FROM python:3.13-slim AS base
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
@@ -459,7 +466,7 @@ class PredictResponse(BaseModel):
 def predict(req: PredictRequest):  # def (pas async) : l'inférence sklearn est bloquante
     X = np.array(req.features).reshape(1, -1)
     pred = model.predict(X)[0]
-    prob = model.predict_proba(X)[0].max()
+    prob = model.predict_proba(X)[0][1]  # probabilité de la classe positive (fraude)
     return PredictResponse(prediction=int(pred), probability=float(prob))
 
 @app.get("/health")

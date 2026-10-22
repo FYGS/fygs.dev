@@ -75,7 +75,7 @@ export const techniques = [
   },
   {
     name: "Kadane's Algorithm",
-    desc: "Trouve la sous-tableau contigu de somme maximale en un seul passage.",
+    desc: "Trouve le sous-tableau contigu de somme maximale en un seul passage.",
     examples: [
       "Maximum Subarray",
       "Max Circular Subarray",
@@ -113,7 +113,7 @@ export const stringTechniques = [
   },
   {
     name: "String builder",
-    desc: "Concaténation efficace via tableau + join au lieu de +=.",
+    desc: "Accumuler les morceaux dans un tableau puis join() : utile pour construire de grosses chaînes (les moteurs JS optimisent aussi +=, mesurez avant d'optimiser).",
     complexity: "O(n)",
   },
 ];

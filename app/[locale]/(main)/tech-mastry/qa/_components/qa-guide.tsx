@@ -91,7 +91,7 @@ const categories = [
       },
       {
         q: "Qu'est-ce que l'OWASP Top 10 ?",
-        a: "L'OWASP Top 10 est une liste des vulnérabilités de sécurité web les plus critiques, mise à jour régulièrement. Elle inclut des risques comme l'injection, l'authentification cassée, l'exposition de données sensibles, etc.",
+        a: "L'OWASP Top 10 est une liste des vulnérabilités de sécurité web les plus critiques, mise à jour régulièrement. La dernière édition est l'OWASP Top 10:2025 : elle inclut notamment le contrôle d'accès défaillant (A01), la mauvaise configuration de sécurité, les défaillances de la chaîne d'approvisionnement logicielle, les défaillances cryptographiques, l'injection et les défaillances d'authentification.",
         followUp: [
           "Comment se protéger contre les injections SQL ?",
           "Importance de l'authentification à deux facteurs ?",

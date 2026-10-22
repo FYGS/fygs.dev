@@ -58,21 +58,32 @@ const topics: Topic[] = [
     "incremental": true,
     "tsBuildInfoFile": "./.tsbuildinfo",
 
-    // ✅ Module resolution moderne
+    // ✅ Module resolution moderne (app bundlée : Vite, Next.js...)
+    // Pour du Node pur : "module": "nodenext" (moduleResolution suit)
+    "module": "esnext",
     "moduleResolution": "bundler",
-    "module": "ESNext",
-    "target": "ES2022",
+    "target": "es2022",
 
-    // ✅ Path aliases
-    "baseUrl": ".",
+    // ✅ Path aliases : "paths" seul, valeurs relatives au tsconfig
+    // ("baseUrl" est déprécié en TS 6 et retiré en TS 7)
     "paths": {
       "@/*": ["./src/*"],
       "@components/*": ["./src/components/*"],
       "@lib/*": ["./src/lib/*"]
     },
 
-    // ✅ Isolation pour builds parallèles
+    // ✅ Chaque fichier doit pouvoir être transpilé seul
+    // (requis par les transpileurs fichier par fichier :
+    //  esbuild, SWC, Babel). Interdit par ex. de ré-exporter
+    //  un type sans "export type".
     "isolatedModules": true,
+    // Imports de types explicites ("import type") : ce qui est
+    // écrit est ce qui est émis (inclut le comportement d'isolatedModules)
+    "verbatimModuleSyntax": true,
+    // Interdit enum, namespace et paramètres de propriétés :
+    // uniquement la syntaxe effaçable (Node peut exécuter le .ts
+    // en retirant simplement les types)
+    "erasableSyntaxOnly": true,
     "skipLibCheck": true,
     // skipLibCheck: ne type-check pas node_modules
     // Accélère sensiblement la compilation (surtout sur les gros projets)
@@ -81,8 +92,36 @@ const topics: Topic[] = [
   "exclude": ["node_modules", "dist", ".next"]
 }`,
       },
+      {
+        tab: "TS 6 → TS 7",
+        code: `// TypeScript 7.0 : compilateur natif (réécrit en Go), commande tsc inchangée.
+// Gains typiques annoncés par l'équipe TypeScript : builds complets 8x à 12x plus rapides.
+// Flags utiles : --checkers (parallélisme du type-check), --builders
+// (project references en parallèle), --singleThreaded.
+// npm install -D typescript   →   npx tsc
+
+// TypeScript 6.0 = dernière version basée sur la base de code JavaScript.
+// Nouveaux défauts (déjà actifs en 6.0 et 7.0) :
+//   "strict": true          (avant : false)
+//   "module": "esnext"
+//   "target": "es2025"      (dernier ECMAScript supporté)
+//   "types": []             (ajoutez "types": ["node"] si besoin)
+//   "rootDir": "."          (dossier du tsconfig ; mettez "./src" si besoin)
+
+// Options dépréciées en 6.0, erreurs en 7.0 :
+//   "baseUrl"                      → mettre le préfixe directement dans "paths"
+//   "moduleResolution": "node"     → "nodenext" ou "bundler" (node10)
+//   "moduleResolution": "classic"  → supprimé
+//   "target": "es5"                → minimum ES2015
+//   "downlevelIteration", "outFile", "module": amd/umd/systemjs
+//   "esModuleInterop": false et "allowSyntheticDefaultImports": false
+//                                  → ne peuvent plus être désactivés
+
+// Migration : corrigez les avertissements sous TS 6.0 ; "ignoreDeprecations": "6.0"
+// les masque temporairement mais ne fonctionne plus en 7.0.`,
+      },
     ],
-    insight: "noUncheckedIndexedAccess n'est pas incluse dans strict et attrape de vrais bugs (accès hors bornes, clés absentes). Elle vaut le coup d'être activée sur les nouveaux projets.",
+    insight: "noUncheckedIndexedAccess n'est pas incluse dans strict et attrape de vrais bugs (accès hors bornes, clés absentes). Elle vaut le coup d'être activée sur les nouveaux projets. Depuis TypeScript 6, strict est activé par défaut.",
   },
   {
     title: "Project References",
@@ -239,7 +278,7 @@ const output = printer.printFile(result.transformed[0]);
 // }`,
       },
     ],
-    insight: "L'API du compilateur TypeScript permet de créer des outils d'analyse statique, des codemods (migrations automatiques) et des plugins personnalisés.",
+    insight: "L'API du compilateur TypeScript permet de créer des outils d'analyse statique, des codemods (migrations automatiques) et des plugins personnalisés. Attention : TypeScript 7.0 (compilateur natif) est livré sans API programmatique, une nouvelle API est prévue pour la 7.1. Les outils qui importent « typescript » (typescript-eslint, codemods) restent sur l'API de TypeScript 6, disponible via le paquet @typescript/typescript6.",
   },
   {
     title: "Diagnostic API",
@@ -281,7 +320,7 @@ function analyzeProject(configPath: string) {
       diag.messageText, "\\n"
     );
     const file = diag.file?.fileName ?? "unknown";
-    const line = diag.file && diag.start
+    const line = diag.file && diag.start !== undefined
       ? diag.file.getLineAndCharacterOfPosition(diag.start).line + 1
       : 0;
 
@@ -302,30 +341,20 @@ function findExplicitAny(program: ts.Program) {
     if (sourceFile.isDeclarationFile) continue;
 
     function visit(node: ts.Node) {
-      // Détecter les annotations de type 'any'
+      // Le mot-clé 'any' est un nœud AnyKeyword, qu'il soit dans une
+      // annotation (x: any) ou dans un cast (x as any) : un seul test
+      // suffit, sinon le cast serait signalé deux fois.
       if (node.kind === ts.SyntaxKind.AnyKeyword) {
         const { line } = sourceFile.getLineAndCharacterOfPosition(
           node.getStart()
         );
+        const parent = node.parent;
         issues.push({
           file: sourceFile.fileName,
           line: line + 1,
-          text: node.parent.getText(),
-        });
-      }
-
-      // Détecter les 'as any' casts
-      if (
-        ts.isAsExpression(node) &&
-        node.type.kind === ts.SyntaxKind.AnyKeyword
-      ) {
-        const { line } = sourceFile.getLineAndCharacterOfPosition(
-          node.getStart()
-        );
-        issues.push({
-          file: sourceFile.fileName,
-          line: line + 1,
-          text: \`as any: \${node.expression.getText()}\`,
+          text: ts.isAsExpression(parent) && parent.type === node
+            ? \`as any: \${parent.expression.getText()}\`
+            : parent.getText(),
         });
       }
 

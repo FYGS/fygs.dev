@@ -15,7 +15,11 @@ export function getArrayStats(currentStep: ArrayStep) {
       stats.push({ label: "Complexité", value: "O(n)" });
       break;
     case "insertEnd":
-      stats.push({ label: "Complexité", value: "O(1)*" });
+      stats.push({ label: "Complexité", value: "O(1) amorti" });
+      stats.push({
+        label: "Note",
+        value: "Une réallocation occasionnelle coûte O(n)",
+      });
       break;
     case "insertStart":
     case "insertAt":

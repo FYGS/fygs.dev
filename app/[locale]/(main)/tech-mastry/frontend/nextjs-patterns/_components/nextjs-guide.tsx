@@ -32,9 +32,28 @@ export default async function DashboardPage() {
 
 // Règle d'or : Server par défaut, Client seulement quand nécessaire
 // ❌ useState, useEffect, onClick → Client
-// ✅ fetch, db, fs, env secrets → Server`,
+// ✅ fetch, db, fs, env secrets → Server
+
+// Next.js 15+ : params et searchParams sont des Promises (Next.js 16 : l'accès synchrone est supprimé)
+// app/blog/[slug]/page.tsx
+export default async function PostPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const { slug } = await params;
+  const { page = '1' } = await searchParams;
+  return <Post slug={slug} page={Number(page)} />;
+}
+
+// Dans un Client Component, utilisez use(params) pour lire la Promise`,
     keyPoints: [
       "Rendu côté serveur par défaut",
+      "params et searchParams sont asynchrones (await)",
+      "Turbopack est le bundler par défaut (dev et build) en Next.js 16",
+      "React Compiler stable : reactCompiler: true (opt-in, non activé par défaut)",
       "Accès direct DB/API/env",
       "Pas de JS envoyé au client",
       "Suspense pour le streaming",
@@ -61,9 +80,14 @@ export async function createPost(formData: FormData) {
   });
   
   await db.post.create({ data: validated });
-  revalidatePath('/posts'); // Invalide le cache
+  revalidatePath('/posts'); // Invalide le cache de la route
   redirect('/posts');
 }
+
+// Avec Cache Components : updateTag (Server Actions uniquement) expire
+// immédiatement le tag, l'utilisateur voit ses propres écritures
+// import { updateTag } from 'next/cache';
+// updateTag('posts');
 
 // Usage dans un formulaire
 // <form action={createPost}>
@@ -84,67 +108,81 @@ export async function updateProfile(prevState, formData) {
 }`,
     keyPoints: [
       "Mutations côté serveur type-safe",
-      "Revalidation explicite (revalidatePath / revalidateTag)",
+      "Revalidation explicite (updateTag / revalidatePath / revalidateTag)",
       "Progressive enhancement (fonctionne sans JS)",
       "Validation Zod intégrée",
     ],
   },
   {
     name: "Caching & Revalidation",
-    code: `// Stratégies de cache Next.js
+    code: `// ─── Cache Components (Next.js 16) ───
+// next.config.ts
+import type { NextConfig } from 'next';
 
-// 1. Static (build time) — à demander explicitement
+const nextConfig: NextConfig = {
+  cacheComponents: true, // remplace experimental.ppr et experimental.dynamicIO
+  partialPrefetching: true, // à définir explicitement avec cacheComponents (Next.js 16.4)
+};
+export default nextConfig;
+
+// Avec Cache Components, tout est dynamique par défaut (rendu à la requête).
+// Vous choisissez ce qui est mis en cache avec la directive 'use cache'.
+// Les fonctions et composants concernés doivent être async.
+
+// lib/posts.ts
+import { cacheLife, cacheTag } from 'next/cache';
+
+export async function getPosts() {
+  'use cache';
+  cacheLife('hours');   // profil intégré : seconds, minutes, hours, days, weeks, max
+  cacheTag('posts');    // étiquette pour l'invalidation à la demande
+  const res = await fetch('https://api.example.com/posts');
+  return res.json();
+}
+// Sans cacheLife, le profil 'default' s'applique : stale 5 min (client),
+// revalidate 15 min (serveur), pas d'expiration par le temps.
+
+// Les données de requête (cookies(), headers(), searchParams) sont interdites
+// DANS un scope 'use cache' : lisez-les à l'extérieur et passez la valeur
+// en argument (elle fait alors partie de la clé de cache).
+
+// Les parties dynamiques doivent être entourées de <Suspense> :
+// le shell statique est servi immédiatement, le reste est streamé.
+// C'est ce que fait Cache Components : il remplace le flag expérimental PPR.
+
+// ─── Invalidation à la demande (app/actions.ts) ───
+'use server';
+import { updateTag, revalidateTag, revalidatePath } from 'next/cache';
+
+export async function createPost(formData: FormData) {
+  await db.post.create({ data: parse(formData) });
+  updateTag('posts'); // Server Actions uniquement : expire tout de suite (read-your-own-writes)
+}
+
+// Route Handler / webhook (app/api/webhook/route.ts) : stale-while-revalidate
+// (le 2e argument, profil cacheLife, est requis en Next.js 16)
+// export async function POST() {
+//   revalidateTag('posts', 'max');
+//   return Response.json({ revalidated: true });
+// }
+
+// ─── Sans Cache Components (fetch classique) ───
 // Depuis Next.js 15, fetch n'est plus mis en cache par défaut
-async function getStaticData() {
-  const res = await fetch('https://api.example.com/data', {
-    cache: 'force-cache'
-  });
-  return res.json();
-}
+await fetch(url, { cache: 'force-cache' });                 // mis en cache
+await fetch(url, { next: { revalidate: 3600 } });           // revalidé toutes les heures
+await fetch(url, { next: { tags: ['posts'] } });            // avec tag
+// revalidatePath('/blog') invalide une route entière
 
-// 2. Time-based revalidation
-async function getISRData() {
-  const res = await fetch('https://api.example.com/data', {
-    next: { revalidate: 3600 } // Revalider toutes les heures
-  });
-  return res.json();
-}
-
-// 3. On-demand revalidation
-import { revalidatePath, revalidateTag } from 'next/cache';
-
-// Par path
-export async function publishPost() {
-  await db.post.publish();
-  revalidatePath('/blog');
-}
-
-// Par tag
-async function getTaggedData() {
-  const res = await fetch('https://api.example.com/data', {
-    next: { tags: ['posts'] }
-  });
-  return res.json();
-}
-
-export async function updatePost() {
-  await db.post.update();
-  revalidateTag('posts', 'max'); // Invalide les fetches taguées (Next.js 16 : 2e argument = profil cacheLife)
-}
-
-// 4. No cache
-async function getDynamicData() {
-  const res = await fetch('https://api.example.com/data', {
-    cache: 'no-store'
-  });
-  return res.json();
-}`,
+// Note : avec cacheComponents, les options de segment de route
+// (export const dynamic / revalidate / fetchCache) provoquent une erreur :
+// remplacez-les par 'use cache' + cacheLife. Le fetch classique reste
+// utilisable ; dans un scope 'use cache', les fetch sont mis en cache.`,
     keyPoints: [
-      "4 stratégies : Static (force-cache), ISR, On-demand, Dynamic (no-store)",
-      "Depuis Next.js 15, fetch n'est plus mis en cache par défaut",
-      "Tags pour invalidation granulaire",
-      "revalidatePath vs revalidateTag",
-      "Partial Prerendering (PPR) en expérimental",
+      "Cache Components : cacheComponents: true dans next.config",
+      "'use cache' + cacheLife + cacheTag (Next.js 16, stable)",
+      "Dynamique par défaut, cache opt-in : remplace le PPR expérimental",
+      "updateTag (Server Actions) vs revalidateTag(tag, profil) vs revalidatePath",
+      "Pas de cookies()/headers() dans un scope 'use cache'",
     ],
   },
   {
@@ -193,6 +231,56 @@ async function ParallelPage() {
       "Suspense boundaries granulaires",
       "loading.tsx par segment de route",
       "Promise.all pour le parallélisme",
+      "Avec Cache Components : cookies(), headers(), searchParams hors Suspense signalés",
+    ],
+  },
+  {
+    name: "Proxy & config Next.js 16",
+    code: `// proxy.ts (à la racine, au niveau de app/)
+// Next.js 16 : le fichier middleware.ts est déprécié et renommé proxy.ts,
+// la fonction exportée s'appelle proxy. Codemod :
+//   npx @next/codemod@canary middleware-to-proxy .
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function proxy(request: NextRequest) {
+  const session = request.cookies.get('session')?.value;
+
+  if (!session && request.nextUrl.pathname.startsWith('/dashboard')) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+  return NextResponse.next();
+}
+
+export const config = {
+  // Sans matcher, le proxy s'exécute sur TOUTES les requêtes
+  // (y compris _next/static et _next/image) : excluez-les
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+};
+
+// ⚠️ Runtime : Node.js uniquement (le runtime edge n'est pas supporté dans proxy.ts,
+// l'option runtime y est refusée ; gardez middleware.ts si vous avez besoin d'edge).
+// ⚠️ Un proxy est une première barrière : vérifiez aussi l'authentification
+// dans chaque Server Action / route (les Server Functions sont des requêtes POST
+// vers la route où elles sont utilisées).
+
+// ─── Autres défauts de Next.js 16 ───
+// • Turbopack : bundler par défaut pour next dev ET next build
+//   (--webpack pour revenir à Webpack)
+// • React Compiler : stable, activez-le avec reactCompiler: true
+//   (+ babel-plugin-react-compiler) ; non activé par défaut
+// • params / searchParams / cookies() / headers() : accès asynchrone uniquement
+// • next/image : minimumCacheTTL par défaut 4 h (14400 s, au lieu de 60 s),
+//   qualities par défaut [75], imageSizes sans 16, IP locales bloquées,
+//   maximumRedirects: 3 ; images.domains est déprécié -> remotePatterns
+// • next lint supprimé : utilisez ESLint ou Biome directement
+// • Node.js 20.9+ et TypeScript 5.1+ requis`,
+    keyPoints: [
+      "middleware.ts renommé proxy.ts (runtime Node.js)",
+      "Fonction exportée : proxy(request)",
+      "Toujours définir un matcher",
+      "Turbopack par défaut, React Compiler stable (opt-in)",
+      "next/image : nouveaux défauts (TTL 4 h, qualities [75])",
     ],
   },
 ];

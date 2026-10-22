@@ -19,7 +19,7 @@ export function HintsSection({
     <div>
       <h3 className="font-medium mb-2 flex items-center gap-2">
         <Lightbulb className="h-4 w-4 text-primary" />
-        Hints
+        Indices
       </h3>
       <div className="space-y-3">
         {selectedChallenge.hints.map(
@@ -35,7 +35,7 @@ export function HintsSection({
                 <p className="text-sm">
                   {revealedHints.includes(hint.id)
                     ? hint.content
-                    : `Click to reveal hint ${index + 1} (-${
+                    : `Cliquez pour révéler l'indice ${index + 1} (-${
                                         hint.revealCost
                                       } pts)`}
                 </p>
@@ -46,7 +46,7 @@ export function HintsSection({
                     className="mt-2 h-6 px-2 text-xs"
                     onClick={() => revealHint(hint)}
                   >
-                    Reveal Hint
+                    Révéler l&apos;indice
                   </Button>
                 )}
               </div>

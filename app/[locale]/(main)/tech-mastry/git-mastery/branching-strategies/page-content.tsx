@@ -82,10 +82,10 @@ const strategies = [
     id: "trunk-based",
     name: "Trunk-Based Development",
     description:
-      "Commits directs sur main/trunk avec feature flags pour le code inachevé.",
+      "Intégration très fréquente sur main/trunk (commits directs ou branches très courtes) avec feature flags pour le code inachevé.",
     useCases: [
       "Équipes expérimentées",
-      "Google, Facebook, Netflix",
+      "Intégration continue très fréquente",
       "Haute cadence de déploiement",
     ],
     branches: [
@@ -94,7 +94,7 @@ const strategies = [
         color: "bg-green-500",
         desc: "Seule branche long-lived",
       },
-      { name: "short-lived/*", color: "bg-yellow-500", desc: "Branches < 24h" },
+      { name: "short-lived/*", color: "bg-yellow-500", desc: "Branches courtes (quelques heures à 1-2 jours)" },
     ],
     pros: [
       "Intégration continue réelle",
@@ -162,7 +162,7 @@ function ComparisonTable() {
       name: "Code review",
       gitflow: "PR sur develop",
       github: "PR sur main",
-      trunk: "Pair programming",
+      trunk: "Revue post-commit ou PR très courtes",
     },
   ];
 

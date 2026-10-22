@@ -11,8 +11,11 @@ export function getHashStats(currentStep: HashTableStep) {
     case "insert":
     case "get":
     case "remove":
-      stats.push({ label: "Complexité", value: "O(1)*" });
-      stats.push({ label: "Note", value: "O(n) dans le pire cas" });
+      stats.push({ label: "Complexité", value: "O(1) moyen" });
+      stats.push({
+        label: "Note",
+        value: "O(n) dans le pire cas (toutes les clés dans le même bucket)",
+      });
       break;
     case "clear":
       stats.push({ label: "Complexité", value: "O(m)" });

@@ -159,7 +159,7 @@ export const systemDesignQuizzes: AreaQuizzes = {
     {
       id: "system-design-case-studies-1",
       question:
-        "Un raccourcisseur d'URL a un ratio lecture/écriture de 100:1 et exige des redirections sous 10 ms. Quelle combinaison est la plus pertinente ?",
+        "Un raccourcisseur d'URL a un ratio lecture/écriture élevé (hypothèse : 10:1) et exige des redirections sous 10 ms. Quelle combinaison est la plus pertinente ?",
       options: [
         "Un cache en mémoire et des réplicas en lecture",
         "Une base unique avec des index sur chaque colonne",

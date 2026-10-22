@@ -48,7 +48,7 @@ const topics = [
   {
     title: "Git Internals",
     description:
-      "Objets Git (blobs, trees, commits), le DAG, pack files, garbage collection. Comprenez Git en profondeur.",
+      "Objets Git (blobs, trees, commits), le DAG, pack files, garbage collection et fonctionnalités récentes. Comprenez Git en profondeur.",
     icon: Eye,
     color: "text-purple-500",
     gradient: "from-purple-500/10 to-purple-500/5",
@@ -59,7 +59,7 @@ const topics = [
   {
     title: "Workflows Professionnels",
     description:
-      "Conventional Commits, semantic versioning, monorepos, code review, pull request templates.",
+      "Conventional Commits, semantic versioning, monorepos (sparse-checkout, clone partiel), code review, pull request templates.",
     icon: Workflow,
     color: "text-green-500",
     gradient: "from-green-500/10 to-green-500/5",

@@ -14,10 +14,10 @@ function PromptBuilder() {
 
   const fullPrompt = useMemo(() => {
     const parts: string[] = [];
-    if (role) parts.push(`[ROLE] ${role}`);
-    if (task) parts.push(`[TASK] ${task}`);
-    if (format) parts.push(`[FORMAT] ${format}`);
-    if (constraints) parts.push(`[CONSTRAINTS] ${constraints}`);
+    if (role) parts.push(`<role>\n${role}\n</role>`);
+    if (task) parts.push(`<task>\n${task}\n</task>`);
+    if (format) parts.push(`<format>\n${format}\n</format>`);
+    if (constraints) parts.push(`<constraints>\n${constraints}\n</constraints>`);
     return parts.join("\n\n");
   }, [role, task, format, constraints]);
 
@@ -28,7 +28,7 @@ function PromptBuilder() {
         Prompt Builder Interactif
       </div>
       <p className="text-sm text-muted-foreground">
-        Construisez un prompt structuré en remplissant chaque section. Le résultat est assemblé en temps réel.
+        Construisez un prompt structuré en remplissant chaque section. Le résultat est assemblé en temps réel avec des balises XML, une pratique recommandée pour délimiter clairement les parties du prompt (notamment avec Claude).
       </p>
 
       <div className="grid md:grid-cols-2 gap-4">
@@ -141,6 +141,12 @@ function TemperatureVisualizer() {
         </div>
       </div>
 
+      <p className="text-xs text-muted-foreground">
+        Certains modèles récents (notamment les modèles de raisonnement) fixent
+        ou refusent les paramètres d&apos;échantillonnage comme temperature :
+        vérifiez la documentation du modèle utilisé.
+      </p>
+
       <div className="grid grid-cols-3 gap-2 text-xs">
         <div className="p-2 rounded bg-blue-500/10 border border-blue-500/20 text-center">
           <strong className="text-blue-400">temp=0.0</strong><br />Exact, répétitif
@@ -168,7 +174,7 @@ const techniques = [
   },
   {
     name: "Few-Shot",
-    desc: "Fournir 2-5 exemples pour guider le format et le style de réponse.",
+    desc: "Fournir quelques exemples variés (souvent 3 à 5) pour guider le format et le style de réponse. Placez-les dans des balises dédiées (<example>) pour les distinguer des instructions.",
     example: "Exemple : 'chat' -> 'animal domestique'\n'voiture' -> 'véhicule motorisé'\n'python' -> ?",
     level: "fondamental",
     icon: List,
@@ -176,7 +182,7 @@ const techniques = [
   },
   {
     name: "Chain-of-Thought (CoT)",
-    desc: "Demander au modèle de réfléchir étape par étape avant de répondre. Moins utile avec les modèles de raisonnement natifs, qui le font déjà en interne.",
+    desc: "Demander au modèle de réfléchir étape par étape avant de répondre. Avec les modèles de raisonnement (réflexion adaptative / extended thinking), inutile de le demander : réglez plutôt le niveau d'effort ou le budget de réflexion et laissez le modèle raisonner.",
     example: "Résous pas à pas : Si j'ai 23 pommes et j'en donne 7, puis j'en achète 12...",
     level: "intermédiaire",
     icon: Brain,
@@ -200,8 +206,8 @@ const techniques = [
   },
   {
     name: "Structured Output",
-    desc: "Forcer le modèle à répondre dans un format précis (JSON, YAML, table).",
-    example: "Réponds uniquement en JSON avec les clés: { name, category, score }",
+    desc: "Obtenir une réponse conforme à un schéma. Préférez les sorties structurées natives de l'API (JSON Schema appliqué au décodage) à une simple consigne dans le prompt, puis validez côté code (Zod, Pydantic). À défaut de support natif, décrivez le format attendu avec un exemple.",
+    example: "API : sortie structurée avec un JSON Schema { name, category, score }\nSans support natif : Réponds uniquement en JSON avec les clés { name, category, score }",
     level: "intermédiaire",
     icon: Target,
     color: "text-rose-500",
@@ -272,9 +278,9 @@ function SystemPromptPatterns() {
       why: "Pose des limites claires pour réduire les hallucinations (sans les éliminer).",
     },
     {
-      name: "Chain-of-Thought Forcé",
-      prompt: "Avant de répondre, réfléchis dans un bloc <thinking>.\nExplore au moins 2 approches.\nChoisis la meilleure et justifie.\nEnsuite seulement, réponds.",
-      why: "Force le raisonnement étape par étape pour de meilleures réponses.",
+      name: "Balises XML",
+      prompt: "<instructions>\nRésume le document en 5 points.\n</instructions>\n\n<document>\n{{contenu}}\n</document>\n\nRéponds dans des balises <summary>.",
+      why: "Les balises XML séparent instructions, données et exemples, réduisent les ambiguïtés et rendent la sortie facile à extraire. Avec un modèle sans raisonnement natif, on peut aussi demander une réflexion dans un bloc <thinking> avant la réponse.",
     },
   ];
 
@@ -353,6 +359,8 @@ export default function PromptEngineeringPage() {
             { title: "Utilisez des exemples", desc: "Quelques exemples bien choisis améliorent souvent nettement la qualité." },
             { title: "Itérez", desc: "Affinez vos prompts basé sur les réponses obtenues." },
             { title: "Séparez les rôles", desc: "System prompt vs User prompt vs Assistant prompt." },
+            { title: "Profitez du prompt caching", desc: "Placez le contenu stable (system prompt, documents, exemples) au début et la partie variable à la fin : un préfixe identique peut être mis en cache, ce qui réduit coût et latence." },
+            { title: "Adaptez aux modèles de raisonnement", desc: "Décrivez l'objectif et les critères de réussite plutôt que chaque étape de raisonnement ; ajustez l'effort de réflexion." },
             { title: "Testez les limites", desc: "Essayez des cas edge pour valider la robustesse." },
           ].map((tip) => (
             <div key={tip.title} className="p-3 rounded-lg bg-muted/30 border border-border/30 space-y-1">

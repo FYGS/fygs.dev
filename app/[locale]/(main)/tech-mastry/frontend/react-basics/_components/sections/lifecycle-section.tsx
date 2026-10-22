@@ -66,7 +66,7 @@ export function LifecycleSection() {
 function LifecycleComponent() {
   const [count, setCount] = useState(0);
 
-  // 1. Similar to componentDidMount (runs once after first render)
+  // 1. Similar to componentDidMount (runs after the first render)
   useEffect(() => {
     console.log('Component mounted');
 
@@ -74,7 +74,8 @@ function LifecycleComponent() {
     return () => {
       console.log('Component unmounted');
     };
-  }, []); // Empty dependency array = run once
+  }, []); // Empty array = once per mount. In development, StrictMode mounts,
+  // unmounts and re-mounts the component: this effect (and its cleanup) runs twice.
 
   // 2. Similar to componentDidUpdate (runs after each count update)
   useEffect(() => {
@@ -133,7 +134,9 @@ function App() {
               <li>
                 <strong>Mounting (componentDidMount)</strong>: Use{" "}
                 <code>useEffect</code> with an empty dependency array{" "}
-                <code>[]</code> to run code once after the first render.
+                <code>[]</code> to run code after the first render. In development, <code>StrictMode</code>{" "}
+                double-invokes effects (mount, cleanup, mount again) to reveal
+                missing cleanups.
               </li>
               <li>
                 <strong>Updating (componentDidUpdate)</strong>: Use{" "}
@@ -157,6 +160,7 @@ function App() {
           "Don't forget to clean up resources (subscriptions, timers, etc.) in the return function of useEffect",
           "Include all values used in the effect in the dependency array",
           "Use conditions inside the effect to avoid execution on the first render if needed",
+          "In development, StrictMode runs every effect twice (mount, cleanup, mount): write idempotent effects with a proper cleanup instead of relying on 'runs once'",
         ]}
         interviewQuestions={[
           {
@@ -169,7 +173,7 @@ function App() {
             question:
               "Why is it important to specify the dependency array correctly in useEffect?",
             answer:
-              "The dependency array determines when the effect will re-run. If you omit a dependency, the effect might use stale values, causing subtle bugs. If you include too many dependencies, the effect might run too often, causing performance issues. An empty array ([]) means the effect only runs once at mount, while no array means it runs after every render. The ESLint tool with the react-hooks plugin can help you detect missing dependencies.",
+              "The dependency array determines when the effect will re-run. If you omit a dependency, the effect might use stale values, causing subtle bugs. If you include too many dependencies, the effect might run too often, causing performance issues. An empty array ([]) means the effect runs when the component mounts (and its cleanup when it unmounts), while no array means it runs after every render. In development, StrictMode double-invokes effects to surface missing cleanups, so an [] effect runs twice there. The ESLint tool with the react-hooks plugin can help you detect missing dependencies.",
           },
         ]}
       />
@@ -353,12 +357,12 @@ function HooksComponent() {
             question:
               "What are the advantages of Hooks over class component lifecycle methods?",
             answer:
-              "Hooks offer several advantages: 1) Better reuse of logic via custom Hooks, avoiding issues with HOCs and render props. 2) Grouping code by feature rather than by lifecycle method, which improves readability and maintainability. 3) Reduced bundle size through better minification and tree-shaking. 4) Avoids issues with 'this' in JavaScript. 5) Allows compilers to more efficiently optimize code. 6) More consistent and less error-prone API.",
+              "Hooks offer several advantages: 1) Better reuse of logic via custom Hooks, avoiding issues with HOCs and render props. 2) Grouping code by feature rather than by lifecycle method, which improves readability and maintainability. 3) Avoids issues with 'this' in JavaScript. 4) Allows compilers (such as the React Compiler) to optimize code more efficiently. 5) A more consistent API.",
           },
           {
             question: "How do you handle asynchronous effects in useEffect?",
             answer:
-              "To handle asynchronous effects in useEffect: 1) Declare an async function inside the effect and call it immediately (useEffect itself cannot be directly async). 2) Make sure to properly handle cancellations to avoid updates on unmounted components. 3) Use a cancellation flag or AbortController for fetch requests. 4) Clean up pending promises in the cleanup function. Example: useEffect(() => { let isMounted = true; const fetchData = async () => { const data = await api.get(); if (isMounted) setState(data); }; fetchData(); return () => { isMounted = false; }; }, []);",
+              "To handle asynchronous effects in useEffect: 1) Declare an async function inside the effect and call it immediately (useEffect itself cannot be directly async). 2) Make sure to properly handle cancellations to avoid updates on unmounted components. 3) Prefer an AbortController for fetch requests (a simple ignore flag works for other promises). 4) Clean up pending requests in the cleanup function and handle errors (ignore AbortError). Example: useEffect(() => { const controller = new AbortController(); fetch(url, { signal: controller.signal }).then((r) => r.json()).then(setState).catch((e) => { if (e.name !== 'AbortError') setError(e); }); return () => controller.abort(); }, [url]); In StrictMode the effect runs twice in development, which the cleanup makes harmless.",
           },
         ]}
       />
@@ -385,7 +389,7 @@ function HooksComponent() {
             question:
               "How do you implement an effect that runs only once after the first render, even if props or state change?",
             answer:
-              "To run an effect only once after the first render, use useEffect with an empty dependency array: useEffect(() => { /* code that runs only once */ }, []). This tells React that this effect doesn't depend on any values from the component and should therefore only run after the initial mount. If you need to access current props or state in this effect, you can use a ref to store these values without triggering a re-execution of the effect.",
+              "To run an effect only once after the first render, use useEffect with an empty dependency array: useEffect(() => { /* code that runs on mount */ }, []). This tells React that this effect doesn't depend on any values from the component and should therefore only re-run when the component is re-mounted. Note that in development StrictMode mounts, unmounts and re-mounts the component once, so the effect runs twice: make it idempotent and clean it up properly (never use a ref flag to hide the double call). If you need to access current props or state in this effect, you can use a ref to store these values without triggering a re-execution of the effect.",
             difficulty: "easy",
             tags: ["useEffect", "Optimization"],
           },

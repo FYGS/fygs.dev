@@ -5,9 +5,9 @@ export const challenges: Challenge[] = [
     id: "1",
     title: "Two Sum",
     description:
-      "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.",
+      "Étant donné un tableau d'entiers nums et un entier target, retournez les indices des deux nombres dont la somme est égale à target.",
     difficulty: "beginner",
-    category: "Arrays",
+    category: "Tableaux",
     estimatedTime: 15,
     tags: ["array", "hash-map"],
     testCases: [
@@ -57,31 +57,31 @@ export const challenges: Challenge[] = [
       {
         id: "1",
         content:
-          "Try using a hash map (object) to store each number and its index as you iterate through the array.",
+          "Essayez d'utiliser une table de hachage (objet) pour stocker chaque nombre et son index en parcourant le tableau.",
         revealCost: 0,
       },
       {
         id: "2",
         content:
-          "For each number, check if target - number exists in your hash map before adding the current number.",
+          "Pour chaque nombre, vérifiez si target - nombre existe dans votre table de hachage avant d'ajouter le nombre courant.",
         revealCost: 10,
       },
       {
         id: "3",
         content:
-          "The optimal solution has O(n) time complexity and O(n) space complexity.",
+          "La solution optimale a une complexité en temps de O(n) et en espace de O(n).",
         revealCost: 20,
       },
     ],
-    explanation: `The optimal solution uses a hash map to store numbers we've seen and their indices. As we iterate through the array, for each number we calculate its complement (target - number). If the complement exists in our hash map, we've found our two numbers. This approach has O(n) time complexity and O(n) space complexity.`,
+    explanation: `La solution optimale utilise une table de hachage pour stocker les nombres déjà vus et leurs index. En parcourant le tableau, on calcule pour chaque nombre son complément (target - nombre). Si le complément existe dans la table, on a trouvé nos deux nombres. Cette approche a une complexité en temps de O(n) et en espace de O(n).`,
   },
   {
     id: "2",
     title: "Valid Parentheses",
     description:
-      "Given a string containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid.",
+      "Étant donné une chaîne contenant uniquement les caractères '(', ')', '{', '}', '[' et ']', déterminez si la chaîne est valide.",
     difficulty: "beginner",
-    category: "Stacks",
+    category: "Piles",
     estimatedTime: 20,
     tags: ["stack", "string", "validation"],
     testCases: [
@@ -130,26 +130,26 @@ export const challenges: Challenge[] = [
       {
         id: "1",
         content:
-          "Use a stack data structure to keep track of opening brackets.",
+          "Utilisez une pile pour garder la trace des parenthèses ouvrantes.",
         revealCost: 0,
       },
       {
         id: "2",
         content:
-          "When you encounter a closing bracket, check if it matches the most recent opening bracket.",
+          "Quand vous rencontrez une parenthèse fermante, vérifiez qu'elle correspond à la dernière parenthèse ouvrante.",
         revealCost: 10,
       },
     ],
-    explanation: `This problem is perfectly suited for a stack data structure. We iterate through the string, pushing opening brackets onto the stack. When we encounter a closing bracket, we check if it matches the most recently pushed opening bracket by popping from the stack. If all brackets are properly matched, the stack will be empty at the end.`,
+    explanation: `Ce problème se prête parfaitement à une pile. On parcourt la chaîne en empilant les parenthèses ouvrantes. Quand on rencontre une parenthèse fermante, on vérifie qu'elle correspond à la dernière ouvrante empilée en dépilant. Si toutes les parenthèses sont correctement appariées, la pile est vide à la fin.`,
   },
   {
     id: "3",
     adapter: "tree",
     title: "Binary Tree Level Order Traversal",
     description:
-      "Given the root of a binary tree, return the level order traversal of its nodes' values. (i.e., from left to right, level by level)",
+      "Étant donné la racine d'un arbre binaire, retournez le parcours par niveaux des valeurs de ses nœuds (c'est-à-dire de gauche à droite, niveau par niveau).",
     difficulty: "intermediate",
-    category: "Trees",
+    category: "Arbres",
     estimatedTime: 25,
     tags: ["tree", "bfs", "queue"],
     testCases: [
@@ -203,16 +203,16 @@ export const challenges: Challenge[] = [
       {
         id: "1",
         content:
-          "Use breadth-first search (BFS) with a queue to traverse the tree level by level.",
+          "Utilisez un parcours en largeur (BFS) avec une file pour parcourir l'arbre niveau par niveau.",
         revealCost: 0,
       },
       {
         id: "2",
         content:
-          "At each level, process all nodes currently in the queue before adding their children.",
+          "À chaque niveau, traitez tous les nœuds présents dans la file avant d'ajouter leurs enfants.",
         revealCost: 15,
       },
     ],
-    explanation: `This solution uses BFS with a queue. At each level, we process all nodes currently in the queue (which represents the current level) before adding their children. This ensures we traverse the tree level by level from left to right.`,
+    explanation: `Cette solution utilise un BFS avec une file. À chaque niveau, on traite tous les nœuds présents dans la file (qui représente le niveau courant) avant d'ajouter leurs enfants. On parcourt ainsi l'arbre niveau par niveau, de gauche à droite.`,
   },
 ];

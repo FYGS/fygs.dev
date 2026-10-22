@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { VisualizationContainer } from "../visualization-container";
 import { OperationPanel } from "./operation-panel";
+import { generateDeleteSteps } from "./delete-steps";
 import { generateInsertSteps } from "./insert-steps";
 import { generateSearchSteps } from "./search-steps";
 import { generateTraverseSteps } from "./traverse-steps";
@@ -182,13 +183,18 @@ export function BinaryTreeVisualization() {
           newSteps = generateSearchSteps(root, searchValue);
         }
         break;
+      case "delete":
+        const deleteValue = parseInt(value);
+        if (!isNaN(deleteValue)) {
+          newSteps = generateDeleteSteps(root, deleteValue);
+        }
+        break;
       case "traverse":
         newSteps = generateTraverseSteps(root, traversalType);
         break;
       case "clear":
         initializeTree();
         break;
-      // L'opération de suppression sera implémentée dans la prochaine étape
     }
 
     if (newSteps.length > 0) {

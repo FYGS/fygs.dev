@@ -292,8 +292,8 @@ const algorithms = [
   {
     name: "Kruskal",
     complexity: "O(E log E)",
-    space: "O(V)",
-    use: "Minimum Spanning Tree (avec Union-Find)",
+    space: "O(V+E)",
+    use: "Minimum Spanning Tree (avec Union-Find : O(V) ; le tri des arêtes ajoute O(E) si l'on en fait une copie)",
     category: "MST",
   },
   {
@@ -305,9 +305,9 @@ const algorithms = [
   },
   {
     name: "Union-Find",
-    complexity: "O(alpha(n))",
+    complexity: "O(α(n)) amorti",
     space: "O(V)",
-    use: "Composantes connexes, détection de cycles",
+    use: "Composantes connexes, détection de cycles (coût par opération find/union)",
     category: "Structures",
   },
   {
@@ -323,7 +323,7 @@ const representations = [
   {
     name: "Liste d'Adjacence",
     space: "O(V+E)",
-    pros: "Efficace en mémoire pour graphes sparse. Itération rapide sur les voisins.",
+    pros: "Efficace en mémoire pour graphes sparse. Itération rapide sur les voisins. Ajouter un sommet : O(1) ; ajouter une arête : O(1) amorti (sans test de doublon) ; tester une arête : O(deg(v)).",
     code: `const graph = new Map<number, number[]>();
 graph.set(0, [1, 2]);
 graph.set(1, [0, 2, 3]);
@@ -334,7 +334,7 @@ graph.set(3, [1]);`,
   {
     name: "Matrice d'Adjacence",
     space: "O(V²)",
-    pros: "Vérification d'arête en O(1). Idéal pour graphes denses.",
+    pros: "Vérification d'arête en O(1). Idéal pour graphes denses. Ajouter une arête : O(1) ; ajouter un sommet : O(V) amorti avec redimensionnement (O(V²) si l'on recopie toute la matrice à chaque ajout).",
     code: `const matrix = [
   [0, 1, 1, 0],  // 0 → 1, 2
   [1, 0, 1, 1],  // 1 → 0, 2, 3
@@ -471,10 +471,13 @@ export default function GraphsPage() {
             <code>{`// BFS — Breadth First Search
 function bfs(graph: Map<number, number[]>, start: number): number[] {
   const visited = new Set<number>([start]);
+  // File = tableau + index de tête (head) : défiler est O(1).
+  // queue.shift() décalerait tout le tableau (O(n)) et ferait dégénérer le BFS.
   const queue = [start];
+  let head = 0;
   const result: number[] = [];
-  while (queue.length > 0) {
-    const node = queue.shift()!;
+  while (head < queue.length) {
+    const node = queue[head++];
     result.push(node);
     for (const neighbor of graph.get(node) || []) {
       if (!visited.has(neighbor)) {
@@ -496,8 +499,12 @@ function dfs(graph: Map<number, number[]>, start: number): number[] {
     if (visited.has(node)) continue;
     visited.add(node);
     result.push(node);
-    for (const neighbor of graph.get(node) || []) {
-      if (!visited.has(neighbor)) stack.push(neighbor);
+    // Ordre de visite : la pile est LIFO, le DERNIER voisin empilé est visité
+    // en premier. On parcourt donc les voisins à l'envers pour retrouver
+    // l'ordre du DFS récursif (premier voisin d'abord).
+    const neighbors = graph.get(node) || [];
+    for (let i = neighbors.length - 1; i >= 0; i--) {
+      if (!visited.has(neighbors[i])) stack.push(neighbors[i]);
     }
   }
   return result;
@@ -507,13 +514,13 @@ function dfs(graph: Map<number, number[]>, start: number): number[] {
 function dijkstra(graph: Map<number, [number, number][]>, start: number, V: number): number[] {
   const dist = new Array(V).fill(Infinity);
   dist[start] = 0;
-  // File de priorité simplifiée (tableau retrié à chaque itération, pédagogique) :
-  // avec un vrai tas binaire on obtient O((V+E) log V)
-  const pq: [number, number][] = [[0, start]]; // [distance, node]
-  while (pq.length > 0) {
-    pq.sort((a, b) => a[0] - b[0]);
-    const [d, u] = pq.shift()!;
-    if (d > dist[u]) continue;
+  // Tas binaire min (file de priorité) : push/pop en O(log n),
+  // d'où O((V+E) log V) pour l'ensemble de l'algorithme.
+  const pq = new MinHeap(); // éléments [distance, node]
+  pq.push([0, start]);
+  while (pq.size > 0) {
+    const [d, u] = pq.pop()!;
+    if (d > dist[u]) continue; // entrée périmée (lazy deletion)
     for (const [v, w] of graph.get(u) || []) {
       if (dist[u] + w < dist[v]) {
         dist[v] = dist[u] + w;
@@ -522,6 +529,42 @@ function dijkstra(graph: Map<number, [number, number][]>, start: number, V: numb
     }
   }
   return dist;
+}
+
+class MinHeap {
+  private a: [number, number][] = [];
+  get size() { return this.a.length; }
+  push(x: [number, number]) {
+    const a = this.a;
+    a.push(x);
+    let i = a.length - 1;
+    while (i > 0) {
+      const p = (i - 1) >> 1;
+      if (a[p][0] <= a[i][0]) break;
+      [a[p], a[i]] = [a[i], a[p]];
+      i = p;
+    }
+  }
+  pop(): [number, number] | undefined {
+    const a = this.a;
+    if (a.length === 0) return undefined;
+    const top = a[0];
+    const last = a.pop()!;
+    if (a.length > 0) {
+      a[0] = last;
+      let i = 0;
+      for (;;) {
+        const l = 2 * i + 1, r = l + 1;
+        let m = i;
+        if (l < a.length && a[l][0] < a[m][0]) m = l;
+        if (r < a.length && a[r][0] < a[m][0]) m = r;
+        if (m === i) break;
+        [a[m], a[i]] = [a[i], a[m]];
+        i = m;
+      }
+    }
+    return top;
+  }
 }`}</code>
           </pre>
         </Card>

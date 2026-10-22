@@ -233,8 +233,8 @@ function BrokerComparison() {
     kafka: {
       name: "Apache Kafka",
       type: "Event Streaming",
-      throughput: "Millions/sec",
-      latency: "~5ms",
+      throughput: "Très élevé (scaling par partitions)",
+      latency: "Faible à modérée (optimisée pour le débit)",
       ordering: "Par partition",
       persistence: "Durable (configurable)",
       useCase: "Event sourcing, logs, analytics real-time, CDC",
@@ -253,8 +253,8 @@ function BrokerComparison() {
     rabbitmq: {
       name: "RabbitMQ",
       type: "Message Broker",
-      throughput: "Dizaines de milliers/sec",
-      latency: "~1ms",
+      throughput: "Élevé (dépend de la configuration)",
+      latency: "Très faible",
       ordering: "Par queue",
       persistence: "Optionnelle",
       useCase: "Task queues, RPC, routing complexe",
@@ -274,7 +274,7 @@ function BrokerComparison() {
       name: "Redis Streams",
       type: "In-Memory Streaming",
       throughput: "Tres eleve (en RAM)",
-      latency: "< 1ms",
+      latency: "Très faible (en mémoire)",
       ordering: "Par stream",
       persistence: "Optionnelle (AOF/RDB)",
       useCase: "Real-time notifications, caching + messaging",
@@ -290,7 +290,7 @@ function BrokerComparison() {
       name: "AWS SQS",
       type: "Managed Queue",
       throughput: "Quasi illimite (Standard)",
-      latency: "~10ms",
+      latency: "Modérée (service managé distant)",
       ordering: "FIFO optionnel",
       persistence: "4 jours (max 14)",
       useCase: "Decouplage microservices, serverless",
@@ -344,6 +344,14 @@ function BrokerComparison() {
           <p className="text-sm font-semibold mt-1">{current.ordering}</p>
         </div>
       </div>
+      <p className="text-xs text-muted-foreground italic">
+        Ces technologies ne sont pas strictement comparables : Kafka est un log
+        d&apos;événements distribué, RabbitMQ un broker de messages avec routage,
+        Redis Streams une structure de données en mémoire et SQS une file
+        managée. Latence et débit dépendent fortement de la configuration
+        (réplication, acks, persistance, taille des messages) : mesurez avec
+        votre propre charge.
+      </p>
       <p className="text-sm text-muted-foreground">
         <span className="font-semibold text-foreground">Cas d&apos;usage:</span>{" "}
         {current.useCase}

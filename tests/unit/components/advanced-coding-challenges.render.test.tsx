@@ -42,7 +42,7 @@ const storedProgress = () => JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "nu
 const open = async (title = "Two Sum") => {
   render(<AdvancedCodingChallenges />);
   fireEvent.click(await screen.findByRole("button", { name: new RegExp(title) }));
-  await screen.findByRole("button", { name: "Submit Solution" });
+  await screen.findByRole("button", { name: "Soumettre la solution" });
 };
 
 beforeEach(() => {
@@ -90,7 +90,7 @@ describe("AdvancedCodingChallenges", () => {
     await open();
 
     expect(screen.getByLabelText("Code editor")).toHaveValue(twoSum.starterCode);
-    expect(screen.getAllByText("Hidden test")).toHaveLength(tests.filter((t) => t.isHidden).length * 2); // input + expected
+    expect(screen.getAllByText("Test masqué")).toHaveLength(tests.filter((t) => t.isHidden).length * 2); // input + expected
     expect(screen.getByText(tests[0].input)).toBeInTheDocument();
     expect(screen.queryByText(tests.find((t) => t.isHidden)!.input)).not.toBeInTheDocument();
   });
@@ -100,9 +100,9 @@ describe("AdvancedCodingChallenges", () => {
     await open();
     fireEvent.change(screen.getByLabelText("Code editor"), { target: { value: "function twoSum() { return [0, 1]; }" } });
 
-    fireEvent.click(screen.getByRole("button", { name: "Submit Solution" }));
+    fireEvent.click(screen.getByRole("button", { name: "Soumettre la solution" }));
 
-    expect(await screen.findByText("All Tests Passed!")).toBeInTheDocument();
+    expect(await screen.findByText("Tous les tests réussis !")).toBeInTheDocument();
     const request = sandbox.runInSandbox.mock.calls[0][0];
     expect(request.code).toBe("function twoSum() { return [0, 1]; }");
     expect(request.entry).toBe("twoSum");
@@ -112,8 +112,8 @@ describe("AdvancedCodingChallenges", () => {
 
     expect(storedProgress().challengeAttempts[twoSum.id]).toMatchObject({ attempts: 1, bestPassed: 4, total: 4 });
     expect(storedProgress().challengesCompleted).toContain(twoSum.id);
-    expect(toast.success).toHaveBeenCalledWith("Challenge solved: Two Sum");
-    expect(await screen.findByText("Solved")).toBeInTheDocument();
+    expect(toast.success).toHaveBeenCalledWith("Défi résolu : Two Sum");
+    expect(await screen.findByText("Résolu")).toBeInTheDocument();
   });
 
   it("a failing submission shows what each test returned, counts as an attempt and does not complete the challenge", async () => {
@@ -127,13 +127,13 @@ describe("AdvancedCodingChallenges", () => {
     );
     await open();
 
-    fireEvent.click(screen.getByRole("button", { name: "Submit Solution" }));
+    fireEvent.click(screen.getByRole("button", { name: "Soumettre la solution" }));
 
-    expect(await screen.findByText("Some Tests Failed")).toBeInTheDocument();
+    expect(await screen.findByText("Certains tests ont échoué")).toBeInTheDocument();
     expect(screen.getByText("2/4")).toBeInTheDocument();
     expect(screen.getByText("[9,9]")).toBeInTheDocument(); // visible test: what the function returned
     expect(screen.queryByText("[8,8]")).not.toBeInTheDocument(); // hidden test: pass/fail only
-    expect(within(screen.getByTestId("test-case-3")).getByText("Failed")).toBeInTheDocument();
+    expect(within(screen.getByTestId("test-case-3")).getByText("Échoué")).toBeInTheDocument();
     expect(storedProgress().challengeAttempts[twoSum.id]).toMatchObject({ attempts: 1, bestPassed: 2 });
     expect(storedProgress().challengesCompleted).not.toContain(twoSum.id);
     expect(toast.success).not.toHaveBeenCalled();
@@ -143,11 +143,11 @@ describe("AdvancedCodingChallenges", () => {
     sandbox.runInSandbox.mockResolvedValue(outcome([{ id: "2", passed: true }]));
     await open();
 
-    fireEvent.click(screen.getByRole("button", { name: "Run test 2" }));
+    fireEvent.click(screen.getByRole("button", { name: "Exécuter le test 2" }));
 
     await waitFor(() => expect(sandbox.runInSandbox).toHaveBeenCalled());
     expect(sandbox.runInSandbox.mock.calls[0][0].tests.map((t: { id: string }) => t.id)).toEqual(["2"]);
-    await screen.findByText("Passed");
+    await screen.findByText("Réussi");
     expect(storedProgress()?.challengeAttempts ?? {}).toEqual({});
   });
 
@@ -155,9 +155,9 @@ describe("AdvancedCodingChallenges", () => {
     sandbox.runInSandbox.mockResolvedValue(outcome([], { passed: false, compileError: "SyntaxError: Unexpected token" }));
     await open();
 
-    fireEvent.click(screen.getByRole("button", { name: "Submit Solution" }));
+    fireEvent.click(screen.getByRole("button", { name: "Soumettre la solution" }));
 
-    expect(await screen.findByRole("alert")).toHaveTextContent("Your code could not run");
+    expect(await screen.findByRole("alert")).toHaveTextContent("Votre code n'a pas pu s'exécuter");
     expect(screen.getByRole("alert")).toHaveTextContent("SyntaxError: Unexpected token");
   });
 
@@ -167,16 +167,16 @@ describe("AdvancedCodingChallenges", () => {
     );
     await open();
 
-    fireEvent.click(screen.getByRole("button", { name: "Submit Solution" }));
+    fireEvent.click(screen.getByRole("button", { name: "Soumettre la solution" }));
 
-    expect(await screen.findByText("Time limit exceeded")).toBeInTheDocument();
+    expect(await screen.findByText("Délai dépassé")).toBeInTheDocument();
   });
 
   it("shows what the code logged", async () => {
     sandbox.runInSandbox.mockResolvedValue({ ...allPass, logs: ["n = 7"] });
     await open();
 
-    fireEvent.click(screen.getByRole("button", { name: "Submit Solution" }));
+    fireEvent.click(screen.getByRole("button", { name: "Soumettre la solution" }));
 
     expect(await screen.findByText("n = 7")).toBeInTheDocument();
   });
@@ -185,12 +185,12 @@ describe("AdvancedCodingChallenges", () => {
     sandbox.runInSandbox.mockRejectedValue(new Error("Le moteur d'exécution ne répond plus"));
     await open();
 
-    fireEvent.click(screen.getByRole("button", { name: "Submit Solution" }));
+    fireEvent.click(screen.getByRole("button", { name: "Soumettre la solution" }));
 
     expect(await screen.findByText("Le moteur d'exécution ne répond plus")).toBeInTheDocument();
-    expect(screen.queryByText("All Tests Passed!")).not.toBeInTheDocument();
+    expect(screen.queryByText("Tous les tests réussis !")).not.toBeInTheDocument();
     expect(storedProgress()?.challengeAttempts ?? {}).toEqual({});
-    expect(screen.getByRole("button", { name: "Submit Solution" })).toBeEnabled(); // it can be retried
+    expect(screen.getByRole("button", { name: "Soumettre la solution" })).toBeEnabled(); // it can be retried
   });
 
   it("runs the editor's own Run button as a submission", async () => {
@@ -199,14 +199,14 @@ describe("AdvancedCodingChallenges", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Editor run" }));
 
-    expect(await screen.findByText("All Tests Passed!")).toBeInTheDocument();
+    expect(await screen.findByText("Tous les tests réussis !")).toBeInTheDocument();
   });
 
   it("Reset gives the starter code back", async () => {
     await open();
     fireEvent.change(screen.getByLabelText("Code editor"), { target: { value: "garbage" } });
 
-    fireEvent.click(screen.getByRole("button", { name: "Reset" }));
+    fireEvent.click(screen.getByRole("button", { name: "Réinitialiser" }));
 
     await waitFor(() => expect(screen.getByLabelText("Code editor")).toHaveValue(twoSum.starterCode));
   });
@@ -215,7 +215,7 @@ describe("AdvancedCodingChallenges", () => {
     await open();
     fireEvent.change(screen.getByLabelText("Code editor"), { target: { value: "my draft" } });
 
-    fireEvent.click(screen.getByRole("button", { name: /Back to Challenges/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Retour aux défis/ }));
     fireEvent.click(await screen.findByRole("button", { name: /Two Sum/ }));
 
     expect(await screen.findByLabelText("Code editor")).toHaveValue("my draft");
@@ -223,28 +223,28 @@ describe("AdvancedCodingChallenges", () => {
 
   it("a hint costs points, and you cannot buy one you cannot afford", async () => {
     await open();
-    const buy = screen.getAllByRole("button", { name: "Reveal Hint" });
+    const buy = screen.getAllByRole("button", { name: "Révéler l'indice" });
 
     fireEvent.click(buy[0]); // free
     fireEvent.click(buy[1]); // 10
     fireEvent.click(buy[2]); // 20 -> 70 left
-    expect(screen.getByText("Points: 70")).toBeInTheDocument();
+    expect(screen.getByText("Points : 70")).toBeInTheDocument();
     expect(toast.error).not.toHaveBeenCalled();
   });
 
   it("Your Progress counts what was really solved", async () => {
     sandbox.runInSandbox.mockResolvedValue(allPass);
     await open();
-    fireEvent.click(screen.getByRole("button", { name: "Submit Solution" }));
-    await screen.findByText("All Tests Passed!");
+    fireEvent.click(screen.getByRole("button", { name: "Soumettre la solution" }));
+    await screen.findByText("Tous les tests réussis !");
 
-    const tab = screen.getByRole("tab", { name: /Your Progress/ });
+    const tab = screen.getByRole("tab", { name: /Votre progression/ });
     fireEvent.mouseDown(tab, { button: 0 });
     fireEvent.click(tab);
 
     const panel = await screen.findByRole("tabpanel");
-    expect(within(panel).getByText("Challenges solved").parentElement).toHaveTextContent("1/3");
-    expect(within(panel).getByText(/1 submission so far/)).toBeInTheDocument();
+    expect(within(panel).getByText("Défis résolus").parentElement).toHaveTextContent("1/3");
+    expect(within(panel).getByText(/1 soumission jusqu'ici/)).toBeInTheDocument();
     expect(within(panel).queryByText(/78%|12\/15/)).not.toBeInTheDocument(); // the old made-up figures
   });
 

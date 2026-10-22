@@ -25,7 +25,7 @@ export function ZustandSection() {
           <p className="text-muted-foreground mb-4">
             Zustand est une bibliothèque de gestion d&apos;état légère qui utilise les hooks et offre une API simple sans boilerplate, tout en restant performante.
           </p>
-          
+
           <div className="flex flex-wrap gap-2 mb-4">
             <Badge>Lightweight</Badge>
             <Badge>Hook-based</Badge>
@@ -34,18 +34,26 @@ export function ZustandSection() {
           </div>
         </CardContent>
       </Card>
-      
+
       <CodeExample
         title="Store Zustand de base"
         description="Comment créer et utiliser un store Zustand simple"
-        code={`// store.js
+        code={`// store.ts (Zustand v5)
 import { create } from 'zustand';
 
-// Création d'un store
-export const useCounterStore = create((set) => ({
+interface CounterState {
+  count: number;
+  increment: () => void;
+  decrement: () => void;
+  reset: () => void;
+  incrementBy: (amount: number) => void;
+}
+
+// Avec TypeScript, utilisez la forme curryfiée create<T>()(...)
+export const useCounterStore = create<CounterState>()((set) => ({
   // État initial
   count: 0,
-  
+
   // Actions pour mettre à jour l'état
   increment: () => set((state) => ({ count: state.count + 1 })),
   decrement: () => set((state) => ({ count: state.count - 1 })),
@@ -53,8 +61,8 @@ export const useCounterStore = create((set) => ({
   incrementBy: (amount) => set((state) => ({ count: state.count + amount })),
 }));
 
-// Counter.jsx
-import React from 'react';
+// Counter.tsx
+import { useShallow } from 'zustand/react/shallow';
 import { useCounterStore } from './store';
 
 function Counter() {
@@ -63,10 +71,15 @@ function Counter() {
   const increment = useCounterStore((state) => state.increment);
   const decrement = useCounterStore((state) => state.decrement);
   const reset = useCounterStore((state) => state.reset);
-  
-  // Alternative: extraire plusieurs valeurs en une seule fois
-  // const { count, increment, decrement, reset } = useCounterStore();
-  
+
+  // Alternative : sélectionner plusieurs valeurs en une fois.
+  // Zustand v5 : un sélecteur qui retourne un NOUVEL objet à chaque appel
+  // provoque une boucle de rendus ; enveloppez-le avec useShallow.
+  // const { count, increment } = useCounterStore(
+  //   useShallow((state) => ({ count: state.count, increment: state.increment })),
+  // );
+  // (appeler useCounterStore() sans sélecteur abonne le composant à tout le store)
+
   return (
     <div>
       <h2>Counter: {count}</h2>
@@ -77,8 +90,7 @@ function Counter() {
   );
 }
 
-// App.jsx
-import React from 'react';
+// App.tsx
 import Counter from './Counter';
 
 function App() {
@@ -103,7 +115,7 @@ function App() {
               <li>API minimaliste avec très peu de boilerplate</li>
               <li>Sélection automatique pour éviter les re-rendus inutiles</li>
               <li>Support pour TypeScript</li>
-              <li>Taille réduite (~1KB)</li>
+              <li>Bibliothèque très légère (vérifiez sa taille actuelle sur bundlephobia.com)</li>
             </ul>
             <p className="mt-3">
               Dans l&apos;exemple ci-dessus:
@@ -123,12 +135,14 @@ function App() {
           "Utilisez des sélecteurs pour n'extraire que les valeurs dont vous avez besoin et éviter les re-rendus inutiles",
           "Organisez votre store en slices pour une meilleure séparation des préoccupations",
           "Utilisez les middlewares intégrés comme persist pour la persistance de l'état",
-          "Combinez Zustand avec Immer pour des mises à jour d'état plus simples"
+          "Combinez Zustand avec Immer pour des mises à jour d'état plus simples",
+          "Zustand v5 : un sélecteur qui retourne un nouvel objet ou tableau à chaque appel boucle à l'infini ; utilisez useShallow (zustand/react/shallow)",
+          "Avec Next.js (SSR), évitez un store global partagé entre requêtes : créez un store par requête avec createStore et fournissez-le via un Context"
         ]}
         interviewQuestions={[
           {
             question: "Quels sont les avantages de Zustand par rapport à Redux?",
-            answer: "Zustand offre plusieurs avantages par rapport à Redux: 1) API plus simple et moins de boilerplate: pas besoin d'actions, de types d'action ou de reducers séparés. 2) Pas de Provider nécessaire: pas besoin d'envelopper l'application dans un Provider. 3) Taille réduite: Zustand est beaucoup plus léger (~1KB) que Redux + React-Redux. 4) Sélection automatique: Zustand réabonne automatiquement les composants uniquement lorsque les valeurs sélectionnées changent. 5) Courbe d'apprentissage plus douce: API plus intuitive et moins de concepts à comprendre. 6) Meilleure intégration avec TypeScript par défaut. Cependant, Redux reste plus adapté pour les très grandes applications avec des besoins complexes de gestion d'état, de middleware et de débogage.",
+            answer: "Zustand offre plusieurs avantages par rapport à Redux: 1) API plus simple et moins de boilerplate: pas besoin d'actions, de types d'action ou de reducers séparés. 2) Pas de Provider nécessaire: pas besoin d'envelopper l'application dans un Provider. 3) Légèreté: Zustand est une bibliothèque beaucoup plus petite que Redux Toolkit + React-Redux (comparez les tailles sur bundlephobia.com). 4) Sélection automatique: Zustand réabonne automatiquement les composants uniquement lorsque les valeurs sélectionnées changent. 5) Courbe d'apprentissage plus douce: API plus intuitive et moins de concepts à comprendre. 6) Meilleure intégration avec TypeScript par défaut. Cependant, Redux reste plus adapté pour les très grandes applications avec des besoins complexes de gestion d'état, de middleware et de débogage.",
             difficulty: "medium",
             tags: ["Zustand", "Redux", "Comparaison"]
           },
@@ -140,17 +154,39 @@ function App() {
           }
         ]}
       />
-      
+
       <CodeExample
         title="Fonctionnalités avancées de Zustand"
         description="Slices, middleware et persistance d'état"
-        code={`// store.js
+        code={`// store.ts (Zustand v5)
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { devtools, persist, createJSONStorage } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
+import { useShallow } from 'zustand/react/shallow';
 
-// Création d'un store avec des slices et des middlewares
-const useStore = create(
+interface User { id: number; name: string }
+interface Todo { id: string; text: string; completed: boolean; assignedTo?: number }
+
+interface AppState {
+  users: {
+    list: User[];
+    loading: boolean;
+    error: string | null;
+    fetchUsers: () => Promise<void>;
+    addUser: (user: User) => void;
+  };
+  todos: {
+    items: Todo[];
+    addTodo: (text: string) => void;
+    toggleTodo: (id: string) => void;
+    removeTodo: (id: string) => void;
+  };
+  assignTodoToUser: (todoId: string, userId: number) => void;
+}
+
+// create<T>()(...) : la forme curryfiée est nécessaire avec les middlewares en TypeScript
+const useStore = create<AppState>()(
+  devtools(
   // Middleware persist pour sauvegarder l'état dans localStorage
   persist(
     // Middleware immer pour des mises à jour d'état plus simples
@@ -160,51 +196,55 @@ const useStore = create(
         list: [],
         loading: false,
         error: null,
-        
+
         fetchUsers: async () => {
           set(state => { state.users.loading = true; state.users.error = null; });
           try {
             const response = await fetch('https://jsonplaceholder.typicode.com/users');
-            const users = await response.json();
+            if (!response.ok) throw new Error('HTTP ' + response.status);
+            const users: User[] = await response.json();
             set(state => { state.users.list = users; state.users.loading = false; });
           } catch (error) {
-            set(state => { state.users.error = error.message; state.users.loading = false; });
+            set(state => {
+              state.users.error = error instanceof Error ? error.message : 'Erreur inconnue';
+              state.users.loading = false;
+            });
           }
         },
-        
+
         addUser: (user) => {
           set(state => { state.users.list.push(user); });
         },
       },
-      
+
       // Slice todos
       todos: {
         items: [],
-        
+
         addTodo: (text) => {
-          const newTodo = { id: Date.now(), text, completed: false };
+          const newTodo: Todo = { id: crypto.randomUUID(), text, completed: false };
           set(state => { state.todos.items.push(newTodo); });
         },
-        
+
         toggleTodo: (id) => {
           set(state => {
             const todo = state.todos.items.find(item => item.id === id);
             if (todo) todo.completed = !todo.completed;
           });
         },
-        
+
         removeTodo: (id) => {
           set(state => {
             state.todos.items = state.todos.items.filter(item => item.id !== id);
           });
         },
       },
-      
+
       // Actions qui utilisent plusieurs slices
       assignTodoToUser: (todoId, userId) => {
         const todo = get().todos.items.find(t => t.id === todoId);
         const user = get().users.list.find(u => u.id === userId);
-        
+
         if (todo && user) {
           set(state => {
             const todoIndex = state.todos.items.findIndex(t => t.id === todoId);
@@ -220,9 +260,11 @@ const useStore = create(
       // Le merge par défaut est superficiel : sans ceci, la slice todos réhydratée écraserait les actions
       merge: (persisted, current) => ({
         ...current,
-        todos: { ...current.todos, ...persisted.todos },
+        todos: { ...current.todos, ...(persisted as Partial<AppState>).todos },
       }),
     }
+  ),
+  { name: 'AppStore' } // devtools : nom affiché dans Redux DevTools
   )
 );
 
@@ -231,20 +273,31 @@ export const useUsers = () => useStore((state) => state.users);
 export const useTodos = () => useStore((state) => state.todos);
 export const useAssignTodoToUser = () => useStore((state) => state.assignTodoToUser);
 
-// UserList.jsx
-import React, { useEffect } from 'react';
+// Sélectionner plusieurs valeurs : useShallow évite les rendus inutiles (et la boucle
+// infinie de la v5) quand le sélecteur construit un nouvel objet à chaque appel
+export const useTodoActions = () =>
+  useStore(
+    useShallow((state) => ({
+      addTodo: state.todos.addTodo,
+      toggleTodo: state.todos.toggleTodo,
+      removeTodo: state.todos.removeTodo,
+    })),
+  );
+
+// UserList.tsx
+import { useEffect } from 'react';
 import { useUsers } from './store';
 
 function UserList() {
   const { list, loading, error, fetchUsers } = useUsers();
-  
+
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
-  
+
   if (loading) return <div>Loading users...</div>;
   if (error) return <div>Error: {error}</div>;
-  
+
   return (
     <div>
       <h2>Users</h2>
@@ -257,24 +310,25 @@ function UserList() {
   );
 }
 
-// TodoList.jsx
-import React from 'react';
-import { useTodos, useUsers, useAssignTodoToUser } from './store';
+// TodoList.tsx
+import { useState } from 'react';
+import { useTodos, useTodoActions, useUsers, useAssignTodoToUser } from './store';
 
 function TodoList() {
-  const { items, addTodo, toggleTodo, removeTodo } = useTodos();
+  const { items } = useTodos();
+  const { addTodo, toggleTodo, removeTodo } = useTodoActions();
   const { list: users } = useUsers();
   const assignTodoToUser = useAssignTodoToUser();
-  const [newTodo, setNewTodo] = React.useState('');
-  
-  const handleSubmit = (e) => {
+  const [newTodo, setNewTodo] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (newTodo.trim()) {
       addTodo(newTodo);
       setNewTodo('');
     }
   };
-  
+
   return (
     <div>
       <h2>Todos</h2>
@@ -374,7 +428,7 @@ function TodoList() {
           }
         ]}
       />
-      
+
       <InterviewQuestions
         title="Questions d'Entretien sur Zustand"
         questions={[
@@ -392,7 +446,7 @@ function TodoList() {
           },
           {
             question: "Comment tester un composant qui utilise Zustand?",
-            answer: "Pour tester un composant qui utilise Zustand: 1) Mocker le store: Créez une version mock du store pour les tests: `jest.mock('../store', () => ({ useStore: () => ({ count: 5, increment: jest.fn() }) }));` 2) Utiliser createStore pour les tests: Créez une instance de store spécifique aux tests: `const createTestStore = () => create(...)` puis utilisez-la dans vos tests. 3) Injecter le store: Modifiez votre hook pour accepter un store optionnel: `export const useStore = (selector, store = defaultStore) => store(selector)` puis injectez un store de test. 4) Tester les actions directement: `const store = createStore(); store.getState().increment(); expect(store.getState().count).toBe(1);` 5) Pour les tests d'intégration, utilisez le vrai store et testez le comportement complet. 6) Utilisez act() de React Testing Library pour les mises à jour d'état asynchrones. 7) Testez les sélecteurs séparément des composants pour une meilleure isolation.",
+            answer: "Pour tester un composant qui utilise Zustand: 1) Mocker le store: Créez une version mock du store pour les tests: `vi.mock('../store', () => ({ useStore: () => ({ count: 5, increment: vi.fn() }) }));` (Vitest ; jest.mock avec Jest) 2) Utiliser createStore pour les tests: Créez une instance de store spécifique aux tests: `const createTestStore = () => create(...)` puis utilisez-la dans vos tests. 3) Injecter le store: Modifiez votre hook pour accepter un store optionnel: `export const useStore = (selector, store = defaultStore) => store(selector)` puis injectez un store de test. 4) Tester les actions directement: `const store = createStore(); store.getState().increment(); expect(store.getState().count).toBe(1);` 5) Pour les tests d'intégration, utilisez le vrai store et testez le comportement complet. 6) Utilisez act() de React Testing Library pour les mises à jour d'état asynchrones. 7) Testez les sélecteurs séparément des composants pour une meilleure isolation.",
             difficulty: "medium",
             tags: ["Zustand", "Testing"]
           },

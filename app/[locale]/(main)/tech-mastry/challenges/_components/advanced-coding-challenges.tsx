@@ -41,7 +41,7 @@ export function AdvancedCodingChallenges() {
       if (!only) {
         trackChallengeAttempt(challenge.id, result.testCasesPassed, result.totalTestCases);
         const firstSolve = result.passed && !progress.challengesCompleted.includes(challenge.id);
-        if (firstSolve) toast.success(`Challenge solved: ${challenge.title}`);
+        if (firstSolve) toast.success(`Défi résolu : ${challenge.title}`);
       }
     } catch (error) {
       setSubmissionResult(null);
@@ -64,7 +64,7 @@ export function AdvancedCodingChallenges() {
       setRevealedHints((prev) => [...prev, hint.id]);
       setUserPoints((prev) => prev - hint.revealCost);
     } else {
-      toast.error(`You need ${hint.revealCost} points to reveal this hint. You currently have ${userPoints} points.`);
+      toast.error(`Il vous faut ${hint.revealCost} points pour révéler cet indice. Vous en avez actuellement ${userPoints}.`);
     }
   };
 
@@ -84,9 +84,9 @@ export function AdvancedCodingChallenges() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Advanced Coding Challenges</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Défis de code avancés</h1>
         <p className="text-muted-foreground mt-2">
-          Write your solution, run it against the tests and see what each one returns
+          Écrivez votre solution, exécutez-la sur les tests et voyez ce que chacun renvoie
         </p>
       </div>
 
@@ -94,11 +94,11 @@ export function AdvancedCodingChallenges() {
         <TabsList className="grid grid-cols-2 w-full max-w-xs mx-auto">
           <TabsTrigger value="challenges" className="flex items-center gap-2">
             <FileCode className="h-4 w-4" aria-hidden="true" />
-            Challenges
+            Défis
           </TabsTrigger>
           <TabsTrigger value="analytics" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" aria-hidden="true" />
-            Your Progress
+            Votre progression
           </TabsTrigger>
         </TabsList>
 

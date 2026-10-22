@@ -371,7 +371,7 @@ export const practiceExercises: AreaExercises = {
     {
       id: "practice-system-design-architecture-order-1",
       type: "order",
-      prompt: "Remettez dans l'ordre le trajet d'une requête de lecture dans le template « Scalable Web Application ».",
+      prompt: "Remettez dans l'ordre le trajet d'une requête de lecture dans le template « Application web scalable ».",
       steps: [
         "Le navigateur envoie la requête au répartiteur de charge",
         "Le répartiteur choisit un serveur applicatif",

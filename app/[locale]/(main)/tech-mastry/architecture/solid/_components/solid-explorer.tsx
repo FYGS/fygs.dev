@@ -205,7 +205,7 @@ class Robot implements Workable, Reportable {
     violation: {
       label: "❌ Violation",
       code: `class MySQLDatabase {
-  save(data: any) { /* MySQL specific */ }
+  save(data: unknown) { /* MySQL specific */ }
 }
 
 class UserRepository {
@@ -222,16 +222,16 @@ class UserRepository {
       label: "✅ Correct",
       code: `// Abstraction
 interface Database {
-  save(data: any): Promise<void>;
+  save(data: unknown): Promise<void>;
 }
 
 // Implémentation concrète
 class MySQLDatabase implements Database {
-  async save(data: any) { /* MySQL */ }
+  async save(data: unknown) { /* MySQL */ }
 }
 
 class MongoDatabase implements Database {
-  async save(data: any) { /* MongoDB */ }
+  async save(data: unknown) { /* MongoDB */ }
 }
 
 // Dépend de l'abstraction

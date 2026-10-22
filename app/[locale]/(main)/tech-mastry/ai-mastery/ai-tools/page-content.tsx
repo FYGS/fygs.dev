@@ -7,7 +7,6 @@ import {
   Wrench,
   ArrowRight,
   ExternalLink,
-  Star,
   BarChart3,
 } from "lucide-react";
 
@@ -19,7 +18,6 @@ interface AITool {
   features: string[];
   pricing: string;
   bestFor: string;
-  rating: number;
   url: string;
   color: string;
 }
@@ -38,41 +36,38 @@ const tools: AITool[] = [
     ],
     pricing: "Offre gratuite (AI Studio) / paiement à l'usage (API), tarifs à vérifier sur le site officiel",
     bestFor: "Prototypage rapide, applications multimodales, long contexte",
-    rating: 90,
     url: "aistudio.google.com",
     color: "border-blue-500/30",
   },
   {
     name: "Cursor",
     category: "IDE IA",
-    desc: "Fork de VS Code avec IA intégrée nativement. Completions, chat, agent mode, et MCP support.",
+    desc: "Fork de VS Code avec IA intégrée nativement. Complétions, chat, mode Agent et support MCP.",
     features: [
       "Completions contextuelles avec codebase complète",
       "Chat avec @ références (fichiers, docs, web)",
-      "Composer : édition multi-fichiers en agent mode",
-      "Règles projet (.cursor/rules ; l'ancien .cursorrules est déprécié)",
+      "Mode Agent : édition multi-fichiers et exécution de commandes",
+      "Règles projet (.cursor/rules ou AGENTS.md ; l'ancien .cursorrules est déprécié)",
       "Support MCP natif",
     ],
     pricing: "Offre gratuite limitée + abonnements payants (tarifs à vérifier sur le site officiel)",
     bestFor: "Développeurs voulant l'IA nativement dans l'IDE",
-    rating: 92,
     url: "cursor.com",
     color: "border-purple-500/30",
   },
   {
     name: "Windsurf (Codeium)",
     category: "IDE IA",
-    desc: "IDE IA initialement développé par Codeium (éditeur actuel à vérifier sur le site officiel), avec Cascade (agent flow), Supercomplete, et intégration profonde.",
+    desc: "IDE IA initialement développé par Codeium, depuis repris par Cognition (propriétaire actuel à vérifier sur le site officiel), avec l'agent Cascade et des suggestions de code avancées.",
     features: [
       "Cascade : flux agentique multi-étapes",
-      "Supercomplete : suggestions multi-lignes intelligentes",
+      "Suggestions multi-lignes contextuelles (Tab)",
       "Flows : workflows automatisés pour le développement",
       "Offre gratuite avec limites (à vérifier)",
       "Support de nombreux langages",
     ],
     pricing: "Offre gratuite + abonnement payant (tarifs à vérifier sur le site officiel)",
-    bestFor: "Alternative gratuite à Cursor, développeurs budget-conscious",
-    rating: 85,
+    bestFor: "Alternative à Cursor avec une offre gratuite, développeurs attentifs au budget",
     url: "windsurf.com",
     color: "border-teal-500/30",
   },
@@ -89,12 +84,11 @@ const tools: AITool[] = [
     ],
     pricing: "Offre gratuite + abonnements payants (tarifs à vérifier sur le site officiel)",
     bestFor: "Usage général, raisonnement complexe, prototypage rapide",
-    rating: 88,
     url: "chatgpt.com",
     color: "border-green-500/30",
   },
   {
-    name: "v0 (Vercel)",
+    name: "v0 (Vercel, v0.app)",
     category: "Générateur UI",
     desc: "Génère des composants React/Next.js à partir de prompts textuels. shadcn/ui + Tailwind natif.",
     features: [
@@ -106,8 +100,7 @@ const tools: AITool[] = [
     ],
     pricing: "Offre gratuite limitée + abonnements payants (tarifs à vérifier sur le site officiel)",
     bestFor: "Prototypage UI rapide, composants React/Next.js",
-    rating: 87,
-    url: "v0.dev",
+    url: "v0.app",
     color: "border-violet-500/30",
   },
   {
@@ -123,7 +116,6 @@ const tools: AITool[] = [
     ],
     pricing: "Offre gratuite + abonnement payant (tarifs à vérifier sur le site officiel)",
     bestFor: "Prototypage rapide full-stack, démos, MVPs",
-    rating: 83,
     url: "bolt.new",
     color: "border-amber-500/30",
   },
@@ -134,13 +126,12 @@ const tools: AITool[] = [
     features: [
       "Recherche web avec réponses synthétisées",
       "Citations et sources vérifiables",
-      "Focus modes : Academic, Writing, Math, Code",
+      "Sources et modes de recherche sélectionnables (web, académique, recherche approfondie ; l'interface évolue, à vérifier)",
       "Collections pour organiser les recherches",
       "API pour intégration",
     ],
     pricing: "Offre gratuite + abonnement payant (tarifs à vérifier sur le site officiel)",
     bestFor: "Recherche technique, veille technologique, documentation",
-    rating: 86,
     url: "perplexity.ai",
     color: "border-cyan-500/30",
   },
@@ -205,12 +196,6 @@ function ToolsGrid() {
                 {tool.desc}
               </p>
               <div className="flex items-center gap-2 mt-2">
-                <div className="flex items-center gap-1">
-                  <Star className="w-3 h-3 text-amber-500" />
-                  <span className="text-[10px] font-medium">
-                    {tool.rating}/100
-                  </span>
-                </div>
                 <span className="text-[10px] text-muted-foreground">
                   {tool.pricing}
                 </span>
@@ -240,7 +225,7 @@ function ToolsGrid() {
             {tools[selectedTool].desc}
           </p>
 
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-xs font-medium text-primary">
                 Fonctionnalités clés
@@ -269,22 +254,6 @@ function ToolsGrid() {
                 {tools[selectedTool].pricing}
               </p>
             </div>
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-muted-foreground">
-                Score indicatif (subjectif)
-              </label>
-              <div className="flex items-center gap-2">
-                <div className="h-3 flex-1 rounded-full bg-muted overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-primary transition-all"
-                    style={{ width: `${tools[selectedTool].rating}%` }}
-                  />
-                </div>
-                <span className="text-sm font-bold">
-                  {tools[selectedTool].rating}
-                </span>
-              </div>
-            </div>
           </div>
         </div>
       )}
@@ -305,58 +274,52 @@ function ComparisonTable() {
 
   const comparison: Record<string, Record<string, string>> = {
     "GitHub Copilot": {
-      Complétions: "A",
-      Chat: "A",
-      Agent: "A",
-      MCP: "A",
-      Multimodal: "B",
-      Gratuit: "C",
+      Complétions: "Oui (IDE)",
+      Chat: "Oui",
+      Agent: "Oui (mode Agent)",
+      MCP: "Oui",
+      Multimodal: "Images dans le chat",
+      Gratuit: "Offre gratuite limitée",
     },
     Cursor: {
-      Complétions: "A",
-      Chat: "A",
-      Agent: "A",
-      MCP: "A",
-      Multimodal: "B",
-      Gratuit: "C",
+      Complétions: "Oui (natif)",
+      Chat: "Oui",
+      Agent: "Oui (mode Agent)",
+      MCP: "Oui",
+      Multimodal: "Images dans le chat",
+      Gratuit: "Offre gratuite limitée",
     },
     Windsurf: {
-      Complétions: "A",
-      Chat: "A",
-      Agent: "B",
-      MCP: "B",
-      Multimodal: "C",
-      Gratuit: "A",
+      Complétions: "Oui (natif)",
+      Chat: "Oui",
+      Agent: "Oui (Cascade)",
+      MCP: "Oui",
+      Multimodal: "Images dans le chat",
+      Gratuit: "Offre gratuite limitée",
     },
     Gemini: {
-      Complétions: "B",
-      Chat: "A",
-      Agent: "B",
-      MCP: "C",
-      Multimodal: "A",
-      Gratuit: "A",
+      Complétions: "Via Gemini Code Assist",
+      Chat: "Oui",
+      Agent: "Oui (Gemini CLI)",
+      MCP: "Oui (Gemini CLI)",
+      Multimodal: "Texte, image, audio, vidéo",
+      Gratuit: "AI Studio gratuit",
     },
     ChatGPT: {
-      Complétions: "C",
-      Chat: "A",
-      Agent: "B",
-      MCP: "C",
-      Multimodal: "A",
-      Gratuit: "B",
+      Complétions: "Non (chat ; Codex pour le code)",
+      Chat: "Oui",
+      Agent: "Oui (Codex, mode agent)",
+      MCP: "Oui (connecteurs)",
+      Multimodal: "Texte, image, audio",
+      Gratuit: "Offre gratuite limitée",
     },
-  };
-
-  const gradeColor: Record<string, string> = {
-    A: "bg-green-500/20 text-green-600",
-    B: "bg-amber-500/20 text-amber-600",
-    C: "bg-red-500/20 text-red-600",
   };
 
   return (
     <Card className="p-5 space-y-4">
       <div className="flex items-center gap-2 text-lg font-semibold">
         <BarChart3 className="w-5 h-5 text-blue-500" />
-        Tableau Comparatif (évaluation subjective)
+        Tableau Comparatif qualitatif (fonctionnalités à vérifier sur les sites officiels)
       </div>
 
       <div className="overflow-x-auto">
@@ -380,9 +343,7 @@ function ComparisonTable() {
                 <td className="p-2 font-medium">{tool}</td>
                 {criteria.map((c) => (
                   <td key={c} className="text-center p-2">
-                    <span
-                      className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold ${gradeColor[grades[c]]}`}
-                    >
+                    <span className="text-xs text-muted-foreground">
                       {grades[c]}
                     </span>
                   </td>
@@ -393,20 +354,10 @@ function ComparisonTable() {
         </table>
       </div>
 
-      <div className="flex gap-4 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1">
-          <span className="w-4 h-4 rounded-full bg-green-500/20 inline-block" />{" "}
-          A = Excellent
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="w-4 h-4 rounded-full bg-amber-500/20 inline-block" />{" "}
-          B = Bon
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="w-4 h-4 rounded-full bg-red-500/20 inline-block" /> C
-          = Limité
-        </span>
-      </div>
+      <p className="text-xs text-muted-foreground">
+        Comparaison qualitative, sans note chiffrée : les offres, les modèles et
+        les fonctionnalités évoluent vite.
+      </p>
     </Card>
   );
 }

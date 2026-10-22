@@ -156,10 +156,22 @@ export function HeapVisualization() {
 
     switch (operation) {
       case "insert":
-        const numValue = parseInt(value);
-        if (!isNaN(numValue)) {
-          newSteps = generateInsertSteps(heap, numValue, heapType);
+        const trimmed = value.trim();
+        const numValue = Number(trimmed);
+        if (trimmed === "" || !Number.isSafeInteger(numValue)) {
+          // Valeur vide, NaN, décimale ou hors limites : on refuse et on l'indique
+          setSteps([
+            {
+              ...initialStepFor(heap, heapType),
+              operation: "insert",
+              message: "Valeur invalide : entrez un entier (ex. 42)",
+            },
+          ]);
+          setCurrentStepIndex(0);
+          setIsPlaying(false);
+          return;
         }
+        newSteps = generateInsertSteps(heap, numValue, heapType);
         break;
       case "extractMax":
         newSteps = generateExtractMaxSteps(heap, heapType);

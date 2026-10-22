@@ -101,9 +101,10 @@ export function generateTraverseSteps(currentRoot: TreeNode | null, type: Traver
     if (!newRoot) return;
 
     const queue: TreeNode[] = [newRoot];
+    let head = 0; // index de tête : défiler en O(1)
 
-    while (queue.length > 0) {
-      const node = queue.shift()!;
+    while (head < queue.length) {
+      const node = queue[head++];
       traversalPath.push(node.value);
       steps.push({
         root: newRoot,

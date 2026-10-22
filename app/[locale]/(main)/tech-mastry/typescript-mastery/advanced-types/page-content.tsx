@@ -48,15 +48,15 @@ type ReturnOf<T> = T extends (...args: any[]) => infer R ? R : never;
 // Extraire le type des éléments d'un tableau
 type ElementOf<T> = T extends (infer E)[] ? E : never;
 
-// UnwrapPromise récursif
-type Awaited<T> = T extends Promise<infer U>
-  ? Awaited<U>
+// Déballage récursif d'une Promise (Awaited<T> existe déjà dans lib.d.ts)
+type UnwrapPromise<T> = T extends Promise<infer U>
+  ? UnwrapPromise<U>
   : T;
 
 // Exemples
 type A = ReturnOf<() => string>; // string
 type B = ElementOf<number[]>;    // number
-type C = Awaited<Promise<Promise<boolean>>>; // boolean`,
+type C = UnwrapPromise<Promise<Promise<boolean>>>; // boolean`,
     explanation: "Les conditional types utilisent le pattern T extends U ? X : Y. Le keyword infer permet d'extraire un type depuis la structure.",
   },
   {
@@ -149,6 +149,51 @@ type Email = NewType<string, "Email">;
 type URL = NewType<string, "URL">;`,
     explanation: "Les branded types ajoutent un champ fantôme qui rend les types structurellement incompatibles, empêchant les erreurs d'inversion de paramètres.",
   },
+  {
+    name: "Syntaxe moderne : satisfies, using, décorateurs, enum",
+    category: "Moderne",
+    description: "satisfies, using, décorateurs standard et alternatives aux enum, avec erasableSyntaxOnly.",
+    code: `// satisfies (TS 4.9) : valide la forme sans élargir le type inféré
+const palette = {
+  red: [255, 0, 0],
+  green: "#00ff00",
+} satisfies Record<string, string | number[]>;
+palette.red.map((c) => c * 2); // red reste number[]
+
+// using (TS 5.2) : libération automatique de ressources
+// (Symbol.dispose / Symbol.asyncDispose, nécessite un runtime ou un polyfill)
+function openFile() {
+  return { [Symbol.dispose]() { console.log("fermé"); } };
+}
+{
+  using file = openFile();
+  // ... utiliser file
+} // file[Symbol.dispose]() est appelé en sortie de bloc
+
+// Décorateurs standard (TS 5.0) : sans l'option experimentalDecorators
+function logged<This, Args extends unknown[], R>(
+  target: (this: This, ...args: Args) => R,
+  context: ClassMethodDecoratorContext<This>,
+) {
+  return function (this: This, ...args: Args): R {
+    console.log(\`appel de \${String(context.name)}\`);
+    return target.call(this, ...args);
+  };
+}
+class Service {
+  @logged
+  run() { /* ... */ }
+}
+
+// Alternative aux enum : objet const + union de littéraux
+const Role = { Admin: "admin", User: "user" } as const;
+type Role = (typeof Role)[keyof typeof Role]; // "admin" | "user"
+
+// TS 5.8 : "erasableSyntaxOnly": true interdit enum, namespace
+// et paramètres de propriétés (constructor(private x)) : seule la
+// syntaxe qui disparaît en retirant les types est acceptée.`,
+    explanation: "satisfies vérifie sans élargir, using automatise le nettoyage, les décorateurs standard (TS 5.0) remplacent l'ancienne option experimentalDecorators, et un objet as const avec une union remplace avantageusement un enum quand erasableSyntaxOnly est activé.",
+  },
 ];
 
 function ConceptCard({ concept }: { concept: TypeConcept }) {
@@ -206,7 +251,7 @@ export default function AdvancedTypesPage() {
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
           Maîtrisez les types avancés de TypeScript : mapped types, conditional types,
-          template literal types, discriminated unions et branded types.
+          template literal types, discriminated unions, branded types et syntaxe moderne (satisfies, using, décorateurs).
         </p>
       </section>
 

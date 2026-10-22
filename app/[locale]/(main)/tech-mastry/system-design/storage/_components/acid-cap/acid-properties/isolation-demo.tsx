@@ -261,6 +261,40 @@ export function IsolationDemo() {
               <span>Ne prévient pas le problème</span>
             </div>
           </div>
+
+          <div className="mt-4 p-3 rounded-md border bg-muted/30 text-xs text-muted-foreground space-y-2">
+            <div className="font-medium text-foreground">
+              Ce tableau suit le standard SQL (théorique) : le comportement
+              réel dépend du moteur
+            </div>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>
+                <span className="font-medium">PostgreSQL :</span> Read
+                Uncommitted se comporte comme Read Committed (pas de lecture
+                sale). Repeatable Read est une isolation par snapshot : pas de
+                lecture fantôme, et si deux transactions modifient la même
+                ligne, la seconde échoue avec une erreur de sérialisation
+                (SQLSTATE 40001) à réessayer, ce qui évite la mise à jour perdue.
+                Serializable (SSI) détecte en plus les anomalies d&apos;écriture
+                croisée (write skew).
+              </li>
+              <li>
+                <span className="font-medium">MySQL InnoDB :</span> Repeatable
+                Read est le niveau par défaut. Les lectures simples utilisent un
+                snapshot (pas de fantôme en lecture), mais un cycle lecture puis
+                écriture d&apos;une valeur calculée par l&apos;application
+                (SELECT, puis UPDATE ... SET solde = 500) peut quand même perdre
+                une mise à jour : aucune erreur n&apos;est levée. Il faut
+                SELECT ... FOR UPDATE, une écriture atomique (SET solde =
+                solde - 500) ou un verrou optimiste (colonne version).
+              </li>
+              <li>
+                <span className="font-medium">Read Committed :</span> la mise à
+                jour perdue reste possible dans les deux moteurs si la valeur est
+                calculée côté application.
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>

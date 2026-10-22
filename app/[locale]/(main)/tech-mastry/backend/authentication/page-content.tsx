@@ -67,7 +67,7 @@ function OAuthFlow() {
   const flows = {
     authorization_code: {
       name: "Authorization Code",
-      desc: "Flow standard pour les applications web server-side",
+      desc: "Flow standard pour les applications web server-side. OAuth 2.1 (en cours de standardisation) rend PKCE obligatoire, même pour les clients confidentiels",
       steps: [
         { from: "Client", to: "Auth Server", label: "1. Redirect /authorize", color: "text-blue-400" },
         { from: "Auth Server", to: "User", label: "2. Login page", color: "text-yellow-400" },
@@ -169,7 +169,7 @@ function requirePermission(permission: string) {
 function AuthComparison() {
   const methods = [
     { name: "JWT", stateless: true, revocable: false, scalable: true, bestFor: "APIs, Microservices, Mobile" },
-    { name: "Session", stateless: false, revocable: true, scalable: false, bestFor: "Apps web traditionnelles" },
+    { name: "Session", stateless: false, revocable: true, scalable: true, bestFor: "Apps web traditionnelles (store partagé type Redis)" },
     { name: "OAuth 2.0", stateless: true, revocable: true, scalable: true, bestFor: "SSO, Third-party login" },
     { name: "API Key", stateless: true, revocable: true, scalable: true, bestFor: "APIs publiques, M2M" },
     { name: "mTLS", stateless: true, revocable: true, scalable: true, bestFor: "Microservices internes" },
@@ -197,6 +197,13 @@ function AuthComparison() {
           ))}</tbody>
         </table>
       </div>
+      <ul className="space-y-1.5 text-xs text-muted-foreground list-disc pl-5">
+        <li><strong>Session</strong> : scalable à condition de stocker les sessions dans un store partagé (Redis, base de données) plutôt qu&apos;en mémoire d&apos;une instance ; l&apos;avantage est la révocation immédiate.</li>
+        <li><strong>JWT</strong> : sans état, donc valide jusqu&apos;à son expiration. Pour le révoquer, il faut une liste de blocage ou un access token très court associé à un refresh token rotatif.</li>
+        <li><strong>OAuth 2.0</strong> : c&apos;est un cadre d&apos;autorisation, pas un format de token. L&apos;access token peut être un JWT (vérifiable localement, difficile à révoquer) ou opaque (révocable, vérifié par introspection, RFC 7662). L&apos;identité relève d&apos;OpenID Connect.</li>
+        <li><strong>Passkeys (WebAuthn)</strong> : authentification sans mot de passe par clé publique, liée au domaine et résistante au phishing ; elle ouvre ensuite une session classique ou délivre des tokens.</li>
+        <li><strong>Bibliothèques</strong> : l&apos;équipe Auth.js (ex-NextAuth) a rejoint Better Auth ; Auth.js reste maintenu surtout pour les correctifs de sécurité, et Better Auth est recommandé pour les nouveaux projets.</li>
+      </ul>
     </div>
   );
 }
@@ -208,7 +215,7 @@ export default function AuthenticationPage() {
         <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-teal-500/10 text-teal-500"><Users className="w-8 h-8" /></div>
         <div className="space-y-4">
           <h1 className="text-4xl font-bold tracking-tight">Authentification & Autorisation</h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">JWT, OAuth 2.0, Sessions, RBAC &mdash; comprenez chaque flow avec des diagrammes interactifs.</p>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">JWT, OAuth 2.0/2.1, Sessions, Passkeys, RBAC &mdash; comprenez chaque flow avec des diagrammes interactifs.</p>
         </div>
       </section>
       <Card className="p-8 border-border/40"><JwtFlow /></Card>

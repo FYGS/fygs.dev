@@ -37,6 +37,8 @@ function initialStepFor(buckets: HashTableBucket[]): HashTableStep {
 export function HashTableVisualization() {
   // État pour la table de hachage
   const [buckets, setBuckets] = useState<HashTableBucket[]>(() => createBuckets(DEFAULT_SIZE));
+  // Taille CIBLE saisie pour « Redimensionner » : la table garde sa taille
+  // actuelle (buckets.length) tant que le redimensionnement n'est pas exécuté.
   const [size, setSize] = useState<number>(DEFAULT_SIZE);
 
   // État pour les étapes de visualisation
@@ -67,10 +69,10 @@ export function HashTableVisualization() {
     setIsPlaying(false);
   }, [size]);
 
-  // Changer la taille réinitialise la table
+  // Saisir une taille ne touche pas à la table : seul « Exécuter » (resize)
+  // réinsère les entrées existantes dans la nouvelle table
   const handleSizeChange = (newSize: number) => {
-    setSize(newSize);
-    initializeHashTable(newSize);
+    setSize(Math.min(20, Math.max(1, Math.trunc(newSize) || DEFAULT_SIZE)));
   };
 
   // Contrôles de la visualisation
@@ -156,17 +158,17 @@ export function HashTableVisualization() {
     switch (operation) {
       case "insert":
         if (key.trim() !== "" && value.trim() !== "") {
-          newSteps = generateInsertSteps(buckets, key, value, size);
+          newSteps = generateInsertSteps(buckets, key, value, buckets.length);
         }
         break;
       case "get":
         if (key.trim() !== "") {
-          newSteps = generateGetSteps(buckets, key, size);
+          newSteps = generateGetSteps(buckets, key, buckets.length);
         }
         break;
       case "remove":
         if (key.trim() !== "") {
-          newSteps = generateRemoveSteps(buckets, key, size);
+          newSteps = generateRemoveSteps(buckets, key, buckets.length);
         }
         break;
       case "clear":

@@ -50,6 +50,26 @@ const config = {
     insight: "TypeScript infère les generics à partir du contexte d'appel. satisfies permet de valider un type tout en gardant l'inférence précise.",
   },
   {
+    title: "const Type Parameters et NoInfer",
+    level: "Avancé",
+    code: `// const type parameter (TS 5.0) : inférence littérale et readonly,
+// sans demander à l'appelant d'écrire "as const"
+function defineRoutes<const T extends readonly string[]>(routes: T): T {
+  return routes;
+}
+const routes = defineRoutes(["/", "/about"]); // readonly ["/", "/about"]
+
+// NoInfer<T> (TS 5.4) : empêche un site d'appel de servir à inférer T
+function createLight<C extends string>(
+  colors: C[],
+  defaultColor?: NoInfer<C>,
+) { /* ... */ }
+
+createLight(["red", "yellow", "green"], "red");   // OK
+createLight(["red", "yellow", "green"], "blue");  // Error : "blue" n'élargit pas C`,
+    insight: "const sur un paramètre de type conserve les littéraux (tuples readonly au lieu de string[]). NoInfer<T> désigne la source unique d'inférence : les autres positions sont seulement vérifiées.",
+  },
+  {
     title: "Builder Pattern Typé",
     level: "Avancé",
     code: `// Builder pattern avec types qui évoluent à chaque étape

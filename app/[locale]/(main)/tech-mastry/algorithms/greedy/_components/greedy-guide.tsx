@@ -145,6 +145,34 @@ function kruskal(n, edges) {
     whenToUse: "Allocation de ressources divisibles, investissements",
     proof: "Le ratio valeur/poids maximal est optimal quand les objets sont divisibles.",
   },
+  {
+    name: "Ordonnancement de Tâches (Job Scheduling)",
+    complexity: "O(n log n + n·D)",
+    description: "Maximiser le profit de tâches d'une unité de temps ayant chacune une échéance et un profit. Trier par profit décroissant, puis placer chaque tâche au dernier créneau libre avant son échéance (D = échéance maximale).",
+    code: `function jobSequencing(jobs) {
+  // jobs : [{ id, deadline, profit }] — chaque tâche dure 1 unité de temps
+  const sorted = [...jobs].sort((a, b) => b.profit - a.profit);
+  const maxDeadline = Math.max(0, ...sorted.map((j) => j.deadline));
+  // slots[t] = tâche exécutée pendant l'unité de temps t (t = 1..maxDeadline)
+  const slots = new Array(maxDeadline + 1).fill(null);
+  let totalProfit = 0;
+
+  for (const job of sorted) {
+    // Le plus tard possible : on garde les créneaux tôt pour les tâches suivantes
+    for (let t = Math.min(job.deadline, maxDeadline); t >= 1; t--) {
+      if (slots[t] === null) {
+        slots[t] = job;
+        totalProfit += job.profit;
+        break;
+      }
+    }
+  }
+
+  return { schedule: slots.slice(1).filter(Boolean), totalProfit };
+}`,
+    whenToUse: "Ordonnancement avec échéances, planification de tâches rémunérées ou à pénalités",
+    proof: "Exchange argument : si une tâche plus rentable est écartée au profit d'une moins rentable, l'échanger ne peut qu'augmenter le profit. Avec une structure Union-Find pour trouver le créneau libre, on descend à O(n log n).",
+  },
 ];
 
 const vsDP = [

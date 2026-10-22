@@ -84,11 +84,11 @@ if (body.email && body.name) {
 
 // Schéma déclaratif
 const UserSchema = z.object({
-  name: z.string().min(2).max(100),
-  email: z.string().email(),
+  name: z.string().min(2, { error: "Nom trop court (2 caractères minimum)" }).max(100),
+  email: z.email(),
   age: z.number().int().min(13).max(150).optional(),
   role: z.enum(["admin", "user", "moderator"]),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 // Le type est dérivé automatiquement !
@@ -102,7 +102,7 @@ export async function POST(req: Request) {
 
   if (!result.success) {
     return Response.json(
-      { errors: result.error.flatten().fieldErrors },
+      { errors: z.flattenError(result.error).fieldErrors },
       { status: 400 },
     );
   }
@@ -117,7 +117,7 @@ const CreateUserSchema = UserSchema.omit({ role: true });
 const UpdateUserSchema = UserSchema.partial().required({ email: true });
 const AdminSchema = UserSchema.extend({ permissions: z.array(z.string()) });`,
     keyTakeaway:
-      "Zod combine validation runtime et inférence de type. z.infer<typeof Schema> élimine la duplication type/validation.",
+      "Zod (v4) combine validation runtime et inférence de type. z.infer<typeof Schema> élimine la duplication type/validation. En v4, les formats sont des fonctions de premier niveau (z.email(), z.url()), z.record() prend toujours deux arguments (clé, valeur), l'option error remplace message, et z.flattenError() / z.treeifyError() remplacent error.flatten() / error.format().",
   },
   {
     title: "Discriminated Unions Runtime",
@@ -196,10 +196,10 @@ const port = Number(process.env.PORT); // NaN silencieux`,
 // Schéma des variables d'environnement
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]),
-  DATABASE_URL: z.string().url(),
+  DATABASE_URL: z.url(),
   JWT_SECRET: z.string().min(32),
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
-  REDIS_URL: z.string().url().optional(),
+  REDIS_URL: z.url().optional(),
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.coerce.number().optional(),
 });
@@ -209,7 +209,7 @@ function validateEnv() {
   const result = envSchema.safeParse(process.env);
   if (!result.success) {
     console.error("❌ Invalid environment variables:");
-    console.error(result.error.flatten().fieldErrors);
+    console.error(z.flattenError(result.error).fieldErrors);
     process.exit(1);
   }
   return result.data;

@@ -49,8 +49,8 @@ const preventionTips = [
   },
   {
     icon: ArrowRight,
-    title: "Rebase régulier",
-    desc: "Exécutez git rebase main quotidiennement sur votre feature branch pour rester synchronisé.",
+    title: "Synchronisation régulière",
+    desc: "Intégrez souvent main dans votre branche : git rebase main si la branche est strictement personnelle (jamais poussée ou seul à l'utiliser), git merge main si elle est partagée.",
   },
   {
     icon: CheckCircle,
@@ -61,6 +61,23 @@ const preventionTips = [
     icon: Lightbulb,
     title: "git rerere",
     desc: "Activez git config rerere.enabled true — Git mémorise vos résolutions et les réapplique automatiquement.",
+  },
+];
+
+const conflictMarkers = `<<<<<<< HEAD
+const API_URL = process.env.API_URL;
+=======
+const API_URL = "https://api.production.com";
+>>>>>>> feature/api-url`;
+
+const mergeVsRebase = [
+  {
+    title: "git merge main (branche partagée)",
+    desc: "Crée un commit de fusion et conserve l'historique tel quel : aucun commit existant n'est réécrit, donc rien à forcer ni à resynchroniser pour les collègues. C'est le choix sûr dès que d'autres personnes utilisent la branche.",
+  },
+  {
+    title: "git rebase main (branche personnelle)",
+    desc: "Rejoue vos commits au-dessus de main et produit de nouveaux commits (nouveaux hashes) : historique linéaire, mais il faudra pousser avec git push --force-with-lease. À réserver aux branches que vous seul utilisez ; ne rebasez jamais une branche déjà partagée.",
   },
 ];
 
@@ -132,6 +149,78 @@ export default function ConflictResolutionPage() {
         {scenarios.map((s) => (
           <ConflictSimulator key={s.title} scenario={s} />
         ))}
+      </section>
+
+      {/* Markers */}
+      <section className="space-y-6">
+        <h2 className="text-2xl font-bold">Lire les Marqueurs de Conflit</h2>
+        <Card className="p-6 space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Lors d&apos;un conflit, Git écrit les deux versions dans le fichier.
+            Pour un <code>git merge feature/api-url</code> lancé depuis votre
+            branche courante :
+          </p>
+          <pre
+            className="rounded-lg bg-muted/50 p-4 font-mono text-xs whitespace-pre-wrap overflow-x-auto"
+            tabIndex={0}
+          >
+            {conflictMarkers}
+          </pre>
+          <ul className="space-y-1.5 text-sm text-muted-foreground list-disc pl-5">
+            <li>
+              Entre <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</code> et{" "}
+              <code>=======</code> : la version de la branche courante.
+            </li>
+            <li>
+              Entre <code>=======</code> et{" "}
+              <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature/api-url</code> : la
+              version de la branche fusionnée.
+            </li>
+            <li>
+              Supprimez les trois marqueurs, gardez le code voulu, puis{" "}
+              <code>git add</code> le fichier et terminez (
+              <code>git commit</code> pour un merge,{" "}
+              <code>git rebase --continue</code> pour un rebase).
+            </li>
+            <li>
+              Astuce : <code>git config merge.conflictStyle zdiff3</code>{" "}
+              ajoute aussi la version d&apos;origine (section{" "}
+              <code>|||||||</code>), très utile pour comprendre l&apos;intention.
+            </li>
+          </ul>
+        </Card>
+      </section>
+
+      {/* Merge vs rebase */}
+      <section className="space-y-6">
+        <h2 className="text-2xl font-bold">Merge ou Rebase ?</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {mergeVsRebase.map((m) => (
+            <Card key={m.title} className="p-5 space-y-2">
+              <h3 className="font-semibold">{m.title}</h3>
+              <p className="text-sm text-muted-foreground">{m.desc}</p>
+            </Card>
+          ))}
+        </div>
+        <Card className="p-5 space-y-2 border-amber-500/30">
+          <h3 className="font-semibold flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-amber-500" />
+            ours / theirs sont inversés pendant un rebase
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Pendant un <strong>merge</strong>, <code>ours</code> (et{" "}
+            <code>HEAD</code>) désigne votre branche courante et{" "}
+            <code>theirs</code> la branche fusionnée. Pendant un{" "}
+            <strong>rebase</strong>, Git part de la branche cible (par exemple{" "}
+            <code>main</code>) et y rejoue vos commits un par un : <code>HEAD</code>{" "}
+            et <code>ours</code> désignent alors la base (main + commits déjà
+            rejoués), et <code>theirs</code> désigne <em>votre</em> commit en
+            cours de rejeu. Les marqueurs <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</code>{" "}
+            montrent donc le code de la branche cible, pas le vôtre. Vérifiez
+            toujours le sens avant d&apos;utiliser{" "}
+            <code>git checkout --ours</code> ou <code>--theirs</code>.
+          </p>
+        </Card>
       </section>
 
       {/* Prevention */}

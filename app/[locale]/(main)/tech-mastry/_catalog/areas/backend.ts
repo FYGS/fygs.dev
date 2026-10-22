@@ -81,10 +81,10 @@ export const backendTopics: Topic[] = [
     prerequisites: ["/tech-mastry/backend/databases"],
     tags: ["cache", "redis", "ttl", "invalidation", "latence", "rate limiting"],
     takeaways: [
-      "Cache-aside lit le cache d'abord puis charge la base en cas de miss ; il faut invalider ou expirer (TTL) l'entrée à chaque écriture pour éviter les données périmées.",
+      "Cache-aside lit le cache d'abord puis charge la base en cas de miss ; il faut écrire en base puis supprimer l'entrée (et/ou la faire expirer par TTL) pour éviter les données périmées.",
       "Write-through garde cache et base cohérents au prix d'écritures plus lentes ; write-behind est très rapide mais perd des données si le cache tombe avant le flush.",
       "Mesurez avant d'optimiser : EXPLAIN ANALYZE, profiling et tracing révèlent le vrai goulot (requête, N+1, réseau).",
-      "Un compteur Redis INCR avec EXPIRE implémente un rate limiting simple, mais la fenêtre fixe tolère des pics à la frontière de deux fenêtres.",
+      "Un compteur Redis INCR avec un TTL posé de façon atomique à la création (SET NX EX, ou script Lua) implémente un rate limiting simple, mais la fenêtre fixe tolère des pics à la frontière de deux fenêtres.",
     ],
   },
   {
@@ -144,7 +144,7 @@ export const backendTopics: Topic[] = [
     prerequisites: ["/tech-mastry/backend/api-design"],
     tags: ["tests", "tdd", "pyramide des tests", "couverture", "intégration", "e2e"],
     takeaways: [
-      "La pyramide recommande beaucoup de tests unitaires rapides, moins de tests d'intégration (API + base) et peu de tests E2E lents et fragiles.",
+      "La pyramide recommande beaucoup de tests unitaires rapides, moins de tests d'intégration (API + base) et peu de tests E2E lents et fragiles ; les proportions (70/20/10) sont une heuristique, le « testing trophy » privilégie l'intégration.",
       "TDD suit le cycle red, green, refactor : un test qui échoue d'abord, le code minimal pour le faire passer, puis un refactoring sous filet de sécurité.",
       "Une couverture élevée ne prouve pas la qualité des assertions ; surveillez aussi la couverture des branches.",
       "Les tests d'intégration vérifient les effets réels (statut HTTP, état en base) là où les mocks cachent les erreurs de contrat.",

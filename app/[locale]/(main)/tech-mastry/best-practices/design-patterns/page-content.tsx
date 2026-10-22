@@ -26,7 +26,7 @@ const patterns: Pattern[] = [
     intent: "Garantir qu'une classe n'a qu'une seule instance globalement accessible.",
     problem: "Accès partagé à une ressource unique (config, DB pool, logger). À utiliser avec parcimonie : état global, tests plus difficiles.",
     solution: "Instance privée + méthode statique getInstance().",
-    realWorld: "Prisma Client, Connection Pool, Configuration globale.",
+    realWorld: "Pool de connexions, configuration globale, client Prisma partagé. En JS/TS, un module ES exporté une seule fois joue souvent le rôle de singleton.",
     code: `class Database {
   private static instance: Database;
   private constructor() { /* connexion */ }
@@ -82,27 +82,31 @@ function createNotification(type: "email" | "sms" | "push"): Notification {
     problem: "Constructeur avec trop de paramètres optionnels.",
     solution: "Chaînage de méthodes (fluent API). Séparation construction / représentation.",
     realWorld: "QueryBuilder, FormBuilder, Zod schemas.",
-    code: `class QueryBuilder {
-  private query: string[] = [];
-  private params: Record<string, unknown> = {};
+    code: `// Démonstration : en production, validez les identifiants (champs, tables)
+// contre une liste blanche ; seules les valeurs passent par des paramètres.
+class QueryBuilder {
+  private clauses: string[] = [];
+  private params: unknown[] = [];
 
-  select(fields: string) { this.query.push(\`SELECT \${fields}\`); return this; }
-  from(table: string) { this.query.push(\`FROM \${table}\`); return this; }
+  select(fields: string) { this.clauses.push(\`SELECT \${fields}\`); return this; }
+  from(table: string) { this.clauses.push(\`FROM \${table}\`); return this; }
   where(condition: string, value: unknown) {
-    this.query.push(\`WHERE \${condition}\`);
-    this.params[condition] = value;
+    this.clauses.push(\`WHERE \${condition}\`); // ex. "age > ?"
+    this.params.push(value);
     return this;
   }
   orderBy(field: string, dir: "ASC" | "DESC" = "ASC") {
-    this.query.push(\`ORDER BY \${field} \${dir}\`);
+    this.clauses.push(\`ORDER BY \${field} \${dir}\`);
     return this;
   }
-  build() { return { sql: this.query.join(" "), params: this.params }; }
+  build() { return { sql: this.clauses.join(" "), params: this.params }; }
 }
 
 const q = new QueryBuilder()
   .select("*").from("users").where("age > ?", 18)
-  .orderBy("name").build();`,
+  .orderBy("name").build();
+// q.sql    -> "SELECT * FROM users WHERE age > ? ORDER BY name ASC"
+// q.params -> [18]`,
     relatedPatterns: ["Factory Method", "Prototype"],
   },
   {

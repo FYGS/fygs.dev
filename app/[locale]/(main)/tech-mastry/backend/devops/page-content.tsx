@@ -40,9 +40,9 @@ on:
       yaml: `build:
   runs-on: ubuntu-latest
   steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with: { node-version: 20 }
+    - uses: actions/checkout@v7
+    - uses: actions/setup-node@v7
+      with: { node-version: 24 }
     - run: pnpm install --frozen-lockfile
     - run: pnpm build
     - run: pnpm type-check`,
@@ -58,14 +58,14 @@ on:
   runs-on: ubuntu-latest
   services:
     postgres:
-      image: postgres:16
+      image: postgres:18
       env: { POSTGRES_DB: test, POSTGRES_PASSWORD: postgres }
       ports: ["5432:5432"]
   steps:
     - run: pnpm test:unit --coverage
     - run: pnpm test:integration
     - run: pnpm lint
-    - uses: codecov/codecov-action@v5`,
+    - uses: codecov/codecov-action@v7`,
     },
     {
       name: "Security",
@@ -78,12 +78,12 @@ on:
   steps:
     - run: pnpm audit --audit-level=high
     # Épinglez une version ou un SHA de commit, évitez @master
-    - uses: aquasecurity/trivy-action@0.28.0
+    - uses: aquasecurity/trivy-action@v0.36.0
       with:
         scan-type: 'fs'
         severity: 'CRITICAL,HIGH'
         exit-code: '1' # sinon le scan n'échoue jamais le job
-    - uses: snyk/actions/node@master
+    - uses: snyk/actions/node@v1.0.0
       env: { SNYK_TOKEN: \${{ secrets.SNYK_TOKEN }} }`,
     },
     {
@@ -202,7 +202,7 @@ function DockerGuide() {
     {
       name: "Dockerfile",
       code: `# Multi-stage build — production optimized
-FROM node:20-alpine AS base
+FROM node:24-alpine AS base
 RUN corepack enable
 
 # Stage 1: Install dependencies
@@ -250,18 +250,18 @@ services:
       redis: { condition: service_started }
 
   db:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     environment:
       POSTGRES_DB: myapp
       POSTGRES_PASSWORD: password
-    volumes: ["pgdata:/var/lib/postgresql/data"]
+    volumes: ["pgdata:/var/lib/postgresql"]
     ports: ["5432:5432"]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
 
   redis:
-    image: redis:7-alpine
+    image: redis:8-alpine
     ports: ["6379:6379"]
 
 volumes:
@@ -272,7 +272,7 @@ volumes:
       code: `# ✅ Docker Best Practices
 
 # 1. Use specific image tags (never :latest in prod)
-FROM node:20.11.1-alpine3.19
+FROM node:24.22.1-alpine3.24
 
 # 2. Multi-stage builds (reduce image size)
 # Seule la dernière stage est livrée : sans outils de build

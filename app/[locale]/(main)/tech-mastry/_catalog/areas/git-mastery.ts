@@ -21,7 +21,7 @@ export const gitMasteryTopics: Topic[] = [
     takeaways: [
       "Git Flow (main, develop, feature, release, hotfix) convient aux releases planifiées mais alourdit la CI/CD continue.",
       "GitHub Flow se résume à une branche main toujours déployable et des feature branches fusionnées par pull request.",
-      "Le trunk-based development impose des branches de moins de 24 h et des feature flags pour masquer le code inachevé.",
+      "Le trunk-based development privilégie des branches très courtes (quelques heures à 1-2 jours) et des feature flags pour masquer le code inachevé.",
       "Plus une branche vit longtemps, plus le risque de conflits et de merge douloureux augmente.",
       "Le bon choix dépend de la cadence de déploiement, de la taille de l'équipe et de la maturité des tests.",
     ],
@@ -50,13 +50,13 @@ export const gitMasteryTopics: Topic[] = [
     kind: "guide",
     level: "intermediate",
     minutes: 15,
-    tags: ["internals", "objets", "blob", "tree", "commit", "dag", "sha-1"],
+    tags: ["internals", "objets", "blob", "tree", "commit", "dag", "sha-1", "pack files", "gc"],
     takeaways: [
-      "Git stocke un contenu adressable : un blob contient uniquement le contenu d'un fichier, jamais son nom.",
+      "Git stocke un contenu adressable : un blob contient uniquement le contenu d'un fichier, jamais son nom, et un même contenu donne le même hash donc un seul blob (déduplication native).",
       "Un tree associe noms, modes et hashes de blobs ou de sous-trees ; un commit pointe vers un tree racine et vers ses parents.",
-      "Un même contenu donne le même hash, donc un seul blob : c'est la déduplication native.",
       "L'historique est un DAG : un merge commit a au moins deux parents, le premier commit n'en a aucun.",
-      "Un tag annoté est un objet à part entière (tagger, message), un tag léger n'est qu'un pointeur.",
+      "Les pack files regroupent les objets et les stockent en deltas ; git gc empaquette les objets loose et git count-objects -vH en donne le bilan.",
+      "Git récent : SHA-256 en option (git init --object-format=sha256), git switch/restore, git maintenance et backend de références reftable (Git 2.45+).",
     ],
   },
   {
@@ -66,13 +66,13 @@ export const gitMasteryTopics: Topic[] = [
     kind: "guide",
     level: "beginner",
     minutes: 15,
-    tags: ["conventional commits", "semver", "pull request", "commit", "versioning", "code review"],
+    tags: ["conventional commits", "semver", "pull request", "commit", "versioning", "code review", "monorepo", "sparse-checkout"],
     takeaways: [
       "Conventional Commits suit le format type(scope): description, par exemple feat(auth): add Google OAuth provider.",
-      "feat déclenche une montée MINOR, fix et perf une montée PATCH, et tout BREAKING CHANGE (ou le suffixe !) une montée MAJOR.",
-      "SemVer MAJOR.MINOR.PATCH : la remise à zéro des chiffres de droite se fait quand un chiffre plus à gauche augmente.",
-      "Des messages comme « WIP » ou « fix bug » ne disent rien : le message doit décrire le quoi et le pourquoi.",
-      "Un template de PR (.github/PULL_REQUEST_TEMPLATE.md) standardise description, type de changement et checklist.",
+      "feat déclenche une montée MINOR, fix une montée PATCH, et tout BREAKING CHANGE (ou le suffixe !) une montée MAJOR.",
+      "SemVer MAJOR.MINOR.PATCH : la remise à zéro des chiffres de droite se fait quand un chiffre plus à gauche augmente (MAJOR remet MINOR et PATCH à 0, MINOR remet PATCH à 0).",
+      "Un message doit dire le quoi et le pourquoi (pas « WIP »), et un template de PR (.github/PULL_REQUEST_TEMPLATE.md) standardise description, type de changement et checklist.",
+      "Pour un monorepo volumineux : clone partiel (--filter=blob:none), git sparse-checkout et Scalar évitent de tout télécharger et matérialiser.",
     ],
   },
   {
@@ -89,6 +89,7 @@ export const gitMasteryTopics: Topic[] = [
       "Résoudre n'est pas choisir un camp : on combine souvent les deux changements (imports fusionnés, filtre conservé après refactoring).",
       "Des branches courtes et des intégrations fréquentes réduisent fortement le nombre de conflits.",
       "git config rerere.enabled true mémorise vos résolutions et les rejoue lors de conflits identiques.",
+      "Sur une branche partagée, préférez git merge ; git rebase réécrit les commits et se réserve aux branches personnelles. Pendant un rebase, ours/HEAD et theirs sont inversés par rapport à un merge.",
     ],
   },
   {

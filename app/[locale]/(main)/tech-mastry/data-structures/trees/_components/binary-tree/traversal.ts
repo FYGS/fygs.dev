@@ -36,9 +36,10 @@ export const getTraversalSteps = (
   const levelorder = (node: TreeNode | null) => {
     if (!node) return;
     const queue: TreeNode[] = [node];
+    let head = 0; // index de tête : défiler en O(1)
 
-    while (queue.length > 0) {
-      const current = queue.shift()!;
+    while (head < queue.length) {
+      const current = queue[head++];
       steps.push(current);
 
       if (current.left) queue.push(current.left);

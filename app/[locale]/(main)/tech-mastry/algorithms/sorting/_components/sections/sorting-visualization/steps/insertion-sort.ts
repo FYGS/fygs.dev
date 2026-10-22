@@ -7,6 +7,11 @@ export function generateInsertionSortSteps(array: number[]): SortingStep[] {
   let comparisons = 0;
   let swaps = 0;
   const sortedIndices: number[] = [0]; // Le premier élément est déjà trié
+  // Pendant qu'on décale, seule la partie [0..j] est intacte ET triée : les
+  // cases j+1..i contiennent un doublon temporaire (case libérée par le
+  // décalage). On ne marque donc "trié" que ce préfixe intact.
+  const intactPrefix = (j: number) =>
+    Array.from({ length: Math.max(0, j + 1) }, (_, k) => k);
 
   // Étape initiale
   steps.push({
@@ -30,7 +35,7 @@ export function generateInsertionSortSteps(array: number[]): SortingStep[] {
       comparisons,
       swaps,
       message: `Sélection de l'élément à l'indice ${i} (${key}) pour insertion.`,
-      sortedIndices: [...sortedIndices],
+      sortedIndices: intactPrefix(j),
     });
 
     // Déplacer les éléments plus grands que key vers la droite
@@ -42,7 +47,7 @@ export function generateInsertionSortSteps(array: number[]): SortingStep[] {
         comparisons,
         swaps,
         message: `Comparaison de ${key} avec l'élément à l'indice ${j} (${arr[j]}).`,
-        sortedIndices: [...sortedIndices],
+        sortedIndices: intactPrefix(j),
       });
 
       if (arr[j] > key) {
@@ -55,7 +60,7 @@ export function generateInsertionSortSteps(array: number[]): SortingStep[] {
           comparisons,
           swaps,
           message: `Déplacement de l'élément ${arr[j]} vers la droite.`,
-          sortedIndices: [...sortedIndices],
+          sortedIndices: intactPrefix(j - 1),
         });
 
         j--;
@@ -74,7 +79,7 @@ export function generateInsertionSortSteps(array: number[]): SortingStep[] {
         comparisons,
         swaps,
         message: `Insertion de ${key} à l'indice ${j + 1}.`,
-        sortedIndices: [...sortedIndices],
+        sortedIndices: [...sortedIndices, i],
       });
     }
 

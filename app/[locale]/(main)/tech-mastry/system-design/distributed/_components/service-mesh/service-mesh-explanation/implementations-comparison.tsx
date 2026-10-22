@@ -26,7 +26,7 @@ export function ImplementationsComparison() {
             <th className="p-2 text-left border text-pink-400">
               <div className="flex items-center gap-1">
                 <div className="w-2 h-2 rounded-full bg-pink-500"></div>
-                AWS App Mesh
+                AWS App Mesh (fin de support)
               </div>
             </th>
           </tr>

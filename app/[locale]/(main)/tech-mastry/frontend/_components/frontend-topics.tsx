@@ -130,9 +130,9 @@ const topics: Topic[] = [
   },
   {
     title: "Next.js Patterns",
-    description: "Server Components, Actions, caching et patterns Next.js 15+.",
+    description: "Server Components, Actions, Cache Components et patterns Next.js 16.",
     category: "Expert",
-    topics: ["RSC", "Server Actions", "ISR", "Middleware", "Parallel Routes"],
+    topics: ["RSC", "Server Actions", "ISR", "proxy", "Parallel Routes"],
     href: "/tech-mastry/frontend/nextjs-patterns",
     icon: Globe,
     color: "text-white",

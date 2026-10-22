@@ -17,7 +17,7 @@ exports[`sorting step generators > heap sort produces a stable, pinned step list
 exports[`sorting step generators > insertion sort produces a stable, pinned step list 1`] = `
 {
   "count": 74,
-  "digest": "1e472101",
+  "digest": "b7ae854e",
 }
 `;
 
@@ -31,7 +31,7 @@ exports[`sorting step generators > merge sort produces a stable, pinned step lis
 exports[`sorting step generators > quick sort produces a stable, pinned step list 1`] = `
 {
   "count": 69,
-  "digest": "22009729",
+  "digest": "2d8ae8f0",
 }
 `;
 

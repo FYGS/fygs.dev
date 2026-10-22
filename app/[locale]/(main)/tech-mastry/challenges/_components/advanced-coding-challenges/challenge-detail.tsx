@@ -56,12 +56,12 @@ export function ChallengeDetail({
       <div className="flex items-center justify-between flex-wrap gap-2">
         <Button variant="outline" onClick={onBack} className="flex items-center gap-2">
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          Back to Challenges
+          Retour aux défis
         </Button>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 text-sm">
             <Star className="h-4 w-4 text-yellow-500" aria-hidden="true" />
-            <span>Points: {userPoints}</span>
+            <span>Points : {userPoints}</span>
           </div>
           <Button variant="outline" asChild className="flex items-center gap-2">
             <Link
@@ -73,7 +73,7 @@ export function ChallengeDetail({
           </Button>
           <Button variant="outline" onClick={resetChallenge} className="flex items-center gap-2">
             <RotateCcw className="h-4 w-4" aria-hidden="true" />
-            Reset
+            Réinitialiser
           </Button>
         </div>
       </div>
@@ -90,7 +90,7 @@ export function ChallengeDetail({
                 {isSolved && (
                   <span className="flex items-center gap-1 text-sm font-normal text-green-600 dark:text-green-400">
                     <CheckCircle className="h-4 w-4" aria-hidden="true" />
-                    Solved
+                    Résolu
                   </span>
                 )}
               </CardTitle>
@@ -116,12 +116,12 @@ export function ChallengeDetail({
               {isRunning ? (
                 <span className="flex items-center gap-2">
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></span>
-                  <span>Running...</span>
+                  <span>Exécution...</span>
                 </span>
               ) : (
                 <>
                   <Play className="h-4 w-4" aria-hidden="true" />
-                  Submit Solution
+                  Soumettre la solution
                 </>
               )}
             </Button>
@@ -132,13 +132,13 @@ export function ChallengeDetail({
             <div>
               <h3 className="font-medium mb-2 flex items-center gap-2">
                 <Code className="h-4 w-4 text-primary" aria-hidden="true" />
-                Problem Statement
+                Énoncé du problème
               </h3>
               <p className="text-muted-foreground">{selectedChallenge.description}</p>
             </div>
 
             <div>
-              <h3 className="font-medium mb-2">Your solution</h3>
+              <h3 className="font-medium mb-2">Votre solution</h3>
               <CodeEditor
                 key={`${selectedChallenge.id}-${editorKey}`}
                 initialCode={initialCode}

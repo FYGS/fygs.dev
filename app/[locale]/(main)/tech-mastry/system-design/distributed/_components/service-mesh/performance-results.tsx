@@ -5,10 +5,17 @@ export function PerformanceResults() {
     <Card>
       <CardHeader>
         <CardTitle className="text-xl">
-          Résultats et Performances (ordres de grandeur indicatifs)
+          Résultats et Performances (comparaison qualitative)
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        <p className="text-sm text-muted-foreground">
+          Les valeurs chiffrées dépendent fortement de la charge, de la
+          version et de la configuration : mesurez sur votre propre
+          plateforme. Les niveaux ci-dessous sont relatifs (sidecar par pod).
+          Le mode ambient d&apos;Istio (ztunnel par nœud) réduit nettement
+          l&apos;empreinte par pod par rapport au mode sidecar.
+        </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="p-4 rounded-lg border bg-blue-900/20 border-blue-800">
             <h4 className="font-medium text-blue-400 mb-2">
@@ -17,23 +24,23 @@ export function PerformanceResults() {
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm">Sans Service Mesh</span>
-                <span className="font-medium text-sm">~1ms</span>
+                <span className="font-medium text-sm">Référence</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm">Linkerd</span>
-                <span className="font-medium text-sm">+0.9ms</span>
+                <span className="font-medium text-sm">Très faible</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm">Istio</span>
-                <span className="font-medium text-sm">+3-5ms</span>
+                <span className="font-medium text-sm">Modérée</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm">Consul Connect</span>
-                <span className="font-medium text-sm">+2-4ms</span>
+                <span className="font-medium text-sm">Modérée</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm">AWS App Mesh</span>
-                <span className="font-medium text-sm">+3-5ms</span>
+                <span className="font-medium text-sm">Modérée</span>
               </div>
             </div>
           </div>
@@ -49,19 +56,19 @@ export function PerformanceResults() {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm">Linkerd</span>
-                <span className="font-medium text-sm">+5-10%</span>
+                <span className="font-medium text-sm">Faible</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm">Istio</span>
-                <span className="font-medium text-sm">+15-30%</span>
+                <span className="font-medium text-sm">Élevé</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm">Consul Connect</span>
-                <span className="font-medium text-sm">+10-20%</span>
+                <span className="font-medium text-sm">Modéré</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm">AWS App Mesh</span>
-                <span className="font-medium text-sm">+15-25%</span>
+                <span className="font-medium text-sm">Modéré à élevé</span>
               </div>
             </div>
           </div>
@@ -77,24 +84,24 @@ export function PerformanceResults() {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm">Linkerd</span>
-                <span className="font-medium text-sm">+10MB/pod</span>
+                <span className="font-medium text-sm">Très faible</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm">Istio</span>
                 <span className="font-medium text-sm">
-                  +40-50MB/pod
+                  Élevée
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm">Consul Connect</span>
                 <span className="font-medium text-sm">
-                  +30-40MB/pod
+                  Moyenne
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm">AWS App Mesh</span>
                 <span className="font-medium text-sm">
-                  +35-45MB/pod
+                  Moyenne
                 </span>
               </div>
             </div>
@@ -105,20 +112,20 @@ export function PerformanceResults() {
           <h4 className="font-medium mb-2">Conclusions</h4>
           <ul className="list-disc pl-5 space-y-1 text-sm">
             <li>
-              <strong>Linkerd</strong> offre les meilleures performances
-              mais moins de fonctionnalités
+              <strong>Linkerd</strong> vise la légèreté (proxy Rust dédié)
+              avec moins de fonctionnalités
             </li>
             <li>
-              <strong>Istio</strong> a l&apos;empreinte la plus lourde
-              mais le plus de fonctionnalités
+              <strong>Istio</strong> a l&apos;empreinte la plus lourde en
+              mode sidecar mais le plus de fonctionnalités
             </li>
             <li>
               <strong>Consul Connect</strong> est un bon compromis avec
               une meilleure compatibilité multi-environnement
             </li>
             <li>
-              <strong>AWS App Mesh</strong> offre une intégration native
-              avec les services AWS et une expérience simplifiée
+              <strong>AWS App Mesh</strong> offrait une intégration native
+              avec les services AWS, mais le service n&apos;est plus supporté depuis le 30 septembre 2026
             </li>
             <li>
               L&apos;impact sur la latence est généralement acceptable

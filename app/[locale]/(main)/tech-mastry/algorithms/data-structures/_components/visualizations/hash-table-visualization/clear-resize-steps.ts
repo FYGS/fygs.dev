@@ -1,3 +1,4 @@
+import { hashFunction } from "./hash-function";
 import type { HashTableBucket, HashTableEntry, HashTableStep } from "./types";
 
 // Générer les étapes pour vider la table de hachage
@@ -101,16 +102,8 @@ export function generateResizeSteps(currentBuckets: HashTableBucket[], newSize: 
   let operationCount = 3;
 
   allEntries.forEach((entry: HashTableEntry, entryIndex) => {
-    // Calculer le nouvel index avec la nouvelle taille
-    const tempHashFunction = (key: string): number => {
-      let hash = 0;
-      for (let i = 0; i < key.length; i++) {
-        hash = (hash + key.charCodeAt(i)) % newSize;
-      }
-      return hash;
-    };
-
-    const newBucketIndex = tempHashFunction(entry.key);
+    // Recalculer l'index avec la nouvelle taille (même fonction de hachage)
+    const newBucketIndex = hashFunction(entry.key, newSize);
 
     // Ajouter l'entrée au nouveau bucket
     newBuckets[newBucketIndex].entries.push(entry);
@@ -124,7 +117,7 @@ export function generateResizeSteps(currentBuckets: HashTableBucket[], newSize: 
         message:
           entryIndex < 5
             ? `Réinsertion de l'entrée (${entry.key}: ${entry.value}) dans le bucket ${newBucketIndex}`
-            : `${allEntries.length - 5} autres entrées réinsérées...`,
+            : `${allEntries.length - 5} ${allEntries.length - 5 > 1 ? "autres entrées réinsérées" : "autre entrée réinsérée"} (étapes abrégées)`,
         operation: "resize",
         operationCount: operationCount++,
       });

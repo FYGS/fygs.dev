@@ -94,7 +94,7 @@ export function CareerHero() {
           <span className="block">Modules</span>
         </div>
         <div>
-          <span className="text-2xl font-bold text-primary">15+</span>{" "}
+          <span className="text-2xl font-bold text-primary">Concrètes</span>{" "}
           <span className="block">Stratégies</span>
         </div>
         <div>

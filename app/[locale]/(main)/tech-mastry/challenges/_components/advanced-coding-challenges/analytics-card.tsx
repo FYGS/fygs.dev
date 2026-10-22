@@ -15,12 +15,12 @@ export function AnalyticsCard({ stats }: { stats: ChallengeStats }) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <BarChart3 className="h-5 w-5 text-primary" aria-hidden="true" />
-          <span>Your Progress</span>
+          <span>Votre progression</span>
         </CardTitle>
         <CardDescription>
           {stats.attempts === 0
-            ? "Submit a solution and your progress shows up here. It is saved in this browser."
-            : `${stats.attempts} submission${stats.attempts === 1 ? "" : "s"} so far. Saved in this browser.`}
+            ? "Soumettez une solution et votre progression s'affichera ici. Elle est enregistrée dans ce navigateur."
+            : `${stats.attempts} soumission${stats.attempts === 1 ? "" : "s"} jusqu'ici. Enregistrées dans ce navigateur.`}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -28,34 +28,34 @@ export function AnalyticsCard({ stats }: { stats: ChallengeStats }) {
           <div className="space-y-4">
             <h3 className="font-medium flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-primary" aria-hidden="true" />
-              Overall
+              Global
             </h3>
 
             <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
               <div className="flex justify-between items-center mb-3">
-                <span className="text-sm">Challenges solved</span>
+                <span className="text-sm">Défis résolus</span>
                 <span className="font-medium">
                   {stats.solved}/{stats.total}
                 </span>
               </div>
-              <Progress value={solvedPercent} className="h-2" aria-label="Challenges solved" />
+              <Progress value={solvedPercent} className="h-2" aria-label="Défis résolus" />
             </div>
 
             <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
               <div className="flex justify-between items-center mb-3">
-                <span className="text-sm">Challenges tried</span>
+                <span className="text-sm">Défis tentés</span>
                 <span className="font-medium">
                   {stats.attempted}/{stats.total}
                 </span>
               </div>
-              <Progress value={triedPercent} className="h-2" aria-label="Challenges tried" />
+              <Progress value={triedPercent} className="h-2" aria-label="Défis tentés" />
             </div>
           </div>
 
           <div className="space-y-4">
             <h3 className="font-medium flex items-center gap-2">
               <Target className="h-4 w-4 text-primary" aria-hidden="true" />
-              By category
+              Par catégorie
             </h3>
 
             {stats.byCategory.map(({ category, solved, total }) => (
@@ -66,7 +66,7 @@ export function AnalyticsCard({ stats }: { stats: ChallengeStats }) {
                     {solved}/{total}
                   </span>
                 </div>
-                <Progress value={percent(solved, total)} className="h-2" aria-label={`${category} solved`} />
+                <Progress value={percent(solved, total)} className="h-2" aria-label={`${category} : résolus`} />
               </div>
             ))}
           </div>

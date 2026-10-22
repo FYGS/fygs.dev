@@ -582,11 +582,11 @@ export function GraphChallenge() {
                 className="p-3 bg-muted/50 rounded-lg font-mono text-sm"
               >
                 <div>
-                  <span className="text-muted-foreground">Input:</span>{" "}
+                  <span className="text-muted-foreground">Entrée :</span>{" "}
                   {example.input}
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Output:</span>{" "}
+                  <span className="text-muted-foreground">Sortie :</span>{" "}
                   {example.output}
                 </div>
               </div>

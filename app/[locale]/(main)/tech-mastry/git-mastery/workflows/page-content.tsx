@@ -4,6 +4,10 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
+  bumpSemver,
+  type SemverVersion,
+} from "../../_utils/semver-bump";
+import {
   Workflow,
   GitCommit,
   Tag,
@@ -105,9 +109,12 @@ const commitExamples = [
 ];
 
 function SemverSection() {
-  const [major, setMajor] = useState(1);
-  const [minor, setMinor] = useState(4);
-  const [patch, setPatch] = useState(2);
+  const [version, setVersion] = useState<SemverVersion>({
+    major: 1,
+    minor: 4,
+    patch: 2,
+  });
+  const { major, minor, patch } = version;
 
   return (
     <Card className="p-6 space-y-4">
@@ -117,21 +124,21 @@ function SemverSection() {
       </h3>
       <div className="flex items-center justify-center gap-1 text-4xl font-mono font-bold">
         <button
-          onClick={() => setMajor((m) => m + 1)}
+          onClick={() => setVersion((v) => bumpSemver(v, "major"))}
           className="text-red-500 hover:bg-red-500/10 px-3 py-1 rounded-lg transition-colors"
         >
           {major}
         </button>
         <span className="text-muted-foreground">.</span>
         <button
-          onClick={() => setMinor((m) => m + 1)}
+          onClick={() => setVersion((v) => bumpSemver(v, "minor"))}
           className="text-blue-500 hover:bg-blue-500/10 px-3 py-1 rounded-lg transition-colors"
         >
           {minor}
         </button>
         <span className="text-muted-foreground">.</span>
         <button
-          onClick={() => setPatch((p) => p + 1)}
+          onClick={() => setVersion((v) => bumpSemver(v, "patch"))}
           className="text-green-500 hover:bg-green-500/10 px-3 py-1 rounded-lg transition-colors"
         >
           {patch}
@@ -143,15 +150,14 @@ function SemverSection() {
         <span className="text-green-500">PATCH</span>
       </div>
       <p className="text-sm text-muted-foreground text-center">
-        Cliquez sur chaque chiffre pour l&apos;incrémenter.{" "}
+        Cliquez sur chaque chiffre pour l&apos;incrémenter : augmenter MAJOR
+        remet MINOR et PATCH à 0, augmenter MINOR remet PATCH à 0.{" "}
         <strong>MAJOR</strong> = breaking changes, <strong>MINOR</strong> =
         nouvelles features, <strong>PATCH</strong> = bug fixes.
       </p>
       <button
         onClick={() => {
-          setMajor(1);
-          setMinor(0);
-          setPatch(0);
+          setVersion({ major: 1, minor: 0, patch: 0 });
         }}
         className="mx-auto block text-xs text-muted-foreground hover:text-primary transition-colors"
       >
@@ -160,6 +166,16 @@ function SemverSection() {
     </Card>
   );
 }
+
+const monorepoCommands = `# Clone partiel : les blobs sont téléchargés à la demande
+git clone --filter=blob:none --sparse https://example.com/org/monorepo.git
+cd monorepo
+
+# Sparse-checkout (mode cone) : ne matérialiser que certains dossiers
+git sparse-checkout set apps/web packages/ui
+
+# Scalar (livré avec Git) : clone partiel + sparse-checkout + maintenance
+scalar clone https://example.com/org/monorepo.git`;
 
 export default function WorkflowsPage() {
   const [copied, setCopied] = useState(false);
@@ -238,6 +254,29 @@ export default function WorkflowsPage() {
       </section>
 
       <SemverSection />
+
+      {/* Monorepo */}
+      <section className="space-y-4">
+        <h2 className="text-2xl font-bold">Git et Monorepo</h2>
+        <Card className="p-6 space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Un monorepo regroupe plusieurs applications et bibliothèques dans un
+            seul dépôt. Quand il grossit, cloner tout l&apos;historique et tous
+            les fichiers devient lent. Git propose trois leviers : le{" "}
+            <strong>clone partiel</strong> (<code>--filter=blob:none</code>),
+            le <strong>sparse-checkout</strong> pour n&apos;extraire que les
+            dossiers utiles, et <strong>Scalar</strong>, qui active ces
+            optimisations (plus la maintenance en arrière-plan) pour les gros
+            dépôts.
+          </p>
+          <pre
+            className="rounded-lg bg-muted/50 p-4 font-mono text-xs whitespace-pre-wrap overflow-x-auto"
+            tabIndex={0}
+          >
+            {monorepoCommands}
+          </pre>
+        </Card>
+      </section>
 
       {/* PR Template */}
       <section className="space-y-4">

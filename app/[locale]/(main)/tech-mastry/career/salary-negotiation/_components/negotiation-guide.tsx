@@ -16,7 +16,7 @@ const steps = [
       "Identifiez la fourchette basse, médiane et haute de votre poste",
       "Prenez en compte le package total : salaire + bonus + equity + avantages",
     ],
-    tip: "Évitez de donner votre salaire actuel en premier : demandez la fourchette du poste et parlez de vos prétentions. La directive européenne 2023/970 sur la transparence salariale encadre cette pratique (pas de question sur l'historique de rémunération, fourchette communiquée) ; son application dépend de la transposition nationale.",
+    tip: "Évitez de donner votre salaire actuel en premier : demandez la fourchette du poste et parlez de vos prétentions. La directive européenne 2023/970 sur la transparence salariale encadre cette pratique (pas de question sur l'historique de rémunération, fourchette communiquée) ; l'échéance de transposition était le 7 juin 2026 et son application dépend de la transposition de chaque pays.",
   },
   {
     step: 2,

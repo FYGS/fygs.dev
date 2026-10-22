@@ -15,11 +15,14 @@ const algorithms = [
     description: "Parcours par niveaux utilisant une file. Trouve le plus court chemin dans un graphe non pondéré.",
     code: `function bfs(graph, start) {
   const visited = new Set([start]);
+  // File = tableau + index de tête (head) : défiler est O(1), donc BFS en O(V+E).
+  // queue.shift() décalerait tout le tableau (O(n)) et ferait dériver vers O(V²).
   const queue = [start];
+  let head = 0;
   const order = [];
   
-  while (queue.length > 0) {
-    const node = queue.shift(); // shift() est O(n) : utiliser un index de tête en production
+  while (head < queue.length) {
+    const node = queue[head++];
     order.push(node);
     
     for (const neighbor of graph[node] || []) {
@@ -37,9 +40,10 @@ const algorithms = [
 function shortestPath(graph, start, end) {
   const visited = new Set([start]);
   const queue = [[start, [start]]];
+  let head = 0; // index de tête : défilement en O(1)
   
-  while (queue.length > 0) {
-    const [node, path] = queue.shift();
+  while (head < queue.length) {
+    const [node, path] = queue[head++];
     if (node === end) return path;
     
     for (const neighbor of graph[node] || []) {
@@ -84,9 +88,13 @@ function dfsIterative(graph, start) {
     if (visited.has(node)) continue;
     visited.add(node);
     
-    for (const neighbor of graph[node] || []) {
-      if (!visited.has(neighbor)) {
-        stack.push(neighbor);
+    // Ordre de visite : la pile est LIFO, le dernier voisin empilé est visité
+    // en premier. On parcourt les voisins à l'envers pour retrouver l'ordre du
+    // DFS récursif (premier voisin d'abord).
+    const neighbors = graph[node] || [];
+    for (let i = neighbors.length - 1; i >= 0; i--) {
+      if (!visited.has(neighbors[i])) {
+        stack.push(neighbors[i]);
       }
     }
   }
@@ -127,13 +135,13 @@ function hasCycle(graph, n) {
   const visited = new Set();
   dist[start] = 0;
   
-  // File de priorité simplifiée : le tri à chaque tour est plus lent que
-  // la complexité annoncée, qui suppose un vrai min-heap (à utiliser en production)
-  const pq = [[0, start]]; // [distance, node]
+  // Tas binaire min (voir MinHeap ci-dessous) : push/pop en O(log n),
+  // d'où O((V+E) log V) au total.
+  const pq = new MinHeap();
+  pq.push([0, start]); // [distance, node]
   
-  while (pq.length > 0) {
-    pq.sort((a, b) => a[0] - b[0]);
-    const [d, u] = pq.shift();
+  while (pq.size > 0) {
+    const [d, u] = pq.pop();
     
     if (visited.has(u)) continue;
     visited.add(u);
@@ -148,6 +156,42 @@ function hasCycle(graph, n) {
   }
   
   return dist;
+}
+
+// Tas binaire min sur des paires [clé, valeur] (comparaison sur la clé)
+class MinHeap {
+  a = [];
+  get size() { return this.a.length; }
+  push(x) {
+    const a = this.a;
+    a.push(x);
+    let i = a.length - 1;
+    while (i > 0) {
+      const p = (i - 1) >> 1;
+      if (a[p][0] <= a[i][0]) break;
+      [a[p], a[i]] = [a[i], a[p]];
+      i = p;
+    }
+  }
+  pop() {
+    const a = this.a;
+    const top = a[0];
+    const last = a.pop();
+    if (a.length > 0) {
+      a[0] = last;
+      let i = 0;
+      for (;;) {
+        const l = 2 * i + 1, r = l + 1;
+        let m = i;
+        if (l < a.length && a[l][0] < a[m][0]) m = l;
+        if (r < a.length && a[r][0] < a[m][0]) m = r;
+        if (m === i) break;
+        [a[m], a[i]] = [a[i], a[m]];
+        i = m;
+      }
+    }
+    return top;
+  }
 }`,
     useCases: ["GPS et navigation", "Routage réseau", "Chemins les plus courts pondérés", "Jeux vidéo (pathfinding)"],
   },
@@ -175,8 +219,9 @@ function topologicalSort(graph, n) {
   }
   
   const order = [];
-  while (queue.length > 0) {
-    const u = queue.shift();
+  let head = 0; // index de tête : défilement en O(1)
+  while (head < queue.length) {
+    const u = queue[head++];
     order.push(u);
     
     for (const v of graph[u] || []) {

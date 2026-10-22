@@ -12,8 +12,8 @@ export default function NextjsPatternsPage() {
         </div>
         <h1 className="text-4xl font-bold">Next.js Patterns</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Patterns avancés pour Next.js 14+ avec App Router, React Server Components,
-          Server Actions, et stratégies de caching.
+          Patterns avancés pour Next.js 16 avec App Router, React Server Components,
+          Server Actions, Cache Components et proxy.
         </p>
       </div>
       <NextjsGuide />
