@@ -2,9 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { z } from "zod";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { presignUpload, safeExtension } from "@/lib/s3-presign";
 
 const uploadSchema = z.object({
   filename: z.string().min(1).max(255),
@@ -20,19 +19,6 @@ const uploadSchema = z.object({
     .min(1)
     .max(500 * 1024 * 1024), // 500MB max
 });
-
-const s3 = new S3Client({
-  region: process.env.S3_REGION || "us-east-1",
-  endpoint: process.env.S3_ENDPOINT,
-  credentials: {
-    accessKeyId: process.env.S3_ACCESS_KEY_ID || "",
-    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || "",
-  },
-  forcePathStyle: true, // Required for MinIO
-});
-
-const BUCKET = process.env.S3_BUCKET || "fygs-videos";
-const PUBLIC_URL_BASE = process.env.S3_PUBLIC_URL || "";
 
 export async function POST(req: NextRequest) {
   const limited = await enforceRateLimit(req, "upload", {
@@ -60,22 +46,15 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const validated = uploadSchema.parse(body);
 
-    // Generate unique key
-    const ext = validated.filename.split(".").pop() || "mp4";
-    const key = `videos/${session.user.id}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
-
-    // Generate presigned PUT URL
-    const command = new PutObjectCommand({
-      Bucket: BUCKET,
-      Key: key,
-      ContentType: validated.contentType,
-      ContentLength: validated.size,
+    const result = await presignUpload({
+      folder: "videos",
+      userId: session.user.id,
+      extension: safeExtension(validated.filename, "mp4"),
+      contentType: validated.contentType,
+      size: validated.size,
     });
 
-    const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 3600 });
-    const publicUrl = `${PUBLIC_URL_BASE}/${key}`;
-
-    return NextResponse.json({ uploadUrl, publicUrl, key });
+    return NextResponse.json(result);
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

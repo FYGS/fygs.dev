@@ -5,6 +5,7 @@ import Link from "next/link";
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
+import { rehypeSanitizeLessonHtml } from "@/lib/learning/sanitize-html";
 import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
 
@@ -88,7 +89,7 @@ export function LessonContentRenderer({
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
-      rehypePlugins={[rehypeRaw, rehypeSlug]}
+      rehypePlugins={[rehypeRaw, rehypeSanitizeLessonHtml, rehypeSlug]}
       components={{
         script: () => null,
         style: () => null,
@@ -129,7 +130,7 @@ export function LessonContentRenderer({
           return (
             <code
               className={cn(
-                "relative rounded bg-secondary/50 px-1.5 py-0.5 font-mono text-sm text-emerald-400",
+                "relative rounded bg-secondary/50 px-1.5 py-0.5 font-mono text-sm text-emerald-700 dark:text-emerald-400",
                 className,
               )}
               {...props}
@@ -176,6 +177,8 @@ export function LessonContentRenderer({
         },
         img: ({ src = "", alt = "", className, ...props }) => {
           const safeSrc = typeof src === "string" ? src : "";
+          // an address removed by the sanitiser leaves nothing to show (next/image refuses an empty src)
+          if (!safeSrc) return null;
           const width =
             typeof props.width === "number"
               ? props.width

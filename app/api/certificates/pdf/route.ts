@@ -4,6 +4,7 @@ import { headers } from 'next/headers';
 import { db } from '@/lib/db';
 import jsPDF from 'jspdf';
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { SITE_URL } from '@/app/_lib/constants';
 
 // Needs Node runtime because auth/email service transitively pulls in nodemailer (depends on 'stream').
 export const runtime = 'nodejs';
@@ -28,7 +29,7 @@ export async function GET(request: Request) {
   if (!session?.user?.id) return NextResponse.json({ ok: false, error: 'UNAUTHENTICATED' }, { status: 401 });
   const userId = session.user.id;
 
-  const cert = await db.certificate.findUnique({ where: { userId_courseId: { userId, courseId } }, select: { issuedAt: true } });
+  const cert = await db.certificate.findUnique({ where: { userId_courseId: { userId, courseId } }, select: { issuedAt: true, code: true } });
   if (!cert) return NextResponse.json({ ok: false, error: 'NOT_FOUND' }, { status: 404 });
   const course = await db.course.findUnique({ where: { id: courseId }, select: { title: true } });
   if (!course) return NextResponse.json({ ok: false, error: 'COURSE_NOT_FOUND' }, { status: 404 });
@@ -63,6 +64,10 @@ export async function GET(request: Request) {
   doc.text('__________________________', w - 340, h - 170);
   doc.text('Fernand SOUALO', w - 300, h - 150);
   doc.setFontSize(9);
+  if (cert.code) {
+    center(`Code de vérification : ${cert.code}`, h - 110, 10);
+    center(`${SITE_URL}/certificates/verify/${cert.code}`, h - 96, 9);
+  }
   center('Ce certificat confirme la complétion réussie conformément aux standards de qualité FYGS DEV.', h - 80, 10);
   const pdfBytes = doc.output('arraybuffer');
 
@@ -70,7 +75,7 @@ export async function GET(request: Request) {
     status: 200,
     headers: {
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename=certificate-${courseId}.pdf`
+      'Content-Disposition': `attachment; filename=certificat-${courseId}.pdf`
     }
   });
 }

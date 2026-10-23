@@ -11,7 +11,7 @@ export class QuizRepository {
             orderBy: { order: "asc" },
           },
         },
-        orderBy: { moduleId: "asc" },
+        orderBy: [{ module: { order: "asc" } }, { createdAt: "asc" }],
       });
     } catch (error) {
       logger.error("Error fetching quizzes for course", {
@@ -24,7 +24,7 @@ export class QuizRepository {
     }
   }
 
-  static async findByCourseIdAndModule(courseId: string, moduleId: number) {
+  static async findByCourseIdAndModule(courseId: string, moduleId: string) {
     try {
       return await db.quiz.findFirst({
         where: { courseId, moduleId },
@@ -48,7 +48,7 @@ export class QuizRepository {
 
   static async create(data: {
     courseId: string;
-    moduleId: number;
+    moduleId: string;
     title: string;
   }) {
     try {

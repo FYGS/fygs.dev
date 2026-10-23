@@ -1,19 +1,19 @@
 /**
  * Certificate Issuance Service
  *
- * Implements transactional certificate issuance with single-issue guarantee
- * as defined in FR-013 and FR-040.
- *
- * Updated to use comprehensive completion tracking (lessons + quizzes + exams).
+ * Transactional certificate issuance with a single-issue guarantee (FR-013, FR-040).
+ * Completion is the one rule of lib/learning/outline.ts: every published lesson done,
+ * every quiz passed and the final exam passed when the course has one.
  */
 
 import { db } from "./db";
-import { CourseCompletionService } from "./course-completion.service";
+import { loadLearnerCourseState } from "./learning/course-state";
 
 export interface CertificateIssuanceResult {
   success: boolean;
   certificate?: {
     id: string;
+    code: string;
     issuedAt: Date;
   };
   error?: string;
@@ -27,6 +27,8 @@ export interface CourseCompletionData {
   totalLessons: number;
   completionPercentage: number;
 }
+
+const certificateSelect = { id: true, code: true, issuedAt: true } as const;
 
 export class CertificateService {
   /**
@@ -54,16 +56,8 @@ export class CertificateService {
       const result = await db.$transaction(async (tx) => {
         // Check if certificate already exists (idempotent guard)
         const existingCertificate = await tx.certificate.findUnique({
-          where: {
-            userId_courseId: {
-              userId,
-              courseId,
-            },
-          },
-          select: {
-            id: true,
-            issuedAt: true,
-          },
+          where: { userId_courseId: { userId, courseId } },
+          select: certificateSelect,
         });
 
         if (existingCertificate) {
@@ -76,12 +70,7 @@ export class CertificateService {
 
         // Verify enrollment exists
         const enrollment = await tx.enrollment.findUnique({
-          where: {
-            userId_courseId: {
-              userId,
-              courseId,
-            },
-          },
+          where: { userId_courseId: { userId, courseId } },
           select: { id: true },
         });
 
@@ -89,46 +78,17 @@ export class CertificateService {
           throw new Error("User not enrolled in course");
         }
 
-        // Re-verify completion percentage within transaction
-        const lessons = await tx.lesson.findMany({
-          where: {
-            courseId,
-            published: true,
-          },
-          select: { id: true },
-        });
-
-        const completedProgress = await tx.progress.count({
-          where: {
-            userId,
-            lessonId: { in: lessons.map((l) => l.id) },
-            completed: true,
-          },
-        });
-
-        const actualCompletionPercentage =
-          lessons.length > 0
-            ? Math.floor((completedProgress / lessons.length) * 100)
-            : 0;
-
-        if (actualCompletionPercentage < 100) {
+        // Re-verify completion from the records, whatever the caller claims
+        const { progress } = await loadLearnerCourseState(userId, courseId);
+        if (!progress.isComplete) {
           throw new Error(
-            `Actual completion is ${actualCompletionPercentage}%, certificate requires 100%`
+            `Actual completion is ${progress.percent}%, certificate requires 100%`
           );
         }
 
-        // Issue certificate with immutable timestamp
-        const issuedAt = new Date();
         const certificate = await tx.certificate.create({
-          data: {
-            userId,
-            courseId,
-            issuedAt,
-          },
-          select: {
-            id: true,
-            issuedAt: true,
-          },
+          data: { userId, courseId, issuedAt: new Date() },
+          select: certificateSelect,
         });
 
         return {
@@ -147,7 +107,7 @@ export class CertificateService {
       if ((error as { code?: string } | null)?.code === "P2002") {
         const existing = await db.certificate.findUnique({
           where: { userId_courseId: { userId, courseId } },
-          select: { id: true, issuedAt: true },
+          select: certificateSelect,
         });
         if (existing) {
           return { success: true, certificate: existing, alreadyIssued: true };
@@ -167,7 +127,6 @@ export class CertificateService {
 
   /**
    * Check if user is eligible for certificate issuance
-   * Uses comprehensive completion tracking (lessons + quizzes + exam)
    *
    * @param userId - User ID
    * @param courseId - Course ID
@@ -175,18 +134,9 @@ export class CertificateService {
    */
   static async checkCertificateEligibility(userId: string, courseId: string) {
     try {
-      // Check enrollment
       const enrollment = await db.enrollment.findUnique({
-        where: {
-          userId_courseId: {
-            userId,
-            courseId,
-          },
-        },
-        select: {
-          id: true,
-          enrolledAt: true,
-        },
+        where: { userId_courseId: { userId, courseId } },
+        select: { id: true, enrolledAt: true },
       });
 
       if (!enrollment) {
@@ -197,18 +147,9 @@ export class CertificateService {
         };
       }
 
-      // Check existing certificate
       const existingCertificate = await db.certificate.findUnique({
-        where: {
-          userId_courseId: {
-            userId,
-            courseId,
-          },
-        },
-        select: {
-          id: true,
-          issuedAt: true,
-        },
+        where: { userId_courseId: { userId, courseId } },
+        select: certificateSelect,
       });
 
       if (existingCertificate) {
@@ -221,21 +162,19 @@ export class CertificateService {
         };
       }
 
-      // Use comprehensive completion service
-      const eligibility = await CourseCompletionService.checkEligibility(
-        userId,
-        courseId
-      );
+      const { progress } = await loadLearnerCourseState(userId, courseId);
 
       return {
-        eligible: eligibility.eligible,
-        reason: eligibility.eligible
-          ? "Course completed"
-          : "Course not completed",
-        completionPercentage: eligibility.completion,
+        eligible: progress.isComplete,
+        reason: progress.isComplete ? "Course completed" : "Course not completed",
+        completionPercentage: progress.percent,
         enrollmentId: enrollment.id,
-        requirements: eligibility.requirements,
-        breakdown: eligibility.breakdown,
+        requirements: {
+          lessons: progress.lessons.done === progress.lessons.total,
+          quizzes: progress.quizzes.done === progress.quizzes.total,
+          exam: !progress.exam.required || progress.exam.passed,
+        },
+        breakdown: progress,
       };
     } catch (error) {
       console.error("Certificate eligibility check failed:", error);
@@ -255,40 +194,20 @@ export class CertificateService {
    */
   static async getUserCertificates(userId: string) {
     try {
-      const certificates = await db.certificate.findMany({
+      return await db.certificate.findMany({
         where: { userId },
         select: {
           id: true,
+          code: true,
           userId: true,
           courseId: true,
           issuedAt: true,
+          course: {
+            select: { id: true, title: true, slug: true, description: true },
+          },
         },
-        orderBy: {
-          issuedAt: "desc",
-        },
+        orderBy: { issuedAt: "desc" },
       });
-
-      // Manually fetch course details for each certificate
-      const certificatesWithCourses = await Promise.all(
-        certificates.map(async (cert) => {
-          const course = await db.course.findUnique({
-            where: { id: cert.courseId },
-            select: {
-              id: true,
-              title: true,
-              slug: true,
-              description: true,
-            },
-          });
-
-          return {
-            ...cert,
-            course,
-          };
-        })
-      );
-
-      return certificatesWithCourses;
     } catch (error) {
       console.error("Failed to get user certificates:", error);
       return [];

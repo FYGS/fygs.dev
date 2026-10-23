@@ -121,6 +121,26 @@ describe("auth gate", () => {
     },
   );
 
+  it.each(["/fr/learn/react", "/fr/learn/react/lessons/variables", "/fr/learn/react/quizzes/q1", "/fr/learn/react/exam"])(
+    "protects the learning area: %s",
+    async (path) => {
+      const res = await proxy(req(path));
+      expect(location(res)).toBe(`/fr/auth/login?callbackUrl=${encodeURIComponent(path)}&reason=auth_required`);
+    },
+  );
+
+  it("lets an authenticated learner into the learning area without any database lookup", async () => {
+    m.getSession.mockResolvedValue({ user: { id: "u1" } });
+    const res = await proxy(req("/fr/learn/react/lessons/variables"));
+    expect(res.status).toBe(200); // the page decides who may open what (lib/learning/page-context.ts)
+  });
+
+  it("keeps the certificate verification page public while the rest of /certificates needs a session", async () => {
+    const verify = await proxy(req("/fr/certificates/verify/0123456789abcdef0123456789abcdef"));
+    expect(verify.status).toBe(200);
+    expect(location(await proxy(req("/fr/certificates/some-course-id")))).toMatch(/^\/fr\/auth\/login\?/);
+  });
+
   describe("the application area is French only", () => {
     it.each([
       ["/en/dashboard", "/fr/dashboard"],

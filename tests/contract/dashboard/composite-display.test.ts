@@ -216,7 +216,9 @@ describe("Dashboard Composite Display Contract Tests (FR-014)", () => {
       expect(completedLessons).toBe(1);
       expect(progressPercentage).toBe(33); // 1/3 = 33%
 
-      // The dashboard's own summary agrees
+      // The dashboard's own summary agrees. The fixture's certificate belongs to other tests: the
+      // summary reports the certificate record, so it is removed to look at a learner who has none.
+      await db.certificate.deleteMany({ where: { userId: testUserId } });
       const [summary] = await getUserCoursesProgress(testUserId);
       expect(summary).toMatchObject({
         courseId: testCourseId,

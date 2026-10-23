@@ -1,9 +1,6 @@
 import { maintenanceConfig } from "@/config/maintenance";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { AccessService } from "@/lib/access-service";
-import { AnalyticsHelper } from "@/lib/analytics-helper";
 import { auth } from "@/lib/auth";
 import { isTranslatedPath } from "@/lib/locale-utils";
 
@@ -83,7 +80,11 @@ const PROTECTED_PREFIXES = [
   "/settings",
   "/certificates",
   "/admin",
+  "/learn", // lessons, quizzes, exam: who may open what is decided by the page (lib/learning/page-context.ts)
 ];
+
+// Anyone given a certificate code can check it: no sign-in
+const PUBLIC_UNDER_PROTECTED = ["/certificates/verify/"];
 
 // const PUBLIC_PREFIXES = [
 //   "/",
@@ -133,18 +134,14 @@ function buildInternalRedirect(
   }
 }
 
-// Match lesson paths: /[locale]/formations/[course]/lessons/[lesson] or /[locale]/learn/[course]/lessons/[lesson]
-const LESSON_PATH_REGEX =
-  /^\/(?:fr|en|es)\/(?:formations|learn)\/[^\/]+\/lessons\/[^\/]+$/;
-
 function isAuthRoute(path: string): boolean {
   const pathWithoutLocale = getPathWithoutLocale(path);
   return AUTH_ROUTE_PREFIXES.some((p) => pathWithoutLocale.startsWith(p));
 }
 
 function isProtectedRoute(path: string): boolean {
-  if (LESSON_PATH_REGEX.test(path)) return true; // lesson pages always protected
   const pathWithoutLocale = getPathWithoutLocale(path);
+  if (PUBLIC_UNDER_PROTECTED.some((p) => pathWithoutLocale.startsWith(p))) return false;
   return PROTECTED_PREFIXES.some(
     (p) => pathWithoutLocale === p || pathWithoutLocale.startsWith(p + "/"),
   );
@@ -297,110 +294,6 @@ export async function proxy(request: NextRequest) {
     loginUrl.searchParams.set("callbackUrl", pathname + nextUrl.search);
     loginUrl.searchParams.set("reason", "auth_required");
     return NextResponse.redirect(loginUrl);
-  }
-
-  // Enhanced lesson access control with course-specific logic
-  if (LESSON_PATH_REGEX.test(pathname)) {
-    try {
-      const pathSegments = pathname.split("/");
-      // Path structure: /[locale]/formations/[course]/lessons/[lesson]
-      const locale = pathSegments[1];
-      const courseSlug = pathSegments[3];
-      const lessonSlug = pathSegments[5];
-
-      if (!courseSlug || !lessonSlug) {
-        return NextResponse.redirect(
-          new URL(`/${locale}/formations`, request.url),
-        );
-      }
-
-      // Get lesson and course information
-      const lesson = await db.lesson.findFirst({
-        where: {
-          slug: lessonSlug,
-          course: { slug: courseSlug },
-          published: true, // Only published lessons accessible
-        },
-        select: {
-          id: true,
-          order: true,
-          courseId: true,
-          course: {
-            select: {
-              id: true,
-              accessTier: true,
-              previewEnabled: true,
-              category: true,
-              level: true,
-              published: true,
-              tags: { include: { tag: true } },
-            },
-          },
-        },
-      });
-
-      if (!lesson || !lesson.course.published) {
-        // Lesson or course not found/published → redirect to formations
-        const locale = pathSegments[1];
-        return NextResponse.redirect(
-          new URL(`/${locale}/formations`, request.url),
-        );
-      }
-
-      // Only proceed with access evaluation if user is authenticated
-      if (userId) {
-        const accessResult = await AccessService.checkCourseAccess(
-          userId,
-          lesson.courseId,
-        );
-
-        if (!accessResult.canAccessLessons) {
-          // Check if this is the first lesson and preview is enabled
-          const firstLesson = await db.lesson.findFirst({
-            where: { courseId: lesson.courseId, published: true },
-            orderBy: { order: "asc" },
-            select: { slug: true, order: true },
-          });
-
-          const isFirstLesson = firstLesson && firstLesson.slug === lessonSlug;
-
-          if (isFirstLesson && accessResult.canPreviewFirstLesson) {
-            // Allow preview access and track analytics
-            try {
-              await AnalyticsHelper.recordRecommendationImpression(userId, {
-                recommendationType: "similar_courses",
-                courseIds: [lesson.courseId],
-                position: 1,
-                context: "course_page",
-                timestamp: new Date().toISOString(),
-              });
-            } catch (analyticsError) {
-              // Don't fail request for analytics errors
-              console.warn("[middleware] Analytics error:", analyticsError);
-            }
-          } else {
-            // No access → redirect to course page with upgrade prompt
-            const locale = pathSegments[1];
-            const courseUrl = new URL(
-              `/${locale}/formations/${courseSlug}`,
-              request.url,
-            );
-            courseUrl.searchParams.set("locked", "1");
-            if (!isFirstLesson) {
-              courseUrl.searchParams.set("lesson", lessonSlug);
-            }
-            return NextResponse.redirect(courseUrl);
-          }
-        }
-      }
-    } catch (error) {
-      console.error("[middleware] Lesson access evaluation failed:", error);
-      // On error, redirect to course catalog to prevent access issues
-      const locale = extractLocaleFromPath(pathname) || DEFAULT_LOCALE;
-      return NextResponse.redirect(
-        new URL(`/${locale}/formations`, request.url),
-      );
-    }
   }
 
   // Allow request to continue for public routes or authorized protected routes

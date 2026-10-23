@@ -133,6 +133,7 @@ export function AdminListShell({
   searchLabel,
   selects = [],
   summary,
+  actions,
   pager,
   children,
 }: {
@@ -143,14 +144,19 @@ export function AdminListShell({
   searchLabel: string;
   selects?: FilterSelect[];
   summary?: ReactNode;
+  /** Buttons next to the page title (create...). */
+  actions?: ReactNode;
   pager: { page: number; pages: number; total: number; pageSize: number };
   children: ReactNode;
 }) {
   return (
     <div className="space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
-        <p className="text-muted-foreground">{description}</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+          <p className="text-muted-foreground">{description}</p>
+        </div>
+        {actions}
       </div>
 
       {summary}

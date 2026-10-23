@@ -113,9 +113,7 @@ export function CourseCardShared({
     switch (accessState) {
       case "ENROLLED":
         return {
-          href: course.firstLessonSlug
-            ? `/formations/${course.slug}/lessons/${course.firstLessonSlug}`
-            : `/formations/${course.slug}`,
+          href: `/learn/${course.slug}`,
           label: content.cta.continue.value,
           icon: <Play className="h-4 w-4" />,
         };
@@ -207,10 +205,12 @@ export function CourseCardShared({
           {course.description}
         </p>
         <div className="flex items-center gap-4 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            {hours}h
-          </span>
+          {hours > 0 && (
+            <span className="flex items-center gap-1">
+              <Clock className="h-3 w-3" aria-hidden />
+              {hours}h
+            </span>
+          )}
           <span className="flex items-center gap-1">
             <Users className="h-3 w-3" />
             {formatNumber(enrollmentCount)}
@@ -249,17 +249,13 @@ export function CourseCardShared({
               )}
           </div>
           <div className="flex gap-2">
-            {showPreviewCTA &&
-              course.previewEnabled &&
-              course.firstLessonSlug && (
+            {showPreviewCTA && course.previewEnabled && (
                 <Button
                   asChild
                   variant="outline"
                   size={size === "compact" ? "sm" : "default"}
                 >
-                  <Link
-                    href={`/formations/${course.slug}/lessons/${course.firstLessonSlug}?preview=1`}
-                  >
+                  <Link href={`/learn/${course.slug}`}>
                     <Play className="h-4 w-4 mr-1" />{" "}
                     {content.cta.preview.value}
                   </Link>

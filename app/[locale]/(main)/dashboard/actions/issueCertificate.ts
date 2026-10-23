@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { CertificateService } from "@/lib/certificate-service";
-import { AnalyticsHelper } from "@/lib/analytics-helper";
+import { afterCertificateIssued } from "@/lib/learning/completion";
 import { auth } from "@/lib/auth";
 
 const issueCertificateSchema = z.object({
@@ -17,6 +17,7 @@ export type IssueCertificateResult = {
   message: string;
   certificate?: {
     id: string;
+    code?: string;
     issuedAt: Date;
     courseTitle?: string;
   };
@@ -81,6 +82,7 @@ export async function issueCertificate(
         certificate: certificate
           ? {
               id: certificate.id,
+              code: certificate.code,
               issuedAt: certificate.issuedAt,
               courseTitle: certificate.course.title,
             }
@@ -106,7 +108,7 @@ export async function issueCertificate(
     const issuanceData = {
       userId,
       courseId,
-      completedLessons: eligibility.breakdown?.lessons.completed || 0,
+      completedLessons: eligibility.breakdown?.lessons.done || 0,
       totalLessons: eligibility.breakdown?.lessons.total || 0,
       completionPercentage: eligibility.completionPercentage,
     };
@@ -124,30 +126,21 @@ export async function issueCertificate(
     // Get course title for response
     const course = await db.course.findUnique({
       where: { id: courseId },
-      select: { title: true },
+      select: { title: true, slug: true },
     });
 
-    // Total time the user spent watching this course's lessons
-    const watched = await db.progress.aggregate({
-      where: { userId, lesson: { courseId } },
-      _sum: { watchTime: true },
-    });
-
-    // Log analytics event
-    await AnalyticsHelper.recordCertificateIssuance(userId, {
-      certificateId: result.certificate!.id,
-      courseId,
-      courseTitle: course?.title,
-      completionDate: new Date().toISOString(),
-      totalLessons: eligibility.breakdown?.lessons.total || 0,
-      totalWatchTime: watched._sum.watchTime ?? 0,
-      timestamp: new Date().toISOString(),
-    });
+    // Effects of the first issue (XP, notification, email, analytics); never repeated
+    if (!result.alreadyIssued) {
+      await afterCertificateIssued(userId, courseId, result.certificate!);
+    }
 
     // Revalidate relevant paths
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/certificates");
-    revalidatePath(`/formations/${courseId}`);
+    if (course?.slug) {
+      revalidatePath(`/formations/${course.slug}`);
+      revalidatePath(`/learn/${course.slug}`, "layout");
+    }
     revalidatePath(`/certificates/${courseId}`);
 
     return {
@@ -155,6 +148,7 @@ export async function issueCertificate(
       message: `Certificate issued for ${course?.title || "course"}`,
       certificate: {
         id: result.certificate!.id,
+        code: result.certificate!.code,
         issuedAt: result.certificate!.issuedAt,
         courseTitle: course?.title,
       },

@@ -1,4 +1,4 @@
-import { test as base, expect, type Page } from "@playwright/test";
+import { test as base, expect, type Cookie, type Page } from "@playwright/test";
 
 import { PASSWORD, uniqueIp } from "./db";
 
@@ -41,14 +41,39 @@ export const test = base.extend<{ lang: Lang; pageErrorGuard: void }>({
   },
 });
 
-/** Signs in through the real auth endpoint (shares cookies with `page`). */
+/** Sessions already opened by this worker, per account: the sign-in endpoint allows 10 attempts per e-mail and 15 minutes. */
+const sessionCookies = new Map<string, Cookie[]>();
+
+async function hasSession(page: Page) {
+  const res = await page.request.get("/api/auth/get-session", {
+    headers: { "x-forwarded-for": uniqueIp() },
+  });
+  if (!res.ok()) return false;
+  const body = await res.json().catch(() => null);
+  return Boolean(body?.user);
+}
+
+/**
+ * Signs in through the real auth endpoint (shares cookies with `page`). A session opened earlier for the same
+ * account in this worker is reused while the server still accepts it, so many tests can use the seeded admin
+ * without running into the per-e-mail sign-in limit (which stays as strict as in production).
+ */
 export async function signInViaApi(page: Page, email: string, password = PASSWORD) {
+  const cached = sessionCookies.get(email);
+  if (cached) {
+    await page.context().addCookies(cached);
+    if (await hasSession(page)) return;
+  }
   const res = await page.request.post("/api/auth/sign-in/email", {
     data: { email, password },
     // page.request bypasses context.route: set the rate-limit bucket here
     headers: { origin: new URL(process.env.E2E_BASE_URL!).origin, "x-forwarded-for": uniqueIp() },
   });
   expect(res.ok(), `sign-in API answered ${res.status()}`).toBe(true);
+  sessionCookies.set(
+    email,
+    (await page.context().cookies()).filter((c) => !["locale_selected", "NEXT_LOCALE"].includes(c.name)),
+  );
 }
 
 /** POST to the app's API from the test runner with its own rate-limit bucket. */

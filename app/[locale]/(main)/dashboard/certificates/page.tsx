@@ -36,7 +36,7 @@ export default async function CertificatesIndexPage() {
           Mes certificats
         </h1>
         <p className="text-sm text-muted-foreground">
-          Certificats émis après complétion à 100% d&apos;un cours.
+          Un certificat est délivré quand toutes les leçons, tous les quiz et l&apos;examen final éventuel d&apos;une formation sont terminés.
         </p>
       </div>
       {certificates.length === 0 && (
@@ -60,7 +60,10 @@ export default async function CertificatesIndexPage() {
                   {cert.course.title}
                 </h2>
                 <p className="text-xs text-muted-foreground">
-                  Délivré le {issued}
+                  Délivré le {issued} · code{" "}
+                  <Link href={`/certificates/verify/${cert.code}`} className="font-mono underline">
+                    {cert.code.slice(0, 8)}…
+                  </Link>
                 </p>
               </div>
               <div className="flex items-center gap-2">

@@ -20,11 +20,17 @@ export async function seedVisualSupports(
     courseIndex++
   ) {
     const course = supportCourses[courseIndex];
+    const firstModule = await prisma.module.findFirst({
+      where: { courseId: course.id },
+      orderBy: { order: "asc" },
+      select: { id: true },
+    });
+    if (!firstModule) continue;
 
     await prisma.visualSupport.create({
       data: {
         courseId: course.id,
-        moduleId: courseIndex + 1,
+        moduleId: firstModule.id,
         title:
           courseIndex === 0
             ? "Fondamentaux JavaScript"
@@ -41,7 +47,7 @@ export async function seedVisualSupports(
     const quiz = await prisma.quiz.create({
       data: {
         courseId: course.id,
-        moduleId: courseIndex + 1,
+        moduleId: firstModule.id,
         title: `Quiz - Module ${courseIndex + 1}`,
       },
     });

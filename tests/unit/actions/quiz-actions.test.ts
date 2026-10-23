@@ -10,7 +10,16 @@ const m = vi.hoisted(() => ({
   attemptCreate: vi.fn(),
   attemptUpdateMany: vi.fn(),
   answerUpsert: vi.fn(),
+  resultFindUnique: vi.fn(),
+  completeCourse: vi.fn(),
+  rewardQuiz: vi.fn(),
+  isStaff: vi.fn(),
 }));
+
+vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
+vi.mock("@/lib/learning/completion", () => ({ completeCourseIfDone: m.completeCourse }));
+vi.mock("@/lib/learning/rewards", () => ({ rewardQuizPassed: m.rewardQuiz }));
+vi.mock("@/lib/learning/access", () => ({ isCourseStaff: m.isStaff }));
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: m.getSession } } }));
 vi.mock("next/headers", () => ({ headers: vi.fn(() => Promise.resolve(new Headers())) }));
@@ -24,7 +33,7 @@ vi.mock("@/lib/db", () => ({
   db: {
     quizQuestion: { findFirst: m.questionFindFirst },
     quiz: { findUnique: m.quizFindUnique },
-    quizResult: { upsert: m.resultUpsert },
+    quizResult: { upsert: m.resultUpsert, findUnique: m.resultFindUnique },
     quizAttempt: { findMany: m.attemptFindMany, create: m.attemptCreate, updateMany: m.attemptUpdateMany },
     quizAttemptAnswer: { upsert: m.answerUpsert },
     $transaction: (operations: Promise<unknown>[]) => Promise.all(operations),
@@ -38,7 +47,7 @@ const questions = [
   { id: "q2", options: ["a", "b"], correct: 0, explanation: null },
   { id: "q3", options: ["a", "b", "c", "d"], correct: 3, explanation: "d it is" },
 ];
-const quiz = { courseId: "course-1", questions };
+const quiz = { courseId: "course-1", course: { slug: "course-one" }, questions };
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -46,6 +55,15 @@ beforeEach(() => {
   m.checkCourseAccess.mockResolvedValue({ canAccessCourse: true });
   m.quizFindUnique.mockResolvedValue(quiz);
   m.resultUpsert.mockResolvedValue({});
+  m.resultFindUnique.mockResolvedValue(null);
+  m.rewardQuiz.mockResolvedValue(null);
+  m.isStaff.mockResolvedValue(false);
+  m.completeCourse.mockResolvedValue({
+    progress: { percent: 50 },
+    isComplete: false,
+    certificate: null,
+    justIssued: false,
+  });
   // no sitting in progress and none finished: the first answer starts one
   m.attemptFindMany.mockResolvedValue([]);
   m.attemptCreate.mockResolvedValue({ id: "attempt-1" });

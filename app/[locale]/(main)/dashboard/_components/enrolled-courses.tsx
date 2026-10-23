@@ -1,73 +1,28 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { db } from "@/lib/db";
-import { Play } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { Award, Play } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { getUserCoursesProgressOnce } from "@/lib/progress-summary";
 
 interface EnrolledCoursesProps {
   userId: string;
 }
 
+/** The courses in progress, most recently worked on first: the top row is where to resume. */
 export async function EnrolledCourses({ userId }: EnrolledCoursesProps) {
-  const enrollments = await db.enrollment.findMany({
-    where: { userId },
-    include: {
-      course: {
-        include: {
-          lessons: {
-            where: { published: true },
-            orderBy: { order: "asc" },
-            select: { id: true, duration: true, slug: true },
-          },
-        },
-      },
-    },
-    orderBy: { enrolledAt: "desc" },
-    take: 6,
-  });
+  const courses = (await getUserCoursesProgressOnce(userId)).slice(0, 6);
 
-  const coursesWithProgress = await Promise.all(
-    enrollments.map(async (enrollment: any) => {
-      const progress = await db.progress.findMany({
-        where: {
-          userId,
-          lesson: {
-            courseId: enrollment.course.id,
-          },
-        },
-      });
-
-      const totalLessons = enrollment.course.lessons.length;
-      const completedLessons = progress.filter((p: any) => p.completed).length;
-      const progressPercentage = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
-
-      // Determine next lesson to continue
-      const completedSet = new Set(progress.filter((p: any) => p.completed).map((p: any) => p.lessonId));
-      const nextLesson = enrollment.course.lessons.find((l: any) => !completedSet.has(l.id)) || enrollment.course.lessons[0];
-
-      return {
-        ...enrollment,
-        progressPercentage: Math.round(progressPercentage),
-        completedLessons,
-        totalLessons,
-        nextLessonSlug: nextLesson?.slug || null,
-      };
-    })
-  );
-
-  if (coursesWithProgress.length === 0) {
+  if (courses.length === 0) {
     return (
       <Card>
         <CardHeader>
           <CardTitle>Mes formations</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8">
-            <p className="text-muted-foreground mb-4">
-              Vous n&apos;êtes inscrit à aucune formation pour le moment.
-            </p>
+          <div className="py-8 text-center">
+            <p className="mb-4 text-muted-foreground">Vous n&apos;êtes inscrit à aucune formation pour le moment.</p>
             <Button asChild>
               <Link href="/formations">Découvrir les formations</Link>
             </Button>
@@ -82,51 +37,54 @@ export async function EnrolledCourses({ userId }: EnrolledCoursesProps) {
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Mes formations</CardTitle>
         <Button variant="outline" size="sm" asChild>
-          <Link href="/formations">Voir tout</Link>
+          <Link href="/dashboard/my-courses">Voir tout</Link>
         </Button>
       </CardHeader>
       <CardContent className="space-y-4">
-        {coursesWithProgress.map((enrollment: any) => (
+        {courses.map((course, index) => (
           <div
-            key={enrollment.id}
-            className="flex items-center gap-4 p-4 rounded-lg border hover:bg-muted/50 transition-colors"
+            key={course.courseId}
+            className="flex flex-wrap items-center gap-4 rounded-lg border p-4 transition-colors hover:bg-muted/50 sm:flex-nowrap"
           >
-            <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0">
-              {enrollment.course.thumbnail ? (
-                <Image
-                  src={enrollment.course.thumbnail}
-                  alt={enrollment.course.title}
-                  fill
-                  className="object-cover"
-                />
+            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg">
+              {course.thumbnail ? (
+                <Image src={course.thumbnail} alt="" fill sizes="64px" className="object-cover" />
               ) : (
-                <div className="w-full h-full bg-linear-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                  <Play className="h-6 w-6 text-primary/50" />
+                <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-primary/20 to-primary/5">
+                  <Play className="h-6 w-6 text-primary/50" aria-hidden />
                 </div>
               )}
             </div>
-            
-            <div className="flex-1 space-y-2">
-              <h3 className="font-medium text-sm leading-tight">
-                {enrollment.course.title}
+
+            <div className="min-w-0 flex-1 space-y-2">
+              <h3 className="text-sm font-medium leading-tight">
+                <Link href={`/formations/${course.slug}`} className="hover:underline">
+                  {course.title}
+                </Link>
               </h3>
-              
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span>
-                    {enrollment.completedLessons}/{enrollment.totalLessons} leçons
+                    {course.done}/{course.total} étapes
                   </span>
-                  <span>{enrollment.progressPercentage}%</span>
+                  <span>{course.percent}%</span>
                 </div>
-                <Progress value={enrollment.progressPercentage} className="h-2" />
+                <Progress value={course.percent} aria-label={`Progression de ${course.title}`} className="h-2" />
               </div>
             </div>
-            
-            <Button size="sm" asChild>
-              <Link href={enrollment.nextLessonSlug ? `/formations/${enrollment.course.slug}/lessons/${enrollment.nextLessonSlug}` : `/formations/${enrollment.course.slug}`}>
-                {enrollment.progressPercentage > 0 ? "Continuer" : "Commencer"}
-              </Link>
-            </Button>
+
+            <div className="flex shrink-0 items-center gap-2">
+              {course.hasCertificate && (
+                <Button asChild variant="ghost" size="icon" className="h-8 w-8">
+                  <Link href={`/certificates/${course.courseId}`} aria-label={`Certificat de ${course.title}`}>
+                    <Award className="h-4 w-4" aria-hidden />
+                  </Link>
+                </Button>
+              )}
+              <Button size="sm" variant={course.isComplete ? "outline" : index === 0 ? "default" : "secondary"} asChild>
+                <Link href={course.continueHref}>{course.isComplete ? "Revoir" : course.done === 0 ? "Commencer" : "Continuer"}</Link>
+              </Button>
+            </div>
           </div>
         ))}
       </CardContent>

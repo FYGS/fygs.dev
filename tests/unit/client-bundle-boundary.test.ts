@@ -7,7 +7,9 @@ import { describe, expect, it } from "vitest";
  * Prisma client (lib/db) and the `pg` driver. `next build` failed with
  * "Can't resolve 'dns' / 'net' / 'tls'" and the browser would have tried to write to the
  * database. Walk the static imports of every client component and refuse any path that
- * reaches the database module. Server action files ("use server") are an RPC boundary.
+ * reaches the database module, a Node built-in (`node:crypto`...) or `react-dom/server`: webpack
+ * cannot bundle them for the browser and `next build` fails (the unit tests and tsc do not see it).
+ * Server action files ("use server") are an RPC boundary.
  */
 const root = path.resolve(__dirname, "../..");
 const SERVER_ONLY = new Set(["lib/db.ts"]);
@@ -53,7 +55,10 @@ function reachesServerOnly(entry: string): string[] | null {
     const src = readFileSync(file, "utf8");
     if (file !== entry && directive(src) === "server") return null;
     // code samples in template literals contain import lines that are not imports
-    for (const spec of staticImports(src.replace(/`(?:\\.|[^`\\])*`/g, "``"))) {
+    const specs = staticImports(src.replace(/`(?:\\.|[^`\\])*`/g, "``"));
+    const forbidden = specs.find((spec) => spec.startsWith("node:") || spec === "react-dom/server");
+    if (forbidden) return [...trail, rel, forbidden];
+    for (const spec of specs) {
       const target = resolveImport(file, spec);
       if (!target) continue;
       const hit = visit(target, [...trail, rel]);
@@ -65,7 +70,7 @@ function reachesServerOnly(entry: string): string[] | null {
 }
 
 describe("client bundle boundary", () => {
-  it("no client component can reach the database module", () => {
+  it("no client component can reach the database, a Node built-in or react-dom/server", () => {
     const offenders: string[] = [];
     for (const dir of SOURCE_DIRS) {
       const abs = path.join(root, dir);
@@ -77,5 +82,6 @@ describe("client bundle boundary", () => {
       }
     }
     expect(offenders).toEqual([]);
-  });
+    // walks every client component and what it imports: slow on a loaded machine
+  }, 120_000);
 });

@@ -43,7 +43,7 @@ test.describe("enrolled learner (fr)", () => {
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
     await page.getByRole("button", { name: /S'inscrire maintenant/ }).click();
-    await expect(page).toHaveURL(new RegExp(`/fr/formations/${FREE_COURSE}/lessons/[^/]+$`), { timeout: 30_000 });
+    await expect(page).toHaveURL(new RegExp(`/fr/learn/${FREE_COURSE}/lessons/[^/]+$`), { timeout: 30_000 });
     await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
 
     const [enrollment] = await sql(`SELECT 1 FROM "Enrollment" WHERE "userId" = $1`, [user.id]);
@@ -63,7 +63,7 @@ test.describe("enrolled learner (fr)", () => {
   test("quiz: graded server-side, correct answers never reach the browser before answering", async ({ page }) => {
     await learner(page, { enrolled: true });
     const quizId = await firstQuizId();
-    const url = `/fr/formations/${FREE_COURSE}/quizzes/${quizId}`;
+    const url = `/fr/learn/${FREE_COURSE}/quizzes/${quizId}`;
 
     // 1. the HTML and the RSC payload of the page carry no answer, no explanation
     const html = await (await page.request.get(url)).text();
@@ -78,18 +78,18 @@ test.describe("enrolled learner (fr)", () => {
     // 2. answering asks the server for the feedback
     await page.goto(url);
     await page.getByRole("button", { name: /La portée \(scope\)/ }).click();
-    await expect(page.getByText("Correct!")).toBeVisible();
+    await expect(page.getByText("Bonne réponse", { exact: true }).first()).toBeVisible();
     await expect(page.getByText(/portée de bloc/)).toBeVisible();
     await page.getByRole("button", { name: "Question suivante" }).click();
 
     await page.getByRole("button", { name: /'null'/ }).click(); // wrong: typeof null is 'object'
-    await expect(page.getByText("Incorrect", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("Mauvaise réponse", { exact: true })).toBeVisible();
     await expect(page.getByText(/bug historique/)).toBeVisible();
     await page.getByRole("button", { name: "Terminer le quiz" }).click();
 
     // 3. the attempt is graded and stored by the server: 1 / 2
     await expect(page.getByText("50%")).toBeVisible();
-    await expect(page.getByText("1 / 2").first()).toBeVisible();
+    await expect(page.getByText(/1 \/ 2 bonnes réponses/)).toBeVisible();
     await expect
       .poll(async () => (await sql<{ score: number; total: number }>(`SELECT score, total FROM "QuizResult" WHERE "quizId" = $1`, [quizId]))[0])
       .toEqual({ score: 1, total: 2 });
@@ -98,11 +98,11 @@ test.describe("enrolled learner (fr)", () => {
   test("anonymous visitors cannot open a quiz", async ({ page }) => {
     // not signed in: the quiz page itself redirects to the login
     const quizId = await firstQuizId();
-    await page.goto(`/fr/formations/${FREE_COURSE}/quizzes/${quizId}`);
+    await page.goto(`/fr/learn/${FREE_COURSE}/quizzes/${quizId}`);
     await expect(page).toHaveURL(/\/fr\/auth\/login\?callbackUrl=/);
   });
 
-  test("certificate eligibility follows lessons and quizzes", async ({ page }) => {
+  test("the certificate comes with the last lesson or quiz, and not before", async ({ page }) => {
     const user = await learner(page, { enrolled: true });
     const id = await courseId();
     const summary = async () => (await page.request.get(`/api/progress/summary?courseId=${id}`)).json();
@@ -113,7 +113,6 @@ test.describe("enrolled learner (fr)", () => {
     expect(before.breakdown.quizzes.passed).toBe(0);
     expect(before.breakdown.overall.isComplete).toBe(false);
     expect(before.hasCertificate).toBe(false);
-    expect(before.justEarnedCertificate).toBe(false);
 
     // all lessons done in the database, quiz still to pass: not eligible yet
     await sql(
@@ -122,22 +121,24 @@ test.describe("enrolled learner (fr)", () => {
       [user.id, id],
     );
     const lessonsOnly = await summary();
-    expect(lessonsOnly.justEarnedCertificate).toBe(false);
+    expect(lessonsOnly.hasCertificate).toBe(false);
     expect(lessonsOnly.breakdown.lessons.percentage).toBe(100);
     expect(lessonsOnly.completion).toBeLessThan(100);
 
     // pass the quiz(zes) through the UI
-    await page.goto(`/fr/formations/${FREE_COURSE}/quizzes/${await firstQuizId()}`);
+    await page.goto(`/fr/learn/${FREE_COURSE}/quizzes/${await firstQuizId()}`);
     await page.getByRole("button", { name: /La portée \(scope\)/ }).click();
     await page.getByRole("button", { name: "Question suivante" }).click();
     await page.getByRole("button", { name: /'object'/ }).click();
     await page.getByRole("button", { name: "Terminer le quiz" }).click();
-    await expect(page.getByText("100%")).toBeVisible();
+    await expect(page.locator("#main-content").getByText("100%")).toBeVisible();
 
     await expect.poll(async () => (await summary()).completion).toBe(100);
     const after = await summary();
     expect(after.breakdown.overall.isComplete).toBe(true);
-    expect(after.justEarnedCertificate).toBe(true);
+    // passing the last quiz issued the certificate on the spot, nothing else had to ask for it
+    expect(after.hasCertificate).toBe(true);
+    expect(after.certificateCode).toMatch(/^[a-f0-9]{32}$/);
   });
 
   test("the learner area renders", async ({ page }) => {
@@ -152,6 +153,9 @@ test.describe("enrolled learner (fr)", () => {
       `/fr/formations/${FREE_COURSE}`,
       `/fr/formations/${FREE_COURSE}/details`,
       `/fr/formations/${FREE_COURSE}/visual-supports`,
+      `/fr/learn/${FREE_COURSE}`,
+      `/fr/learn/${FREE_COURSE}/supports`,
+      `/fr/learn/${FREE_COURSE}/completed`,
     ]) {
       await expectHealthyPage(page, path);
     }

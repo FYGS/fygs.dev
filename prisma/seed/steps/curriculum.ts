@@ -1,6 +1,7 @@
 import {
   type PrismaClient,
 } from "../../../lib/generated/prisma/client";
+import { slugify } from "../../../lib/text/slug";
 
 /** Course modules and lessons. */
 export async function seedCurriculum(
@@ -125,6 +126,106 @@ export async function seedCurriculum(
         },
       ],
     },
+    {
+      courseIndex: 1, // React Advanced Patterns
+      modules: [
+        {
+          title: "Patterns de composition",
+          lessons: [
+            {
+              title: "Composition et render props",
+              duration: 40,
+              videoUrl: "https://player.vimeo.com/video/287094149",
+            },
+            {
+              title: "Hooks personnalisés",
+              duration: 45,
+              videoUrl: "https://player.vimeo.com/video/287094149",
+            },
+            {
+              title: "Mémoïsation et performance",
+              duration: 50,
+              videoUrl: "https://player.vimeo.com/video/287094149",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      courseIndex: 3, // TypeScript
+      modules: [
+        {
+          title: "Typer son code",
+          lessons: [
+            {
+              title: "Types de base et inférence",
+              duration: 35,
+              videoUrl: "https://player.vimeo.com/video/287094149",
+            },
+            {
+              title: "Interfaces et alias de types",
+              duration: 40,
+              videoUrl: "https://player.vimeo.com/video/287094149",
+            },
+            {
+              title: "Génériques",
+              duration: 45,
+              videoUrl: "https://player.vimeo.com/video/287094149",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      courseIndex: 6, // Frontend Moderne
+      modules: [
+        {
+          title: "Interfaces accessibles et responsives",
+          lessons: [
+            {
+              title: "HTML sémantique et accessibilité",
+              duration: 35,
+              videoUrl: "https://player.vimeo.com/video/287094149",
+            },
+            {
+              title: "CSS moderne : grid et flexbox",
+              duration: 45,
+              videoUrl: "https://player.vimeo.com/video/287094149",
+            },
+            {
+              title: "Outillage avec Vite",
+              duration: 30,
+              videoUrl: "https://player.vimeo.com/video/287094149",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      courseIndex: 7, // Backend Node.js
+      modules: [
+        {
+          title: "Fondations d'un backend Node.js",
+          lessons: [
+            {
+              title: "Architecture d'une API Node.js",
+              duration: 40,
+              videoUrl: "https://player.vimeo.com/video/287094149",
+            },
+            {
+              title: "Gestion des erreurs et journalisation",
+              duration: 35,
+              videoUrl: "https://player.vimeo.com/video/287094149",
+            },
+            {
+              title: "Scalabilité horizontale",
+              duration: 45,
+              videoUrl: "https://player.vimeo.com/video/287094149",
+            },
+          ],
+        },
+      ],
+    },
   ];
 
   for (const courseContent of modulesAndLessons) {
@@ -141,10 +242,7 @@ export async function seedCurriculum(
         data: {
           courseId: course.id,
           title: moduleData.title,
-          slug: moduleData.title
-            .toLowerCase()
-            .replace(/\s+/g, "-")
-            .replace(/[^a-z0-9-]/g, ""),
+          slug: slugify(moduleData.title),
           order: moduleIndex + 1,
         },
       });
@@ -161,10 +259,7 @@ export async function seedCurriculum(
             courseId: course.id,
             moduleId: courseModule.id,
             title: lessonData.title,
-            slug: lessonData.title
-              .toLowerCase()
-              .replace(/\s+/g, "-")
-              .replace(/[^a-z0-9-]/g, ""),
+            slug: slugify(lessonData.title),
             description: `Apprenez ${lessonData.title.toLowerCase()} avec des exemples pratiques et des exercices.`,
             content: `# ${lessonData.title}\n\nContenu détaillé de la leçon avec explications, exemples de code et exercices pratiques.`,
             videoUrl: lessonData.videoUrl,

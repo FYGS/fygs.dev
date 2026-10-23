@@ -29,9 +29,11 @@ import {
   Link as LinkIcon,
   Image as ImageIcon,
   Code2,
+  Loader2,
 } from "lucide-react";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const lowlight = createLowlight();
 lowlight.register("javascript", javascript);
@@ -96,9 +98,36 @@ export function RichTextEditor({
     }
   }, [editor]);
 
-  const addImage = useCallback(() => {
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const uploadImage = useCallback(
+    async (file: File) => {
+      if (!editor) return;
+      if (file.size > 5 * 1024 * 1024) return void toast.error("L'image dépasse 5 Mo.");
+      setUploading(true);
+      try {
+        const body = new FormData();
+        body.append("file", file);
+        body.append("folder", "lessons");
+        body.append("prefix", "lesson");
+        const response = await fetch("/api/upload/image", { method: "POST", body });
+        const result = (await response.json().catch(() => ({}))) as { url?: string };
+        if (!response.ok || !result.url) throw new Error();
+        editor.chain().focus().setImage({ src: result.url, alt: file.name.replace(/\.[^.]+$/, "") }).run();
+      } catch {
+        toast.error("L'envoi de l'image a échoué. Vérifiez le format (JPEG, PNG, GIF, WebP) et réessayez.");
+      } finally {
+        setUploading(false);
+        if (fileInput.current) fileInput.current.value = "";
+      }
+    },
+    [editor],
+  );
+
+  const addImageByUrl = useCallback(() => {
     if (!editor) return;
-    const url = window.prompt("URL de l'image :");
+    const url = window.prompt("Adresse de l'image :");
     if (url) {
       editor.chain().focus().setImage({ src: url }).run();
     }
@@ -214,8 +243,11 @@ export function RichTextEditor({
           <ToolbarButton onClick={addLink} title="Lien">
             <LinkIcon className="h-4 w-4" />
           </ToolbarButton>
-          <ToolbarButton onClick={addImage} title="Image">
-            <ImageIcon className="h-4 w-4" />
+          <ToolbarButton onClick={() => fileInput.current?.click()} disabled={uploading} title="Insérer une image depuis un fichier">
+            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
+          </ToolbarButton>
+          <ToolbarButton onClick={addImageByUrl} title="Insérer une image depuis une adresse">
+            <ImageIcon className="h-4 w-4 opacity-60" />
           </ToolbarButton>
           <ToolbarButton
             onClick={() => editor.chain().focus().setHorizontalRule().run()}
@@ -244,6 +276,16 @@ export function RichTextEditor({
           </ToolbarButton>
         </ToolbarGroup>
       </div>
+
+      <input
+        ref={fileInput}
+        type="file"
+        accept="image/jpeg,image/png,image/gif,image/webp"
+        className="sr-only"
+        tabIndex={-1}
+        aria-label="Choisir une image à insérer"
+        onChange={(e) => e.target.files?.[0] && void uploadImage(e.target.files[0])}
+      />
 
       {/* Editor Content */}
       <EditorContent editor={editor} />
@@ -285,6 +327,8 @@ function ToolbarButton({
       onClick={onClick}
       disabled={disabled}
       title={title}
+      aria-label={title}
+      aria-pressed={active}
     >
       {children}
     </Button>

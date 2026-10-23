@@ -26,7 +26,7 @@ export function QuickActions() {
       title: "Rechercher du contenu",
       description: "Trouvez rapidement ce que vous cherchez",
       icon: Search,
-      href: "/formations?search=",
+      href: "/formations#courses",
       color: "bg-green-500/10 text-green-600 hover:bg-green-500/20"
     },
     {

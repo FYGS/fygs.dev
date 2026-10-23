@@ -8,11 +8,14 @@ import { AccessService } from '@/lib/access-service'
 import { AnalyticsHelper } from '@/lib/analytics-helper'
 import { createLogger } from '@/lib/structured-logger'
 import { auth } from '@/lib/auth'
+import { completeCourseIfDone } from '@/lib/learning/completion'
+import { rewardLessonCompleted, type LessonReward } from '@/lib/learning/rewards'
 
 const updateLessonProgressSchema = z.object({
   lessonId: z.string().cuid(),
   completed: z.boolean().optional(),
   watchTimeDelta: z.number().min(0).max(7200).optional(), // Additional watch time in seconds (at most 2h per call)
+  lastPosition: z.number().min(0).max(86400).optional(), // Where the video is, in seconds: where "resume" starts
 })
 
 export type UpdateLessonProgressResult = {
@@ -23,6 +26,16 @@ export type UpdateLessonProgressResult = {
     completed: boolean
     watchTime: number
     completedAt: Date | null
+    lastPosition: number
+  }
+  /** XP given for this completion, once per lesson */
+  reward?: LessonReward | null
+  /** Set when this call completed the lesson: where the course stands */
+  course?: {
+    percent: number
+    isComplete: boolean
+    justIssued: boolean
+    certificate: { id: string; code: string } | null
   }
   error?: string
 }
@@ -34,7 +47,7 @@ export async function updateLessonProgress(
 
   try {
     // Validate input
-    const { lessonId, completed, watchTimeDelta = 0 } = updateLessonProgressSchema.parse(input)
+    const { lessonId, completed, watchTimeDelta = 0, lastPosition } = updateLessonProgressSchema.parse(input)
     
     logger.info('Starting lesson progress update', {
       resourceId: lessonId,
@@ -65,6 +78,7 @@ export async function updateLessonProgress(
           select: {
             id: true,
             title: true,
+            slug: true,
             published: true,
             accessTier: true
           }
@@ -104,7 +118,7 @@ export async function updateLessonProgress(
     }
     
     // Use transaction for idempotent update
-    const progress = await db.$transaction(async (tx) => {
+    const progressResult = await db.$transaction(async (tx) => {
       // Get existing progress
       const existing = await tx.progress.findUnique({
         where: {
@@ -135,11 +149,13 @@ export async function updateLessonProgress(
           lessonId,
           completed: newCompleted,
           watchTime: watchTimeDelta,
+          lastPosition: Math.floor(lastPosition ?? 0),
           completedAt: newCompleted ? new Date() : null
         },
         update: {
           completed: newCompleted,
           watchTime: { increment: watchTimeDelta },
+          ...(lastPosition !== undefined ? { lastPosition: Math.floor(lastPosition) } : {}),
           // keep the first completion date; un-completing clears it
           completedAt: !newCompleted
             ? null
@@ -152,7 +168,8 @@ export async function updateLessonProgress(
           id: true,
           completed: true,
           watchTime: true,
-          completedAt: true
+          completedAt: true,
+          lastPosition: true
         }
       })
       
@@ -177,15 +194,32 @@ export async function updateLessonProgress(
         })
       }
       
-      return updated
+      return { updated, completionChanged: newCompleted !== wasCompleted }
     })
-    
-    // Revalidate relevant paths
-    revalidatePath('/dashboard')
-    revalidatePath('/dashboard/courses')
-    revalidatePath(`/formations/${lesson.courseId}`)
-    revalidatePath(`/formations/${lesson.courseId}/lessons/${lesson.slug}`)
-    
+
+    const { updated: progress, completionChanged } = progressResult
+
+    // Only a change of the completed state needs fresh pages: a watch-time heartbeat must not
+    // re-render the lesson the learner is watching
+    let reward: LessonReward | null = null
+    let course: UpdateLessonProgressResult['course']
+    if (completionChanged) {
+      if (progress.completed) {
+        reward = await rewardLessonCompleted(userId, lessonId)
+        const outcome = await completeCourseIfDone(userId, lesson.courseId)
+        course = {
+          percent: outcome.progress.percent,
+          isComplete: outcome.isComplete,
+          justIssued: outcome.justIssued,
+          certificate: outcome.certificate ? { id: outcome.certificate.id, code: outcome.certificate.code } : null,
+        }
+      }
+      revalidatePath('/dashboard')
+      revalidatePath('/dashboard/my-courses')
+      revalidatePath(`/formations/${lesson.course.slug}`)
+      revalidatePath(`/learn/${lesson.course.slug}`, 'layout')
+    }
+
     contextLogger.info('Lesson progress updated successfully', {
       metadata: {
         progressId: progress.id,
@@ -197,7 +231,9 @@ export async function updateLessonProgress(
     return {
       success: true,
       message: 'Progress updated successfully',
-      progress
+      progress,
+      reward,
+      course
     }
     
   } catch (error) {

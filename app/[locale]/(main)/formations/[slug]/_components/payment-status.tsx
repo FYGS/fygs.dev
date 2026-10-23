@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FadeIn } from "@/components/ui/fade-in";
 import { notify } from "@/lib/notification-store";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface PaymentStatusProps {
@@ -16,6 +17,7 @@ interface PaymentStatusProps {
 }
 
 export function PaymentStatus({ type, courseTitle, courseSlug }: PaymentStatusProps) {
+  const router = useRouter();
   const [redirecting, setRedirecting] = useState(false);
   useEffect(() => {
     if (type === "success") {
@@ -40,10 +42,7 @@ export function PaymentStatus({ type, courseTitle, courseSlug }: PaymentStatusPr
           if (data.unlocked) {
             clearInterval(interval);
             setRedirecting(true);
-            const next = data.firstLessonSlug
-              ? `/formations/${courseSlug}/lessons/${data.firstLessonSlug}`
-              : `/formations/${courseSlug}`;
-            window.location.href = next;
+            router.push(`/learn/${courseSlug}`);
           }
         } catch {}
       }, 1500);
@@ -55,7 +54,7 @@ export function PaymentStatus({ type, courseTitle, courseSlug }: PaymentStatusPr
         6000
       );
     }
-  }, [type, courseTitle, courseSlug, redirecting]);
+  }, [type, courseTitle, courseSlug, redirecting, router]);
 
   // Stripe webhooks handle access provisioning; no client-side capture needed.
 

@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -47,6 +48,7 @@ export function CoursePaymentForm({
   canPreview = false,
   hasPurchased = false,
 }: CoursePaymentFormProps) {
+  const router = useRouter();
   const { data: session, isPending: isSessionPending } = useSession();
   const [loading, setLoading] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -71,10 +73,8 @@ export function CoursePaymentForm({
   const handlePayment = async () => {
     // If already enrolled, redirect to first lesson or course page
     if (isEnrolled) {
-      const firstLessonSlug = course.firstLessonSlug || null;
-      window.location.href = firstLessonSlug
-        ? `/formations/${course.slug}/lessons/${firstLessonSlug}`
-        : `/formations/${course.slug}`;
+      // /learn/[slug] sends the learner to where they left off, or to the first lesson
+      router.push(`/learn/${course.slug}`);
       return;
     }
 
@@ -120,10 +120,7 @@ export function CoursePaymentForm({
             toast.success("Inscription réussie", {
               description: result.message,
             });
-            const firstLesson = course.firstLessonSlug;
-            window.location.href = firstLesson
-              ? `/formations/${course.slug}/lessons/${firstLesson}`
-              : `/formations/${course.slug}`;
+            router.push(`/learn/${course.slug}`);
           } else {
             toast.error("Erreur lors de l'inscription", {
               description: result.message,
@@ -188,10 +185,7 @@ export function CoursePaymentForm({
         const result = await enrollCourse({ courseId: course.id });
         if (result.success) {
           toast.success("Inscription réussie", { description: result.message });
-          const firstLesson = course.firstLessonSlug;
-          window.location.href = firstLesson
-            ? `/formations/${course.slug}/lessons/${firstLesson}`
-            : `/formations/${course.slug}`;
+          router.push(`/learn/${course.slug}`);
         } else {
           toast.error("Erreur lors de l'inscription", {
             description: result.message,
@@ -298,17 +292,16 @@ export function CoursePaymentForm({
           )}
         </Button>
 
-        {!isEnrolled && canPreview && course.firstLessonSlug && (
+        {!isEnrolled && canPreview && (
           <Button
             type="button"
             variant="secondary"
             className="w-full"
             onClick={() => {
-              window.location.href = new URL(`/formations/${course.slug}/lessons/${course.firstLessonSlug}?preview=1`, window.location.origin).href;
+              router.push(`/learn/${course.slug}`);
             }}
           >
-            <PlayCircle className="h-4 w-4 mr-2" /> Prévisualiser la première
-            leçon
+            <PlayCircle className="h-4 w-4 mr-2" /> Voir les leçons en aperçu
           </Button>
         )}
 

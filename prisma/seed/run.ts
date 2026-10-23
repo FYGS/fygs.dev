@@ -40,6 +40,7 @@ import { seedFinalExams } from "./steps/final-exams";
 import { seedExamResults } from "./steps/exam-results";
 import { seedCertificates } from "./steps/certificates";
 import { seedAnalytics } from "./steps/analytics";
+import { seedPaths } from "./steps/paths";
 
 export async function runSeed(prisma: PrismaClient) {
   console.log("🌱 Starting comprehensive FYGS Academy database seed...");
@@ -68,6 +69,7 @@ export async function runSeed(prisma: PrismaClient) {
     const { finalExams } = await seedFinalExams(prisma, { courses });
     const { examResults } = await seedExamResults(prisma, { finalExams, enrollments });
     const { completedEnrollments } = await seedCertificates(prisma, { enrollments });
+    await seedPaths(prisma, { courses });
     await seedAnalytics(prisma, { users, courses });
 
     // 17. Final statistics

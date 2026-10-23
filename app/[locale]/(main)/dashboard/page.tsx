@@ -11,6 +11,7 @@ import { AsyncComponentWrapper } from "@/components/ui/suspense-wrapper";
 import { DashboardStats } from "./_components/dashboard-stats";
 import { EnrolledCourses } from "./_components/enrolled-courses";
 import { LearningProgress } from "./_components/learning-progress";
+import { MyPaths } from "@/components/paths/my-paths";
 import { RecentActivity } from "./_components/recent-activity";
 import { QuickActions } from "./_components/quick-actions";
 import { LearningStreak } from "./_components/learning-streak";
@@ -18,7 +19,6 @@ import { RecommendedCourses } from "./_components/recommended-courses";
 import { SubscriptionStatus } from "./_components/subscription-status";
 import { PremiumUpgradeCard } from "@/components/premium-upgrade-card";
 import { db } from "@/lib/db";
-import { CourseProgressGridServer } from './_components/course-progress-grid-server';
 import { SubscriptionStatus as PrismaSubscriptionStatus } from '@/lib/generated/prisma/browser';
 
 
@@ -123,14 +123,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                 </FadeInWhenVisible>
               </ErrorBoundary>
 
-              {/* Server-hydrated per-course progress grid */}
               <ErrorBoundary>
-                <FadeInWhenVisible delay={0.425}>
-                  {/* Direct server component render (already async) */}
-                  <CourseProgressGridServer />
+                <FadeInWhenVisible delay={0.43}>
+                  <AsyncComponentWrapper loadingText="Chargement des parcours...">
+                    <MyPaths userId={session.user.id} />
+                  </AsyncComponentWrapper>
                 </FadeInWhenVisible>
               </ErrorBoundary>
-              
+
               {/* Learning Streak */}
               <ErrorBoundary>
                 <FadeInWhenVisible delay={0.45}>

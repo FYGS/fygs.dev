@@ -1,4 +1,5 @@
 import { getBlogPostsMeta } from "@/lib/mdx";
+import { db } from "@/lib/db";
 import { localizedUrls } from "./localized-urls";
 import type { MetadataRoute } from "next";
 
@@ -21,6 +22,7 @@ export async function generateSitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
       changeFrequency: "daily" as const,
     },
+    { path: "/parcours", priority: 0.8, changeFrequency: "weekly" as const },
     { path: "/pricing", priority: 0.7, changeFrequency: "monthly" as const },
     { path: "/contact", priority: 0.6, changeFrequency: "monthly" as const },
     { path: "/community", priority: 0.8, changeFrequency: "daily" as const },
@@ -69,5 +71,22 @@ export async function generateSitemap(): Promise<MetadataRoute.Sitemap> {
     },
   }));
 
-  return [...sitemapRoutes, ...blogRoutes];
+  // Published learning paths. The sitemap must still build when the database is not reachable.
+  const paths = await db.path
+    .findMany({ where: { published: true }, select: { slug: true, updatedAt: true } })
+    .catch(() => []);
+  const pathRoutes: MetadataRoute.Sitemap = paths.map((path) => ({
+    url: `${SITE_URL}/parcours/${path.slug}`,
+    lastModified: path.updatedAt,
+    changeFrequency: "weekly" as const,
+    priority: 0.7,
+    alternates: {
+      languages: {
+        ...toAbsoluteUrls(`/parcours/${path.slug}`),
+        "x-default": `${SITE_URL}/parcours/${path.slug}`,
+      },
+    },
+  }));
+
+  return [...sitemapRoutes, ...blogRoutes, ...pathRoutes];
 }

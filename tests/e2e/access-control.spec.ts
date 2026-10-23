@@ -51,8 +51,6 @@ test.describe("access control (fr)", () => {
     "/fr/admin/community/users",
     "/fr/admin/courses",
     "/fr/admin/courses/new",
-    "/fr/admin/lessons",
-    "/fr/admin/lessons/new",
     "/fr/admin/reviews",
     "/fr/admin/reviews/analytics",
     "/fr/admin/reviews/moderation",

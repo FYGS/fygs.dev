@@ -21,7 +21,6 @@ import {
   Zap,
   ChevronLeft,
   ChevronRight,
-  GraduationCap,
   MessageSquare,
   Tag,
   Calendar,
@@ -30,6 +29,7 @@ import {
   Globe,
   Activity,
   MessageCircle,
+  Route,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -59,13 +59,14 @@ const navigation: NavItem[] = [
     title: "Formations",
     href: "/admin/courses",
     icon: BookOpen,
-    description: "Cours, leçons et contenus pédagogiques",
+    description: "Créer et publier cours, leçons et évaluations",
   },
   {
-    title: "Leçons",
-    href: "/admin/lessons",
-    icon: GraduationCap,
-    description: "Gestion détaillée des leçons",
+    title: "Parcours",
+    href: "/admin/paths",
+    icon: Route,
+    description: "Formations enchaînées vers un objectif",
+    adminOnly: true,
   },
   {
     title: "Tags & Catégories",

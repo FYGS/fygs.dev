@@ -15,13 +15,15 @@ exports[`prisma/seed.ts (pinned Prisma call sequence) > issues the same Prisma c
   "enrollment.create": 33,
   "enrollment.findMany": 1,
   "finalExam.create": 5,
-  "lesson.create": 16,
+  "lesson.create": 28,
   "lesson.findMany": 24,
   "mentorRequest.create": 2,
-  "module.create": 5,
+  "module.create": 9,
+  "module.findFirst": 2,
   "notification.create": 3,
+  "path.create": 2,
   "payment.create": 14,
-  "progress.create": 35,
+  "progress.create": 56,
   "quiz.create": 2,
   "quizQuestion.create": 3,
   "review.create": 10,
@@ -68,8 +70,8 @@ exports[`prisma/seed.ts (pinned Prisma call sequence) > issues the same Prisma c
     "header": "🔗 Linking courses with tags...",
   },
   {
-    "calls": 21,
-    "hash": "856b54849859dcf90ffd34670376ec5de71c48cac47667dedd6a63542b49ee79",
+    "calls": 37,
+    "hash": "eb626e6cdc0c09acd6d5c861eee824fbecd93fa71f4732f302c5c89a4a3f7448",
     "header": "📖 Creating course content structure...",
   },
   {
@@ -89,37 +91,37 @@ exports[`prisma/seed.ts (pinned Prisma call sequence) > issues the same Prisma c
   },
   {
     "calls": 6,
-    "hash": "f1169e55852548b3acae9c58aaa86f7329ded100932c11326673ef9cacea73a2",
+    "hash": "d67d4157ef0c08cba249c8fccdbbfcdbb385c1e03966e28e0609b78a07151db8",
     "header": "✅ Created 6 community badges",
   },
   {
     "calls": 6,
-    "hash": "0fefdc0768c0105e03a06bfc2093ec0f88c8109b003eff51f33bc420cd457526",
+    "hash": "ca164303a6b30270e6a5502724b8d77ace5e6abe140486027f77e78f53b791b3",
     "header": "✅ Created 6 community discussions",
   },
   {
     "calls": 66,
-    "hash": "5eee3bf1f90a305c8c5881162b148df5959312696ae7891fc52000262d1913dd",
+    "hash": "f861574cb24efc8222b2a647908fba8a27ab5de81912455406e4494cf251e2f5",
     "header": "✅ Created 6 discussion replies",
   },
   {
     "calls": 16,
-    "hash": "38a3adbc1f6fd174d4d824834cb8861f59c125fae3b0fb7427526a043b65f3e1",
+    "hash": "a78e0a40d1e464eac62b6e96281bda29f1652d732e3174892e8d6301ef04c7a8",
     "header": "✅ Created discussion and reply votes",
   },
   {
     "calls": 10,
-    "hash": "3e51c4f3177eab588a5f47f3a780868e84d6833fd6925c6df6da4e83230b3220",
+    "hash": "05da23afa8e059e558f856e533c16c4434d9229835344048fe8a45a9aa67621b",
     "header": "✅ Created topic follows",
   },
   {
     "calls": 14,
-    "hash": "e2e55a4f1718f4b9c179a8acd0d3296c5f5ca7583ef5653806fe277812c5162f",
+    "hash": "c017f6eca1dc94416864e3e50c1fc094a350092c5fd1f1474b4b3040f336eeeb",
     "header": "✅ Created discussion bookmarks",
   },
   {
     "calls": 3,
-    "hash": "47ad63916ce3ec3c8a9525adb80788ae6a3f1bc9959fb9a9998bb82794eeba46",
+    "hash": "fa2879c4bb1dbaadb7c9bc9ca651a5a88de4e74862dd786bb1a7d3ed8d93f55d",
     "header": "✅ Awarded community badges",
   },
   {
@@ -144,22 +146,22 @@ exports[`prisma/seed.ts (pinned Prisma call sequence) > issues the same Prisma c
   },
   {
     "calls": 26,
-    "hash": "acdf8b1a4e9b2c3bac0621c0c71fb2ccbe09c9edf3328db0d6e8f0eef7a1e2af",
+    "hash": "c390a7ac1b81b383bfad5e5c5efe2eb1d0902c4f7746718d7c1b00130fa8ce30",
     "header": "💬 Adding review interactions...",
   },
   {
-    "calls": 59,
-    "hash": "f46b0078e1af9fcb114737445e1860ea9a271229fbdaf8024cd8fd3b21fe0b97",
+    "calls": 80,
+    "hash": "17a03f1f10c619cfef01eb07d16c6ccaf45cae0dbcc12124d3272c6b7bbc2cea",
     "header": "📊 Creating progress tracking data...",
   },
   {
     "calls": 14,
-    "hash": "06a13637565f17686b1b3d15c3b0ae430cf6b5fe7c689e6c02800d3b302f702c",
+    "hash": "75bc2c05e8a09256f00f9d24cc3ef97a2043b8e7b8870874557a094808bc0237",
     "header": "💰 Creating payment records...",
   },
   {
-    "calls": 7,
-    "hash": "a031c5f177728d60775f958f0d98bbeb1ace1c7e89b9caabdb059ce0d71deff5",
+    "calls": 9,
+    "hash": "e8bb5ed1da016e37a052acef8e6cc7ce6e62828b157d2071e2817b5c9260be83",
     "header": "🎯 Creating visual supports and interactive quizzes...",
   },
   {
@@ -173,8 +175,13 @@ exports[`prisma/seed.ts (pinned Prisma call sequence) > issues the same Prisma c
     "header": "🏆 Issuing certificates...",
   },
   {
+    "calls": 2,
+    "hash": "4c9b7c230bb3e8eda47d2166b808cbfe7b264045aba60d68b9503045e319ea28",
+    "header": "🧭 Creating learning paths...",
+  },
+  {
     "calls": 500,
-    "hash": "71db86fcbb9257ffdbac7c058d2a846ca029d651936b76b87929595e9e780cd3",
+    "hash": "c7ccfb48e742a92c0849f6fef6070615d5f2922d6b36fd96dccb22400c6b2870",
     "header": "📈 Creating analytics data...",
   },
   {
@@ -232,6 +239,8 @@ exports[`prisma/seed.ts (pinned Prisma call sequence) > issues the same Prisma c
   "✅ Created 0 exam results",
   "🏆 Issuing certificates...",
   "✅ Issued 6 certificates",
+  "🧭 Creating learning paths...",
+  "✅ Created 2 learning paths",
   "📈 Creating analytics data...",
   "✅ Created analytics events",
   "
@@ -257,4 +266,4 @@ exports[`prisma/seed.ts (pinned Prisma call sequence) > issues the same Prisma c
 ]
 `;
 
-exports[`prisma/seed.ts (pinned Prisma call sequence) > issues the same Prisma calls in the same order 4`] = `"77703dbca9a1b96fdbfac73b759e958c677f299ffda656c838afd6d3691d930e"`;
+exports[`prisma/seed.ts (pinned Prisma call sequence) > issues the same Prisma calls in the same order 4`] = `"6a02fe9ffb9342d68bfba6537ac4dcc0fbb14fb8b9f79bb6807abd3e98aba911"`;

@@ -56,6 +56,15 @@ describe("prisma/seed orchestrator against a real database", () => {
     expect(await db.discussion.count()).toBe(summary.discussions);
     expect(await db.certificate.count()).toBe(summary.certificates);
 
+    // learning paths: published, courses in order, each with at least two courses
+    const paths = await db.path.findMany({ include: { courses: { orderBy: { order: "asc" } } } });
+    expect(paths.length).toBeGreaterThan(0);
+    for (const path of paths) {
+      expect(path.published).toBe(true);
+      expect(path.courses.length).toBeGreaterThanOrEqual(2);
+      expect(path.courses.map((c) => c.order)).toEqual(path.courses.map((_, i) => i + 1));
+    }
+
     // the roles the app depends on exist
     const roles = await db.user.groupBy({ by: ["role"], _count: true });
     expect(roles.map((r) => r.role)).toEqual(expect.arrayContaining(["STUDENT", "INSTRUCTOR"]));

@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { z } from "zod";
+import { AccessService } from "@/lib/access-service";
 
 const noteSchema = z.object({
   lessonId: z.string().min(1),
@@ -15,7 +16,14 @@ export async function createNote(input: z.infer<typeof noteSchema>) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) return { error: "Non authentifié" };
 
-  const validated = noteSchema.parse(input);
+  const parsed = noteSchema.safeParse(input);
+  if (!parsed.success) return { error: "Note invalide" };
+  const validated = parsed.data;
+
+  // A note belongs to a lesson the learner can open
+  if (!(await AccessService.canAccessLesson(session.user.id, validated.lessonId))) {
+    return { error: "Accès refusé" };
+  }
 
   const note = await db.lessonNote.create({
     data: {

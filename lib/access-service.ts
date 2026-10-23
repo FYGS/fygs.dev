@@ -1,5 +1,6 @@
 import { CourseAccessTier, PaymentKind, PaymentStatus, SubscriptionStatus } from "@/lib/generated/prisma/browser";
 import { db } from "./db";
+import { loadCourseOutline } from "./learning/course-state";
 
 export interface UserAccess {
   hasActiveSubscription: boolean; // Premium subscription (ACTIVE)
@@ -307,7 +308,10 @@ export class AccessService {
   }
 
   /**
-   * Check if user can access specific lesson
+   * Check if user can access specific lesson.
+   * Entitled learners open every lesson. Others open the free sample lessons of a published
+   * course: the lessons flagged `isPreview`, or, when none is flagged and the course allows
+   * previews, its first lesson in learning order (same rule as `canOpenItem`).
    */
   static async canAccessLesson(
     userId: string,
@@ -317,53 +321,25 @@ export class AccessService {
       where: { id: lessonId },
       select: {
         courseId: true,
-        course: {
-          select: {
-            accessTier: true,
-            previewEnabled: true,
-            lessons: {
-              where: { published: true, moduleId: null },
-              orderBy: { order: "asc" },
-              select: { id: true },
-              take: 1,
-            },
-            modules: {
-              orderBy: { order: "asc" },
-              select: {
-                id: true,
-                lessons: {
-                  where: { published: true },
-                  orderBy: { order: "asc" },
-                  select: { id: true },
-                  take: 1,
-                },
-              },
-              take: 1,
-            },
-          },
-        },
+        published: true,
+        isPreview: true,
+        course: { select: { published: true } },
       },
     });
     if (!lesson) return false;
     const access = await this.checkCourseAccess(userId, lesson.courseId);
     if (access.canAccessLessons) return true;
-    if (access.canPreviewFirstLesson) {
-      // Get the first lesson (prioritize standalone, then first module's first lesson)
-      let firstLessonId: string | null = null;
+    if (!lesson.published || !lesson.course.published) return false;
+    if (lesson.isPreview) return true;
+    if (!access.canPreviewFirstLesson) return false;
 
-      const standaloneLessons = lesson.course.lessons || [];
-      if (standaloneLessons.length > 0) {
-        firstLessonId = standaloneLessons[0].id;
-      } else {
-        const modules = lesson.course.modules || [];
-        if (modules.length > 0 && modules[0].lessons?.length > 0) {
-          firstLessonId = modules[0].lessons[0].id;
-        }
-      }
-
-      return firstLessonId === lessonId;
-    }
-    return false;
+    const flagged = await db.lesson.count({
+      where: { courseId: lesson.courseId, published: true, isPreview: true },
+    });
+    if (flagged > 0) return false;
+    const outline = await loadCourseOutline(lesson.courseId);
+    const first = outline.items.find((item) => item.kind === "lesson");
+    return first?.id === lessonId;
   }
 
   /**

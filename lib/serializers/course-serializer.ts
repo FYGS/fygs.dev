@@ -1,13 +1,4 @@
-import {
-  FeaturedCourseDTO,
-  CourseSummaryDTO,
-  CourseDetailDTO,
-  CourseLessonDTO,
-  CourseReviewDTO,
-  CourseModuleDTO,
-  CourseQuizDTO,
-  CourseVisualSupportDTO,
-} from "@/types/course";
+import { FeaturedCourseDTO, CourseSummaryDTO } from "@/types/course";
 
 // Pure functions to convert Prisma entities to DTOs.
 //
@@ -27,58 +18,8 @@ interface SummaryModuleInput {
   lessons?: SummaryLessonInput[] | null;
 }
 
-interface LessonInput extends SummaryLessonInput {
-  id: string;
-  title: string;
-  description?: string | null;
-  duration?: number | null;
-  order: number;
-}
-
-interface ModuleInput extends SummaryModuleInput {
-  id: string;
-  title: string;
-  slug: string;
-  order: number;
-  courseId: string;
-  lessons?: LessonInput[] | null;
-}
-
 interface TagInput {
   tag: { id: string; name: string; color: string };
-}
-
-interface ReviewInput {
-  id: string;
-  userId: string;
-  courseId: string;
-  rating: number;
-  comment?: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  user?: { name?: string | null; image?: string | null } | null;
-}
-
-interface QuizQuestionInput {
-  id: string;
-  question: string;
-  options: string[];
-  order: number;
-}
-
-interface QuizInput {
-  id: string;
-  moduleId: number;
-  title: string;
-  questions?: QuizQuestionInput[] | null;
-}
-
-interface VisualSupportInput {
-  id: string;
-  title: string;
-  moduleId: number;
-  order: number;
-  content: unknown;
 }
 
 export interface CourseSummaryInput {
@@ -96,24 +37,12 @@ export interface CourseSummaryInput {
   accessTier?: string;
   previewEnabled?: boolean;
   enrollments?: unknown[] | null;
+  /** Count of enrolments when the ids were not loaded. */
+  _count?: { enrollments: number } | null;
   reviews?: { rating: number }[] | null;
   tags?: TagInput[] | null;
   lessons?: SummaryLessonInput[] | null;
   modules?: SummaryModuleInput[] | null;
-}
-
-export interface CourseDetailInput extends CourseSummaryInput {
-  lessons?: LessonInput[] | null;
-  modules?: ModuleInput[] | null;
-  reviews?: ReviewInput[] | null;
-  quizzes?: QuizInput[] | null;
-  visualSupports?: VisualSupportInput[] | null;
-  publicStructure?: string | null;
-  publicResources?: string | null;
-  publicEvaluation?: string | null;
-  publicPrerequisites?: string | null;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 // An absent `order` (field not selected) compares as 0, which leaves the array
@@ -124,7 +53,7 @@ const byOrder = (a: { order?: number }, b: { order?: number }) =>
 export function serializeCourseSummary(
   prismaCourse: CourseSummaryInput,
 ): CourseSummaryDTO {
-  const enrollmentCount = prismaCourse.enrollments?.length || 0;
+  const enrollmentCount = prismaCourse._count?.enrollments ?? prismaCourse.enrollments?.length ?? 0;
   const avg = prismaCourse.reviews?.length
     ? prismaCourse.reviews.reduce((s, r) => s + r.rating, 0) /
       prismaCourse.reviews.length
@@ -183,82 +112,4 @@ export function serializeFeatured(
   prismaCourse: CourseSummaryInput,
 ): FeaturedCourseDTO {
   return serializeCourseSummary(prismaCourse);
-}
-
-export function serializeCourseDetail(
-  prismaCourse: CourseDetailInput,
-): CourseDetailDTO {
-  const base = serializeCourseSummary(prismaCourse);
-  const lessons: CourseLessonDTO[] = (prismaCourse.lessons || []).map((l) => ({
-    id: l.id,
-    title: l.title,
-    slug: l.slug,
-    description: l.description ?? null,
-    duration: l.duration ?? null,
-    order: l.order,
-    moduleId: l.moduleId ?? null,
-  }));
-  const modules: CourseModuleDTO[] = (prismaCourse.modules || []).map((m) => ({
-    id: m.id,
-    title: m.title,
-    slug: m.slug,
-    order: m.order,
-    courseId: m.courseId,
-    lessons: (m.lessons || []).map((l) => ({
-      id: l.id,
-      title: l.title,
-      slug: l.slug,
-      description: l.description ?? null,
-      duration: l.duration ?? null,
-      order: l.order,
-      moduleId: l.moduleId ?? null,
-    })),
-  }));
-  const reviews: CourseReviewDTO[] = (prismaCourse.reviews || []).map((r) => ({
-    id: r.id,
-    userId: r.userId,
-    courseId: r.courseId,
-    rating: r.rating,
-    comment: r.comment || null,
-    createdAt: r.createdAt.toISOString(),
-    updatedAt: r.updatedAt.toISOString(),
-    user: {
-      name: r.user?.name || "Utilisateur anonyme",
-      image: r.user?.image || null,
-    },
-  }));
-  const quizzes: CourseQuizDTO[] = (prismaCourse.quizzes || []).map((q) => ({
-    id: q.id,
-    moduleId: q.moduleId,
-    title: q.title,
-    questions: (q.questions || []).map((question) => ({
-      id: question.id,
-      question: question.question,
-      options: question.options,
-      order: question.order,
-    })),
-  }));
-  const visualSupports: CourseVisualSupportDTO[] = (
-    prismaCourse.visualSupports || []
-  ).map((vs) => ({
-    id: vs.id,
-    title: vs.title,
-    moduleId: vs.moduleId,
-    order: vs.order,
-    content: vs.content,
-  }));
-  return {
-    ...base,
-    lessons,
-    modules,
-    quizzes,
-    visualSupports,
-    reviews,
-    publicStructure: prismaCourse.publicStructure || null,
-    publicResources: prismaCourse.publicResources || null,
-    publicEvaluation: prismaCourse.publicEvaluation || null,
-    publicPrerequisites: prismaCourse.publicPrerequisites || null,
-    createdAt: prismaCourse.createdAt.toISOString(),
-    updatedAt: prismaCourse.updatedAt.toISOString(),
-  };
 }

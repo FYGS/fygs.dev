@@ -5,7 +5,7 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { db } from '@/lib/db';
 import { AccessService } from '@/lib/access-service';
-import { toggleLessonProgressSchema, submitReviewSchema } from '@/lib/validators/course';
+import { submitReviewSchema } from '@/lib/validators/course';
 import { COURSE_TAG_FEATURED, COURSE_TAG_LIST, COURSE_TAG_RECOMMENDATIONS } from '@/lib/repositories/course-repository';
 
 // Helpers
@@ -20,43 +20,6 @@ function revalidateCourseRelated(slug?: string) {
   revalidateTag(COURSE_TAG_LIST, { expire: 0 });
   revalidateTag(COURSE_TAG_RECOMMENDATIONS, { expire: 0 });
   if (slug) revalidateTag(`course:${slug}`, { expire: 0 });
-}
-
-// Toggle lesson progress
-export async function toggleLessonProgress(formData: FormData) {
-  const user = await getUserOrThrow();
-  const parsed = toggleLessonProgressSchema.safeParse({
-    lessonId: formData.get('lessonId'),
-    completed: formData.get('completed') === 'true' ? true : formData.get('completed') === 'false' ? false : undefined,
-    watchTime: formData.get('watchTime') ? Number(formData.get('watchTime')) : undefined,
-  });
-  if (!parsed.success) return { ok: false, error: 'INVALID_INPUT' };
-
-  const { lessonId, completed, watchTime } = parsed.data;
-  const lesson = await db.lesson.findUnique({ where: { id: lessonId }, select: { id: true, course: { select: { slug: true, id: true } } } });
-  if (!lesson) return { ok: false, error: 'LESSON_NOT_FOUND' };
-
-  // Access check
-  const canAccess = await AccessService.canAccessLesson(user.id, lessonId);
-  if (!canAccess) return { ok: false, error: 'FORBIDDEN' };
-
-  const existing = await db.progress.findUnique({ where: { userId_lessonId: { userId: user.id, lessonId } } });
-  let nextCompleted = completed;
-  if (nextCompleted === undefined) {
-    nextCompleted = existing ? !existing.completed : true;
-  }
-  const data = {
-    completed: nextCompleted,
-    completedAt: nextCompleted ? new Date() : null,
-    watchTime: typeof watchTime === 'number' ? watchTime : existing?.watchTime || 0,
-  };
-  if (existing) {
-    await db.progress.update({ where: { userId_lessonId: { userId: user.id, lessonId } }, data });
-  } else {
-    await db.progress.create({ data: { userId: user.id, lessonId, ...data } });
-  }
-  revalidateCourseRelated(lesson.course.slug);
-  return { ok: true, completed: nextCompleted };
 }
 
 // Submit review

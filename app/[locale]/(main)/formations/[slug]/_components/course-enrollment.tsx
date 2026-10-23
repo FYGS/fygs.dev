@@ -1,10 +1,19 @@
 "use client";
 
 import { CoursePaymentForm } from "@/app/_components/payment/course-payment-form";
-import { SerializedCourse } from "../types";
 
 interface CourseEnrollmentProps {
-  course: SerializedCourse;
+  course: {
+    id: string;
+    slug: string;
+    title: string;
+    price: number;
+    level: string;
+    /** Total of the lesson durations, in minutes. */
+    duration: number;
+    enrollmentCount: number;
+    averageRating: number;
+  };
   isEnrolled?: boolean;
   canPreview?: boolean;
   hasPurchased?: boolean; // User has entitlement via subscription or course purchase

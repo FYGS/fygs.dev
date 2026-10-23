@@ -304,12 +304,11 @@ describe("Certificate Issuance Flow Integration Tests", () => {
       });
     }
 
-    // Clear any existing analytics events
-    await db.analyticsEvent.deleteMany({ where: { userId: testUserId } });
-
-    // Issue certificate
+    // The last lesson issued the certificate (and recorded the event) by itself; asking for it
+    // explicitly returns the same certificate and must not record a second event
     const certificateResult = await issueCertificate({ courseId });
     expect(certificateResult.success).toBe(true);
+    expect(certificateResult.alreadyIssued).toBe(true);
 
     // Verify analytics event was created
     const analyticsEvents = await db.analyticsEvent.findMany({

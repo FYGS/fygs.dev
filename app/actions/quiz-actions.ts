@@ -5,8 +5,13 @@ import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { AccessService } from "@/lib/access-service";
 import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { logger } from "@/lib/structured-logger";
+import { PASSING_SCORE } from "@/lib/learning/outline";
+import { isCourseStaff } from "@/lib/learning/access";
+import { completeCourseIfDone } from "@/lib/learning/completion";
+import { rewardQuizPassed } from "@/lib/learning/rewards";
 import {
   QUIZ_MAX_ATTEMPTS_PER_DAY,
   canStartQuizAttempt,
@@ -61,6 +66,18 @@ export type SubmitQuizAnswersResult =
       total: number;
       percentage: number;
       review: QuizFeedback[];
+      /** This sitting reached the passing score. */
+      passed: boolean;
+      /** Best score kept for the learner (a lower retake never replaces it). */
+      bestPercentage: number;
+      reward: { xp: number } | null;
+      /** Where the course stands once this quiz is counted. */
+      course: {
+        percent: number;
+        isComplete: boolean;
+        justIssued: boolean;
+        certificate: { id: string; code: string } | null;
+      };
     }
   | { success: false; error: string };
 
@@ -179,10 +196,22 @@ export async function checkQuizAnswer(
       userId,
       question.quiz.courseId,
     );
-    if (!access.canAccessCourse) return { success: false, error: "Accès refusé" };
+    const staffPreview = !access.canAccessCourse && (await isCourseStaff(userId, question.quiz.courseId));
+    if (!access.canAccessCourse && !staffPreview) return { success: false, error: "Accès refusé" };
 
     if (selectedOption >= question.options.length) {
       return { success: false, error: "Réponse invalide" };
+    }
+
+    // The author trying their own quiz sees the feedback; nothing is recorded
+    if (staffPreview) {
+      return {
+        success: true,
+        questionId: question.id,
+        isCorrect: selectedOption === question.correct,
+        correctOption: question.correct,
+        explanation: question.explanation ?? "",
+      };
     }
 
     const now = new Date();
@@ -245,6 +274,7 @@ export async function submitQuizAnswers(
       where: { id: quizId },
       select: {
         courseId: true,
+        course: { select: { slug: true } },
         questions: {
           select: { id: true, options: true, correct: true, explanation: true },
           orderBy: { order: "asc" },
@@ -256,7 +286,8 @@ export async function submitQuizAnswers(
     }
 
     const access = await AccessService.checkCourseAccess(userId, courseId);
-    if (!access.canAccessCourse) return { success: false, error: "Accès refusé" };
+    const staffPreview = !access.canAccessCourse && (await isCourseStaff(userId, courseId));
+    if (!access.canAccessCourse && !staffPreview) return { success: false, error: "Accès refusé" };
 
     const submitted = new Map<string, number>();
     for (const answer of answers) {
@@ -272,6 +303,28 @@ export async function submitQuizAnswers(
       submitted.size === total &&
       quiz.questions.every((q) => submitted.has(q.id));
     if (!answeredAll) return { success: false, error: "Quiz incomplet" };
+
+    if (staffPreview) {
+      const review: QuizFeedback[] = quiz.questions.map((q) => ({
+        questionId: q.id,
+        isCorrect: submitted.get(q.id) === q.correct,
+        correctOption: q.correct,
+        explanation: q.explanation ?? "",
+      }));
+      const score = review.filter((r) => r.isCorrect).length;
+      const percentage = Math.round((score / total) * 100);
+      return {
+        success: true,
+        score,
+        total,
+        percentage,
+        review,
+        passed: percentage >= PASSING_SCORE,
+        bestPercentage: percentage,
+        reward: null,
+        course: { percent: 0, isComplete: false, justIssued: false, certificate: null },
+      };
+    }
 
     const now = new Date();
     const open = await getOpenAttempts(userId, quizId, now);
@@ -297,11 +350,17 @@ export async function submitQuizAnswers(
     const score = review.filter((r) => r.isCorrect).length;
     const percentage = Math.round((score / total) * 100);
 
+    // The stored result is the best one: a worse retake is graded and shown but does not replace it
+    const previous = await db.quizResult.findUnique({
+      where: { userId_quizId: { userId, quizId } },
+      select: { percentage: true },
+    });
+    const keepsPrevious = previous !== null && previous.percentage > percentage;
     await db.$transaction([
       db.quizResult.upsert({
         where: { userId_quizId: { userId, quizId } },
         create: { userId, quizId, score, total, percentage },
-        update: { score, total, percentage, completedAt: now },
+        update: keepsPrevious ? {} : { score, total, percentage, completedAt: now },
       }),
       db.quizAttempt.updateMany({
         where: { id: { in: attemptIds }, submittedAt: null },
@@ -309,7 +368,30 @@ export async function submitQuizAnswers(
       }),
     ]);
 
-    return { success: true, score, total, percentage, review };
+    const bestPercentage = keepsPrevious ? previous.percentage : percentage;
+    const passed = percentage >= PASSING_SCORE;
+    const reward = passed ? await rewardQuizPassed(userId, quizId) : null;
+    const outcome = await completeCourseIfDone(userId, courseId);
+    revalidatePath("/dashboard");
+    revalidatePath(`/learn/${quiz.course.slug}`, "layout");
+    revalidatePath(`/formations/${quiz.course.slug}`);
+
+    return {
+      success: true,
+      score,
+      total,
+      percentage,
+      review,
+      passed,
+      bestPercentage,
+      reward,
+      course: {
+        percent: outcome.progress.percent,
+        isComplete: outcome.isComplete,
+        justIssued: outcome.justIssued,
+        certificate: outcome.certificate ? { id: outcome.certificate.id, code: outcome.certificate.code } : null,
+      },
+    };
   } catch (error) {
     logger.error("Error submitting quiz answers", {
       metadata: {

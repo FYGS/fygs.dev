@@ -1,57 +1,51 @@
-"use client";
 import Link from "next/link";
-import { ArrowRight, Play } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { ArrowRight, Award, Play } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 
 interface CourseResumeBannerProps {
-  courseSlug: string;
-  lastPosition?: { lessonId: string; slug: string } | null;
-  nextLesson?: { lessonId: string; slug: string } | null;
-  isEnrolled: boolean;
+  percent: number;
+  done: number;
+  total: number;
+  /** Title and link of the next step, null when everything is done. */
+  next: { title: string; href: string } | null;
+  completedHref: string;
+  hasCertificate: boolean;
 }
 
-export function CourseResumeBanner({
-  courseSlug,
-  lastPosition,
-  nextLesson,
-  isEnrolled,
-}: CourseResumeBannerProps) {
-  if (!isEnrolled) return null;
-  const target = lastPosition || nextLesson;
-  if (!target) return null;
-  const href = `/learn/${courseSlug}/lessons/${target.slug}`;
-  const label = lastPosition
-    ? "Reprendre la leçon"
-    : "Commencer la prochaine leçon";
+/** For an enrolled learner: where they are and the one button that continues. */
+export function CourseResumeBanner({ percent, done, total, next, completedHref, hasCertificate }: CourseResumeBannerProps) {
+  const started = done > 0;
   return (
-    <div
-      className={cn(
-        "mb-6 rounded-xl border bg-linear-to-r from-primary/10 via-primary/5 to-transparent p-4 flex items-center justify-between gap-4",
-      )}
-    >
-      <div className="space-y-1">
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="text-xs">
-            Progression
-          </Badge>
-          <span className="text-sm text-muted-foreground">
-            Optimisez votre apprentissage
-          </span>
-        </div>
-        <h4 className="font-semibold text-base">{label}</h4>
-        <p className="text-xs text-muted-foreground">
-          Nous avons sauvegardé votre progression.
-        </p>
+    <section aria-label="Votre progression" className="space-y-3 rounded-xl border bg-primary/5 p-5">
+      <div className="flex items-center justify-between gap-3 text-sm">
+        <span className="font-medium">
+          {done} étape{done > 1 ? "s" : ""} sur {total}
+        </span>
+        <span className="text-muted-foreground">{percent}%</span>
       </div>
-      <Link
-        href={href}
-        className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:opacity-90 transition"
-      >
-        <Play className="h-4 w-4" />
-        <span>{lastPosition ? "Reprendre" : "Commencer"}</span>
-        <ArrowRight className="h-4 w-4" />
-      </Link>
-    </div>
+      <Progress value={percent} aria-label="Progression dans la formation" className="h-2" />
+      {next ? (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="min-w-0 text-sm text-muted-foreground">
+            {started ? "Prochaine étape" : "Pour commencer"} : <span className="font-medium text-foreground">{next.title}</span>
+          </p>
+          <Button asChild>
+            <Link href={next.href}>
+              <Play className="mr-2 h-4 w-4" aria-hidden /> {started ? "Reprendre" : "Commencer"} <ArrowRight className="ml-2 h-4 w-4" aria-hidden />
+            </Link>
+          </Button>
+        </div>
+      ) : (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm font-medium">Formation terminée.</p>
+          <Button asChild variant="outline">
+            <Link href={completedHref}>
+              <Award className="mr-2 h-4 w-4" aria-hidden /> {hasCertificate ? "Voir mon certificat" : "Voir le bilan"}
+            </Link>
+          </Button>
+        </div>
+      )}
+    </section>
   );
 }

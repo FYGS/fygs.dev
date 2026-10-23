@@ -1,274 +1,169 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
+import { Clock, Eye } from "lucide-react";
 import { db } from "@/lib/db";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import { AccessService } from "@/lib/access-service";
-import { LearningShell } from "@/components/learning/learning-shell";
-import { GamificationStats } from "@/components/learning/gamification-stats";
-import { CourseRoadmap } from "@/components/learning/course-roadmap";
-import { LessonNotes } from "@/components/learning/lesson-notes";
-import { VideoPlayer } from "@/app/[locale]/(main)/formations/[slug]/lessons/[lessonSlug]/_components/video-player";
-import { LessonContent as LessonContentComponent } from "@/app/[locale]/(main)/formations/[slug]/lessons/[lessonSlug]/_components/lesson-content";
-import { LessonNavigation } from "@/app/[locale]/(main)/formations/[slug]/lessons/[lessonSlug]/_components/lesson-navigation";
-import { getUserGamificationStats } from "@/lib/gamification";
+import { Badge } from "@/components/ui/badge";
+import { LessonContentRenderer } from "@/components/learning/lesson-content-renderer";
+import { LessonFooter } from "@/components/learning/lesson-footer";
+import { LessonSession } from "@/components/learning/lesson-session";
+import { LessonTabs } from "@/components/learning/lesson-tabs";
+import { VideoPlayer } from "@/components/learning/video-player";
+import { getLearningContext } from "@/lib/learning/page-context";
 
 interface LessonPageProps {
   params: Promise<{ slug: string; lessonSlug: string }>;
 }
 
-export async function generateMetadata({
-  params,
-}: LessonPageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: LessonPageProps): Promise<Metadata> {
   const { slug, lessonSlug } = await params;
   const lesson = await db.lesson.findFirst({
     where: { slug: lessonSlug, course: { slug } },
-    include: { course: { select: { title: true } } },
+    select: { title: true, description: true, course: { select: { title: true } } },
   });
-
-  if (!lesson) return { title: "Leçon non trouvée" };
-
+  if (!lesson) return { title: "Leçon introuvable" };
   return {
     title: `${lesson.title} | ${lesson.course.title} | FYGS`,
-    description:
-      lesson.description ||
-      `Leçon ${lesson.title} du cours ${lesson.course.title}`,
+    description: lesson.description ?? `Leçon « ${lesson.title} » de la formation ${lesson.course.title}`,
+    robots: { index: false },
   };
 }
 
-export default async function ImmersiveLessonPage({ params }: LessonPageProps) {
+function formatDuration(seconds: number): string {
+  const minutes = Math.max(1, Math.round(seconds / 60));
+  if (minutes < 60) return `${minutes} min`;
+  return `${Math.floor(minutes / 60)} h ${String(minutes % 60).padStart(2, "0")}`;
+}
+
+export default async function LessonPage({ params }: LessonPageProps) {
   const { slug, lessonSlug } = await params;
-
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    redirect(
-      `/auth/login?callbackUrl=${encodeURIComponent(
-        `/learn/${slug}/lessons/${lessonSlug}`,
-      )}`,
-    );
-  }
+  const ctx = await getLearningContext(slug);
+  const staff = ctx.mode === "staff";
 
   const lesson = await db.lesson.findFirst({
-    where: { slug: lessonSlug, course: { slug }, published: true },
-    include: {
-      course: {
-        include: {
-          modules: {
-            orderBy: { order: "asc" },
-            include: {
-              lessons: {
-                where: { published: true },
-                orderBy: { order: "asc" },
-                select: { id: true, title: true, slug: true, order: true },
-              },
-            },
-          },
-          lessons: {
-            where: { published: true, moduleId: null },
-            orderBy: { order: "asc" },
-            select: { id: true, title: true, slug: true, order: true },
-          },
-        },
-      },
+    where: { slug: lessonSlug, courseId: ctx.course.id, ...(staff ? {} : { published: true }) },
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      description: true,
+      content: true,
+      videoUrl: true,
+      duration: true,
+      published: true,
+      moduleId: true,
+      resources: { orderBy: { order: "asc" }, select: { id: true, title: true, url: true, kind: true, sizeBytes: true } },
     },
   });
-
   if (!lesson) notFound();
 
-  const canAccess = await AccessService.canAccessLesson(
-    session.user.id,
-    lesson.id,
-  );
-  if (!canAccess) redirect(`/formations/${slug}`);
+  const { outline } = ctx.state;
+  const item = outline.items.find((i) => i.kind === "lesson" && i.id === lesson.id);
+  // A published lesson of a previewed course that is not a sample: back to the course page
+  if (item && !ctx.canOpen(item)) redirect(`/formations/${ctx.course.slug}?locked=1&reason=not_enrolled&lesson=${lesson.slug}`);
 
-  // Fetch quizzes
-  const quizzes = await db.quiz.findMany({
-    where: { courseId: lesson.courseId },
-    select: { id: true, title: true, moduleId: true },
-  });
+  const section = outline.sections.find((s) => s.items.some((i) => i.id === lesson.id));
+  const lessonsInSection = section?.items.filter((i) => i.kind === "lesson") ?? [];
+  const position = lessonsInSection.findIndex((i) => i.id === lesson.id) + 1;
 
-  // User progress
-  const progress = await db.progress.findUnique({
-    where: {
-      userId_lessonId: { userId: session.user.id, lessonId: lesson.id },
-    },
-  });
+  const [progress, notes, questions] = await Promise.all([
+    db.progress.findUnique({
+      where: { userId_lessonId: { userId: ctx.user.id, lessonId: lesson.id } },
+      select: { completed: true, lastPosition: true },
+    }),
+    db.lessonNote.findMany({
+      where: { userId: ctx.user.id, lessonId: lesson.id },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, content: true, timestamp: true, createdAt: true },
+    }),
+    db.discussion.findMany({
+      where: { lessonId: lesson.id, status: "ACTIVE" },
+      orderBy: { lastActivityAt: "desc" },
+      take: 20,
+      select: {
+        id: true,
+        title: true,
+        isSolved: true,
+        createdAt: true,
+        author: { select: { name: true } },
+        _count: { select: { replies: true } },
+      },
+    }),
+  ]);
 
-  // All lesson/quiz IDs for progress calculation
-  const allLessonIds = [
-    ...lesson.course.lessons.map((l) => l.id),
-    ...lesson.course.modules.flatMap((m) => m.lessons.map((l) => l.id)),
-  ];
-  const allQuizIds = quizzes.map((q) => q.id);
-
-  const [allLessonProgress, allQuizResults, lessonNotes, gamificationStats] =
-    await Promise.all([
-      db.progress.findMany({
-        where: { userId: session.user.id, lessonId: { in: allLessonIds } },
-        select: { lessonId: true, completed: true },
-      }),
-      db.quizResult.findMany({
-        where: { userId: session.user.id, quizId: { in: allQuizIds } },
-        select: { quizId: true, percentage: true },
-      }),
-      db.lessonNote.findMany({
-        where: { userId: session.user.id, lessonId: lesson.id },
-        orderBy: { createdAt: "desc" },
-        select: {
-          id: true,
-          content: true,
-          timestamp: true,
-          createdAt: true,
-        },
-      }),
-      getUserGamificationStats(session.user.id),
-    ]);
-
-  const unifiedProgress = [
-    ...allLessonProgress.map((p) => ({
-      itemId: p.lessonId,
-      completed: p.completed,
-      type: "lesson" as const,
-    })),
-    ...allQuizResults.map((q) => ({
-      itemId: q.quizId,
-      completed: q.percentage >= 70,
-      type: "quiz" as const,
-    })),
-  ];
-
-  // Progress percentage
-  const totalItems = allLessonIds.length + allQuizIds.length;
-  const completedItems = unifiedProgress.filter((p) => p.completed).length;
-  const progressPercentage =
-    totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
-
-  // Build navigation items using learning route URLs
-  const standaloneLessons = lesson.course.lessons
-    .sort((a, b) => a.order - b.order)
-    .map((l) => ({
-      ...l,
-      type: "lesson" as const,
-      url: `/learn/${slug}/lessons/${l.slug}`,
-    }));
-
-  const modulesWithItems = lesson.course.modules.map((m) => ({
-    ...m,
-    items: [
-      ...m.lessons
-        .sort((a, b) => a.order - b.order)
-        .map((l) => ({
-          ...l,
-          type: "lesson" as const,
-          url: `/learn/${slug}/lessons/${l.slug}`,
-        })),
-      ...quizzes
-        .filter((q) => q.moduleId === m.order)
-        .map((q) => ({
-          ...q,
-          slug: q.id,
-          order: 999,
-          type: "quiz" as const,
-          url: `/learn/${slug}/quizzes/${q.id}`,
-        })),
-    ],
-  }));
-
-  // Linear items for LessonNavigation
-  const linearItems = [
-    ...standaloneLessons,
-    ...modulesWithItems.flatMap((m) => m.items),
-  ];
-  const currentItemIndex = linearItems.findIndex(
-    (item) => item.id === lesson.id,
-  );
-
-  const completedSet = new Set(
-    unifiedProgress.filter((p) => p.completed).map((p) => p.itemId),
-  );
-  const roadmapItems = linearItems.map((item, index) => ({
-    id: item.id,
-    title: item.title,
-    type: item.type,
-    url: item.url,
-    completed: completedSet.has(item.id),
-    accessible:
-      index === 0 || completedSet.has(linearItems[index - 1]?.id || ""),
-    current: item.id === lesson.id,
-  }));
-
-  const serializedNotes = lessonNotes.map((note) => ({
-    id: note.id,
-    content: note.content,
-    timestamp: note.timestamp,
-    createdAt: note.createdAt.toISOString(),
-  }));
-
-  // Serialize for client components
-  const serializedLesson = {
-    ...lesson,
-    duration: lesson.duration ? Number(lesson.duration) : null,
-    createdAt: lesson.createdAt.toISOString(),
-    updatedAt: lesson.updatedAt.toISOString(),
-    course: {
-      ...lesson.course,
-      price: lesson.course.price ? Number(lesson.course.price) : null,
-      duration: lesson.course.duration ? Number(lesson.course.duration) : null,
-      createdAt: lesson.course.createdAt.toISOString(),
-      updatedAt: lesson.course.updatedAt.toISOString(),
-    },
-  };
-
-  const serializedProgress = progress
-    ? {
-        ...progress,
-        completedAt: progress.completedAt?.toISOString() || null,
-        createdAt: progress.createdAt.toISOString(),
-        updatedAt: progress.updatedAt.toISOString(),
-      }
-    : null;
+  const completed = progress?.completed ?? false;
 
   return (
-    <LearningShell
-      courseTitle={lesson.course.title}
-      courseSlug={slug}
-      lessonTitle={lesson.title}
-      progressPercentage={progressPercentage}
-      lessons={standaloneLessons}
-      modules={modulesWithItems}
-      currentLessonId={lesson.id}
-      progressData={unifiedProgress}
-    >
-      <div className="space-y-6">
-        <VideoPlayer
-          lesson={serializedLesson}
-          userId={session.user.id}
-          initialProgress={serializedProgress}
-        />
-        <LessonContentComponent lesson={serializedLesson} />
-        <LessonNavigation
-          lessons={linearItems}
-          currentLessonIndex={currentItemIndex}
-          courseSlug={slug}
-        />
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <GamificationStats
-              totalXp={gamificationStats.totalXp}
-              currentStreak={gamificationStats.currentStreak}
-              todayXp={gamificationStats.todayXp}
-              className="rounded-lg border bg-card p-4"
-            />
-            <LessonNotes lessonId={lesson.id} initialNotes={serializedNotes} />
+    <LessonSession lessonId={lesson.id} initialCompleted={completed} courseSlug={ctx.course.slug}>
+      <article className="space-y-6">
+        {staff && (
+          <p role="note" className="rounded-md border border-dashed bg-muted/40 p-3 text-sm">
+            Aperçu auteur{lesson.published ? "" : " (leçon non publiée)"} : vous voyez la leçon comme un apprenant, votre progression n’est pas enregistrée.
+          </p>
+        )}
+
+        {lesson.videoUrl && (
+          <VideoPlayer
+            key={lesson.id}
+            title={lesson.title}
+            videoUrl={lesson.videoUrl}
+            durationHint={lesson.duration}
+            resumeAt={completed ? 0 : (progress?.lastPosition ?? 0)}
+          />
+        )}
+
+        <header className="space-y-3">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            {section?.module && <span>{section.module.title}</span>}
+            {position > 0 && (
+              <span>
+                · Leçon {position} sur {lessonsInSection.length}
+              </span>
+            )}
+            {lesson.duration ? (
+              <span className="flex items-center gap-1">
+                · <Clock className="h-3.5 w-3.5" aria-hidden /> {formatDuration(lesson.duration)}
+              </span>
+            ) : null}
+            {item?.kind === "lesson" && item.isPreview && (
+              <Badge variant="secondary" className="gap-1">
+                <Eye className="h-3 w-3" aria-hidden /> Aperçu gratuit
+              </Badge>
+            )}
           </div>
-          <div className="rounded-lg border bg-card p-4">
-            <CourseRoadmap items={roadmapItems} />
+          <h1 className="text-2xl font-bold leading-tight md:text-3xl">{lesson.title}</h1>
+          {lesson.description && <p className="max-w-3xl text-lg text-muted-foreground">{lesson.description}</p>}
+        </header>
+
+        {lesson.content ? (
+          <div className="mdx-content prose prose-neutral max-w-none dark:prose-invert prose-headings:font-bold prose-img:rounded-lg prose-pre:bg-transparent prose-pre:p-0">
+            <LessonContentRenderer content={lesson.content} />
           </div>
-        </div>
-      </div>
-    </LearningShell>
+        ) : (
+          !lesson.videoUrl && (
+            <p className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
+              Le contenu de cette leçon arrive bientôt.
+            </p>
+          )
+        )}
+
+        <LessonFooter lessonId={lesson.id} />
+
+        <LessonTabs
+          lessonId={lesson.id}
+          hasVideo={!!lesson.videoUrl}
+          notes={notes.map((n) => ({ ...n, createdAt: n.createdAt.toISOString() }))}
+          resources={lesson.resources}
+          questions={questions.map((q) => ({
+            id: q.id,
+            title: q.title,
+            authorName: q.author.name,
+            replyCount: q._count.replies,
+            isSolved: q.isSolved,
+            createdAt: q.createdAt.toISOString(),
+          }))}
+          canAsk={ctx.mode === "full"}
+        />
+      </article>
+    </LessonSession>
   );
 }

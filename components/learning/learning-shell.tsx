@@ -1,132 +1,92 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { LearningTopBar } from "./learning-top-bar";
-import { LearningSidebar } from "./learning-sidebar";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { LearningProvider, useLearning } from "./learning-context";
+import { LearningSidebar } from "./learning-sidebar";
+import { LearningTopBar } from "./learning-top-bar";
+import type { ComponentProps } from "react";
 
-interface CourseItem {
-  id: string;
-  title: string;
-  slug: string;
-  order: number;
-  type: "lesson" | "quiz";
-  url: string;
+const DESKTOP_QUERY = "(min-width: 768px)";
+
+function subscribeDesktop(onChange: () => void) {
+  const query = window.matchMedia(DESKTOP_QUERY);
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
 }
 
-interface Module {
-  id: string;
-  title: string;
-  items: CourseItem[];
-}
+function Frame({ children }: { children: React.ReactNode }) {
+  const { progress, mode } = useLearning();
+  // Until hydration the page is laid out by CSS alone (docked on large screens, closed on small ones)
+  const isDesktop = useSyncExternalStore(
+    subscribeDesktop,
+    () => window.matchMedia(DESKTOP_QUERY).matches,
+    () => false,
+  );
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [desktopCollapsed, setDesktopCollapsed] = useState(false);
 
-interface ProgressData {
-  itemId: string;
-  completed: boolean;
-  type: "lesson" | "quiz";
-}
+  const sidebarOpen = isDesktop ? !desktopCollapsed : mobileOpen;
+  const toggle = useCallback(() => {
+    if (isDesktop) setDesktopCollapsed((c) => !c);
+    else setMobileOpen((o) => !o);
+  }, [isDesktop]);
+  const closeOnSmallScreen = useCallback(() => setMobileOpen(false), []);
 
-interface LearningShellProps {
-  courseTitle: string;
-  courseSlug: string;
-  lessonTitle: string;
-  progressPercentage: number;
-  lessons: CourseItem[];
-  modules: Module[];
-  currentLessonId: string;
-  progressData: ProgressData[];
-  children: React.ReactNode;
-}
-
-export function LearningShell({
-  courseTitle,
-  courseSlug,
-  lessonTitle,
-  progressPercentage,
-  lessons,
-  modules,
-  currentLessonId,
-  progressData,
-  children,
-}: LearningShellProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Detect mobile and set sidebar default state
   useEffect(() => {
-    const mq = window.matchMedia("(min-width: 768px)");
-    const handler = (e: MediaQueryListEvent | MediaQueryList) => {
-      setIsMobile(!e.matches);
-      if (e.matches) setSidebarOpen(true);
+    if (!mobileOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileOpen(false);
     };
-    handler(mq);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
-
-  const handleToggleSidebar = () => {
-    setSidebarOpen((o) => !o);
-  };
-
-  // Close sidebar on mobile when navigating
-  const handleMobileClose = () => {
-    if (isMobile) setSidebarOpen(false);
-  };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [mobileOpen]);
 
   return (
     <>
-      <LearningTopBar
-        courseTitle={courseTitle}
-        courseSlug={courseSlug}
-        lessonTitle={lessonTitle}
-        progressPercentage={progressPercentage}
-        sidebarOpen={sidebarOpen}
-        onToggleSidebar={handleToggleSidebar}
-      />
+      <LearningTopBar sidebarOpen={sidebarOpen} onToggleSidebar={toggle} />
 
-      {/* Mobile backdrop */}
-      {isMobile && sidebarOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black/50 md:hidden"
-          onClick={handleMobileClose}
-          aria-hidden
-        />
+      {mobileOpen && !isDesktop && (
+        <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={closeOnSmallScreen} aria-hidden />
       )}
 
       <LearningSidebar
-        lessons={lessons}
-        modules={modules}
-        currentLessonId={currentLessonId}
-        progressData={progressData}
-        open={sidebarOpen}
+        hidden={isDesktop ? desktopCollapsed : !mobileOpen}
+        collapsedOnDesktop={desktopCollapsed}
+        onNavigate={closeOnSmallScreen}
       />
 
       <main
+        id="main-content"
+        tabIndex={-1}
         className={cn(
-          "transition-[margin] duration-300 ease-in-out",
-          "pt-4 pb-20 px-4 md:pt-6 md:pb-12 md:px-8",
-          sidebarOpen && !isMobile ? "md:ml-80" : "ml-0",
+          "px-4 pb-24 pt-4 outline-hidden transition-[margin] duration-300 ease-in-out md:px-8 md:pb-12 md:pt-6",
+          !desktopCollapsed && "md:ml-80",
         )}
       >
-        <div className="max-w-4xl mx-auto">{children}</div>
+        <div className="mx-auto max-w-4xl">{children}</div>
       </main>
 
-      {/* Mobile bottom progress bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-background border-t p-3 safe-area-pb">
-        <div className="flex items-center gap-3">
-          <div className="flex-1">
-            <div className="h-2 rounded-full bg-muted overflow-hidden">
-              <div
-                className="h-full bg-primary rounded-full transition-all duration-500"
-                style={{ width: `${progressPercentage}%` }}
-              />
-            </div>
+      {mode !== "preview" && (
+        <div className="safe-area-pb fixed inset-x-0 bottom-0 z-30 border-t bg-background p-3 md:hidden">
+          <div className="flex items-center gap-3">
+            <Progress value={progress.percent} aria-label="Progression dans la formation" className="h-2 flex-1" />
+            <span className="shrink-0 text-xs font-medium text-muted-foreground">{progress.percent}%</span>
           </div>
-          <span className="text-xs font-medium text-muted-foreground shrink-0">
-            {progressPercentage}%
-          </span>
         </div>
-      </div>
+      )}
     </>
+  );
+}
+
+export function LearningShell({
+  children,
+  ...provider
+}: Omit<ComponentProps<typeof LearningProvider>, "children"> & { children: React.ReactNode }) {
+  return (
+    <LearningProvider {...provider}>
+      <Frame>{children}</Frame>
+    </LearningProvider>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,10 +30,15 @@ import {
   Users,
   BookOpen,
   Clock,
-  Euro
+  Copy,
+  Euro,
+  EyeOff,
+  Plus,
+  Rocket,
 } from "lucide-react";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
-import { deleteCourse } from "../[id]/_actions/edit-course";
+import { deleteCourse, duplicateCourse, publishCourse, unpublishCourse } from "../_actions/course-actions";
+import { formatMinutes } from "@/lib/format-duration";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -42,7 +48,8 @@ interface Course {
   slug: string;
   description: string;
   thumbnail: string | null;
-  price: number;
+  price: number | null;
+  accessTier: string;
   category: string;
   level: string;
   published: boolean;
@@ -120,13 +127,29 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
     }
   };
 
-  const formatDuration = (minutes: number | null): string => {
-    if (!minutes) return "—";
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    if (hours === 0) return `${remainingMinutes}min`;
-    if (remainingMinutes === 0) return `${hours}h`;
-    return `${hours}h ${remainingMinutes}min`;
+  const formatDuration = (minutes: number | null): string => formatMinutes(minutes) || "—";
+
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const duplicate = async (course: Course) => {
+    setBusyId(course.id);
+    const result = await duplicateCourse(course.id);
+    setBusyId(null);
+    if (!result.success) return toast.error(result.error);
+    toast.success("Copie créée en brouillon.");
+    router.push(`/admin/courses/${result.courseId}`);
+  };
+
+  const togglePublished = async (course: Course) => {
+    setBusyId(course.id);
+    const result = course.published ? await unpublishCourse(course.id) : await publishCourse(course.id);
+    setBusyId(null);
+    if (result.success) {
+      toast.success(course.published ? "Formation retirée du catalogue." : "Formation publiée.");
+      router.refresh();
+    } else {
+      toast.error(result.error, { action: { label: "Ouvrir l'éditeur", onClick: () => router.push(`/admin/courses/${course.id}?section=apercu`) } });
+    }
   };
 
   return (
@@ -153,9 +176,15 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
             {courses.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={9} className="text-center py-8">
-                  <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                    <BookOpen className="h-8 w-8 opacity-50" />
-                    <p>Aucun cours trouvé</p>
+                  <div className="flex flex-col items-center gap-3 text-muted-foreground">
+                    <BookOpen className="h-8 w-8 opacity-50" aria-hidden />
+                    <p>Aucune formation à afficher. Ajustez les filtres ou créez-en une.</p>
+                    <Button asChild size="sm">
+                      <Link href="/admin/courses/new">
+                        <Plus className="mr-1.5 h-4 w-4" aria-hidden />
+                        Créer une formation
+                      </Link>
+                    </Button>
                   </div>
                 </TableCell>
               </TableRow>
@@ -166,8 +195,12 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
                     <div className="space-y-2">
                       <div className="flex items-start gap-3">
                         {/* Thumbnail */}
-                        <div className="w-12 h-8 rounded bg-muted flex items-center justify-center shrink-0">
-                          <BookOpen className="h-4 w-4 text-muted-foreground" />
+                        <div className="relative w-12 h-8 overflow-hidden rounded bg-muted flex items-center justify-center shrink-0">
+                          {course.thumbnail ? (
+                            <Image src={course.thumbnail} alt="" fill sizes="48px" className="object-cover" unoptimized />
+                          ) : (
+                            <BookOpen className="h-4 w-4 text-muted-foreground" aria-hidden />
+                          )}
                         </div>
                         
                         {/* Course info */}
@@ -256,10 +289,16 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
                   </TableCell>
                   
                   <TableCell>
-                    <div className="flex items-center gap-1 text-sm font-medium">
-                      <Euro className="h-3 w-3 text-muted-foreground" />
-                      <span>{course.price}</span>
-                    </div>
+                    {course.accessTier === "FREE" ? (
+                      <span className="text-sm font-medium">Gratuit</span>
+                    ) : course.price && course.price > 0 ? (
+                      <div className="flex items-center gap-1 text-sm font-medium">
+                        <Euro className="h-3 w-3 text-muted-foreground" aria-hidden />
+                        <span>{course.price}</span>
+                      </div>
+                    ) : (
+                      <span className="text-sm text-amber-600 dark:text-amber-400">Prix à fixer</span>
+                    )}
                   </TableCell>
                   
                   <TableCell>
@@ -286,16 +325,24 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
-                          <Link href={`/formations/${course.slug}`}>
-                            <Eye className="h-4 w-4 mr-2" />
-                            Voir le cours
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
                           <Link href={`/admin/courses/${course.id}`}>
                             <Edit className="h-4 w-4 mr-2" />
                             Modifier
                           </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href={course.published ? `/formations/${course.slug}` : `/formations/${course.slug}?preview=true`} target="_blank">
+                            <Eye className="h-4 w-4 mr-2" />
+                            {course.published ? "Voir la page publique" : "Prévisualiser"}
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem disabled={busyId === course.id} onSelect={() => void togglePublished(course)}>
+                          {course.published ? <EyeOff className="h-4 w-4 mr-2" /> : <Rocket className="h-4 w-4 mr-2" />}
+                          {course.published ? "Dépublier" : "Publier"}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem disabled={busyId === course.id} onSelect={() => void duplicate(course)}>
+                          <Copy className="h-4 w-4 mr-2" />
+                          Dupliquer
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <ConfirmationModal
@@ -310,7 +357,7 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
                             </DropdownMenuItem>
                           }
                           title="Confirmer la suppression"
-                          description={`Êtes-vous sûr de vouloir supprimer la formation "${course.title}" ? Cette action est irréversible et supprimera toutes les données associées (leçons, inscriptions, progrès).`}
+                          description={`Êtes-vous sûr de vouloir supprimer la formation "${course.title}" ? Cette action est irréversible et supprimera son programme, ses quiz et ses supports. Une formation avec des inscrits ne peut pas être supprimée.`}
                           confirmText="Supprimer définitivement"
                           onConfirm={() => handleDeleteCourse(course.id)}
                           isDestructive={true}

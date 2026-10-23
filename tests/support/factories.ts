@@ -67,10 +67,13 @@ export function createSubscription(
 
 /** A quiz with `correct.length` questions of four options; `correct[i]` is the right index. */
 export async function createQuiz(courseId: string, correct: number[]) {
+  const courseModule =
+    (await db.module.findFirst({ where: { courseId }, orderBy: { order: "asc" } })) ??
+    (await db.module.create({ data: { courseId, title: "Module 1", slug: "module-1", order: 1 } }));
   const quiz = await db.quiz.create({
     data: {
       courseId,
-      moduleId: 1,
+      moduleId: courseModule.id,
       title: "Quiz",
       questions: {
         create: correct.map((c, order) => ({

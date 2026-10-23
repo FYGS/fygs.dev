@@ -42,7 +42,7 @@ export function CoursesHeader({ filters }: { filters: CourseFilters }) {
         <Button asChild>
           <Link href="/admin/courses/new">
             <Plus className="h-4 w-4 mr-2" />
-            Nouveau cours
+            Nouvelle formation
           </Link>
         </Button>
       </div>

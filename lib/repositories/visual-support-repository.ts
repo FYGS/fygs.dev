@@ -6,7 +6,7 @@ export class VisualSupportRepository {
     try {
       return await db.visualSupport.findMany({
         where: { courseId },
-        orderBy: { moduleId: "asc", order: "asc" },
+        orderBy: [{ module: { order: "asc" } }, { order: "asc" }],
       });
     } catch (error) {
       logger.error("Error fetching visual supports for course", {
@@ -19,7 +19,7 @@ export class VisualSupportRepository {
     }
   }
 
-  static async findByCourseIdAndModule(courseId: string, moduleId: number) {
+  static async findByCourseIdAndModule(courseId: string, moduleId: string) {
     try {
       return await db.visualSupport.findMany({
         where: { courseId, moduleId },
@@ -39,7 +39,7 @@ export class VisualSupportRepository {
 
   static async create(data: {
     courseId: string;
-    moduleId: number;
+    moduleId: string;
     title: string;
     content: any;
     order: number;

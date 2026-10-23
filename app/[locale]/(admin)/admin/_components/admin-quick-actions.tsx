@@ -4,7 +4,7 @@ import { isAdminHrefAvailable } from "@/lib/admin-routes";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Plus, BookOpen, GraduationCap, BarChart3, Eye } from "lucide-react";
+import { Plus, BookOpen, BarChart3, Eye } from "lucide-react";
 import { Role } from "@/lib/generated/prisma/browser";
 
 interface AdminQuickActionsProps {
@@ -38,18 +38,6 @@ export function AdminQuickActions({ userRole }: AdminQuickActionsProps) {
           variant: "outline" as const,
           external: true
         });
-      }
-
-      // Lessons management
-      else if (pathname.startsWith("/admin/lessons")) {
-        if (pathname === "/admin/lessons") {
-          actions.push({
-            label: "Nouvelle leçon",
-            href: "/admin/lessons/new",
-            icon: GraduationCap,
-            variant: "default" as const
-          });
-        }
       }
 
       // Dashboard quick actions

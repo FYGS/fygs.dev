@@ -14,6 +14,18 @@ export interface ListCoursesFilters {
   limit?: number;
 }
 
+export type CatalogSort = "relevance" | "recent" | "popular" | "title";
+export const CATALOG_SORTS: readonly CatalogSort[] = ["relevance", "recent", "popular", "title"];
+export const CATALOG_PAGE_SIZE = 12;
+
+export interface CatalogFilters {
+  category?: string;
+  level?: string;
+  search?: string;
+  sort?: CatalogSort;
+  page?: number;
+}
+
 export const COURSE_TAG_FEATURED = "featured-courses";
 export const COURSE_TAG_LIST = "courses"; // generic list tag
 export const COURSE_TAG_RECOMMENDATIONS = "recommendations"; // generic recommendations tag (non-personalized)
@@ -87,84 +99,57 @@ export class CourseRepository {
     }
   }
 
-  static async findBySlug(slug: string) {
-    return db.course.findUnique({
-      where: { slug },
-      include: {
-        ...this.baseIncludes(),
-        modules: {
-          orderBy: { order: "asc" },
-          include: {
-            lessons: {
-              where: { published: true },
-              orderBy: { order: "asc" },
-              select: {
-                id: true,
-                title: true,
-                slug: true,
-                description: true,
-                duration: true,
-                order: true,
-                moduleId: true,
-              },
-            },
-          },
+  /** One page of the public catalogue (published courses), with the total for the pager. */
+  static async listPage(filters: CatalogFilters) {
+    const { category, level, search, sort = "relevance" } = filters;
+    const page = Math.max(1, Math.floor(filters.page ?? 1));
+    const where: Prisma.CourseWhereInput = {
+      published: true,
+      ...(category && { category: category as any }),
+      ...(level && { level: level as any }),
+      ...(search && {
+        OR: [
+          { title: { contains: search, mode: Prisma.QueryMode.insensitive } },
+          { description: { contains: search, mode: Prisma.QueryMode.insensitive } },
+        ],
+      }),
+    };
+    const orderBy: Prisma.CourseOrderByWithRelationInput[] =
+      sort === "recent"
+        ? [{ createdAt: "desc" }]
+        : sort === "popular"
+          ? [{ enrollments: { _count: "desc" } }, { createdAt: "desc" }]
+          : sort === "title"
+            ? [{ title: "asc" }]
+            : [{ featured: "desc" }, { createdAt: "desc" }];
+
+    const [total, items] = await Promise.all([
+      db.course.count({ where }),
+      db.course.findMany({
+        where,
+        orderBy: [...orderBy, { id: "asc" }],
+        skip: (page - 1) * CATALOG_PAGE_SIZE,
+        take: CATALOG_PAGE_SIZE,
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          description: true,
+          thumbnail: true,
+          price: true,
+          level: true,
+          category: true,
+          duration: true,
+          featured: true,
+          accessTier: true,
+          previewEnabled: true,
+          tags: { include: { tag: true } },
+          reviews: { select: { rating: true } },
+          _count: { select: { enrollments: true } },
         },
-        lessons: {
-          where: { published: true },
-          orderBy: { order: "asc" },
-          select: {
-            id: true,
-            title: true,
-            slug: true,
-            description: true,
-            duration: true,
-            order: true,
-            moduleId: true,
-          },
-        },
-        quizzes: {
-          orderBy: { moduleId: "asc" },
-          include: {
-            questions: {
-              orderBy: { order: "asc" },
-              select: {
-                id: true,
-                question: true,
-                options: true,
-                correct: true,
-                explanation: true,
-                order: true,
-              },
-            },
-          },
-        },
-        visualSupports: {
-          orderBy: [{ moduleId: "asc" }, { order: "asc" }],
-          select: {
-            id: true,
-            title: true,
-            moduleId: true,
-            order: true,
-            content: true,
-          },
-        },
-        reviews: {
-          select: {
-            id: true,
-            userId: true,
-            courseId: true,
-            rating: true,
-            comment: true,
-            createdAt: true,
-            updatedAt: true,
-            user: { select: { name: true, image: true } },
-          },
-          orderBy: { createdAt: "desc" },
-          take: 50,
-        },
-      },
-    });
+      }),
+    ]);
+    return { items, total, page, pageCount: Math.max(1, Math.ceil(total / CATALOG_PAGE_SIZE)) };
   }
 
   static async list(filters: ListCoursesFilters) {
@@ -247,6 +232,13 @@ export const getCachedFeaturedCourses = async (limit: number = 6) => {
     return [];
   }
 };
+
+// One page of the catalogue, cached under the same broad tag as the list.
+export const getCachedCatalogPage = unstable_cache(
+  async (filters: CatalogFilters) => CourseRepository.listPage(filters),
+  ["courses-catalog-page"],
+  { tags: [COURSE_TAG_LIST] },
+);
 
 // Cached course list (basic filters). We purposely keep a broad tag so any mutation revalidates all lists.
 export const getCachedCourseList = unstable_cache(
