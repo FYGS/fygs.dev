@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { QuizRunner } from "@/components/learning/quiz-runner";
-import { getLearningContext } from "@/lib/learning/page-context";
-import { getQuizStartBlock } from "@/lib/learning/quiz-status";
+import { getLearningContext, leaveStep } from "@/lib/learning/page-context";
+import { getQuizStartBlock, getResumedAnswers } from "@/lib/learning/quiz-status";
 
 interface QuizPageProps {
   params: Promise<{ slug: string; quizId: string }>;
@@ -36,17 +36,20 @@ export default async function QuizPage({ params }: QuizPageProps) {
   if (!quiz) notFound();
 
   // Quizzes record results: they need the course, not just the free sample
-  if (ctx.mode === "preview") redirect(`/formations/${ctx.course.slug}?locked=1&reason=not_enrolled`);
+  // A quiz records a result: a visitor signs in, a free-sample learner opens the course first
+  if (!ctx.user || ctx.mode === "preview") leaveStep(ctx, `/learn/${ctx.course.slug}/quizzes/${quizId}`);
+  const user = ctx.user;
 
   const staff = ctx.mode === "staff";
-  const [result, blockedMessage] = await Promise.all([
+  const [result, blockedMessage, resumed] = await Promise.all([
     staff
       ? null
       : db.quizResult.findUnique({
-          where: { userId_quizId: { userId: ctx.user.id, quizId: quiz.id } },
+          where: { userId_quizId: { userId: user.id, quizId: quiz.id } },
           select: { percentage: true, score: true, total: true },
         }),
-    staff ? null : getQuizStartBlock(ctx.user.id, quiz.id),
+    staff ? null : getQuizStartBlock(user.id, quiz.id),
+    staff ? [] : getResumedAnswers(user.id, quiz.id),
   ]);
 
   return (
@@ -60,7 +63,14 @@ export default async function QuizPage({ params }: QuizPageProps) {
           </p>
         )}
       </header>
-      <QuizRunner key={quiz.id} quiz={quiz} courseId={ctx.course.id} best={result} blockedMessage={blockedMessage} />
+      <QuizRunner
+        key={quiz.id}
+        quiz={quiz}
+        courseId={ctx.course.id}
+        best={result}
+        blockedMessage={blockedMessage}
+        resumed={resumed}
+      />
     </div>
   );
 }

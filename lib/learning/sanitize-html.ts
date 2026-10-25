@@ -8,6 +8,8 @@
  * on its own; the list is wide on purpose (everything the editor can produce), strict on what runs.
  */
 
+import { VIDEO_EMBED_SOURCES } from "@/lib/csp.mjs";
+
 interface HastNode {
   type: string;
   tagName?: string;
@@ -57,7 +59,8 @@ const TAG_ATTRIBUTES: Record<string, string[]> = {
 
 const URL_ATTRIBUTES = new Set(["href", "src", "poster", "cite"]);
 const SAFE_URL = /^(https?:|mailto:|tel:|\/(?!\/)|#|\.{0,2}\/|[^:/?#]*(?:[/?#]|$))/i;
-const EMBED_HOSTS = new Set(["www.youtube.com", "www.youtube-nocookie.com", "player.vimeo.com"]);
+/** Same hosts as the `frame-src` of the Content-Security-Policy: an iframe the policy would block is not kept. */
+const EMBED_HOSTS = new Set(VIDEO_EMBED_SOURCES.map((source) => new URL(source).hostname));
 const SAFE_CLASS = /^(language-[\w+#.-]+|hljs[\w-]*|token|[\w-]*highlight[\w-]*|contains-task-list|task-list-item|footnotes|sr-only)$/;
 
 function isSafeUrl(value: unknown): boolean {

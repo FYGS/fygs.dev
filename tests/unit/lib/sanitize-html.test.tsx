@@ -62,7 +62,10 @@ describe("lesson HTML is reduced to a white list", () => {
   it("allows an embed only from the known video hosts, over https", () => {
     const ok = html(`<iframe src="https://www.youtube-nocookie.com/embed/abc" allowfullscreen></iframe>`);
     expect(ok.querySelector("iframe")?.getAttribute("src")).toBe("https://www.youtube-nocookie.com/embed/abc");
-    const bad = html(`<iframe src="https://evil.example/x"></iframe><iframe src="http://www.youtube.com/embed/abc"></iframe><iframe srcdoc="<script>1</script>"></iframe>`);
+    // www.youtube.com is not in the Content-Security-Policy (only the privacy-enhanced player is): not kept either
+    const bad = html(
+      `<iframe src="https://evil.example/x"></iframe><iframe src="http://www.youtube.com/embed/abc"></iframe><iframe src="https://www.youtube.com/embed/abc"></iframe><iframe srcdoc="<script>1</script>"></iframe>`,
+    );
     expect(bad.querySelector("iframe")).toBeNull();
   });
 

@@ -3,7 +3,8 @@ import { Award, BookOpen, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { CourseThumbnail } from "@/components/marketing/course-thumbnail";
-import { formatMinutes, LEVEL_LABELS } from "@/lib/paths/rules";
+import { LEVEL_LABELS } from "@/lib/courses/labels";
+import { formatMinutes } from "@/lib/format-duration";
 import type { PathSummary } from "@/lib/paths/queries";
 
 export interface PathCardProgress {
@@ -40,7 +41,7 @@ export function PathCard({ path, progress }: { path: PathSummary; progress?: Pat
           </li>
           <li className="flex items-center gap-1.5">
             <Clock className="h-4 w-4" aria-hidden />
-            {formatMinutes(path.minutes)}
+            {formatMinutes(path.minutes) || "—"}
           </li>
         </ul>
         {progress && (

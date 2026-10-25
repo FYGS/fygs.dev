@@ -25,29 +25,6 @@ export interface CompletionOutcome {
   courseXp: number | null;
 }
 
-/** Shape the progress summary API has always returned for one course. */
-export function toBreakdown(progress: CourseProgress) {
-  const pct = (done: number, total: number) => (total === 0 ? 100 : Math.floor((done / total) * 100));
-  return {
-    lessons: {
-      completed: progress.lessons.done,
-      total: progress.lessons.total,
-      percentage: pct(progress.lessons.done, progress.lessons.total),
-    },
-    quizzes: {
-      passed: progress.quizzes.done,
-      total: progress.quizzes.total,
-      percentage: pct(progress.quizzes.done, progress.quizzes.total),
-    },
-    exam: {
-      passed: progress.exam.passed,
-      required: progress.exam.required,
-      percentage: progress.exam.required ? (progress.exam.passed ? 100 : 0) : 100,
-    },
-    overall: { percentage: progress.percent, isComplete: progress.isComplete },
-  };
-}
-
 /**
  * What follows the first issue of a certificate: enrolment marked complete, course XP, a
  * notification, an email, the analytics event and the certificate of any learning path this course
@@ -96,7 +73,8 @@ export async function afterCertificateIssued(
       const template = emailService.certificateEarnedEmail(
         user.name || user.email,
         course.title,
-        `${SITE_URL}/certificates/verify/${certificate.code}`,
+        `${SITE_URL}/certificates/${courseId}`,
+        "course",
       );
       await emailService.sendEmail({ to: user.email, subject: template.subject, html: template.html });
     }

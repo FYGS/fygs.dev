@@ -5,7 +5,8 @@ import { resetDatabase } from "../../support/test-db";
 import { createCourse, createSubscription, createUser, enroll } from "../../support/factories";
 import { deletePath, savePath, setPathPublished, type Actor } from "@/lib/paths/admin";
 import { listAdminPaths } from "@/lib/paths/admin-list";
-import { syncPathCertificates, verifyPathCertificate } from "@/lib/paths/certificates";
+import { syncPathCertificates } from "@/lib/paths/certificates";
+import { findCertificateByCode } from "@/lib/learning/certificates";
 import { enrollInPath } from "@/lib/paths/enrollment";
 import { getPublishedPath, listPathsOfCourse, listPublishedPaths } from "@/lib/paths/queries";
 import { loadUserPath } from "@/lib/paths/progress";
@@ -20,7 +21,7 @@ afterAll(async () => {
 async function courseWithLesson(over: Parameters<typeof createCourse>[0] = {}) {
   const course = await createCourse(over);
   const lesson = await db.lesson.create({
-    data: { courseId: course.id, title: "Leçon", slug: `lecon-${course.id}`, order: 1, published: true, duration: 30 },
+    data: { courseId: course.id, title: "Leçon", slug: `lecon-${course.id}`, order: 1, published: true, duration: 30 * 60 }, // seconds
   });
   return { course, lesson };
 }
@@ -110,12 +111,13 @@ describe("path progress and certificate", () => {
     expect(await db.pathCertificate.count()).toBe(1);
 
     const { code } = (await db.pathCertificate.findFirstOrThrow())!;
-    expect(await verifyPathCertificate(code)).toMatchObject({
+    expect(await findCertificateByCode(code)).toMatchObject({
+      kind: "path",
       holderName: "Awa Traoré",
-      pathSlug: path.slug,
+      href: `/parcours/${path.slug}`,
       courseTitles: [a.course.title, b.course.title],
     });
-    expect(await verifyPathCertificate(code.toUpperCase())).not.toBeNull();
+    expect(await findCertificateByCode(code.toUpperCase())).not.toBeNull();
   });
 
   it("does not issue a certificate to someone who never enrolled in the path", async () => {
@@ -144,9 +146,9 @@ describe("path progress and certificate", () => {
   });
 
   it("rejects verification of an unknown or malformed code", async () => {
-    expect(await verifyPathCertificate("0".repeat(32))).toBeNull();
-    expect(await verifyPathCertificate("'; drop table")).toBeNull();
-    expect(await verifyPathCertificate("")).toBeNull();
+    expect(await findCertificateByCode("0".repeat(32))).toBeNull();
+    expect(await findCertificateByCode("'; drop table")).toBeNull();
+    expect(await findCertificateByCode("")).toBeNull();
   });
 });
 

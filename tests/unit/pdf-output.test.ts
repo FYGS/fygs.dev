@@ -4,10 +4,22 @@ vi.mock("@/lib/auth", () => ({
   auth: { api: { getSession: vi.fn(async () => ({ user: { id: "u1", name: "Ada Lovelace", email: "ada@example.com" } })) } },
 }));
 vi.mock("next/headers", () => ({ headers: vi.fn(async () => new Headers()) }));
+const CODE = "0123456789abcdef0123456789abcdef";
 vi.mock("@/lib/db", () => ({
   db: {
-    certificate: { findUnique: vi.fn(async () => ({ issuedAt: new Date("2026-03-04T10:00:00Z") })) },
-    course: { findUnique: vi.fn(async () => ({ title: "TypeScript avancé" })) },
+    certificate: {
+      findUnique: vi.fn(async ({ where }: { where: { code?: string } }) =>
+        where.code
+          ? {
+              code: CODE,
+              issuedAt: new Date("2026-03-04T10:00:00Z"),
+              user: { id: "u1", name: "Ada Lovelace" },
+              course: { id: "c1", title: "TypeScript avancé", slug: "typescript-avance" },
+            }
+          : { code: CODE },
+      ),
+    },
+    pathCertificate: { findUnique: vi.fn(async () => null) },
   },
 }));
 vi.mock("@/lib/rate-limit", () => ({ enforceRateLimit: vi.fn(async () => null) }));
@@ -33,7 +45,7 @@ describe("generated PDFs", () => {
   });
 
   it("the certificate is a valid PDF carrying the learner and course names", async () => {
-    const res = await GET(new Request("http://localhost/api/certificates/pdf?courseId=c1"));
+    const res = await GET(new Request(`http://localhost/api/certificates/pdf?code=${CODE}`));
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toBe("application/pdf");
     const bytes = new Uint8Array(await res.arrayBuffer());
@@ -42,6 +54,12 @@ describe("generated PDFs", () => {
     const body = new TextDecoder("latin1").decode(bytes);
     expect(body).toContain("Ada Lovelace");
     expect(body).toContain("TypeScript avanc");
-    expect(body).toMatch(/CERTIFICAT DE COMPL/);
+    expect(body).toMatch(/CERTIFICAT DE R/);
+    expect(body).toContain(CODE);
+  });
+
+  it("answers an older ?courseId= link with the same certificate", async () => {
+    const res = await GET(new Request("http://localhost/api/certificates/pdf?courseId=c1"));
+    expect(res.status).toBe(200);
   });
 });

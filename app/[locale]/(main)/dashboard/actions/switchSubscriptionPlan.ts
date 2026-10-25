@@ -1,6 +1,7 @@
 'use server'
 
 import { z } from 'zod'
+import { isSubscriptionActive } from "@/lib/access/entitlement";
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 import { db } from '@/lib/db'
@@ -9,7 +10,6 @@ import { paymentService } from '@/lib/payment-service'
 import { AnalyticsHelper } from '@/lib/analytics-helper'
 import { getSubscriptionPeriod } from '@/lib/stripe-shapes'
 import { resolveRequestedPriceId } from '@/lib/subscription-pricing'
-import { SubscriptionStatus } from '@/lib/generated/prisma/browser'
 
 const switchPlanSchema = z.object({
   newPriceId: z.string().min(1, 'Price ID is required'),
@@ -64,7 +64,8 @@ export async function switchSubscriptionPlan(
       }
     }
 
-    if (subscription.status !== SubscriptionStatus.ACTIVE) {
+    // ACTIVE or TRIALING: a trial is a running subscription (lib/access/entitlement.ts)
+    if (!isSubscriptionActive(subscription)) {
       return {
         success: false,
         message: "Subscription is not active",

@@ -1,107 +1,73 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { VideoUpload } from "@/components/admin/video-upload";
 
 describe("VideoUpload", () => {
-  const mockOnChange = vi.fn();
+  const onChange = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
-
-  it("renders upload and URL mode buttons", () => {
-    render(<VideoUpload value="" onChange={mockOnChange} />);
-
-    expect(screen.getByText("Upload")).toBeTruthy();
-    expect(screen.getByText("URL externe")).toBeTruthy();
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
-  it("shows drag & drop zone in upload mode", () => {
-    render(<VideoUpload value="" onChange={mockOnChange} />);
-
+  it("offers a file or an address, in French", () => {
+    render(<VideoUpload value="" onChange={onChange} />);
+    expect(screen.getByRole("button", { name: "Envoyer un fichier" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Coller une adresse" })).toBeTruthy();
     expect(screen.getByText("Glissez votre vidéo ici")).toBeTruthy();
-    expect(screen.getByText(/MP4, WebM ou OGG/)).toBeTruthy();
-    expect(screen.getByText("Parcourir les fichiers")).toBeTruthy();
+    expect(screen.getByText(/MP4, WebM, OGG ou MOV \(QuickTime\), 500 Mo au plus/)).toBeTruthy();
   });
 
-  it("switches to URL mode and shows input", () => {
-    render(<VideoUpload value="" onChange={mockOnChange} />);
-
-    fireEvent.click(screen.getByText("URL externe"));
-
-    const input = screen.getByPlaceholderText("https://example.com/video.mp4");
-    expect(input).toBeTruthy();
+  it("takes an address and says when it is not one", () => {
+    const { rerender } = render(<VideoUpload value="" onChange={onChange} label="Adresse de la vidéo" />);
+    fireEvent.click(screen.getByRole("button", { name: "Coller une adresse" }));
+    fireEvent.change(screen.getByLabelText("Adresse de la vidéo"), { target: { value: "https://youtu.be/abc" } });
+    expect(onChange).toHaveBeenCalledWith("https://youtu.be/abc");
+    rerender(<VideoUpload value="pas-une-adresse" onChange={onChange} label="Adresse de la vidéo" />);
+    expect(screen.getByText("L'adresse doit commencer par http:// ou https://.")).toBeTruthy();
   });
 
-  it("calls onChange when URL is entered", () => {
-    render(<VideoUpload value="" onChange={mockOnChange} />);
-
-    fireEvent.click(screen.getByText("URL externe"));
-    const input = screen.getByPlaceholderText("https://example.com/video.mp4");
-    fireEvent.change(input, {
-      target: { value: "https://example.com/video.mp4" },
-    });
-
-    expect(mockOnChange).toHaveBeenCalledWith("https://example.com/video.mp4");
+  it("starts on the address when a video is set, and can remove it", () => {
+    render(<VideoUpload value="https://cdn.example.com/video.mp4" onChange={onChange} />);
+    expect(screen.getByDisplayValue("https://cdn.example.com/video.mp4")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Envoyer un fichier" }));
+    fireEvent.click(screen.getByRole("button", { name: "Retirer la vidéo" }));
+    expect(onChange).toHaveBeenCalledWith("");
   });
 
-  it("shows current value in URL input when value is provided", () => {
-    render(
-      <VideoUpload
-        value="https://cdn.example.com/video.mp4"
-        onChange={mockOnChange}
-      />,
+  it("refuses a format the storage does not take, before sending anything", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    render(<VideoUpload value="" onChange={onChange} />);
+    fireEvent.change(screen.getByLabelText("Fichier vidéo"), { target: { files: [new File(["x"], "clip.avi", { type: "video/x-msvideo" })] } });
+    expect(await screen.findByRole("alert")).toBeTruthy();
+    expect(screen.getByRole("alert").textContent).toMatch(/Format non pris en charge/);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("without storage, says so and opens the address field", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 503,
+        json: async () => ({ error: "Stockage non configuré : l'envoi de fichiers n'est pas disponible. Collez l'adresse du fichier à la place.", code: "STORAGE_UNAVAILABLE" }),
+      }),
     );
-
-    // Starts in URL mode when value exists — shows in input
-    const input = screen.getByDisplayValue("https://cdn.example.com/video.mp4");
-    expect(input).toBeTruthy();
+    render(<VideoUpload value="" onChange={onChange} label="Adresse de la vidéo" />);
+    fireEvent.change(screen.getByLabelText("Fichier vidéo"), { target: { files: [new File(["x"], "clip.mp4", { type: "video/mp4" })] } });
+    await waitFor(() => expect(screen.getByRole("alert").textContent).toMatch(/Stockage non configuré/));
+    expect(screen.getByLabelText("Adresse de la vidéo")).toBeTruthy();
+    expect(onChange).not.toHaveBeenCalled();
   });
 
-  it("starts in URL mode when value is provided", () => {
-    render(
-      <VideoUpload
-        value="https://cdn.example.com/video.mp4"
-        onChange={mockOnChange}
-      />,
-    );
-
-    // URL input should be visible with the value
-    const input = screen.getByDisplayValue("https://cdn.example.com/video.mp4");
-    expect(input).toBeTruthy();
-  });
-
-  it("resets when X button is clicked (upload mode with existing value)", () => {
-    render(
-      <VideoUpload
-        value="https://cdn.example.com/vid.mp4"
-        onChange={mockOnChange}
-      />,
-    );
-
-    // Switch to upload mode to see the existing value display
-    fireEvent.click(screen.getByText("Upload"));
-
-    // There should be a reset button
-    const closeButtons = screen.getAllByRole("button");
-    const xButton = closeButtons.find(
-      (btn) => btn.querySelector("svg") && btn.className.includes("h-7"),
-    );
-    if (xButton) {
-      fireEvent.click(xButton);
-      expect(mockOnChange).toHaveBeenCalledWith("");
-    }
-  });
-
-  it("applies custom className", () => {
-    const { container } = render(
-      <VideoUpload value="" onChange={mockOnChange} className="custom-class" />,
-    );
-
-    const wrapper = container.firstChild as HTMLElement;
-    expect(wrapper.className).toContain("custom-class");
+  it("applies a custom className", () => {
+    const { container } = render(<VideoUpload value="" onChange={onChange} className="custom-class" />);
+    expect((container.firstChild as HTMLElement).className).toContain("custom-class");
   });
 });

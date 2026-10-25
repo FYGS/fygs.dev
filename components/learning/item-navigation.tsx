@@ -67,7 +67,7 @@ export function ItemNavigation({ currentId, emphasizeNext = false }: { currentId
       >
         <Link href={nextHref} prefetch>
           <span className="min-w-0 text-right">
-            <span className={cn("flex items-center justify-end gap-1 text-xs", emphasizeNext || !next ? "opacity-90" : "text-muted-foreground")}>
+            <span className={cn("flex items-center justify-end gap-1 text-xs", emphasizeNext || !next ? "" : "text-muted-foreground")}>
               {next ? <KindIcon kind={next.kind} /> : <Trophy className="h-3.5 w-3.5" aria-hidden />}
               {nextLabel}
             </span>

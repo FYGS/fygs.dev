@@ -54,14 +54,11 @@ class EmailService extends CommunityEmailSenders {
 
   certificateEarnedEmail(
     name: string,
-    formationTitle: string,
-    formationUrl: string
+    title: string,
+    certificateUrl: string,
+    kind: "course" | "path" = "course",
   ): EmailTemplate {
-    return authEmailTemplates.certificateEarnedEmail(
-      name,
-      formationTitle,
-      formationUrl
-    );
+    return authEmailTemplates.certificateEarnedEmail(name, title, certificateUrl, kind);
   }
 
   contactFormAdminEmail(data: ContactFormData): EmailTemplate {

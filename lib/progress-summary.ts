@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { db } from "./db";
+import { getEntitlements, type LapsedReason } from "./access/entitlement";
 import { loadLearnerCourseState } from "./learning/course-state";
 import { itemHref } from "./learning/outline";
 
@@ -25,9 +26,16 @@ export interface CourseProgressSummary {
   consumedDurationSec: number;
   /** A certificate record exists (not just "100 %"). */
   hasCertificate: boolean;
+  /** The course is still open to the learner; when not, `lapsed` says why (the progress is kept). */
+  hasAccess: boolean;
+  lapsed: LapsedReason | null;
+  /** The course was unpublished since the enrolment: it stays listed, it cannot be followed. */
+  published: boolean;
   isComplete: boolean;
   /** Where "continue" goes: the first item not done, the wrap-up once complete, the course page while it has no content. */
   continueHref: string;
+  /** Title of the next step, when there is one to take. */
+  nextStepTitle: string | null;
 }
 
 /** Progress of every course the user is enrolled in, with the one rule used by all screens. */
@@ -40,7 +48,7 @@ export async function getUserCoursesProgress(userId: string): Promise<CourseProg
         courseId: true,
         enrolledAt: true,
         course: {
-          select: { title: true, slug: true, description: true, thumbnail: true, category: true, level: true },
+          select: { title: true, slug: true, description: true, thumbnail: true, category: true, level: true, published: true },
         },
       },
     }),
@@ -52,6 +60,7 @@ export async function getUserCoursesProgress(userId: string): Promise<CourseProg
   ]);
 
   const certified = new Set(certificates.map((c) => c.courseId));
+  const entitlements = await getEntitlements(userId, enrollments.map((e) => e.courseId));
   const watchedByCourse = new Map<string, number>();
   const activityByCourse = new Map<string, Date>();
   for (const p of watched) {
@@ -68,6 +77,8 @@ export async function getUserCoursesProgress(userId: string): Promise<CourseProg
   const summaries: CourseProgressSummary[] = [];
   for (const { e, state } of states) {
     const { progress, outline } = state;
+    const entitlement = entitlements.courses.get(e.courseId);
+    const hasAccess = e.course.published && !!entitlement?.entitled;
     const totalDurationSec = outline.items.reduce(
       (sum, item) => sum + (item.kind === "lesson" ? (item.duration ?? 0) : 0),
       0,
@@ -90,12 +101,19 @@ export async function getUserCoursesProgress(userId: string): Promise<CourseProg
       totalDurationSec,
       consumedDurationSec: watchedByCourse.get(e.courseId) ?? 0,
       hasCertificate: certified.has(e.courseId),
+      hasAccess,
+      lapsed: entitlement?.lapsed ?? null,
+      published: e.course.published,
       isComplete: progress.isComplete,
-      continueHref: progress.next
-        ? itemHref(e.course.slug, progress.next)
-        : progress.total === 0
-          ? `/formations/${e.course.slug}`
-          : `/learn/${e.course.slug}/completed`,
+      // A course that is no longer open leads to its page, which says what reopens it
+      continueHref: !hasAccess
+        ? `/formations/${e.course.slug}`
+        : progress.next && !(progress.isComplete || certified.has(e.courseId))
+          ? itemHref(e.course.slug, progress.next)
+          : progress.total === 0
+            ? `/formations/${e.course.slug}`
+            : `/learn/${e.course.slug}/completed`,
+      nextStepTitle: hasAccess && progress.next && !progress.isComplete ? progress.next.title : null,
     });
   }
   // Most recently active first: the first card is where the learner left off

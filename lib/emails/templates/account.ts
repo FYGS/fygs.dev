@@ -1,6 +1,7 @@
 import { SITE_URL } from "@/app/_lib/constants";
 
 import { createBaseTemplate, type CourseTemplateProps, type EmailTemplateProps, type PasswordChangeTemplateProps, type SubscriptionTemplateProps } from "./base";
+import { formatPrice } from "@/lib/price-format";
 
 /** Account, course purchase and subscription/billing emails. */
 export class AccountEmailTemplates {
@@ -87,7 +88,7 @@ export class AccountEmailTemplates {
 
         ${
           coursePrice
-            ? `<p><strong>Prix payé :</strong> ${coursePrice}€</p>`
+            ? `<p><strong>Prix payé :</strong> ${formatPrice(coursePrice, { freeLabel: false })}</p>`
             : ""
         }
         
@@ -141,7 +142,7 @@ export class AccountEmailTemplates {
           </ul>
         </div>
 
-        <p><strong>Votre abonnement :</strong> ${price}€/${
+        <p><strong>Votre abonnement :</strong> ${formatPrice(price, { freeLabel: false })}/${
       billingPeriod === "monthly" ? "mois" : "an"
     }</p>
         
@@ -178,7 +179,7 @@ export class AccountEmailTemplates {
         <p>Votre abonnement <strong>${planName}</strong> a été mis à jour avec succès.</p>
         
         <div class="highlight">
-          <p><strong>Nouvel abonnement :</strong> ${price}€/${
+          <p><strong>Nouvel abonnement :</strong> ${formatPrice(price, { freeLabel: false })}/${
       billingPeriod === "monthly" ? "mois" : "an"
     }</p>
           ${
@@ -378,7 +379,7 @@ export class AccountEmailTemplates {
       </div>
       <div class="content">
         <h2>Bonjour ${userName},</h2>
-        <p>Votre abonnement a été basculé vers la formule <strong>${planName}</strong> (${price}€ / ${
+        <p>Votre abonnement a été basculé vers la formule <strong>${planName}</strong> (${formatPrice(price, { freeLabel: false })} / ${
       billingPeriod === "monthly" ? "mois" : "an"
     }).</p>
         <div class="highlight">
@@ -424,7 +425,7 @@ export class AccountEmailTemplates {
       <div class="content">
         <h2>Bonjour ${userName},</h2>
         <p>Votre remboursement ${
-          amount ? `de <strong>${amount}€</strong>` : ""
+          amount ? `de <strong>${formatPrice(amount, { freeLabel: false })}</strong>` : ""
         } a été traité avec succès${
       courseTitle ? ` pour la formation <strong>${courseTitle}</strong>` : ""
     }.</p>

@@ -6,8 +6,9 @@ import { db } from "@/lib/db";
 import type { CourseAccessTier, CourseCategory, CourseLevel } from "@/lib/generated/prisma/browser";
 import { slugify, uniqueSlug } from "@/lib/text/slug";
 import { normalizeFaq, normalizeObjectives, normalizeTrailerUrl, isEmptyHtml, type FaqEntry } from "./content";
-import { syncCourseDuration, type Result } from "./curriculum";
-import { checkPublishReadiness, type Readiness } from "./publish";
+import { claimSlug, recordSlugChange } from "@/lib/courses/slug-redirect";
+import { type Result } from "./curriculum";
+import { checkPublishReadiness, MIN_PREMIUM_PRICE, type Readiness } from "./publish";
 import { SLUG_PATTERN } from "./slug-pattern";
 
 const fail = (error: string): { success: false; error: string } => ({ success: false, error });
@@ -39,18 +40,21 @@ export async function createCourseDraft(
   for (let attempt = 0; attempt < 3; attempt++) {
     const slug = await uniqueSlug(slugify(title, "formation"), (s) => isCourseSlugTaken(s));
     try {
-      const course = await db.course.create({
-        data: {
-          title,
-          slug,
-          description: "",
-          category: input.category,
-          level: input.level,
-          accessTier: "FREE",
-          published: false,
-          instructorId: user.role === "INSTRUCTOR" ? user.id : null,
-          objectives: [],
-        },
+      const course = await db.$transaction(async (tx) => {
+        await claimSlug(tx, slug);
+        return tx.course.create({
+          data: {
+            title,
+            slug,
+            description: "",
+            category: input.category,
+            level: input.level,
+            accessTier: "FREE",
+            published: false,
+            instructorId: user.role === "INSTRUCTOR" ? user.id : null,
+            objectives: [],
+          },
+        });
       });
       return { success: true, courseId: course.id, slug: course.slug };
     } catch (error) {
@@ -72,7 +76,10 @@ export interface CoursePatch {
   level?: CourseLevel;
   accessTier?: CourseAccessTier;
   price?: number | null;
-  /** Minutes. Overwritten by the lessons' total as soon as they have durations. */
+  /**
+   * Minutes, typed by the author. Shown only while no published lesson has a duration: as soon as one has, the
+   * lessons' total is shown instead (never written here, so the typed value comes back if lesson durations go).
+   */
   duration?: number | null;
   previewEnabled?: boolean;
   objectives?: string[];
@@ -116,7 +123,21 @@ export async function updateCourseInfo(
     if (patch.price !== null && (!Number.isFinite(patch.price) || patch.price < 0 || patch.price > 100_000)) {
       return fail("Le prix doit être compris entre 0 et 100 000 €.");
     }
-    data.price = patch.price;
+    data.price = patch.price === null ? null : Math.round(patch.price * 100) / 100;
+  }
+  // A free course has no price (nothing shown, nothing charged); a live premium course keeps a payable one.
+  if (data.accessTier === "FREE") data.price = null;
+  if (data.accessTier !== undefined || data.price !== undefined) {
+    const current = await db.course.findUnique({
+      where: { id: courseId },
+      select: { published: true, accessTier: true, price: true },
+    });
+    const tier = (data.accessTier as CourseAccessTier | undefined) ?? current?.accessTier;
+    const price =
+      data.price !== undefined ? (data.price as number | null) : current?.price == null ? null : Number(current.price);
+    if (current?.published && tier === "PREMIUM" && (price === null || price < MIN_PREMIUM_PRICE)) {
+      return fail("Une formation premium en ligne doit garder un prix d'au moins 0,50 €.");
+    }
   }
   if (patch.duration !== undefined) {
     if (patch.duration !== null && (!Number.isInteger(patch.duration) || patch.duration < 0)) {
@@ -173,12 +194,34 @@ export async function renameCourseSlug(courseId: string, slug: string): Promise<
   if (next === current.slug) return { success: true, slug: next, previous: current.slug };
   if (await isCourseSlugTaken(next, courseId)) return fail("Cette adresse est déjà utilisée par une autre formation.");
   try {
-    await db.course.update({ where: { id: courseId }, data: { slug: next } });
+    await db.$transaction(async (tx) => {
+      await tx.course.update({ where: { id: courseId }, data: { slug: next } });
+      // the old address keeps working: it redirects to the new one
+      await recordSlugChange(tx, courseId, current.slug, next);
+    });
   } catch (error) {
     if ((error as { code?: string }).code === "P2002") return fail("Cette adresse est déjà utilisée par une autre formation.");
     throw error;
   }
   return { success: true, slug: next, previous: current.slug };
+}
+
+// ---------------------------------------------------------------- paths
+
+/** Published learning paths that contain the course: it must stay live for them. */
+export async function publishedPathsOf(courseId: string): Promise<{ id: string; title: string }[]> {
+  const rows = await db.pathCourse.findMany({
+    where: { courseId, path: { published: true } },
+    select: { path: { select: { id: true, title: true } } },
+    orderBy: { path: { title: "asc" } },
+  });
+  return rows.map((r) => r.path);
+}
+
+function pathRefusal(verb: string, paths: { title: string }[]): string {
+  const list = paths.map((p) => `« ${p.title} »`).join(", ");
+  const which = paths.length > 1 ? "des parcours publiés" : "du parcours publié";
+  return `Impossible de ${verb} cette formation : elle fait partie ${which} ${list}. Retirez-la du parcours ou dépubliez celui-ci d'abord.`;
 }
 
 // ---------------------------------------------------------------- publish
@@ -218,6 +261,10 @@ export async function setCoursePublished(
 ): Promise<Result<{ readiness: Readiness }> | { success: false; error: string; readiness: Readiness }> {
   const readiness = await loadReadiness(courseId);
   if (!readiness) return fail("Formation introuvable.");
+  if (!published) {
+    const paths = await publishedPathsOf(courseId);
+    if (paths.length > 0) return fail(pathRefusal("dépublier", paths));
+  }
   if (published && !readiness.ready) {
     return { success: false, error: `La formation n'est pas prête : ${readiness.missing.join(" ; ")}.`, readiness };
   }
@@ -226,7 +273,6 @@ export async function setCoursePublished(
     where: { id: courseId },
     data: { published, ...(published && !current?.publishedAt ? { publishedAt: new Date() } : {}) },
   });
-  if (published) await syncCourseDuration(courseId);
   return { success: true, readiness };
 }
 
@@ -254,6 +300,7 @@ export async function duplicateCourse(
   const slug = await uniqueSlug(`${source.slug}-copie`.slice(0, 80), (s) => isCourseSlugTaken(s));
 
   const created = await db.$transaction(async (tx) => {
+    await claimSlug(tx, slug);
     const copy = await tx.course.create({
       data: {
         title,
@@ -369,6 +416,8 @@ export async function deleteCourse(courseId: string): Promise<Result<{ slug: str
     select: { slug: true, _count: { select: { enrollments: true } } },
   });
   if (!course) return fail("Formation introuvable.");
+  const paths = await publishedPathsOf(courseId);
+  if (paths.length > 0) return fail(pathRefusal("supprimer", paths));
   if (course._count.enrollments > 0) {
     return fail(
       `Impossible de supprimer cette formation : ${course._count.enrollments} personne(s) y sont inscrites. Dépubliez-la pour la retirer du catalogue.`,

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CheckCircle2, ShieldX } from "lucide-react";
-import { db } from "@/lib/db";
+import { Button } from "@/components/ui/button";
 import { CertificateSheet } from "@/components/learning/certificate-view";
+import { certificateVerifyUrl, findCertificateByCode } from "@/lib/learning/certificates";
 
 export const dynamic = "force-dynamic";
 
@@ -11,24 +12,10 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
-// A verification code is 32 hexadecimal characters; anything else cannot match a certificate
-const CODE_PATTERN = /^[a-f0-9]{32}$/i;
-
-/** Public: anyone given the code can check that a certificate is real, who holds it and for which course. */
+/** Public: anyone given the code can check that a course or path certificate is real, who holds it and for what. */
 export default async function VerifyCertificatePage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
-
-  const certificate = CODE_PATTERN.test(code)
-    ? await db.certificate.findUnique({
-        where: { code: code.toLowerCase() },
-        select: {
-          code: true,
-          issuedAt: true,
-          user: { select: { name: true } },
-          course: { select: { title: true, slug: true } },
-        },
-      })
-    : null;
+  const certificate = await findCertificateByCode(decodeURIComponent(code).trim());
 
   if (!certificate) {
     return (
@@ -36,11 +23,11 @@ export default async function VerifyCertificatePage({ params }: { params: Promis
         <ShieldX className="mx-auto h-12 w-12 text-destructive" aria-hidden />
         <h1 className="text-2xl font-bold">Certificat introuvable</h1>
         <p className="text-muted-foreground">
-          Aucun certificat ne correspond à ce code. Vérifiez le lien ou le code imprimé sur le certificat.
+          Aucun certificat ne correspond à ce code. Vérifiez qu’il est recopié en entier, sans espace, ou suivez le lien imprimé sur le certificat.
         </p>
-        <Link href="/formations" className="underline">
-          Voir les formations
-        </Link>
+        <Button asChild variant="outline">
+          <Link href="/formations">Voir les formations</Link>
+        </Button>
       </div>
     );
   }
@@ -49,17 +36,20 @@ export default async function VerifyCertificatePage({ params }: { params: Promis
     <div className="container mx-auto max-w-3xl space-y-6 py-12">
       <div className="flex items-center justify-center gap-2 text-emerald-700 dark:text-emerald-400">
         <CheckCircle2 className="h-6 w-6" aria-hidden />
-        <h1 className="text-xl font-bold">Certificat authentique</h1>
+        <h1 className="text-xl font-bold">Ce certificat est authentique</h1>
       </div>
       <CertificateSheet
-        holder={certificate.user.name}
-        courseTitle={certificate.course.title}
+        kind={certificate.kind}
+        holder={certificate.holderName}
+        title={certificate.title}
+        courseTitles={certificate.courseTitles}
         issuedAt={certificate.issuedAt}
         code={certificate.code}
+        verifyUrl={certificateVerifyUrl(certificate.code)}
       />
       <p className="text-center text-sm">
-        <Link href={`/formations/${certificate.course.slug}`} className="underline">
-          Découvrir cette formation
+        <Link href={certificate.href} className="underline">
+          {certificate.kind === "path" ? "Découvrir ce parcours" : "Découvrir cette formation"}
         </Link>
       </p>
     </div>

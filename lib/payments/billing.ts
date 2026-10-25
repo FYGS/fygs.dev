@@ -2,13 +2,9 @@ import type Stripe from "stripe";
 import { stripe } from "../stripe";
 import { db } from "../db";
 import { WebhookSignatureError } from "./errors";
-import type {
-  CheckoutSessionData,
-  PaymentProduct,
-  SubscriptionData,
-} from "./types";
+import type { CheckoutSessionData, SubscriptionData } from "./types";
 
-/** Stripe checkout sessions, customers, catalog and webhook signature checks. */
+/** Stripe checkout sessions and webhook signature checks. */
 export class StripeBilling {
   // Create checkout session for one-time payments (courses)
   async createCheckoutSession(
@@ -57,6 +53,11 @@ export class StripeBilling {
           courseSlug: course.slug,
         },
         allow_promotion_codes: true,
+        // A one-time payment gets a real invoice (PDF from the receipt link on the billing page)
+        invoice_creation: {
+          enabled: true,
+          invoice_data: { description: `Formation « ${course.title} »` },
+        },
       });
 
       if (!session.url) {
@@ -123,94 +124,6 @@ export class StripeBilling {
     } catch (error) {
       console.error("Stripe subscription session creation failed:", error);
       throw new Error("Failed to create subscription session");
-    }
-  }
-
-  // Create Stripe customer
-  async createCustomer(
-    email: string,
-    name?: string,
-    userId?: string,
-  ): Promise<string> {
-    try {
-      const customer = await stripe.customers.create({
-        email,
-        name,
-        metadata: userId ? { userId } : {},
-      });
-
-      return customer.id;
-    } catch (error) {
-      console.error("Failed to create Stripe customer:", error);
-      throw new Error("Failed to create customer");
-    }
-  }
-
-  // Get customer by email
-  async getCustomerByEmail(email: string): Promise<Stripe.Customer | null> {
-    try {
-      const customers = await stripe.customers.list({
-        email,
-        limit: 1,
-      });
-
-      return customers.data[0] || null;
-    } catch (error) {
-      console.error("Failed to get customer:", error);
-      return null;
-    }
-  }
-
-  // Create product in Stripe
-  async createProduct(product: PaymentProduct): Promise<string> {
-    try {
-      const stripeProduct = await stripe.products.create({
-        id: product.id,
-        name: product.name,
-        description: product.description,
-        metadata: product.metadata || {},
-      });
-
-      // Create price for the product
-      await stripe.prices.create({
-        product: stripeProduct.id,
-        unit_amount: product.price,
-        currency: product.currency,
-        metadata: {
-          type: product.type,
-        },
-      });
-
-      return stripeProduct.id;
-    } catch (error) {
-      console.error("Failed to create Stripe product:", error);
-      throw new Error("Failed to create product");
-    }
-  }
-
-  // Create subscription price
-  async createSubscriptionPrice(
-    productId: string,
-    amount: number,
-    interval: "month" | "year" = "month",
-  ): Promise<string> {
-    try {
-      const price = await stripe.prices.create({
-        product: productId,
-        unit_amount: amount,
-        currency: "eur",
-        recurring: {
-          interval,
-        },
-        metadata: {
-          type: "subscription",
-        },
-      });
-
-      return price.id;
-    } catch (error) {
-      console.error("Failed to create subscription price:", error);
-      throw new Error("Failed to create subscription price");
     }
   }
 

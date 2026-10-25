@@ -1,5 +1,6 @@
 "use client";
 
+import type { Ref } from "react";
 import Link from "next/link";
 import { Menu, PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,9 +11,11 @@ import { useCurrentItem } from "./use-current-item";
 interface LearningTopBarProps {
   sidebarOpen: boolean;
   onToggleSidebar: () => void;
+  /** Focus comes back here when the plan closes on a small screen. */
+  toggleRef?: Ref<HTMLButtonElement>;
 }
 
-export function LearningTopBar({ sidebarOpen, onToggleSidebar }: LearningTopBarProps) {
+export function LearningTopBar({ sidebarOpen, onToggleSidebar, toggleRef }: LearningTopBarProps) {
   const { courseTitle, courseSlug, progress, mode } = useLearning();
   const item = useCurrentItem();
 
@@ -20,6 +23,7 @@ export function LearningTopBar({ sidebarOpen, onToggleSidebar }: LearningTopBarP
     <header className="sticky top-0 z-50 h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-full items-center gap-3 px-4">
         <Button
+          ref={toggleRef}
           variant="ghost"
           size="icon"
           onClick={onToggleSidebar}
@@ -44,9 +48,9 @@ export function LearningTopBar({ sidebarOpen, onToggleSidebar }: LearningTopBarP
         </div>
 
         {mode !== "preview" && (
-          <div className="hidden shrink-0 items-center gap-3 sm:flex">
+          <div className="hidden shrink-0 items-center gap-3 md:flex">
             <Progress value={progress.percent} aria-label="Progression dans la formation" className="h-2 w-32" />
-            <span className="text-xs font-medium text-muted-foreground">{progress.percent}%</span>
+            <span className="text-xs font-medium text-muted-foreground">{progress.percent} %</span>
           </div>
         )}
 

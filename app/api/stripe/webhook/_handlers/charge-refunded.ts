@@ -9,7 +9,7 @@ const refId = (ref: string | { id: string } | null | undefined): string | null =
 /**
  * A refund made outside the app (Stripe dashboard, support) reaches us only through
  * `charge.refunded`. A FULL refund marks the payment REFUNDED, which is what ends
- * the lifetime-purchase entitlement (`AccessService.evaluateCourseAccess`); the
+ * the lifetime-purchase entitlement (`lib/access/entitlement.ts`); the
  * enrollment and the learner's progress are kept. A partial refund is recorded in the
  * audit trail but leaves access untouched. The subscription itself is never cancelled
  * here: stopping future billing stays an explicit decision in Stripe.

@@ -4,8 +4,8 @@ import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { z } from "zod";
 import { createLogger } from "@/lib/structured-logger";
-import { SubscriptionStatus } from "@/lib/generated/prisma/browser";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { isSubscriptionActive } from "@/lib/access/entitlement";
 
 const updateProfileSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
@@ -217,9 +217,8 @@ export async function GET() {
         averageProgress,
       },
       recentEnrollments: user.enrollments,
-      hasActiveSubscription:
-        user.subscriptions?.status === SubscriptionStatus.ACTIVE &&
-        !user.subscriptions?.cancelAtPeriodEnd,
+      // Same rule as the access to courses: trialing counts, a cancellation at period end keeps access until then
+      hasActiveSubscription: isSubscriptionActive(user.subscriptions),
     });
   } catch (error) {
     const apiLogger = createLogger({

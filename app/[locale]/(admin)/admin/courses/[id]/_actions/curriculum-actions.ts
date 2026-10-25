@@ -147,6 +147,8 @@ const lessonPatch = z.object({
   duration: z.number().int().nullable().optional(),
   published: z.boolean().optional(),
   isPreview: z.boolean().optional(),
+  captionsUrl: z.string().max(2000).nullable().optional(),
+  transcript: z.string().max(curriculum.TRANSCRIPT_MAX_LENGTH + 1000).nullable().optional(),
 });
 
 /** Autosave of the editing panel: saves the fields given and returns the lesson's new summary. */
@@ -163,6 +165,19 @@ export async function saveLesson(
     return r;
   } catch (error) {
     return unexpected("saveLesson", error);
+  }
+}
+
+/** What deleting a lesson would remove: shown in the confirmation dialog. */
+export async function getLessonImpact(
+  lessonId: string,
+): Promise<({ success: true; learnersWithProgress: number }) | ActionFailure> {
+  try {
+    const g = await guardLesson(id.parse(lessonId));
+    if (!g.ok) return failure(g.error);
+    return { success: true, ...(await curriculum.getLessonImpact(g.lesson.id)) };
+  } catch (error) {
+    return unexpected("getLessonImpact", error);
   }
 }
 

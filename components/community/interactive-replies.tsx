@@ -7,12 +7,15 @@ interface InteractiveRepliesProps {
   replies: CommunityReply[];
   discussionId: string;
   currentUserId?: string;
+  /** The instructor of the course the discussion belongs to: their answers are marked. */
+  instructorId?: string | null;
 }
 
 export function InteractiveReplies({ 
   replies, 
   discussionId,
-  currentUserId 
+  currentUserId,
+  instructorId = null,
 }: InteractiveRepliesProps) {
   return (
     <div className="space-y-4">
@@ -22,6 +25,7 @@ export function InteractiveReplies({
           reply={reply}
           discussionId={discussionId}
           currentUserId={currentUserId}
+          instructorId={instructorId}
         />
       ))}
     </div>

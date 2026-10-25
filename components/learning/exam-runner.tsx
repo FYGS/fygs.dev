@@ -33,6 +33,8 @@ function clock(totalSeconds: number): string {
 export function ExamRunner({ courseId, exam, last, blockedMessage }: ExamRunnerProps) {
   const { courseSlug, mode } = useLearning();
   const [session, setSession] = useState<Started | null>(null);
+  // The questions of the last sitting, kept for the correction once the session is over
+  const [paper, setPaper] = useState<Started["exam"]["questions"]>([]);
   const [answers, setAnswers] = useState<(number | null)[]>([]);
   const [result, setResult] = useState<Graded | null>(null);
   const [starting, setStarting] = useState(false);
@@ -55,6 +57,7 @@ export function ExamRunner({ courseId, exam, last, blockedMessage }: ExamRunnerP
           return;
         }
         if (auto) toast.info("Temps écoulé : vos réponses ont été envoyées.");
+        setPaper(session.exam.questions);
         setResult(response);
         setSession(null);
       } catch {
@@ -66,6 +69,17 @@ export function ExamRunner({ courseId, exam, last, blockedMessage }: ExamRunnerP
     },
     [session, answers],
   );
+
+  // Leaving or reloading the page during a sitting would lose the answers: the browser asks first
+  useEffect(() => {
+    if (!session) return;
+    const warn = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [session]);
 
   // Clock and automatic submission at the end of the time limit
   useEffect(() => {
@@ -110,9 +124,9 @@ export function ExamRunner({ courseId, exam, last, blockedMessage }: ExamRunnerP
           <h2 id="exam-result" className="text-2xl font-bold">
             {result.passed ? "Examen réussi !" : "Examen non réussi"}
           </h2>
-          <p className="text-4xl font-bold">{result.percentage}%</p>
+          <p className="text-4xl font-bold">{result.percentage} %</p>
           <p className="text-muted-foreground">
-            {result.score} / {result.total} bonnes réponses · seuil {result.passingScore}%
+            {result.score} / {result.total} bonnes réponses · seuil {result.passingScore} %
           </p>
           {!result.passed && mode === "full" && (
             <p className="text-sm text-muted-foreground">
@@ -130,25 +144,37 @@ export function ExamRunner({ courseId, exam, last, blockedMessage }: ExamRunnerP
           {mode === "staff" && <p className="text-sm text-muted-foreground">Aperçu auteur : ce résultat n’est pas enregistré.</p>}
         </div>
 
-        <ol className="space-y-3">
-          {result.review.map((r, i) => (
-            <li key={r.index} className={cn("rounded-lg border p-4 text-sm", r.isCorrect ? "border-emerald-600/40" : "border-red-600/40")}>
-              <p className="flex items-start gap-2 font-medium">
-                {r.isCorrect ? (
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-400" aria-label="Bonne réponse" />
-                ) : (
-                  <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-700 dark:text-red-400" aria-label="Mauvaise réponse" />
-                )}
-                <span>Question {i + 1}</span>
-              </p>
-              <p className="mt-1 text-muted-foreground">
-                {r.selected === null ? "Pas de réponse." : `Votre réponse : option ${String.fromCharCode(65 + r.selected)}.`}
-                {!r.isCorrect && ` Bonne réponse : option ${String.fromCharCode(65 + r.correctOption)}.`}
-              </p>
-              {r.explanation && <p className="mt-1">{r.explanation}</p>}
-            </li>
-          ))}
-        </ol>
+        <section aria-labelledby="exam-review" className="space-y-3">
+          <h3 id="exam-review" className="text-lg font-semibold">
+            Correction
+          </h3>
+          <ol className="space-y-3">
+            {result.review.map((r, i) => {
+              const q = paper[r.index];
+              const chosen = r.selected === null ? null : q?.options[r.selected];
+              return (
+                <li key={r.index} className={cn("space-y-2 rounded-lg border p-4 text-sm", r.isCorrect ? "border-emerald-600/40" : "border-red-600/40")}>
+                  <p className="flex items-start gap-2 font-medium">
+                    {r.isCorrect ? (
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-400" aria-hidden />
+                    ) : (
+                      <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-700 dark:text-red-400" aria-hidden />
+                    )}
+                    <span>
+                      <span className="sr-only">{r.isCorrect ? "Bonne réponse. " : "Mauvaise réponse. "}</span>
+                      {i + 1}. {q?.question ?? `Question ${i + 1}`}
+                    </span>
+                  </p>
+                  <p className={r.isCorrect ? "text-emerald-800 dark:text-emerald-300" : "text-red-800 dark:text-red-300"}>
+                    {chosen === null || chosen === undefined ? "Pas de réponse." : `Votre réponse : ${chosen}`}
+                  </p>
+                  {!r.isCorrect && q && <p>Bonne réponse : {q.options[r.correctOption]}</p>}
+                  {r.explanation && <p className="text-muted-foreground">{r.explanation}</p>}
+                </li>
+              );
+            })}
+          </ol>
+        </section>
 
         <ItemNavigation currentId={exam.id} emphasizeNext={result.passed} />
       </section>
@@ -205,7 +231,7 @@ export function ExamRunner({ courseId, exam, last, blockedMessage }: ExamRunnerP
                   name={`q-${qi}`}
                   checked={answers[qi] === oi}
                   onChange={() => setAnswers((prev) => prev.map((a, i) => (i === qi ? oi : a)))}
-                  className="mt-1"
+                  className="mt-1 accent-primary"
                 />
                 <span>{option}</span>
               </label>
@@ -238,15 +264,15 @@ export function ExamRunner({ courseId, exam, last, blockedMessage }: ExamRunnerP
         <li>
           {exam.questionCount} question{exam.questionCount > 1 ? "s" : ""}, une seule bonne réponse chacune.
         </li>
-        <li>Seuil de réussite : {exam.passingScore}%.</li>
+        <li>Seuil de réussite : {exam.passingScore} %.</li>
         <li>{exam.timeLimit ? `Durée : ${exam.timeLimit} minutes. L’examen est envoyé automatiquement à la fin du temps.` : "Pas de limite de temps."}</li>
         <li>La correction s’affiche après l’envoi. En cas d’échec, vous pourrez repasser l’examen après {EXAM_RETAKE_COOLDOWN_MINUTES} minutes.</li>
       </ul>
       {last && (
-        <p className="flex items-center gap-2 text-sm">
+        <div className="flex items-center gap-2 text-sm">
           <Badge variant={last.passed ? "default" : "secondary"}>{last.passed ? "Réussi" : "Non réussi"}</Badge>
-          Dernier résultat : <strong>{last.percentage}%</strong>
-        </p>
+          Dernier résultat : <strong>{last.percentage} %</strong>
+        </div>
       )}
       {blockedMessage ? (
         <p role="status" className="rounded-md bg-muted p-3 text-sm">
@@ -257,11 +283,9 @@ export function ExamRunner({ courseId, exam, last, blockedMessage }: ExamRunnerP
           {starting && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />} Commencer l’examen
         </Button>
       )}
-      {last?.passed && (
-        <div className="border-t pt-4">
-          <ItemNavigation currentId={exam.id} emphasizeNext />
-        </div>
-      )}
+      <div className="border-t pt-4">
+        <ItemNavigation currentId={exam.id} emphasizeNext={!!last?.passed} />
+      </div>
     </section>
   );
 }

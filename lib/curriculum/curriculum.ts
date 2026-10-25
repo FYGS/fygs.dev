@@ -7,9 +7,9 @@
  * lessons, quizzes and supports with it.
  */
 import { db } from "@/lib/db";
-import { courseMinutesFromLessons } from "@/lib/format-duration";
 import { slugify, uniqueSlug } from "@/lib/text/slug";
 import { isEmptyHtml } from "./content";
+import { TRANSCRIPT_MAX_LENGTH } from "./limits";
 import { applyOrder, moveId, nextOrder, sameIdSet } from "./ordering";
 import { lessonStatus, type LessonStatus } from "./publish";
 
@@ -72,15 +72,16 @@ export async function getCurriculum(courseId: string, client: Client = db): Prom
         _count: { select: { resources: true } },
       },
     }),
+    // same test as the publish checklist on the server: an editor left with `<p></p>` is no content
     client.lesson.findMany({
       where: { courseId, content: { not: null }, NOT: { content: "" } },
-      select: { id: true },
+      select: { id: true, content: true },
     }),
     client.quiz.groupBy({ by: ["moduleId"], where: { courseId }, _count: { _all: true } }),
     client.visualSupport.groupBy({ by: ["moduleId"], where: { courseId }, _count: { _all: true } }),
   ]);
 
-  const contentIds = new Set(withContent.map((l) => l.id));
+  const contentIds = new Set(withContent.filter((l) => !isEmptyHtml(l.content)).map((l) => l.id));
   const summaries: LessonSummary[] = lessons.map((l) => {
     const hasVideo = Boolean(l.videoUrl?.trim());
     const hasContent = contentIds.has(l.id);
@@ -117,14 +118,18 @@ export async function getCurriculum(courseId: string, client: Client = db): Prom
   };
 }
 
-/** Course duration in minutes follows the published lessons that have a duration; otherwise it is left as typed. */
-export async function syncCourseDuration(courseId: string, client: Client = db): Promise<void> {
-  const lessons = await client.lesson.findMany({
-    where: { courseId, published: true },
-    select: { duration: true },
-  });
-  const minutes = courseMinutesFromLessons(lessons.map((l) => l.duration));
-  if (minutes > 0) await client.course.update({ where: { id: courseId }, data: { duration: minutes } });
+export const LAST_LIVE_LESSON =
+  "La formation est en ligne : elle doit garder au moins une leçon publiée. Publiez d'abord une autre leçon, ou dépubliez la formation.";
+
+/**
+ * A published course keeps at least one published lesson, otherwise its learners open an empty course.
+ * Returns the refusal message when hiding or removing `lessonIds` would leave none, else null.
+ */
+export async function lastLiveLessonGuard(client: Client, courseId: string, lessonIds: readonly string[]): Promise<string | null> {
+  const course = await client.course.findUnique({ where: { id: courseId }, select: { published: true } });
+  if (!course?.published) return null;
+  const remaining = await client.lesson.count({ where: { courseId, published: true, id: { notIn: [...lessonIds] } } });
+  return remaining === 0 ? LAST_LIVE_LESSON : null;
 }
 
 const isUniqueViolation = (error: unknown) =>
@@ -215,8 +220,13 @@ export async function getModuleImpact(moduleId: string): Promise<ModuleImpact> {
 }
 
 export async function deleteModule(moduleId: string): Promise<Result<{ courseId: string; lessonSlugs: string[] }>> {
-  const found = await db.module.findUnique({ where: { id: moduleId }, select: { courseId: true } });
+  const found = await db.module.findUnique({
+    where: { id: moduleId },
+    select: { courseId: true, lessons: { select: { id: true } } },
+  });
   if (!found) return fail("Module introuvable.");
+  const refusal = await lastLiveLessonGuard(db, found.courseId, found.lessons.map((l) => l.id));
+  if (refusal) return fail(refusal);
 
   const lessonSlugs = await db.$transaction(async (tx) => {
     const lessons = await tx.lesson.findMany({ where: { moduleId }, select: { slug: true } });
@@ -224,7 +234,6 @@ export async function deleteModule(moduleId: string): Promise<Result<{ courseId:
     await tx.lesson.deleteMany({ where: { moduleId } });
     await tx.module.delete({ where: { id: moduleId } });
     await renumberModules(tx, found.courseId);
-    await syncCourseDuration(found.courseId, tx);
     return lessons.map((l) => l.slug);
   });
   return { success: true, courseId: found.courseId, lessonSlugs };
@@ -249,8 +258,15 @@ export async function setModulePublished(
   moduleId: string,
   published: boolean,
 ): Promise<Result<{ changed: number; skipped: number; courseId: string }>> {
-  const found = await db.module.findUnique({ where: { id: moduleId }, select: { courseId: true } });
+  const found = await db.module.findUnique({
+    where: { id: moduleId },
+    select: { courseId: true, lessons: { select: { id: true } } },
+  });
   if (!found) return fail("Module introuvable.");
+  if (!published) {
+    const refusal = await lastLiveLessonGuard(db, found.courseId, found.lessons.map((l) => l.id));
+    if (refusal) return fail(refusal);
+  }
 
   const result = await db.$transaction(async (tx) => {
     const lessons = await tx.lesson.findMany({
@@ -262,7 +278,6 @@ export async function setModulePublished(
     );
     const ids = eligible.filter((l) => l.published !== published).map((l) => l.id);
     if (ids.length > 0) await tx.lesson.updateMany({ where: { id: { in: ids } }, data: { published } });
-    await syncCourseDuration(found.courseId, tx);
     return { changed: ids.length, skipped: lessons.length - eligible.length };
   });
   return { success: true, courseId: found.courseId, ...result };
@@ -305,7 +320,12 @@ export interface LessonPatch {
   duration?: number | null;
   published?: boolean;
   isPreview?: boolean;
+  /** WebVTT file of the captions; `null` removes it. */
+  captionsUrl?: string | null;
+  transcript?: string | null;
 }
+
+export { TRANSCRIPT_MAX_LENGTH };
 
 export interface LessonDetail {
   id: string;
@@ -319,6 +339,8 @@ export interface LessonDetail {
   duration: number | null;
   published: boolean;
   isPreview: boolean;
+  captionsUrl: string;
+  transcript: string;
   resources: ResourceItem[];
 }
 
@@ -349,6 +371,8 @@ export async function getLessonDetail(lessonId: string): Promise<LessonDetail | 
     duration: l.duration,
     published: l.published,
     isPreview: l.isPreview,
+    captionsUrl: l.captionsUrl ?? "",
+    transcript: l.transcript ?? "",
     resources: l.resources.map((r) => ({
       id: r.id,
       title: r.title,
@@ -376,6 +400,10 @@ export async function updateLesson(lessonId: string, patch: LessonPatch): Promis
     select: { courseId: true, moduleId: true, published: true, videoUrl: true, content: true },
   });
   if (!current) return fail("Leçon introuvable.");
+  if (patch.published === false && current.published) {
+    const refusal = await lastLiveLessonGuard(db, current.courseId, [lessonId]);
+    if (refusal) return fail(refusal);
+  }
 
   const data: Record<string, unknown> = {};
   if (patch.title !== undefined) {
@@ -405,6 +433,16 @@ export async function updateLesson(lessonId: string, patch: LessonPatch): Promis
   }
   if (patch.published !== undefined) data.published = patch.published;
   if (patch.isPreview !== undefined) data.isPreview = patch.isPreview;
+  if (patch.captionsUrl !== undefined) {
+    const c = patch.captionsUrl?.trim() ?? "";
+    if (c && !isHttpUrl(c)) return fail("L'adresse des sous-titres n'est pas valide (http ou https, fichier .vtt).");
+    data.captionsUrl = c || null;
+  }
+  if (patch.transcript !== undefined) {
+    const t = patch.transcript?.trim() ?? "";
+    if (t.length > TRANSCRIPT_MAX_LENGTH) return fail("La transcription est trop longue (100 000 caractères maximum).");
+    data.transcript = t || null;
+  }
 
   const published = (data.published as boolean | undefined) ?? current.published;
   const nextVideo = "videoUrl" in data ? (data.videoUrl as string | null) : current.videoUrl;
@@ -421,7 +459,6 @@ export async function updateLesson(lessonId: string, patch: LessonPatch): Promis
       data,
       include: { _count: { select: { resources: true } } },
     });
-    if ("published" in data || "duration" in data) await syncCourseDuration(current.courseId, tx);
     return lesson;
   });
 
@@ -447,15 +484,24 @@ export async function updateLesson(lessonId: string, patch: LessonPatch): Promis
 export async function deleteLesson(lessonId: string): Promise<Result<{ courseId: string; slug: string }>> {
   const found = await db.lesson.findUnique({
     where: { id: lessonId },
-    select: { courseId: true, moduleId: true, slug: true },
+    select: { courseId: true, moduleId: true, slug: true, published: true },
   });
   if (!found) return fail("Leçon introuvable.");
+  if (found.published) {
+    const refusal = await lastLiveLessonGuard(db, found.courseId, [lessonId]);
+    if (refusal) return fail(refusal);
+  }
   await db.$transaction(async (tx) => {
     await tx.lesson.delete({ where: { id: lessonId } });
     if (found.moduleId) await renumberLessons(tx, found.moduleId);
-    await syncCourseDuration(found.courseId, tx);
   });
   return { success: true, courseId: found.courseId, slug: found.slug };
+}
+
+/** Learners who completed the lesson: their progress on it is lost if it is deleted. */
+export async function getLessonImpact(lessonId: string): Promise<{ learnersWithProgress: number }> {
+  const learnersWithProgress = await db.progress.count({ where: { lessonId, completed: true } });
+  return { learnersWithProgress };
 }
 
 export async function reorderLessons(moduleId: string, orderedIds: string[]): Promise<Result> {

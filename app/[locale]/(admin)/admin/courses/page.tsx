@@ -9,11 +9,12 @@ import { CoursesTable } from "./_components/courses-table";
 import { CoursesStats } from "./_components/courses-stats";
 import { PaginationService, extractPaginationParams } from "@/lib/pagination-utils";
 import { serializeCourse } from "@/lib/serialization-utils";
+import { courseMinutesFromLessons, displayedCourseMinutes } from "@/lib/format-duration";
 import { Prisma, Role } from "@/lib/generated/prisma/browser";
 
 type AdminCourseRow = Prisma.CourseGetPayload<{
   include: {
-    lessons: { select: { id: true; published: true } };
+    lessons: { select: { id: true; published: true; duration: true } };
     enrollments: { select: { id: true } };
     reviews: { select: { rating: true } };
     tags: { include: { tag: { select: { name: true; color: true } } } };
@@ -65,7 +66,7 @@ async function getCoursesData(searchParams: URLSearchParams, session: { user: { 
       },
       {
         lessons: {
-          select: { id: true, published: true },
+          select: { id: true, published: true, duration: true },
         },
         enrollments: {
           select: { id: true },
@@ -122,6 +123,9 @@ async function getCoursesData(searchParams: URLSearchParams, session: { user: { 
     ...serializeCourse(course),
     lessonsCount: course.lessons.length,
     publishedLessonsCount: course.lessons.filter((l) => l.published).length,
+    // what learners see: the published lessons' total, else the author's estimate
+    displayMinutes:
+      displayedCourseMinutes(courseMinutesFromLessons(course.lessons.filter((l) => l.published).map((l) => l.duration)), course.duration) || null,
     enrollmentsCount: course.enrollments.length,
     tags: course.tags.map(({ tag }) => ({ name: tag.name, color: tag.color })),
   }));

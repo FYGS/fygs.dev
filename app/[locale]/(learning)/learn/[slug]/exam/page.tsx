@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { ExamRunner } from "@/components/learning/exam-runner";
 import { examRetakeDecision, parseExamQuestions } from "@/lib/learning/exam";
-import { getLearningContext } from "@/lib/learning/page-context";
+import { getLearningContext, leaveStep } from "@/lib/learning/page-context";
 import { formatRetryDelay } from "@/lib/quiz-attempt-policy";
 
 interface ExamPageProps {
@@ -19,7 +19,9 @@ export async function generateMetadata({ params }: ExamPageProps): Promise<Metad
 export default async function ExamPage({ params }: ExamPageProps) {
   const { slug } = await params;
   const ctx = await getLearningContext(slug);
-  if (ctx.mode === "preview") redirect(`/formations/${ctx.course.slug}?locked=1&reason=not_enrolled`);
+  // The exam records a result: a visitor signs in, a free-sample learner opens the course first
+  if (!ctx.user || ctx.mode === "preview") leaveStep(ctx, `/learn/${ctx.course.slug}/exam`);
+  const user = ctx.user;
   const staff = ctx.mode === "staff";
 
   const exam = await db.finalExam.findFirst({
@@ -32,7 +34,7 @@ export default async function ExamPage({ params }: ExamPageProps) {
   const last = staff
     ? null
     : await db.examResult.findUnique({
-        where: { userId_examId: { userId: ctx.user.id, examId: exam.id } },
+        where: { userId_examId: { userId: user.id, examId: exam.id } },
         select: { percentage: true, passed: true, completedAt: true },
       });
   const decision = examRetakeDecision(last, new Date());

@@ -54,12 +54,6 @@ const apiEndpoints = [
     url: "/api/courses/status",
     maxTTFB: 100,
     requireAuth: true
-  },
-  {
-    name: "Progress Summary API",
-    url: "/api/progress/summary",
-    maxTTFB: 150,
-    requireAuth: true
   }
 ];
 

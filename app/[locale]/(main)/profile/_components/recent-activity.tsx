@@ -104,7 +104,7 @@ export function RecentActivity({ userId }: RecentActivityProps) {
             <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
               <Calendar className="h-3 w-3" />
               <span>
-                Inscrit le {new Date(enrollment.enrolledAt).toLocaleDateString("fr-FR")}
+                Inscrit le {new Date(enrollment.enrolledAt).toLocaleDateString("fr-FR", { timeZone: "Europe/Paris" })}
               </span>
               {enrollment.completedAt && (
                 <>

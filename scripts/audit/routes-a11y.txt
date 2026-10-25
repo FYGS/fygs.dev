@@ -23,3 +23,5 @@
 /en/blog
 /en/tech-mastry
 /en/privacy
+/fr/formations
+/fr/parcours

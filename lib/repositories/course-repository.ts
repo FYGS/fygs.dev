@@ -1,6 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db";
-import { Prisma } from "@/lib/generated/prisma/browser";
+import { CourseAccessTier, Prisma } from "@/lib/generated/prisma/browser";
 
 // Centralized DB access for course domain.
 // WARNING: This is an initial scaffold; more methods (updates, stats, recommendations) will be added progressively.
@@ -18,9 +18,14 @@ export type CatalogSort = "relevance" | "recent" | "popular" | "title";
 export const CATALOG_SORTS: readonly CatalogSort[] = ["relevance", "recent", "popular", "title"];
 export const CATALOG_PAGE_SIZE = 12;
 
+export type CatalogAccess = "free" | "premium";
+export const CATALOG_ACCESS: readonly CatalogAccess[] = ["free", "premium"];
+
 export interface CatalogFilters {
   category?: string;
   level?: string;
+  /** Free courses or premium courses only. */
+  access?: CatalogAccess;
   search?: string;
   sort?: CatalogSort;
   page?: number;
@@ -72,14 +77,11 @@ export class CourseRepository {
           },
           enrollments: { select: { id: true } },
           reviews: { select: { rating: true } },
+          // Every published lesson: the card's duration is their total, as on the course page
           lessons: {
             where: { published: true },
             orderBy: { order: "asc" as const },
-            select: {
-              slug: true,
-              order: true,
-            },
-            take: 1,
+            select: { duration: true },
           },
           instructor: {
             select: {
@@ -101,12 +103,13 @@ export class CourseRepository {
 
   /** One page of the public catalogue (published courses), with the total for the pager. */
   static async listPage(filters: CatalogFilters) {
-    const { category, level, search, sort = "relevance" } = filters;
+    const { category, level, search, access, sort = "relevance" } = filters;
     const page = Math.max(1, Math.floor(filters.page ?? 1));
     const where: Prisma.CourseWhereInput = {
       published: true,
       ...(category && { category: category as any }),
       ...(level && { level: level as any }),
+      ...(access && { accessTier: access === "free" ? CourseAccessTier.FREE : CourseAccessTier.PREMIUM }),
       ...(search && {
         OR: [
           { title: { contains: search, mode: Prisma.QueryMode.insensitive } },

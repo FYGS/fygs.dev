@@ -5,6 +5,7 @@ import { ArrowLeft, ExternalLink } from "lucide-react";
 import { headers } from "next/headers";
 
 import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
 import { CommunityService } from "@/lib/services/community-service";
 import { ReplyComposer } from "@/components/community/reply-composer";
 import { InteractiveReplies } from "@/components/community/interactive-replies";
@@ -65,15 +66,33 @@ async function DiscussionContent({ params, searchParams }: DiscussionPageProps) 
 
   const { discussion, sortedReplies, sortBy } = loaded;
 
+  // A question asked from a lesson leads back to it, and the course's instructor is marked in the answers
+  const origin = await db.discussion.findUnique({
+    where: { id: discussion.id },
+    select: {
+      course: { select: { instructorId: true } },
+      lesson: { select: { slug: true, title: true, course: { select: { slug: true } } } },
+    },
+  });
+  const lessonHref = origin?.lesson ? `/learn/${origin.lesson.course.slug}/lessons/${origin.lesson.slug}` : null;
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6 max-w-4xl">
         {/* Back Navigation */}
-        <div className="mb-6">
+        <div className="mb-6 flex flex-wrap gap-2">
+          {lessonHref && (
+            <Button variant="outline" asChild>
+              <Link href={lessonHref} className="gap-2">
+                <ArrowLeft className="h-4 w-4" aria-hidden />
+                Retour à la leçon « {origin?.lesson?.title} »
+              </Link>
+            </Button>
+          )}
           <Button variant="ghost" asChild>
             <Link href="/community" className="gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Back to Community
+              {!lessonHref && <ArrowLeft className="h-4 w-4" aria-hidden />}
+              Communauté
             </Link>
           </Button>
         </div>
@@ -237,6 +256,7 @@ async function DiscussionContent({ params, searchParams }: DiscussionPageProps) 
                   replies={sortedReplies}
                   discussionId={discussion.id}
                   currentUserId={session?.user?.id}
+                  instructorId={origin?.course?.instructorId ?? null}
                 />
               ) : (
                 <div className="text-center py-8">

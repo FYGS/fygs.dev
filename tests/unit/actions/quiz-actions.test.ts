@@ -107,6 +107,7 @@ describe("checkQuizAnswer", () => {
     expect(await checkQuizAnswer(input)).toEqual({
       success: true,
       questionId: "q1",
+      selectedOption: 1,
       isCorrect: true,
       correctOption: 1,
       explanation: "because b",
@@ -320,9 +321,9 @@ describe("submitQuizAnswers", () => {
   it("returns a per-question review with the right options", async () => {
     const result = await submitQuizAnswers(all([1, 1, 3]));
     expect(result.success && result.review).toEqual([
-      { questionId: "q1", isCorrect: true, correctOption: 1, explanation: "because b" },
-      { questionId: "q2", isCorrect: false, correctOption: 0, explanation: "" },
-      { questionId: "q3", isCorrect: true, correctOption: 3, explanation: "d it is" },
+      { questionId: "q1", selectedOption: 1, isCorrect: true, correctOption: 1, explanation: "because b" },
+      { questionId: "q2", selectedOption: 1, isCorrect: false, correctOption: 0, explanation: "" },
+      { questionId: "q3", selectedOption: 3, isCorrect: true, correctOption: 3, explanation: "d it is" },
     ]);
   });
 

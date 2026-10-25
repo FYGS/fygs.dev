@@ -27,9 +27,10 @@ const quiz = {
   ],
 };
 
-const feedback = (questionId: string, isCorrect: boolean, correctOption: number) => ({
+const feedback = (questionId: string, isCorrect: boolean, correctOption: number, selectedOption: number) => ({
   success: true as const,
   questionId,
+  selectedOption,
   isCorrect,
   correctOption,
   explanation: isCorrect ? "Exact." : "Raison historique.",
@@ -54,7 +55,7 @@ const run = (props: Partial<React.ComponentProps<typeof QuizRunner>> = {}, state
 beforeEach(() => {
   vi.clearAllMocks();
   m.check.mockImplementation(async ({ questionId, selectedOption }: { questionId: string; selectedOption: number }) =>
-    questionId === "a" ? feedback("a", selectedOption === 1, 1) : feedback("b", selectedOption === 1, 1),
+    questionId === "a" ? feedback("a", selectedOption === 1, 1, selectedOption) : feedback("b", selectedOption === 1, 1, selectedOption),
   );
   m.submit.mockResolvedValue(submitted());
 });
@@ -103,7 +104,7 @@ describe("QuizRunner", () => {
         { questionId: "b", selectedOption: 1 },
       ],
     });
-    expect(screen.getByText("100%")).toBeTruthy();
+    expect(screen.getByText("100 %")).toBeTruthy();
     // the next step of the course (the next lesson after this quiz is in module 2)
     expect(screen.getByRole("link", { name: /Asynchrone/ }).getAttribute("href")).toBe("/learn/react/lessons/async");
   });
@@ -125,6 +126,37 @@ describe("QuizRunner", () => {
 
   it("shows the next step right away when the quiz was already passed", () => {
     run({ best: { percentage: 100, score: 2, total: 2 } });
+    expect(screen.getByRole("link", { name: /Asynchrone/ })).toBeTruthy();
+  });
+
+  it("continues a sitting in progress at its first open question, answers already given kept", async () => {
+    run({
+      best: { percentage: 50, score: 1, total: 2 },
+      resumed: [{ questionId: "a", selectedOption: 0, isCorrect: false, correctOption: 1, explanation: "Raison historique." }],
+    });
+    expect(screen.getByText("Question 2 sur 2")).toBeTruthy();
+    expect(screen.getByText(/reprenez votre tentative/)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /^B?.*let/ }));
+    await waitFor(() => screen.getByRole("button", { name: "Terminer le quiz" }));
+    fireEvent.click(screen.getByRole("button", { name: "Terminer le quiz" }));
+    await waitFor(() => expect(m.submit).toHaveBeenCalled());
+    expect(m.submit.mock.calls[0][0].answers).toEqual([
+      { questionId: "a", selectedOption: 0 },
+      { questionId: "b", selectedOption: 1 },
+    ]);
+  });
+
+  it("shows the answer the server counts, not the one clicked again", async () => {
+    // an earlier answer to this question is final: the server answers for it
+    m.check.mockResolvedValueOnce(feedback("a", false, 1, 0));
+    run();
+    fireEvent.click(screen.getByRole("button", { name: /'object'/ }));
+    await waitFor(() => expect(screen.getByText("Mauvaise réponse")).toBeTruthy());
+    expect(screen.getByRole("button", { name: /'null'/ }).getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("leaves the way on open after a failed quiz, even while a new sitting must wait", () => {
+    run({ best: { percentage: 50, score: 1, total: 2 }, blockedMessage: "Vous pourrez refaire ce quiz dans 3 min." });
     expect(screen.getByRole("link", { name: /Asynchrone/ })).toBeTruthy();
   });
 

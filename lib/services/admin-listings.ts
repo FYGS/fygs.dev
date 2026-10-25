@@ -7,6 +7,7 @@ import {
   SubscriptionStatus,
   type Prisma,
 } from "@/lib/generated/prisma/browser";
+import { isSubscriptionActive } from "@/lib/access/entitlement";
 
 /**
  * Read-only listings for the back office: payments, subscriptions, enrollments, certificates.
@@ -346,7 +347,9 @@ export async function listUsers(query: ListQuery & { role?: string; plan?: strin
   const q = trimmed(query.q);
   const role = oneOf(USER_ROLES, query.role);
   const plan = oneOf(USER_PLANS, query.plan);
-  const premiumNow: Prisma.UserWhereInput = { subscriptions: { is: { status: SubscriptionStatus.ACTIVE } } };
+  const premiumNow: Prisma.UserWhereInput = {
+    subscriptions: { is: { status: { in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIALING] } } },
+  };
   const where: Prisma.UserWhereInput = {
     ...personFilter(q),
     ...(role ? { role } : {}),
@@ -391,7 +394,7 @@ export async function listUsers(query: ListQuery & { role?: string; plan?: strin
       enrollments: user._count.enrollments,
       completedLessons: user._count.progress,
       spent: spentBy.get(user.id) ?? 0,
-      premium: user.subscriptions?.status === SubscriptionStatus.ACTIVE,
+      premium: isSubscriptionActive(user.subscriptions),
     })),
     total,
     requested,

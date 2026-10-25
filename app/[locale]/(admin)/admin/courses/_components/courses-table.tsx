@@ -31,7 +31,6 @@ import {
   BookOpen,
   Clock,
   Copy,
-  Euro,
   EyeOff,
   Plus,
   Rocket,
@@ -40,7 +39,11 @@ import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import { deleteCourse, duplicateCourse, publishCourse, unpublishCourse } from "../_actions/course-actions";
 import { formatMinutes } from "@/lib/format-duration";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { formatPrice } from "@/lib/price-format";
+import { MIN_PREMIUM_PRICE } from "@/lib/curriculum/publish";
+import { LEVEL_BADGE_CLASSES, levelLabel } from "@/lib/courses/labels";
+import type { CourseLevel } from "@/lib/generated/prisma/browser";
 
 interface Course {
   id: string;
@@ -59,6 +62,8 @@ interface Course {
   updatedAt: string;
   lessonsCount: number;
   publishedLessonsCount: number;
+  /** Minutes shown to learners (lessons' total, else the estimate). */
+  displayMinutes: number | null;
   enrollmentsCount: number;
   averageRating: number;
   tags: Array<{
@@ -82,6 +87,15 @@ interface CoursesTableProps {
 export function CoursesTable({ courses, pagination }: CoursesTableProps) {
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const pageHref = (page: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (page > 1) params.set("page", String(page));
+    else params.delete("page");
+    const query = params.toString();
+    return query ? `${pathname}?${query}` : pathname;
+  };
 
   const handleDeleteCourse = async (courseId: string) => {
     setIsDeleting(courseId);
@@ -102,30 +116,7 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
     }
   };
 
-  const formatLevel = (level: string) => {
-    const levelMap: Record<string, string> = {
-      'BEGINNER': 'Débutant',
-      'INTERMEDIATE': 'Intermédiaire',
-      'ADVANCED': 'Avancé',
-      'EXPERT': 'Expert',
-    };
-    return levelMap[level] || level;
-  };
 
-  const getLevelColor = (level: string) => {
-    switch (level) {
-      case 'BEGINNER':
-        return 'bg-green-900 text-green-300';
-      case 'INTERMEDIATE':
-        return 'bg-blue-900 text-blue-300';
-      case 'ADVANCED':
-        return 'bg-orange-900 text-orange-300';
-      case 'EXPERT':
-        return 'bg-red-900 text-red-300';
-      default:
-        return 'bg-gray-900 text-gray-300';
-    }
-  };
 
   const formatDuration = (minutes: number | null): string => formatMinutes(minutes) || "—";
 
@@ -254,7 +245,7 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
                         variant={course.published ? "default" : "secondary"}
                         className="w-fit"
                       >
-                        {course.published ? "Publié" : "Brouillon"}
+                        {course.published ? "Publiée" : "Brouillon"}
                       </Badge>
                       {course.featured && (
                         <Badge variant="outline" className="w-fit text-xs">
@@ -265,8 +256,8 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
                   </TableCell>
                   
                   <TableCell>
-                    <Badge className={getLevelColor(course.level)}>
-                      {formatLevel(course.level)}
+                    <Badge className={LEVEL_BADGE_CLASSES[course.level as CourseLevel] ?? ""}>
+                      {levelLabel(course.level)}
                     </Badge>
                   </TableCell>
                   
@@ -291,26 +282,23 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
                   <TableCell>
                     {course.accessTier === "FREE" ? (
                       <span className="text-sm font-medium">Gratuit</span>
-                    ) : course.price && course.price > 0 ? (
-                      <div className="flex items-center gap-1 text-sm font-medium">
-                        <Euro className="h-3 w-3 text-muted-foreground" aria-hidden />
-                        <span>{course.price}</span>
-                      </div>
+                    ) : course.price !== null && course.price >= MIN_PREMIUM_PRICE ? (
+                      <span className="text-sm font-medium">{formatPrice(course.price, { freeLabel: false })}</span>
                     ) : (
-                      <span className="text-sm text-amber-600 dark:text-amber-400">Prix à fixer</span>
+                      <span className="text-sm text-amber-800 dark:text-amber-300">Prix à fixer</span>
                     )}
                   </TableCell>
                   
                   <TableCell>
                     <div className="flex items-center gap-1 text-sm">
                       <Clock className="h-3 w-3 text-muted-foreground" />
-                      <span>{formatDuration(course.duration)}</span>
+                      <span>{formatDuration(course.displayMinutes)}</span>
                     </div>
                   </TableCell>
                   
                   <TableCell>
                     <div className="text-sm text-muted-foreground">
-                      {new Date(course.createdAt).toLocaleDateString('fr-FR')}
+                      {new Date(course.createdAt).toLocaleDateString('fr-FR', { timeZone: 'Europe/Paris' })}
                     </div>
                   </TableCell>
                   
@@ -347,13 +335,17 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
                         <DropdownMenuSeparator />
                         <ConfirmationModal
                           trigger={
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               className="text-red-600"
-                              disabled={isDeleting === course.id}
+                              disabled={isDeleting === course.id || course.enrollmentsCount > 0}
                               onSelect={(e) => e.preventDefault()}
                             >
                               <Trash2 className="h-4 w-4 mr-2" />
-                              {isDeleting === course.id ? "Suppression..." : "Supprimer"}
+                              {isDeleting === course.id
+                                ? "Suppression..."
+                                : course.enrollmentsCount > 0
+                                  ? `Supprimer (impossible : ${course.enrollmentsCount} inscrit${course.enrollmentsCount > 1 ? "s" : ""})`
+                                  : "Supprimer"}
                             </DropdownMenuItem>
                           }
                           title="Confirmer la suppression"
@@ -361,7 +353,7 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
                           confirmText="Supprimer définitivement"
                           onConfirm={() => handleDeleteCourse(course.id)}
                           isDestructive={true}
-                          disabled={isDeleting === course.id}
+                          disabled={isDeleting === course.id || course.enrollmentsCount > 0}
                         />
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -379,20 +371,11 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
           <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
               Affichage de {Math.min((pagination.currentPage - 1) * pagination.pageSize + 1, pagination.totalItems)} à{" "}
-              {Math.min(pagination.currentPage * pagination.pageSize, pagination.totalItems)} sur {pagination.totalItems} cours
+              {Math.min(pagination.currentPage * pagination.pageSize, pagination.totalItems)} sur {pagination.totalItems} formations
             </div>
             
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={!pagination.hasPrevPage}
-                onClick={() => {
-                  const url = new URL(window.location.href);
-                  url.searchParams.set('page', (pagination.currentPage - 1).toString());
-                  window.location.href = url.toString();
-                }}
-              >
+              <Button variant="outline" size="sm" disabled={!pagination.hasPrevPage} onClick={() => router.push(pageHref(pagination.currentPage - 1))}>
                 Précédent
               </Button>
               
@@ -400,16 +383,7 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
                 Page {pagination.currentPage} sur {pagination.totalPages}
               </span>
               
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={!pagination.hasNextPage}
-                onClick={() => {
-                  const url = new URL(window.location.href);
-                  url.searchParams.set('page', (pagination.currentPage + 1).toString());
-                  window.location.href = url.toString();
-                }}
-              >
+              <Button variant="outline" size="sm" disabled={!pagination.hasNextPage} onClick={() => router.push(pageHref(pagination.currentPage + 1))}>
                 Suivant
               </Button>
             </div>

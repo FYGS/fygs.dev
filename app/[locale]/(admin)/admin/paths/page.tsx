@@ -4,7 +4,7 @@ import { Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { requireAdminPage } from "@/lib/admin-guard";
-import { LEVEL_LABELS, type PathLevel } from "@/lib/paths/rules";
+import { levelLabel } from "@/lib/courses/labels";
 import { listAdminPaths } from "@/lib/paths/admin-list";
 import { AdminListShell, Td, Th, formatDateTime } from "../_components/list-shell";
 import { firstParam, type SearchParams } from "../_lib/search-params";
@@ -75,7 +75,7 @@ export default async function PathsPage({ searchParams }: { searchParams: Promis
                     </Link>
                     <div className="text-xs text-muted-foreground">/parcours/{row.slug}</div>
                   </Td>
-                  <Td>{LEVEL_LABELS[row.level as PathLevel] ?? row.level}</Td>
+                  <Td>{levelLabel(row.level)}</Td>
                   <Td>
                     <Badge variant={row.published ? "default" : "secondary"}>{row.published ? "Publié" : "Brouillon"}</Badge>
                     {row.featured && (

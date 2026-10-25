@@ -263,7 +263,8 @@ export async function seedCurriculum(
             description: `Apprenez ${lessonData.title.toLowerCase()} avec des exemples pratiques et des exercices.`,
             content: `# ${lessonData.title}\n\nContenu détaillé de la leçon avec explications, exemples de code et exercices pratiques.`,
             videoUrl: lessonData.videoUrl,
-            duration: lessonData.duration,
+            // The lesson list above is written in minutes; Lesson.duration is stored in seconds
+            duration: lessonData.duration * 60,
             order: lessonIndex + 1,
             published: true,
           },

@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("@/lib/db", () => ({ db: {} }));
 vi.mock("@/lib/access-service", () => ({ AccessService: {} }));
 
-import { buildCurriculumView, curriculumStats, formatMinutes } from "@/lib/learning/curriculum-view";
+import { buildCurriculumView, curriculumStats } from "@/lib/learning/curriculum-view";
 import {
   examRetakeDecision,
   gradeExam,
@@ -11,7 +11,6 @@ import {
   withinTimeLimit,
 } from "@/lib/learning/exam";
 import { signExamStart, verifyExamStart } from "@/lib/learning/exam-token";
-import { progressEtag } from "@/lib/learning/etag";
 import { formatTime } from "@/lib/learning/format-time";
 import { canOpenItem, outlineHasFlaggedPreview } from "@/lib/learning/access";
 import { findCurrentItem } from "@/components/learning/use-current-item";
@@ -39,9 +38,6 @@ describe("curriculum view", () => {
 
   it("counts what the course holds", () => {
     expect(curriculumStats(outline)).toEqual({ modules: 2, lessons: 3, quizzes: 1, hasExam: true, minutes: 30 });
-    expect(formatMinutes(45)).toBe("45 min");
-    expect(formatMinutes(60)).toBe("1 h");
-    expect(formatMinutes(125)).toBe("2 h 05");
   });
 });
 
@@ -146,11 +142,5 @@ describe("small helpers", () => {
     expect(formatTime(75)).toBe("1:15");
     expect(formatTime(3725)).toBe("1:02:05");
     expect(formatTime(Number.NaN)).toBe("0:00");
-  });
-
-  it("builds an ETag that changes with the progress", () => {
-    const a = progressEtag([{ courseId: "c", percent: 10, hasCertificate: false }]);
-    expect(progressEtag([{ courseId: "c", percent: 10, hasCertificate: false }])).toBe(a);
-    expect(progressEtag([{ courseId: "c", percent: 20, hasCertificate: false }])).not.toBe(a);
   });
 });

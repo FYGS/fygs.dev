@@ -1,4 +1,5 @@
 import { FeaturedCourseDTO, CourseSummaryDTO } from "@/types/course";
+import { courseMinutesFromLessons, displayedCourseMinutes } from "@/lib/format-duration";
 
 // Pure functions to convert Prisma entities to DTOs.
 //
@@ -6,16 +7,9 @@ import { FeaturedCourseDTO, CourseSummaryDTO } from "@/types/course";
 // serializers read, so any Prisma payload (select / include variant) that
 // carries them is accepted without importing Prisma payload types here.
 
-/** Fields the summary reads; callers often select only a subset of the lesson. */
+/** Fields the summary reads: the published lessons of the course, for its duration (seconds). */
 interface SummaryLessonInput {
-  slug: string;
-  order?: number;
-  moduleId?: string | null;
-}
-
-interface SummaryModuleInput {
-  order?: number;
-  lessons?: SummaryLessonInput[] | null;
+  duration?: number | null;
 }
 
 interface TagInput {
@@ -42,13 +36,7 @@ export interface CourseSummaryInput {
   reviews?: { rating: number }[] | null;
   tags?: TagInput[] | null;
   lessons?: SummaryLessonInput[] | null;
-  modules?: SummaryModuleInput[] | null;
 }
-
-// An absent `order` (field not selected) compares as 0, which leaves the array
-// order untouched, same as the previous `undefined - undefined` (NaN) comparator.
-const byOrder = (a: { order?: number }, b: { order?: number }) =>
-  (a.order ?? 0) - (b.order ?? 0);
 
 export function serializeCourseSummary(
   prismaCourse: CourseSummaryInput,
@@ -59,26 +47,6 @@ export function serializeCourseSummary(
       prismaCourse.reviews.length
     : 0;
 
-  // Get the first lesson slug (prioritize standalone lessons, then first module's first lesson)
-  let firstLessonSlug: string | null = null;
-  const allLessons = prismaCourse.lessons || [];
-
-  // First, try standalone lessons (moduleId is null)
-  const standaloneLessons = allLessons
-    .filter((l) => !l.moduleId)
-    .sort(byOrder);
-
-  if (standaloneLessons.length > 0) {
-    firstLessonSlug = standaloneLessons[0].slug;
-  } else {
-    // If no standalone lessons, get first lesson from first module
-    const modules = (prismaCourse.modules || []).sort(byOrder);
-    if (modules.length > 0 && modules[0].lessons && modules[0].lessons.length > 0) {
-      const moduleLessons = modules[0].lessons.sort(byOrder);
-      firstLessonSlug = moduleLessons[0].slug;
-    }
-  }
-
   return {
     id: prismaCourse.id,
     title: prismaCourse.title,
@@ -88,7 +56,10 @@ export function serializeCourseSummary(
     price: prismaCourse.price ? Number(prismaCourse.price) : 0,
     level: prismaCourse.level,
     category: prismaCourse.category,
-    duration: prismaCourse.duration ?? null,
+    // Same duration as the course page: the published lessons' total, else the author's estimate
+    duration:
+      displayedCourseMinutes(courseMinutesFromLessons((prismaCourse.lessons ?? []).map((l) => l.duration ?? null)), prismaCourse.duration) ||
+      null,
     featured: prismaCourse.featured,
     enrollmentCount,
     averageRating: Math.round(avg * 10) / 10,
@@ -99,12 +70,6 @@ export function serializeCourseSummary(
     })),
     requiredTier: prismaCourse.accessTier,
     previewEnabled: prismaCourse.previewEnabled,
-    firstLessonSlug,
-    // Access flags default (will be enriched later)
-    isUnlocked: undefined,
-    isInSubscription: undefined,
-    isEnrolled: undefined,
-    hasEntitlement: undefined,
   };
 }
 

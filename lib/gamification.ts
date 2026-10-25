@@ -9,7 +9,6 @@ const XP_AMOUNTS = {
   COURSE_COMPLETED: 100,
   STREAK_BONUS: 5, // per day of streak (bonus)
   FIRST_LESSON: 20,
-  DAILY_LOGIN: 5,
 } as const;
 
 type XpReason = keyof typeof XP_AMOUNTS;
@@ -111,37 +110,4 @@ export async function updateStreak(userId: string) {
   });
 
   return { currentStreak: 1, isNewDay: true };
-}
-
-/**
- * Get user's gamification stats
- */
-export async function getUserGamificationStats(userId: string) {
-  const [user, streak, todayXp] = await Promise.all([
-    db.user.findUnique({
-      where: { id: userId },
-      select: { communityPoints: true, communityLevel: true },
-    }),
-    db.userStreak.findUnique({
-      where: { userId },
-      select: { currentStreak: true, longestStreak: true },
-    }),
-    db.xpEvent.aggregate({
-      where: {
-        userId,
-        createdAt: {
-          gte: new Date(new Date().setHours(0, 0, 0, 0)),
-        },
-      },
-      _sum: { amount: true },
-    }),
-  ]);
-
-  return {
-    totalXp: user?.communityPoints ?? 0,
-    level: user?.communityLevel ?? 1,
-    currentStreak: streak?.currentStreak ?? 0,
-    longestStreak: streak?.longestStreak ?? 0,
-    todayXp: todayXp._sum.amount ?? 0,
-  };
 }

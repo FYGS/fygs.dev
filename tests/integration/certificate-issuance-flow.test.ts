@@ -2,7 +2,7 @@ import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { db } from "@/lib/db";
 import { enrollCourse } from "@/app/[locale]/(main)/dashboard/actions/enrollCourse";
 import { updateLessonProgress } from "@/app/[locale]/(main)/dashboard/actions/updateLessonProgress";
-import { issueCertificate } from "@/app/[locale]/(main)/dashboard/actions/issueCertificate";
+import { issueCertificate } from "../support/certificate-helpers";
 import { auth } from "@/lib/auth";
 
 // Mock auth for testing

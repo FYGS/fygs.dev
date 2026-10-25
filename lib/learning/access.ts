@@ -1,80 +1,100 @@
-import { db } from "@/lib/db";
-import { AccessService } from "@/lib/access-service";
+import {
+  getEntitlements,
+  previewLessonIds,
+  type EntitlementSource,
+  type LapsedReason,
+} from "@/lib/access/entitlement";
+import { loadCourseOutline } from "./course-state";
 import type { CourseOutline, OutlineItem } from "./outline";
 
 /**
- * How a visitor may use the learning area of one course.
+ * How a visitor may use the learning area of one course (the rule itself is `lib/access/entitlement.ts`).
  * - `full`: enrolled and entitled, everything is open and progress is recorded.
  * - `staff`: the author (or an admin) looking at their own course, published or not; read only, nothing is recorded.
- * - `preview`: not entitled, but the course is published and has free sample lessons (`Lesson.isPreview`,
- *   or its first lesson when the course allows previews and none is flagged).
+ * - `preview`: not entitled (or not signed in), but the published course has free sample lessons
+ *   (`previewLessonIds`); they can be watched, nothing is recorded.
  * - `none`: nothing to see, the course page explains why.
  */
 export type LearnerMode = "full" | "staff" | "preview" | "none";
 
 export interface LearnerAccessInput {
-  userId: string;
+  /** `null` for a visitor without an account. */
+  userId: string | null;
   role?: string | null;
   course: {
     id: string;
     published: boolean;
     instructorId: string | null;
   };
+  /** The outline already loaded by the caller (saves its queries). */
+  outline?: CourseOutline;
 }
 
 export interface LearnerAccess {
   mode: LearnerMode;
   /** Why `none`: shown on the course page. */
   reason?: "not_enrolled" | "premium_locked" | "unpublished";
+  signedIn: boolean;
   isEnrolled: boolean;
-  /** An active subscription: premium courses are open to it once enrolled. */
+  /** An ACTIVE or TRIALING subscription: premium courses are open to it once enrolled. */
   hasActiveSubscription: boolean;
+  /** What opens the course for this learner (`staff` for the author or an admin), or null. */
+  source: EntitlementSource | null;
+  /** Holds a right to the course; when not enrolled yet, one click on "Commencer" enrols them. */
+  eligible: boolean;
+  /** Enrolled, but the right ended: why. */
+  lapsed: LapsedReason | null;
+  /** The free sample lessons of the course (published lessons only). */
+  previewLessonIds: string[];
 }
 
 export async function resolveLearnerAccess(input: LearnerAccessInput): Promise<LearnerAccess> {
   const { userId, role, course } = input;
-  const isStaff = role === "ADMIN" || (role === "INSTRUCTOR" && course.instructorId === userId);
-  const access = await AccessService.checkCourseAccess(userId, course.id);
+  const [all, outline] = await Promise.all([
+    getEntitlements(userId ? { id: userId, role } : null, [course.id]),
+    input.outline ?? loadCourseOutline(course.id),
+  ]);
+  const entitlement = all.courses.get(course.id);
+  const lessons = outline.items.flatMap((item) => (item.kind === "lesson" ? [{ id: item.id, isPreview: item.isPreview }] : []));
+  const preview = [...previewLessonIds({ published: course.published, previewEnabled: entitlement?.previewEnabled ?? false }, lessons)];
 
-  if (isStaff && !access.canAccessCourse) {
-    return { mode: "staff", isEnrolled: access.isEnrolledInCourse, hasActiveSubscription: access.hasActiveSubscription };
-  }
-  const base = { isEnrolled: access.isEnrolledInCourse, hasActiveSubscription: access.hasActiveSubscription };
-  if (!course.published) return { mode: "none", reason: "unpublished", ...base };
-  if (access.canAccessCourse) return { mode: "full", ...base, isEnrolled: true };
-
-  const hasPreview = await courseHasPreview(course.id, access.canPreviewFirstLesson ?? false);
-  if (hasPreview) return { mode: "preview", ...base };
-
-  return {
-    mode: "none",
-    reason: access.isEnrolledInCourse ? "premium_locked" : "not_enrolled",
-    ...base,
+  const base = {
+    signedIn: all.signedIn,
+    isEnrolled: entitlement?.enrolled ?? false,
+    hasActiveSubscription: all.hasActiveSubscription,
+    source: entitlement?.source ?? null,
+    eligible: entitlement?.eligible ?? false,
+    lapsed: entitlement?.lapsed ?? null,
+    previewLessonIds: preview,
   };
-}
 
-async function courseHasPreview(courseId: string, firstLessonPreview: boolean): Promise<boolean> {
-  if (firstLessonPreview) return true;
-  const flagged = await db.lesson.count({ where: { courseId, published: true, isPreview: true } });
-  return flagged > 0;
+  if (entitlement?.entitled && entitlement.source === "staff") return { mode: "staff", ...base };
+  if (!course.published) return { mode: "none", reason: "unpublished", ...base };
+  if (entitlement?.entitled) return { mode: "full", ...base };
+  if (preview.length > 0) return { mode: "preview", ...base };
+  return { mode: "none", reason: base.isEnrolled ? "premium_locked" : "not_enrolled", ...base };
 }
 
 /**
- * Whether `item` can be opened in `mode`. Lessons follow the preview rule; quizzes and the exam
- * need full access (they record results), the staff may open anything.
+ * Whether `item` can be opened in `mode`. In preview mode only the free sample lessons open; quizzes and the exam
+ * need full access (they record results); the staff may open anything.
+ *
+ * `preview` is the set of sample lesson ids (`LearnerAccess.previewLessonIds`). A boolean is still accepted from
+ * older callers and means "the outline has flagged lessons": then only flagged lessons open, otherwise the first one.
  */
 export function canOpenItem(
   mode: LearnerMode,
   item: OutlineItem,
   outline: CourseOutline,
-  hasFlaggedPreview: boolean,
+  preview: ReadonlySet<string> | readonly string[] | boolean,
 ): boolean {
   if (mode === "full" || mode === "staff") return true;
-  if (mode === "none") return false;
-  if (item.kind !== "lesson") return false;
+  if (mode === "none" || item.kind !== "lesson") return false;
+  if (typeof preview !== "boolean") {
+    return (preview instanceof Set ? preview : new Set(preview as readonly string[])).has(item.id);
+  }
   if (item.isPreview) return true;
-  // No lesson flagged: the course falls back to its first lesson as the free sample.
-  if (hasFlaggedPreview) return false;
+  if (preview) return false;
   const first = outline.items.find((i) => i.kind === "lesson");
   return first?.id === item.id;
 }
@@ -85,10 +105,6 @@ export function outlineHasFlaggedPreview(outline: CourseOutline): boolean {
 
 /** The author of the course or an admin: they may look at everything, nothing they do is recorded. */
 export async function isCourseStaff(userId: string, courseId: string): Promise<boolean> {
-  const [user, course] = await Promise.all([
-    db.user.findUnique({ where: { id: userId }, select: { role: true } }),
-    db.course.findUnique({ where: { id: courseId }, select: { instructorId: true } }),
-  ]);
-  if (!user || !course) return false;
-  return user.role === "ADMIN" || (user.role === "INSTRUCTOR" && course.instructorId === userId);
+  const all = await getEntitlements(userId, [courseId]);
+  return all.courses.get(courseId)?.isStaff ?? false;
 }

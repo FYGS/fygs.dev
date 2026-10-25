@@ -91,7 +91,11 @@ export async function updateCourse(
     }
     const r = await courses.updateCourseInfo(g.course.id, rest, { featured, instructorId });
     if (!r.success) return r;
-    revalidateCourse({ courseId: g.course.id, slugs: [g.course.slug], listings: featured !== undefined });
+    // the catalogue cards show these: their pages are dropped too
+    const shownInListings = ["title", "description", "thumbnail", "category", "level", "accessTier", "price"].some(
+      (key) => key in rest,
+    );
+    revalidateCourse({ courseId: g.course.id, slugs: [g.course.slug], listings: shownInListings || featured !== undefined });
     return { success: true };
   } catch (error) {
     return unexpected("updateCourse", error);
@@ -120,21 +124,6 @@ export async function changeCourseSlug(courseId: string, slug: string): Promise<
 }
 
 // ---------------------------------------------------------------- publish
-
-export async function getReadiness(courseId: string): Promise<{ success: true; readiness: Readiness; published: boolean } | ActionFailure> {
-  try {
-    const g = await guardCourse(id.parse(courseId));
-    if (!g.ok) return failure(g.error);
-    const [readiness, course] = await Promise.all([
-      courses.loadReadiness(g.course.id),
-      db.course.findUnique({ where: { id: g.course.id }, select: { published: true } }),
-    ]);
-    if (!readiness || !course) return failure("Formation introuvable.");
-    return { success: true, readiness, published: course.published };
-  } catch (error) {
-    return unexpected("getReadiness", error);
-  }
-}
 
 export async function publishCourse(courseId: string): Promise<{ success: true } | (ActionFailure & { readiness?: Readiness })> {
   try {

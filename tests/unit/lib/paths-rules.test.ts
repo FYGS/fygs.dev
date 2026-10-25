@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   computePathProgress,
-  formatMinutes,
   parsePathLevel,
   parsePathSort,
   pathCourseStatus,
@@ -109,13 +108,6 @@ describe("pathPublishIssues", () => {
 });
 
 describe("helpers", () => {
-  it("formats durations", () => {
-    expect(formatMinutes(0)).toBe("—");
-    expect(formatMinutes(45)).toBe("45 min");
-    expect(formatMinutes(120)).toBe("2 h");
-    expect(formatMinutes(200)).toBe("3 h 20");
-    expect(formatMinutes(65)).toBe("1 h 05");
-  });
   it("ignores unknown filter values from the URL", () => {
     expect(parsePathLevel("ADVANCED")).toBe("ADVANCED");
     expect(parsePathLevel("<script>")).toBeUndefined();

@@ -1,8 +1,7 @@
 import { db } from "@/lib/db";
-import { AccessService } from "@/lib/access-service";
+import { getEntitlements } from "@/lib/access/entitlement";
 import { loadLearnerCourseState } from "@/lib/learning/course-state";
 import { itemHref } from "@/lib/learning/outline";
-import { PaymentKind, PaymentStatus, SubscriptionStatus } from "@/lib/generated/prisma/client";
 import type { PathCourseView, PathDetail } from "./queries";
 import {
   computePathProgress,
@@ -12,39 +11,15 @@ import {
 } from "./rules";
 
 /**
- * Which of these courses may the user take (free tier, lifetime purchase, active subscription)?
- * Same rule as `AccessService.evaluateCourseAccess`, asked as if the user were already enrolled:
- * this is the question "may I be enrolled", not "am I".
+ * Which of these courses may the user take (the question "may I be enrolled", not "am I")? The one rule of
+ * `lib/access/entitlement.ts`: a free course, a lifetime purchase, an active subscription or an access granted.
  */
 export async function courseEntitlements(
   userId: string,
-  courses: { courseId: string; accessTier: string }[],
+  courses: { courseId: string; accessTier?: string }[],
 ): Promise<Map<string, boolean>> {
-  const ids = courses.map((c) => c.courseId);
-  const [subscription, payments] = await Promise.all([
-    db.subscription.findFirst({
-      where: { userId, status: SubscriptionStatus.ACTIVE },
-      select: { id: true, status: true },
-    }),
-    ids.length === 0
-      ? []
-      : db.payment.findMany({
-          where: { userId, courseId: { in: ids }, kind: PaymentKind.COURSE, status: PaymentStatus.COMPLETED },
-          select: { id: true, kind: true, status: true, courseId: true },
-        }),
-  ]);
-  const asEnrolled = { id: "entitlement-check", enrolledAt: new Date() };
-  return new Map(
-    courses.map((c) => [
-      c.courseId,
-      AccessService.evaluateCourseAccess({
-        enrollment: asEnrolled,
-        course: { id: c.courseId, accessTier: c.accessTier },
-        subscription,
-        payments: payments.filter((p) => p.courseId === c.courseId),
-      }).allowed,
-    ]),
-  );
+  const all = await getEntitlements(userId, courses.map((c) => c.courseId));
+  return new Map(courses.map((c) => [c.courseId, all.courses.get(c.courseId)?.eligible ?? false]));
 }
 
 export interface PathCourseProgressView extends PathCourseView {

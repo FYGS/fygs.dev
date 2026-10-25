@@ -2,10 +2,12 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { AccessService } from "@/lib/access-service";
+import { toCourseCards } from "@/lib/access/course-cards";
 import {
+  CATALOG_ACCESS,
   CATALOG_SORTS,
   getCachedCatalogPage,
+  type CatalogAccess,
   type CatalogSort,
 } from "@/lib/repositories/course-repository";
 import { serializeCourseSummary } from "@/lib/serializers/course-serializer";
@@ -16,7 +18,7 @@ import { CourseHero, type CatalogStats } from "./_components/course-hero";
 import { CatalogPager } from "./_components/catalog-pager";
 
 interface FormationsPageProps {
-  searchParams: Promise<{ category?: string; level?: string; search?: string; sort?: string; page?: string }>;
+  searchParams: Promise<{ category?: string; level?: string; access?: string; search?: string; sort?: string; page?: string }>;
 }
 
 async function getCatalogStats(): Promise<CatalogStats> {
@@ -30,40 +32,27 @@ async function getCatalogStats(): Promise<CatalogStats> {
 }
 
 export default async function FormationsPage({ searchParams }: FormationsPageProps) {
-  const { category, level, search, sort, page } = await searchParams;
+  const { category, level, access: rawAccess, search, sort, page } = await searchParams;
+  const access = CATALOG_ACCESS.includes(rawAccess as CatalogAccess) ? (rawAccess as CatalogAccess) : undefined;
 
   const session = await auth.api.getSession({ headers: await headers() });
-  const userId = session?.user?.id ?? null;
+  const viewer = session?.user ? { id: session.user.id, role: session.user.role } : null;
 
   const catalog = await getCachedCatalogPage({
     category,
     level,
+    access,
     search: search?.trim() || undefined,
     sort: CATALOG_SORTS.includes(sort as CatalogSort) ? (sort as CatalogSort) : "relevance",
     page: Number.parseInt(page ?? "1", 10) || 1,
   });
-  const summaries = catalog.items.map(serializeCourseSummary);
-  const stats = await getCatalogStats();
+  // Offer, where this viewer stands and the button of each card: one rule (lib/access/entitlement.ts)
+  const [courses, stats] = await Promise.all([
+    toCourseCards(viewer, catalog.items.map(serializeCourseSummary)),
+    getCatalogStats(),
+  ]);
 
-  // What this visitor already has: enrolled, included in their subscription, free
-  const access = userId ? await AccessService.checkMultipleCoursesAccess(userId, summaries.map((c) => c.id)) : {};
-  const courses = summaries.map((course) => {
-    const isFree = course.requiredTier === "FREE" || course.price === 0;
-    const a = access[course.id];
-    const isEnrolled = !!a?.isEnrolledInCourse;
-    const isInSubscription = !!a?.hasActiveSubscription;
-    return {
-      ...course,
-      isUnlocked: userId ? !!a?.canAccessCourse : isFree,
-      isInSubscription,
-      isEnrolled,
-      hasEntitlement: isInSubscription || isEnrolled || isFree,
-      unlockedLabel: isInSubscription ? "Inclus avec Premium" : isEnrolled ? "Déjà acheté" : undefined,
-      previewEnabled: userId ? !!a?.canPreviewFirstLesson && course.previewEnabled : course.previewEnabled,
-    };
-  });
-
-  const filtersInUse = !!(category || level || search);
+  const filtersInUse = !!(category || level || access || search);
 
   return (
     <div className="min-h-screen bg-linear-to-br from-background via-background to-muted/20">
@@ -88,7 +77,7 @@ export default async function FormationsPage({ searchParams }: FormationsPagePro
           {courses.length > 0 ? (
             <>
               <CourseGrid courses={courses} />
-              <CatalogPager page={catalog.page} pageCount={catalog.pageCount} params={{ category, level, search, sort }} />
+              <CatalogPager page={catalog.page} pageCount={catalog.pageCount} params={{ category, level, access, search, sort }} />
             </>
           ) : (
             <div className="space-y-3 py-12 text-center">

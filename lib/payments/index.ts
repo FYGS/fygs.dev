@@ -3,7 +3,6 @@ import { PaymentWebhookHandler } from "./webhook";
 export { WebhookSignatureError } from "./errors";
 export type {
   CheckoutSessionData,
-  PaymentProduct,
   SubscriptionData,
 } from "./types";
 

@@ -6,12 +6,12 @@ import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { paymentService } from "@/lib/payment-service";
-import { isRefundEligible } from "@/lib/refund-policy";
+import { isRefundEligible, REFUND_WINDOW_DAYS } from "@/lib/refund-policy";
 import { AnalyticsHelper } from "@/lib/analytics-helper";
 import { SubscriptionStatus } from "@/lib/generated/prisma/browser";
 
 const requestRefundSchema = z.object({
-  subscriptionId: z.string().min(1, "Subscription ID is required"),
+  subscriptionId: z.string().min(1, "Abonnement manquant"),
   reason: z.string().max(500).optional(),
 });
 
@@ -44,7 +44,7 @@ export async function requestRefund(
     });
 
     if (!session?.user?.id) {
-      return fail("Authentication required", "UNAUTHORIZED");
+      return fail("Connectez-vous pour continuer.", "UNAUTHORIZED");
     }
 
     const userId = session.user.id;
@@ -64,25 +64,22 @@ export async function requestRefund(
     });
 
     if (!subscription || !subscription.stripeSubscriptionId) {
-      return fail("Subscription not found", "SUBSCRIPTION_NOT_FOUND");
+      return fail("Abonnement introuvable.", "SUBSCRIPTION_NOT_FOUND");
     }
 
     // A subscription that is already canceled (or not paid) cannot be refunded again
     if (subscription.status !== SubscriptionStatus.ACTIVE) {
-      return fail("Subscription is not active", "SUBSCRIPTION_NOT_ACTIVE");
+      return fail("Cet abonnement n’est pas actif.", "SUBSCRIPTION_NOT_ACTIVE");
     }
 
     // Check refund eligibility (14-day window)
     if (!subscription.currentPeriodStart) {
-      return fail(
-        "Unable to determine subscription start date",
-        "INVALID_PERIOD_START"
-      );
+      return fail("La date de début de la période est inconnue : contactez le support.", "INVALID_PERIOD_START");
     }
 
     const now = new Date();
     if (!isRefundEligible(subscription.currentPeriodStart, now)) {
-      return fail("Refund period has expired (14 days)", "REFUND_PERIOD_EXPIRED");
+      return fail(`Le délai de remboursement de ${REFUND_WINDOW_DAYS} jours est dépassé.`, "REFUND_PERIOD_EXPIRED");
     }
 
     try {
@@ -93,7 +90,7 @@ export async function requestRefund(
       );
 
       if (!payment || payment.amountPaidCents <= 0) {
-        return fail("No payment found for refund", "NO_PAYMENT_FOUND");
+        return fail("Aucun paiement à rembourser n’a été trouvé.", "NO_PAYMENT_FOUND");
       }
 
       // Idempotent: retrying after a later step failed returns the same refund
@@ -156,24 +153,20 @@ export async function requestRefund(
 
       return {
         success: true,
-        message:
-          "Refund processed successfully. Your subscription has been canceled.",
+        message: "Remboursement effectué : votre abonnement est arrêté. Le montant revient sur votre moyen de paiement sous 5 à 10 jours.",
         refund: { amount, currency, refundId },
       };
     } catch (stripeError) {
       console.error("Stripe refund failed:", stripeError);
-      return fail(
-        "Failed to process refund with payment provider",
-        "STRIPE_REFUND_FAILED"
-      );
+      return fail("Le remboursement n’a pas pu être traité. Réessayez ou contactez le support.", "STRIPE_REFUND_FAILED");
     }
   } catch (error) {
     console.error("Request refund error:", error);
 
     if (error instanceof z.ZodError) {
-      return fail("Invalid input data", "VALIDATION_ERROR");
+      return fail("Données invalides.", "VALIDATION_ERROR");
     }
 
-    return fail("Failed to process refund request", "INTERNAL_ERROR");
+    return fail("La demande de remboursement a échoué. Réessayez dans un instant.", "INTERNAL_ERROR");
   }
 }

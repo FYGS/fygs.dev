@@ -111,7 +111,8 @@ export function BillingActions({
     }
   };
 
-  const canCancel = subscriptionStatus === "ACTIVE" && !cancelAtPeriodEnd;
+  // A trial is a running subscription too: it can be stopped or switched the same way
+  const canCancel = (subscriptionStatus === "ACTIVE" || subscriptionStatus === "TRIALING") && !cancelAtPeriodEnd;
   // the other cycle, when it is on sale and we know which one the subscription is on
   const otherCycle = currentCycle === "monthly" ? "yearly" : currentCycle === "yearly" ? "monthly" : null;
   const canSwitch = canCancel && otherCycle !== null && availableCycles.includes(otherCycle);
@@ -123,7 +124,6 @@ export function BillingActions({
           variant="outline"
           disabled={loadingAction !== null}
           onClick={openPortal}
-          className="border-purple-600 text-purple-400 hover:bg-purple-950"
         >
           {loadingAction === "portal" ? "Redirection..." : "Gérer l'abonnement"}
         </Button>
@@ -154,7 +154,7 @@ export function BillingActions({
         {canCancel && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="outline" disabled={loadingAction !== null} className="border-red-600 text-red-400 hover:bg-red-950">
+              <Button variant="outline" disabled={loadingAction !== null} className="border-destructive text-destructive hover:bg-destructive/10">
                 Annuler l&apos;abonnement
               </Button>
             </AlertDialogTrigger>

@@ -10,11 +10,13 @@ import { canEditCourse } from "@/lib/curriculum/guard";
 import { CourseBuilder } from "./_components/builder/course-builder";
 import type { CourseInfo, SectionId } from "./_components/builder/types";
 
-export const metadata: Metadata = {
-  title: "Éditeur de formation | Admin FYGS",
-};
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const course = await db.course.findUnique({ where: { id }, select: { title: true } });
+  return { title: `${course?.title ?? "Formation"} · Éditeur | Admin FYGS` };
+}
 
-const SECTIONS: readonly SectionId[] = ["infos", "programme", "evaluations", "supports", "vente", "apercu", "parametres"];
+const SECTIONS: readonly SectionId[] = ["infos", "programme", "evaluations", "supports", "vente", "apercu", "statistiques", "apprenants", "parametres"];
 
 interface PageProps {
   params: Promise<{ id: string }>;

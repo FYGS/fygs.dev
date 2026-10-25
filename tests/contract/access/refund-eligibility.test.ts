@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { isRefundEligible, getRefundDeadline, getRefundWindowRemaining } from '@/lib/refund-policy'
+import { courseRefundDecision, getRefundDeadline, isRefundEligible } from '@/lib/refund-policy'
 
 describe('Refund Eligibility Contract Tests', () => {
   /**
@@ -194,46 +194,20 @@ describe('Refund Eligibility Contract Tests', () => {
     })
   })
 
-  describe('Refund window remaining calculation', () => {
-    test('remaining time calculation at various points', () => {
-      const periodStart = new Date('2024-01-01T00:00:00.000Z')
+  describe('Course purchase refunds', () => {
+    const purchasedAt = new Date('2024-01-01T00:00:00.000Z')
 
-      // At start: full 14 days remaining
-      const atStart = getRefundWindowRemaining(periodStart, periodStart)
-      expect(atStart).toBe(FOURTEEN_DAYS_MS)
-
-      // After 1 day: 13 days remaining
-      const after1Day = new Date('2024-01-02T00:00:00.000Z')
-      const remaining1Day = getRefundWindowRemaining(periodStart, after1Day)
-      expect(remaining1Day).toBe(13 * DAY_MS)
-
-      // After 13 days: 1 day remaining
-      const after13Days = new Date('2024-01-14T00:00:00.000Z')
-      const remaining13Days = getRefundWindowRemaining(periodStart, after13Days)
-      expect(remaining13Days).toBe(1 * DAY_MS)
-
-      // At deadline: 0 remaining
-      const atDeadline = new Date('2024-01-15T00:00:00.000Z')
-      const remainingAtDeadline = getRefundWindowRemaining(periodStart, atDeadline)
-      expect(remainingAtDeadline).toBe(0)
-
-      // After deadline: 0 remaining (not negative)
-      const afterDeadline = new Date('2024-01-17T00:00:00.000Z')
-      const remainingAfterDeadline = getRefundWindowRemaining(periodStart, afterDeadline)
-      expect(remainingAfterDeadline).toBe(0)
+    test('refundable within 14 days while the course is not finished', () => {
+      const now = new Date('2024-01-10T00:00:00.000Z')
+      expect(courseRefundDecision({ purchasedAt, amount: 49.99, completed: false, now })).toEqual({ refundable: true })
     })
 
-    test('remaining time with default current time', () => {
-      // Test with current time (using recent past to ensure positive remaining)
-      const recentPast = new Date(Date.now() - (5 * DAY_MS)) // 5 days ago
-      const remaining = getRefundWindowRemaining(recentPast)
-
-      // Should be approximately 9 days remaining (allowing for small timing differences)
-      const expectedRemaining = 9 * DAY_MS
-      const tolerance = 60 * 1000 // 1 minute tolerance
-
-      expect(remaining).toBeGreaterThan(expectedRemaining - tolerance)
-      expect(remaining).toBeLessThan(expectedRemaining + tolerance)
+    test('not after the window, not once finished, not a free order', () => {
+      const late = new Date('2024-01-15T00:00:00.000Z')
+      const early = new Date('2024-01-02T00:00:00.000Z')
+      expect(courseRefundDecision({ purchasedAt, amount: 49.99, completed: false, now: late })).toEqual({ refundable: false, reason: 'WINDOW_EXPIRED' })
+      expect(courseRefundDecision({ purchasedAt, amount: 49.99, completed: true, now: early })).toEqual({ refundable: false, reason: 'COURSE_COMPLETED' })
+      expect(courseRefundDecision({ purchasedAt, amount: 0, completed: false, now: early })).toEqual({ refundable: false, reason: 'NOT_REFUNDABLE' })
     })
   })
 

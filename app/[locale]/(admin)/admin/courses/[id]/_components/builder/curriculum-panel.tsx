@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import {
   closestCenter,
   DndContext,
@@ -53,12 +53,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import type { CurriculumSnapshot, LessonSummary, ModuleImpact, ModuleSummary } from "@/lib/curriculum/curriculum";
+import { LESSON_STATUS_LABELS } from "@/lib/curriculum/publish";
 import { moveLessonInSnapshot, moveModuleInSnapshot } from "@/lib/curriculum/snapshot";
 import { formatSeconds } from "@/lib/format-duration";
 import { cn } from "@/lib/utils";
 import {
   addLesson,
   addModule,
+  getLessonImpact,
   getModuleImpact,
   moveLesson,
   removeLesson,
@@ -81,10 +83,10 @@ interface Props {
   initialLessonId?: string;
 }
 
-const STATUS = {
-  draft: { label: "Brouillon", className: "border-border text-muted-foreground" },
-  incomplete: { label: "À compléter", className: "border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-300" },
-  ready: { label: "Prête", className: "border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300" },
+const STATUS_CLASSES = {
+  draft: "border-border text-muted-foreground",
+  incomplete: "border-amber-500/50 bg-amber-500/10 text-amber-900 dark:text-amber-200",
+  ready: "border-emerald-500/50 bg-emerald-500/10 text-emerald-900 dark:text-emerald-200",
 } as const;
 
 export function CurriculumPanel({ courseId, courseSlug, coursePublished, snapshot, onSnapshot, onGoToSection, initialLessonId }: Props) {
@@ -93,6 +95,8 @@ export function CurriculumPanel({ courseId, courseSlug, coursePublished, snapsho
   const [newModule, setNewModule] = useState("");
   const [adding, setAdding] = useState(false);
   const [busy, setBusy] = useState(false);
+  /** One change at a time: two quick moves would otherwise come back in any order and overwrite each other. */
+  const inFlight = useRef(false);
   const [deleteModuleTarget, setDeleteModuleTarget] = useState<ModuleSummary | null>(null);
   const [deleteLessonTarget, setDeleteLessonTarget] = useState<LessonSummary | null>(null);
 
@@ -106,6 +110,8 @@ export function CurriculumPanel({ courseId, courseSlug, coursePublished, snapsho
     run: () => Promise<{ success: true; snapshot: CurriculumSnapshot } | { success: false; error: string }>,
     optimistic?: CurriculumSnapshot,
   ) {
+    if (inFlight.current) return false;
+    inFlight.current = true;
     const before = snapshot;
     if (optimistic) onSnapshot(optimistic);
     setBusy(true);
@@ -118,6 +124,7 @@ export function CurriculumPanel({ courseId, courseSlug, coursePublished, snapsho
       }
       return result.success;
     } finally {
+      inFlight.current = false;
       setBusy(false);
     }
   }
@@ -146,7 +153,7 @@ export function CurriculumPanel({ courseId, courseSlug, coursePublished, snapsho
 
   function onDragEnd(event: DragEndEvent) {
     const { active, over } = event;
-    if (!over || active.id === over.id) return;
+    if (!over || active.id === over.id || inFlight.current) return;
     const activeId = String(active.id);
     const overId = String(over.id);
 
@@ -187,8 +194,11 @@ export function CurriculumPanel({ courseId, courseSlug, coursePublished, snapsho
   }
 
   async function publishModule(mod: ModuleSummary, published: boolean) {
+    if (inFlight.current) return;
+    inFlight.current = true;
     setBusy(true);
     const result = await setModulePublished(mod.id, published);
+    inFlight.current = false;
     setBusy(false);
     if (!result.success) return toast.error(result.error);
     onSnapshot(result.snapshot);
@@ -246,6 +256,7 @@ export function CurriculumPanel({ courseId, courseSlug, coursePublished, snapsho
                 total={snapshot.modules.length}
                 expanded={!collapsed.has(mod.id)}
                 modules={snapshot.modules}
+                busy={busy}
                 onToggle={() => toggle(mod.id)}
                 onMoveModule={(delta) => {
                   const next = moveModuleInSnapshot(snapshot, mod.id, index + delta);
@@ -286,6 +297,7 @@ export function CurriculumPanel({ courseId, courseSlug, coursePublished, snapsho
                 <LessonLine
                   lesson={lesson}
                   modules={snapshot.modules}
+                  busy={busy}
                   onOpen={() => setOpenLessonId(lesson.id)}
                   onMoveToModule={(toModuleId) => {
                     const target = snapshot.modules.find((m) => m.id === toModuleId);
@@ -344,28 +356,15 @@ export function CurriculumPanel({ courseId, courseSlug, coursePublished, snapsho
         }}
       />
 
-      <AlertDialog open={deleteLessonTarget !== null} onOpenChange={(open) => !open && setDeleteLessonTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer la leçon « {deleteLessonTarget?.title} » ?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Son contenu, ses ressources, les notes des apprenants et leur progression sur cette leçon sont supprimés. Cette action est définitive.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={async () => {
-                const target = deleteLessonTarget;
-                setDeleteLessonTarget(null);
-                if (target) await mutate(() => removeLesson(target.id));
-              }}
-            >
-              Supprimer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteLessonDialog
+        target={deleteLessonTarget}
+        onCancel={() => setDeleteLessonTarget(null)}
+        onConfirm={async () => {
+          const target = deleteLessonTarget;
+          setDeleteLessonTarget(null);
+          if (target) await mutate(() => removeLesson(target.id));
+        }}
+      />
     </div>
   );
 }
@@ -378,6 +377,8 @@ interface ModuleBlockProps {
   total: number;
   expanded: boolean;
   modules: ModuleSummary[];
+  /** A change is being saved: moves wait for it. */
+  busy: boolean;
   onToggle: () => void;
   onMoveModule: (delta: -1 | 1) => void;
   onRename: (title: string) => Promise<boolean>;
@@ -397,6 +398,7 @@ function ModuleBlock({
   total,
   expanded,
   modules,
+  busy,
   onToggle,
   onMoveModule,
   onRename,
@@ -492,10 +494,10 @@ function ModuleBlock({
           </p>
         </div>
 
-        <Button variant="ghost" size="icon" className="h-7 w-7" disabled={position === 0} onClick={() => onMoveModule(-1)} aria-label={`Monter le module ${mod.title}`}>
+        <Button variant="ghost" size="icon" className="h-7 w-7" disabled={busy || position === 0} onClick={() => onMoveModule(-1)} aria-label={`Monter le module ${mod.title}`}>
           <ArrowUp className="h-4 w-4" aria-hidden />
         </Button>
-        <Button variant="ghost" size="icon" className="h-7 w-7" disabled={position === total - 1} onClick={() => onMoveModule(1)} aria-label={`Descendre le module ${mod.title}`}>
+        <Button variant="ghost" size="icon" className="h-7 w-7" disabled={busy || position === total - 1} onClick={() => onMoveModule(1)} aria-label={`Descendre le module ${mod.title}`}>
           <ArrowDown className="h-4 w-4" aria-hidden />
         </Button>
 
@@ -533,6 +535,7 @@ function ModuleBlock({
                   lesson={lesson}
                   moduleId={mod.id}
                   modules={modules}
+                  busy={busy}
                   isFirst={i === 0}
                   isLast={i === mod.lessons.length - 1}
                   onOpen={() => onOpenLesson(lesson.id)}
@@ -585,6 +588,7 @@ function ModuleBlock({
 interface LessonLineProps {
   lesson: LessonSummary;
   modules: ModuleSummary[];
+  busy: boolean;
   onOpen: () => void;
   onMoveToModule: (moduleId: string) => void;
   onDelete: () => void;
@@ -594,8 +598,7 @@ interface LessonLineProps {
   handle?: React.ReactNode;
 }
 
-function LessonLine({ lesson, modules, onOpen, onMoveToModule, onDelete, isFirst, isLast, onMove, handle }: LessonLineProps) {
-  const status = STATUS[lesson.status];
+function LessonLine({ lesson, modules, busy, onOpen, onMoveToModule, onDelete, isFirst, isLast, onMove, handle }: LessonLineProps) {
   const otherModules = modules.filter((m) => m.id !== lesson.moduleId);
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-md border bg-background px-2 py-1.5">
@@ -620,17 +623,17 @@ function LessonLine({ lesson, modules, onOpen, onMoveToModule, onDelete, isFirst
             Aperçu gratuit
           </Badge>
         )}
-        <Badge variant="outline" className={status.className}>
-          {status.label}
+        <Badge variant="outline" className={STATUS_CLASSES[lesson.status]}>
+          {LESSON_STATUS_LABELS[lesson.status]}
         </Badge>
       </div>
 
       {onMove && (
         <>
-          <Button variant="ghost" size="icon" className="h-7 w-7" disabled={isFirst} onClick={() => onMove(-1)} aria-label={`Monter la leçon ${lesson.title}`}>
+          <Button variant="ghost" size="icon" className="h-7 w-7" disabled={busy || isFirst} onClick={() => onMove(-1)} aria-label={`Monter la leçon ${lesson.title}`}>
             <ArrowUp className="h-4 w-4" aria-hidden />
           </Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7" disabled={isLast} onClick={() => onMove(1)} aria-label={`Descendre la leçon ${lesson.title}`}>
+          <Button variant="ghost" size="icon" className="h-7 w-7" disabled={busy || isLast} onClick={() => onMove(1)} aria-label={`Descendre la leçon ${lesson.title}`}>
             <ArrowDown className="h-4 w-4" aria-hidden />
           </Button>
         </>
@@ -652,7 +655,7 @@ function LessonLine({ lesson, modules, onOpen, onMoveToModule, onDelete, isFirst
                 Déplacer vers
               </DropdownMenuLabel>
               {otherModules.map((m) => (
-                <DropdownMenuItem key={m.id} onSelect={() => onMoveToModule(m.id)}>
+                <DropdownMenuItem key={m.id} disabled={busy} onSelect={() => onMoveToModule(m.id)}>
                   {m.title}
                 </DropdownMenuItem>
               ))}
@@ -760,6 +763,64 @@ function DeleteModuleDialog({
           <AlertDialogCancel>Annuler</AlertDialogCancel>
           <AlertDialogAction onClick={onConfirm} disabled={!impact}>
             Supprimer le module
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
+// ------------------------------------------------------------------ delete lesson
+
+function DeleteLessonDialog({
+  target,
+  onCancel,
+  onConfirm,
+}: {
+  target: LessonSummary | null;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  const [loaded, setLoaded] = useState<{ id: string; learners: number } | null>(null);
+  const targetId = target?.id;
+
+  useEffect(() => {
+    if (!targetId) return;
+    let cancelled = false;
+    void getLessonImpact(targetId).then((r) => {
+      if (!cancelled && r.success) setLoaded({ id: targetId, learners: r.learnersWithProgress });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [targetId]);
+
+  const learners = loaded && loaded.id === targetId ? loaded.learners : null;
+
+  return (
+    <AlertDialog open={target !== null} onOpenChange={(open) => !open && onCancel()}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Supprimer la leçon « {target?.title} » ?</AlertDialogTitle>
+          <AlertDialogDescription asChild>
+            <div className="space-y-2">
+              <p>Son contenu, ses ressources et les notes des apprenants sont supprimés. Cette action est définitive.</p>
+              {learners === null ? (
+                <p>Recherche des apprenants concernés…</p>
+              ) : learners > 0 ? (
+                <p className="font-medium text-destructive">
+                  {learners} apprenant{learners > 1 ? "s ont" : " a"} terminé cette leçon : {learners > 1 ? "ils perdront" : "il perdra"} cette progression.
+                </p>
+              ) : (
+                <p>Aucun apprenant ne l&apos;a encore terminée.</p>
+              )}
+            </div>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Annuler</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm} disabled={learners === null}>
+            Supprimer la leçon
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -3,9 +3,11 @@ import { CheckCircle2, Circle, CircleDot, Lock, TriangleAlert } from "lucide-rea
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { courseOffer } from "@/lib/access/offer";
+import { LEVEL_LABELS } from "@/lib/courses/labels";
+import { formatPrice } from "@/lib/price-format";
+import { formatMinutes } from "@/lib/format-duration";
 import {
-  formatMinutes,
-  LEVEL_LABELS,
   PATH_COURSE_STATUS_LABELS,
   pathCourseStatus,
   type PathCourseStatus,
@@ -22,6 +24,15 @@ const ICONS: Record<PathCourseStatus, typeof Circle> = {
   needs_access: Lock,
   unavailable: TriangleAlert,
 };
+
+/** What opens the course, in words: shown for every course of the programme. */
+function offerText(course: Pick<PathCourseView, "accessTier" | "price">): string {
+  const offer = courseOffer(course.accessTier, course.price);
+  if (offer.kind === "free") return "Gratuite";
+  return offer.price === null
+    ? "Incluse dans l’abonnement Premium"
+    : `${formatPrice(offer.price, { freeLabel: false })} ou incluse dans l’abonnement Premium`;
+}
 
 function actionLabel(status: PathCourseStatus, signedIn: boolean) {
   switch (status) {
@@ -78,12 +89,12 @@ export function PathCourseTimeline({
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-base font-semibold leading-snug">{course.title}</h3>
                 {course.optional && <Badge variant="outline">Facultative</Badge>}
-                {course.accessTier === "PREMIUM" && <Badge variant="secondary">Premium</Badge>}
+                <Badge variant={course.accessTier === "PREMIUM" ? "secondary" : "outline"}>{offerText(course)}</Badge>
               </div>
               <p className="line-clamp-2 text-sm text-muted-foreground">{course.description}</p>
               <p className="text-xs text-muted-foreground">
                 {LEVEL_LABELS[course.level]} · {course.lessonsCount} leçon{course.lessonsCount > 1 ? "s" : ""} ·{" "}
-                {formatMinutes(course.minutes)}
+                {formatMinutes(course.minutes) || "—"}
               </p>
               {signedIn && course.status && (
                 <div className="space-y-1">

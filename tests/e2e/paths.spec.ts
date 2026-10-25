@@ -46,7 +46,7 @@ test.describe("learning paths (fr)", () => {
 
     // filters work without JavaScript: a GET form
     await page.goto("/fr/parcours?q=zzzzzz-introuvable");
-    await expect(page.getByText("Aucun parcours ne correspond")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Aucun parcours ne correspond" })).toBeVisible();
 
     await page.goto(`/fr/parcours/${FREE_PATH}`);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -62,7 +62,7 @@ test.describe("learning paths (fr)", () => {
     await page.goto("/fr/parcours/ce-parcours-n-existe-pas");
     await expect(page.getByRole("heading", { name: "Oups ! Page introuvable" })).toBeVisible();
     await expect(page.locator('meta[name="robots"][content="noindex"]').first()).toBeAttached();
-    await page.goto(`/fr/parcours/verification/${"0".repeat(32)}`);
+    await page.goto(`/fr/certificates/verify/${"0".repeat(32)}`);
     await expect(page.getByRole("heading", { name: "Certificat introuvable" })).toBeVisible();
   });
 
@@ -94,7 +94,7 @@ test.describe("learning paths (fr)", () => {
     // anyone can verify it, signed out
     const visitor = await context.browser()!.newContext();
     const anonymous = await visitor.newPage();
-    await anonymous.goto(`${new URL(page.url()).origin}/fr/parcours/verification/${code}`);
+    await anonymous.goto(`${new URL(page.url()).origin}/fr/certificates/verify/${code}`);
     await expect(anonymous.getByText("Ce certificat est authentique")).toBeVisible();
     await expect(anonymous.getByText("Apprenante Parcours")).toBeVisible();
     await visitor.close();

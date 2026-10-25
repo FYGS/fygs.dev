@@ -152,13 +152,11 @@ export async function updateTag(
     }
 
     // Vérifier les permissions
-    if (
-      session.user.role !== Role.ADMIN &&
-      session.user.role !== Role.INSTRUCTOR
-    ) {
+    // A tag is shared by every course: renaming it changes other authors' courses, so it is an administrator's call
+    if (session.user.role !== Role.ADMIN) {
       return {
         success: false,
-        error: "Vous n'avez pas les permissions pour modifier un tag",
+        error: "Seul un administrateur peut modifier un tag : il est partagé par toutes les formations.",
       };
     }
 
@@ -260,13 +258,10 @@ export async function deleteTag(
     }
 
     // Vérifier les permissions
-    if (
-      session.user.role !== Role.ADMIN &&
-      session.user.role !== Role.INSTRUCTOR
-    ) {
+    if (session.user.role !== Role.ADMIN) {
       return {
         success: false,
-        error: "Vous n'avez pas les permissions pour supprimer un tag",
+        error: "Seul un administrateur peut supprimer un tag : il est partagé par toutes les formations.",
       };
     }
 

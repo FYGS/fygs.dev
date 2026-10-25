@@ -109,6 +109,12 @@ exports[`paymentService (pinned behaviour) > checkoutNoUrl 1`] = `
         {
           "allow_promotion_codes": true,
           "cancel_url": "c",
+          "invoice_creation": {
+            "enabled": true,
+            "invoice_data": {
+              "description": "Formation « React »",
+            },
+          },
           "line_items": [
             {
               "price_data": {
@@ -173,6 +179,12 @@ exports[`paymentService (pinned behaviour) > checkoutOk 1`] = `
           "allow_promotion_codes": true,
           "cancel_url": "c",
           "customer_email": "a@b.c",
+          "invoice_creation": {
+            "enabled": true,
+            "invoice_data": {
+              "description": "Formation « React »",
+            },
+          },
           "line_items": [
             {
               "price_data": {
@@ -230,6 +242,12 @@ exports[`paymentService (pinned behaviour) > checkoutPlainNumberPrice 1`] = `
         {
           "allow_promotion_codes": true,
           "cancel_url": "c",
+          "invoice_creation": {
+            "enabled": true,
+            "invoice_data": {
+              "description": "Formation « React »",
+            },
+          },
           "line_items": [
             {
               "price_data": {
@@ -293,308 +311,6 @@ exports[`paymentService (pinned behaviour) > checkoutUnpublished 1`] = `
     "instanceOfWebhook": false,
     "name": "Error",
     "thrown": "Failed to create payment session",
-  },
-}
-`;
-
-exports[`paymentService (pinned behaviour) > createCustomerFail 1`] = `
-{
-  "log": [
-    [
-      "stripe.customers.create",
-      [
-        {
-          "email": "a@b.c",
-          "metadata": {},
-        },
-      ],
-    ],
-    [
-      "console.error",
-      [
-        "Failed to create Stripe customer:",
-        "x",
-      ],
-    ],
-  ],
-  "outcome": {
-    "instanceOfWebhook": false,
-    "name": "Error",
-    "thrown": "Failed to create customer",
-  },
-}
-`;
-
-exports[`paymentService (pinned behaviour) > createCustomerMin 1`] = `
-{
-  "log": [
-    [
-      "stripe.customers.create",
-      [
-        {
-          "email": "a@b.c",
-          "metadata": {},
-        },
-      ],
-    ],
-  ],
-  "outcome": {
-    "value": "cus_new",
-  },
-}
-`;
-
-exports[`paymentService (pinned behaviour) > createCustomerOk 1`] = `
-{
-  "log": [
-    [
-      "stripe.customers.create",
-      [
-        {
-          "email": "a@b.c",
-          "metadata": {
-            "userId": "u1",
-          },
-          "name": "Al",
-        },
-      ],
-    ],
-  ],
-  "outcome": {
-    "value": "cus_new",
-  },
-}
-`;
-
-exports[`paymentService (pinned behaviour) > createProductFail 1`] = `
-{
-  "log": [
-    [
-      "stripe.products.create",
-      [
-        {
-          "description": "D",
-          "id": "p1",
-          "metadata": {},
-          "name": "N",
-        },
-      ],
-    ],
-    [
-      "stripe.prices.create",
-      [
-        {
-          "currency": "eur",
-          "metadata": {
-            "type": "bundle",
-          },
-          "product": "prod_1",
-          "unit_amount": 1000,
-        },
-      ],
-    ],
-    [
-      "console.error",
-      [
-        "Failed to create Stripe product:",
-        "x",
-      ],
-    ],
-  ],
-  "outcome": {
-    "instanceOfWebhook": false,
-    "name": "Error",
-    "thrown": "Failed to create product",
-  },
-}
-`;
-
-exports[`paymentService (pinned behaviour) > createProductOk 1`] = `
-{
-  "log": [
-    [
-      "stripe.products.create",
-      [
-        {
-          "description": "D",
-          "id": "p1",
-          "metadata": {
-            "a": "b",
-          },
-          "name": "N",
-        },
-      ],
-    ],
-    [
-      "stripe.prices.create",
-      [
-        {
-          "currency": "eur",
-          "metadata": {
-            "type": "course",
-          },
-          "product": "prod_1",
-          "unit_amount": 1000,
-        },
-      ],
-    ],
-  ],
-  "outcome": {
-    "value": "prod_1",
-  },
-}
-`;
-
-exports[`paymentService (pinned behaviour) > createSubPriceFail 1`] = `
-{
-  "log": [
-    [
-      "stripe.prices.create",
-      [
-        {
-          "currency": "eur",
-          "metadata": {
-            "type": "subscription",
-          },
-          "product": "prod_1",
-          "recurring": {
-            "interval": "month",
-          },
-          "unit_amount": 900,
-        },
-      ],
-    ],
-    [
-      "console.error",
-      [
-        "Failed to create subscription price:",
-        "x",
-      ],
-    ],
-  ],
-  "outcome": {
-    "instanceOfWebhook": false,
-    "name": "Error",
-    "thrown": "Failed to create subscription price",
-  },
-}
-`;
-
-exports[`paymentService (pinned behaviour) > createSubPriceMonth 1`] = `
-{
-  "log": [
-    [
-      "stripe.prices.create",
-      [
-        {
-          "currency": "eur",
-          "metadata": {
-            "type": "subscription",
-          },
-          "product": "prod_1",
-          "recurring": {
-            "interval": "month",
-          },
-          "unit_amount": 900,
-        },
-      ],
-    ],
-  ],
-  "outcome": {
-    "value": "price_new",
-  },
-}
-`;
-
-exports[`paymentService (pinned behaviour) > createSubPriceYear 1`] = `
-{
-  "log": [
-    [
-      "stripe.prices.create",
-      [
-        {
-          "currency": "eur",
-          "metadata": {
-            "type": "subscription",
-          },
-          "product": "prod_1",
-          "recurring": {
-            "interval": "year",
-          },
-          "unit_amount": 9000,
-        },
-      ],
-    ],
-  ],
-  "outcome": {
-    "value": "price_new",
-  },
-}
-`;
-
-exports[`paymentService (pinned behaviour) > customerByEmailFail 1`] = `
-{
-  "log": [
-    [
-      "stripe.customers.list",
-      [
-        {
-          "email": "a@b.c",
-          "limit": 1,
-        },
-      ],
-    ],
-    [
-      "console.error",
-      [
-        "Failed to get customer:",
-        "x",
-      ],
-    ],
-  ],
-  "outcome": {
-    "value": null,
-  },
-}
-`;
-
-exports[`paymentService (pinned behaviour) > customerByEmailFound 1`] = `
-{
-  "log": [
-    [
-      "stripe.customers.list",
-      [
-        {
-          "email": "a@b.c",
-          "limit": 1,
-        },
-      ],
-    ],
-  ],
-  "outcome": {
-    "value": {
-      "email": "a@b.c",
-      "id": "cus_1",
-    },
-  },
-}
-`;
-
-exports[`paymentService (pinned behaviour) > customerByEmailNone 1`] = `
-{
-  "log": [
-    [
-      "stripe.customers.list",
-      [
-        {
-          "email": "a@b.c",
-          "limit": 1,
-        },
-      ],
-    ],
-  ],
-  "outcome": {
-    "value": null,
   },
 }
 `;
@@ -1053,6 +769,27 @@ exports[`paymentService (pinned behaviour) > grantSub-canceled 1`] = `
       ],
     ],
     [
+      "pathCourse.findMany",
+      {
+        "select": {
+          "courseId": true,
+        },
+        "where": {
+          "course": {
+            "published": true,
+          },
+          "path": {
+            "enrollments": {
+              "some": {
+                "userId": "u1",
+              },
+            },
+            "published": true,
+          },
+        },
+      },
+    ],
+    [
       "payment.findFirst",
       {
         "where": {
@@ -1302,6 +1039,27 @@ exports[`paymentService (pinned behaviour) > grantSub-customerMissing 1`] = `
       ],
     ],
     [
+      "pathCourse.findMany",
+      {
+        "select": {
+          "courseId": true,
+        },
+        "where": {
+          "course": {
+            "published": true,
+          },
+          "path": {
+            "enrollments": {
+              "some": {
+                "userId": "u1",
+              },
+            },
+            "published": true,
+          },
+        },
+      },
+    ],
+    [
       "payment.findFirst",
       {
         "where": {
@@ -1536,6 +1294,27 @@ exports[`paymentService (pinned behaviour) > grantSub-customerObject 1`] = `
           "resourceId": "cs_1",
         },
       ],
+    ],
+    [
+      "pathCourse.findMany",
+      {
+        "select": {
+          "courseId": true,
+        },
+        "where": {
+          "course": {
+            "published": true,
+          },
+          "path": {
+            "enrollments": {
+              "some": {
+                "userId": "u1",
+              },
+            },
+            "published": true,
+          },
+        },
+      },
     ],
     [
       "payment.findFirst",
@@ -1784,6 +1563,27 @@ exports[`paymentService (pinned behaviour) > grantSub-emptyItemsNoPrice 1`] = `
           "resourceId": "cs_1",
         },
       ],
+    ],
+    [
+      "pathCourse.findMany",
+      {
+        "select": {
+          "courseId": true,
+        },
+        "where": {
+          "course": {
+            "published": true,
+          },
+          "path": {
+            "enrollments": {
+              "some": {
+                "userId": "u1",
+              },
+            },
+            "published": true,
+          },
+        },
+      },
     ],
     [
       "payment.findFirst",
@@ -2157,6 +1957,27 @@ exports[`paymentService (pinned behaviour) > grantSub-pastDue 1`] = `
       ],
     ],
     [
+      "pathCourse.findMany",
+      {
+        "select": {
+          "courseId": true,
+        },
+        "where": {
+          "course": {
+            "published": true,
+          },
+          "path": {
+            "enrollments": {
+              "some": {
+                "userId": "u1",
+              },
+            },
+            "published": true,
+          },
+        },
+      },
+    ],
+    [
       "payment.findFirst",
       {
         "where": {
@@ -2393,6 +2214,27 @@ exports[`paymentService (pinned behaviour) > grantSub-unknownStatus 1`] = `
       ],
     ],
     [
+      "pathCourse.findMany",
+      {
+        "select": {
+          "courseId": true,
+        },
+        "where": {
+          "course": {
+            "published": true,
+          },
+          "path": {
+            "enrollments": {
+              "some": {
+                "userId": "u1",
+              },
+            },
+            "published": true,
+          },
+        },
+      },
+    ],
+    [
       "payment.findFirst",
       {
         "where": {
@@ -2627,6 +2469,27 @@ exports[`paymentService (pinned behaviour) > grantSub-yearlyNoPeriod 1`] = `
       ],
     ],
     [
+      "pathCourse.findMany",
+      {
+        "select": {
+          "courseId": true,
+        },
+        "where": {
+          "course": {
+            "published": true,
+          },
+          "path": {
+            "enrollments": {
+              "some": {
+                "userId": "u1",
+              },
+            },
+            "published": true,
+          },
+        },
+      },
+    ],
+    [
       "payment.findFirst",
       {
         "where": {
@@ -2814,6 +2677,27 @@ exports[`paymentService (pinned behaviour) > hpsCourseAnalyticsFails 1`] = `
       ],
     ],
     [
+      "pathCourse.findMany",
+      {
+        "select": {
+          "courseId": true,
+        },
+        "where": {
+          "course": {
+            "published": true,
+          },
+          "path": {
+            "enrollments": {
+              "some": {
+                "userId": "u1",
+              },
+            },
+            "published": true,
+          },
+        },
+      },
+    ],
+    [
       "analytics.coursePurchased",
       [
         "u1",
@@ -2970,6 +2854,27 @@ exports[`paymentService (pinned behaviour) > hpsCourseEnrollFails 1`] = `
       ],
     ],
     [
+      "pathCourse.findMany",
+      {
+        "select": {
+          "courseId": true,
+        },
+        "where": {
+          "course": {
+            "published": true,
+          },
+          "path": {
+            "enrollments": {
+              "some": {
+                "userId": "u1",
+              },
+            },
+            "published": true,
+          },
+        },
+      },
+    ],
+    [
       "analytics.coursePurchased",
       [
         "u1",
@@ -3112,6 +3017,27 @@ exports[`paymentService (pinned behaviour) > hpsCourseNew 1`] = `
       [
         "✅ User u1 auto-enrolled in course c1",
       ],
+    ],
+    [
+      "pathCourse.findMany",
+      {
+        "select": {
+          "courseId": true,
+        },
+        "where": {
+          "course": {
+            "published": true,
+          },
+          "path": {
+            "enrollments": {
+              "some": {
+                "userId": "u1",
+              },
+            },
+            "published": true,
+          },
+        },
+      },
     ],
     [
       "analytics.coursePurchased",
@@ -3406,6 +3332,27 @@ exports[`paymentService (pinned behaviour) > hpsCoursePending 1`] = `
       ],
     ],
     [
+      "pathCourse.findMany",
+      {
+        "select": {
+          "courseId": true,
+        },
+        "where": {
+          "course": {
+            "published": true,
+          },
+          "path": {
+            "enrollments": {
+              "some": {
+                "userId": "u1",
+              },
+            },
+            "published": true,
+          },
+        },
+      },
+    ],
+    [
       "analytics.coursePurchased",
       [
         "u1",
@@ -3671,6 +3618,27 @@ exports[`paymentService (pinned behaviour) > hpsSubAnalyticsFails 1`] = `
       ],
     ],
     [
+      "pathCourse.findMany",
+      {
+        "select": {
+          "courseId": true,
+        },
+        "where": {
+          "course": {
+            "published": true,
+          },
+          "path": {
+            "enrollments": {
+              "some": {
+                "userId": "u1",
+              },
+            },
+            "published": true,
+          },
+        },
+      },
+    ],
+    [
       "payment.findFirst",
       {
         "where": {
@@ -3904,6 +3872,27 @@ exports[`paymentService (pinned behaviour) > hpsSubExplicitCycle 1`] = `
           "resourceId": "cs_1",
         },
       ],
+    ],
+    [
+      "pathCourse.findMany",
+      {
+        "select": {
+          "courseId": true,
+        },
+        "where": {
+          "course": {
+            "published": true,
+          },
+          "path": {
+            "enrollments": {
+              "some": {
+                "userId": "u1",
+              },
+            },
+            "published": true,
+          },
+        },
+      },
     ],
     [
       "payment.findFirst",
@@ -4277,6 +4266,27 @@ exports[`paymentService (pinned behaviour) > hpsSubNew 1`] = `
       ],
     ],
     [
+      "pathCourse.findMany",
+      {
+        "select": {
+          "courseId": true,
+        },
+        "where": {
+          "course": {
+            "published": true,
+          },
+          "path": {
+            "enrollments": {
+              "some": {
+                "userId": "u1",
+              },
+            },
+            "published": true,
+          },
+        },
+      },
+    ],
+    [
       "payment.findFirst",
       {
         "where": {
@@ -4560,6 +4570,27 @@ exports[`paymentService (pinned behaviour) > hpsSubPaymentRecordFails 1`] = `
       ],
     ],
     [
+      "pathCourse.findMany",
+      {
+        "select": {
+          "courseId": true,
+        },
+        "where": {
+          "course": {
+            "published": true,
+          },
+          "path": {
+            "enrollments": {
+              "some": {
+                "userId": "u1",
+              },
+            },
+            "published": true,
+          },
+        },
+      },
+    ],
+    [
       "payment.findFirst",
       {
         "where": {
@@ -4775,6 +4806,27 @@ exports[`paymentService (pinned behaviour) > hpsSubPendingYearly 1`] = `
       ],
     ],
     [
+      "pathCourse.findMany",
+      {
+        "select": {
+          "courseId": true,
+        },
+        "where": {
+          "course": {
+            "published": true,
+          },
+          "path": {
+            "enrollments": {
+              "some": {
+                "userId": "u1",
+              },
+            },
+            "published": true,
+          },
+        },
+      },
+    ],
+    [
       "payment.findFirst",
       {
         "where": {
@@ -4901,11 +4953,7 @@ exports[`paymentService (pinned behaviour) > is a singleton with the expected AP
   "cancelImmediately",
   "cancelSubscription",
   "createCheckoutSession",
-  "createCustomer",
-  "createProduct",
-  "createSubscriptionPrice",
   "createSubscriptionSession",
-  "getCustomerByEmail",
   "getLatestSubscriptionPayment",
   "getSubscription",
   "grantCourseAccess",
@@ -4913,6 +4961,7 @@ exports[`paymentService (pinned behaviour) > is a singleton with the expected AP
   "handlePaymentSuccess",
   "refundPayment",
   "switchSubscriptionPrice",
+  "syncPaths",
   "verifyWebhookSignature",
 ]
 `;

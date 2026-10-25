@@ -6,21 +6,35 @@
 //   AUDIT_VIEWPORT=390x844        default 1280x900 (use a phone size for the mobile pass)
 //   AUDIT_THEME=light|dark        the site's theme (the default follows the system, which is dark here)
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+
+import { waitForSettledPage } from "./settle.mjs";
 
 const root = path.resolve(import.meta.dirname, "../..");
 const { chromium } = await import(
   pathToFileURL(path.join(root, "node_modules/@playwright/test/index.mjs")).href
 );
-// axe-core is only a transitive dependency: take the newest copy pnpm installed
-const axeDir = fs
-  .readdirSync(path.join(root, "node_modules/.pnpm"))
-  .filter((name) => name.startsWith("axe-core@"))
-  .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
-  .at(-1);
-if (!axeDir) throw new Error("axe-core is not installed");
-const axeSource = fs.readFileSync(path.join(root, "node_modules/.pnpm", axeDir, "node_modules/axe-core/axe.min.js"), "utf8");
+// axe-core is only a transitive dependency: resolve it the Node way (flat or hoisted install), else take the
+// newest copy pnpm put in its store
+function axeSourcePath() {
+  try {
+    return createRequire(path.join(root, "package.json")).resolve("axe-core/axe.min.js");
+  } catch {
+    const store = path.join(root, "node_modules/.pnpm");
+    const dir = fs.existsSync(store)
+      ? fs
+          .readdirSync(store)
+          .filter((name) => name.startsWith("axe-core@"))
+          .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+          .at(-1)
+      : undefined;
+    if (!dir) throw new Error("axe-core is not installed");
+    return path.join(store, dir, "node_modules/axe-core/axe.min.js");
+  }
+}
+const axeSource = fs.readFileSync(axeSourcePath(), "utf8");
 
 const [signInEmail, signInPassword] = (process.env.AUDIT_SIGNIN ?? "").split("|");
 const [viewportWidth, viewportHeight] = (process.env.AUDIT_VIEWPORT ?? "1280x900").split("x").map(Number);
@@ -60,7 +74,8 @@ for (const route of routes) {
   const entry = { route };
   try {
     await page.goto(base + route, { waitUntil: "load", timeout: 240000 });
-    await page.waitForTimeout(2500);
+    entry.settled = await waitForSettledPage(page);
+    await page.waitForTimeout(500);
     entry.title = await page.title();
     entry.lang = await page.evaluate(() => document.documentElement.lang);
 
@@ -156,7 +171,7 @@ for (const route of routes) {
   results.push(entry);
   const v = entry.violations ?? [];
   console.log(
-    `${entry.error ? "ERR " : "done"} ${route} lang=${entry.lang} violations=${v.length} (${v.map((x) => x.id + ":" + x.count).join(",")})`,
+    `${entry.error ? "ERR " : "done"} ${route} lang=${entry.lang}${entry.settled === false ? " STILL-LOADING" : ""} violations=${v.length} (${v.map((x) => x.id + ":" + x.count).join(",")})`,
   );
   await ctx.close();
 }

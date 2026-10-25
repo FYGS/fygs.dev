@@ -15,7 +15,8 @@ import { PathStructuredData } from "@/components/paths/path-structured-data";
 import { getPublishedPath } from "@/lib/paths/queries";
 import { loadUserPath } from "@/lib/paths/progress";
 import { syncPathCertificates } from "@/lib/paths/certificates";
-import { formatMinutes, LEVEL_LABELS } from "@/lib/paths/rules";
+import { LEVEL_LABELS } from "@/lib/courses/labels";
+import { formatMinutes } from "@/lib/format-duration";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -57,6 +58,10 @@ export default async function PathPage({ params }: Props) {
   const progress = state?.progress;
   const continueHref = state?.next?.href ?? null;
   const lessonsTotal = path.courses.filter((c) => c.available).reduce((sum, c) => sum + c.lessonsCount, 0);
+  // Premium courses the learner cannot take yet (all of them for a visitor): said plainly, with where to get them
+  const lockedPremium = state
+    ? state.courses.filter((c) => c.status === "needs_access").length
+    : path.courses.filter((c) => c.available && c.accessTier === "PREMIUM").length;
 
   return (
     <div className="container mx-auto max-w-6xl space-y-10 py-10">
@@ -98,7 +103,7 @@ export default async function PathPage({ params }: Props) {
             </li>
             <li className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-primary" aria-hidden />
-              {formatMinutes(path.minutes)}
+              {formatMinutes(path.minutes) || "—"}
             </li>
             <li className="flex items-center gap-2">
               <Award className="h-4 w-4 text-primary" aria-hidden />
@@ -145,8 +150,21 @@ export default async function PathPage({ params }: Props) {
               )}
 
               <p className="text-xs text-muted-foreground">
-                Les formations gratuites s&apos;ajoutent à vos formations dès l&apos;inscription. Les formations Premium restent
-                soumises à leur abonnement ou à leur achat.
+                En vous inscrivant au parcours, les formations qui vous sont ouvertes s&apos;ajoutent à votre apprentissage.
+                {lockedPremium > 0 ? (
+                  <>
+                    {" "}
+                    {lockedPremium} formation{lockedPremium > 1 ? "s" : ""} Premium {lockedPremium > 1 ? "sont incluses" : "est incluse"} dans
+                    l&apos;abonnement ou {lockedPremium > 1 ? "achetables" : "achetable"} à l&apos;unité.{" "}
+                    <Link href="/pricing" className="underline underline-offset-2">
+                      Voir les formules
+                    </Link>
+                  </>
+                ) : state ? (
+                  " Toutes ses formations vous sont ouvertes."
+                ) : (
+                  " Toutes ses formations sont gratuites, avec un compte."
+                )}
               </p>
             </CardContent>
           </Card>

@@ -30,8 +30,8 @@ interface Props {
   isAdmin: boolean;
   instructors: InstructorOption[];
   enrollments: number;
-  /** Writes pending edits before the page is left. */
-  beforeLeave: () => Promise<void>;
+  /** Writes pending edits before the page is left; false when a save failed. */
+  beforeLeave: () => Promise<boolean>;
 }
 
 const NO_INSTRUCTOR = "none";
@@ -39,10 +39,11 @@ const NO_INSTRUCTOR = "none";
 export function SettingsPanel({ info, update, onSlugChanged, isAdmin, instructors, enrollments, beforeLeave }: Props) {
   const router = useRouter();
   const [slug, setSlug] = useState(info.slug);
-  const [availability, setAvailability] = useState<"idle" | "checking" | "free" | "taken" | "invalid">("idle");
+  const [availability, setAvailability] = useState<{ slug: string; state: "checking" | "free" | "taken" } | null>(null);
   const [savingSlug, setSavingSlug] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const normalized = slug.trim().toLowerCase();
   const changed = normalized !== info.slug;
@@ -52,9 +53,9 @@ export function SettingsPanel({ info, update, onSlugChanged, isAdmin, instructor
     if (!SLUG_PATTERN.test(normalized) || normalized.length < 3) return;
     let cancelled = false;
     const timer = setTimeout(() => {
-      setAvailability("checking");
+      setAvailability({ slug: normalized, state: "checking" });
       void checkCourseSlug(info.id, normalized).then((r) => {
-        if (!cancelled) setAvailability(r.available ? "free" : "taken");
+        if (!cancelled) setAvailability({ slug: normalized, state: r.available ? "free" : "taken" });
       });
     }, 400);
     return () => {
@@ -64,7 +65,8 @@ export function SettingsPanel({ info, update, onSlugChanged, isAdmin, instructor
   }, [normalized, changed, info.id]);
 
   const shape = SLUG_PATTERN.test(normalized) && normalized.length >= 3;
-  const status = !changed ? "idle" : !shape ? "invalid" : availability;
+  // the answer counts only for the address it was given for: typing again shows "checking" until the new answer
+  const status = !changed ? "idle" : !shape ? "invalid" : availability?.slug === normalized ? availability.state : "checking";
 
   async function saveSlug() {
     setSavingSlug(true);
@@ -73,13 +75,16 @@ export function SettingsPanel({ info, update, onSlugChanged, isAdmin, instructor
     if (!result.success) return toast.error(result.error);
     onSlugChanged(result.slug);
     setSlug(result.slug);
-    setAvailability("idle");
-    toast.success("Adresse mise à jour.");
+    setAvailability(null);
+    toast.success("Adresse mise à jour. L'ancienne redirige vers la nouvelle.");
   }
 
   async function duplicate() {
     setDuplicating(true);
-    await beforeLeave();
+    if (!(await beforeLeave())) {
+      setDuplicating(false);
+      return toast.error("Une modification n'a pas pu être enregistrée : corrigez-la avant de dupliquer.");
+    }
     const result = await duplicateCourse(info.id);
     setDuplicating(false);
     if (!result.success) return toast.error(result.error);
@@ -88,7 +93,10 @@ export function SettingsPanel({ info, update, onSlugChanged, isAdmin, instructor
   }
 
   async function remove() {
+    setDeleting(true);
     const result = await deleteCourse(info.id);
+    setDeleting(false);
+    setDeleteOpen(false);
     if (!result.success) return toast.error(result.error);
     toast.success("Formation supprimée.");
     router.push("/admin/courses");
@@ -118,7 +126,7 @@ export function SettingsPanel({ info, update, onSlugChanged, isAdmin, instructor
           )}
           {status === "free" && (
             <>
-              <Check className="h-3.5 w-3.5 text-emerald-600" aria-hidden /> Adresse disponible.
+              <Check className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" aria-hidden /> Adresse disponible.
             </>
           )}
           {status === "taken" && (
@@ -127,7 +135,8 @@ export function SettingsPanel({ info, update, onSlugChanged, isAdmin, instructor
             </>
           )}
           {status === "invalid" && "Lettres minuscules, chiffres et tirets, 3 caractères minimum."}
-          {status === "idle" && (info.published ? "Changer l'adresse d'une formation publiée casse les liens déjà partagés." : "Générée à partir du titre ; modifiable tant que la formation n'est pas diffusée.")}
+          {status === "idle" &&
+            "Générée à partir du titre et modifiable à tout moment : l'ancienne adresse continue de fonctionner et redirige vers la nouvelle."}
         </p>
       </section>
 
@@ -203,7 +212,16 @@ export function SettingsPanel({ info, update, onSlugChanged, isAdmin, instructor
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={() => void remove()}>Supprimer définitivement</AlertDialogAction>
+            <AlertDialogAction
+              disabled={deleting}
+              onClick={(e) => {
+                e.preventDefault(); // stays open while the server answers
+                void remove();
+              }}
+            >
+              {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />}
+              Supprimer définitivement
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

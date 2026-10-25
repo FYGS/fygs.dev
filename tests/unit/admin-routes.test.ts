@@ -21,13 +21,17 @@ describe("admin routes", () => {
   });
 
   it("the sidebar and quick actions only link to listed routes after filtering", () => {
-    // Every static /admin/... href written in the shared admin components is either listed
-    // or filtered by isAdminHrefAvailable (the three components call it).
+    // The sidebar reads lib/admin-navigation (filtered by isAdminHrefAvailable there); the quick actions filter themselves.
     const dir = join(ADMIN_DIR, "_components");
-    for (const file of ["admin-sidebar.tsx", "admin-quick-actions.tsx", "quick-actions.tsx"]) {
-      expect(readFileSync(join(dir, file), "utf8"), file).toContain("isAdminHrefAvailable");
-    }
+    expect(readFileSync(join(dir, "admin-sidebar.tsx"), "utf8")).toContain("navigationFor");
+    expect(readFileSync(join(process.cwd(), "lib", "admin-navigation.ts"), "utf8")).toContain("isAdminHrefAvailable");
+    expect(readFileSync(join(dir, "admin-quick-actions.tsx"), "utf8")).toContain("isAdminHrefAvailable");
     expect(statSync(dir).isDirectory()).toBe(true);
     expect(readdirSync(dir).length).toBeGreaterThan(0);
+  });
+
+  it("lists the questions inbox and not the retired lesson pages", () => {
+    expect(isAdminHrefAvailable("/admin/questions")).toBe(true);
+    expect(isAdminHrefAvailable("/admin/lessons")).toBe(false);
   });
 });

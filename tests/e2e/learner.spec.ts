@@ -42,7 +42,7 @@ test.describe("enrolled learner (fr)", () => {
     await expect(page).toHaveURL(new RegExp(`/fr/formations/${FREE_COURSE}$`));
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
-    await page.getByRole("button", { name: /S'inscrire maintenant/ }).click();
+    await page.getByRole("button", { name: "Commencer la formation" }).click();
     await expect(page).toHaveURL(new RegExp(`/fr/learn/${FREE_COURSE}/lessons/[^/]+$`), { timeout: 30_000 });
     await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
 
@@ -88,7 +88,7 @@ test.describe("enrolled learner (fr)", () => {
     await page.getByRole("button", { name: "Terminer le quiz" }).click();
 
     // 3. the attempt is graded and stored by the server: 1 / 2
-    await expect(page.getByText("50%")).toBeVisible();
+    await expect(page.getByText("50 %")).toBeVisible();
     await expect(page.getByText(/1 \/ 2 bonnes réponses/)).toBeVisible();
     await expect
       .poll(async () => (await sql<{ score: number; total: number }>(`SELECT score, total FROM "QuizResult" WHERE "quizId" = $1`, [quizId]))[0])
@@ -105,25 +105,20 @@ test.describe("enrolled learner (fr)", () => {
   test("the certificate comes with the last lesson or quiz, and not before", async ({ page }) => {
     const user = await learner(page, { enrolled: true });
     const id = await courseId();
-    const summary = async () => (await page.request.get(`/api/progress/summary?courseId=${id}`)).json();
+    const certificates = async () =>
+      sql<{ code: string }>(`SELECT code FROM "Certificate" WHERE "userId" = $1 AND "courseId" = $2`, [user.id, id]);
 
-    const before = await summary();
-    expect(before.ok).toBe(true);
-    expect(before.breakdown.lessons.completed).toBe(0);
-    expect(before.breakdown.quizzes.passed).toBe(0);
-    expect(before.breakdown.overall.isComplete).toBe(false);
-    expect(before.hasCertificate).toBe(false);
+    expect(await certificates()).toHaveLength(0);
 
-    // all lessons done in the database, quiz still to pass: not eligible yet
+    // all lessons done in the database, quiz still to pass: not complete yet, no certificate
     await sql(
       `INSERT INTO "Progress" (id, "userId", "lessonId", completed, "completedAt")
        SELECT gen_random_uuid()::text, $1, id, true, now() FROM "Lesson" WHERE "courseId" = $2 AND published = true`,
       [user.id, id],
     );
-    const lessonsOnly = await summary();
-    expect(lessonsOnly.hasCertificate).toBe(false);
-    expect(lessonsOnly.breakdown.lessons.percentage).toBe(100);
-    expect(lessonsOnly.completion).toBeLessThan(100);
+    await page.goto(`/fr/learn/${FREE_COURSE}/completed`);
+    await expect(page.getByRole("heading", { level: 1, name: /Il vous reste/ })).toBeVisible();
+    expect(await certificates()).toHaveLength(0);
 
     // pass the quiz(zes) through the UI
     await page.goto(`/fr/learn/${FREE_COURSE}/quizzes/${await firstQuizId()}`);
@@ -131,14 +126,20 @@ test.describe("enrolled learner (fr)", () => {
     await page.getByRole("button", { name: "Question suivante" }).click();
     await page.getByRole("button", { name: /'object'/ }).click();
     await page.getByRole("button", { name: "Terminer le quiz" }).click();
-    await expect(page.locator("#main-content").getByText("100%")).toBeVisible();
+    await expect(page.locator("#main-content").getByText("100 %")).toBeVisible();
 
-    await expect.poll(async () => (await summary()).completion).toBe(100);
-    const after = await summary();
-    expect(after.breakdown.overall.isComplete).toBe(true);
     // passing the last quiz issued the certificate on the spot, nothing else had to ask for it
-    expect(after.hasCertificate).toBe(true);
-    expect(after.certificateCode).toMatch(/^[a-f0-9]{32}$/);
+    await expect.poll(async () => (await certificates()).length).toBe(1);
+    const [{ code }] = await certificates();
+    expect(code).toMatch(/^[a-f0-9]{32}$/);
+
+    // it is on the wrap-up page, in « Mon apprentissage », and anyone can verify it
+    await page.goto(`/fr/learn/${FREE_COURSE}/completed`);
+    await expect(page.getByRole("heading", { level: 1, name: "Formation terminée" })).toBeVisible();
+    await page.goto("/fr/dashboard/my-courses?tab=certificats");
+    await expect(page.getByRole("link", { name: /PDF/ }).first()).toHaveAttribute("href", `/api/certificates/pdf?code=${code}`);
+    await page.goto(`/fr/certificates/verify/${code}`);
+    await expect(page.getByRole("heading", { name: "Ce certificat est authentique" })).toBeVisible();
   });
 
   test("the learner area renders", async ({ page }) => {
@@ -147,7 +148,9 @@ test.describe("enrolled learner (fr)", () => {
       "/fr/dashboard",
       "/fr/dashboard/my-courses",
       "/fr/dashboard/billing",
-      "/fr/dashboard/certificates",
+      "/fr/dashboard/my-courses?tab=terminees",
+      "/fr/dashboard/my-courses?tab=parcours",
+      "/fr/dashboard/my-courses?tab=certificats",
       "/fr/profile",
       "/fr/community/notifications",
       `/fr/formations/${FREE_COURSE}`,

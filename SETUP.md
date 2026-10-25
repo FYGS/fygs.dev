@@ -194,34 +194,7 @@ uses `DATABASE_URL`: see [tests/README.md](tests/README.md) for the test databas
 
 ## 📁 Project Structure
 
-```
-fygs.dev/
-├── app/                    # Next.js App Router pages
-│   ├── (auth)/            # Authentication pages
-│   ├── (dashboard)/       # Protected dashboard routes
-│   ├── api/               # API routes and webhooks
-│   └── globals.css        # Global styles
-├── components/            # Reusable React components
-│   ├── ui/               # shadcn/ui components
-│   ├── auth/             # Authentication components
-│   └── dashboard/        # Dashboard-specific components
-├── lib/                   # Utility functions and configurations
-│   ├── auth/             # Authentication configuration
-│   ├── db/               # Database utilities
-│   ├── redis.ts          # Redis client (native ioredis)
-│   └── utils.ts          # General utilities
-├── hooks/                 # Custom React hooks
-├── stores/               # Zustand state stores
-├── types/                # TypeScript type definitions
-├── prisma/               # Database schema and migrations
-│   ├── schema.prisma     # Database schema
-│   └── seed.ts          # Database seeding script
-├── public/               # Static assets
-├── .github/              # GitHub workflows and templates
-│   ├── workflows/        # CI/CD pipelines
-│   └── ISSUE_TEMPLATE/   # Issue templates
-└── docs/                 # Project documentation
-```
+The layout of the code is described in the [README](README.md#architecture).
 
 ## 🔧 Development Tools
 

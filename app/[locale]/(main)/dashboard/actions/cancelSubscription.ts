@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import { isSubscriptionActive } from "@/lib/access/entitlement";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
@@ -76,7 +77,8 @@ export async function cancelSubscription(
       };
     }
 
-    if (subscription.status !== SubscriptionStatus.ACTIVE) {
+    // ACTIVE or TRIALING: a trial is a running subscription (lib/access/entitlement.ts)
+    if (!isSubscriptionActive(subscription)) {
       return {
         success: false,
         message: "Subscription is not active",

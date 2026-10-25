@@ -1,7 +1,5 @@
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { ReviewStatus, Role } from "@/lib/generated/prisma/browser";
+import { requireAdminPage } from "@/lib/admin-guard";
+import { ReviewStatus } from "@/lib/generated/prisma/browser";
 import { db } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -43,17 +41,8 @@ async function getAnalyticsData() {
 }
 
 export default async function AdminReviewsAnalyticsPage() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session?.user) {
-    redirect("/auth/login");
-  }
-
-  if (session.user.role !== Role.ADMIN) {
-    redirect("/unauthorized");
-  }
+  // Administrators only: an instructor who types the URL goes back to the back-office home
+  await requireAdminPage();
 
   const { globalStats, ratingCounts, sentimentData } = await getAnalyticsData();
 

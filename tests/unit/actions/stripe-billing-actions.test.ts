@@ -100,7 +100,7 @@ describe("requestRefund (recorded Stripe answers)", () => {
     });
     expect(result).toEqual({
       success: true,
-      message: expect.stringContaining("Refund processed"),
+      message: expect.stringContaining("Remboursement effectué"),
       refund: {
         amount: f.invoiceRetrieved.amount_paid / 100,
         currency: f.invoiceRetrieved.currency,

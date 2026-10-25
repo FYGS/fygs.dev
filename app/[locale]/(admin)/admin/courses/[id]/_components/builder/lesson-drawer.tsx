@@ -13,10 +13,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import { VideoUpload } from "@/components/admin/video-upload";
 import type { LessonDetail, LessonSummary, ResourceItem } from "@/lib/curriculum/curriculum";
-import { lessonStatus } from "@/lib/curriculum/publish";
+import { LESSON_STATUS_LABELS, lessonStatus } from "@/lib/curriculum/publish";
+import { formatSeconds } from "@/lib/format-duration";
 import { isEmptyHtml } from "@/lib/curriculum/content";
 import { looksLikeHtml } from "@/lib/curriculum/html-detect";
 import { loadLesson, saveLesson } from "../../_actions/curriculum-actions";
+import { CaptionsField } from "./captions-field";
 import { ResourcesEditor } from "./resources-editor";
 import { useAutosave } from "./use-autosave";
 
@@ -63,7 +65,7 @@ export function LessonDrawer({ courseSlug, courseLive, lessonId, onClose, onLess
   );
 }
 
-type Draft = Pick<LessonDetail, "title" | "description" | "content" | "videoUrl" | "duration" | "isPreview">;
+type Draft = Pick<LessonDetail, "title" | "description" | "content" | "videoUrl" | "duration" | "isPreview" | "captionsUrl" | "transcript">;
 
 function LessonEditor({
   lessonId,
@@ -147,10 +149,24 @@ function LessonFields({
     videoUrl: initial.videoUrl,
     duration: initial.duration,
     isPreview: initial.isPreview,
+    captionsUrl: initial.captionsUrl,
+    transcript: initial.transcript,
   });
   const [published, setPublished] = useState(initial.published);
   const [resources, setResources] = useState<ResourceItem[]>(initial.resources);
   const [publishing, setPublishing] = useState(false);
+  /** A duration read from the video that differs from the one already set: offered, never imposed. */
+  const [detected, setDetected] = useState<number | null>(null);
+  /** The duration came from the video file in this session (so a new file may replace it). */
+  const durationFromVideo = useRef(false);
+  const probeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const durationRef = useRef(draft.duration);
+  useEffect(() => {
+    durationRef.current = draft.duration;
+  }, [draft.duration]);
+  useEffect(() => () => {
+    if (probeTimer.current) clearTimeout(probeTimer.current);
+  }, []);
 
   const { queue, flush, error, retry } = useAutosave<Draft>({
     name: `lesson:${initial.id}`,
@@ -176,15 +192,31 @@ function LessonFields({
 
   function onVideoChange(url: string) {
     edit({ videoUrl: url });
-    if (url && /^https?:\/\//i.test(url)) detectDuration(url);
+    setDetected(null);
+    // typed addresses are probed once the author stops typing, not at every key
+    if (probeTimer.current) clearTimeout(probeTimer.current);
+    if (url && /^https?:\/\/\S+\.\S+/i.test(url)) probeTimer.current = setTimeout(() => detectDuration(url), 800);
   }
 
-  /** Reads the length from the video file itself; platforms that block it (YouTube, Vimeo pages) leave the field to the author. */
+  /**
+   * Reads the length from the video file itself (platforms such as YouTube or Vimeo do not give it: the field stays
+   * with the author). An empty duration, or one read from a previous file, is filled in; a duration the author
+   * set is kept and the detected one is offered next to it.
+   */
   function detectDuration(url: string) {
     const probe = document.createElement("video");
     probe.preload = "metadata";
     probe.onloadedmetadata = () => {
-      if (Number.isFinite(probe.duration) && probe.duration > 0) edit({ duration: Math.round(probe.duration) });
+      if (Number.isFinite(probe.duration) && probe.duration > 0) {
+        const seconds = Math.round(probe.duration);
+        const current = durationRef.current;
+        if (current === null || durationFromVideo.current) {
+          durationFromVideo.current = true;
+          edit({ duration: seconds });
+        } else if (current !== seconds) {
+          setDetected(seconds);
+        }
+      }
       probe.removeAttribute("src");
       probe.load();
     };
@@ -210,7 +242,11 @@ function LessonFields({
   const status = lessonStatus({ published, hasVideo, hasContent });
   const minutes = draft.duration ? Math.floor(draft.duration / 60) : "";
   const seconds = draft.duration ? draft.duration % 60 : "";
-  const setDuration = (m: number, s: number) => edit({ duration: m * 60 + s > 0 ? m * 60 + s : null });
+  const setDuration = (m: number, s: number) => {
+    durationFromVideo.current = false;
+    setDetected(null);
+    edit({ duration: m * 60 + s > 0 ? m * 60 + s : null });
+  };
   const titleBlank = !draft.title.trim();
 
   return (
@@ -218,20 +254,16 @@ function LessonFields({
       <SheetHeader>
         <div className="flex items-center gap-2 pr-8">
           <SheetTitle className="min-w-0 flex-1 truncate">{draft.title || "Leçon sans titre"}</SheetTitle>
-          <Badge variant={status === "ready" ? "default" : "outline"}>
-            {status === "draft" ? "Brouillon" : status === "ready" ? "Publiée" : "À compléter"}
-          </Badge>
+          <Badge variant={status === "ready" ? "default" : "outline"}>{LESSON_STATUS_LABELS[status]}</Badge>
         </div>
         <SheetDescription>
           Les modifications sont enregistrées automatiquement.{" "}
-          {courseLive && published ? (
-            <a href={`/learn/${courseSlug}/lessons/${initial.slug}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary underline-offset-4 hover:underline">
-              Voir comme un apprenant
-              <ExternalLink className="h-3 w-3" aria-hidden />
-            </a>
-          ) : (
-            "La leçon est visible côté apprenant une fois la leçon et la formation publiées."
-          )}
+          <a href={`/learn/${courseSlug}/lessons/${initial.slug}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary underline-offset-4 hover:underline">
+            Voir comme un apprenant
+            <ExternalLink className="h-3 w-3" aria-hidden />
+          </a>
+          {(!published || !courseLive) &&
+            ` ${!published ? "La leçon est en brouillon" : "La formation est en brouillon"} : vous seul la voyez, marquée « Brouillon ».`}
         </SheetDescription>
       </SheetHeader>
 
@@ -271,8 +303,31 @@ function LessonFields({
                 <span className="text-sm text-muted-foreground">s</span>
               </div>
             </div>
-            <p className="pb-2 text-xs text-muted-foreground">Détectée automatiquement pour un fichier vidéo ; à saisir pour une vidéo hébergée ailleurs.</p>
+            <p className="pb-2 text-xs text-muted-foreground">Lue dans le fichier vidéo quand c&apos;est possible ; à saisir pour YouTube ou Vimeo.</p>
           </div>
+          {detected !== null && (
+            <p className="text-sm text-muted-foreground" role="status">
+              La vidéo dure {formatSeconds(detected)}.{" "}
+              <button
+                type="button"
+                className="text-primary underline underline-offset-4"
+                onClick={() => {
+                  durationFromVideo.current = true;
+                  setDetected(null);
+                  edit({ duration: detected });
+                }}
+              >
+                Utiliser cette durée
+              </button>
+            </p>
+          )}
+          <CaptionsField
+            captionsUrl={draft.captionsUrl}
+            transcript={draft.transcript}
+            hasVideo={hasVideo}
+            onCaptionsChange={(captionsUrl) => edit({ captionsUrl })}
+            onTranscriptChange={(transcript) => edit({ transcript })}
+          />
         </section>
 
         <section aria-labelledby="lesson-content" className="space-y-3">
@@ -314,7 +369,10 @@ function LessonFields({
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-0.5">
               <Label htmlFor="lesson-preview">Aperçu gratuit</Label>
-              <p className="text-sm text-muted-foreground">Ouverte aux visiteurs sans accès, comme échantillon de la formation.</p>
+              <p className="text-sm text-muted-foreground">Ouverte à tous, même sans compte, comme échantillon de la formation.</p>
+              {draft.isPreview && !published && (
+                <p className="text-sm text-amber-800 dark:text-amber-300">Cette leçon est en brouillon : elle ne servira d&apos;aperçu qu&apos;une fois publiée.</p>
+              )}
             </div>
             <Switch id="lesson-preview" checked={draft.isPreview} onCheckedChange={(checked) => edit({ isPreview: checked })} />
           </div>

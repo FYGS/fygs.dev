@@ -16,7 +16,7 @@ test.describe("access control (fr)", () => {
   }
 
   test("anonymous API calls are refused", async ({ request }) => {
-    expect((await request.get("/api/progress/summary")).status()).toBe(401);
+    expect((await request.post("/api/progress/beacon", { data: { lessonId: "x" } })).status()).toBe(401);
   });
 
   test("a student is sent back to the dashboard and never sees admin content", async ({ page }) => {
@@ -51,6 +51,7 @@ test.describe("access control (fr)", () => {
     "/fr/admin/community/users",
     "/fr/admin/courses",
     "/fr/admin/courses/new",
+    "/fr/admin/questions",
     "/fr/admin/reviews",
     "/fr/admin/reviews/analytics",
     "/fr/admin/reviews/moderation",
@@ -64,7 +65,16 @@ test.describe("access control (fr)", () => {
   ];
 
   // the sidebar hides these for an instructor, but typing the URL must not be enough
-  const ADMIN_ONLY = ["users", "payments", "subscriptions", "enrollments", "certificates"];
+  const ADMIN_ONLY = [
+    "users",
+    "payments",
+    "subscriptions",
+    "enrollments",
+    "certificates",
+    "reviews",
+    "reviews/analytics",
+    "reviews/moderation",
+  ];
 
   test("an instructor reaches the back office but not the admin-only pages", async ({ page }) => {
     const instructor = await createUser({ name: "Instructeur E2E", role: "INSTRUCTOR" });
@@ -73,6 +83,13 @@ test.describe("access control (fr)", () => {
 
     await page.goto("/fr/admin");
     await expect(page).toHaveURL(/\/fr\/admin$/);
+    // their own home, and a menu without the pages they cannot open
+    await expect(page.getByRole("heading", { level: 1, name: /Bonjour/ })).toBeVisible();
+    const menu = page.getByRole("navigation", { name: "Navigation d'administration" });
+    await expect(menu.getByRole("link", { name: /Questions des apprenants/ })).toBeVisible();
+    for (const hidden of [/Analytics/, /Avis/, /Communauté/, /Utilisateurs/, /Paiements/]) {
+      await expect(menu.getByRole("link", { name: hidden })).toHaveCount(0);
+    }
     for (const name of ADMIN_ONLY) {
       await page.goto(`/fr/admin/${name}`);
       await expect(page, `/admin/${name}`).toHaveURL(/\/fr\/admin$/);

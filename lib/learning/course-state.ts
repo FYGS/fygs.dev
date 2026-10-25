@@ -6,16 +6,20 @@ import {
   type CourseOutline,
   type CourseProgress,
 } from "./outline";
+import { parseExamQuestions } from "./exam";
 
-/** Published lessons, quizzes with questions and the published final exam of a course, in learning order. */
-export async function loadCourseOutline(courseId: string): Promise<CourseOutline> {
+/**
+ * Published lessons, quizzes with questions and the published final exam of a course, in learning order.
+ * `includeDrafts` (the author's preview) adds the draft lessons and the unpublished exam, marked `draft`.
+ */
+export async function loadCourseOutline(courseId: string, { includeDrafts = false } = {}): Promise<CourseOutline> {
   const [modules, lessons, quizzes, exam] = await Promise.all([
     db.module.findMany({
       where: { courseId },
       select: { id: true, title: true, slug: true, order: true },
     }),
     db.lesson.findMany({
-      where: { courseId, published: true },
+      where: { courseId, ...(includeDrafts ? {} : { published: true }) },
       select: {
         id: true,
         slug: true,
@@ -24,6 +28,7 @@ export async function loadCourseOutline(courseId: string): Promise<CourseOutline
         duration: true,
         moduleId: true,
         isPreview: true,
+        published: true,
       },
     }),
     db.quiz.findMany({
@@ -37,8 +42,8 @@ export async function loadCourseOutline(courseId: string): Promise<CourseOutline
       },
     }),
     db.finalExam.findFirst({
-      where: { courseId, published: true },
-      select: { id: true, title: true, questions: true },
+      where: { courseId, ...(includeDrafts ? {} : { published: true }) },
+      select: { id: true, title: true, questions: true, published: true },
     }),
   ]);
 
@@ -56,7 +61,9 @@ export async function loadCourseOutline(courseId: string): Promise<CourseOutline
       ? {
           id: exam.id,
           title: exam.title,
-          questionCount: Array.isArray(exam.questions) ? exam.questions.length : 0,
+          published: exam.published,
+          // Same count as the exam page: an exam whose questions do not parse is not a step of the course
+          questionCount: parseExamQuestions(exam.questions).length,
         }
       : null,
   });
@@ -101,5 +108,18 @@ export async function loadLearnerCourseState(
     completedLessonIds,
     passedQuizIds,
     examPassed,
+  };
+}
+
+/** The state of someone who has done nothing yet (a visitor watching a free sample). */
+export function emptyLearnerState(outline: CourseOutline): LearnerCourseState {
+  const completedLessonIds = new Set<string>();
+  const passedQuizIds = new Set<string>();
+  return {
+    outline,
+    progress: computeProgress(outline, { completedLessonIds, passedQuizIds, examPassed: false }),
+    completedLessonIds,
+    passedQuizIds,
+    examPassed: false,
   };
 }

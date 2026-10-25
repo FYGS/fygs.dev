@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { AccessService } from "@/lib/access-service";
+import { getEntitlement } from "@/lib/access/entitlement";
 import { slugify } from "@/lib/text/slug";
 import { communityWriteBlock } from "@/app/actions/community/_rate-limit";
 import { checkAndAwardBadges } from "@/app/actions/community/_badges";
@@ -36,13 +36,21 @@ export async function askLessonQuestion(input: z.infer<typeof askSchema>): Promi
 
   const lesson = await db.lesson.findUnique({
     where: { id: lessonId },
-    select: { id: true, courseId: true, course: { select: { id: true, title: true, slug: true } } },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      courseId: true,
+      course: { select: { id: true, title: true, slug: true, instructorId: true } },
+    },
   });
   if (!lesson) return { success: false, error: "Leçon introuvable" };
 
   // Asking is for the course's learners: a free preview does not open the community
-  const access = await AccessService.checkCourseAccess(userId, lesson.courseId);
-  if (!access.canAccessCourse) return { success: false, error: "Inscrivez-vous à la formation pour poser une question" };
+  const entitlement = await getEntitlement({ id: userId, role: session.user.role }, lesson.courseId);
+  if (!entitlement?.entitled || entitlement.source === "staff") {
+    return { success: false, error: "Inscrivez-vous à la formation pour poser une question" };
+  }
 
   const blocked = await communityWriteBlock(userId);
   if (blocked) return { success: false, error: "Trop de messages à la suite, réessayez dans un instant" };
@@ -70,6 +78,23 @@ export async function askLessonQuestion(input: z.infer<typeof askSchema>): Promi
     data: { communityPoints: { increment: 10 }, lastActiveAt: new Date() },
   });
   await checkAndAwardBadges(userId, "DISCUSSION_CREATED");
+
+  // The instructor answers the questions of their course: they are told at once (and find them in the back office)
+  const instructorId = lesson.course.instructorId;
+  if (instructorId && instructorId !== userId) {
+    await db.notification
+      .create({
+        data: {
+          recipientId: instructorId,
+          senderId: userId,
+          type: "SYSTEM_ANNOUNCEMENT",
+          title: "Nouvelle question sur votre formation",
+          message: `${session.user.name || "Un apprenant"} demande, à propos de « ${lesson.title} » : ${title}`,
+          data: { kind: "lesson_question", discussionId: discussion.id, lessonId: lesson.id, courseId: lesson.courseId },
+        },
+      })
+      .catch((e) => console.warn("[lesson-questions] instructor notification failed", e));
+  }
 
   revalidatePath("/community");
   revalidatePath(`/learn/${lesson.course.slug}`, "layout");

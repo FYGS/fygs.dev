@@ -71,7 +71,7 @@ exports[`prisma/seed.ts (pinned Prisma call sequence) > issues the same Prisma c
   },
   {
     "calls": 37,
-    "hash": "eb626e6cdc0c09acd6d5c861eee824fbecd93fa71f4732f302c5c89a4a3f7448",
+    "hash": "c8a6d36ae04383a8a906c7340934b7818297bf8cf573ccc68dedef499763c88e",
     "header": "📖 Creating course content structure...",
   },
   {
@@ -151,7 +151,7 @@ exports[`prisma/seed.ts (pinned Prisma call sequence) > issues the same Prisma c
   },
   {
     "calls": 80,
-    "hash": "17a03f1f10c619cfef01eb07d16c6ccaf45cae0dbcc12124d3272c6b7bbc2cea",
+    "hash": "d7be72fe21135700984283c71f4f2a3efc7c050010927aca53aa562cd4fd0aea",
     "header": "📊 Creating progress tracking data...",
   },
   {
@@ -266,4 +266,4 @@ exports[`prisma/seed.ts (pinned Prisma call sequence) > issues the same Prisma c
 ]
 `;
 
-exports[`prisma/seed.ts (pinned Prisma call sequence) > issues the same Prisma calls in the same order 4`] = `"6a02fe9ffb9342d68bfba6537ac4dcc0fbb14fb8b9f79bb6807abd3e98aba911"`;
+exports[`prisma/seed.ts (pinned Prisma call sequence) > issues the same Prisma calls in the same order 4`] = `"237abf65bf6cb40b19418b404eeb27252e98fd0d27d4d335c1b6d7594550e12f"`;

@@ -45,14 +45,18 @@ export function moveLessonInSnapshot(
   return { modules, looseLessons: withoutLesson(snapshot.looseLessons) };
 }
 
-export function replaceLessonInSnapshot(snapshot: CurriculumSnapshot, lesson: LessonSummary): CurriculumSnapshot {
-  const swap = (lessons: LessonSummary[]) => lessons.map((l) => (l.id === lesson.id ? { ...l, ...lesson, order: l.order } : l));
-  return {
-    modules: snapshot.modules.map((m) => ({ ...m, lessons: swap(m.lessons) })),
-    looseLessons: swap(snapshot.looseLessons),
-  };
-}
-
 export function allLessons(snapshot: CurriculumSnapshot): LessonSummary[] {
   return [...snapshot.looseLessons, ...snapshot.modules.flatMap((m) => m.lessons)];
+}
+
+/**
+ * The free sample lessons, as learners will get them: published lessons flagged as preview, plus the first published
+ * lesson in course order when the course offers it. Same rule as `previewLessonIds` (lib/access/entitlement), which the
+ * learner side applies; repeated here because that module reads the database and cannot reach the browser.
+ */
+export function freeSampleLessons(snapshot: CurriculumSnapshot, previewEnabled: boolean): LessonSummary[] {
+  const published = allLessons(snapshot).filter((l) => l.published);
+  const samples = published.filter((l) => l.isPreview);
+  if (previewEnabled && published[0] && !samples.includes(published[0])) samples.unshift(published[0]);
+  return samples;
 }

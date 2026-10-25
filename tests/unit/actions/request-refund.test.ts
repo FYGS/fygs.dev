@@ -124,7 +124,7 @@ describe("requestRefund", () => {
     });
     expect(result).toEqual({
       success: true,
-      message: "Refund processed successfully. Your subscription has been canceled.",
+      message: expect.stringContaining("Remboursement effectué"),
       refund: { amount: 29, currency: "eur", refundId: "re_555" },
     });
   });

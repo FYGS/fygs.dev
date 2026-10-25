@@ -124,8 +124,8 @@ export async function handleCheckoutSessionCompleted(
         }
       }
 
-      // Send email based on purchase type
-      if (userId) {
+      // Course purchase email. The subscription welcome email is sent once, by customer.subscription.created
+      if (userId && type === "course_purchase" && productId) {
         try {
           const user = await db.user.findUnique({
             where: { id: userId },
@@ -133,47 +133,30 @@ export async function handleCheckoutSessionCompleted(
           });
 
           if (user) {
-            if (type === "course_purchase" && productId) {
-              // Individual course purchase email
-              const course = await db.course.findUnique({
-                where: { id: productId },
-                select: { title: true, description: true, slug: true },
-              });
+            // Individual course purchase email
+            const course = await db.course.findUnique({
+              where: { id: productId },
+              select: { title: true, description: true, slug: true },
+            });
 
-              if (course) {
-                await emailService.sendCoursePurchaseEmail(
-                  user.name || "Étudiant",
-                  user.email,
-                  course.title,
-                  course.slug,
-                  session.amount_total
-                    ? session.amount_total / 100
-                    : undefined,
-                );
-                logger.info("Course purchase email sent", {
-                  eventType: "email.course_purchase_sent",
-                  userId,
-                  resourceType: "course",
-                  resourceId: productId,
-                  metadata: {
-                    courseTitle: course.title,
-                  },
-                });
-              }
-            } else if (type === "premium_subscription") {
-              // Premium subscription welcome email
-              await emailService.sendPremiumSubscriptionEmail(
+            if (course) {
+              await emailService.sendCoursePurchaseEmail(
                 user.name || "Étudiant",
                 user.email,
-                "Premium",
-                session.amount_total ? session.amount_total / 100 : 0,
-                "monthly",
+                course.title,
+                course.slug,
+                session.amount_total
+                  ? session.amount_total / 100
+                  : undefined,
               );
-              logger.info("Premium subscription email sent", {
-                eventType: "email.subscription_welcome_sent",
+              logger.info("Course purchase email sent", {
+                eventType: "email.course_purchase_sent",
                 userId,
-                resourceType: "subscription",
-                metadata: {},
+                resourceType: "course",
+                resourceId: productId,
+                metadata: {
+                  courseTitle: course.title,
+                },
               });
             }
           }

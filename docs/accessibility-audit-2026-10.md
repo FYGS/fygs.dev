@@ -146,3 +146,19 @@ Still open (two items, both understood):
 | `color-contrast` of "15 min read" on the mobile blog page | a false positive: the text is sampled in the middle of its hover colour transition (#131b2d, nearly the background); its settled colour is the tested muted token |
 
 Not done and not possible from here: a screen-reader pass (NVDA, VoiceOver) and a pass with real zoom and high-contrast settings.
+
+## Addendum 2026-10-25: formation pages (builder, `/learn`, `/parcours`, "Mon apprentissage")
+
+Production build, seeded database, same tooling. Pages with at least one violation:
+
+| Pass | Pages audited | First run | After the fixes |
+|------|---------------|-----------|-----------------|
+| Admin (signed in, incl. three course builders and the path editor) | 25 | 0 | 0 |
+| Learner (signed in, incl. lessons, quizzes, exams, supports, wrap-up, paths, certificates) | 43 | 2 | 0 |
+| Visitor dark | 32 | 1 | 1 (blog, see below) |
+| Visitor light | 32 | 1 | 1 (blog, see below) |
+| Mobile 390x844 | 32 | 1 | 1 (blog, see below) |
+
+Fixed: heading order on "Mon apprentissage" (course cards titled h3 under no h2), contrast of the voted "useful" / "not useful" review buttons (white on green-700 / red-700).
+
+Left: the two blog items of the previous addendum (reading-progress markers `target-size`, "15 min read" sampled mid-transition) and the dimmed spinner of the blog stats while they load. Pages that redirect while they stream (`/learn/[slug]` to the next step, a path certificate page without certificate) were checked by loading them directly: the audit script judges them mid-navigation.

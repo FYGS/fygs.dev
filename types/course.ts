@@ -23,13 +23,6 @@ export interface CourseSummaryDTO {
   tags: CourseTagDTO[];
   requiredTier?: string; // CourseAccessTier enum
   previewEnabled?: boolean;
-  // Access flags (optional; enriched by access layer)
-  isUnlocked?: boolean; // user can consume lessons fully
-  isInSubscription?: boolean; // user has active subscription (Premium) covering this course
-  isEnrolled?: boolean; // user explicitly enrolled (lifetime purchase or explicit enrollment action)
-  hasEntitlement?: boolean; // user owns via subscription or purchase
-  firstLessonSlug?: string | null;
-  unlockedLabel?: string;
 }
 
 export type FeaturedCourseDTO = CourseSummaryDTO; // semantic alias

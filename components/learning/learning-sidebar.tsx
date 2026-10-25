@@ -17,6 +17,8 @@ interface LearningSidebarProps {
   /** Called when a link is followed, so a small screen can close the panel. */
   onNavigate: () => void;
   collapsedOnDesktop: boolean;
+  /** Open over the page on a small screen: announced as a dialog. */
+  modal?: boolean;
 }
 
 function ItemIcon({ item, done, current }: { item: OutlineItem; done: boolean; current: boolean }) {
@@ -29,7 +31,7 @@ function ItemIcon({ item, done, current }: { item: OutlineItem; done: boolean; c
 
 const KIND_LABEL = { lesson: "Leçon", quiz: "Quiz", exam: "Examen final" } as const;
 
-export function LearningSidebar({ hidden, onNavigate, collapsedOnDesktop }: LearningSidebarProps) {
+export function LearningSidebar({ hidden, onNavigate, collapsedOnDesktop, modal = false }: LearningSidebarProps) {
   const { outline, courseSlug, openableIds, isDone, progress, mode, hasSupports } = useLearning();
   const currentItem = useCurrentItem();
   const nextId = progress.next?.id;
@@ -66,9 +68,14 @@ export function LearningSidebar({ hidden, onNavigate, collapsedOnDesktop }: Lear
             {item.title}
           </span>
           {!openable && <span className="shrink-0 text-xs text-muted-foreground">Inscrits</span>}
+          {item.kind !== "quiz" && item.draft && (
+            <Badge variant="outline" className="shrink-0 text-xs">
+              Brouillon
+            </Badge>
+          )}
           {done && <span className="sr-only">(terminé)</span>}
           {!done && !current && item.id === nextId && openable && (
-            <Badge variant="secondary" className="shrink-0 text-[10px]">
+            <Badge variant="secondary" className="shrink-0 text-xs">
               Suivant
             </Badge>
           )}
@@ -81,6 +88,7 @@ export function LearningSidebar({ hidden, onNavigate, collapsedOnDesktop }: Lear
     <aside
       id="learning-sidebar"
       aria-label="Plan de la formation"
+      {...(modal ? { role: "dialog", "aria-modal": true } : {})}
       inert={hidden}
       className={cn(
         "fixed bottom-0 left-0 top-14 z-50 w-80 max-w-[85vw] border-r bg-background transition-transform duration-300 ease-in-out",

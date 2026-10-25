@@ -22,7 +22,8 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import type { ExamDetail, QuizItem } from "@/lib/curriculum/assessments";
 import type { ModuleSummary } from "@/lib/curriculum/curriculum";
-import { addQuiz, removeFinalExam, removeQuiz, saveFinalExam, saveQuiz } from "../../_actions/assessment-actions";
+import { addQuiz, getLearnersInProgress, removeFinalExam, removeQuiz, saveFinalExam, saveQuiz } from "../../_actions/assessment-actions";
+import { useUnsavedReport } from "./save-status";
 import { emptyQuestion, questionsProblem, QuestionsEditor, QuizPreview, toDrafts, toInputs, type QuestionDraft } from "./questions-editor";
 
 interface Props {
@@ -42,6 +43,47 @@ export function AssessmentsPanel({ courseId, modules, quizzes, onQuizzes, exam, 
       <ExamSection courseId={courseId} exam={exam} onExam={onExam} />
     </div>
   );
+}
+
+// ------------------------------------------------------------------ shared
+
+/**
+ * Adding a quiz or publishing an exam changes what learners already in the course must pass for their
+ * certificate: when there are some, the author confirms first.
+ */
+function useCertificateChangeConfirm(courseId: string) {
+  const [ask, setAsk] = useState<{ count: number; what: string; resolve: (ok: boolean) => void } | null>(null);
+
+  async function confirm(what: string): Promise<boolean> {
+    const result = await getLearnersInProgress(courseId);
+    if (!result.success || result.count === 0) return true;
+    return new Promise((resolve) => setAsk({ count: result.count, what, resolve }));
+  }
+
+  const close = (ok: boolean) => {
+    ask?.resolve(ok);
+    setAsk(null);
+  };
+
+  const dialog = (
+    <AlertDialog open={ask !== null} onOpenChange={(open) => !open && close(false)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Le certificat demandera davantage</AlertDialogTitle>
+          <AlertDialogDescription>
+            {ask
+              ? `${ask.count} apprenant${ask.count > 1 ? "s suivent" : " suit"} cette formation sans l'avoir terminée. ${ask.what} fera partie de ce qu'il faut réussir pour obtenir le certificat, y compris pour ${ask.count > 1 ? "eux" : "lui"}. Les certificats déjà délivrés restent valables.`
+              : ""}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={() => close(false)}>Annuler</AlertDialogCancel>
+          <AlertDialogAction onClick={() => close(true)}>Continuer</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+  return { confirm, dialog };
 }
 
 // ------------------------------------------------------------------ quizzes
@@ -163,11 +205,16 @@ function QuizEditor({
   const [questions, setQuestions] = useState<QuestionDraft[]>(() => (quiz ? toDrafts(quiz.questions) : [emptyQuestion()]));
   const [preview, setPreview] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [initial] = useState(() => JSON.stringify({ title, targetModule, questions: toInputs(questions) }));
+  const dirty = JSON.stringify({ title, targetModule, questions: toInputs(questions) }) !== initial;
+  useUnsavedReport(`quiz-${quiz?.id ?? "new"}`, dirty, "Quiz non enregistré");
+  const { confirm, dialog } = useCertificateChangeConfirm(courseId);
 
   const problem = !title.trim() ? "Donnez un titre au quiz." : questions.length === 0 ? "Ajoutez au moins une question." : questionsProblem(questions);
 
   async function save() {
     if (problem) return toast.error(problem);
+    if (!quiz && !(await confirm("Ce quiz"))) return;
     setSaving(true);
     const input = { title, questions: toInputs(questions) };
     const result = quiz ? await saveQuiz(quiz.id, { ...input, moduleId: targetModule }) : await addQuiz(courseId, targetModule, input);
@@ -179,6 +226,7 @@ function QuizEditor({
 
   return (
     <div className="space-y-5 rounded-lg border-2 border-primary/30 bg-background p-4">
+      {dialog}
       <h4 className="font-medium">{quiz ? "Modifier le quiz" : "Nouveau quiz"}</h4>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
@@ -211,7 +259,7 @@ function QuizEditor({
       </div>
       {preview ? <QuizPreview questions={questions} /> : <QuestionsEditor questions={questions} onChange={setQuestions} />}
 
-      {problem && <p className="text-sm text-amber-600 dark:text-amber-400">{problem}</p>}
+      {problem && <p className="text-sm text-amber-800 dark:text-amber-300">{problem}</p>}
       <div className="flex justify-end gap-2">
         <Button type="button" variant="ghost" onClick={onCancel} disabled={saving}>
           Annuler
@@ -315,6 +363,10 @@ function ExamEditor({ courseId, exam, onSaved, onCancel }: { courseId: string; e
   const [questions, setQuestions] = useState<QuestionDraft[]>(() => (exam && exam.questions.length > 0 ? toDrafts(exam.questions) : [emptyQuestion()]));
   const [preview, setPreview] = useState(false);
   const [saving, setSaving] = useState(false);
+  const snapshot = () => JSON.stringify({ title, description, passingScore, timed, timeLimit, published, questions: toInputs(questions) });
+  const [initial] = useState(snapshot);
+  useUnsavedReport("exam", snapshot() !== initial, "Examen non enregistré");
+  const { confirm, dialog } = useCertificateChangeConfirm(courseId);
 
   const problem = !title.trim()
     ? "Donnez un titre à l'examen."
@@ -328,6 +380,7 @@ function ExamEditor({ courseId, exam, onSaved, onCancel }: { courseId: string; e
 
   async function save() {
     if (problem) return toast.error(problem);
+    if (published && !exam?.published && !(await confirm("L'examen final"))) return;
     setSaving(true);
     const input = {
       title,
@@ -353,6 +406,7 @@ function ExamEditor({ courseId, exam, onSaved, onCancel }: { courseId: string; e
 
   return (
     <div className="space-y-5 rounded-lg border-2 border-primary/30 bg-background p-4">
+      {dialog}
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5 sm:col-span-2">
           <Label htmlFor="exam-title-input">Titre</Label>
@@ -392,7 +446,7 @@ function ExamEditor({ courseId, exam, onSaved, onCancel }: { courseId: string; e
         <Switch id="exam-published" checked={published} onCheckedChange={setPublished} />
       </div>
 
-      {problem && <p className="text-sm text-amber-600 dark:text-amber-400">{problem}</p>}
+      {problem && <p className="text-sm text-amber-800 dark:text-amber-300">{problem}</p>}
       <div className="flex justify-end gap-2">
         <Button type="button" variant="ghost" onClick={onCancel} disabled={saving}>
           Annuler

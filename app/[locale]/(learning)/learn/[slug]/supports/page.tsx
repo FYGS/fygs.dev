@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
+import { LessonContentRenderer } from "@/components/learning/lesson-content-renderer";
 import { SlidesViewer, type SlideDeck } from "@/components/learning/slides-viewer";
-import { getLearningContext } from "@/lib/learning/page-context";
+import { getLearningContext, leaveStep } from "@/lib/learning/page-context";
 import { slideContentToHtml } from "@/lib/visual-support-slide";
 
 interface SupportsPageProps {
@@ -15,7 +15,9 @@ export const metadata: Metadata = { title: "Supports visuels | FYGS", robots: { 
 export default async function SupportsPage({ params }: SupportsPageProps) {
   const { slug } = await params;
   const ctx = await getLearningContext(slug);
-  if (ctx.mode === "preview") redirect(`/formations/${ctx.course.slug}?locked=1&reason=not_enrolled`);
+  if (ctx.mode === "preview") {
+    leaveStep(ctx, `/learn/${ctx.course.slug}/supports`);
+  }
 
   const supports = await db.visualSupport.findMany({
     where: { courseId: ctx.course.id },
@@ -29,7 +31,7 @@ export default async function SupportsPage({ params }: SupportsPageProps) {
       const slides = Array.isArray(raw)
         ? raw.map((slide, i) => ({
             title: typeof slide.title === "string" && slide.title ? slide.title : `Diapositive ${i + 1}`,
-            html: slideContentToHtml(slide.content),
+            body: <LessonContentRenderer content={slideContentToHtml(slide.content)} />,
           }))
         : [];
       return { id: s.id, title: s.title, moduleTitle: s.module.title, slides };

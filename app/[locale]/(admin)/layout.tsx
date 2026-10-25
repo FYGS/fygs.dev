@@ -10,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { defaultMetadata } from "../../_lib/metadata";
 import { ReportStatus, ReviewStatus, Role } from "@/lib/generated/prisma/browser";
 import { db } from "@/lib/db";
+import { countQuestionsToAnswer } from "@/lib/curriculum/lesson-questions";
 
 export const metadata: Metadata = {
   ...defaultMetadata,
@@ -45,8 +46,16 @@ export default async function AdminLayout({
     redirect("/dashboard");
   }
 
+  // Questions asked from the lessons wait for the course's team (an instructor sees those of their courses)
+  const questionsToAnswer = await countQuestionsToAnswer({ id: session.user.id, role: session.user.role === Role.ADMIN ? "ADMIN" : "INSTRUCTOR" });
+  const questionAlert = {
+    label: "Questions d'apprenants sans réponse",
+    count: questionsToAnswer,
+    href: "/admin/questions",
+  };
+
   // Only an administrator moderates: the counts are for them
-  const alerts =
+  const moderationAlerts =
     session.user.role === Role.ADMIN
       ? [
           {
@@ -61,12 +70,13 @@ export default async function AdminLayout({
           },
         ]
       : [];
+  const alerts = [questionAlert, ...moderationAlerts];
 
   return (
     <>
       <div className="flex h-screen overflow-hidden">
         {/* Sidebar */}
-        <AdminSidebar userRole={session.user.role || Role.STUDENT} />
+        <AdminSidebar userRole={session.user.role || Role.STUDENT} counters={{ questions: questionsToAnswer }} />
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">

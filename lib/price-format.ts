@@ -1,57 +1,40 @@
-// Centralized price & currency formatting utilities
-// Keep presentation logic consistent across components (cards, analytics, payment forms)
+/**
+ * Prices and counts as shown everywhere (catalog, course page, billing, paths). An amount is shown exactly as it is
+ * charged: "49,99 €", "50 €" for a whole amount, never rounded.
+ */
 
-const EURO_LOCALE = 'fr-FR';
-const EURO_CURRENCY = 'EUR';
+const LOCALE = "fr-FR";
+
+/** Smallest amount Stripe charges in euros; a premium course must cost at least this. */
+export const MIN_COURSE_PRICE_EUR = 0.5;
 
 export interface FormatPriceOptions {
+  /** ISO currency code, as Stripe returns it ("eur") or upper case. Default EUR. */
   currency?: string;
-  locale?: string;
-  minimumFractionDigits?: number;
-  maximumFractionDigits?: number;
-  showFreeLabel?: boolean; // if true, 0 becomes 'Gratuit'
-  freeLabel?: string;
+  /** Show 0 as "Gratuit" (default) instead of "0 €". */
+  freeLabel?: string | false;
 }
 
-export function formatPrice(amount: number, opts: FormatPriceOptions = {}) {
-  const {
-    currency = EURO_CURRENCY,
-    locale = EURO_LOCALE,
-    minimumFractionDigits = 0,
-    maximumFractionDigits = 0,
-    showFreeLabel = true,
-    freeLabel = 'Gratuit',
-  } = opts;
-
-  if (amount === 0 && showFreeLabel) return freeLabel;
-
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    minimumFractionDigits,
-    maximumFractionDigits,
-  }).format(amount);
+/** "49,99 €", "50 €", "Gratuit". */
+export function formatPrice(amount: number | string | { toString(): string } | null | undefined, opts: FormatPriceOptions = {}): string {
+  const value = Number(amount ?? 0);
+  const { currency = "EUR", freeLabel = "Gratuit" } = opts;
+  if ((!Number.isFinite(value) || value === 0) && freeLabel !== false) return freeLabel;
+  const whole = Number.isInteger(Math.round(value * 100) / 100);
+  return new Intl.NumberFormat(LOCALE, {
+    style: "currency",
+    currency: currency.toUpperCase(),
+    minimumFractionDigits: whole ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(Number.isFinite(value) ? value : 0);
 }
 
-// Lightweight formatter for plain numbers (enrollments, counts, etc.)
-export function formatNumber(n: number, locale: string = EURO_LOCALE) {
-  return new Intl.NumberFormat(locale).format(n);
+/** Amount in cents (Stripe) as a price. */
+export function formatCents(cents: number, currency = "EUR"): string {
+  return formatPrice(cents / 100, { currency, freeLabel: false });
 }
 
-// Shorthand specifically for euro amounts without decimals (e.g., 49€)
-export function formatEuro(amount: number) {
-  if (amount === 0) return 'Gratuit';
-  return `${Math.round(amount)}€`;
+/** Plain numbers (enrolments, counts): "1 234". */
+export function formatNumber(n: number): string {
+  return new Intl.NumberFormat(LOCALE).format(n);
 }
-
-// Attempt to parse a price string back to number (best effort)
-export function parsePriceToNumber(input: string): number | null {
-  if (!input) return null;
-  const cleaned = input
-    .replace(/[^0-9,\.]/g, '')
-    .replace(',', '.');
-  const num = Number.parseFloat(cleaned);
-  return Number.isFinite(num) ? num : null;
-}
-
-export const priceFormat = { formatPrice, formatNumber, formatEuro, parsePriceToNumber };

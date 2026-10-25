@@ -7,8 +7,6 @@
 /fr/admin/community/users
 /fr/admin/courses
 /fr/admin/courses/new
-/fr/admin/lessons
-/fr/admin/lessons/new
 /fr/admin/reviews
 /fr/admin/reviews/analytics
 /fr/admin/reviews/moderation
@@ -19,3 +17,6 @@
 /fr/admin/subscriptions
 /fr/admin/enrollments
 /fr/admin/certificates
+/fr/admin/paths
+/fr/admin/paths/new
+# The course builder and a path editor of the seed are appended by the audit run (ids come from the seed).

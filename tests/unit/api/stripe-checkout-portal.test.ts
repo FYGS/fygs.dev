@@ -71,6 +71,7 @@ beforeEach(() => {
     title: "TypeScript",
     slug: "ts",
     published: true,
+    accessTier: "PREMIUM",
     price: new Prisma.Decimal("49.90"),
   });
 });
@@ -108,8 +109,8 @@ describe("POST /api/stripe/checkout", () => {
         ],
         customer_email: "buyer@example.test",
         // origin without the trailing slash `String(new URL(...))` would add
-        success_url: "http://localhost:3000/formations/ts?success=true",
-        cancel_url: "http://localhost:3000/formations/ts?canceled=true",
+        success_url: "http://localhost:3000/fr/formations/ts?success=true",
+        cancel_url: "http://localhost:3000/fr/formations/ts?canceled=true",
         metadata: {
           userId: "user_1",
           productId: "course_1",
@@ -117,6 +118,7 @@ describe("POST /api/stripe/checkout", () => {
           courseSlug: "ts",
         },
         allow_promotion_codes: true,
+        invoice_creation: { enabled: true, invoice_data: { description: "Formation « TypeScript »" } },
       },
     ]);
 
@@ -140,7 +142,7 @@ describe("POST /api/stripe/checkout", () => {
   });
 
   it("course: validates input and the course", async () => {
-    expect((await post({ type: "course", slug: "ts" })).status).toBe(400);
+    expect((await post({ type: "course" })).status).toBe(400);
     expect((await post({ type: "course", courseId: "nope", slug: "ts" })).status).toBe(404);
     expect((await post({ type: "other" })).status).toBe(400);
     expect(h.create).not.toHaveBeenCalled();
@@ -162,8 +164,8 @@ describe("POST /api/stripe/checkout", () => {
         mode: "subscription",
         line_items: [{ price: "price_yearly", quantity: 1 }],
         customer_email: "buyer@example.test",
-        success_url: "http://localhost:3000/dashboard?subscription=success&cycle=yearly",
-        cancel_url: "http://localhost:3000/dashboard?subscription=canceled",
+        success_url: "http://localhost:3000/fr/dashboard?subscription=success&cycle=yearly",
+        cancel_url: "http://localhost:3000/fr/pricing?subscription=canceled",
         // the webhooks read userId on both the session and the subscription
         metadata: {
           userId: "user_1",
@@ -196,20 +198,49 @@ describe("POST /api/stripe/checkout", () => {
     ]);
   });
 
-  it("subscription: a member who already has access keeps it while a new checkout is open", async () => {
-    h.create.mockResolvedValue(f.checkoutSubscriptionCreated);
-    h.priceRetrieve.mockResolvedValue({ unit_amount: 1200, currency: "eur" });
-    mem().db.subscription.rows.push({
-      id: "dbsub",
-      userId: "user_1",
-      status: SubscriptionStatus.ACTIVE,
-      priceId: "price_monthly",
-    });
-    expect((await post({ type: "subscription", priceId: "yearly" })).status).toBe(200);
-    expect(mem().db.subscription.rows[0]).toMatchObject({
-      status: SubscriptionStatus.ACTIVE,
-      priceId: "price_monthly",
-    });
+  it("subscription: no second subscription for a member (active, trialing, ending or past due)", async () => {
+    for (const [status, cancelAtPeriodEnd, code] of [
+      [SubscriptionStatus.ACTIVE, false, "ALREADY_SUBSCRIBED"],
+      [SubscriptionStatus.TRIALING, false, "ALREADY_SUBSCRIBED"],
+      [SubscriptionStatus.ACTIVE, true, "SUBSCRIPTION_SCHEDULED_TO_END"],
+      [SubscriptionStatus.PAST_DUE, false, "SUBSCRIPTION_PAST_DUE"],
+    ] as const) {
+      mem().reset();
+      mem().db.subscription.rows.push({ id: "dbsub", userId: "user_1", status, cancelAtPeriodEnd, priceId: "price_monthly" });
+      const res = await post({ type: "subscription", priceId: "yearly" });
+      expect(res.status).toBe(409);
+      expect((await res.json()).code).toBe(code);
+      expect(mem().db.subscription.rows[0]).toMatchObject({ status, priceId: "price_monthly" });
+    }
+    expect(h.create).not.toHaveBeenCalled();
+  });
+
+  it("course: refuses what must not be paid", async () => {
+    const course = (over: Record<string, unknown>) => {
+      mem().db.course.rows.length = 0;
+      mem().db.course.rows.push({ id: "course_1", title: "TypeScript", slug: "ts", published: true, accessTier: "PREMIUM", price: new Prisma.Decimal("49.90"), ...over });
+    };
+    const code = async () => {
+      const res = await post({ type: "course", courseId: "course_1" });
+      return [res.status, (await res.json()).code];
+    };
+
+    course({ accessTier: "FREE", price: new Prisma.Decimal("29") }); // a free course that kept an old price
+    expect(await code()).toEqual([400, "COURSE_IS_FREE"]);
+    course({ price: new Prisma.Decimal("0.30") }); // under the Stripe minimum
+    expect(await code()).toEqual([400, "NOT_FOR_SALE"]);
+    course({ published: false });
+    expect(await code()).toEqual([404, "COURSE_NOT_FOUND"]);
+
+    course({});
+    mem().db.payment.rows.push({ userId: "user_1", courseId: "course_1", kind: PaymentKind.COURSE, status: PaymentStatus.COMPLETED });
+    mem().db.enrollment.rows.push({ userId: "user_1", courseId: "course_1", grantedAt: null });
+    expect(await code()).toEqual([409, "ALREADY_PURCHASED"]);
+
+    mem().db.payment.rows.length = 0;
+    mem().db.subscription.rows.push({ id: "s", userId: "user_1", status: SubscriptionStatus.ACTIVE, cancelAtPeriodEnd: false });
+    expect(await code()).toEqual([409, "ALREADY_ENTITLED"]); // included in the subscription
+    expect(h.create).not.toHaveBeenCalled();
   });
 
   it("subscription: an unknown price falls back to monthly; no configured price is a 400", async () => {
@@ -223,10 +254,11 @@ describe("POST /api/stripe/checkout", () => {
     expect((await post({ type: "subscription" })).status).toBe(400);
   });
 
-  it("a Stripe failure is a 500, no placeholder row", async () => {
+  it("a Stripe failure is a 502 with a French message, no placeholder row", async () => {
     h.create.mockRejectedValue(new Error("stripe down"));
     const res = await post({ type: "course", courseId: "course_1", slug: "ts" });
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(502);
+    expect((await res.json()).error).toMatch(/n’a pas pu démarrer/);
     expect(mem().db.payment.rows).toHaveLength(0);
   });
 });

@@ -11,9 +11,11 @@ const escapeHtml = (value: unknown) =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 
-const list = (items: unknown, icon: string) =>
+// Theme colours only (readable in the light and the dark theme); the slide title is the h2 of the viewer, so a
+// section is an h3. "Points forts" / "Limites" are said in words, not with emojis.
+const list = (items: unknown, label: string) =>
   Array.isArray(items) && items.length > 0
-    ? `<ul class="text-sm space-y-1 list-none p-0">${items.map((item) => `<li>${icon} ${escapeHtml(item)}</li>`).join("")}</ul>`
+    ? `<p class="mt-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">${label}</p><ul class="mt-1 space-y-1 pl-4 text-sm">${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
     : "";
 
 interface Section {
@@ -34,11 +36,11 @@ export function slideContentToHtml(content: unknown): string {
     .filter((section) => section && typeof section === "object")
     .map(
       (section) => `
-        <div class="bg-slate-50 border-2 border-slate-200 rounded-lg p-4 text-left">
-          <h4 class="font-bold text-slate-800 mb-1">${escapeHtml(section.title)}</h4>
-          ${section.description ? `<p class="text-sm text-slate-600 mb-2">${escapeHtml(section.description)}</p>` : ""}
-          ${list(section.pros, "✅")}
-          ${list(section.cons, "⚠️")}
+        <div class="rounded-lg border bg-muted/40 p-4 text-left">
+          <h3 class="mb-1 text-base font-semibold text-foreground">${escapeHtml(section.title)}</h3>
+          ${section.description ? `<p class="mb-2 text-sm text-muted-foreground">${escapeHtml(section.description)}</p>` : ""}
+          ${list(section.pros, "Points forts")}
+          ${list(section.cons, "Limites")}
         </div>`,
     )
     .join("");

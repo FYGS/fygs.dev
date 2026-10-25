@@ -2,7 +2,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 function LoadingSkeleton() {
   return (
-    <div className="min-h-screen bg-linear-to-br from-background via-background to-muted/20">
+    <div role="status" className="min-h-screen bg-linear-to-br from-background via-background to-muted/20">
+      <span className="sr-only">Chargement du catalogue des formations…</span>
       {/* Hero skeleton */}
       <div className="py-16 md:py-24">
         <div className="container max-w-4xl mx-auto text-center space-y-8">

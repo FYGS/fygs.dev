@@ -1,6 +1,6 @@
 /**
- * Durations are stored in two units: a lesson in seconds, a course in minutes.
- * Everything displayed goes through these two functions.
+ * Durations are stored in two units: a lesson in seconds, a course in minutes (the author's estimate).
+ * Everything displayed goes through these functions; the duration of a course is `displayedCourseMinutes`.
  */
 
 /** "45 min", "1 h", "2 h 05". Under a minute: "< 1 min". */
@@ -25,4 +25,13 @@ export function formatSeconds(seconds: number | null | undefined): string {
 export function courseMinutesFromLessons(lessonSeconds: readonly (number | null)[]): number {
   const total = lessonSeconds.reduce<number>((sum, s) => sum + (s && s > 0 ? s : 0), 0);
   return total === 0 ? 0 : Math.max(1, Math.round(total / 60));
+}
+
+/**
+ * The duration shown for a course, the same on every screen (catalogue, course page, paths, back office): the total of
+ * its published lessons when they announce one, else the author's estimate (`Course.duration`, minutes), else 0.
+ */
+export function displayedCourseMinutes(lessonMinutes: number, manualMinutes: number | null | undefined): number {
+  if (lessonMinutes > 0) return lessonMinutes;
+  return manualMinutes && manualMinutes > 0 ? manualMinutes : 0;
 }

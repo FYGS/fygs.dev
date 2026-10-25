@@ -26,7 +26,7 @@ Status: `TODO` · `DOING` · `DONE` · `DECISION`. Definition of done: `tsc` 0, 
 | TM-5 | **SEO and robustness**: server metadata for the 41 client pages (server wrapper + client content) and one title format for all 113; section `loading.tsx` and `error.tsx`; `LearningResource` structured data per lesson | DONE |
 | TM-6 | **Dashboard** in French, on the catalog: topics done (not just opened), per-area progress, "next topic" card, self-check average, 8 achievements | DONE |
 | TM-7 | Content accuracy review of the pages by area (errors found so far: OWASP numbering of XSS, Kubernetes Secrets "encrypted", `exactOptionalProperties`, `fetch` cached by default in Next.js 15+, `cacheTime` in React Query v5; more to check: git object hash, uncited performance figures) | DONE |
-| TM-8 | Verification: unit tests (catalog, quizzes, exercises, shell, progress, dashboard), e2e (open, complete, self-check, dashboard moves), axe on the shell, smoke crawl, docs, changelog | DOING (full e2e gate running) |
+| TM-8 | Verification: unit tests (catalog, quizzes, exercises, shell, progress, dashboard), e2e (open, complete, self-check, dashboard moves), axe on the shell, smoke crawl, docs, changelog | DONE (2026-10-25: e2e 65 passed on a fresh production build, 7 TechMastery specs among them) |
 
 ## 3. Log
 - 2026-10-22: analysis done, tracker created.

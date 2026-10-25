@@ -4,7 +4,16 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { AlertCircle, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type SaveState = "idle" | "dirty" | "saving" | "saved" | "error";
+/**
+ * `dirty`: an autosaved editor is about to send its changes (it also sends them when it closes).
+ * `unsaved`: an editor with a Save button holds changes that are lost if it closes (quiz, exam, slides).
+ */
+export type SaveState = "idle" | "dirty" | "unsaved" | "saving" | "saved" | "error";
+
+/** Changes that closing an editor would lose: the builder asks before switching section, the browser before leaving. */
+export function hasLosableChanges(entries: Record<string, { state: SaveState }>): boolean {
+  return Object.values(entries).some((e) => e.state === "unsaved" || e.state === "error");
+}
 
 interface Entry {
   state: SaveState;
@@ -39,7 +48,9 @@ export function SaveStatusProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const unsaved = Object.values(entries).some((e) => e.state === "dirty" || e.state === "saving" || e.state === "error");
+  const unsaved = Object.values(entries).some(
+    (e) => e.state === "dirty" || e.state === "unsaved" || e.state === "saving" || e.state === "error",
+  );
   useEffect(() => {
     if (!unsaved) return;
     const warn = (event: BeforeUnloadEvent) => {
@@ -54,7 +65,7 @@ export function SaveStatusProvider({ children }: { children: ReactNode }) {
   return <SaveStatusContext.Provider value={value}>{children}</SaveStatusContext.Provider>;
 }
 
-function useSaveStatus() {
+export function useSaveStatus() {
   const ctx = useContext(SaveStatusContext);
   if (!ctx) throw new Error("SaveStatusProvider is missing");
   return ctx;
@@ -71,12 +82,21 @@ export function useSaveReporter(key: string) {
   return useCallback((state: SaveState, message?: string) => report(keyRef.current, state, message), [report]);
 }
 
+/** Reports an editor holding changes that only its Save button keeps: leaving the section or the page asks first. */
+export function useUnsavedReport(key: string, dirty: boolean, message: string) {
+  const report = useSaveReporter(key);
+  useEffect(() => {
+    report(dirty ? "unsaved" : "idle", dirty ? message : undefined);
+  }, [dirty, message, report]);
+}
+
 /** The one-line summary shown in the builder header. */
 export function SaveIndicator({ className }: { className?: string }) {
   const { entries } = useSaveStatus();
   const list = Object.values(entries);
   const error = list.find((e) => e.state === "error");
   const saving = list.some((e) => e.state === "saving");
+  const unsavedEntry = list.find((e) => e.state === "unsaved");
   const dirty = list.some((e) => e.state === "dirty");
   const saved = list.some((e) => e.state === "saved");
 
@@ -86,6 +106,13 @@ export function SaveIndicator({ className }: { className?: string }) {
       <>
         <AlertCircle className="h-3.5 w-3.5 text-destructive" aria-hidden />
         <span className="text-destructive">{error.message ?? "Échec de la sauvegarde"}</span>
+      </>
+    );
+  } else if (unsavedEntry && !saving) {
+    content = (
+      <>
+        <AlertCircle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" aria-hidden />
+        <span className="text-amber-800 dark:text-amber-300">{unsavedEntry.message ?? "Modifications non enregistrées"}</span>
       </>
     );
   } else if (saving || dirty) {
@@ -98,7 +125,7 @@ export function SaveIndicator({ className }: { className?: string }) {
   } else if (saved) {
     content = (
       <>
-        <Check className="h-3.5 w-3.5 text-emerald-600" aria-hidden />
+        <Check className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" aria-hidden />
         <span>Enregistré</span>
       </>
     );

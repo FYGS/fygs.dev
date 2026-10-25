@@ -7,18 +7,25 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { VideoUpload } from "@/components/admin/video-upload";
 import { normalizeTrailerUrl } from "@/lib/curriculum/content";
+import type { CurriculumSnapshot } from "@/lib/curriculum/curriculum";
+import { MIN_PREMIUM_PRICE } from "@/lib/curriculum/publish";
+import { allLessons, freeSampleLessons } from "@/lib/curriculum/snapshot";
 import { FaqEditor } from "./faq-editor";
-import type { CourseInfo } from "./types";
+import type { CourseInfo, SectionId } from "./types";
 
 interface Props {
   info: CourseInfo;
   update: (patch: Partial<CourseInfo>) => void;
+  snapshot: CurriculumSnapshot;
+  onGoToSection: (section: SectionId) => void;
 }
 
 /** What a visitor sees before enrolling: price, trailer, the programme pitch and the questions they ask. */
-export function SalesPanel({ info, update }: Props) {
+export function SalesPanel({ info, update, snapshot, onGoToSection }: Props) {
   const premium = info.accessTier === "PREMIUM";
-  const priceMissing = premium && !(info.price && info.price > 0);
+  const priceMissing = premium && !(info.price !== null && info.price >= MIN_PREMIUM_PRICE);
+  const samples = freeSampleLessons(snapshot, info.previewEnabled);
+  const draftSamples = allLessons(snapshot).filter((l) => l.isPreview && !l.published);
   const trailerInvalid = info.trailerUrl.trim() !== "" && normalizeTrailerUrl(info.trailerUrl) === undefined;
 
   return (
@@ -35,8 +42,8 @@ export function SalesPanel({ info, update }: Props) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="FREE">Gratuit — ouvert à tout compte</SelectItem>
-                <SelectItem value="PREMIUM">Premium — achat ou abonnement</SelectItem>
+                <SelectItem value="FREE">Gratuite — ouverte à tout compte inscrit</SelectItem>
+                <SelectItem value="PREMIUM">Premium — achat à vie ou abonnement</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -46,29 +53,71 @@ export function SalesPanel({ info, update }: Props) {
               <Input
                 id="course-price"
                 type="number"
-                min={0}
+                min={MIN_PREMIUM_PRICE}
                 step="0.01"
+                inputMode="decimal"
                 value={info.price ?? ""}
                 aria-invalid={priceMissing}
                 aria-describedby={priceMissing ? "course-price-error" : undefined}
                 onChange={(e) => update({ price: e.target.value === "" ? null : Number(e.target.value) })}
               />
               {priceMissing && (
-                <p id="course-price-error" className="text-sm text-amber-600 dark:text-amber-400">
-                  Un prix supérieur à 0 est nécessaire pour publier une formation premium.
+                <p id="course-price-error" className="text-sm text-amber-800 dark:text-amber-300">
+                  Un prix d&apos;au moins 0,50 € est nécessaire pour publier une formation premium.
                 </p>
               )}
             </div>
           )}
         </div>
+        <p className="text-sm text-muted-foreground">
+          {premium
+            ? "Ouverte à vie par un achat à ce prix, ou incluse tant que l'apprenant a un abonnement Premium actif."
+            : "Ouverte à tout apprenant qui s'inscrit, sans paiement."}
+        </p>
+      </section>
+
+      <section aria-labelledby="sales-sample" className="space-y-4">
+        <div>
+          <h2 id="sales-sample" className="text-lg font-semibold">
+            Aperçu gratuit
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Des leçons que tout le monde peut suivre, même sans compte, pour découvrir la formation avant de s&apos;inscrire ou de
+            l&apos;acheter. Ce sont les leçons publiées marquées « Aperçu gratuit » dans le programme, et la première leçon si vous
+            l&apos;activez ci-dessous.
+          </p>
+        </div>
         <div className="flex items-start justify-between gap-4 rounded-lg border p-4">
           <div className="space-y-0.5">
-            <Label htmlFor="course-preview">Première leçon en aperçu gratuit</Label>
-            <p className="text-sm text-muted-foreground">
-              Si aucune leçon n&apos;est marquée « aperçu gratuit » dans le programme, la première est ouverte aux visiteurs sans accès. Les leçons marquées le sont toujours.
-            </p>
+            <Label htmlFor="course-preview">Offrir la première leçon en aperçu</Label>
+            <p className="text-sm text-muted-foreground">La première leçon publiée du programme s&apos;ajoute aux leçons marquées.</p>
           </div>
           <Switch id="course-preview" checked={info.previewEnabled} onCheckedChange={(checked) => update({ previewEnabled: checked })} />
+        </div>
+        <div className="rounded-lg border bg-card p-4 text-sm">
+          {samples.length === 0 ? (
+            <p className="text-muted-foreground">Aucune leçon en aperçu : les visiteurs ne voient que le programme.</p>
+          ) : (
+            <>
+              <p className="font-medium">
+                {samples.length} leçon{samples.length > 1 ? "s" : ""} en aperçu gratuit
+              </p>
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
+                {samples.map((l) => (
+                  <li key={l.id}>{l.title}</li>
+                ))}
+              </ul>
+            </>
+          )}
+          {draftSamples.length > 0 && (
+            <p className="mt-3 text-amber-800 dark:text-amber-300">
+              Marquée{draftSamples.length > 1 ? "s" : ""} mais en brouillon, donc sans effet :{" "}
+              {draftSamples.map((l) => `« ${l.title} »`).join(", ")}.{" "}
+              <button type="button" className="underline underline-offset-4" onClick={() => onGoToSection("programme")}>
+                Ouvrir le programme
+              </button>
+            </p>
+          )}
         </div>
       </section>
 
@@ -79,7 +128,7 @@ export function SalesPanel({ info, update }: Props) {
           </h2>
           <p className="text-sm text-muted-foreground">Une vidéo courte en tête de la page de la formation. Envoyez un fichier ou collez une adresse.</p>
         </div>
-        <VideoUpload value={info.trailerUrl} onChange={(url) => update({ trailerUrl: url })} />
+        <VideoUpload value={info.trailerUrl} onChange={(url) => update({ trailerUrl: url })} label="Adresse de la bande-annonce" />
         {trailerInvalid && (
           <p role="alert" className="text-sm text-destructive">
             Cette adresse n&apos;est pas valide (http ou https). Elle n&apos;est pas enregistrée.

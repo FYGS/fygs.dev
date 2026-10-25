@@ -1,7 +1,9 @@
-import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Star, Users } from "lucide-react";
+import { Calendar, Clock, Star, UserRound, Users } from "lucide-react";
 import { CourseThumbnail } from "@/components/marketing/course-thumbnail";
-import { formatMinutes } from "@/lib/learning/curriculum-view";
+import { Badge } from "@/components/ui/badge";
+import { categoryLabel, LEVEL_BADGE_CLASSES, levelLabel } from "@/lib/courses/labels";
+import { formatMinutes } from "@/lib/format-duration";
+import { formatNumber } from "@/lib/price-format";
 
 interface CourseHeaderProps {
   title: string;
@@ -16,28 +18,10 @@ interface CourseHeaderProps {
   updatedAt: string;
   /** Total of the lesson durations, in minutes (0 when none is announced). */
   minutes: number;
+  instructorName: string | null;
   /** Hide the image when the page shows the trailer instead. */
   showThumbnail?: boolean;
 }
-
-const CATEGORY_LABELS: Record<string, string> = {
-  JAVASCRIPT: "JavaScript",
-  TYPESCRIPT: "TypeScript",
-  FRONTEND: "Frontend",
-  BACKEND: "Backend",
-  FULLSTACK: "Fullstack",
-  CLOUD: "Cloud",
-  AI: "IA",
-  DEVOPS: "DevOps",
-  PRODUCTIVITY: "Productivité",
-};
-
-const LEVEL_LABELS: Record<string, string> = {
-  BEGINNER: "Débutant",
-  INTERMEDIATE: "Intermédiaire",
-  ADVANCED: "Avancé",
-  EXPERT: "Expert",
-};
 
 export function CourseHeader({
   title,
@@ -51,20 +35,24 @@ export function CourseHeader({
   reviewCount,
   updatedAt,
   minutes,
+  instructorName,
   showThumbnail = true,
 }: CourseHeaderProps) {
+  const duration = formatMinutes(minutes);
   return (
     <div className="space-y-6">
       {showThumbnail && (
         <div className="relative aspect-video overflow-hidden rounded-xl border shadow-sm">
-          <CourseThumbnail src={thumbnail} alt={title} priority className="h-full w-full rounded-none" />
+          <CourseThumbnail src={thumbnail} alt="" priority className="h-full w-full rounded-none" />
         </div>
       )}
 
       <div className="space-y-4">
         <div className="flex flex-wrap gap-2">
-          <Badge variant="secondary">{CATEGORY_LABELS[category] ?? category}</Badge>
-          <Badge variant="outline">{LEVEL_LABELS[level] ?? level}</Badge>
+          <Badge variant="secondary">{categoryLabel(category)}</Badge>
+          <Badge variant="secondary" className={LEVEL_BADGE_CLASSES[level as keyof typeof LEVEL_BADGE_CLASSES] ?? ""}>
+            {levelLabel(level)}
+          </Badge>
           {tags.map((tag) => (
             <Badge key={tag.name} variant="outline" style={{ borderColor: tag.color }}>
               {tag.name}
@@ -76,22 +64,28 @@ export function CourseHeader({
         <p className="text-lg leading-relaxed text-muted-foreground">{description}</p>
 
         <ul className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
-          {minutes > 0 && (
+          {instructorName && (
             <li className="flex items-center gap-2">
-              <Clock className="h-4 w-4" aria-hidden /> {formatMinutes(minutes)} de contenu
+              <UserRound className="h-4 w-4" aria-hidden /> Par {instructorName}
+            </li>
+          )}
+          {duration && (
+            <li className="flex items-center gap-2">
+              <Clock className="h-4 w-4" aria-hidden /> {duration} de contenu
             </li>
           )}
           <li className="flex items-center gap-2">
-            <Users className="h-4 w-4" aria-hidden /> {enrollmentCount} inscrit{enrollmentCount > 1 ? "s" : ""}
+            <Users className="h-4 w-4" aria-hidden /> {formatNumber(enrollmentCount)} apprenant{enrollmentCount > 1 ? "s" : ""}
           </li>
           {reviewCount > 0 && (
             <li className="flex items-center gap-2">
-              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" aria-hidden />
-              {averageRating.toFixed(1)} ({reviewCount} avis)
+              <Star className="h-4 w-4 fill-amber-500 text-amber-500" aria-hidden />
+              {averageRating.toFixed(1).replace(".", ",")} ({formatNumber(reviewCount)} avis)
             </li>
           )}
           <li className="flex items-center gap-2">
-            <Calendar className="h-4 w-4" aria-hidden /> Mis à jour le {new Date(updatedAt).toLocaleDateString("fr-FR")}
+            <Calendar className="h-4 w-4" aria-hidden /> Mise à jour le{" "}
+            {new Date(updatedAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
           </li>
         </ul>
       </div>

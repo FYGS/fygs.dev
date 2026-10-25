@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { isTranslatedPath } from "@/lib/locale-utils";
+import { LEARN_PATH_HEADER, learnPathOf } from "@/lib/learning/request-path";
 
 
 // Available locales from intlayer config
@@ -62,7 +63,9 @@ function detectUserLocale(request: NextRequest): Locale {
 /**
  * ROUTE POLICY
  * - Public: accessible without auth (marketing, catalog, course page w/ preview)
- * - Protected: requires authenticated user (dashboard, billing, profile, lesson content)
+ * - Protected: requires authenticated user (dashboard, billing, profile, back office)
+ * - The learning area (/learn) is not gated here: its free sample lessons are open to visitors, and the page
+ *   decides who may open what (lib/learning/page-context.ts, rule in lib/access/entitlement.ts)
  * - Auth: login/register/forgot/etc — redirect away if already authenticated
  * - Special: maintenance, API/static handled early
  */
@@ -80,24 +83,10 @@ const PROTECTED_PREFIXES = [
   "/settings",
   "/certificates",
   "/admin",
-  "/learn", // lessons, quizzes, exam: who may open what is decided by the page (lib/learning/page-context.ts)
 ];
 
 // Anyone given a certificate code can check it: no sign-in
 const PUBLIC_UNDER_PROTECTED = ["/certificates/verify/"];
-
-// const PUBLIC_PREFIXES = [
-//   "/",
-//   "/formations",
-//   "/pricing",
-//   "/blog",
-//   "/projects",
-//   "/tech-mastry",
-//   "/contact",
-//   "/me",
-//   "/terms",
-//   "/privacy",
-// ];
 
 /**
  * Remove locale prefix from path for route matching
@@ -146,10 +135,6 @@ function isProtectedRoute(path: string): boolean {
     (p) => pathWithoutLocale === p || pathWithoutLocale.startsWith(p + "/"),
   );
 }
-
-// function isPublicRoute(path: string): boolean {
-//   return PUBLIC_PREFIXES.some(p => path === p || path.startsWith(p + '/'));
-// }
 
 // Determine if request should bypass middleware logic
 function shouldBypass(path: string): boolean {
@@ -294,6 +279,14 @@ export async function proxy(request: NextRequest) {
     loginUrl.searchParams.set("callbackUrl", pathname + nextUrl.search);
     loginUrl.searchParams.set("reason", "auth_required");
     return NextResponse.redirect(loginUrl);
+  }
+
+  // The learning area brings a visitor back to the exact step they asked for (lib/learning/request-path.ts)
+  const learnPath = learnPathOf(pathname, nextUrl.search);
+  if (learnPath) {
+    const forwarded = new Headers(request.headers);
+    forwarded.set(LEARN_PATH_HEADER, learnPath);
+    return NextResponse.next({ request: { headers: forwarded } });
   }
 
   // Allow request to continue for public routes or authorized protected routes

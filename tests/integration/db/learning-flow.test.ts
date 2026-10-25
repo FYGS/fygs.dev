@@ -309,7 +309,7 @@ describe("notes and questions from a lesson", () => {
     const { course, lessons } = await buildCourse({ accessTier: "PREMIUM" });
     const stranger = await createUser();
     h.session = sessionFor(stranger.id);
-    expect(await createNote({ lessonId: lessons[1].id, content: "x", timestamp: null })).toEqual({ error: "Accès refusé" });
+    expect(await createNote({ lessonId: lessons[1].id, content: "x", timestamp: null })).toEqual({ error: "Cette leçon ne vous est pas ouverte" });
     const member = await learner(course);
     await createSubscription(member.id);
     expect(await createNote({ lessonId: lessons[1].id, content: "à retenir", timestamp: 42 })).toMatchObject({ note: { timestamp: 42 } });

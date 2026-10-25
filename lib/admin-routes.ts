@@ -8,6 +8,7 @@ export const AVAILABLE_ADMIN_ROUTES = [
   "/admin",
   "/admin/courses",
   "/admin/courses/new",
+  "/admin/questions",
   "/admin/tags",
   "/admin/paths",
   "/admin/paths/new",

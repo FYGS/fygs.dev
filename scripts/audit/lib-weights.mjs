@@ -8,8 +8,18 @@ import zlib from "node:zlib";
 import { createRequire } from "node:module";
 
 const root = path.resolve(import.meta.dirname, "../..");
-const require = createRequire(path.join(root, "node_modules/.pnpm/esbuild@0.27.2/node_modules/esbuild/package.json"));
-const esbuild = require("esbuild");
+// esbuild is a dependency of the toolchain, not of the app: resolve it the Node way, else from the pnpm store
+function loadEsbuild() {
+  try {
+    return createRequire(path.join(root, "package.json"))("esbuild");
+  } catch {
+    const store = path.join(root, "node_modules/.pnpm");
+    const dir = fs.existsSync(store) ? fs.readdirSync(store).filter((n) => n.startsWith("esbuild@")).sort().at(-1) : undefined;
+    if (!dir) throw new Error("esbuild is not installed");
+    return createRequire(path.join(store, dir, "node_modules/esbuild/package.json"))("esbuild");
+  }
+}
+const esbuild = loadEsbuild();
 
 const cases = {
   "react-syntax-highlighter Prism (all languages), before": `export { default as P } from "react-syntax-highlighter/dist/esm/prism";`,

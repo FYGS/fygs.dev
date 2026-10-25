@@ -165,4 +165,24 @@ describe("VideoPlayer", () => {
     });
     expect(screen.getByRole("alert").textContent).toContain("La vidéo ne peut pas être lue");
   });
+
+  it("offers captions when the lesson has them, and shows or hides the track", () => {
+    const { container } = render(
+      <VideoPlayer title="Variables" videoUrl="/v.mp4" durationHint={300} resumeAt={0} captionsSrc="/api/learn/captions/l1" />,
+    );
+    const track = container.querySelector("track")!;
+    expect(track.getAttribute("kind")).toBe("captions");
+    expect(track.getAttribute("srclang")).toBe("fr");
+    const button = screen.getByRole("button", { name: "Sous-titres" });
+    expect(button.getAttribute("aria-pressed")).toBe("false");
+    fireEvent.click(button);
+    expect(button.getAttribute("aria-pressed")).toBe("true");
+    fireEvent.keyDown(group(), { key: "c" });
+    expect(button.getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("has no captions control without captions", () => {
+    player();
+    expect(screen.queryByRole("button", { name: "Sous-titres" })).toBeNull();
+  });
 });

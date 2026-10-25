@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   awardXp,
   updateStreak,
-  getUserGamificationStats,
 } from "@/lib/gamification";
 
 // Mock Prisma
@@ -167,25 +166,6 @@ describe("Gamification Service", () => {
 
       expect(result.currentStreak).toBe(1);
       expect(result.isNewDay).toBe(true);
-    });
-  });
-
-  describe("getUserGamificationStats", () => {
-    it("returns aggregated stats", async () => {
-      vi.mocked(db.userStreak.findUnique).mockResolvedValueOnce({
-        currentStreak: 7,
-        longestStreak: 14,
-      } as never);
-
-      const stats = await getUserGamificationStats("user-1");
-
-      expect(stats).toEqual({
-        totalXp: 250,
-        level: 3,
-        currentStreak: 7,
-        longestStreak: 14,
-        todayXp: 45,
-      });
     });
   });
 });

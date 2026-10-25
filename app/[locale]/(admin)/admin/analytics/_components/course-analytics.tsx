@@ -13,6 +13,9 @@ import {
   Award
 } from "lucide-react";
 import Link from "next/link";
+import { LEVEL_BADGE_CLASSES, levelLabel } from "@/lib/courses/labels";
+import type { CourseLevel } from "@/lib/generated/prisma/browser";
+import { formatPrice } from "@/lib/price-format";
 
 interface Course {
   id: string;
@@ -31,30 +34,7 @@ interface CourseAnalyticsProps {
 }
 
 export function CourseAnalytics({ courses }: CourseAnalyticsProps) {
-  const formatLevel = (level: string) => {
-    const levelMap: Record<string, string> = {
-      'BEGINNER': 'Débutant',
-      'INTERMEDIATE': 'Intermédiaire',
-      'ADVANCED': 'Avancé',
-      'EXPERT': 'Expert',
-    };
-    return levelMap[level] || level;
-  };
 
-  const getLevelColor = (level: string) => {
-    switch (level) {
-      case 'BEGINNER':
-        return 'bg-green-900 text-green-300';
-      case 'INTERMEDIATE':
-        return 'bg-blue-900 text-blue-300';
-      case 'ADVANCED':
-        return 'bg-orange-900 text-orange-300';
-      case 'EXPERT':
-        return 'bg-red-900 text-red-300';
-      default:
-        return 'bg-gray-900 text-gray-300';
-    }
-  };
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
@@ -98,7 +78,7 @@ export function CourseAnalytics({ courses }: CourseAnalyticsProps) {
           <div className="grid grid-cols-3 gap-4 pb-4 border-b">
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">
-                {totalRevenue.toLocaleString("fr-FR")}€
+                {formatPrice(totalRevenue, { freeLabel: false })}
               </div>
               <div className="text-xs text-muted-foreground">Revenus totaux</div>
             </div>
@@ -142,8 +122,8 @@ export function CourseAnalytics({ courses }: CourseAnalyticsProps) {
                         {course.title}
                       </h3>
                       <div className="flex gap-1">
-                        <Badge className={getLevelColor(course.level)}>
-                          {formatLevel(course.level)}
+                        <Badge className={LEVEL_BADGE_CLASSES[course.level as CourseLevel] ?? ""}>
+                          {levelLabel(course.level)}
                         </Badge>
                         <Badge className={getCategoryColor(course.category)}>
                           {course.category}
@@ -160,7 +140,7 @@ export function CourseAnalytics({ courses }: CourseAnalyticsProps) {
                       
                       <div className="flex items-center gap-1">
                         <Euro className="h-3 w-3 text-muted-foreground" />
-                        <span>{course.totalRevenue.toLocaleString("fr-FR")}€</span>
+                        <span>{formatPrice(course.totalRevenue, { freeLabel: false })}</span>
                       </div>
                       
                       {course.averageRating > 0 && (

@@ -9,9 +9,21 @@ import { Analytics } from "../analytics-helper";
 import { createLogger } from "../structured-logger";
 import { stripeRefId } from "../stripe-shapes";
 import { AccessGrants } from "./access";
+import { syncPathEnrollments } from "../paths/enrollment";
 
 /** Handling of successful Stripe checkout sessions. */
 export class PaymentWebhookHandler extends AccessGrants {
+  /** The learner's paths take in the courses this payment just opened. Never fails the webhook. */
+  private async syncPaths(userId: string, logger: ReturnType<typeof createLogger>): Promise<void> {
+    try {
+      await syncPathEnrollments(userId);
+    } catch (error) {
+      logger.error("Failed to sync path enrollments", {
+        metadata: { userId, error: error instanceof Error ? error.message : String(error) },
+      });
+    }
+  }
+
   // Handle successful payment
   async handlePaymentSuccess(session: Stripe.Checkout.Session): Promise<void> {
     // Safely extract metadata with fallbacks
@@ -171,6 +183,8 @@ export class PaymentWebhookHandler extends AccessGrants {
             // Don't throw - payment is recorded, enrollment can be retried
           }
 
+          await this.syncPaths(userId, logger);
+
           try {
             // Track analytics
             Analytics.coursePurchased(userId, {
@@ -235,6 +249,8 @@ export class PaymentWebhookHandler extends AccessGrants {
           });
           throw subscriptionError; // Critical
         }
+
+        await this.syncPaths(userId, logger);
 
         try {
           // Calculate safe amount

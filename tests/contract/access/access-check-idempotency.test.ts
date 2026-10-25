@@ -54,7 +54,7 @@ describe('T118: Access Check Idempotency Tests', () => {
           accessReason: 'not_enrolled',
         })
       }
-      expect(AccessService.resolveAccessState(access1)).toBe('FREE')
+      expect(access1.entitlement).toMatchObject({ eligible: true, entitled: false, source: 'free' })
 
       expect(await countUserEnrollments(user.id)).toBe(0)
       expect(await countTotalEnrollments()).toBe(totalEnrollmentsBefore)
@@ -82,7 +82,7 @@ describe('T118: Access Check Idempotency Tests', () => {
           accessReason: 'not_enrolled',
         })
       }
-      expect(AccessService.resolveAccessState(access1)).toBe('LOCKED')
+      expect(access1.entitlement).toMatchObject({ eligible: false, entitled: false, source: null })
 
       expect(await countUserEnrollments(user.id)).toBe(0)
       expect(await countTotalEnrollments()).toBe(totalEnrollmentsBefore)
@@ -109,8 +109,7 @@ describe('T118: Access Check Idempotency Tests', () => {
           accessReason: 'ok',
         })
       }
-      expect(access1.enrollmentDate).toEqual(existingEnrollment.enrolledAt)
-      expect(AccessService.resolveAccessState(access1)).toBe('ENROLLED')
+      expect(access1.entitlement).toMatchObject({ enrolled: true, entitled: true, source: 'subscription' })
 
       // Enrollment count unchanged and the original row untouched
       expect(await countUserEnrollments(user.id)).toBe(1)
@@ -167,6 +166,8 @@ describe('T118: Access Check Idempotency Tests', () => {
         accessTier: CourseAccessTier.PREMIUM,
         previewEnabled: true,
       })
+      // a sample needs a published lesson to show
+      await db.lesson.create({ data: { courseId: course.id, title: 'L1', slug: 'l-1', order: 1, published: true } })
 
       const access1 = await AccessService.checkCourseAccess(user.id, course.id)
       const access2 = await AccessService.checkCourseAccess(user.id, course.id)

@@ -1,3 +1,5 @@
+import type { CourseLevel } from "@/lib/generated/prisma/browser";
+import { LEVEL_LABELS } from "@/lib/courses/labels";
 /**
  * Pure rules of learning paths (parcours). No database here: the same functions run in the
  * service, in server actions and in the admin editor.
@@ -106,23 +108,8 @@ export function pathPublishIssues(path: PublishCandidate): string[] {
   return issues;
 }
 
-/** « 3 h 20 », « 45 min », « — » */
-export function formatMinutes(minutes: number): string {
-  if (!Number.isFinite(minutes) || minutes <= 0) return "—";
-  const h = Math.floor(minutes / 60);
-  const m = Math.round(minutes % 60);
-  if (h === 0) return `${m} min`;
-  return m === 0 ? `${h} h` : `${h} h ${String(m).padStart(2, "0")}`;
-}
-
-export const LEVEL_LABELS = {
-  BEGINNER: "Débutant",
-  INTERMEDIATE: "Intermédiaire",
-  ADVANCED: "Avancé",
-  EXPERT: "Expert",
-} as const;
-
-export type PathLevel = keyof typeof LEVEL_LABELS;
+/** Path levels are course levels; their names come from lib/courses/labels.ts. */
+export type PathLevel = CourseLevel;
 export const PATH_LEVELS = Object.keys(LEVEL_LABELS) as PathLevel[];
 
 export const PATH_SORTS = [

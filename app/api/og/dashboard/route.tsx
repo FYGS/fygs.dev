@@ -44,7 +44,7 @@ export async function GET() {
                 margin: "0 32px 0",
               }}
             >
-              Track Your Learning Progress
+              Suivez votre apprentissage
             </div>
 
             <div
@@ -55,7 +55,7 @@ export async function GET() {
                 justifyContent: "center",
               }}
             >
-              {["Progress", "Courses", "Achievements", "Certificates"].map((tech) => (
+              {["Progression", "Formations", "Parcours", "Certificats"].map((tech) => (
                 <div
                   key={tech}
                   style={{
@@ -105,7 +105,7 @@ export async function GET() {
     );
   } catch (error: unknown) {
     const errorMessage =
-      error instanceof Error ? error.message : "An unknown error occurred";
+      error instanceof Error ? error.message : "Erreur inconnue";
     console.error(`Error generating image: ${errorMessage}`);
     return new Response(`Failed to generate image: ${errorMessage}`, {
       status: 500,

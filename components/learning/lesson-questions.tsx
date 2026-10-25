@@ -24,10 +24,17 @@ interface LessonQuestionsProps {
   questions: LessonQuestion[];
   /** Only the course's learners can ask (a preview visitor reads). */
   canAsk: boolean;
+  /** Said when the visitor cannot ask; null says nothing (the page shows its own prompt). */
+  cannotAskReason?: string | null;
 }
 
 /** Questions asked from this lesson: community discussions tied to it, answered by the instructor and other learners. */
-export function LessonQuestions({ lessonId, questions: initial, canAsk }: LessonQuestionsProps) {
+export function LessonQuestions({
+  lessonId,
+  questions: initial,
+  canAsk,
+  cannotAskReason = "Inscrivez-vous à la formation pour poser une question au formateur et aux autres apprenants.",
+}: LessonQuestionsProps) {
   const [questions, setQuestions] = useState(initial);
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
@@ -66,9 +73,7 @@ export function LessonQuestions({ lessonId, questions: initial, canAsk }: Lesson
         )}
       </div>
 
-      {!canAsk && (
-        <p className="text-sm text-muted-foreground">Inscrivez-vous à la formation pour poser une question à la communauté.</p>
-      )}
+      {!canAsk && cannotAskReason && <p className="text-sm text-muted-foreground">{cannotAskReason}</p>}
 
       {open && (
         <form onSubmit={submit} className="space-y-3 rounded-md border bg-muted/30 p-3">
@@ -104,7 +109,7 @@ export function LessonQuestions({ lessonId, questions: initial, canAsk }: Lesson
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-medium">{q.title}</span>
                   <span className="text-xs text-muted-foreground">
-                    {q.authorName} · {new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium" }).format(new Date(q.createdAt))}
+                    {q.authorName} · {new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeZone: "Europe/Paris" }).format(new Date(q.createdAt))}
                   </span>
                 </span>
                 <span className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">

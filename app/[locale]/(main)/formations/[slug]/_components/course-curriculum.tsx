@@ -6,7 +6,8 @@ import { Check, ChevronDown, ChevronRight, Clock, Eye, FileText, GraduationCap, 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { formatMinutes, type CurriculumSectionView, type CurriculumStats } from "@/lib/learning/curriculum-view";
+import { formatMinutes, formatSeconds } from "@/lib/format-duration";
+import type { CurriculumSectionView, CurriculumStats } from "@/lib/learning/curriculum-view";
 
 interface CourseCurriculumProps {
   sections: CurriculumSectionView[];
@@ -45,12 +46,12 @@ export function CourseCurriculum({ sections, stats, resourceCount, initiallyOpen
   return (
     <Card id="programme">
       <CardHeader className="border-b">
-        <CardTitle className="text-xl">Programme de la formation</CardTitle>
+        <CardTitle as="h2" className="text-xl">Programme de la formation</CardTitle>
         {sections.length > 0 && <p className="text-sm text-muted-foreground">{summary.join(" · ")}</p>}
       </CardHeader>
       <CardContent className="p-0">
         {sections.length === 0 ? (
-          <p className="py-8 text-center text-muted-foreground">Le contenu de cette formation sera bientôt disponible.</p>
+          <p className="py-8 text-center text-muted-foreground">Aucune leçon n’est encore publiée dans cette formation.</p>
         ) : (
           sections.map((section, index) => {
             const done = section.items.filter((i) => i.done).length;
@@ -67,16 +68,18 @@ export function CourseCurriculum({ sections, stats, resourceCount, initiallyOpen
                       </span>
                       {item.isPreview && (
                         <Badge variant="secondary" className="gap-1 text-xs">
-                          <Eye className="h-3 w-3" aria-hidden /> Aperçu
+                          <Eye className="h-3 w-3" aria-hidden /> Aperçu gratuit
                         </Badge>
                       )}
                       {item.isNext && <Badge className="text-xs">Suivant</Badge>}
                       {item.questionCount !== null && (
-                        <span className="shrink-0 text-xs text-muted-foreground">{item.questionCount} questions</span>
+                        <span className="shrink-0 text-xs text-muted-foreground">
+                          {item.questionCount} question{item.questionCount > 1 ? "s" : ""}
+                        </span>
                       )}
                       {item.duration ? (
                         <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
-                          <Clock className="h-3 w-3" aria-hidden /> {formatMinutes(Math.max(1, Math.round(item.duration / 60)))}
+                          <Clock className="h-3 w-3" aria-hidden /> {formatSeconds(item.duration)}
                         </span>
                       ) : null}
                     </div>

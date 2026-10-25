@@ -24,7 +24,7 @@ vi.mock("@/lib/auth", () => ({
 
 import { enrollCourse } from "@/app/[locale]/(main)/dashboard/actions/enrollCourse";
 import { updateLessonProgress } from "@/app/[locale]/(main)/dashboard/actions/updateLessonProgress";
-import { issueCertificate } from "@/app/[locale]/(main)/dashboard/actions/issueCertificate";
+import { issueCertificate } from "../support/certificate-helpers";
 
 type Props = Record<string, any>;
 

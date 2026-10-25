@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import * as assessments from "@/lib/curriculum/assessments";
 import { guardCourse, guardQuiz, guardSupport } from "@/lib/curriculum/guard";
+import { learnersInProgress } from "@/lib/curriculum/insights";
 import { revalidateCourse } from "@/lib/curriculum/revalidate";
 import { failure, unexpected, type ActionFailure } from "../../_actions/shared";
 
@@ -24,17 +25,21 @@ async function refreshed(course: { id: string; slug: string }) {
   revalidateCourse({ courseId: course.id, slugs: [course.slug] });
 }
 
-// ---------------------------------------------------------------- quizzes
-
-export async function loadQuizzes(courseId: string) {
+/**
+ * Learners enrolled and not finished: adding a quiz or publishing an exam changes what their certificate needs,
+ * so the builder warns before doing it.
+ */
+export async function getLearnersInProgress(courseId: string): Promise<(Ok & { count: number }) | ActionFailure> {
   try {
     const g = await guardCourse(id.parse(courseId));
     if (!g.ok) return failure(g.error);
-    return { success: true as const, quizzes: await assessments.listQuizzes(g.course.id) };
+    return { success: true, count: await learnersInProgress(g.course.id) };
   } catch (error) {
-    return unexpected("loadQuizzes", error);
+    return unexpected("getLearnersInProgress", error);
   }
 }
+
+// ---------------------------------------------------------------- quizzes
 
 export async function addQuiz(
   courseId: string,
@@ -96,16 +101,6 @@ export async function removeQuiz(
 const slides = z.array(z.object({ title: z.string().max(300), content: z.string().max(200_000) })).max(100);
 
 type Supports = Awaited<ReturnType<typeof assessments.listSupports>>;
-
-export async function loadSupports(courseId: string) {
-  try {
-    const g = await guardCourse(id.parse(courseId));
-    if (!g.ok) return failure(g.error);
-    return { success: true as const, supports: await assessments.listSupports(g.course.id) };
-  } catch (error) {
-    return unexpected("loadSupports", error);
-  }
-}
 
 export async function addSupport(
   courseId: string,
@@ -189,16 +184,6 @@ const examInput = z.object({
   questions,
   published: z.boolean(),
 });
-
-export async function loadExam(courseId: string) {
-  try {
-    const g = await guardCourse(id.parse(courseId));
-    if (!g.ok) return failure(g.error);
-    return { success: true as const, exam: await assessments.getExam(g.course.id) };
-  } catch (error) {
-    return unexpected("loadExam", error);
-  }
-}
 
 export async function saveFinalExam(courseId: string, input: z.input<typeof examInput>): Promise<Ok | ActionFailure> {
   try {

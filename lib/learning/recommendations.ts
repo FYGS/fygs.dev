@@ -17,22 +17,38 @@ export interface NextCourse {
 }
 
 /**
- * What to learn after a course: published courses the learner is not enrolled in, the same
- * subject first, one level up before the same level, featured ones before the others.
+ * What to learn next: published courses the learner is not enrolled in. After a given course (wrap-up page), the
+ * same subject first, one level up before the same level; without one (dashboard), the subjects and levels of the
+ * courses the learner follows, most recent first. Featured courses come before the others at equal score.
+ * The one recommendation rule of the platform.
  */
-export async function suggestNextCourses(userId: string, courseId: string, limit = 3): Promise<NextCourse[]> {
-  const current = await db.course.findUnique({ where: { id: courseId }, select: { category: true, level: true } });
-  if (!current) return [];
+export async function suggestNextCourses(userId: string, courseId?: string | null, limit = 3): Promise<NextCourse[]> {
+  const anchors = courseId
+    ? await db.course.findMany({ where: { id: courseId }, select: { category: true, level: true } })
+    : (
+        await db.enrollment.findMany({
+          where: { userId },
+          orderBy: { enrolledAt: "desc" },
+          take: 5,
+          select: { course: { select: { category: true, level: true } } },
+        })
+      ).map((e) => e.course);
 
   const candidates = await db.course.findMany({
-    where: { published: true, id: { not: courseId }, enrollments: { none: { userId } } },
+    where: { published: true, ...(courseId ? { id: { not: courseId } } : {}), enrollments: { none: { userId } } },
     select: { id: true, slug: true, title: true, description: true, thumbnail: true, level: true, category: true, featured: true },
-    take: 50,
+    take: 60,
   });
 
-  const higher = NEXT_LEVEL[current.level];
+  // The most recent course weighs most; a learner with no course gets the featured ones
   const score = (c: (typeof candidates)[number]) =>
-    (c.category === current.category ? 4 : 0) + (c.level === higher ? 2 : c.level === current.level ? 1 : 0) + (c.featured ? 0.5 : 0);
+    anchors.reduce((sum, anchor, rank) => {
+      const weight = 1 / (rank + 1);
+      const higher = NEXT_LEVEL[anchor.level];
+      const subject = c.category === anchor.category ? 4 : 0;
+      const level = c.level === higher ? 2 : c.level === anchor.level ? 1 : 0;
+      return sum + weight * (subject + level);
+    }, 0) + (c.featured ? 0.5 : 0);
 
   return candidates
     .sort((a, b) => score(b) - score(a) || a.title.localeCompare(b.title, "fr"))

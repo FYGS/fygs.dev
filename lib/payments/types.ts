@@ -1,13 +1,3 @@
-export interface PaymentProduct {
-  id: string;
-  name: string;
-  description: string;
-  price: number; // in cents
-  currency: string;
-  type: "course" | "subscription" | "bundle";
-  metadata?: Record<string, string>;
-}
-
 export interface CheckoutSessionData {
   productId: string;
   userId: string;

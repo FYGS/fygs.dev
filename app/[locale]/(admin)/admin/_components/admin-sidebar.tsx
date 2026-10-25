@@ -1,6 +1,5 @@
 "use client";
 
-import { isAdminHrefAvailable } from "@/lib/admin-routes";
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -12,9 +11,6 @@ import {
   LayoutDashboard,
   BookOpen,
   Users,
-  FileText,
-  FolderOpen,
-  Settings,
   BarChart3,
   CreditCard,
   Shield,
@@ -24,180 +20,46 @@ import {
   MessageSquare,
   Tag,
   Calendar,
-  Database,
   Palette,
   Globe,
   Activity,
   MessageCircle,
+  MessageCircleQuestion,
   Route,
 } from "lucide-react";
+import { navigationFor, type AdminNavEntry } from "@/lib/admin-navigation";
 
 interface AdminSidebarProps {
   userRole: string;
+  /** Things waiting for the user, shown next to their entry. */
+  counters?: Partial<Record<NonNullable<AdminNavEntry["counter"]>, number>>;
 }
 
-interface NavItem {
-  title: string;
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-  badge?: string;
-  description?: string;
-  adminOnly?: boolean;
-}
+const ICONS: Record<AdminNavEntry["icon"], React.ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" }>> = {
+  dashboard: LayoutDashboard,
+  courses: BookOpen,
+  questions: MessageCircleQuestion,
+  paths: Route,
+  tags: Tag,
+  certificates: Shield,
+  users: Users,
+  enrollments: Activity,
+  analytics: BarChart3,
+  payments: CreditCard,
+  subscriptions: Zap,
+  reviews: MessageSquare,
+  community: MessageCircle,
+};
 
-const navigation: NavItem[] = [
-  // Dashboard - Always visible
-  {
-    title: "Vue d'ensemble",
-    href: "/admin",
-    icon: LayoutDashboard,
-    description: "Tableau de bord et métriques",
-  },
-
-  // Content Management Section
-  {
-    title: "Formations",
-    href: "/admin/courses",
-    icon: BookOpen,
-    description: "Créer et publier cours, leçons et évaluations",
-  },
-  {
-    title: "Parcours",
-    href: "/admin/paths",
-    icon: Route,
-    description: "Formations enchaînées vers un objectif",
-    adminOnly: true,
-  },
-  {
-    title: "Tags & Catégories",
-    href: "/admin/tags",
-    icon: Tag,
-    description: "Organisation du contenu",
-  },
-  {
-    title: "Certificats",
-    href: "/admin/certificates",
-    icon: Shield,
-    description: "Génération et gestion des certificats",
-    adminOnly: true,
-  },
-
-  // User Management Section (Role-based visibility)
-  {
-    title: "Utilisateurs",
-    href: "/admin/users",
-    icon: Users,
-    description: "Gestion des comptes utilisateurs",
-    adminOnly: true,
-  },
-  {
-    title: "Inscriptions",
-    href: "/admin/enrollments",
-    icon: Activity,
-    description: "Suivi des inscriptions aux cours",
-    adminOnly: true,
-  },
-  {
-    title: "Progrès & Performance",
-    href: "/admin/progress",
-    icon: BarChart3,
-    description: "Progression et analytics des étudiants",
-  },
-
-  // Business & Analytics Section (Admin-focused)
-  {
-    title: "Analytics",
-    href: "/admin/analytics",
-    icon: BarChart3,
-    description: "Rapports détaillés et métriques",
-  },
-  {
-    title: "Paiements",
-    href: "/admin/payments",
-    icon: CreditCard,
-    description: "Transactions et gestion financière",
-    adminOnly: true,
-  },
-  {
-    title: "Abonnements",
-    href: "/admin/subscriptions",
-    icon: Zap,
-    description: "Gestion des plans premium",
-    adminOnly: true,
-  },
-  {
-    title: "Revenus",
-    href: "/admin/revenue",
-    icon: Database,
-    description: "Suivi des revenus et facturations",
-    adminOnly: true,
-  },
-
-  // Communication & Content
-  {
-    title: "Avis & Commentaires",
-    href: "/admin/reviews",
-    icon: MessageSquare,
-    description: "Modération des avis utilisateurs",
-  },
-  {
-    title: "Communauté",
-    href: "/admin/community",
-    icon: MessageCircle,
-    description: "Gestion du forum et discussions",
-  },
-  {
-    title: "Blog",
-    href: "/admin/blog",
-    icon: FileText,
-    description: "Articles et actualités",
-  },
-  {
-    title: "Projets",
-    href: "/admin/projects",
-    icon: FolderOpen,
-    description: "Portfolio et projets réalisés",
-  },
-  {
-    title: "Pages",
-    href: "/admin/pages",
-    icon: Globe,
-    description: "Pages statiques et contenu",
-  },
-
-  // System Administration (Admin only)
-  {
-    title: "Paramètres",
-    href: "/admin/settings",
-    icon: Settings,
-    description: "Configuration de la plateforme",
-    adminOnly: true,
-  },
-  {
-    title: "Base de données",
-    href: "/admin/database",
-    icon: Database,
-    description: "Maintenance et backups",
-    adminOnly: true,
-  },
-  {
-    title: "Sécurité",
-    href: "/admin/security",
-    icon: Shield,
-    description: "Logs et sécurité",
-    adminOnly: true,
-  },
-];
-
-export function AdminSidebar({ userRole }: AdminSidebarProps) {
+export function AdminSidebar({ userRole, counters = {} }: AdminSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
 
-  const filteredNavigation = navigation.filter(
-    (item) =>
-      isAdminHrefAvailable(item.href) &&
-      (!item.adminOnly || userRole === "ADMIN"),
-  );
+  const filteredNavigation = navigationFor(userRole).map((entry) => ({
+    ...entry,
+    icon: ICONS[entry.icon],
+    badge: entry.counter && counters[entry.counter] ? String(counters[entry.counter]) : undefined,
+  }));
 
   return (
     <aside
@@ -289,7 +151,7 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
                           <Badge
                             variant="secondary"
                             className="ml-2 h-5 text-xs"
-                            aria-label={`Badge: ${item.badge}`}
+                            aria-label={`${item.badge} en attente`}
                           >
                             {item.badge}
                           </Badge>

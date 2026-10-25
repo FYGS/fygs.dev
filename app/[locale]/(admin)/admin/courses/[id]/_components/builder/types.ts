@@ -12,7 +12,7 @@ export interface CourseInfo {
   level: CourseLevel;
   accessTier: CourseAccessTier;
   price: number | null;
-  /** Minutes. */
+  /** Minutes typed by the author; the lessons' total is shown instead as soon as a published lesson has a duration. */
   duration: number | null;
   previewEnabled: boolean;
   featured: boolean;
@@ -40,8 +40,14 @@ export interface InstructorOption {
   email: string;
 }
 
-export type SectionId = "infos" | "programme" | "evaluations" | "supports" | "vente" | "apercu" | "parametres";
+export type SectionId =
+  | "infos"
+  | "programme"
+  | "evaluations"
+  | "supports"
+  | "vente"
+  | "apercu"
+  | "statistiques"
+  | "apprenants"
+  | "parametres";
 
-export interface BuilderStats {
-  enrollments: number;
-}

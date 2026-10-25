@@ -6,20 +6,22 @@ import { Linkedin, Twitter } from "@/components/icons/brand-icons";
 import { Button } from "@/components/ui/button";
 
 interface CertificateActionsProps {
-  courseId: string;
-  courseTitle: string;
+  /** Title of the course or of the path. */
+  title: string;
   code: string;
   issuedAt: string;
   /** Absolute URL of the public verification page. */
   verifyUrl: string;
+  /** Download address of the PDF (only the holder may download it). */
+  pdfUrl: string;
 }
 
-/** Download, add to a LinkedIn profile, share, copy the verification link. */
-export function CertificateActions({ courseId, courseTitle, code, issuedAt, verifyUrl }: CertificateActionsProps) {
+/** Download, add to a LinkedIn profile, share, copy the verification link: the same for a course and a path. */
+export function CertificateActions({ title, code, issuedAt, verifyUrl, pdfUrl }: CertificateActionsProps) {
   const issued = new Date(issuedAt);
   const linkedIn = new URL("https://www.linkedin.com/profile/add");
   linkedIn.searchParams.set("startTask", "CERTIFICATION_NAME");
-  linkedIn.searchParams.set("name", courseTitle);
+  linkedIn.searchParams.set("name", title);
   linkedIn.searchParams.set("organizationName", "FYGS");
   linkedIn.searchParams.set("issueYear", String(issued.getFullYear()));
   linkedIn.searchParams.set("issueMonth", String(issued.getMonth() + 1));
@@ -27,22 +29,22 @@ export function CertificateActions({ courseId, courseTitle, code, issuedAt, veri
   linkedIn.searchParams.set("certId", code);
 
   const tweet = new URL("https://twitter.com/intent/tweet");
-  tweet.searchParams.set("text", `J’ai obtenu mon certificat « ${courseTitle} » sur FYGS.`);
+  tweet.searchParams.set("text", `J’ai obtenu mon certificat « ${title} » sur FYGS.`);
   tweet.searchParams.set("url", verifyUrl);
 
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(verifyUrl);
-      toast.success("Lien copié");
+      toast.success("Lien de vérification copié");
     } catch {
       toast.error("Copie impossible : sélectionnez le lien de la page de vérification.");
     }
   };
 
   return (
-    <div className="flex flex-wrap items-center justify-center gap-2">
+    <div className="flex flex-wrap items-center justify-center gap-2 print:hidden">
       <Button asChild>
-        <a href={`/api/certificates/pdf?courseId=${courseId}`} download>
+        <a href={pdfUrl} download>
           <Download className="mr-2 h-4 w-4" aria-hidden /> Télécharger le PDF
         </a>
       </Button>

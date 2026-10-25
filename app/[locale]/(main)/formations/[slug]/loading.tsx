@@ -2,7 +2,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 function LoadingSkeleton() {
     return (
-        <div className="min-h-screen bg-linear-to-br from-background via-background to-muted/20">
+        <div role="status" className="min-h-screen bg-linear-to-br from-background via-background to-muted/20">
+      <span className="sr-only">Chargement de la formation…</span>
             <div className="container py-8 max-w-7xl mx-auto space-y-8">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 space-y-6">

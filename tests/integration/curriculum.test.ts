@@ -237,13 +237,17 @@ describe("lessons", () => {
     expect(await curriculum.setModulePublished(m, false)).toMatchObject({ success: true, changed: 1 });
   });
 
-  it("sets the course duration from the published lessons", async () => {
-    const course = await newCourse();
+  it("never overwrites the author's duration estimate with the lessons' total (shown instead, never stored)", async () => {
+    const course = await newCourse({ duration: 90 });
     const m = await moduleOf(course.id);
     const [a, b] = await lessonsOf(course.id, m, ["A", "B"]);
     await curriculum.updateLesson(a, { content: "<p>x</p>", duration: 600, published: true });
     await curriculum.updateLesson(b, { content: "<p>y</p>", duration: 1800, published: true });
-    expect((await db.course.findUnique({ where: { id: course.id } }))?.duration).toBe(40);
+    expect((await db.course.findUnique({ where: { id: course.id } }))?.duration).toBe(90);
+    // when the lessons lose their durations, the estimate is what is left, untouched
+    await curriculum.updateLesson(a, { duration: null });
+    await curriculum.updateLesson(b, { duration: null });
+    expect((await db.course.findUnique({ where: { id: course.id } }))?.duration).toBe(90);
   });
 
   it("keeps resources in order and renumbers after a delete", async () => {
@@ -387,10 +391,23 @@ describe("publishing", () => {
 
   it("requires a price for a premium course", async () => {
     const { course } = await readyCourse();
-    await courses.updateCourseInfo(course.id, { accessTier: "PREMIUM", price: 0 });
+    await courses.updateCourseInfo(course.id, { accessTier: "PREMIUM", price: 0.3 });
     expect((await courses.setCoursePublished(course.id, true)).success).toBe(false);
-    await courses.updateCourseInfo(course.id, { price: 49 });
+    await courses.updateCourseInfo(course.id, { price: 49.99 });
     expect((await courses.setCoursePublished(course.id, true)).success).toBe(true);
+    expect(Number((await db.course.findUniqueOrThrow({ where: { id: course.id } })).price)).toBe(49.99);
+  });
+
+  it("a live premium course keeps a payable price, and a free course carries no price", async () => {
+    const { course } = await readyCourse();
+    await courses.updateCourseInfo(course.id, { accessTier: "PREMIUM", price: 20 });
+    await courses.setCoursePublished(course.id, true);
+    expect((await courses.updateCourseInfo(course.id, { price: null })).success).toBe(false);
+    expect((await courses.updateCourseInfo(course.id, { price: 0.2 })).success).toBe(false);
+    expect(Number((await db.course.findUniqueOrThrow({ where: { id: course.id } })).price)).toBe(20);
+    // switching to free drops the price: nothing can be shown or charged any more
+    expect((await courses.updateCourseInfo(course.id, { accessTier: "FREE" })).success).toBe(true);
+    expect((await db.course.findUniqueOrThrow({ where: { id: course.id } })).price).toBeNull();
   });
 
   it("the autosave action cannot publish or feature, and keeps a published course published", async () => {

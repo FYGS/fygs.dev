@@ -16,13 +16,22 @@ interface CourseResumeBannerProps {
 /** For an enrolled learner: where they are and the one button that continues. */
 export function CourseResumeBanner({ percent, done, total, next, completedHref, hasCertificate }: CourseResumeBannerProps) {
   const started = done > 0;
+  // Nothing published yet: not "finished"
+  if (total === 0) {
+    return (
+      <section aria-label="Votre progression" className="rounded-xl border bg-muted/40 p-5 text-sm">
+        <p className="font-medium">Vous êtes inscrit à cette formation.</p>
+        <p className="text-muted-foreground">Ses leçons ne sont pas encore publiées : elles apparaîtront ici dès leur mise en ligne.</p>
+      </section>
+    );
+  }
   return (
     <section aria-label="Votre progression" className="space-y-3 rounded-xl border bg-primary/5 p-5">
       <div className="flex items-center justify-between gap-3 text-sm">
         <span className="font-medium">
           {done} étape{done > 1 ? "s" : ""} sur {total}
         </span>
-        <span className="text-muted-foreground">{percent}%</span>
+        <span className="text-muted-foreground">{percent} %</span>
       </div>
       <Progress value={percent} aria-label="Progression dans la formation" className="h-2" />
       {next ? (

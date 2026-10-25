@@ -1,7 +1,7 @@
 # Formations: analysis, plan and tracker
 
 Scope: course authoring (admin / instructor), learner experience (`/formations`, `/learn`, dashboard, certificates), learning paths.
-Status: `TODO` · `DOING` · `DONE` · `DECISION`. Definition of done: `tsc` 0, `eslint` 0, unit + integration green, e2e when a flow changes, CHANGELOG, committed. No half-features: a feature is either complete end to end or not started.
+Status: `TODO` · `DONE` · `DONE` · `DECISION`. Definition of done: `tsc` 0, `eslint` 0, unit + integration green, e2e when a flow changes, CHANGELOG, committed. No half-features: a feature is either complete end to end or not started.
 
 ## 1. Analysis (2026-10-23, three read-only audits)
 
@@ -48,9 +48,31 @@ Status: `TODO` · `DOING` · `DONE` · `DECISION`. Definition of done: `tsc` 0, 
 - The production build and the e2e found what tsc and unit tests could not: `react-dom/server` imported by a server action, `node:crypto` reached from a client component (`client-bundle-boundary` now forbids both), the single-letter keyboard shortcuts firing while typing in the rich-text editor (and swallowing Ctrl+R), two `h1` on the admin paths page, and seeded path courses with no lesson (a path certificate that could never be earned: publishing now requires a lesson in every course).
 
 ## 5. Open points
-- Axe accessibility audit not re-run on the new pages (builder, `/learn`, `/parcours`); keyboard and labels were built in, but no screen-reader test was done.
-- A draft lesson cannot be previewed as a learner by its author from the builder drawer (the link appears once course and lesson are published); the course page preview (`?preview=true`) works.
+- Axe re-run on the new pages on 2026-10-25 (see the log): 0 violation on the formation pages. No screen-reader session was done (owner).
+- Draft lessons and the unpublished exam are previewed by their author inside the learning area, marked "Brouillon" (second pass).
 - Unknown `/parcours/[slug]` and course pages answer 200 with the not-found screen and `noindex` (the page streams behind its loading skeleton), like the existing course pages.
 - Lesson HTML is sanitised by an in-repo allow-list plugin (`lib/learning/sanitize-html.ts`); replacing it with `rehype-sanitize` is one line once the dependency is added.
 - Paths are administrator-only; a path with a delivered certificate can be unpublished but not deleted.
-- Nothing is pushed: the commits are local until the owner says so.
+- Pushed on 2026-10-25 with the owner's go-ahead.
+
+## 6. Second pass (2026-10-24): audit, four independent reviews, plan
+
+Inputs: axe audit of 173 page passes (admin, learner, visitor, mobile, light) and four read-only reviews (commerce and access, learner, authoring, dead code). Main findings: the UI decides from `price` while access decides from `accessTier` (free course sold, premium course shown free, lapsed learners in a redirect loop, checkout without guards, prices rounded on screen); stored XSS through visual-support HTML; lesson images from other hosts crash the lesson page; YouTube/Vimeo links unplayable; no captions; empty course shown as finished; quiz resume shows another answer; exam correction unreadable; quiz/exam/support edits lost on section change; instructors offered admin-only pages; no per-course statistics, learner list, manual access or question inbox; lesson durations stored in seconds but summed as minutes in paths and seeded as minutes; `updatedAt` never updated; dead files and five duration formatters.
+
+Decisions:
+- Offers: a FREE course is open to any signed-in learner who enrols; a PREMIUM course is opened by a lifetime purchase (price of at least 0,50 EUR), by an active or trialing subscription, or by an access granted by an administrator. One entitlement function decides for every screen, the checkout and the paths.
+- Free sample: published lessons flagged as preview, plus the first lesson when the course switch is on, for every tier; visitors can watch them without an account (nothing is recorded).
+- Refunds: 14 days everywhere, for subscriptions and course purchases, under the existing policy.
+- Not built (not a must-have here, stated): draft/live versions of a course (a banner says edits on a live course are visible at once), course announcements, per-quiz pass mark (70 % for all), bulk actions on the course list.
+
+| ID | Task | Status |
+|----|------|--------|
+| F5 | Commerce and access: one entitlement function, tier-driven CTA, checkout guards, payment return, exact prices, honest "included" list and refund copy, free/premium filter, lapsed/refunded states, receipts, course refund, anonymous preview, path pricing data | DONE |
+| F6 | Learner area and paths: video providers and captions/transcript, one HTML rendering path (lessons and slides), empty course, quiz resume, exam review, certificates (course and path unified), Q&A loop, "Mon apprentissage", shell focus and mobile, reading comfort, dashboard, emails, durations, accessibility findings | DONE |
+| F7 | Authoring and admin: unsafe HTML, images and uploads without storage, unsaved editors, instructor permissions, preview rules, labels, live-course safety, slug redirects, per-course statistics and learners (grant/revoke access), question inbox, captions upload, accessibility findings | DONE |
+| F8 | Dead code, duplicates, stale docs; full validation (tsc, eslint, unit, integration, e2e on a fresh build, smoke crawl, axe) | DONE |
+
+### Log of the second pass
+- 2026-10-25: F8 validation on a fresh production build and the seeded database: tsc 0, eslint 0, unit 196 files / 2188 tests, integration 57 files / 747 tests, `db:check-migrations` clean, e2e 65 passed. Smoke crawl: visitor 42, learner 43, admin 25, instructor 25 pages, 0 problem. Axe: admin 25 pages 0, learner 43 pages 0 (after the fixes below), visitor dark / light / mobile 32 pages each: the only findings are the two accepted blog items of docs/accessibility-audit-2026-10.md and the spinner of the blog stats while they load (not formation pages).
+- Found and fixed by that validation: dates formatted in the server's and the browser's own time zone (reviews, review replies, lesson questions, admin course list, profile) broke hydration once the two differed (the switch to winter time showed it; a server in UTC and a learner in Paris would too): they are formatted in Europe/Paris; a badge (`div`) inside a paragraph on the learner's own review, the exam and quiz results and the team replies (unhydratable HTML); the review list and analytics sent instructors to a `/unauthorized` route that does not exist (404), they use the shared admin guard; the voted "useful" button lacked contrast; "Mon apprentissage" had an h3 without h2; the featured courses counted one lesson in their duration; stale tests (copy, snapshots) aligned.
+- Audit tooling note: the audit and crawl scripts judge a page that redirects while it streams (`/learn/[slug]` sends to the next step, a path certificate page without certificate sends to the path) in the middle of the navigation and can hang; those routes were checked by loading them directly.

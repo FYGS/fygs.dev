@@ -564,18 +564,6 @@ exports[`POST /api/stripe/webhook (pinned behaviour) > checkoutCourseNoProduct 1
       ],
     ],
     [
-      "user.findUnique",
-      {
-        "select": {
-          "email": true,
-          "name": true,
-        },
-        "where": {
-          "id": "u1",
-        },
-      },
-    ],
-    [
       "log.info",
       [
         "Webhook processed successfully",
@@ -1372,40 +1360,6 @@ exports[`POST /api/stripe/webhook (pinned behaviour) > checkoutPremium 1`] = `
       ],
     ],
     [
-      "user.findUnique",
-      {
-        "select": {
-          "email": true,
-          "name": true,
-        },
-        "where": {
-          "id": "u1",
-        },
-      },
-    ],
-    [
-      "email.sendPremiumSubscriptionEmail",
-      [
-        "Alice",
-        "a@x.test",
-        "Premium",
-        49.9,
-        "monthly",
-      ],
-    ],
-    [
-      "log.info",
-      [
-        "Premium subscription email sent",
-        {
-          "eventType": "email.subscription_welcome_sent",
-          "metadata": {},
-          "resourceType": "subscription",
-          "userId": "u1",
-        },
-      ],
-    ],
-    [
       "log.info",
       [
         "Webhook processed successfully",
@@ -1525,18 +1479,6 @@ exports[`POST /api/stripe/webhook (pinned behaviour) > checkoutSubscriptionType 
           "userId": "u1",
         },
       ],
-    ],
-    [
-      "user.findUnique",
-      {
-        "select": {
-          "email": true,
-          "name": true,
-        },
-        "where": {
-          "id": "u1",
-        },
-      },
     ],
     [
       "log.info",
@@ -1659,18 +1601,6 @@ exports[`POST /api/stripe/webhook (pinned behaviour) > checkoutSubscriptionUpdat
         },
         "db down",
       ],
-    ],
-    [
-      "user.findUnique",
-      {
-        "select": {
-          "email": true,
-          "name": true,
-        },
-        "where": {
-          "id": "u1",
-        },
-      },
     ],
     [
       "log.info",

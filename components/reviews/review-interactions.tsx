@@ -221,7 +221,7 @@ export function ReviewInteractions({
             disabled={isVoting}
             className={cn(
               "gap-1.5",
-              votes.userVote?.helpful === true && "bg-green-600 hover:bg-green-700"
+              votes.userVote?.helpful === true && "bg-green-700 text-white hover:bg-green-800"
             )}
           >
             <ThumbsUp className="h-3.5 w-3.5" />
@@ -235,7 +235,7 @@ export function ReviewInteractions({
             disabled={isVoting}
             className={cn(
               "gap-1.5",
-              votes.userVote?.helpful === false && "bg-red-600 hover:bg-red-700"
+              votes.userVote?.helpful === false && "bg-red-700 text-white hover:bg-red-800"
             )}
           >
             <ThumbsDown className="h-3.5 w-3.5" />

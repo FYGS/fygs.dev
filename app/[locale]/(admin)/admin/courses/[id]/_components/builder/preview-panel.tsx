@@ -5,6 +5,7 @@ import { CheckCircle2, Circle, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { CurriculumSnapshot } from "@/lib/curriculum/curriculum";
 import { allLessons } from "@/lib/curriculum/snapshot";
+import { normalizeTrailerUrl } from "@/lib/curriculum/content";
 import type { Readiness } from "@/lib/curriculum/publish";
 import { formatSeconds } from "@/lib/format-duration";
 import type { CourseInfo, SectionId } from "./types";
@@ -34,13 +35,13 @@ export function PreviewPanel({ info, readiness, snapshot, quizCount, hasExam, on
 
   const facts = [
     ["Modules", snapshot.modules.length],
-    ["Leçons publiées", `${ready.length} / ${lessons.length}`],
+    ["Leçons prêtes", `${ready.length} / ${lessons.length}`],
     ["Durée des leçons publiées", seconds > 0 ? formatSeconds(seconds) : "—"],
     ["Quiz", quizCount],
     ["Examen final", hasExam ? "Oui" : "Non"],
     ["Objectifs", info.objectives.length],
     ["Questions fréquentes", info.faq.filter((f) => f.q.trim() && f.a.trim()).length],
-    ["Bande-annonce", info.trailerUrl ? "Oui" : "Non"],
+    ["Bande-annonce", normalizeTrailerUrl(info.trailerUrl) ? "Oui" : "Non"],
   ] as const;
 
   return (
@@ -49,7 +50,10 @@ export function PreviewPanel({ info, readiness, snapshot, quizCount, hasExam, on
         <h2 id="preview-view" className="text-lg font-semibold">
           Voir la formation
         </h2>
-        <p className="text-sm text-muted-foreground">La page que verront les visiteurs, avec votre contenu actuel, même tant que la formation est en brouillon.</p>
+        <p className="text-sm text-muted-foreground">
+          La page que verront les visiteurs, avec votre contenu actuel, même tant que la formation est en brouillon. Depuis
+          cette page, vous ouvrez aussi les leçons comme un apprenant.
+        </p>
         <Button asChild>
           <Link href={`/formations/${info.slug}?preview=true`} target="_blank" rel="noopener noreferrer">
             Ouvrir la page de la formation
@@ -57,7 +61,7 @@ export function PreviewPanel({ info, readiness, snapshot, quizCount, hasExam, on
           </Link>
         </Button>
         {!info.published && (
-          <p className="text-sm text-muted-foreground">Les leçons ne s&apos;ouvrent côté apprenant qu&apos;une fois la formation publiée.</p>
+          <p className="text-sm text-muted-foreground">Tant qu&apos;elle est en brouillon, vous seul et les administrateurs la voyez.</p>
         )}
       </section>
 
@@ -68,7 +72,7 @@ export function PreviewPanel({ info, readiness, snapshot, quizCount, hasExam, on
         <ul className="space-y-3">
           {readiness.items.map((item) => (
             <li key={item.key} className="flex gap-3">
-              {item.ok ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" aria-label="Fait" /> : <Circle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" aria-label="À faire" />}
+              {item.ok ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-400" aria-label="Fait" /> : <Circle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" aria-label="À faire" />}
               <div className="text-sm">
                 <p className={item.ok ? "text-muted-foreground" : "font-medium"}>{item.label}</p>
                 {!item.ok && item.hint && <p className="text-muted-foreground">{item.hint}</p>}

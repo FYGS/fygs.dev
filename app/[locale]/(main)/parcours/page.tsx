@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input";
 import { PathCard, type PathCardProgress } from "@/components/paths/path-card";
 import { listPublishedPaths } from "@/lib/paths/queries";
 import { loadUserPath } from "@/lib/paths/progress";
+import { LEVEL_LABELS } from "@/lib/courses/labels";
 import {
-  LEVEL_LABELS,
   PATH_LEVELS,
   PATH_SORTS,
   parsePathLevel,
@@ -112,9 +112,9 @@ export default async function PathsCatalogPage({ searchParams }: { searchParams:
         )}
       </form>
 
-      <p className="text-sm text-muted-foreground" aria-live="polite">
+      <h2 className="text-sm font-normal text-muted-foreground" aria-live="polite">
         {paths.length} parcours
-      </p>
+      </h2>
 
       {paths.length === 0 ? (
         <div className="rounded-xl border border-dashed p-12 text-center">

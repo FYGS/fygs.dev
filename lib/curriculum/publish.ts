@@ -43,7 +43,17 @@ export interface Readiness {
   missing: string[];
 }
 
+/** Smallest price the payment provider accepts, in euros. */
+export const MIN_PREMIUM_PRICE = 0.5;
+
 export type LessonStatus = "draft" | "incomplete" | "ready";
+
+/** The one vocabulary of lesson states, in the list and in the lesson panel. */
+export const LESSON_STATUS_LABELS: Record<LessonStatus, string> = {
+  draft: "Brouillon",
+  incomplete: "À compléter",
+  ready: "Prête",
+};
 
 /** `draft`: hidden from learners. `incomplete`: published but nothing to watch or read. `ready`. */
 export function lessonStatus(lesson: {
@@ -99,8 +109,8 @@ export function checkPublishReadiness(course: ReadinessInput): Readiness {
     items.push({
       key: "price",
       label: "Un prix pour une formation premium",
-      ok: course.price !== null && course.price > 0,
-      hint: "Renseignez un prix supérieur à 0 dans l'onglet Page de vente, ou passez la formation en accès gratuit.",
+      ok: course.price !== null && course.price >= MIN_PREMIUM_PRICE,
+      hint: "Renseignez un prix d'au moins 0,50 € dans l'onglet Page de vente, ou passez la formation en accès gratuit.",
     });
   }
 

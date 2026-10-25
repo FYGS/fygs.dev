@@ -70,22 +70,48 @@ export function useLessonProgress({ lessonId, enabled = true, intervalMs = 10_00
     void flush();
   }, [flush]);
 
+  /**
+   * The page is going away: what was not sent goes with `sendBeacon`, which the browser delivers even while the
+   * tab closes (a server action would be dropped). Falls back to the action where beacons are not available.
+   */
+  const flushOnLeave = useCallback(() => {
+    if (!enabled) return;
+    const delta = Math.min(Math.floor(watched.current), MAX_DELTA_PER_CALL);
+    const lastPosition = position.current;
+    if (delta <= 0 && lastPosition === null) return;
+    const body = JSON.stringify({
+      lessonId,
+      ...(delta > 0 ? { watchTimeDelta: delta } : {}),
+      ...(lastPosition !== null ? { lastPosition: Math.floor(lastPosition) } : {}),
+    });
+    const sent =
+      typeof navigator !== "undefined" &&
+      typeof navigator.sendBeacon === "function" &&
+      navigator.sendBeacon("/api/progress/beacon", new Blob([body], { type: "application/json" }));
+    if (sent) {
+      watched.current -= delta;
+      position.current = null;
+    } else {
+      void flush();
+    }
+  }, [enabled, flush, lessonId]);
+
   // Leaving the lesson (navigation, tab hidden or closed) reports the rest
   useEffect(() => {
     if (!enabled) return;
     const onHide = () => {
-      if (document.visibilityState === "hidden") void flush();
+      if (document.visibilityState === "hidden") flushOnLeave();
     };
     document.addEventListener("visibilitychange", onHide);
-    window.addEventListener("pagehide", flush);
+    window.addEventListener("pagehide", flushOnLeave);
     return () => {
       document.removeEventListener("visibilitychange", onHide);
-      window.removeEventListener("pagehide", flush);
+      window.removeEventListener("pagehide", flushOnLeave);
       if (timer.current) clearInterval(timer.current);
       timer.current = null;
       void flush();
     };
-  }, [enabled, flush]);
+  }, [enabled, flush, flushOnLeave]);
 
   const complete = useCallback(async (): Promise<UpdateLessonProgressResult> => {
     // report the time first so the completion call carries the final position

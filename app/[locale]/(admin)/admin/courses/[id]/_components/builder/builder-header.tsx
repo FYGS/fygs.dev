@@ -28,8 +28,8 @@ interface Props {
   published: boolean;
   enrollments: number;
   readiness: Readiness;
-  /** Flushes pending edits so the server checks what the author sees. */
-  beforePublish: () => Promise<void>;
+  /** Flushes pending edits so the server checks what the author sees; false when a save failed. */
+  beforePublish: () => Promise<boolean>;
   onPublishedChange: (published: boolean) => void;
   onGoToSection: (section: "infos" | "programme" | "vente") => void;
 }
@@ -60,7 +60,10 @@ export function BuilderHeader({
 
   const publish = () =>
     startTransition(async () => {
-      await beforePublish();
+      if (!(await beforePublish())) {
+        toast.error("Une modification n'a pas pu être enregistrée : corrigez-la avant de publier.");
+        return;
+      }
       const result = await publishCourse(courseId);
       if (result.success) {
         onPublishedChange(true);
@@ -73,7 +76,10 @@ export function BuilderHeader({
 
   const unpublish = () =>
     startTransition(async () => {
-      await beforePublish();
+      if (!(await beforePublish())) {
+        toast.error("Une modification n'a pas pu être enregistrée : corrigez-la avant de dépublier.");
+        return;
+      }
       const result = await unpublishCourse(courseId);
       if (result.success) {
         onPublishedChange(false);
@@ -138,9 +144,9 @@ export function BuilderHeader({
             {readiness.items.map((item) => (
               <li key={item.key} className="flex gap-3">
                 {item.ok ? (
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" aria-label="Fait" />
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-400" aria-label="Fait" />
                 ) : (
-                  <Circle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" aria-label="À faire" />
+                  <Circle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" aria-label="À faire" />
                 )}
                 <div className="min-w-0 flex-1 text-sm">
                   <p className={item.ok ? "text-muted-foreground" : "font-medium"}>{item.label}</p>

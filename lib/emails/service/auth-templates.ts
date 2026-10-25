@@ -1,6 +1,7 @@
 import { SITE_BASE_URL } from "@/app/_lib/constants";
 
 import type { EmailTemplate } from "./types";
+import { certificateEarnedTemplate, enrollmentConfirmationTemplate } from "../templates/learning";
 
 /** Account emails (verification, password reset, welcome). */
 export class AuthEmailTemplates {
@@ -168,51 +169,17 @@ export class AuthEmailTemplates {
     return { subject, html };
   }
 
-  enrollmentConfirmationEmail(
-    name: string,
-    formationTitle: string,
-    formationUrl: string
-  ): EmailTemplate {
-    const subject = `Inscription confirmée: ${formationTitle}`;
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #2563eb;">Inscription confirmée!</h1>
-        <p>Bonjour ${name},</p>
-        <p>Votre inscription à la formation <strong>${formationTitle}</strong> a été confirmée.</p>
-        <p>Vous pouvez maintenant commencer votre apprentissage:</p>
-        <a href="${formationUrl}" 
-           style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 20px 0;">
-          Accéder à la formation
-        </a>
-        <p>Bon apprentissage!</p>
-        <p>L'équipe FYGS</p>
-      </div>
-    `;
-
-    return { subject, html };
+  enrollmentConfirmationEmail(name: string, formationTitle: string, formationUrl: string): EmailTemplate {
+    return enrollmentConfirmationTemplate(name, formationTitle, formationUrl);
   }
 
   certificateEarnedEmail(
     name: string,
-    formationTitle: string,
-    formationUrl: string
+    title: string,
+    certificateUrl: string,
+    kind: "course" | "path" = "course",
   ): EmailTemplate {
-    const subject = `Félicitations! Certificat obtenu pour ${formationTitle}`;
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #16a34a;">🎉 Félicitations ${name}!</h1>
-        <p>Vous avez terminé avec succès la formation <strong>${formationTitle}</strong>.</p>
-        <p>Votre certificat de completion est maintenant disponible dans votre tableau de bord.</p>
-        <a href="${formationUrl}" 
-           style="background-color: #16a34a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 20px 0;">
-          Télécharger mon certificat
-        </a>
-        <p>Continuez votre apprentissage avec nos autres formations! <a href="${SITE_BASE_URL}/formations">Découvrir les formations</a></p>
-        <p>L'équipe FYGS</p>
-      </div>
-    `;
-
-    return { subject, html };
+    return certificateEarnedTemplate(name, title, certificateUrl, kind);
   }
 }
 

@@ -90,68 +90,22 @@
 
 ---
 
-## Composants Marketing
+## Composants des formations
 
-### `<SectionHero>`
+Réutilisés par le catalogue, la page d'une formation, l'accueil et les parcours ; aucun autre composant ne refait
+leur travail.
 
-Hero section avec titre display, description et CTA.
+| Composant | Rôle |
+|-----------|------|
+| `components/courses/course-card-shared.tsx` | Carte d'une formation (catalogue, accueil) : miniature, niveau, durée, prix exact, statut du visiteur |
+| `components/paths/path-card.tsx` | Carte d'un parcours |
+| `components/marketing/course-thumbnail.tsx` | Miniature d'une formation, avec un fond neutre quand il n'y en a pas |
+| `components/marketing/course-trailer.tsx` | Bande-annonce de la page d'une formation |
+| `components/marketing/course-faq.tsx` | FAQ d'une formation (accordéon accessible) |
+| `components/learning/lesson-content-renderer.tsx` | Seul rendu du contenu des leçons et des diapositives (Markdown ou HTML, nettoyé) |
 
-```tsx
-<SectionHero
-  badge="Nouveau"
-  subtitle="Sous-titre"
-  title="Titre principal"
-  description="Description longue..."
-  align="center" // ou "left"
->
-  <Button>CTA</Button>
-</SectionHero>
-```
-
-### `<FeatureGrid>`
-
-Grille de fonctionnalités avec icônes.
-
-```tsx
-<FeatureGrid
-  title="Fonctionnalités"
-  features={[{ icon: BookOpen, title: "...", description: "..." }]}
-  columns={3} // 2, 3 ou 4
-/>
-```
-
-### `<TestimonialCarousel>`
-
-Témoignages avec étoiles et avatars.
-
-```tsx
-<TestimonialCarousel
-  title="Témoignages"
-  testimonials={[{ name: "...", role: "...", content: "...", rating: 5 }]}
-/>
-```
-
-### `<PricingTable>`
-
-Tableau de prix avec plan mis en avant.
-
-```tsx
-<PricingTable
-  title="Tarifs"
-  plans={[{ id: "...", name: "...", price: 29, period: "mois", features: [...], highlighted: true }]}
-/>
-```
-
-### `<FAQSection>`
-
-Accordion FAQ accessible (aria-expanded).
-
-```tsx
-<FAQSection
-  title="FAQ"
-  items={[{ question: "...", answer: "..." }]}
-/>
-```
+Libellés et couleurs des niveaux, catégories et accès : `lib/courses/labels.ts` (badges lisibles en clair et en
+sombre). Durées : `lib/format-duration.ts`. Prix : `lib/price-format.ts`.
 
 ---
 

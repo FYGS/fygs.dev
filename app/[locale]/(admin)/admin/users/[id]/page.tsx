@@ -8,6 +8,7 @@ import { db } from "@/lib/db";
 import { requireAdminPage } from "@/lib/admin-guard";
 import { formatDateTime, formatMoney } from "../../_components/list-shell";
 import { UserAdminControls } from "../_components/user-admin-controls";
+import { isSubscriptionActive } from "@/lib/access/entitlement";
 
 export const metadata: Metadata = {
   title: "Utilisateur | Admin FYGS",
@@ -65,7 +66,7 @@ export default async function AdminUserPage({ params }: { params: Promise<{ id: 
           <p className="text-muted-foreground break-all">{user.email}</p>
           <div className="flex flex-wrap gap-2 pt-1">
             <Badge variant="secondary">{ROLE_LABEL[user.role] ?? user.role}</Badge>
-            {subscription?.status === "ACTIVE" && <Badge>Premium</Badge>}
+            {isSubscriptionActive(subscription) && <Badge>Premium</Badge>}
             {user.isBanned && <Badge variant="destructive">Suspendu de la communauté</Badge>}
             {!user.emailVerified && <Badge variant="outline">E-mail non vérifié</Badge>}
           </div>

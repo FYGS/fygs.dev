@@ -18,18 +18,17 @@ import {
 import { cn } from '@/lib/utils';
 
 interface ReviewFormProps {
-  courseId: string;
   existingReview?: {
     rating: number;
     comment: string | null;
   };
-  onSubmit?: (data: { rating: number; comment: string }) => Promise<void>;
+  /** Saves the review; it reports success and errors itself. */
+  onSubmit: (data: { rating: number; comment: string }) => Promise<void>;
   className?: string;
   disabled?: boolean;
 }
 
 export function ReviewForm({ 
-  courseId, 
   existingReview, 
   onSubmit,
   className,
@@ -53,30 +52,7 @@ export function ReviewForm({
     }
 
     startTransition(async () => {
-      try {
-        if (onSubmit) {
-          await onSubmit({ rating, comment: comment.trim() });
-        } else {
-          // Default submit action
-          const formData = new FormData();
-          formData.append('courseId', courseId);
-          formData.append('rating', String(rating));
-          formData.append('comment', comment.trim());
-          
-          // Import the action dynamically to avoid build issues
-          const { submitCourseReview } = await import('@/app/actions/learning');
-          const result = await submitCourseReview(formData);
-          
-          if (result?.ok) {
-            toast.success(existingReview ? 'Avis mis à jour avec succès!' : 'Avis publié avec succès!');
-          } else {
-            throw new Error(result?.error || 'Erreur lors de la publication');
-          }
-        }
-      } catch (error) {
-        console.error('Review submission error:', error);
-        toast.error(error instanceof Error ? error.message : 'Une erreur inattendue s\'est produite');
-      }
+      await onSubmit({ rating, comment: comment.trim() });
     });
   };
 

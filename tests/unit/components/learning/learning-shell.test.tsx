@@ -89,7 +89,7 @@ describe("LearningTopBar", () => {
     renderInLearning(<LearningTopBar sidebarOpen onToggleSidebar={vi.fn()} />, { completed: ["l1", "l2"] });
     expect(screen.getByText("React")).toBeTruthy();
     expect(screen.getByText("Fonctions")).toBeTruthy();
-    expect(screen.getByText("40%")).toBeTruthy(); // 2 of 5 items
+    expect(screen.getByText("40 %")).toBeTruthy(); // 2 of 5 items
     expect(screen.getByRole("link", { name: /Quitter/ }).getAttribute("href")).toBe("/formations/react");
   });
 

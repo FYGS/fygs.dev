@@ -12,6 +12,7 @@ import {
   Minus
 } from "lucide-react";
 import { percentChange } from "@/lib/percent-change";
+import { formatPrice } from "@/lib/price-format";
 
 interface AnalyticsOverviewProps {
   stats: {
@@ -48,7 +49,7 @@ function MetricCard({
 }: MetricCardProps) {
   const formatValue = (val: string | number) => {
     if (format === "currency") {
-      return typeof val === "number" ? `${val.toLocaleString("fr-FR")}€` : val;
+      return typeof val === "number" ? formatPrice(val, { freeLabel: false }) : val;
     }
     if (format === "percentage") {
       return typeof val === "number" ? `${val}%` : val;

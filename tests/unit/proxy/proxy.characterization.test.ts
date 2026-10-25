@@ -122,18 +122,13 @@ describe("auth gate", () => {
   );
 
   it.each(["/fr/learn/react", "/fr/learn/react/lessons/variables", "/fr/learn/react/quizzes/q1", "/fr/learn/react/exam"])(
-    "protects the learning area: %s",
+    "leaves the learning area to the page, signed in or not (free samples are open to visitors): %s",
     async (path) => {
-      const res = await proxy(req(path));
-      expect(location(res)).toBe(`/fr/auth/login?callbackUrl=${encodeURIComponent(path)}&reason=auth_required`);
+      expect((await proxy(req(path))).status).toBe(200);
+      m.getSession.mockResolvedValue({ user: { id: "u1" } });
+      expect((await proxy(req(path))).status).toBe(200); // lib/learning/page-context.ts decides
     },
   );
-
-  it("lets an authenticated learner into the learning area without any database lookup", async () => {
-    m.getSession.mockResolvedValue({ user: { id: "u1" } });
-    const res = await proxy(req("/fr/learn/react/lessons/variables"));
-    expect(res.status).toBe(200); // the page decides who may open what (lib/learning/page-context.ts)
-  });
 
   it("keeps the certificate verification page public while the rest of /certificates needs a session", async () => {
     const verify = await proxy(req("/fr/certificates/verify/0123456789abcdef0123456789abcdef"));

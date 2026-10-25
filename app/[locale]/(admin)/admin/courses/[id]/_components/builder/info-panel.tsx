@@ -14,7 +14,7 @@ import { StringListEditor } from "@/components/admin/string-list-editor";
 import { formatMinutes } from "@/lib/format-duration";
 import { cn } from "@/lib/utils";
 import { createQuickTag } from "../../../_actions/course-actions";
-import { CATEGORY_OPTIONS, LEVEL_OPTIONS } from "./labels";
+import { CATEGORY_OPTIONS, LEVEL_OPTIONS } from "@/lib/courses/labels";
 import type { CourseInfo, TagOption } from "./types";
 
 interface Props {
@@ -78,7 +78,7 @@ export function InfoPanel({ info, update, tags, onTagCreated, computedMinutes }:
             aria-describedby="course-description-help"
             onChange={(e) => update({ description: e.target.value })}
           />
-          <p id="course-description-help" className={cn("text-sm", descriptionTooShort ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground")}>
+          <p id="course-description-help" className={cn("text-sm", descriptionTooShort ? "text-amber-800 dark:text-amber-300" : "text-muted-foreground")}>
             {descriptionTooShort
               ? "Décrivez en quelques phrases ce que l'apprenant saura faire à la fin (10 caractères minimum pour publier)."
               : `${info.description.length} / 2000`}
@@ -119,7 +119,7 @@ export function InfoPanel({ info, update, tags, onTagCreated, computedMinutes }:
         </div>
 
         <div className="space-y-1.5">
-          <Label>Image de couverture</Label>
+          <p className="text-sm font-medium leading-none">Image de couverture</p>
           <ImageField
             label="Image de couverture de la formation"
             value={info.thumbnail}
@@ -156,29 +156,31 @@ export function InfoPanel({ info, update, tags, onTagCreated, computedMinutes }:
           />
         </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="course-duration">Durée totale (minutes)</Label>
-          {computedMinutes > 0 ? (
-            <p id="course-duration" className="text-sm">
+        {computedMinutes > 0 ? (
+          <div className="space-y-1.5">
+            <p className="text-sm font-medium leading-none">Durée totale</p>
+            <p className="text-sm">
               <span className="font-medium">{formatMinutes(computedMinutes)}</span>
-              <span className="text-muted-foreground"> — calculée à partir de la durée des leçons publiées.</span>
+              <span className="text-muted-foreground"> — la somme des durées des leçons publiées, affichée aux apprenants.</span>
             </p>
-          ) : (
-            <>
-              <Input
-                id="course-duration"
-                type="number"
-                min={0}
-                className="max-w-40"
-                value={info.duration ?? ""}
-                onChange={(e) => update({ duration: e.target.value === "" ? null : Math.max(0, Math.round(Number(e.target.value))) })}
-              />
-              <p className="text-sm text-muted-foreground">
-                Estimation à votre main tant que les leçons n&apos;ont pas de durée ; elle sera calculée ensuite.
-              </p>
-            </>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="space-y-1.5">
+            <Label htmlFor="course-duration">Durée totale estimée (minutes)</Label>
+            <Input
+              id="course-duration"
+              type="number"
+              min={0}
+              className="max-w-40"
+              aria-describedby="course-duration-help"
+              value={info.duration ?? ""}
+              onChange={(e) => update({ duration: e.target.value === "" ? null : Math.max(0, Math.round(Number(e.target.value))) })}
+            />
+            <p id="course-duration-help" className="text-sm text-muted-foreground">
+              Affichée tant qu&apos;aucune leçon publiée n&apos;a de durée ; ensuite, la somme des leçons la remplace.
+            </p>
+          </div>
+        )}
       </section>
 
       <section aria-labelledby="info-tags" className="space-y-4">

@@ -8,6 +8,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
+import { waitForSettledPage } from "./settle.mjs";
+
 const root = path.resolve(import.meta.dirname, "../..");
 const { chromium } = await import(pathToFileURL(path.join(root, "node_modules/@playwright/test/index.mjs")).href);
 
@@ -74,7 +76,8 @@ for (const route of routes) {
 
   try {
     const response = await page.goto(base + route, { waitUntil: "load", timeout: 240000 });
-    await page.waitForTimeout(1500);
+    if (!(await waitForSettledPage(page))) entry.problems.push("still loading after 15 s (aria-busy or no title)");
+    await page.waitForTimeout(500);
     entry.status = response?.status();
     if (entry.status && entry.status >= 400) entry.problems.push(`HTTP ${entry.status} on the page itself`);
 

@@ -247,4 +247,25 @@ describe("Enroll Course Server Action Contract Tests", () => {
       });
     });
   });
+  describe("Entitlement rule (lib/access/entitlement.ts)", () => {
+    test("a lapsed premium learner is told why, and nothing is created", async () => {
+      await db.enrollment.create({ data: { userId: testUserId, courseId: premiumCourseId } });
+      await db.subscription.create({ data: { userId: testUserId, status: "CANCELED" } });
+
+      const result = await enrollCourse({ courseId: premiumCourseId });
+      expect(result).toMatchObject({ success: false, error: "ACCESS_EXPIRED", message: expect.stringContaining("abonnement") });
+      expect(await db.enrollment.count({ where: { userId: testUserId } })).toBe(1);
+      await db.subscription.deleteMany({ where: { userId: testUserId } });
+    });
+
+    test("an access granted by an administrator lets the learner in", async () => {
+      await db.enrollment.create({ data: { userId: testUserId, courseId: premiumCourseId, grantedAt: new Date() } });
+      expect(await enrollCourse({ courseId: premiumCourseId })).toMatchObject({ success: true, alreadyEnrolled: true });
+    });
+
+    test("an unpublished course cannot be joined", async () => {
+      await db.course.update({ where: { id: testCourseId }, data: { published: false } });
+      expect(await enrollCourse({ courseId: testCourseId })).toMatchObject({ success: false, error: "COURSE_NOT_PUBLISHED" });
+    });
+  });
 });

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { headers } from "next/headers";
 import { Award, CheckCircle2 } from "lucide-react";
 import { auth } from "@/lib/auth";
@@ -9,17 +9,19 @@ import { logger, createLogger } from "@/lib/structured-logger";
 import { Analytics } from "@/lib/analytics-helper";
 import { CourseFaq } from "@/components/marketing/course-faq";
 import { CourseTrailer } from "@/components/marketing/course-trailer";
-import { SocialProof } from "@/components/marketing/social-proof";
-import { TrustBadges } from "@/components/marketing/trust-badges";
 import { Button } from "@/components/ui/button";
 import { CoursePathBadges } from "@/components/paths/course-path-badges";
-import { canOpenItem, outlineHasFlaggedPreview, resolveLearnerAccess, type LearnerAccess } from "@/lib/learning/access";
+import { CourseOfferPanel, type OfferViewerState } from "@/app/_components/payment/course-offer-panel";
+import { courseOffer } from "@/lib/access/offer";
+import { findRedirectedCourseSlug } from "@/lib/courses/slug-redirect";
+import { canOpenItem, resolveLearnerAccess } from "@/lib/learning/access";
 import { loadCourseOutline, loadLearnerCourseState } from "@/lib/learning/course-state";
 import { buildCurriculumView, curriculumStats } from "@/lib/learning/curriculum-view";
+import { displayedCourseMinutes } from "@/lib/format-duration";
 import { computeProgress, itemHref, type OutlineItem } from "@/lib/learning/outline";
+import { getOwnReview, getReviewPage, getReviewSummary } from "@/lib/reviews/course-reviews";
 import { CourseBreadcrumb } from "./_components/course-breadcrumb";
 import { CourseCurriculum } from "./_components/course-curriculum";
-import { CourseEnrollment } from "./_components/course-enrollment";
 import { CourseHeader } from "./_components/course-header";
 import { CoursePublicContent } from "./_components/course-public-content";
 import { CourseResumeBanner } from "./_components/course-resume-banner";
@@ -34,7 +36,8 @@ interface CoursePageProps {
     canceled?: string;
     preview?: string;
     locked?: string;
-    reason?: string;
+    /** The step of the learning area that sent the visitor here (sign-in comes back to it). */
+    from?: string;
   }>;
 }
 
@@ -44,12 +47,13 @@ export async function generateMetadata({ params }: CoursePageProps): Promise<Met
     where: { slug, published: true },
     select: { title: true, description: true, thumbnail: true },
   });
-  if (!course) return { title: "Formation introuvable" };
+  if (!course) return { title: "Formation introuvable", robots: { index: false } };
 
   const title = `${course.title} | Formations FYGS`;
   return {
     title,
     description: course.description,
+    alternates: { canonical: `/formations/${slug}` },
     openGraph: {
       title,
       description: course.description,
@@ -70,14 +74,13 @@ export async function generateMetadata({ params }: CoursePageProps): Promise<Met
 
 export default async function CoursePage({ params, searchParams }: CoursePageProps) {
   const { slug } = await params;
-  const { success, canceled, preview, locked, reason } = await searchParams;
+  const query = await searchParams;
 
   const correlationId = logger.generateCorrelationId();
   const courseLogger = createLogger({ operation: "course-page-view", correlationId, resourceType: "course", resourceId: slug });
 
   const session = await auth.api.getSession({ headers: await headers() });
-  const user = session?.user;
-
+  const user = session?.user ?? null;
   courseLogger.info("Course page accessed", { userId: user?.id, resourceId: slug, metadata: { authenticated: !!user } });
 
   const course = await db.course.findUnique({
@@ -93,8 +96,9 @@ export default async function CoursePage({ params, searchParams }: CoursePagePro
       level: true,
       published: true,
       accessTier: true,
-      previewEnabled: true,
+      duration: true,
       instructorId: true,
+      instructor: { select: { name: true } },
       updatedAt: true,
       trailerUrl: true,
       faq: true,
@@ -105,89 +109,109 @@ export default async function CoursePage({ params, searchParams }: CoursePagePro
       publicPrerequisites: true,
       tags: { select: { tag: { select: { name: true, color: true } } } },
       _count: { select: { enrollments: true } },
-      reviews: {
-        where: { status: "APPROVED" },
-        select: {
-          id: true,
-          userId: true,
-          courseId: true,
-          rating: true,
-          comment: true,
-          createdAt: true,
-          updatedAt: true,
-          user: { select: { name: true, image: true } },
-        },
-        orderBy: { createdAt: "desc" },
-        take: 50,
-      },
     },
   });
 
+  if (!course) {
+    // A former address of a course leads to its current one
+    const current = await findRedirectedCourseSlug(slug);
+    if (current) permanentRedirect(`/formations/${current}`);
+    notFound();
+  }
+
   // A draft is shown to its author (or an admin) who asks for the preview
-  const isStaff = !!user && (user.role === "ADMIN" || (user.role === "INSTRUCTOR" && course?.instructorId === user.id));
-  if (!course || (!course.published && !(preview === "true" && isStaff))) notFound();
+  const isStaff = !!user && (user.role === "ADMIN" || (user.role === "INSTRUCTOR" && course.instructorId === user.id));
+  if (!course.published && !(query.preview === "true" && isStaff)) notFound();
 
-  // The plan of the course for everyone; what has been done only for a signed-in user
-  const state = user ? await loadLearnerCourseState(user.id, course.id) : null;
-  const outline = state?.outline ?? (await loadCourseOutline(course.id));
-  const progress = state?.progress ?? computeProgress(outline, { completedLessonIds: new Set(), passedQuizIds: new Set(), examPassed: false });
-  const isDone = (item: OutlineItem) =>
-    !state ? false : item.kind === "lesson" ? state.completedLessonIds.has(item.id) : item.kind === "quiz" ? state.passedQuizIds.has(item.id) : state.examPassed;
+  const outline = await loadCourseOutline(course.id);
+  const [state, access, resourceCount, certificate, summary, firstReviews, ownReview] = await Promise.all([
+    user ? loadLearnerCourseState(user.id, course.id, outline) : Promise.resolve(null),
+    resolveLearnerAccess({ userId: user?.id ?? null, role: user?.role, course, outline }),
+    db.lessonResource.count({ where: { lesson: { courseId: course.id, published: true } } }),
+    // A certificate stays the learner's, whatever happens to their access
+    user
+      ? db.certificate.findUnique({ where: { userId_courseId: { userId: user.id, courseId: course.id } }, select: { id: true } })
+      : Promise.resolve(null),
+    getReviewSummary(course.id),
+    getReviewPage({ courseId: course.id, viewerId: user?.id ?? null }),
+    user ? getOwnReview(user.id, course.id) : Promise.resolve(null),
+  ]);
 
-  let access: LearnerAccess = { mode: "none", reason: "not_enrolled", isEnrolled: false, hasActiveSubscription: false };
   if (user) {
-    access = await resolveLearnerAccess({ userId: user.id, role: user.role, course });
     await Analytics.courseCardViewed(user.id, {
       courseId: course.id,
       courseSlug: slug,
-      courseTier: course.accessTier || "FREE",
+      courseTier: course.accessTier,
       hasActiveSubscription: access.hasActiveSubscription,
       isEnrolled: access.isEnrolled,
       correlationId,
     });
-  } else if (course.published && (outlineHasFlaggedPreview(outline) || (course.previewEnabled && course.accessTier === "PREMIUM"))) {
-    access = { mode: "preview", isEnrolled: false, hasActiveSubscription: false };
   }
 
-  const hasFlaggedPreview = outlineHasFlaggedPreview(outline);
+  const progress = state?.progress ?? computeProgress(outline, { completedLessonIds: new Set(), passedQuizIds: new Set(), examPassed: false });
+  const isDone = (item: OutlineItem) =>
+    !state ? false : item.kind === "lesson" ? state.completedLessonIds.has(item.id) : item.kind === "quiz" ? state.passedQuizIds.has(item.id) : state.examPassed;
+
   const entitled = access.mode === "full";
-  const canOpen = (item: OutlineItem) => canOpenItem(access.mode, item, outline, hasFlaggedPreview);
+  const previewIds = new Set(access.previewLessonIds);
+  const canOpen = (item: OutlineItem) => canOpenItem(access.mode, item, outline, previewIds);
 
-  const resourceCount = await db.lessonResource.count({ where: { lesson: { courseId: course.id, published: true } } });
-
-  const certificate =
-    user && entitled
-      ? await db.certificate.findUnique({
-          where: { userId_courseId: { userId: user.id, courseId: course.id } },
-          select: { id: true },
-        })
-      : null;
-
-  const sections = buildCurriculumView(outline, course.slug, {
-    isDone,
-    nextId: entitled ? (progress.next?.id ?? null) : null,
-    canOpen,
-  });
+  // "Aperçu gratuit" marks the lessons the sample rule opens (flagged ones, and the first one when the course offers it)
+  const sections = buildCurriculumView(outline, course.slug, { isDone, nextId: entitled ? (progress.next?.id ?? null) : null, canOpen }).map(
+    (section) => ({ ...section, items: section.items.map((item) => ({ ...item, isPreview: !entitled && previewIds.has(item.id) })) }),
+  );
   const stats = curriculumStats(outline);
+  const minutes = displayedCourseMinutes(stats.minutes, course.duration);
   const nextSection = progress.next ? sections.findIndex((s) => s.items.some((i) => i.id === progress.next?.id)) : -1;
 
-  const ratings = course.reviews;
-  const averageRating = ratings.length > 0 ? ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length : 0;
-  const price = course.price ? Number(course.price) : 0;
-  const serializedReviews = ratings.map((r) => ({
-    ...r,
-    createdAt: r.createdAt.toISOString(),
-    updatedAt: r.updatedAt.toISOString(),
-    user: { name: r.user.name, image: r.user.image },
-  }));
+  const offer = courseOffer(course.accessTier, course.price);
+  const viewerState: OfferViewerState = !user
+    ? "anonymous"
+    : access.mode === "staff"
+      ? "staff"
+      : entitled
+        ? "entitled"
+        : access.lapsed
+          ? "lapsed"
+          : access.eligible
+            ? "eligible"
+            : "none";
+  const paymentPending = query.success === "true" && !entitled;
+  const returnTo =
+    query.from && query.from.startsWith(`/learn/${course.slug}`) ? query.from : `/formations/${course.slug}`;
+
+  const offerPanel = (
+      <CourseOfferPanel
+        course={{ id: course.id, slug: course.slug, title: course.title }}
+        offer={offer}
+        state={viewerState}
+        source={access.source}
+        lapsed={access.lapsed}
+        continueHref={progress.next ? itemHref(course.slug, progress.next) : `/learn/${course.slug}`}
+        continueLabel={progress.done > 0 ? (progress.next ? "Reprendre la formation" : "Revoir la formation") : "Commencer la formation"}
+        hasPreview={previewIds.size > 0}
+        paymentPending={paymentPending}
+        includes={{
+          lessons: stats.lessons,
+          minutes,
+          resources: resourceCount,
+          quizzes: stats.quizzes,
+          hasExam: stats.hasExam,
+        }}
+      />
+    );
 
   return (
     <div className="min-h-screen bg-linear-to-br from-background via-background to-muted/20">
       <div className="container mx-auto max-w-7xl py-8">
-        <CourseBreadcrumb courseTitle={course.title} courseSlug={course.slug} />
+        <CourseBreadcrumb courseTitle={course.title} />
 
-        {success && <PaymentStatus type="success" courseTitle={course.title} courseSlug={course.slug} />}
-        {canceled && <PaymentStatus type="canceled" courseTitle={course.title} courseSlug={course.slug} />}
+        {query.success === "true" && (
+          <PaymentStatus type="success" courseTitle={course.title} courseSlug={course.slug} unlocked={entitled} />
+        )}
+        {query.canceled === "true" && (
+          <PaymentStatus type="canceled" courseTitle={course.title} courseSlug={course.slug} unlocked={entitled} />
+        )}
         {access.mode === "staff" && (
           <p role="note" className="mb-6 flex flex-wrap items-center gap-3 rounded-md border border-dashed bg-muted/40 p-3 text-sm">
             <span className="flex-1">
@@ -198,9 +222,16 @@ export default async function CoursePage({ params, searchParams }: CoursePagePro
             </Button>
           </p>
         )}
-        {locked === "1" && !entitled && (
+        {query.locked === "1" && !entitled && access.mode !== "staff" && (
           <div className="mb-6">
-            <LockedNotice reason={reason} signedIn={!!user} />
+            <LockedNotice
+              signedIn={!!user}
+              free={offer.kind === "free"}
+              eligible={access.eligible && !access.isEnrolled}
+              lapsed={access.lapsed}
+              unpublished={!course.published}
+              returnTo={returnTo}
+            />
           </div>
         )}
 
@@ -227,12 +258,18 @@ export default async function CoursePage({ params, searchParams }: CoursePagePro
               level={course.level}
               tags={course.tags.map((t) => t.tag)}
               enrollmentCount={course._count.enrollments}
-              averageRating={averageRating}
-              reviewCount={ratings.length}
+              averageRating={summary.average}
+              reviewCount={summary.count}
               updatedAt={course.updatedAt.toISOString()}
-              minutes={stats.minutes}
+              minutes={minutes}
+              instructorName={course.instructor?.name ?? null}
               showThumbnail={!course.trailerUrl}
             />
+
+            {/* The panel comes right after the header on small screens, beside the content on large ones */}
+            <div className="lg:hidden">
+              {offerPanel}
+            </div>
 
             <CoursePathBadges courseId={course.id} />
 
@@ -244,15 +281,13 @@ export default async function CoursePage({ params, searchParams }: CoursePagePro
                 <ul className="grid gap-3 sm:grid-cols-2">
                   {course.objectives.map((objective, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm">
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" aria-hidden />
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-400" aria-hidden />
                       <span>{objective}</span>
                     </li>
                   ))}
                 </ul>
               </section>
             )}
-
-            <SocialProof enrollmentCount={course._count.enrollments} averageRating={averageRating} reviewCount={ratings.length} />
 
             <CoursePublicContent
               course={{
@@ -288,31 +323,24 @@ export default async function CoursePage({ params, searchParams }: CoursePagePro
             )}
 
             <div id="reviews">
-              <CourseReviews reviews={serializedReviews} courseId={course.id} canReview={entitled} />
+              <CourseReviews
+                courseId={course.id}
+                summary={summary}
+                initialReviews={firstReviews.reviews}
+                initialHasMore={firstReviews.hasMore}
+                canReview={entitled}
+                canAnswer={access.mode === "staff" || isStaff}
+                signedIn={!!user}
+                ownReview={ownReview}
+              />
             </div>
 
             {Array.isArray(course.faq) && course.faq.length > 0 && <CourseFaq items={course.faq as { q: string; a: string }[]} />}
-
-            <TrustBadges />
           </div>
 
-          <div className="lg:col-span-1">
+          <div className="hidden lg:col-span-1 lg:block">
             <div className="sticky top-8">
-              <CourseEnrollment
-                course={{
-                  id: course.id,
-                  slug: course.slug,
-                  title: course.title,
-                  price,
-                  level: course.level,
-                  duration: stats.minutes,
-                  enrollmentCount: course._count.enrollments,
-                  averageRating,
-                }}
-                isEnrolled={entitled}
-                canPreview={access.mode === "preview"}
-                hasPurchased={access.hasActiveSubscription || access.isEnrolled || price === 0}
-              />
+              {offerPanel}
             </div>
           </div>
         </div>

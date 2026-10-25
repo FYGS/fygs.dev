@@ -1,8 +1,9 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageLoading } from "@/components/learning/page-loading";
 
 export default function PathsLoading() {
   return (
-    <div className="container mx-auto max-w-7xl space-y-8 py-10" aria-busy="true" aria-label="Chargement des parcours">
+    <PageLoading label="Chargement des parcours…" className="container mx-auto max-w-7xl space-y-8 py-10">
       <div className="max-w-3xl space-y-3">
         <Skeleton className="h-5 w-24" />
         <Skeleton className="h-10 w-full max-w-lg" />
@@ -18,6 +19,6 @@ export default function PathsLoading() {
           <Skeleton key={i} className="h-80 rounded-xl" />
         ))}
       </div>
-    </div>
+    </PageLoading>
   );
 }

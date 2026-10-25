@@ -18,9 +18,9 @@ vi.mock("@/app/[locale]/(admin)/admin/paths/_actions/path-actions", () => ({
   deletePathAction: (...a: unknown[]) => deletePathAction(...a),
   checkPathSlugAction: (...a: unknown[]) => checkPathSlugAction(...a),
 }));
-vi.mock("@/components/ui/image-upload", () => ({
-  ImageUpload: ({ onImageUploaded }: { onImageUploaded: (url: string) => void }) => (
-    <button type="button" onClick={() => onImageUploaded("https://cdn.test/cover.png")}>
+vi.mock("@/components/admin/image-field", () => ({
+  ImageField: ({ onChange }: { onChange: (url: string | null) => void }) => (
+    <button type="button" onClick={() => onChange("https://cdn.test/cover.png")}>
       téléverser
     </button>
   ),

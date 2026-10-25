@@ -251,15 +251,10 @@ describe("serializeCourseSummary / serializeFeatured", () => {
         "averageRating": 4.5,
         "category": "JAVASCRIPT",
         "description": "desc",
-        "duration": 120,
+        "duration": 1,
         "enrollmentCount": 3,
         "featured": true,
-        "firstLessonSlug": "one",
-        "hasEntitlement": undefined,
         "id": "c1",
-        "isEnrolled": undefined,
-        "isInSubscription": undefined,
-        "isUnlocked": undefined,
         "level": "BEGINNER",
         "previewEnabled": true,
         "price": 29.99,
@@ -278,9 +273,10 @@ describe("serializeCourseSummary / serializeFeatured", () => {
     `);
   });
 
-  it("falls back to the first module lesson when there are no standalone lessons", () => {
-    const course = { ...baseCourse(), lessons: [] as unknown[] };
-    expect(serializeCourseSummary(course).firstLessonSlug).toMatchInlineSnapshot(`"in-module"`);
+  it("takes the published lessons' total (seconds) as duration, else the author's estimate", () => {
+    const course = { ...baseCourse(), lessons: [{ duration: 600 }, { duration: 1200 }, { duration: null }] };
+    expect(serializeCourseSummary(course).duration).toBe(30);
+    expect(serializeCourseSummary({ ...baseCourse(), lessons: [] }).duration).toBe(120);
   });
 
   it("handles a bare course (no relations, no price)", () => {
@@ -305,12 +301,7 @@ describe("serializeCourseSummary / serializeFeatured", () => {
         "duration": null,
         "enrollmentCount": 0,
         "featured": false,
-        "firstLessonSlug": null,
-        "hasEntitlement": undefined,
         "id": "c9",
-        "isEnrolled": undefined,
-        "isInSubscription": undefined,
-        "isUnlocked": undefined,
         "level": "BEGINNER",
         "previewEnabled": false,
         "price": 0,

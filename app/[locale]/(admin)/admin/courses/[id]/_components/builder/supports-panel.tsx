@@ -20,10 +20,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
+import { LessonContentRenderer } from "@/components/learning/lesson-content-renderer";
 import type { SupportItem, SupportSlide } from "@/lib/curriculum/assessments";
 import type { ModuleSummary } from "@/lib/curriculum/curriculum";
 import { cn } from "@/lib/utils";
 import { addSupport, removeSupport, reorderModuleSupports, saveSupport } from "../../_actions/assessment-actions";
+import { useUnsavedReport } from "./save-status";
 
 interface Props {
   courseId: string;
@@ -172,14 +174,16 @@ function SupportEditor({
   const [html, setHtml] = useState(() => isAdvancedHtml(slides[0]?.content ?? ""));
   const [preview, setPreview] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [initial] = useState(() => JSON.stringify({ title, targetModule, slides }));
+  useUnsavedReport(`support-${support?.id ?? "new"}`, JSON.stringify({ title, targetModule, slides }) !== initial, "Support non enregistré");
 
   const slide = slides[current];
   const problem = !title.trim() ? "Donnez un titre au support." : slides.some((s) => !s.title.trim()) ? "Chaque diapositive a besoin d'un titre." : null;
 
   const patchSlide = (patch: Partial<SupportSlide>) => setSlides((list) => list.map((s, i) => (i === current ? { ...s, ...patch } : s)));
-  const select = (index: number) => {
+  const select = (index: number, list: SupportSlide[] = slides) => {
     setCurrent(index);
-    setHtml(isAdvancedHtml(slides[index]?.content ?? ""));
+    setHtml(isAdvancedHtml(list[index]?.content ?? ""));
     setPreview(false);
   };
   const moveSlide = (delta: -1 | 1) => {
@@ -280,11 +284,16 @@ function SupportEditor({
           </div>
 
           {preview ? (
-            <div className="prose prose-sm dark:prose-invert min-h-40 max-w-none rounded-md border bg-card p-4" dangerouslySetInnerHTML={{ __html: slide.content }} />
+            <div className="min-h-40 rounded-md border bg-card p-4">
+              {/* the learner's renderer: what the author sees is what learners get, cleaned of anything that runs */}
+              <LessonContentRenderer content={slide.content} />
+            </div>
           ) : html ? (
             <div className="space-y-1.5">
               <Textarea aria-label="HTML de la diapositive" rows={12} className="font-mono text-sm" value={slide.content} onChange={(e) => patchSlide({ content: e.target.value })} />
-              <p className="text-xs text-muted-foreground">Mise en forme libre. Repasser au mode visuel simplifie les mises en page avancées.</p>
+              <p className="text-xs text-muted-foreground">
+                Mise en forme libre. Les scripts, styles intégrés et formulaires sont retirés à l&apos;affichage. Repasser au mode visuel simplifie les mises en page avancées.
+              </p>
             </div>
           ) : (
             <RichTextEditor key={current} content={slide.content} onChange={(content) => patchSlide({ content })} placeholder="Le contenu de la diapositive…" />
@@ -305,7 +314,8 @@ function SupportEditor({
               onClick={() => {
                 const next = slides.filter((_, i) => i !== current);
                 setSlides(next);
-                select(Math.min(current, next.length - 1));
+                // the mode follows the slide that takes its place, read from the new list
+                select(Math.min(current, next.length - 1), next);
               }}
             >
               <Trash2 className="mr-1.5 h-4 w-4" aria-hidden />
@@ -315,7 +325,7 @@ function SupportEditor({
         </div>
       </div>
 
-      {problem && <p className="text-sm text-amber-600 dark:text-amber-400">{problem}</p>}
+      {problem && <p className="text-sm text-amber-800 dark:text-amber-300">{problem}</p>}
       <div className="flex justify-end gap-2">
         <Button type="button" variant="ghost" onClick={onCancel} disabled={saving}>
           Annuler

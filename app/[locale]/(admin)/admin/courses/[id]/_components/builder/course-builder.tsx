@@ -1,7 +1,17 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { BookOpen, Eye, FileQuestion, Layers, Presentation, Settings, ShoppingBag } from "lucide-react";
+import { BarChart3, BookOpen, Eye, FileQuestion, Layers, Presentation, Radio, Settings, ShoppingBag, Users } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import type { ExamDetail, QuizItem, SupportItem } from "@/lib/curriculum/assessments";
 import type { CurriculumSnapshot } from "@/lib/curriculum/curriculum";
 import { checkPublishReadiness } from "@/lib/curriculum/publish";
@@ -15,10 +25,12 @@ import { AssessmentsPanel } from "./assessments-panel";
 import { BuilderHeader } from "./builder-header";
 import { CurriculumPanel } from "./curriculum-panel";
 import { InfoPanel } from "./info-panel";
+import { LearnersPanel } from "./learners-panel";
 import { PreviewPanel } from "./preview-panel";
-import { SaveStatusProvider } from "./save-status";
+import { hasLosableChanges, SaveStatusProvider, useSaveStatus } from "./save-status";
 import { SalesPanel } from "./sales-panel";
 import { SettingsPanel } from "./settings-panel";
+import { StatisticsPanel } from "./statistics-panel";
 import { SupportsPanel } from "./supports-panel";
 import type { CourseInfo, InstructorOption, SectionId, TagOption } from "./types";
 import { useAutosave } from "./use-autosave";
@@ -60,6 +72,8 @@ const SECTIONS: { id: SectionId; label: string; icon: typeof BookOpen }[] = [
   { id: "supports", label: "Supports visuels", icon: Presentation },
   { id: "vente", label: "Page de vente", icon: ShoppingBag },
   { id: "apercu", label: "Aperçu et publication", icon: Eye },
+  { id: "statistiques", label: "Statistiques", icon: BarChart3 },
+  { id: "apprenants", label: "Apprenants", icon: Users },
   { id: "parametres", label: "Paramètres", icon: Settings },
 ];
 
@@ -71,6 +85,8 @@ function Builder({ course, curriculum, quizzes: initialQuizzes, supports: initia
   const [exam, setExam] = useState(initialExam);
   const [tags, setTags] = useState(initialTags);
   const [section, setSection] = useState<SectionId>(initialSection);
+  const [pendingSection, setPendingSection] = useState<SectionId | null>(null);
+  const { entries } = useSaveStatus();
 
   const { queue, flush } = useAutosave<InfoPatch>({ name: "course", save: (patch) => updateCourse(info.id, patch) });
 
@@ -107,11 +123,21 @@ function Builder({ course, curriculum, quizzes: initialQuizzes, supports: initia
     if (result.success) setSnapshot(result.snapshot);
   }, [info.id]);
 
-  const goTo = useCallback((next: SectionId) => {
+  const show = useCallback((next: SectionId) => {
     setSection(next);
     window.history.replaceState(null, "", `?section=${next}`);
-    document.getElementById("builder-main")?.scrollIntoView({ block: "start" });
+    document.getElementById("builder-section")?.scrollIntoView({ block: "start" });
   }, []);
+
+  /** Leaving a section closes its editors: a quiz, an exam or slides not saved yet would be lost, so ask first. */
+  const goTo = useCallback(
+    (next: SectionId) => {
+      if (next === section) return;
+      if (hasLosableChanges(entries)) setPendingSection(next);
+      else show(next);
+    },
+    [entries, section, show],
+  );
 
   const dots: Partial<Record<SectionId, Dot>> = {
     infos: readiness.items.filter((i) => ["title", "description", "thumbnail"].includes(i.key)).every((i) => i.ok) ? "ok" : "todo",
@@ -133,7 +159,7 @@ function Builder({ course, curriculum, quizzes: initialQuizzes, supports: initia
         published={info.published}
         enrollments={enrollments}
         readiness={readiness}
-        beforePublish={async () => void (await flush())}
+        beforePublish={flush}
         onPublishedChange={(published) => setInfo((i) => ({ ...i, published }))}
         onGoToSection={goTo}
       />
@@ -172,7 +198,13 @@ function Builder({ course, curriculum, quizzes: initialQuizzes, supports: initia
           </ul>
         </nav>
 
-        <main id="builder-main" className="min-w-0 max-w-4xl scroll-mt-24">
+        <section id="builder-section" aria-label={SECTIONS.find((s) => s.id === section)?.label} className="min-w-0 max-w-4xl scroll-mt-24 space-y-6">
+          {info.published && (
+            <p className="flex items-start gap-2 rounded-md border border-sky-300 bg-sky-50 px-3 py-2 text-sm text-sky-950 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-100">
+              <Radio className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+              <span>Formation en ligne : vos modifications sont visibles immédiatement par les apprenants.</span>
+            </p>
+          )}
           {section === "infos" && <InfoPanel info={info} update={update} tags={tags} onTagCreated={(tag) => setTags((list) => (list.some((t) => t.id === tag.id) ? list : [...list, tag]))} computedMinutes={computedMinutes} />}
           {section === "programme" && (
             <CurriculumPanel courseId={info.id} courseSlug={info.slug} coursePublished={info.published} snapshot={snapshot} onSnapshot={setSnapshot} onGoToSection={goTo} initialLessonId={initialLessonId} />
@@ -181,7 +213,7 @@ function Builder({ course, curriculum, quizzes: initialQuizzes, supports: initia
             <AssessmentsPanel courseId={info.id} modules={snapshot.modules} quizzes={quizzes} onQuizzes={setQuizzes} exam={exam} onExam={setExam} onModulesChanged={() => void refreshCurriculum()} />
           )}
           {section === "supports" && <SupportsPanel courseId={info.id} modules={snapshot.modules} supports={supports} onSupports={setSupports} onModulesChanged={() => void refreshCurriculum()} />}
-          {section === "vente" && <SalesPanel info={info} update={update} />}
+          {section === "vente" && <SalesPanel info={info} update={update} snapshot={snapshot} onGoToSection={goTo} />}
           {section === "apercu" && <PreviewPanel info={info} readiness={readiness} snapshot={snapshot} quizCount={quizzes.length} hasExam={exam !== null} onGoToSection={goTo} />}
           {section === "parametres" && (
             <SettingsPanel
@@ -191,11 +223,37 @@ function Builder({ course, curriculum, quizzes: initialQuizzes, supports: initia
               isAdmin={isAdmin}
               instructors={instructors}
               enrollments={enrollments}
-              beforeLeave={async () => void (await flush())}
+              beforeLeave={flush}
             />
           )}
-        </main>
+          {section === "statistiques" && <StatisticsPanel courseId={info.id} />}
+          {section === "apprenants" && <LearnersPanel courseId={info.id} accessTier={info.accessTier} isAdmin={isAdmin} />}
+        </section>
       </div>
+
+      <AlertDialog open={pendingSection !== null} onOpenChange={(open) => !open && setPendingSection(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Modifications non enregistrées</AlertDialogTitle>
+            <AlertDialogDescription>
+              {Object.values(entries).find((e) => e.state === "unsaved" || e.state === "error")?.message ?? "Des modifications ne sont pas enregistrées"}. Si vous
+              changez de section maintenant, elles seront perdues.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Rester et enregistrer</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                const next = pendingSection;
+                setPendingSection(null);
+                if (next) show(next);
+              }}
+            >
+              Quitter sans enregistrer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

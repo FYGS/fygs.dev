@@ -67,6 +67,10 @@ describe("path administration actions", () => {
     signedInAs(admin);
     const a = await createCourse();
     const b = await createCourse();
+    // a published path needs courses that can be completed: each has a published lesson
+    for (const course of [a, b]) {
+      await db.lesson.create({ data: { courseId: course.id, title: "Leçon", slug: "lecon", order: 1, published: true } });
+    }
 
     const saved = await savePathAction(null, payload([a.id, b.id]));
     expect(saved).toMatchObject({ success: true, slug: "parcours" });

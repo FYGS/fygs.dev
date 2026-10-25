@@ -14,8 +14,9 @@ import {
   ChevronUp
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+
+// Same zone on the server and in the browser, or the dates of the server HTML do not hydrate
+const dateTime = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeStyle: "short", timeZone: "Europe/Paris" });
 
 interface ReviewReply {
   id: string;
@@ -207,9 +208,7 @@ export function ReviewReplies({
                     </div>
 
                     <p className="text-xs text-muted-foreground">
-                      {format(new Date(reply.createdAt), "d MMMM yyyy 'à' HH:mm", {
-                        locale: fr
-                      })}
+                      {dateTime.format(new Date(reply.createdAt))}
                     </p>
                   </div>
                 </div>

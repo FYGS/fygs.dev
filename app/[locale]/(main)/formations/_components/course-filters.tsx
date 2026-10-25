@@ -7,27 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CourseCategory, CourseLevel } from "@/lib/generated/prisma/browser";
+import { CATEGORY_OPTIONS, LEVEL_OPTIONS } from "@/lib/courses/labels";
 
 const ALL = "all";
 
-const CATEGORIES = [
-  { value: CourseCategory.JAVASCRIPT, label: "JavaScript" },
-  { value: CourseCategory.TYPESCRIPT, label: "TypeScript" },
-  { value: CourseCategory.FRONTEND, label: "Frontend" },
-  { value: CourseCategory.BACKEND, label: "Backend" },
-  { value: CourseCategory.FULLSTACK, label: "Fullstack" },
-  { value: CourseCategory.CLOUD, label: "Cloud" },
-  { value: CourseCategory.AI, label: "IA" },
-  { value: CourseCategory.DEVOPS, label: "DevOps" },
-  { value: CourseCategory.PRODUCTIVITY, label: "Productivité" },
-];
-
-const LEVELS = [
-  { value: CourseLevel.BEGINNER, label: "Débutant" },
-  { value: CourseLevel.INTERMEDIATE, label: "Intermédiaire" },
-  { value: CourseLevel.ADVANCED, label: "Avancé" },
-  { value: CourseLevel.EXPERT, label: "Expert" },
+const ACCESS = [
+  { value: "free", label: "Gratuites" },
+  { value: "premium", label: "Premium" },
 ];
 
 const SORTS = [
@@ -84,11 +70,12 @@ export function CourseFilters() {
 
   const category = searchParams.get("category") ?? ALL;
   const level = searchParams.get("level") ?? ALL;
+  const access = searchParams.get("access") ?? ALL;
   const sort = searchParams.get("sort") ?? "relevance";
-  const filtered = !!urlSearch || category !== ALL || level !== ALL || sort !== "relevance";
+  const filtered = !!urlSearch || category !== ALL || level !== ALL || access !== ALL || sort !== "relevance";
 
   return (
-    <div role="search" aria-label="Rechercher et filtrer les formations" className="mx-auto w-full max-w-4xl space-y-4" aria-busy={pending}>
+    <div role="search" aria-label="Rechercher et filtrer les formations" className="mx-auto w-full max-w-5xl space-y-4" aria-busy={pending}>
       <form
         className="mx-auto w-full max-w-md"
         onSubmit={(e) => {
@@ -112,7 +99,7 @@ export function CourseFilters() {
         </div>
       </form>
 
-      <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+      <div className="flex flex-col flex-wrap items-center justify-center gap-3 sm:flex-row sm:gap-4">
         <div className="w-full sm:w-48">
           <Label htmlFor="catalog-category" className="sr-only">
             Catégorie
@@ -123,7 +110,7 @@ export function CourseFilters() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={ALL}>Toutes les catégories</SelectItem>
-              {CATEGORIES.map((c) => (
+              {CATEGORY_OPTIONS.map((c) => (
                 <SelectItem key={c.value} value={c.value}>
                   {c.label}
                 </SelectItem>
@@ -142,9 +129,28 @@ export function CourseFilters() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={ALL}>Tous les niveaux</SelectItem>
-              {LEVELS.map((l) => (
+              {LEVEL_OPTIONS.map((l) => (
                 <SelectItem key={l.value} value={l.value}>
                   {l.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="w-full sm:w-44">
+          <Label htmlFor="catalog-access" className="sr-only">
+            Accès
+          </Label>
+          <Select value={access} onValueChange={(v) => update({ access: v === ALL ? null : v })}>
+            <SelectTrigger id="catalog-access" className="h-11 w-full">
+              <SelectValue placeholder="Tous les accès" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>Gratuites et Premium</SelectItem>
+              {ACCESS.map((a) => (
+                <SelectItem key={a.value} value={a.value}>
+                  {a.label}
                 </SelectItem>
               ))}
             </SelectContent>

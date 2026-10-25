@@ -41,61 +41,62 @@ model Session {
 }
 
 model User {
-  id                String               @id @default(cuid())
-  name              String
-  email             String               @unique
-  emailVerified     Boolean              @default(false)
-  image             String?
-  role              Role                 @default(STUDENT)
-  createdAt         DateTime             @default(now())
-  updatedAt         DateTime             @updatedAt
-  bio               String? // Community profile bio
-  githubUrl         String? // Social links for community
-  linkedinUrl       String?
-  websiteUrl        String?
-  communityPoints   Int                  @default(0) // Gamification points
-  communityLevel    Int                  @default(1) // User level based on activity
-  lastActiveAt      DateTime? // Last community activity
-  isBanned          Boolean              @default(false) // User ban status for moderation
-  AnalyticsEvent    AnalyticsEvent[]
-  certificates      Certificate[]
-  instructedCourses Course[]             @relation("CourseInstructor")
-  enrollments       Enrollment[]
-  InvoiceAudit      InvoiceAudit[]
-  payments          Payment[]
-  progress          Progress[]
-  quizResults       QuizResult[]
-  quizAttempts      QuizAttempt[]
-  reviewModerations ReviewModeration[]   @relation("ReviewModerator")
-  examResults       ExamResult[]
-  reviews           Review[]
-  reviewVotes       ReviewVote[]
-  reviewReplies     ReviewReply[]
-  reviewReports     ReviewReport[]
-  subscriptions     Subscription?
-  accounts          Account[]
-  sessions          Session[]
+  id                 String               @id @default(cuid())
+  name               String
+  email              String               @unique
+  emailVerified      Boolean              @default(false)
+  image              String?
+  role               Role                 @default(STUDENT)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  bio                String? // Community profile bio
+  githubUrl          String? // Social links for community
+  linkedinUrl        String?
+  websiteUrl         String?
+  communityPoints    Int                  @default(0) // Gamification points
+  communityLevel     Int                  @default(1) // User level based on activity
+  lastActiveAt       DateTime? // Last community activity
+  isBanned           Boolean              @default(false) // User ban status for moderation
+  AnalyticsEvent     AnalyticsEvent[]
+  certificates       Certificate[]
+  instructedCourses  Course[]             @relation("CourseInstructor")
+  enrollments        Enrollment[]
+  InvoiceAudit       InvoiceAudit[]
+  payments           Payment[]
+  progress           Progress[]
+  quizResults        QuizResult[]
+  quizAttempts       QuizAttempt[]
+  reviewModerations  ReviewModeration[]   @relation("ReviewModerator")
+  examResults        ExamResult[]
+  reviews            Review[]
+  reviewVotes        ReviewVote[]
+  reviewReplies      ReviewReply[]
+  reviewReports      ReviewReport[]
+  subscriptions      Subscription?
+  accounts           Account[]
+  sessions           Session[]
   // Community Relations
-  discussions       Discussion[]
-  discussionReplies DiscussionReply[]
-  discussionVotes   DiscussionVote[]
-  userBadges        UserBadge[]
-  notifications     Notification[]       @relation("NotificationRecipient")
-  sentNotifications Notification[]       @relation("NotificationSender")
-  followedTopics    TopicFollow[]
-  bookmarks         DiscussionBookmark[]
-  mentorRequests    MentorRequest[]      @relation("MentorRequestStudent")
-  mentorOffers      MentorRequest[]      @relation("MentorRequestMentor")
+  discussions        Discussion[]
+  discussionReplies  DiscussionReply[]
+  discussionVotes    DiscussionVote[]
+  userBadges         UserBadge[]
+  notifications      Notification[]       @relation("NotificationRecipient")
+  sentNotifications  Notification[]       @relation("NotificationSender")
+  followedTopics     TopicFollow[]
+  bookmarks          DiscussionBookmark[]
+  mentorRequests     MentorRequest[]      @relation("MentorRequestStudent")
+  mentorOffers       MentorRequest[]      @relation("MentorRequestMentor")
   // User following relations
-  following         UserFollow[]         @relation("UserFollowing")
-  followers         UserFollow[]         @relation("UserFollowers")
+  following          UserFollow[]         @relation("UserFollowing")
+  followers          UserFollow[]         @relation("UserFollowers")
   // Gamification
-  streak            UserStreak?
-  xpEvents          XpEvent[]
-  lessonNotes       LessonNote[]
-  authoredPaths     Path[]               @relation("PathAuthor")
-  pathEnrollments   PathEnrollment[]
-  pathCertificates  PathCertificate[]
+  streak             UserStreak?
+  xpEvents           XpEvent[]
+  lessonNotes        LessonNote[]
+  authoredPaths      Path[]               @relation("PathAuthor")
+  pathEnrollments    PathEnrollment[]
+  pathCertificates   PathCertificate[]
+  grantedEnrollments Enrollment[]         @relation("EnrollmentGrantedBy")
 
   @@map("user")
 }
@@ -135,11 +136,15 @@ model Lesson {
   description String?
   content     String?
   videoUrl    String?
+  /// WebVTT captions of the video (accessibility); shown as a captions track and offered for download
+  captionsUrl String?
+  /// Text version of the video, shown in the lesson's transcript tab
+  transcript  String?
   duration    Int?
   order       Int
   published   Boolean          @default(false)
   createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @default(now())
+  updatedAt   DateTime         @default(now()) @updatedAt
   courseId    String
   moduleId    String?
   isPreview   Boolean          @default(false) // Watchable without enrolment, shown as a free sample on the course page
@@ -161,6 +166,10 @@ model Enrollment {
   courseId    String
   enrolledAt  DateTime  @default(now())
   completedAt DateTime?
+  /// Access given by an administrator (no purchase, no subscription needed); null for a normal enrolment
+  grantedById String?
+  grantedAt   DateTime?
+  grantedBy   User?     @relation("EnrollmentGrantedBy", fields: [grantedById], references: [id], onDelete: SetNull)
   course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -176,7 +185,7 @@ model Progress {
   lastPosition Int       @default(0) // Where the video was left, in seconds (watchTime is cumulative)
   completedAt  DateTime?
   createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @default(now())
+  updatedAt    DateTime  @default(now()) @updatedAt
   lesson       Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -191,7 +200,7 @@ model Certificate {
   courseId  String
   issuedAt  DateTime @default(now())
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
   course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -755,21 +764,21 @@ model MentorRequest {
 
 // Add community relation to Course
 model Course {
-  id                  String           @id @default(cuid())
+  id                  String               @id @default(cuid())
   title               String
-  slug                String           @unique
+  slug                String               @unique
   description         String
   thumbnail           String?
   price               Decimal?
   category            CourseCategory
   level               CourseLevel
-  published           Boolean          @default(false)
-  featured            Boolean          @default(false)
+  published           Boolean              @default(false)
+  featured            Boolean              @default(false)
   duration            Int?
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @default(now())
-  accessTier          CourseAccessTier @default(FREE)
-  previewEnabled      Boolean          @default(true)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @default(now()) @updatedAt
+  accessTier          CourseAccessTier     @default(FREE)
+  previewEnabled      Boolean              @default(true)
   instructorId        String?
   publicEvaluation    String?
   publicPrerequisites String?
@@ -780,21 +789,22 @@ model Course {
   objectives          String[] // What the learner will be able to do
   publishedAt         DateTime? // First publication, shown as "updated" and used for ordering
   Certificate         Certificate[]
-  instructor          User?            @relation("CourseInstructor", fields: [instructorId], references: [id])
+  instructor          User?                @relation("CourseInstructor", fields: [instructorId], references: [id])
   tags                CourseTag[]
   enrollments         Enrollment[]
   lessons             Lesson[]
   modules             Module[]
   payments            Payment[]
-  quizzes             Quiz[]           @relation("CourseToQuiz")
-  finalExam           FinalExam?       @relation("CourseToFinalExam")
+  quizzes             Quiz[]               @relation("CourseToQuiz")
+  finalExam           FinalExam?           @relation("CourseToFinalExam")
   reviews             Review[]
-  visualSupports      VisualSupport[]  @relation("CourseToVisualSupport")
+  visualSupports      VisualSupport[]      @relation("CourseToVisualSupport")
   // Community Relations
   topics              Topic[]
   discussions         Discussion[]
   mentorRequests      MentorRequest[]
   paths               PathCourse[]
+  slugRedirects       CourseSlugRedirect[]
 }
 
 // New Enums for Community
@@ -865,7 +875,6 @@ enum XpReason {
   COURSE_COMPLETED
   STREAK_BONUS
   FIRST_LESSON
-  DAILY_LOGIN
 }
 
 // ─── Inline Notes ─────────────────────────────────────────────────────────────
@@ -963,4 +972,14 @@ model PathCertificate {
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, pathId])
+}
+
+/// A former address of a course: after a slug change, the old /formations and /learn links redirect to the new one.
+model CourseSlugRedirect {
+  slug      String   @id
+  courseId  String
+  createdAt DateTime @default(now())
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
 }

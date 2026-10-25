@@ -108,7 +108,7 @@ export function AdminHeader({ user, alerts = [] }: AdminHeaderProps) {
                 alerts
                   .filter((alert) => alert.count > 0)
                   .map((alert) => (
-                    <DropdownMenuItem key={alert.href} asChild>
+                    <DropdownMenuItem key={alert.label} asChild>
                       <Link href={alert.href} className="flex items-center justify-between">
                         <span>{alert.label}</span>
                         <Badge variant="secondary">{alert.count}</Badge>

@@ -5,13 +5,13 @@ import { FadeInWhenVisible } from "@/components/ui/fade-in";
 import { ArrowRight, Trophy, BookOpen } from "lucide-react";
 import Link from "next/link";
 import { CourseCardShared } from "@/components/courses/course-card-shared";
-import { FeaturedCourseDTO } from "@/types/course";
+import type { CourseCardData } from "@/lib/access/course-cards";
 import { motion } from "framer-motion";
 import { useIntlayer } from "next-intlayer";
 
 // Types pour les cours sérialisés
 interface FeaturedCoursesClientProps {
-  courses: FeaturedCourseDTO[];
+  courses: CourseCardData[];
 }
 
 export function FeaturedCoursesClient({ courses }: FeaturedCoursesClientProps) {
@@ -65,12 +65,7 @@ export function FeaturedCoursesClient({ courses }: FeaturedCoursesClientProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {courses.map((course, index) => (
             <FadeInWhenVisible key={course.id} delay={index * 0.08}>
-              <CourseCardShared
-                course={course as any}
-                accessState={course.price === 0 ? "FREE" : "LOCKED"}
-                showPreviewCTA
-                size="default"
-              />
+              <CourseCardShared course={course} />
             </FadeInWhenVisible>
           ))}
         </div>

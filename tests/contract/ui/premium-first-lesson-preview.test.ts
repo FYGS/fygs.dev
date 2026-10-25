@@ -10,6 +10,9 @@ import {
 } from "../../support/factories";
 import { resetDatabase } from "../../support/test-db";
 
+const isEnrolled = async (userId: string, courseId: string) =>
+  !!(await db.enrollment.findUnique({ where: { userId_courseId: { userId, courseId } } }));
+
 /**
  * T114: first-lesson preview of premium courses, through the real AccessService.
  *
@@ -152,14 +155,10 @@ describe("T114: Premium First Lesson Preview Tests", () => {
 
       // Previewing is a read: it leaves no progress and no enrollment behind
       expect(await getProgressRecord(user.id, course.id)).toBeNull();
-      expect(await AccessService.isEnrolledInCourse(user.id, course.id)).toBe(
-        false
-      );
+      expect(await isEnrolled(user.id, course.id)).toBe(false);
       expect(await AccessService.canAccessLesson(user.id, first.id)).toBe(true);
       expect(await getProgressRecord(user.id, course.id)).toBeNull();
-      expect(await AccessService.isEnrolledInCourse(user.id, course.id)).toBe(
-        false
-      );
+      expect(await isEnrolled(user.id, course.id)).toBe(false);
     });
 
     it("progress record can exist after enrollment for premium course", async () => {
@@ -185,9 +184,9 @@ describe("T114: Premium First Lesson Preview Tests", () => {
   });
 
   describe("Free Course Comparison", () => {
-    it("free course first lesson needs an enrollment, there is no preview", async () => {
+    it("a free course follows the same sample rule; without it, the lesson needs an enrollment", async () => {
       const user = await createUser();
-      const course = await createCourse({ accessTier: CourseAccessTier.FREE });
+      const course = await createCourse({ accessTier: CourseAccessTier.FREE, previewEnabled: false });
       const lesson = await createLesson(course.id, 1);
 
       expect(await AccessService.canAccessLesson(user.id, lesson.id)).toBe(false);
@@ -196,21 +195,23 @@ describe("T114: Premium First Lesson Preview Tests", () => {
           .canPreviewFirstLesson
       ).toBe(false);
 
+      await db.course.update({ where: { id: course.id }, data: { previewEnabled: true } });
+      expect(await AccessService.canAccessLesson(user.id, lesson.id)).toBe(true); // free sample, nothing recorded
+      expect(await AccessService.canRecordLessonProgress(user.id, lesson.id)).toBe(false);
+
       await enroll(user.id, course.id);
       expect(await AccessService.canAccessLesson(user.id, lesson.id)).toBe(true);
     });
   });
 
   describe("Admin and Edge Cases", () => {
-    it("admin gets the same first-lesson preview as anybody (not enrolled)", async () => {
+    it("an admin is staff: every lesson opens, nothing is recorded", async () => {
       const admin = await createUser({ role: Role.ADMIN });
       const { first, second } = await premiumCourseWithLessons();
 
       expect(await AccessService.canAccessLesson(admin.id, first.id)).toBe(true);
-      // admin viewing of the rest is a route-level decision, not an entitlement
-      expect(await AccessService.canAccessLesson(admin.id, second.id)).toBe(
-        false
-      );
+      expect(await AccessService.canAccessLesson(admin.id, second.id)).toBe(true);
+      expect(await AccessService.canRecordLessonProgress(admin.id, second.id)).toBe(false);
     });
 
     it("the preview lesson is the first PUBLISHED lesson", async () => {
@@ -261,9 +262,7 @@ describe("T114: Premium First Lesson Preview Tests", () => {
       const { course, first, second } = await premiumCourseWithLessons();
 
       // 1. Initial state - no enrollment, no progress
-      expect(await AccessService.isEnrolledInCourse(user.id, course.id)).toBe(
-        false
-      );
+      expect(await isEnrolled(user.id, course.id)).toBe(false);
       expect(await getProgressRecord(user.id, course.id)).toBeNull();
 
       // 2. Preview accessible for the first lesson only
@@ -276,9 +275,7 @@ describe("T114: Premium First Lesson Preview Tests", () => {
       await createSubscription(user.id);
       await enroll(user.id, course.id);
 
-      expect(await AccessService.isEnrolledInCourse(user.id, course.id)).toBe(
-        true
-      );
+      expect(await isEnrolled(user.id, course.id)).toBe(true);
       expect(await AccessService.canAccessLesson(user.id, first.id)).toBe(true);
       expect(await AccessService.canAccessLesson(user.id, second.id)).toBe(true);
     });

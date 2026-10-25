@@ -14,12 +14,15 @@ import {
   ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
+import { formatPrice } from "@/lib/price-format";
+import { LEVEL_BADGE_CLASSES, levelLabel } from "@/lib/courses/labels";
+import type { CourseLevel } from "@/lib/generated/prisma/browser";
 
 interface Course {
   id: string;
   title: string;
   slug: string;
-  price: number;
+  price: number | null;
   enrollmentCount: number;
   averageRating: number;
   level: string;
@@ -31,30 +34,7 @@ interface PopularCoursesProps {
 }
 
 export function PopularCourses({ courses }: PopularCoursesProps) {
-  const formatLevel = (level: string) => {
-    const levelMap: Record<string, string> = {
-      BEGINNER: "Débutant",
-      INTERMEDIATE: "Intermédiaire",
-      ADVANCED: "Avancé",
-      EXPERT: "Expert",
-    };
-    return levelMap[level] || level;
-  };
 
-  const getLevelColor = (level: string) => {
-    switch (level) {
-      case 'BEGINNER':
-        return 'bg-green-900 text-green-300';
-      case 'INTERMEDIATE':
-        return 'bg-blue-90 text-blue-300';
-      case 'ADVANCED':
-        return 'bg-orange-90 text-orange-300';
-      case 'EXPERT':
-        return 'bg-red-90 text-red-300';
-      default:
-        return "bg-gray-900 text-gray-300";
-    }
-  };
 
   return (
     <Card>
@@ -101,8 +81,8 @@ export function PopularCourses({ courses }: PopularCoursesProps) {
                       <h3 className="font-medium text-sm leading-tight line-clamp-2">
                         {course.title}
                       </h3>
-                      <Badge className={getLevelColor(course.level)}>
-                        {formatLevel(course.level)}
+                      <Badge className={LEVEL_BADGE_CLASSES[course.level as CourseLevel] ?? ""}>
+                        {levelLabel(course.level)}
                       </Badge>
                     </div>
 
@@ -115,14 +95,14 @@ export function PopularCourses({ courses }: PopularCoursesProps) {
 
                       {course.averageRating > 0 && (
                         <div className="flex items-center gap-1">
-                          <Star className="h-3 w-3 fill-yellow-40 text-yellow-400" />
+                          <Star className="h-3 w-3 fill-amber-400 text-amber-500" aria-hidden />
                           <span>{course.averageRating.toFixed(1)}</span>
                         </div>
                       )}
 
                       <div className="flex items-center gap-1">
-                        <Euro className="h-3 w-3" />
-                        <span>{course.price}€</span>
+                        <Euro className="h-3 w-3" aria-hidden />
+                        <span>{formatPrice(course.price)}</span>
                       </div>
                     </div>
                   </div>

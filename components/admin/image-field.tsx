@@ -1,10 +1,12 @@
 "use client";
 
-import Image from "next/image";
-import { useRef, useState } from "react";
-import { ImageIcon, Loader2, Trash2, Upload } from "lucide-react";
+import { useId, useRef, useState } from "react";
+import { ImageIcon, Link as LinkIcon, Loader2, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { isHttpUrl, UploadError, uploadImageFile } from "./direct-upload";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 const TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
@@ -19,12 +21,19 @@ interface Props {
   className?: string;
 }
 
-/** One image: preview, upload (click or drop), replace, remove. */
+/**
+ * One image: preview, upload (click or drop) or address, replace, remove. Without storage the address field is
+ * the way in, so a course can always get its cover.
+ */
 export function ImageField({ value, onChange, folder = "images", prefix = "course", label, className }: Props) {
   const input = useRef<HTMLInputElement>(null);
+  const urlId = useId();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [urlMode, setUrlMode] = useState(false);
+  const [address, setAddress] = useState("");
+  const [broken, setBroken] = useState(false);
 
   async function upload(file: File) {
     setError(null);
@@ -32,20 +41,25 @@ export function ImageField({ value, onChange, folder = "images", prefix = "cours
     if (file.size > MAX_BYTES) return setError("L'image dépasse 5 Mo.");
     setBusy(true);
     try {
-      const body = new FormData();
-      body.append("file", file);
-      body.append("folder", folder);
-      body.append("prefix", prefix);
-      const response = await fetch("/api/upload/image", { method: "POST", body });
-      const result = (await response.json().catch(() => ({}))) as { url?: string; error?: string };
-      if (!response.ok || !result.url) throw new Error("L'envoi a échoué. Réessayez.");
-      onChange(result.url);
+      onChange(await uploadImageFile(file, { folder, prefix }));
+      setBroken(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : "L'envoi a échoué.");
+      if (e instanceof UploadError && e.storageUnavailable) setUrlMode(true);
     } finally {
       setBusy(false);
       if (input.current) input.current.value = "";
     }
+  }
+
+  function applyAddress() {
+    const url = address.trim();
+    if (!isHttpUrl(url)) return setError("L'adresse doit commencer par http:// ou https://.");
+    setError(null);
+    setBroken(false);
+    onChange(url);
+    setAddress("");
+    setUrlMode(false);
   }
 
   return (
@@ -67,17 +81,20 @@ export function ImageField({ value, onChange, folder = "images", prefix = "cours
           dragging ? "border-primary bg-primary/5" : "border-muted-foreground/25",
         )}
       >
-        {value ? (
-          <Image src={value} alt={label} fill sizes="448px" className="object-cover" unoptimized />
+        {value && !broken ? (
+          // a plain image: the cover may be on any host (no domain list to keep in sync)
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={value} alt={label} className="absolute inset-0 h-full w-full object-cover" onError={() => setBroken(true)} />
         ) : (
           <div className="flex flex-col items-center gap-2 p-4 text-center text-sm text-muted-foreground">
             <ImageIcon className="h-8 w-8" aria-hidden />
-            <span>Glissez une image ici ou choisissez un fichier</span>
+            <span>{broken ? "Cette image ne se charge pas : vérifiez son adresse." : "Glissez une image ici, choisissez un fichier ou collez une adresse"}</span>
           </div>
         )}
         {busy && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/70" role="status">
-            <Loader2 className="h-6 w-6 animate-spin" aria-label="Envoi en cours" />
+            <Loader2 className="h-6 w-6 animate-spin" aria-hidden />
+            <span className="sr-only">Envoi en cours</span>
           </div>
         )}
       </div>
@@ -87,6 +104,10 @@ export function ImageField({ value, onChange, folder = "images", prefix = "cours
           <Upload className="mr-1.5 h-4 w-4" aria-hidden />
           {value ? "Remplacer" : "Choisir une image"}
         </Button>
+        <Button type="button" variant="ghost" size="sm" onClick={() => setUrlMode((m) => !m)} aria-expanded={urlMode} disabled={busy}>
+          <LinkIcon className="mr-1.5 h-4 w-4" aria-hidden />
+          Coller une adresse
+        </Button>
         {value && (
           <Button type="button" variant="ghost" size="sm" onClick={() => onChange(null)} disabled={busy}>
             <Trash2 className="mr-1.5 h-4 w-4" aria-hidden />
@@ -95,6 +116,32 @@ export function ImageField({ value, onChange, folder = "images", prefix = "cours
         )}
         <span className="text-xs text-muted-foreground">JPEG, PNG, GIF ou WebP, 5 Mo maximum</span>
       </div>
+
+      {urlMode && (
+        <div className="flex max-w-md items-end gap-2">
+          <div className="flex-1 space-y-1.5">
+            <Label htmlFor={urlId}>Adresse de l&apos;image</Label>
+            <Input
+              id={urlId}
+              type="url"
+              inputMode="url"
+              placeholder="https://…"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  applyAddress();
+                }
+              }}
+            />
+          </div>
+          <Button type="button" size="sm" onClick={applyAddress} disabled={!address.trim()}>
+            Utiliser
+          </Button>
+        </div>
+      )}
+
       <input ref={input} type="file" accept={TYPES.join(",")} className="sr-only" tabIndex={-1} aria-label={label} onChange={(e) => e.target.files?.[0] && void upload(e.target.files[0])} />
       {error && (
         <p role="alert" className="text-sm text-destructive">

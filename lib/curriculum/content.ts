@@ -61,6 +61,44 @@ export function normalizeTrailerUrl(raw: string | null | undefined): string | nu
 }
 
 /**
+ * The address of a link typed in the editor, or null when it cannot be one. Accepted: http(s) and mailto
+ * addresses, paths of the site ("/formations") and anchors ("#exemple"); "exemple.com" becomes
+ * "https://exemple.com". Anything else (javascript:, data:, blanks) is refused.
+ */
+export function normalizeLinkUrl(raw: string): string | null {
+  const value = raw.trim();
+  if (!value || /\s/.test(value) || value.startsWith("//")) return null;
+  if (/^(\/(?!\/)|#)/.test(value)) return value;
+  const candidate = /^[a-z][a-z0-9+.-]*:/i.test(value) ? value : `https://${value}`;
+  try {
+    const url = new URL(candidate);
+    if (url.protocol === "mailto:") return url.pathname.includes("@") ? candidate : null;
+    if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+    return url.hostname.includes(".") || url.hostname === "localhost" ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Languages offered for code blocks: the class `language-xxx` drives the highlighting on the learner side. */
+export const CODE_LANGUAGES = [
+  { value: "plaintext", label: "Texte brut" },
+  { value: "javascript", label: "JavaScript" },
+  { value: "typescript", label: "TypeScript" },
+  { value: "xml", label: "HTML / XML" },
+  { value: "css", label: "CSS" },
+  { value: "json", label: "JSON" },
+  { value: "bash", label: "Terminal (bash)" },
+  { value: "python", label: "Python" },
+  { value: "sql", label: "SQL" },
+  { value: "yaml", label: "YAML" },
+  { value: "java", label: "Java" },
+  { value: "go", label: "Go" },
+  { value: "rust", label: "Rust" },
+  { value: "php", label: "PHP" },
+] as const;
+
+/**
  * True when rich-text output holds nothing a learner could read: an empty editor yields `<p></p>`.
  * Media and code blocks count as content.
  */

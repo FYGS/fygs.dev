@@ -3,8 +3,9 @@ import { db } from "@/lib/db";
 import { enrollCourse } from "@/app/[locale]/(main)/dashboard/actions/enrollCourse";
 import { updateLessonProgress } from "@/app/[locale]/(main)/dashboard/actions/updateLessonProgress";
 import { cancelSubscription } from "@/app/[locale]/(main)/dashboard/actions/cancelSubscription";
-import { issueCertificate } from "@/app/[locale]/(main)/dashboard/actions/issueCertificate";
+import { issueCertificate } from "../support/certificate-helpers";
 import { AccessService } from "@/lib/access-service";
+import { getEntitlement } from "@/lib/access/entitlement";
 import { auth } from "@/lib/auth";
 
 // Mock auth for testing
@@ -306,19 +307,10 @@ describe("User Full Flow Integration Tests", () => {
     );
     expect(freeAccessAfterCancelResult.canAccessCourse).toBe(true);
 
-    // Premium course: the entitlement is gone (FR-005). The access rules
-    // (getCourseAccessContext + evaluateCourseAccess, the FR-003 contract) deny it
-    // while the enrollment itself stays.
-    // NOTE: checkCourseAccess, which the pages use, still only looks at the
-    // enrollment (see the contract tests of course-access-control); the two layers
-    // disagree here, which is reported as an open product question.
-    const premiumContext = await AccessService.getCourseAccessContext(
-      testUserId,
-      premiumCourseId
-    );
-    expect(AccessService.evaluateCourseAccess(premiumContext)).toMatchObject({
-      allowed: false,
-      reason: "PREMIUM_LOCKED",
+    // Premium course: the entitlement is gone (FR-005), the enrolment stays and says why
+    expect(await getEntitlement(testUserId, premiumCourseId)).toMatchObject({
+      entitled: false,
+      lapsed: "subscription_ended",
     });
     const premiumAccessAfterCancelResult =
       await AccessService.checkCourseAccess(testUserId, premiumCourseId);
@@ -329,18 +321,10 @@ describe("User Full Flow Integration Tests", () => {
     const lifetimeAccessAfterCancelResult =
       await AccessService.checkCourseAccess(testUserId, lifetimeCourseId);
     expect(lifetimeAccessAfterCancelResult.canAccessCourse).toBe(true);
-    expect(
-      AccessService.evaluateCourseAccess(
-        await AccessService.getCourseAccessContext(testUserId, lifetimeCourseId)
-      )
-    ).toMatchObject({ allowed: true, reason: "LIFETIME_PURCHASE" });
+    expect(await getEntitlement(testUserId, lifetimeCourseId)).toMatchObject({ entitled: true, source: "purchase" });
 
-    // Free course: still allowed by the rules too
-    expect(
-      AccessService.evaluateCourseAccess(
-        await AccessService.getCourseAccessContext(testUserId, freeCourseId)
-      )
-    ).toMatchObject({ allowed: true, reason: "FREE_COURSE" });
+    // Free course: still open
+    expect(await getEntitlement(testUserId, freeCourseId)).toMatchObject({ entitled: true, source: "free" });
 
     // Step 8: Verify enrollments persist
     const enrollments = await db.enrollment.findMany({
@@ -447,11 +431,7 @@ describe("User Full Flow Integration Tests", () => {
       lifetimeCourseId
     );
     expect(lifetimeAccessResult.canAccessCourse).toBe(true);
-    expect(
-      AccessService.evaluateCourseAccess(
-        await AccessService.getCourseAccessContext(testUserId, lifetimeCourseId)
-      )
-    ).toMatchObject({ allowed: true, reason: "LIFETIME_PURCHASE" });
+    expect(await getEntitlement(testUserId, lifetimeCourseId)).toMatchObject({ entitled: true, source: "purchase" });
 
     // Complete lessons and ensure progress persists
     const lessons = await db.lesson.findMany({

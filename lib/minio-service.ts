@@ -309,6 +309,18 @@ export class MinIOService {
   }
 }
 
+/**
+ * Whether images can be stored. In production the address and both keys must be set (no fallback to the
+ * development defaults); in development the local MinIO defaults apply, and an unreachable server is reported
+ * by the upload route as "storage not configured".
+ */
+export function isImageStorageConfigured(): boolean {
+  if (process.env.NODE_ENV !== "production") return true;
+  return Boolean(
+    (process.env.MINIO_API_URL || process.env.MINIO_ENDPOINT) && process.env.MINIO_ACCESS_KEY && process.env.MINIO_SECRET_KEY,
+  );
+}
+
 // Create singleton instance
 const minioConfig: MinIOConfig = {
   endPoint:

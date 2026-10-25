@@ -100,8 +100,8 @@ export async function createReply(
           recipientId: discussion.authorId,
           senderId: session.user.id,
           type: "DISCUSSION_REPLY",
-          title: "New reply to your discussion",
-          message: `${session.user.name} replied to your discussion "${discussion.title}"`,
+          title: "Nouvelle réponse à votre discussion",
+          message: `${session.user.name || "Un membre"} a répondu à « ${discussion.title} »`,
           data: {
             discussionId: validatedData.discussionId,
             replyId: reply.id,

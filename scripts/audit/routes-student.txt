@@ -1,5 +1,5 @@
 # Pages behind a login, audited as the seeded student (AUDIT_SIGNIN, see a11y-audit.mjs)
-# The course, lesson and quiz pages of that student are appended by the audit run (slugs come from the seed).
+# The learning area of that student (course, lesson, quiz, exam, wrap-up) and the paths are appended by the audit run (slugs come from the seed).
 /fr/dashboard
 /fr/dashboard/my-courses
 /fr/dashboard/billing
@@ -11,3 +11,5 @@
 /fr/tech-mastry/algorithms/searching
 /fr/tech-mastry/algorithms/sorting
 /fr/tech-mastry/qa
+/fr/dashboard/certificates
+/fr/parcours

@@ -11,6 +11,7 @@ import {
   TrendingDown,
   Minus
 } from "lucide-react";
+import { formatPrice } from "@/lib/price-format";
 
 interface AdminDashboardStatsProps {
   totalUsers: number;
@@ -144,7 +145,7 @@ export function AdminDashboardStats({
       
       <StatCard
         title="Revenus totaux"
-        value={`${totalRevenue.toLocaleString("fr-FR")}€`}
+        value={formatPrice(totalRevenue, { freeLabel: false })}
         icon={Euro}
         description="Paiements confirmés"
         color="text-orange-600"

@@ -50,6 +50,8 @@ const submitAnswersSchema = z.object({
 
 export type QuizFeedback = {
   questionId: string;
+  /** The answer that counts: the first one recorded for this question, whatever was clicked since. */
+  selectedOption: number;
   isCorrect: boolean;
   correctOption: number;
   explanation: string;
@@ -208,6 +210,7 @@ export async function checkQuizAnswer(
       return {
         success: true,
         questionId: question.id,
+        selectedOption,
         isCorrect: selectedOption === question.correct,
         correctOption: question.correct,
         explanation: question.explanation ?? "",
@@ -237,6 +240,7 @@ export async function checkQuizAnswer(
     return {
       success: true,
       questionId: question.id,
+      selectedOption: effectiveOption,
       isCorrect: effectiveOption === question.correct,
       correctOption: question.correct,
       explanation: question.explanation ?? "",
@@ -307,6 +311,7 @@ export async function submitQuizAnswers(
     if (staffPreview) {
       const review: QuizFeedback[] = quiz.questions.map((q) => ({
         questionId: q.id,
+        selectedOption: submitted.get(q.id)!,
         isCorrect: submitted.get(q.id) === q.correct,
         correctOption: q.correct,
         explanation: q.explanation ?? "",
@@ -343,6 +348,7 @@ export async function submitQuizAnswers(
 
     const review: QuizFeedback[] = quiz.questions.map((q) => ({
       questionId: q.id,
+      selectedOption: selectedByQuestion.get(q.id)!,
       isCorrect: selectedByQuestion.get(q.id) === q.correct,
       correctOption: q.correct,
       explanation: q.explanation ?? "",

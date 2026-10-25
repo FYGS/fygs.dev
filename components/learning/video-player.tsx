@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import {
+  Captions,
   Maximize,
   Minimize,
   Pause,
@@ -28,6 +29,7 @@ const SHORTCUTS: [string, string][] = [
   ["← / →", "Reculer / avancer de 5 s"],
   ["↑ / ↓", "Volume"],
   ["M", "Couper le son"],
+  ["C", "Sous-titres"],
   ["F", "Plein écran"],
   ["?", "Afficher les raccourcis"],
 ];
@@ -39,6 +41,25 @@ interface VideoPlayerProps {
   durationHint: number | null;
   /** Where the learner stopped last time. */
   resumeAt: number;
+  /** Same-origin address of the WebVTT captions, or null. */
+  captionsSrc?: string | null;
+}
+
+const CAPTIONS_PREFERENCE = "fygs:captions";
+
+/** The learner's last captions choice in this browser (false when unknown or storage is refused). */
+function storedCaptionsChoice(): boolean {
+  try {
+    return window.localStorage.getItem(CAPTIONS_PREFERENCE) === "on";
+  } catch {
+    return false;
+  }
+}
+
+/** Shows or hides the captions track of a video (the `default` attribute is only read once). */
+function showCaptions(video: HTMLVideoElement | null, on: boolean) {
+  const track = video?.textTracks[0];
+  if (track) track.mode = on ? "showing" : "hidden";
 }
 
 /** Keys the player takes over only while the player itself (or its video) has focus. */
@@ -46,7 +67,7 @@ function isNativeControl(target: EventTarget | null): boolean {
   return target instanceof HTMLElement && !!target.closest("button, input, textarea, select, a, [role='slider'], [role='dialog']");
 }
 
-export function VideoPlayer({ title, videoUrl, durationHint, resumeAt }: VideoPlayerProps) {
+export function VideoPlayer({ title, videoUrl, durationHint, resumeAt, captionsSrc = null }: VideoPlayerProps) {
   const { progress, registerPlayer, complete, completed, recording } = useLessonSession();
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -67,6 +88,8 @@ export function VideoPlayer({ title, videoUrl, durationHint, resumeAt }: VideoPl
   const [showSettings, setShowSettings] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [resumed, setResumed] = useState<number | null>(null);
+  // Captions follow the learner's last choice, kept in this browser
+  const [captionsOn, setCaptionsOn] = useState(false);
   const pipSupported = useSyncExternalStore(
     subscribeNoop,
     () => document.pictureInPictureEnabled,
@@ -89,6 +112,21 @@ export function VideoPlayer({ title, videoUrl, durationHint, resumeAt }: VideoPl
   }, []);
 
   const skip = useCallback((delta: number) => seekTo((videoRef.current?.currentTime ?? 0) + delta), [seekTo]);
+
+  useEffect(() => {
+    showCaptions(videoRef.current, captionsOn);
+  }, [captionsOn, captionsSrc]);
+
+  const toggleCaptions = useCallback(() => {
+    setCaptionsOn((on) => {
+      try {
+        window.localStorage.setItem(CAPTIONS_PREFERENCE, on ? "off" : "on");
+      } catch {
+        // the choice is only kept for this page
+      }
+      return !on;
+    });
+  }, []);
 
   const toggleMute = useCallback(() => {
     const video = videoRef.current;
@@ -127,6 +165,8 @@ export function VideoPlayer({ title, videoUrl, durationHint, resumeAt }: VideoPl
     const onLoaded = () => {
       setDuration(video.duration);
       setLoading(false);
+      // captions follow the learner's last choice, once the track exists
+      if (captionsSrc && storedCaptionsChoice()) setCaptionsOn(true);
       const d = video.duration;
       if (resumeAt > 5 && Number.isFinite(d) && resumeAt < d - 5) {
         video.currentTime = resumeAt;
@@ -195,7 +235,7 @@ export function VideoPlayer({ title, videoUrl, durationHint, resumeAt }: VideoPl
     return () => {
       for (const [name, handler] of events) video.removeEventListener(name, handler);
     };
-  }, [resumeAt, progress, completed, complete, showControlsBriefly]);
+  }, [resumeAt, progress, completed, complete, showControlsBriefly, captionsSrc]);
 
   useEffect(() => {
     const onChange = () => setFullscreen(document.fullscreenElement === containerRef.current);
@@ -249,6 +289,10 @@ export function VideoPlayer({ title, videoUrl, durationHint, resumeAt }: VideoPl
       case "f":
       case "F":
         return handled(() => void toggleFullscreen());
+      case "c":
+      case "C":
+        if (captionsSrc) return handled(toggleCaptions);
+        return;
       case "?":
         return handled(() => setShowShortcuts((s) => !s));
       case "Escape":
@@ -313,7 +357,9 @@ export function VideoPlayer({ title, videoUrl, durationHint, resumeAt }: VideoPl
           togglePlay();
           showControlsBriefly();
         }}
-      />
+      >
+        {captionsSrc && <track kind="captions" src={captionsSrc} srcLang="fr" label="Français" />}
+      </video>
 
       {(loading || buffering) && (
         <div role="status" className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/60 text-white">
@@ -341,6 +387,18 @@ export function VideoPlayer({ title, videoUrl, durationHint, resumeAt }: VideoPl
 
       <div className={cn("pointer-events-none absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-black/20", controlsClass)}>
         <div className="pointer-events-auto absolute right-3 top-3 flex items-center gap-1">
+          {captionsSrc && (
+            <Button
+              aria-label="Sous-titres"
+              aria-pressed={captionsOn}
+              variant="ghost"
+              size="icon"
+              className={cn("h-8 w-8 text-white hover:bg-white/20", captionsOn && "bg-white/25")}
+              onClick={toggleCaptions}
+            >
+              <Captions className="h-4 w-4" aria-hidden />
+            </Button>
+          )}
           {pipSupported && (
             <Button aria-label="Image dans l’image" variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/20" onClick={togglePip}>
               <PictureInPicture className="h-4 w-4" aria-hidden />

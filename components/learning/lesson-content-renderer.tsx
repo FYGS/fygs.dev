@@ -1,16 +1,28 @@
 import { EnhancedCodeViewer } from "@/components/mdx/enhanced-code-viewer";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
+import { looksLikeHtml } from "@/lib/curriculum/html-detect";
 import { rehypeSanitizeLessonHtml } from "@/lib/learning/sanitize-html";
 import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
 
 interface LessonContentRendererProps {
+  /** Lesson text or slide body: HTML from the course editor, or Markdown (older lessons, seed). */
   content: string;
+}
+
+/**
+ * HTML written by the rich-text editor is one document, not Markdown: read as Markdown, an HTML block stops at
+ * the first blank line, so a code block with an empty line would be cut and its end read as Markdown. This remark
+ * plugin hands the whole source to the HTML parser (rehype-raw, then the sanitiser) as a single raw node.
+ */
+function remarkWholeHtml() {
+  return (tree: { type: string; children?: unknown[] }, file: { value?: unknown }) => {
+    tree.children = [{ type: "html", value: String(file.value ?? "") }];
+  };
 }
 
 type CodeBlockData = {
@@ -83,12 +95,17 @@ function extractCodeBlock(children: React.ReactNode): CodeBlockData | null {
   };
 }
 
+/**
+ * The one way lesson texts and visual-support slides are shown, to learners and in the course editor's previews:
+ * Markdown or editor HTML, always through the sanitiser (lib/learning/sanitize-html.ts).
+ */
 export function LessonContentRenderer({
   content,
 }: LessonContentRendererProps): React.ReactElement {
+  const html = looksLikeHtml(content);
   return (
     <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
+      remarkPlugins={html ? [remarkWholeHtml] : [remarkGfm]}
       rehypePlugins={[rehypeRaw, rehypeSanitizeLessonHtml, rehypeSlug]}
       components={{
         script: () => null,
@@ -152,7 +169,7 @@ export function LessonContentRenderer({
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(
-                  "text-primary no-underline hover:text-primary/80",
+                  "font-medium text-primary underline underline-offset-2 hover:text-primary/80",
                   className,
                 )}
                 {...props}
@@ -166,7 +183,7 @@ export function LessonContentRenderer({
             <Link
               href={safeHref}
               className={cn(
-                "text-primary no-underline hover:text-primary/80",
+                "font-medium text-primary underline underline-offset-2 hover:text-primary/80",
                 className,
               )}
               {...props}
@@ -175,27 +192,21 @@ export function LessonContentRenderer({
             </Link>
           );
         },
-        img: ({ src = "", alt = "", className, ...props }) => {
+        img: ({ src = "", alt = "", className, width, height }) => {
           const safeSrc = typeof src === "string" ? src : "";
-          // an address removed by the sanitiser leaves nothing to show (next/image refuses an empty src)
+          // an address removed by the sanitiser leaves nothing to show
           if (!safeSrc) return null;
-          const width =
-            typeof props.width === "number"
-              ? props.width
-              : Number.parseInt(String(props.width ?? ""), 10) || 1200;
-          const height =
-            typeof props.height === "number"
-              ? props.height
-              : Number.parseInt(String(props.height ?? ""), 10) || 675;
-
+          // A plain image: lesson images may come from any host, which next/image would refuse (and crash the page)
           return (
-            <Image
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
               src={safeSrc}
               alt={alt}
               width={width}
               height={height}
-              className={cn("h-auto w-full rounded-lg shadow-lg", className)}
               loading="lazy"
+              decoding="async"
+              className={cn("h-auto max-w-full rounded-lg", className)}
             />
           );
         },

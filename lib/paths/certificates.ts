@@ -1,4 +1,6 @@
 import { db } from "@/lib/db";
+import { SITE_URL } from "@/app/_lib/constants";
+import { emailService } from "@/lib/email-service";
 import { getPublishedPath } from "./queries";
 import { loadUserPath } from "./progress";
 
@@ -43,45 +45,38 @@ export async function syncPathCertificates(
       issued.push({ pathId: path.id, slug: path.slug, title: path.title, code: certificate.code });
     } catch (error) {
       if (!isUniqueViolation(error)) throw error; // issued by a concurrent call
+      continue;
     }
+    await announcePathCertificate(userId, path);
   }
   return { issued };
 }
 
-export interface VerifiedPathCertificate {
-  code: string;
-  issuedAt: Date;
-  holderName: string;
-  pathTitle: string;
-  pathSlug: string;
-  courseTitles: string[];
-}
-
-/** Public verification of a path certificate. `null` when the code matches nothing. */
-export async function verifyPathCertificate(code: string): Promise<VerifiedPathCertificate | null> {
-  if (!/^[a-f0-9]{16,64}$/i.test(code)) return null;
-  const certificate = await db.pathCertificate.findUnique({
-    where: { code: code.toLowerCase() },
-    select: {
-      code: true,
-      issuedAt: true,
-      user: { select: { name: true } },
-      path: {
-        select: {
-          title: true,
-          slug: true,
-          courses: { orderBy: { order: "asc" }, where: { optional: false }, select: { course: { select: { title: true } } } },
-        },
+/**
+ * The learner is told, as for a course certificate: a notification and an e-mail with the link to the
+ * certificate. Best effort: neither can undo the certificate.
+ */
+async function announcePathCertificate(userId: string, path: { id: string; slug: string; title: string }) {
+  try {
+    await db.notification.create({
+      data: {
+        recipientId: userId,
+        type: "SYSTEM_ANNOUNCEMENT",
+        title: "Certificat de parcours obtenu",
+        message: `Bravo, vous avez mené à terme le parcours « ${path.title} ». Votre certificat est disponible.`,
+        data: { kind: "path_certificate", pathId: path.id, slug: path.slug },
       },
-    },
-  });
-  if (!certificate) return null;
-  return {
-    code: certificate.code,
-    issuedAt: certificate.issuedAt,
-    holderName: certificate.user.name,
-    pathTitle: certificate.path.title,
-    pathSlug: certificate.path.slug,
-    courseTitles: certificate.path.courses.map((c) => c.course.title),
-  };
+    });
+  } catch (e) {
+    console.warn("[paths] certificate notification failed", e);
+  }
+  try {
+    const user = await db.user.findUnique({ where: { id: userId }, select: { name: true, email: true } });
+    if (user) {
+      const template = emailService.certificateEarnedEmail(user.name || user.email, path.title, `${SITE_URL}/parcours/${path.slug}/certificat`, "path");
+      await emailService.sendEmail({ to: user.email, subject: template.subject, html: template.html });
+    }
+  } catch (e) {
+    console.warn("[paths] certificate email failed", e);
+  }
 }

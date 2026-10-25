@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { checkPublishReadiness, lessonStatus, type ReadinessInput } from "@/lib/curriculum/publish";
 import { applyOrder, moveId, nextOrder, sameIdSet, TEMP_ORDER_BASE } from "@/lib/curriculum/ordering";
 import { isEmptyHtml, normalizeFaq, normalizeObjectives, normalizeTrailerUrl } from "@/lib/curriculum/content";
-import { moveLessonInSnapshot, moveModuleInSnapshot, replaceLessonInSnapshot, allLessons } from "@/lib/curriculum/snapshot";
+import { allLessons, freeSampleLessons, moveLessonInSnapshot, moveModuleInSnapshot } from "@/lib/curriculum/snapshot";
 import type { CurriculumSnapshot, LessonSummary } from "@/lib/curriculum/curriculum";
 import { validateQuestions } from "@/lib/curriculum/questions";
 import { SLUG_PATTERN } from "@/lib/curriculum/slug-pattern";
@@ -61,7 +61,9 @@ describe("checkPublishReadiness", () => {
     expect(materials?.hint).not.toContain("« Bonne »");
   });
 
-  it("only requires a price for a premium course, and it must be above zero", () => {
+  it("only requires a price for a premium course, and the payment provider's minimum (0,50 €)", () => {
+    expect(checkPublishReadiness(readyCourse({ accessTier: "PREMIUM", price: 0.49 })).ready).toBe(false);
+    expect(checkPublishReadiness(readyCourse({ accessTier: "PREMIUM", price: 0.5 })).ready).toBe(true);
     expect(checkPublishReadiness(readyCourse({ accessTier: "FREE", price: 0 })).ready).toBe(true);
     const zero = checkPublishReadiness(readyCourse({ accessTier: "PREMIUM", price: 0 }));
     expect(zero.items.find((i) => i.key === "price")?.ok).toBe(false);
@@ -257,11 +259,24 @@ describe("snapshot edits", () => {
     expect(moveLessonInSnapshot(snapshot, "a", "nope", 0)).toBe(snapshot);
   });
 
-  it("merges a saved lesson without touching its position", () => {
-    const next = replaceLessonInSnapshot(snapshot, { ...lesson("b", 99, "m1"), title: "Nouveau", status: "draft", published: false });
-    const b = next.modules[0].lessons[1];
-    expect(b).toMatchObject({ title: "Nouveau", status: "draft", order: 2 });
-    expect(allLessons(next)).toHaveLength(4);
+  it("lists every lesson in course order: lessons without module first", () => {
+    expect(allLessons(snapshot).map((l) => l.id)).toEqual(["loose", "a", "b", "x"]);
+  });
+
+  it("free samples: flagged published lessons, plus the first published lesson when the course offers it", () => {
+    const outline: CurriculumSnapshot = {
+      modules: [
+        {
+          ...snapshot.modules[0],
+          lessons: [{ ...lesson("a", 1, "m1"), published: false, status: "draft" }, lesson("b", 2, "m1")],
+        },
+        { ...snapshot.modules[1], lessons: [{ ...lesson("x", 1, "m2"), isPreview: true }, { ...lesson("y", 2, "m2"), isPreview: true, published: false }] },
+      ],
+      looseLessons: [],
+    };
+    expect(freeSampleLessons(outline, false).map((l) => l.id)).toEqual(["x"]);
+    // the first PUBLISHED lesson ("a" is a draft), and a flagged draft ("y") never counts
+    expect(freeSampleLessons(outline, true).map((l) => l.id)).toEqual(["b", "x"]);
   });
 });
 

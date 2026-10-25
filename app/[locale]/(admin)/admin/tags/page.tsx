@@ -45,7 +45,7 @@ async function getTagsWithStats() {
   }));
 }
 
-async function TagsContent() {
+async function TagsContent({ canManage }: { canManage: boolean }) {
   const tags = await getTagsWithStats();
   const totalCourses = await db.course.count();
 
@@ -98,7 +98,7 @@ async function TagsContent() {
       {tags.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {tags.map((tag) => (
-            <TagCard key={tag.id} tag={tag} />
+            <TagCard key={tag.id} tag={tag} canManage={canManage} />
           ))}
         </div>
       ) : (
@@ -152,7 +152,7 @@ export default async function TagsPage() {
         </div>
       </div>
     }>
-      <TagsContent />
+      <TagsContent canManage={session.user.role === Role.ADMIN} />
     </Suspense>
   );
 }

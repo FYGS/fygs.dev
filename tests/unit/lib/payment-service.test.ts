@@ -275,19 +275,6 @@ describe("paymentService (pinned behaviour)", () => {
         () => p.getLatestSubscriptionPayment("sub_1"),
       ),
     latestPaymentNone: () => scenario({ stripe: { "invoicePayments.list": { data: [] } } }, () => p.getLatestSubscriptionPayment("sub_1")),
-    createCustomerOk: () => scenario({}, () => p.createCustomer("a@b.c", "Al", "u1")),
-    createCustomerMin: () => scenario({}, () => p.createCustomer("a@b.c")),
-    createCustomerFail: () => scenario({ stripe: { "customers.create": new Error("x") } }, () => p.createCustomer("a@b.c")),
-    customerByEmailFound: () => scenario({}, () => p.getCustomerByEmail("a@b.c")),
-    customerByEmailNone: () => scenario({ stripe: { "customers.list": { data: [] } } }, () => p.getCustomerByEmail("a@b.c")),
-    customerByEmailFail: () => scenario({ stripe: { "customers.list": new Error("x") } }, () => p.getCustomerByEmail("a@b.c")),
-    createProductOk: () =>
-      scenario({}, () => p.createProduct({ id: "p1", name: "N", description: "D", price: 1000, currency: "eur", type: "course", metadata: { a: "b" } })),
-    createProductFail: () =>
-      scenario({ stripe: { "prices.create": new Error("x") } }, () => p.createProduct({ id: "p1", name: "N", description: "D", price: 1000, currency: "eur", type: "bundle" })),
-    createSubPriceMonth: () => scenario({}, () => p.createSubscriptionPrice("prod_1", 900)),
-    createSubPriceYear: () => scenario({}, () => p.createSubscriptionPrice("prod_1", 9000, "year")),
-    createSubPriceFail: () => scenario({ stripe: { "prices.create": new Error("x") } }, () => p.createSubscriptionPrice("prod_1", 900)),
     verifyOk: () => scenario({ env: { STRIPE_WEBHOOK_SECRET: "whsec" } }, () => p.verifyWebhookSignature("{}", "sig")),
     verifyNoSecret: () => scenario({ env: { STRIPE_WEBHOOK_SECRET: undefined } }, () => p.verifyWebhookSignature("{}", "sig")),
     verifyBadSig: () =>

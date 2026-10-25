@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { checkQuizAnswer, submitQuizAnswers, type QuizFeedback, type SubmitQuizAnswersResult } from "@/app/actions/quiz-actions";
 import { QUIZ_COOLDOWN_MINUTES } from "@/lib/quiz-attempt-policy";
+import type { ResumedAnswer } from "@/lib/learning/quiz-status";
 import { PASSING_SCORE } from "@/lib/learning/outline";
 import { cn } from "@/lib/utils";
 import { ItemNavigation } from "./item-navigation";
@@ -27,18 +28,45 @@ interface QuizRunnerProps {
   best: { percentage: number; score: number; total: number } | null;
   /** Set when a new sitting cannot start yet (cooldown or daily limit): said before the learner answers. */
   blockedMessage: string | null;
+  /** Answers already given in the sitting in progress: the learner continues it. */
+  resumed?: ResumedAnswer[];
 }
 
 type Answered = { selected: number; feedback: QuizFeedback };
 type SuccessResult = Extract<SubmitQuizAnswersResult, { success: true }>;
 
-export function QuizRunner({ quiz, courseId, best, blockedMessage }: QuizRunnerProps) {
+function initialAnswers(resumed: ResumedAnswer[]): Record<string, Answered> {
+  return Object.fromEntries(
+    resumed.map((a) => [
+      a.questionId,
+      {
+        selected: a.selectedOption,
+        feedback: {
+          questionId: a.questionId,
+          selectedOption: a.selectedOption,
+          isCorrect: a.isCorrect,
+          correctOption: a.correctOption,
+          explanation: a.explanation,
+        },
+      },
+    ]),
+  );
+}
+
+export function QuizRunner({ quiz, courseId, best, blockedMessage, resumed = [] }: QuizRunnerProps) {
   const { courseSlug, mode } = useLearning();
   const total = quiz.questions.length;
+  const resuming = resumed.length > 0;
 
-  const [started, setStarted] = useState(best === null && blockedMessage === null);
-  const [index, setIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, Answered>>({});
+  // A sitting in progress is continued at its first unanswered question
+  const [started, setStarted] = useState(resuming || (best === null && blockedMessage === null));
+  const [index, setIndex] = useState(() => {
+    if (!resuming) return 0;
+    const done = new Set(resumed.map((a) => a.questionId));
+    const firstOpen = quiz.questions.findIndex((q) => !done.has(q.id));
+    return firstOpen === -1 ? Math.max(0, quiz.questions.length - 1) : firstOpen;
+  });
+  const [answers, setAnswers] = useState<Record<string, Answered>>(() => initialAnswers(resumed));
   const [checking, setChecking] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<SuccessResult | null>(null);
@@ -70,7 +98,8 @@ export function QuizRunner({ quiz, courseId, best, blockedMessage }: QuizRunnerP
         toast.error(response.error);
         return;
       }
-      setAnswers((prev) => ({ ...prev, [question.id]: { selected: option, feedback: response } }));
+      // The server answers for the option that counts (an earlier answer to this question stays final)
+      setAnswers((prev) => ({ ...prev, [question.id]: { selected: response.selectedOption, feedback: response } }));
     } catch {
       toast.error("La réponse n’a pas pu être vérifiée. Réessayez.");
     } finally {
@@ -129,17 +158,17 @@ export function QuizRunner({ quiz, courseId, best, blockedMessage }: QuizRunnerP
           {best ? "Votre résultat" : quiz.title}
         </h2>
         {best && (
-          <p className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Badge variant={best.percentage >= PASSING_SCORE ? "default" : "secondary"}>
               {best.percentage >= PASSING_SCORE ? "Réussi" : "Non réussi"}
             </Badge>
             <span>
-              Meilleur score : <strong>{best.percentage}%</strong> ({best.score} / {best.total})
+              Meilleur score : <strong>{best.percentage} %</strong> ({best.score} / {best.total})
             </span>
-          </p>
+          </div>
         )}
         <p className="text-sm text-muted-foreground">
-          {total} question{total > 1 ? "s" : ""}. Seuil de réussite : {PASSING_SCORE}%. La correction s’affiche après chaque réponse, qui est définitive.
+          {total} question{total > 1 ? "s" : ""}. Seuil de réussite : {PASSING_SCORE} %. La correction s’affiche après chaque réponse, qui est définitive.
         </p>
         {blockedMessage ? (
           <p role="status" className="rounded-md bg-muted p-3 text-sm">
@@ -150,11 +179,9 @@ export function QuizRunner({ quiz, courseId, best, blockedMessage }: QuizRunnerP
             <RotateCcw className="mr-2 h-4 w-4" aria-hidden /> {best ? "Refaire le quiz" : "Commencer"}
           </Button>
         )}
-        {best && best.percentage >= PASSING_SCORE && (
-          <div className="border-t pt-4">
-            <ItemNavigation currentId={quiz.id} emphasizeNext />
-          </div>
-        )}
+        <div className="border-t pt-4">
+          <ItemNavigation currentId={quiz.id} emphasizeNext={!!best && best.percentage >= PASSING_SCORE} />
+        </div>
       </section>
     );
   }
@@ -169,13 +196,13 @@ export function QuizRunner({ quiz, courseId, best, blockedMessage }: QuizRunnerP
           <h2 id="quiz-result" className="text-2xl font-bold">
             {result.passed ? "Quiz réussi !" : "Quiz non réussi"}
           </h2>
-          <p className="text-4xl font-bold">{result.percentage}%</p>
+          <p className="text-4xl font-bold">{result.percentage} %</p>
           <p className="text-muted-foreground">
             {result.score} / {result.total} bonnes réponses
-            {result.bestPercentage > result.percentage && ` · meilleur score conservé : ${result.bestPercentage}%`}
+            {result.bestPercentage > result.percentage && ` · meilleur score conservé : ${result.bestPercentage} %`}
           </p>
           {!result.passed && (
-            <p className="text-sm text-muted-foreground">Il faut {PASSING_SCORE}% pour valider ce quiz. Relisez la correction, puis réessayez.</p>
+            <p className="text-sm text-muted-foreground">Il faut {PASSING_SCORE} % pour valider ce quiz. Relisez la correction, puis réessayez.</p>
           )}
           {result.reward && (
             <p className="inline-flex items-center gap-1 text-sm text-amber-700 dark:text-amber-400">
@@ -233,6 +260,11 @@ export function QuizRunner({ quiz, courseId, best, blockedMessage }: QuizRunnerP
   const isLast = index === total - 1;
   return (
     <section className="space-y-5" aria-labelledby="quiz-question">
+      {resuming && index > 0 && Object.keys(answers).length === resumed.length && !answered && (
+        <p role="status" className="rounded-md bg-muted p-3 text-sm">
+          Vous reprenez votre tentative en cours : vos réponses précédentes sont conservées.
+        </p>
+      )}
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>

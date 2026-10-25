@@ -30,6 +30,8 @@ interface ReplyCardProps {
   level?: number;
   maxDepth?: number;
   className?: string;
+  /** The instructor of the course the discussion belongs to: their answers are marked "Formateur". */
+  instructorId?: string | null;
 }
 
 export function ReplyCard({
@@ -39,6 +41,7 @@ export function ReplyCard({
   level = 0,
   maxDepth = 4,
   className,
+  instructorId = null,
 }: ReplyCardProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -173,7 +176,10 @@ export function ReplyCard({
                     {reply.author.name}
                   </Link>
                   
-                  {isModerator && (
+                  {instructorId && reply.authorId === instructorId && (
+                    <Badge className="text-xs">Formateur</Badge>
+                  )}
+                  {isModerator && reply.authorId !== instructorId && (
                     <Badge variant="secondary" className="text-xs">
                       Moderator
                     </Badge>
@@ -326,6 +332,7 @@ export function ReplyCard({
               currentUserId={currentUserId}
               level={level + 1}
               maxDepth={maxDepth}
+              instructorId={instructorId}
             />
           ))}
         </div>

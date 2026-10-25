@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -9,8 +9,8 @@ export interface SlideDeck {
   id: string;
   title: string;
   moduleTitle: string;
-  /** Slide content as HTML, produced on the server. */
-  slides: { title: string; html: string }[];
+  /** Slide bodies, rendered on the server through the lesson renderer (sanitised, like lesson texts). */
+  slides: { title: string; body: ReactNode }[];
 }
 
 /** The visual supports of a course: pick a deck, move through its slides. */
@@ -37,7 +37,7 @@ export function SlidesViewer({ decks }: { decks: SlideDeck[] }) {
                 setSlideIndex(0);
               }}
             >
-              <span className="text-xs opacity-80">{d.moduleTitle} · </span>
+              <span className="text-xs">{d.moduleTitle} · </span>
               {d.title}
             </Button>
           ))}
@@ -60,8 +60,7 @@ export function SlidesViewer({ decks }: { decks: SlideDeck[] }) {
           </span>
         </div>
         <h2 className="text-xl font-semibold">{slide.title}</h2>
-        {/* The slides are written by the instructors in the course editor */}
-        <div className="prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: slide.html }} />
+        <div className="prose prose-sm max-w-none dark:prose-invert">{slide.body}</div>
         <div className="flex items-center justify-between pt-2">
           <Button variant="outline" size="sm" onClick={() => go(-1)} disabled={slideIndex === 0}>
             <ChevronLeft className="mr-1 h-4 w-4" aria-hidden /> Précédente

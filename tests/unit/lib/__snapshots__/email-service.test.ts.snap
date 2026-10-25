@@ -168,9 +168,9 @@ exports[`emailService (pinned behaviour) > every sender builds and sends the exp
     "mails": [
       {
         "from": "FYGS <noreply@fygs.test>",
-        "html": "06e641ff64c29bfbdb71fc806c2e89c7b81f50f1f4fad0cf4ae95647f77406ef",
+        "html": "61166b60ce6bb93119c0f5907649c776c0125555773807a3b8ae1287fffa322d",
         "subject": "🌟 Abonnement Premium activé - Accès illimité !",
-        "text": "24c6cf23703c6ac10aaf3db4dddc0abba16a9e5e155fc11daf8ec6c142e4e204",
+        "text": "5f15cae790e0920e3104cb9b1ad40c8a22933db42ee4a09db307e4ce25e8b214",
         "to": "al@x.test",
       },
     ],
@@ -180,9 +180,9 @@ exports[`emailService (pinned behaviour) > every sender builds and sends the exp
     "mails": [
       {
         "from": "FYGS <noreply@fygs.test>",
-        "html": "5280a5facf4507dc9bed884c41a1d78732f5cd210b87c6427aa320017f9fe262",
+        "html": "5e677c150007726cf6c62866656dadcd27b24147f29e9c1131202784c9794aca",
         "subject": "✅ Formation "C" - Accès confirmé !",
-        "text": "9a3e1f13bb7519a209444cc8e753cabb491d8af28d6794b71948187a4075723e",
+        "text": "590e623b74f561873af1f28e383971ab2663b76702e1a995226187a2a889b03d",
         "to": "al@x.test",
       },
     ],
@@ -204,9 +204,9 @@ exports[`emailService (pinned behaviour) > every sender builds and sends the exp
     "mails": [
       {
         "from": "FYGS <noreply@fygs.test>",
-        "html": "791b487c07c44d9f3bd834bf47f81b088d561ebcea841d80cd0e928bbb7dc044",
+        "html": "62635b73236f3e23caad687bfff9eb95d0a08b046a91b6b83fbd5b03c8a13a6d",
         "subject": "💸 Confirmation de remboursement",
-        "text": "ddd4f9b62bec300bf58879e5bd60213c44245342c3e5cf011b50c57b673dbb8e",
+        "text": "45f7d6abc82100eb19be32806c068c5fb59abd75da1b16903247ed2fc3b6ca0f",
         "to": "al@x.test",
       },
     ],
@@ -240,9 +240,9 @@ exports[`emailService (pinned behaviour) > every sender builds and sends the exp
     "mails": [
       {
         "from": "FYGS <noreply@fygs.test>",
-        "html": "982991ec3569b0b748d303c1fe9247d90bd38ff65c4c2060384834dbefa57bec",
+        "html": "73eaf6488835b1bea4f8760fda6c8ea8e78743ee63f411280dded70509b8c6f4",
         "subject": "🔄 Votre abonnement a été modifié",
-        "text": "b8a050579a09197c53a6463e183bf47b88606e0089f18b6940d95509188c26dc",
+        "text": "760ba37fc0ef38bb53ccb16bf95447670e9670b0800bf02acc4a5e2072bc9ef5",
         "to": "al@x.test",
       },
     ],
@@ -252,9 +252,9 @@ exports[`emailService (pinned behaviour) > every sender builds and sends the exp
     "mails": [
       {
         "from": "FYGS <noreply@fygs.test>",
-        "html": "14d46c2ace0ea7909e3853da138a3dbca7cd0bb2c89746137499a8fe9cd0f8c0",
+        "html": "713966af69b2f6312c06dc6f99621a384aa42b0b8ab87908dcb94f725b719931",
         "subject": "📋 Votre abonnement FYGS a été mis à jour",
-        "text": "7fe61590d23d0a99d406f2573a8bb127e50bd87b2fa80c358541bca73d35809b",
+        "text": "2a3317547bc4cfb3dc84097557f8d6592ccbac67fab96546a2ff062049c9b3ad",
         "to": "al@x.test",
       },
     ],
@@ -311,13 +311,13 @@ exports[`emailService (pinned behaviour) > pure templates are stable > adminAll 
 
 exports[`emailService (pinned behaviour) > pure templates are stable > adminAll subject 1`] = `"📧 [FYGS.dev] Contact Général - Hello"`;
 
-exports[`emailService (pinned behaviour) > pure templates are stable > cert hash 1`] = `"0b653b54c5de0b618ee65e7472c50885906252202014e5e37231b1e8519c1ef5"`;
+exports[`emailService (pinned behaviour) > pure templates are stable > cert hash 1`] = `"8090dfd71db430a67e3c27b48d944ae168fec4ee60fa99593a55c73fdcff30a5"`;
 
-exports[`emailService (pinned behaviour) > pure templates are stable > cert subject 1`] = `"Félicitations! Certificat obtenu pour Formation"`;
+exports[`emailService (pinned behaviour) > pure templates are stable > cert subject 1`] = `"Certificat obtenu : Formation"`;
 
-exports[`emailService (pinned behaviour) > pure templates are stable > enroll hash 1`] = `"e13b2e5e20559812970058b2169e1505b880a276c24dc4f68669437f5e0d95af"`;
+exports[`emailService (pinned behaviour) > pure templates are stable > enroll hash 1`] = `"d98178eddbe23a91cdaba62f44a271c021981c4433c8f07e4cf8e83f900a7407"`;
 
-exports[`emailService (pinned behaviour) > pure templates are stable > enroll subject 1`] = `"Inscription confirmée: Formation"`;
+exports[`emailService (pinned behaviour) > pure templates are stable > enroll subject 1`] = `"Inscription confirmée : Formation"`;
 
 exports[`emailService (pinned behaviour) > pure templates are stable > reset hash 1`] = `"0b5543046caa481b857b4aab5a3ad3dfb84f240f5cd73d214503ace5aa7f7de8"`;
 

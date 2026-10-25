@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import type { Prisma } from "@/lib/generated/prisma/client";
 import type { PathLevel, PathSort } from "./rules";
+import { displayedCourseMinutes } from "@/lib/format-duration";
 
 export interface PathCourseView {
   courseId: string;
@@ -16,6 +17,7 @@ export interface PathCourseView {
   /** Unpublished since it was added to the path */
   available: boolean;
   lessonsCount: number;
+  /** Sum of the published lessons, in minutes (lesson durations are stored in seconds). */
   minutes: number;
 }
 
@@ -51,6 +53,7 @@ const courseSelect = {
   accessTier: true,
   price: true,
   published: true,
+  duration: true,
 } satisfies Prisma.CourseSelect;
 
 type PathRow = Prisma.PathGetPayload<{
@@ -67,7 +70,8 @@ async function lessonTotals(courseIds: string[]) {
           _sum: { duration: true },
           _count: { _all: true },
         });
-  return new Map(rows.map((r) => [r.courseId, { minutes: r._sum.duration ?? 0, lessons: r._count._all }]));
+  // Lesson.duration is in seconds: the totals are given in minutes
+  return new Map(rows.map((r) => [r.courseId, { minutes: Math.round((r._sum.duration ?? 0) / 60), lessons: r._count._all }]));
 }
 
 function toDetail(row: PathRow, totals: Map<string, { minutes: number; lessons: number }>): PathDetail {
@@ -88,7 +92,7 @@ function toDetail(row: PathRow, totals: Map<string, { minutes: number; lessons: 
         price: pc.course.price === null ? null : Number(pc.course.price),
         available: pc.course.published,
         lessonsCount: t?.lessons ?? 0,
-        minutes: t?.minutes ?? 0,
+        minutes: displayedCourseMinutes(t?.minutes ?? 0, pc.course.duration),
       };
     });
   const available = courses.filter((c) => c.available);

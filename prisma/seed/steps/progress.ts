@@ -35,8 +35,8 @@ export async function seedProgress(
           lessonId: lesson.id,
           completed: isCompleted,
           watchTime: Math.floor(
-            (lesson.duration || 30) * (0.7 + Math.random() * 0.5)
-          ), // 70-120% of lesson duration
+            (lesson.duration || 1800) * (0.7 + Math.random() * 0.5)
+          ), // seconds: 70-120% of the lesson duration (seconds too)
           completedAt: isCompleted
             ? randomDate(enrollment.enrolledAt, new Date())
             : null,

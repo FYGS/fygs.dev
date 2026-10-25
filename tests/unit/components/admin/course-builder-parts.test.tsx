@@ -343,7 +343,7 @@ describe("BuilderHeader", () => {
       published: false,
       enrollments: 0,
       readiness: incomplete,
-      beforePublish: vi.fn().mockResolvedValue(undefined),
+      beforePublish: vi.fn().mockResolvedValue(true),
       onPublishedChange: vi.fn(),
       onGoToSection: vi.fn(),
       ...over,
@@ -377,6 +377,15 @@ describe("BuilderHeader", () => {
     await waitFor(() => expect(h.publishCourse).toHaveBeenCalledWith("c1"));
     expect(props.beforePublish).toHaveBeenCalled();
     await waitFor(() => expect(props.onPublishedChange).toHaveBeenCalledWith(true));
+  });
+
+  it("does not publish while a change could not be saved", async () => {
+    const props = renderHeader({ readiness: complete, beforePublish: vi.fn().mockResolvedValue(false) });
+    fireEvent.click(screen.getByRole("button", { name: "Publier" }));
+    fireEvent.click(screen.getByRole("button", { name: "Publier maintenant" }));
+    await waitFor(() => expect(h.toast.error).toHaveBeenCalledWith(expect.stringContaining("n'a pas pu être enregistrée")));
+    expect(h.publishCourse).not.toHaveBeenCalled();
+    expect(props.onPublishedChange).not.toHaveBeenCalled();
   });
 
   it("reports the server's refusal and does not mark the course published", async () => {
@@ -465,7 +474,7 @@ describe("CurriculumPanel", () => {
     h.addLesson.mockResolvedValue({ success: true, snapshot: withLesson, lessonId: "n" });
     h.loadLesson.mockResolvedValue({
       success: true,
-      lesson: { id: "n", courseId: "c1", moduleId: "m2", title: "Leçon n", slug: "n", description: "", content: "", videoUrl: "", duration: null, published: false, isPreview: false, resources: [] },
+      lesson: { id: "n", courseId: "c1", moduleId: "m2", title: "Leçon n", slug: "n", description: "", content: "", videoUrl: "", duration: null, published: false, isPreview: false, captionsUrl: "", transcript: "", resources: [] },
     });
     render(<Harness />);
     fireEvent.change(screen.getByLabelText("Titre de la nouvelle leçon du module Aller plus loin"), { target: { value: "Leçon n" } });

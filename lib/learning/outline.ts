@@ -29,6 +29,8 @@ export interface OutlineLessonInput {
   duration: number | null;
   moduleId: string | null;
   isPreview?: boolean;
+  /** false for a draft, which only the course staff's outline contains */
+  published?: boolean;
 }
 
 export interface OutlineQuizInput {
@@ -43,6 +45,7 @@ export interface OutlineExamInput {
   id: string;
   title: string;
   questionCount: number;
+  published?: boolean;
 }
 
 export type OutlineItem =
@@ -54,9 +57,11 @@ export type OutlineItem =
       duration: number | null;
       isPreview: boolean;
       moduleId: string | null;
+      /** A draft lesson, shown to the course staff only (author preview) */
+      draft?: boolean;
     }
   | { kind: "quiz"; id: string; title: string; questionCount: number; moduleId: string }
-  | { kind: "exam"; id: string; title: string; questionCount: number };
+  | { kind: "exam"; id: string; title: string; questionCount: number; draft?: boolean };
 
 export interface OutlineSection {
   /** `null` for lessons that belong to no module. */
@@ -86,6 +91,7 @@ export function buildOutline(input: {
     duration: l.duration,
     isPreview: l.isPreview ?? false,
     moduleId: l.moduleId,
+    ...(l.published === false && { draft: true }),
   });
   const byOrder = (a: OutlineLessonInput, b: OutlineLessonInput) => a.order - b.order;
   const time = (d?: Date | string) => (d ? new Date(d).getTime() : 0);
@@ -125,6 +131,7 @@ export function buildOutline(input: {
       id: input.exam.id,
       title: input.exam.title,
       questionCount: input.exam.questionCount,
+      ...(input.exam.published === false && { draft: true }),
     });
   }
   return { sections, items };

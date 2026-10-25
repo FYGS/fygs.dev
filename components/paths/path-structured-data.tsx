@@ -1,5 +1,5 @@
 import { SITE_URL } from "@/app/_lib/constants";
-import { LEVEL_LABELS } from "@/lib/paths/rules";
+import { LEVEL_LABELS } from "@/lib/courses/labels";
 import type { PathDetail } from "@/lib/paths/queries";
 
 /** schema.org description of a path: a course made of ordered courses. */

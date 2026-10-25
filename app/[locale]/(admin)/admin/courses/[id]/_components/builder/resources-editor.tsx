@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { uploadResourceFile } from "@/components/admin/direct-upload";
-import { RESOURCE_ACCEPT } from "@/lib/resource-types";
+import { formatFileSize, RESOURCE_ACCEPT } from "@/lib/resource-types";
 import type { ResourceItem } from "@/lib/curriculum/curriculum";
 import {
   addLessonResource,
@@ -20,12 +20,6 @@ interface Props {
   lessonId: string;
   resources: ResourceItem[];
   onChange: (resources: ResourceItem[]) => void;
-}
-
-function formatSize(bytes: number | null): string {
-  if (!bytes) return "";
-  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} Ko`;
-  return `${(bytes / (1024 * 1024)).toFixed(1).replace(".", ",")} Mo`;
 }
 
 /** Files and links attached to a lesson: upload, add a link, rename, reorder, remove. */
@@ -102,7 +96,7 @@ export function ResourcesEditor({ lessonId, resources, onChange }: Props) {
                 onBlur={(e) => void rename(resource, e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
               />
-              {resource.sizeBytes ? <span className="hidden text-xs text-muted-foreground sm:inline">{formatSize(resource.sizeBytes)}</span> : null}
+              {resource.sizeBytes ? <span className="hidden text-xs text-muted-foreground sm:inline">{formatFileSize(resource.sizeBytes)}</span> : null}
               <Button asChild variant="ghost" size="icon" className="h-7 w-7">
                 <a href={resource.url} target="_blank" rel="noopener noreferrer" aria-label={`Ouvrir ${resource.title}`}>
                   <ExternalLink className="h-4 w-4" aria-hidden />

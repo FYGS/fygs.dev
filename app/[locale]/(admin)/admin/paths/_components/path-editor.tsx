@@ -36,13 +36,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ImageUpload } from "@/components/ui/image-upload";
+import { ImageField } from "@/components/admin/image-field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { slugify } from "@/lib/text/slug";
-import { LEVEL_LABELS, MAX_PATH_COURSES, MIN_PATH_COURSES, PATH_LEVELS, pathPublishIssues, type PathLevel } from "@/lib/paths/rules";
+import { LEVEL_LABELS } from "@/lib/courses/labels";
+import { MAX_PATH_COURSES, MIN_PATH_COURSES, PATH_LEVELS, pathPublishIssues, type PathLevel } from "@/lib/paths/rules";
 import { pathInputSchema } from "@/lib/paths/schema";
 import {
   checkPathSlugAction,
@@ -350,19 +351,14 @@ export function PathEditor({ initial, courseOptions }: { initial: PathEditorInit
             <CardHeader>
               <CardTitle as="h2">Image de couverture</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <ImageUpload
-                currentImageUrl={form.thumbnail ?? undefined}
-                onImageUploaded={(url) => patch({ thumbnail: url })}
+            <CardContent>
+              <ImageField
+                label="Image de couverture du parcours"
+                value={form.thumbnail}
+                onChange={(thumbnail) => patch({ thumbnail })}
                 folder="paths"
                 prefix="path"
               />
-              {form.thumbnail && (
-                <Button type="button" variant="ghost" size="sm" onClick={() => patch({ thumbnail: null })}>
-                  <X className="mr-2 h-4 w-4" />
-                  Retirer l&apos;image
-                </Button>
-              )}
             </CardContent>
           </Card>
 

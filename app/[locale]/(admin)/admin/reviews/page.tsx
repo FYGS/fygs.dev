@@ -1,8 +1,5 @@
 import Link from "next/link";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { Role } from "@/lib/generated/prisma/browser";
+import { requireAdminPage } from "@/lib/admin-guard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -33,18 +30,8 @@ async function getReviewStats() {
 }
 
 export default async function AdminReviewsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  // Check authentication and permissions
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session?.user) {
-    redirect("/auth/login");
-  }
-
-  if (session.user.role !== Role.ADMIN) {
-    redirect("/unauthorized");
-  }
+  // Moderation is for administrators: an instructor who types the URL goes back to the back-office home
+  await requireAdminPage();
 
   const raw = await searchParams;
   const params = {

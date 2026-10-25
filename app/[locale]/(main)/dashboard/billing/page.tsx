@@ -1,487 +1,326 @@
-import { Metadata } from "next";
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import { db } from "@/lib/db";
-import { AccessService } from "@/lib/access-service";
-import { isRefundEligible, getRefundDeadline } from "@/lib/refund-policy";
-import { logger, createLogger } from "@/lib/structured-logger";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, DollarSign, AlertCircle, CheckCircle, Crown, Users, BookOpen, Clock, Star, Shield, Zap } from "lucide-react";
-import { FadeIn, FadeInWhenVisible } from "@/components/ui/fade-in";
+import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { headers } from "next/headers";
+import { AlertCircle, Crown, FileText, Receipt } from "lucide-react";
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { isSubscriptionActive } from "@/lib/access/entitlement";
+import { courseRefundDecision, getRefundDeadline, isRefundEligible, REFUND_WINDOW_DAYS } from "@/lib/refund-policy";
+import { classifyBillingCycle, getSubscriptionPrices } from "@/lib/subscription-pricing";
+import { formatPrice } from "@/lib/price-format";
+import { PaymentKind, PaymentStatus, SubscriptionStatus } from "@/lib/generated/prisma/browser";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BillingActions } from "@/components/billing/billing-actions";
 import { RefundButton } from "@/components/billing/refund-button";
-import { SubscriptionStatus } from "@/lib/generated/prisma/browser";
-import { classifyBillingCycle, getSubscriptionPrices } from "@/lib";
 
 export const metadata: Metadata = {
-  title: "Facturation & Abonnement | FYGS Learning Platform",
-  description: "Gérez votre abonnement Premium et vos paiements en toute sécurité.",
+  title: "Facturation | FYGS",
+  description: "Votre abonnement, vos achats de formations, vos reçus et vos remboursements.",
 };
 
-function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat('fr-FR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  }).format(date);
+const date = (value: Date) => new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeZone: "Europe/Paris" }).format(value);
+const money = (amount: { toString(): string } | number, currency: string) =>
+  formatPrice(Number(amount), { currency, freeLabel: false });
+
+const SUBSCRIPTION_STATUS: Record<SubscriptionStatus, { label: string; className: string }> = {
+  ACTIVE: { label: "Actif", className: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200" },
+  TRIALING: { label: "Période d’essai", className: "bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200" },
+  PAST_DUE: { label: "Paiement en échec", className: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200" },
+  CANCELED: { label: "Arrêté", className: "bg-muted text-foreground" },
+  INCOMPLETE: { label: "Non finalisé", className: "bg-muted text-foreground" },
+};
+
+const PAYMENT_STATUS: Record<PaymentStatus, { label: string; className: string }> = {
+  COMPLETED: { label: "Payé", className: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200" },
+  REFUNDED: { label: "Remboursé", className: "bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200" },
+  FAILED: { label: "Échec", className: "bg-rose-100 text-rose-900 dark:bg-rose-950 dark:text-rose-200" },
+  PENDING: { label: "En cours", className: "bg-muted text-foreground" },
+};
+
+const AUDIT_LABELS: Record<string, string> = {
+  PRORATION: "Prorata de changement de formule",
+  REFUND_PROCESSED: "Remboursement",
+  REFUND_RECORD: "Remboursement",
+  CHARGE_REFUNDED: "Remboursement",
+};
+
+/** The moment the page is built, and the cut-off under which an unpaid checkout is no longer listed. */
+function clock() {
+  const now = new Date();
+  return { now, dayAgo: new Date(now.getTime() - 24 * 60 * 60 * 1000) };
 }
 
-function getStatusBadge(status: string) {
-  switch (status) {
-    case SubscriptionStatus.ACTIVE:
-      return <Badge className="bg-green-100 text-green-800 border-green-200">✓ Actif</Badge>;
-    case SubscriptionStatus.CANCELED:
-      return <Badge className="bg-red-100 text-red-800 border-red-200">✗ Annulé</Badge>;
-    case SubscriptionStatus.PAST_DUE:
-      return <Badge className="bg-orange-100 text-orange-800 border-orange-200">⚠ En retard</Badge>;
-    case SubscriptionStatus.TRIALING:
-      return <Badge className="bg-blue-100 text-blue-800 border-blue-200">🚀 Essai</Badge>;
-    default:
-      return <Badge variant="secondary">{status}</Badge>;
-  }
-}
+const ERRORS: Record<string, string> = {
+  receipt: "Le reçu de ce paiement n’est pas disponible pour le moment.",
+  "no-subscription": "Aucun abonnement Stripe n’est associé à votre compte.",
+};
 
-export default async function BillingPage() {
-  const correlationId = logger.generateCorrelationId();
-  const billingLogger = createLogger({ 
-    operation: 'billing-page-view',
-    correlationId,
-    resourceType: 'billing'
-  });
+export default async function BillingPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) redirect("/auth/login?callbackUrl=%2Ffr%2Fdashboard%2Fbilling");
+  const userId = session.user.id;
+  const { error } = await searchParams;
 
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    redirect("/auth/login");
-  }
-
-  billingLogger.info("Billing page accessed", {
-    userId: session.user.id
-  });
-
-  // Get user with subscription details and course stats
-  const [user, enrolledCourseCount, totalCourseCount, invoiceAudits] = await Promise.all([
-    db.user.findUnique({
-      where: { id: session.user.id },
+  const { now, dayAgo } = clock();
+  const [subscription, payments, audits, certificates] = await Promise.all([
+    db.subscription.findUnique({
+      where: { userId },
       select: {
-        id: true,
-        email: true,
-        name: true,
-        subscriptions: {
-          select: {
-            id: true,
-            status: true,
-            currentPeriodStart: true,
-            currentPeriodEnd: true,
-            stripeCustomerId: true,
-            stripeSubscriptionId: true,
-            cancelAtPeriodEnd: true,
-            priceId: true,
-          },
-        },
-        payments: {
-          orderBy: { createdAt: 'desc' },
-          take: 5,
-          select: {
-            id: true,
-            amount: true,
-            status: true,
-            description: true,
-            createdAt: true,
-            kind: true,
-            course: {
-              select: {
-                id: true,
-                title: true,
-                slug: true
-              }
-            }
-          }
-        }
+        status: true,
+        currentPeriodStart: true,
+        currentPeriodEnd: true,
+        stripeCustomerId: true,
+        stripeSubscriptionId: true,
+        cancelAtPeriodEnd: true,
+        priceId: true,
       },
     }),
-    db.enrollment.count({ where: { userId: session.user.id } }),
-    db.course.count({ where: { published: true } }),
+    db.payment.findMany({
+      where: {
+        userId,
+        // A checkout left open and never paid is not a payment: hidden once it is a day old
+        OR: [{ status: { not: PaymentStatus.PENDING } }, { createdAt: { gte: dayAgo } }],
+      },
+      orderBy: { createdAt: "desc" },
+      take: 30,
+      select: {
+        id: true,
+        amount: true,
+        currency: true,
+        status: true,
+        description: true,
+        createdAt: true,
+        kind: true,
+        stripePaymentIntentId: true,
+        course: { select: { id: true, title: true, slug: true } },
+      },
+    }),
     db.invoiceAudit.findMany({
-      where: { userId: session.user.id },
-      orderBy: { createdAt: 'desc' },
+      where: { userId },
+      orderBy: { createdAt: "desc" },
       take: 10,
-      select: { id: true, stripeInvoiceId: true, type: true, amount: true, createdAt: true }
-    })
+      select: { id: true, type: true, amount: true, currency: true, createdAt: true },
+    }),
+    db.certificate.findMany({ where: { userId }, select: { courseId: true } }),
   ]);
 
-  if (!user) {
-    redirect("/auth/login");
-  }
-
-  const hasActiveSubscription = await AccessService.hasActiveSubscription(session.user.id);
-  // no published course yet: 0%, not NaN
-  const progressPercent = totalCourseCount > 0 ? Math.round((enrolledCourseCount / totalCourseCount) * 100) : 0;
-  const subscription = user.subscriptions;
-  
+  const active = isSubscriptionActive(subscription);
+  const cycle = classifyBillingCycle(subscription?.priceId ?? undefined);
   const prices = getSubscriptionPrices();
-  const availableCycles = (["monthly", "yearly"] as const).filter((cycle) => Boolean(prices[cycle]));
+  const availableCycles = (["monthly", "yearly"] as const).filter((c) => Boolean(prices[c]));
+  const subscriptionRefund =
+    subscription?.status === SubscriptionStatus.ACTIVE && subscription.currentPeriodStart && subscription.stripeSubscriptionId
+      ? {
+          eligible: isRefundEligible(subscription.currentPeriodStart, now),
+          deadline: getRefundDeadline(subscription.currentPeriodStart),
+          subscriptionId: subscription.stripeSubscriptionId,
+        }
+      : null;
 
-  // Get billing cycle for display
-  const billingCycle = subscription?.priceId ? classifyBillingCycle(subscription.priceId) : 'unknown';
-  
-  // Calculate refund eligibility for canceled subscriptions
-  let refundInfo: { eligible: boolean; deadline?: Date; daysRemaining?: number } | null = null;
-  if (subscription && subscription.currentPeriodStart) {
-    const now = new Date();
-    const eligible = isRefundEligible(subscription.currentPeriodStart, now);
-    const deadline = getRefundDeadline(subscription.currentPeriodStart);
-    const daysRemaining = Math.max(0, Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
-    
-    refundInfo = {
-      eligible,
-      deadline,
-      daysRemaining
-    };
-  }
-  
+  const finished = new Set(certificates.map((c) => c.courseId));
+  const purchases = payments.filter((p) => p.kind === PaymentKind.COURSE && p.course && p.status !== PaymentStatus.PENDING);
+  const subscriptionPayments = payments.filter((p) => p.kind === PaymentKind.SUBSCRIPTION);
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-background via-background to-muted/20">
-      <div className="container py-8 max-w-6xl mx-auto space-y-8 px-4">
-        {/* Header */}
-        <FadeIn>
-          <div className="text-center space-y-4">
-            <h1 className="text-4xl font-bold bg-linear-to-r from-primary via-purple-600 to-blue-600 bg-clip-text text-transparent">
-              Facturation & Abonnement
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Gérez votre abonnement Premium, consultez vos paiements et optimisez votre expérience d&apos;apprentissage.
-            </p>
-          </div>
-        </FadeIn>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content - Subscription Status */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Current Plan */}
-            <FadeInWhenVisible delay={0.1}>
-              <Card className={`relative overflow-hidden border-2 ${hasActiveSubscription ? 'border-emerald-200 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 shadow-lg' : 'border-slate-200 bg-gradient-to-br from-slate-50 to-gray-50'}`}>
-                {hasActiveSubscription && (
-                  <>
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-emerald-400/20 to-transparent rounded-full -translate-y-16 translate-x-16" />
-                    <div className="absolute top-4 right-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-3 py-1 rounded-full text-xs font-medium">
-                      Premium
-                    </div>
-                  </>
-                )}
-                
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-3">
-                      {hasActiveSubscription ? (
-                        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-linear-to-br from-amber-100 to-yellow-100 ring-2 ring-amber-300">
-                          <Crown className="h-6 w-6 text-amber-600" />
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gray-100">
-                          <Users className="h-6 w-6 text-gray-600" />
-                        </div>
-                      )}
-                      <div>
-                        <h3 className={`text-xl font-bold ${hasActiveSubscription ? 'text-amber-900' : 'text-gray-800'}`}>
-                          {hasActiveSubscription ? `FYGS Premium - ${billingCycle === 'yearly' ? 'Annuel' : billingCycle === 'monthly' ? 'Mensuel' : 'Premium'}` : "Plan Gratuit"}
-                        </h3>
-                        <p className={`text-sm font-normal ${hasActiveSubscription ? 'text-amber-700' : 'text-muted-foreground'}`}>
-                          {hasActiveSubscription ? (
-                            billingCycle === 'yearly' 
-                              ? "Plan annuel - Économisez 2 mois" 
-                              : billingCycle === 'monthly' 
-                                ? "Plan mensuel - Flexible" 
-                                : "Accès illimité à toutes les formations"
-                          ) : "Accès limité aux formations gratuites"}
-                        </p>
-                      </div>
-                    </CardTitle>
-                    {subscription && getStatusBadge(subscription.status)}
-                  </div>
-                </CardHeader>
-
-                <CardContent className="space-y-6">
-                  {hasActiveSubscription && subscription ? (
-                    <>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="bg-white/80 backdrop-blur-xs rounded-lg p-4 border border-amber-200">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Calendar className="h-4 w-4 text-amber-600" />
-                            <span className="font-medium text-amber-900">Période actuelle</span>
-                          </div>
-                          <p className="text-sm text-amber-700">
-                            Du {subscription.currentPeriodStart ? formatDate(subscription.currentPeriodStart) : 'N/A'}
-                          </p>
-                          <p className="text-sm text-amber-700">
-                            Au {subscription.currentPeriodEnd ? formatDate(subscription.currentPeriodEnd) : 'N/A'}
-                          </p>
-                        </div>
-
-                        <div className="bg-white/80 backdrop-blur-xs rounded-lg p-4 border border-green-200">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Shield className="h-4 w-4 text-green-600" />
-                            <span className="font-medium text-green-800">Avantages actifs</span>
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-xs text-green-700">✓ Formations illimitées</p>
-                            <p className="text-xs text-green-700">✓ Support prioritaire</p>
-                            <p className="text-xs text-green-700">✓ Nouveautés exclusives</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {subscription.cancelAtPeriodEnd && (
-                          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                            <div className="flex items-start gap-3">
-                              <AlertCircle className="h-5 w-5 text-orange-600 mt-0.5" />
-                              <div>
-                                <h4 className="font-medium text-orange-900">Annulation programmée</h4>
-                                <p className="text-sm text-orange-700 mt-1">
-                                  Votre abonnement sera annulé le {subscription.currentPeriodEnd ? formatDate(subscription.currentPeriodEnd) : 'fin de la période actuelle'}.
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                      )}
-
-                      <div className="space-y-4">
-                          {/* Refund Eligibility Display */}
-                          {refundInfo && subscription.status === SubscriptionStatus.ACTIVE && (
-                            <div className={`rounded-lg p-4 border ${
-                              refundInfo.eligible 
-                                ? 'bg-green-50 border-green-200' 
-                                : 'bg-gray-50 border-gray-200'
-                            }`}>
-                              <div className="flex items-start gap-3">
-                                {refundInfo.eligible ? (
-                                  <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
-                                ) : (
-                                  <Clock className="h-5 w-5 text-gray-600 mt-0.5" />
-                                )}
-                                <div>
-                                  <h4 className={`font-medium ${
-                                    refundInfo.eligible ? 'text-green-900' : 'text-gray-900'
-                                  }`}>
-                                    {refundInfo.eligible ? 'Remboursement disponible' : 'Période de remboursement expirée'}
-                                  </h4>
-                                  <p className={`text-sm mt-1 ${
-                                    refundInfo.eligible ? 'text-green-700' : 'text-gray-700'
-                                  }`}>
-                                    {refundInfo.eligible ? (
-                                      refundInfo.daysRemaining && refundInfo.daysRemaining > 0 ? (
-                                        `Vous pouvez demander un remboursement pendant encore ${refundInfo.daysRemaining} jour${refundInfo.daysRemaining > 1 ? 's' : ''}.`
-                                      ) : (
-                                        'Dernier jour pour demander un remboursement.'
-                                      )
-                                    ) : (
-                                      `La période de remboursement de 14 jours a expiré le ${refundInfo.deadline ? formatDate(refundInfo.deadline) : 'N/A'}.`
-                                    )}
-                                  </p>
-                                  {refundInfo.eligible && (
-                                    <div className="mt-3">
-                                      <RefundButton 
-                                        subscriptionId={subscription.stripeSubscriptionId || ''}
-                                        className="bg-green-100 hover:bg-green-200 text-green-800 border-green-300"
-                                      />
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                      </div>
-
-                      <div className="flex gap-3">
-                        <Button asChild className="bg-amber-500 hover:bg-amber-600 text-black">
-                            <Link href="/dashboard">
-                            <BookOpen className="h-4 w-4 mr-2" />
-                            Tableau de Bord
-                            </Link>
-                        </Button>
-                        <Button variant="outline" asChild>
-                          <Link href="/formations">
-                            <BookOpen className="h-4 w-4 mr-2" />
-                            Explorer les formations
-                          </Link>
-                        </Button>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="text-center space-y-4">
-                      <div className="bg-linear-to-r from-amber-100 to-yellow-100 rounded-lg p-6 border border-amber-200">
-                        <h4 className="font-semibold text-amber-900 mb-2">Passez à Premium</h4>
-                        <p className="text-sm text-amber-800 mb-4">
-                          Débloquez toutes les formations et bénéficiez d&apos;un accès illimité à notre catalogue complet.
-                        </p>
-                        <Button asChild className="bg-linear-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white">
-                          <Link href="/pricing">
-                            <Crown className="h-4 w-4 mr-2" />
-                            Devenir Premium
-                          </Link>
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </FadeInWhenVisible>
-
-            {/* Payment History */}
-            {user.payments.length > 0 && (
-              <FadeInWhenVisible delay={0.2}>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <DollarSign className="h-5 w-5" />
-                      Historique des paiements
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {user.payments.map((payment) => (
-                        <div key={payment.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                          <div>
-                            <p className="font-medium">
-                              {payment.course ? (
-                                `Achat Formation - ${payment.course.title}`
-                              ) : payment.description ? (
-                                payment.description
-                              ) : (
-                                payment.kind === 'SUBSCRIPTION' ? 'Abonnement Premium' : 'Paiement FYGS'
-                              )}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {formatDate(payment.createdAt)}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-semibold">{Number(payment.amount)}€</p>
-                            {getStatusBadge(payment.status)}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    {invoiceAudits.length > 0 && (
-                      <div className="mt-6 border-t pt-4 space-y-3">
-                        <h4 className="text-sm font-semibold text-muted-foreground">Ajustements & Prorations</h4>
-                        {invoiceAudits.map(adj => (
-                          <div key={adj.id} className="flex items-center justify-between text-sm p-2 rounded-md bg-muted/30">
-                            <div>
-                              <p className="font-medium">
-                                {adj.type === 'PRORATION' && 'Proration plan'}
-                                {adj.type === 'REFUND_RECORD' && 'Remboursement'}
-                                {adj.type !== 'PRORATION' && adj.type !== 'REFUND_RECORD' && adj.type}
-                              </p>
-                              <p className="text-xs text-muted-foreground">{formatDate(adj.createdAt)}</p>
-                            </div>
-                            <div className={`font-semibold ${(adj.amount?.toNumber() || 0) < 0 ? 'text-red-600' : 'text-blue-600'}`}>
-                              {adj.amount ? `${adj.amount.toNumber()}€` : '—'}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </FadeInWhenVisible>
-            )}
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Usage Stats */}
-            <FadeInWhenVisible delay={0.3}>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Statistiques d&apos;utilisation</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center p-3 rounded-lg bg-muted/50">
-                      <BookOpen className="h-6 w-6 mx-auto mb-1 text-blue-600" />
-                      <div className="text-2xl font-bold text-blue-600">{enrolledCourseCount}</div>
-                      <div className="text-xs text-muted-foreground">Formations suivies</div>
-                    </div>
-                    <div className="text-center p-3 rounded-lg bg-muted/50">
-                      <Star className="h-6 w-6 mx-auto mb-1 text-purple-600" />
-                      <div className="text-2xl font-bold text-purple-600">{totalCourseCount}</div>
-                      <div className="text-xs text-muted-foreground">Formations disponibles</div>
-                    </div>
-                  </div>
-
-                  <div className="mt-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-medium">Progression</span>
-                      <span className="text-sm text-muted-foreground">
-                        {progressPercent}%
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-linear-to-r from-blue-600 to-purple-600 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${progressPercent}%` }}
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </FadeInWhenVisible>
-
-            {/* Support */}
-            <FadeInWhenVisible delay={0.4}>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Gestion abonnement</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {subscription ? (
-                    <BillingActions
-                      subscriptionStatus={subscription.status}
-                      cancelAtPeriodEnd={subscription.cancelAtPeriodEnd}
-                      currentCycle={billingCycle}
-                      availableCycles={availableCycles}
-                      periodEnd={subscription.currentPeriodEnd ? formatDate(subscription.currentPeriodEnd) : null}
-                    />
-                  ) : (
-                    <p className="text-sm text-muted-foreground">Aucun abonnement actif.</p>
-                  )}
-                </CardContent>
-              </Card>
-            </FadeInWhenVisible>
-
-            {/* Support */}
-            <FadeInWhenVisible delay={0.4}>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Besoin d&apos;aide ?</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button variant="outline" asChild className="w-full justify-start">
-                    <Link href="/contact">
-                      <Zap className="h-4 w-4 mr-2" />
-                      Contacter le support
-                    </Link>
-                  </Button>
-                  <Button variant="outline" asChild className="w-full justify-start">
-                    <Link href="/terms">
-                      <Shield className="h-4 w-4 mr-2" />
-                      Conditions d&apos;utilisation
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            </FadeInWhenVisible>
-          </div>
-        </div>
+    <div className="container mx-auto max-w-5xl space-y-8 px-4 py-8">
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight">Facturation</h1>
+        <p className="text-muted-foreground">Votre abonnement, vos achats de formations, vos reçus et vos remboursements.</p>
       </div>
+
+      {error && ERRORS[error] && (
+        <p role="alert" className="flex items-center gap-2 rounded-lg border border-amber-600/40 bg-amber-50 p-3 text-sm text-amber-950 dark:bg-amber-950/40 dark:text-amber-50">
+          <AlertCircle className="h-4 w-4 shrink-0" aria-hidden /> {ERRORS[error]}
+        </p>
+      )}
+
+      <Card>
+        <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3">
+          <CardTitle as="h2" className="flex items-center gap-2 text-xl">
+            <Crown className="h-5 w-5 text-amber-600 dark:text-amber-400" aria-hidden />
+            {active ? `Premium ${cycle === "yearly" ? "annuel" : cycle === "monthly" ? "mensuel" : ""}`.trim() : "Abonnement"}
+          </CardTitle>
+          {subscription && (
+            <Badge variant="secondary" className={SUBSCRIPTION_STATUS[subscription.status].className}>
+              {SUBSCRIPTION_STATUS[subscription.status].label}
+            </Badge>
+          )}
+        </CardHeader>
+        <CardContent className="space-y-5">
+          {active && subscription ? (
+            <>
+              <dl className="grid gap-4 text-sm sm:grid-cols-2">
+                <div>
+                  <dt className="text-muted-foreground">Période en cours</dt>
+                  <dd className="font-medium">
+                    {subscription.currentPeriodStart && subscription.currentPeriodEnd
+                      ? `du ${date(subscription.currentPeriodStart)} au ${date(subscription.currentPeriodEnd)}`
+                      : "—"}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground">{subscription.cancelAtPeriodEnd ? "Fin de l’abonnement" : "Prochain prélèvement"}</dt>
+                  <dd className="font-medium">{subscription.currentPeriodEnd ? date(subscription.currentPeriodEnd) : "—"}</dd>
+                </div>
+              </dl>
+              {subscription.cancelAtPeriodEnd && (
+                <p className="rounded-lg border bg-muted/40 p-3 text-sm">
+                  L’arrêt est programmé : vous gardez Premium jusqu’au{" "}
+                  {subscription.currentPeriodEnd ? date(subscription.currentPeriodEnd) : "terme de la période"}, sans nouveau prélèvement.
+                </p>
+              )}
+              {subscriptionRefund && (
+                <div className="flex flex-wrap items-center gap-3 rounded-lg border p-3 text-sm">
+                  <p className="min-w-0 flex-1">
+                    {subscriptionRefund.eligible
+                      ? `Remboursement possible jusqu’au ${date(subscriptionRefund.deadline)} (${REFUND_WINDOW_DAYS} jours après le début de la période).`
+                      : `Le délai de remboursement de ${REFUND_WINDOW_DAYS} jours s’est terminé le ${date(subscriptionRefund.deadline)}.`}
+                  </p>
+                  {subscriptionRefund.eligible && (
+                    <RefundButton target={{ kind: "subscription", subscriptionId: subscriptionRefund.subscriptionId }} />
+                  )}
+                </div>
+              )}
+              <BillingActions
+                subscriptionStatus={subscription.status}
+                cancelAtPeriodEnd={subscription.cancelAtPeriodEnd}
+                currentCycle={cycle}
+                availableCycles={availableCycles}
+                periodEnd={subscription.currentPeriodEnd ? date(subscription.currentPeriodEnd) : null}
+              />
+            </>
+          ) : subscription?.status === SubscriptionStatus.PAST_DUE ? (
+            <div className="space-y-3 text-sm">
+              <p>Le dernier prélèvement a échoué : mettez à jour votre moyen de paiement pour garder Premium.</p>
+              <BillingActions subscriptionStatus={subscription.status} cancelAtPeriodEnd={subscription.cancelAtPeriodEnd} />
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center gap-4">
+              <p className="min-w-0 flex-1 text-sm text-muted-foreground">
+                Vous n’avez pas d’abonnement en cours. Premium ouvre toutes les formations Premium du catalogue.
+              </p>
+              <Button asChild>
+                <Link href="/pricing">Voir les formules</Link>
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle as="h2" className="flex items-center gap-2 text-xl">
+            <FileText className="h-5 w-5" aria-hidden /> Formations achetées
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {purchases.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Aucun achat. Chaque formation Premium peut s’acheter à l’unité, avec un accès à vie, depuis sa page.
+            </p>
+          ) : (
+            <ul className="divide-y">
+              {purchases.map((payment) => {
+                const decision =
+                  payment.status === PaymentStatus.COMPLETED && payment.stripePaymentIntentId?.startsWith("pi_")
+                    ? courseRefundDecision({
+                        purchasedAt: payment.createdAt,
+                        amount: Number(payment.amount),
+                        completed: finished.has(payment.course!.id),
+                        now,
+                      })
+                    : null;
+                return (
+                  <li key={payment.id} className="flex flex-wrap items-center gap-3 py-3">
+                    <div className="min-w-0 flex-1">
+                      <Link href={`/formations/${payment.course!.slug}`} className="font-medium hover:underline">
+                        {payment.course!.title}
+                      </Link>
+                      <p className="text-sm text-muted-foreground">
+                        {date(payment.createdAt)} · {money(payment.amount, payment.currency)}
+                      </p>
+                    </div>
+                    <Badge variant="secondary" className={PAYMENT_STATUS[payment.status].className}>
+                      {PAYMENT_STATUS[payment.status].label}
+                    </Badge>
+                    <Button asChild variant="ghost" size="sm">
+                      <a href={`/api/stripe/receipt?paymentId=${payment.id}`} target="_blank" rel="noopener noreferrer">
+                        <Receipt className="mr-1 h-4 w-4" aria-hidden /> Reçu<span className="sr-only"> de {payment.course!.title}</span>
+                      </a>
+                    </Button>
+                    {decision?.refundable && (
+                      <RefundButton target={{ kind: "course", paymentId: payment.id, courseTitle: payment.course!.title }} />
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          <p className="mt-4 text-xs text-muted-foreground">
+            Une formation achetée se rembourse sur demande pendant {REFUND_WINDOW_DAYS} jours, tant qu’elle n’est pas terminée.
+          </p>
+        </CardContent>
+      </Card>
+
+      {(subscriptionPayments.length > 0 || audits.length > 0) && (
+        <Card>
+          <CardHeader>
+            <CardTitle as="h2" className="flex items-center gap-2 text-xl">
+              <Receipt className="h-5 w-5" aria-hidden /> Paiements de l’abonnement
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {subscriptionPayments.length > 0 && (
+              <ul className="divide-y">
+                {subscriptionPayments.map((payment) => (
+                  <li key={payment.id} className="flex flex-wrap items-center gap-3 py-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium">{payment.description ?? "Abonnement Premium"}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {date(payment.createdAt)} · {money(payment.amount, payment.currency)}
+                      </p>
+                    </div>
+                    <Badge variant="secondary" className={PAYMENT_STATUS[payment.status].className}>
+                      {PAYMENT_STATUS[payment.status].label}
+                    </Badge>
+                    {(payment.status === PaymentStatus.COMPLETED || payment.status === PaymentStatus.REFUNDED) && (
+                      <Button asChild variant="ghost" size="sm">
+                        <a href={`/api/stripe/receipt?paymentId=${payment.id}`} target="_blank" rel="noopener noreferrer">
+                          <Receipt className="mr-1 h-4 w-4" aria-hidden /> Facture
+                          <span className="sr-only"> du {date(payment.createdAt)}</span>
+                        </a>
+                      </Button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+            {audits.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold text-muted-foreground">Ajustements</h3>
+                <ul className="space-y-2">
+                  {audits.map((audit) => (
+                    <li key={audit.id} className="flex items-center justify-between gap-3 rounded-md bg-muted/40 p-2 text-sm">
+                      <span>
+                        {AUDIT_LABELS[audit.type] ?? "Ajustement"} · {date(audit.createdAt)}
+                      </span>
+                      <span className="font-medium">{audit.amount ? money(audit.amount, audit.currency ?? "eur") : "—"}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      <p className="text-sm text-muted-foreground">
+        Une question sur un paiement ? <Link href="/contact" className="underline">Contactez-nous</Link> ·{" "}
+        <Link href="/terms" className="underline">Conditions d’utilisation</Link>
+      </p>
     </div>
   );
 }

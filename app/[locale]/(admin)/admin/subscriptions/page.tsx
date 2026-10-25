@@ -4,6 +4,7 @@ import { requireAdminPage } from "@/lib/admin-guard";
 import { SUBSCRIPTION_STATUSES, listSubscriptions } from "@/lib/services/admin-listings";
 import { AdminListShell, Person, Td, Th, formatDateTime } from "../_components/list-shell";
 import { firstParam, type SearchParams } from "../_lib/search-params";
+import { isSubscriptionActive } from "@/lib/access/entitlement";
 
 export const metadata: Metadata = {
   title: "Abonnements | Admin FYGS",
@@ -64,7 +65,7 @@ export default async function SubscriptionsPage({ searchParams }: { searchParams
               <Td>
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant={STATUS_VARIANT[row.status] ?? "outline"}>{STATUS_LABEL[row.status] ?? row.status}</Badge>
-                  {row.cancelAtPeriodEnd && row.status === "ACTIVE" && <Badge variant="outline">Fin programmée</Badge>}
+                  {row.cancelAtPeriodEnd && isSubscriptionActive(row) && <Badge variant="outline">Fin programmée</Badge>}
                 </div>
               </Td>
               <Td className="whitespace-nowrap">{formatDateTime(row.currentPeriodEnd)}</Td>
