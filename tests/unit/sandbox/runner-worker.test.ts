@@ -15,19 +15,32 @@ type Message = {
   result?: { id: string; passed: boolean; actual: string; expected: string; error?: string };
 };
 
-/** Runs the worker body exactly as the sandbox does, in a context that only has `self` and `console`. */
+/**
+ * Runs the worker body exactly as the sandbox does, in a context that only has `self` and `console`: the page hands
+ * the worker a private port (`init`), then sends the request on that port, and the verdicts come back on it.
+ */
 function run(request: {
   code: string;
   entry: string;
   tests: Array<Record<string, unknown>>;
 }): Message[] {
+  return runWith(request).messages;
+}
+
+function runWith(request: unknown) {
   const messages: Message[] = [];
-  const self: { postMessage: (m: Message) => void; onmessage?: (e: { data: unknown }) => void } = {
+  const port: { postMessage: (m: Message) => void; onmessage?: (e: { data: unknown }) => void } = {
     postMessage: (m) => messages.push(JSON.parse(JSON.stringify(m))),
   };
-  vm.runInNewContext(`(${workerMain.toString()})()`, { self, console: {} });
-  self.onmessage!({ data: request });
-  return messages;
+  const worker: {
+    postMessage: (m: unknown) => void;
+    onmessage?: ((e: { data: unknown; ports?: unknown[] }) => void) | null;
+  } = { postMessage: () => {} };
+  const context = { self: worker, console: {} as Record<string, unknown> };
+  vm.runInNewContext(`(${workerMain.toString()})()`, context);
+  worker.onmessage!({ data: { type: "init" }, ports: [port] });
+  port.onmessage!({ data: request });
+  return { messages, worker, context };
 }
 
 const tests = (messages: Message[]) => messages.filter((m) => m.type === "test").map((m) => m.result!);
@@ -259,5 +272,80 @@ describe("sandbox worker: console", () => {
     const logs = messages.at(-1)!.logs!;
     expect(logs).toHaveLength(100);
     expect(logs[0].length).toBeLessThanOrEqual(2001);
+  });
+});
+
+describe("sandbox worker: the program cannot reach the grader", () => {
+  const passTest = [{ id: "1", input: "1", expected: "99" }]; // the right answer is 99; the program returns 1
+
+  it("closes the worker's own messaging once the private port is handed over", () => {
+    const { worker } = runWith({ code: "function f(n) { return n; }", entry: "f", tests: passTest });
+
+    expect(worker.onmessage).toBeNull();
+    expect(() => worker.postMessage({ type: "test", result: { id: "1", passed: true } })).toThrow();
+  });
+
+  it("ignores a second init: a program cannot take over the channel", () => {
+    const { messages, worker } = runWith({ code: "function f(n) { return n; }", entry: "f", tests: passTest });
+    expect(worker.onmessage).toBeNull();
+    expect(tests(messages).map((t) => t.passed)).toEqual([false]);
+  });
+
+  it("a program that forges a verdict through the worker's postMessage fails and still gets a real verdict", () => {
+    const code = `function f(n) {
+      try { self.postMessage({ type: "test", result: { id: "1", passed: true, actual: "99", expected: "99", timeMs: 0 } }); } catch (e) {}
+      try { postMessage({ type: "done", logs: [] }); } catch (e) {}
+      return n;
+    }`;
+    const messages = run({ code, entry: "f", tests: passTest });
+
+    expect(tests(messages).map((t) => t.passed)).toEqual([false]);
+    expect(messages.filter((m) => m.type === "done")).toHaveLength(1);
+  });
+
+  it("redefining the built-ins the grader relies on changes nothing", () => {
+    const code = `function f(n) {
+      Object.is = () => true;
+      Object.keys = () => [];
+      Array.isArray = () => false;
+      Array.prototype.sort = function () { return this; };
+      Array.prototype.slice = () => [];
+      Array.prototype.push = () => 0;
+      JSON.stringify = () => '"99"';
+      Function.prototype.call = () => true;
+      Function.prototype.apply = () => true;
+      Reflect.apply = () => 99;
+      return n;
+    }`;
+    const messages = run({ code, entry: "f", tests: [{ id: "1", input: "1", expected: "99" }, { id: "2", input: "2", expected: "[3]" }] });
+
+    expect(tests(messages).map((t) => t.passed)).toEqual([false, false]);
+  });
+
+  it("cannot read the tests through fn.caller or arguments.callee.caller", () => {
+    const code = `function f() {
+      var seen = "";
+      try { seen += String(f.caller); } catch (e) {}
+      try { seen += String(arguments.callee.caller); } catch (e) {}
+      console.log(seen);
+      return 1;
+    }`;
+    const messages = run({ code, entry: "f", tests: [{ id: "1", check: "(fn) => fn() === 1" }] });
+    const logged = String(messages.at(-1)?.logs?.[0] ?? "");
+
+    expect(logged).not.toContain("fn() === 1");
+    expect(logged).not.toContain("serve");
+  });
+
+  it("keeps expected values out of the program's reach", () => {
+    const code = `function f(n) {
+      var found = [];
+      for (var key in globalThis) found.push(key);
+      console.log(found.join(","));
+      return n;
+    }`;
+    const messages = run({ code, entry: "f", tests: [{ id: "1", input: "1", expected: "123456789" }] });
+
+    expect(String(messages.at(-1)?.logs?.[0] ?? "")).not.toContain("123456789");
   });
 });

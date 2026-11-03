@@ -107,6 +107,8 @@ describe("prisma/seed.ts (pinned Prisma call sequence)", () => {
     });
     const exit = vi.spyOn(process, "exit").mockImplementation((() => undefined) as never);
 
+    // The seed refuses a database that is not local (prisma/seed-guard.ts): this one is a recorder, but it must look like one
+    vi.stubEnv("DATABASE_URL", "postgresql://u:p@localhost:5432/seed_unit");
     h.done = new Promise<void>((res) => (h.resolveDone = res));
     await import("../../../prisma/seed");
     await h.done;

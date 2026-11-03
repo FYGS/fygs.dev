@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { cleanDisplayName } from "@/lib/html-escape";
 import { SITE_URL } from "@/app/_lib/constants";
 
 /**
@@ -42,6 +43,7 @@ export async function findCertificateByCode(rawCode: string): Promise<Certificat
     select: {
       code: true,
       issuedAt: true,
+      holderName: true,
       user: { select: { id: true, name: true } },
       course: { select: { id: true, title: true, slug: true } },
     },
@@ -52,7 +54,8 @@ export async function findCertificateByCode(rawCode: string): Promise<Certificat
       code: course.code,
       issuedAt: course.issuedAt,
       holderId: course.user.id,
-      holderName: course.user.name,
+      // The name printed at issue time; certificates issued before it was kept follow the account's name
+      holderName: course.holderName ?? cleanDisplayName(course.user.name),
       title: course.course.title,
       href: `/formations/${course.course.slug}`,
       holderHref: `/certificates/${course.course.id}`,
@@ -85,7 +88,7 @@ export async function findCertificateByCode(rawCode: string): Promise<Certificat
     code: path.code,
     issuedAt: path.issuedAt,
     holderId: path.user.id,
-    holderName: path.user.name,
+    holderName: cleanDisplayName(path.user.name),
     title: path.path.title,
     href: `/parcours/${path.path.slug}`,
     holderHref: `/parcours/${path.path.slug}/certificat`,
@@ -98,7 +101,7 @@ export async function listUserCertificates(userId: string): Promise<CertificateR
   const [courses, paths, user] = await Promise.all([
     db.certificate.findMany({
       where: { userId },
-      select: { code: true, issuedAt: true, course: { select: { id: true, title: true, slug: true } } },
+      select: { code: true, issuedAt: true, holderName: true, course: { select: { id: true, title: true, slug: true } } },
     }),
     db.pathCertificate.findMany({
       where: { userId },
@@ -120,14 +123,14 @@ export async function listUserCertificates(userId: string): Promise<CertificateR
     }),
     db.user.findUnique({ where: { id: userId }, select: { name: true } }),
   ]);
-  const holderName = user?.name ?? "";
+  const accountName = cleanDisplayName(user?.name);
   const records: CertificateRecord[] = [
     ...courses.map((c) => ({
       kind: "course" as const,
       code: c.code,
       issuedAt: c.issuedAt,
       holderId: userId,
-      holderName,
+      holderName: c.holderName ?? accountName,
       title: c.course.title,
       href: `/formations/${c.course.slug}`,
       holderHref: `/certificates/${c.course.id}`,
@@ -138,7 +141,7 @@ export async function listUserCertificates(userId: string): Promise<CertificateR
       code: p.code,
       issuedAt: p.issuedAt,
       holderId: userId,
-      holderName,
+      holderName: accountName,
       title: p.path.title,
       href: `/parcours/${p.path.slug}`,
       holderHref: `/parcours/${p.path.slug}/certificat`,

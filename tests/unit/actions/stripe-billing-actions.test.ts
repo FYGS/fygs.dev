@@ -32,13 +32,17 @@ vi.mock("@/lib/stripe", async () => {
     invoicePayments: { list: vi.fn() },
     refunds: { create: vi.fn() },
   };
-  return { stripe: h.stripe };
+  return { stripe: h.stripe, stripeKeyMode: () => "unknown" };
 });
 vi.mock("@/lib/analytics-helper", async () => {
   const { vi } = await import("vitest");
   h.recordRefund = vi.fn().mockResolvedValue(undefined);
   return { AnalyticsHelper: { recordRefund: h.recordRefund, emit: vi.fn() } };
 });
+// The purchase lock is a database lock: the in-memory database used here has none, the transaction is the database itself
+vi.mock("@/lib/payments/locks", () => ({
+  withPurchaseLock: async (_userId: string, _courseId: string | null, fn: (tx: unknown) => unknown) => fn(h.mem!.db),
+}));
 vi.mock("@/lib/structured-logger", () => {
   const noop = () => {};
   const logger = { debug: noop, info: noop, warn: noop, error: noop };
@@ -47,7 +51,6 @@ vi.mock("@/lib/structured-logger", () => {
 vi.spyOn(console, "error").mockImplementation(() => {});
 vi.spyOn(console, "warn").mockImplementation(() => {});
 
-import { requestRefund } from "@/app/[locale]/(main)/dashboard/actions/requestRefund";
 import { switchSubscriptionPlan } from "@/app/[locale]/(main)/dashboard/actions/switchSubscriptionPlan";
 
 const mem = () => h.mem!;
@@ -77,72 +80,14 @@ beforeEach(() => {
   h.stripe.refunds.create.mockResolvedValue(clone(f.refundCreated));
 });
 
-describe("requestRefund (recorded Stripe answers)", () => {
-  it("looks the payment up through the latest paid invoice, refunds its PaymentIntent, cancels", async () => {
-    const result = await requestRefund({ subscriptionId: SUB, reason: "changed my mind" });
-
-    expect(h.stripe.invoices.list).toHaveBeenCalledWith({
-      subscription: SUB,
-      status: "paid",
-      limit: 1,
-    });
-    expect(h.stripe.invoicePayments.list).toHaveBeenCalledWith({
-      invoice: f.invoiceRetrieved.id,
-      status: "paid",
-      limit: 1,
-    });
-    expect(h.stripe.refunds.create).toHaveBeenCalledWith(
-      { payment_intent: PI, amount: f.invoiceRetrieved.amount_paid },
-      { idempotencyKey: `refund:dbsub:${PI}` },
-    );
-    expect(h.stripe.subscriptions.cancel).toHaveBeenCalledWith(SUB, undefined, {
-      idempotencyKey: `cancel:${SUB}:immediate`,
-    });
-    expect(result).toEqual({
-      success: true,
-      message: expect.stringContaining("Remboursement effectué"),
-      refund: {
-        amount: f.invoiceRetrieved.amount_paid / 100,
-        currency: f.invoiceRetrieved.currency,
-        refundId: f.refundCreated.id,
-      },
-    });
-    expect(mem().db.subscription.rows[0].status).toBe(SubscriptionStatus.CANCELED);
-    expect(mem().db.invoiceAudit.rows[0]).toMatchObject({
-      type: "REFUND_PROCESSED",
-      metadata: expect.objectContaining({
-        stripeRefundId: f.refundCreated.id,
-        stripePaymentIntentId: PI,
-        stripeSubscriptionId: SUB,
-      }),
-    });
-  });
-
+describe("recorded Stripe answers used by the refund", () => {
+  // requestRefund itself runs against a real database in tests/integration/db/refund.test.ts and
+  // tests/integration/payments/refund-actions.test.ts
   it("the recorded payment is a PaymentIntent payment and the refund is accepted", () => {
     expect(f.invoicePaymentsList.data[0].payment.type).toBe("payment_intent");
     expect(PI).toMatch(/^pi_/);
     expect(f.refundCreated.object).toBe("refund");
     expect(f.refundCreated.payment_intent).toBe(PI);
-  });
-
-  it("does not refund twice when Stripe has no paid invoice payment", async () => {
-    h.stripe.invoicePayments.list.mockResolvedValue({ data: [] });
-    expect(await requestRefund({ subscriptionId: SUB })).toMatchObject({
-      success: false,
-      error: "NO_PAYMENT_FOUND",
-    });
-    expect(h.stripe.refunds.create).not.toHaveBeenCalled();
-    expect(h.stripe.subscriptions.cancel).not.toHaveBeenCalled();
-  });
-
-  it("a Stripe refund failure leaves the subscription active", async () => {
-    h.stripe.refunds.create.mockRejectedValue(new Error("charge_already_refunded"));
-    expect(await requestRefund({ subscriptionId: SUB })).toMatchObject({
-      success: false,
-      error: "STRIPE_REFUND_FAILED",
-    });
-    expect(mem().db.subscription.rows[0].status).toBe(SubscriptionStatus.ACTIVE);
-    expect(h.stripe.subscriptions.cancel).not.toHaveBeenCalled();
   });
 });
 

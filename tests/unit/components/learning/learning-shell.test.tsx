@@ -149,4 +149,21 @@ describe("LearningShell", () => {
     fireEvent.click(within(aside).getByRole("link", { name: /Variables/ }));
     expect(aside.hasAttribute("inert")).toBe(true);
   });
+
+  describe("the bar of small screens", () => {
+    const bar = () => shell().container.querySelector("nav.learning-mobile-bar")!;
+
+    it("carries the class the stylesheet uses to lift the floating buttons above it", () => {
+      expect(bar()).toBeTruthy();
+    });
+
+    it("has no control without a name: at the ends of the course the missing step is only a space", () => {
+      m.pathname = `/fr/learn/react/lessons/${sampleOutline().items.find((i) => i.kind === "lesson")!.slug}`;
+      const mobile = bar();
+      for (const control of mobile.querySelectorAll("a, button")) {
+        expect(control.getAttribute("aria-label") ?? control.textContent?.trim(), control.outerHTML).toBeTruthy();
+      }
+      expect(mobile.querySelectorAll("button[disabled]")).toHaveLength(0);
+    });
+  });
 });

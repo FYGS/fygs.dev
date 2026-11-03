@@ -18,6 +18,8 @@ import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useIntlayer } from "next-intlayer";
+import { safeInternalPath } from "@/lib/safe-redirect";
+import { honeypotFields } from "@/lib/anti-automation/honeypot";
 
 interface RegisterFormProps {
   callbackUrl?: string | null;
@@ -25,6 +27,7 @@ interface RegisterFormProps {
 
 export function RegisterForm({ callbackUrl }: RegisterFormProps) {
   const content = useIntlayer("register-form");
+  const destination = safeInternalPath(callbackUrl);
 
   const registerSchema = z
     .object({
@@ -73,6 +76,7 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
         email: data.email,
         password: data.password,
         name: data.name,
+        callbackURL: destination,
       });
 
       if (!result.success) {
@@ -86,7 +90,7 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
         const verifyUrl = `/auth/verify?email=${encodeURIComponent(
           data.email
         )}${
-          callbackUrl ? `&callbackUrl=${encodeURIComponent(callbackUrl)}` : ""
+          callbackUrl ? `&callbackUrl=${encodeURIComponent(destination)}` : ""
         }`;
         router.push(verifyUrl);
       }
@@ -100,11 +104,7 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
   const handleSocialLogin = async (provider: "github" | "google") => {
     setIsLoading(true);
     try {
-      // Store callbackUrl in sessionStorage for post-auth redirect
-      if (callbackUrl) {
-        sessionStorage.setItem("authCallbackUrl", callbackUrl);
-      }
-      await authService.signInWithProvider(provider);
+      await authService.signInWithProvider(provider, destination);
     } catch (error) {
       console.error("Social login error:", error);
       toast.error(`${content.messages.error.socialLogin} ${provider}`, {
@@ -152,6 +152,7 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
 
       {/* Registration Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        {honeypotFields()}
         <div className="space-y-2">
           <Label htmlFor="name">{content.form.name.label}</Label>
           <Input

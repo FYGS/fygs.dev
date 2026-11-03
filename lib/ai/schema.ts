@@ -41,6 +41,11 @@ const fileSchema = z.object({
 
 export const assistantContextSchema = z.object({
   surface: z.enum(["playground", "lesson"]).default("playground"),
+  /**
+   * Where the code in the context comes from. "shared-link" is a project received through a `?code=` link, i.e. written
+   * by someone else: the prompt labels it so the model treats it with extra suspicion.
+   */
+  origin: z.enum(["own", "shared-link"]).optional(),
   language: z.string().max(32).optional(),
   activeFile: fileSchema.optional(),
   selection: z
@@ -82,10 +87,17 @@ export const assistantContextSchema = z.object({
 });
 export type AssistantContext = z.infer<typeof assistantContextSchema>;
 
-export const assistantMessageSchema = z.object({
-  role: z.enum(["user", "assistant"]),
-  content: z.string().min(1).max(AI_LIMITS.maxMessageChars),
-});
+/**
+ * One turn of the conversation as the browser sends it. The server cannot tell a real earlier answer from one the user
+ * wrote (the history lives in the browser), so only two roles exist ("system" cannot be sent) and the history is bounded
+ * (prompts.ts): it is context for the learner's convenience, never a source of authority. Extra keys are refused.
+ */
+export const assistantMessageSchema = z
+  .object({
+    role: z.enum(["user", "assistant"]),
+    content: z.string().min(1).max(AI_LIMITS.maxMessageChars),
+  })
+  .strict();
 export type AssistantMessage = z.infer<typeof assistantMessageSchema>;
 
 export const assistantRequestSchema = z

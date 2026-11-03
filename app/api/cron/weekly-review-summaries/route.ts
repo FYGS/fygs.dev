@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ReviewNotificationService } from "@/lib/services/review-notification";
 import { logger } from "@/lib/structured-logger";
+import { checkBearer } from "@/lib/bearer";
 import { enforceRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
@@ -19,13 +20,13 @@ export async function GET(request: NextRequest) {
 
   try {
     // Verify the request is from a cron service
-    const authHeader = request.headers.get("authorization");
+    // Constant-time comparison, and a secret that is missing or shorter than 32 characters never matches
     const cronSecret = process.env.CRON_SECRET;
 
-    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    if (!checkBearer(request, cronSecret)) {
       logger.warn("Unauthorized cron request", {
         metadata: {
-          hasAuth: !!authHeader,
+          hasAuth: !!request.headers.get("authorization"),
           hasSecret: !!cronSecret,
         },
       });

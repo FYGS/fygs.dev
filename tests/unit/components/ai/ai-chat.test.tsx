@@ -244,7 +244,9 @@ describe("AiChat - safety of rendered output", () => {
     const links = [...container.querySelectorAll("a")];
     for (const a of links) expect(a.getAttribute("href") ?? "").not.toMatch(/^javascript:/i);
     const ok = screen.getByText("ok").closest("a")!;
-    expect(ok).toHaveAttribute("href", "https://example.com");
+    expect(ok).toHaveAttribute("href", "https://example.com/");
+    // the destination is shown next to the link text, so a label cannot hide where it leads
+    expect(ok.parentElement?.textContent).toContain("example.com");
     expect(ok).toHaveAttribute("rel", expect.stringContaining("noopener"));
     expect((window as unknown as { __pwned?: number }).__pwned).toBeUndefined();
   });

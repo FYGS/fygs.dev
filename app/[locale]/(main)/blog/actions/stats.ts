@@ -1,10 +1,16 @@
 "use server";
 
 import { PostStats } from "@/types/blog";
+import { isValidBlogSlug } from "@/lib/blog-slug";
+
+const EMPTY_STATS: PostStats = { views: 0, likes: 0, shares: 0 };
+const MAX_SLUGS = 60;
 
 export async function getAllPostsStats(
-  slugs: string[],
+  requested: string[],
 ): Promise<Record<string, PostStats>> {
+  // The slugs of a server action come from the browser: a bounded list of plain blog slugs, nothing else becomes a key
+  const slugs = (Array.isArray(requested) ? requested : []).filter(isValidBlogSlug).slice(0, MAX_SLUGS);
   if (
     process.env.NODE_ENV === "production" &&
     process.env.NEXT_PHASE === "phase-production-build"
@@ -27,6 +33,7 @@ export async function getAllPostsStats(
 
 // Use a static fallback for build time and real data at runtime
 export async function getPostStats(slug: string): Promise<PostStats> {
+  if (!isValidBlogSlug(slug)) return { ...EMPTY_STATS };
   // During static generation (build time), return default values
   if (
     process.env.NODE_ENV === "production" &&

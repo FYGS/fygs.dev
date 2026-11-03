@@ -58,6 +58,9 @@ export class AccessService {
       };
     }
 
+    // FR-041: withdrawing a course from the catalogue does not take it away from the people who hold it. An entitled
+    // learner keeps every lesson, their progress and their certificate; what an unpublished course loses is its
+    // visibility, new enrolments and the free sample (see `coursesWithPreview`, which only counts published courses).
     const canAccessCourse = entitlement.entitled;
     const canPreviewFirstLesson = !canAccessCourse && (await coursesWithPreview([courseId])).has(courseId);
     const accessReason: UserAccess["accessReason"] = canAccessCourse

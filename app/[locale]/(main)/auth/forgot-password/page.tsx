@@ -13,6 +13,7 @@ import { FieldError, fieldErrorProps } from "@/components/ui/field-error";
 import { authService } from "@/lib/auth-service";
 import { toast } from "sonner";
 import { useIntlayer } from "next-intlayer";
+import { honeypotFields } from "@/lib/anti-automation/honeypot";
 
 export default function ForgotPasswordPage() {
   const content = useIntlayer("auth");
@@ -72,6 +73,7 @@ export default function ForgotPasswordPage() {
             </div>
           ) : (
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              {honeypotFields()}
               <div className="space-y-2">
                 <Label htmlFor="email">
                   {content.forgotPassword.emailLabel}

@@ -23,7 +23,7 @@ vi.mock("@/lib/auth", () => ({
 }));
 
 import { enrollCourse } from "@/app/[locale]/(main)/dashboard/actions/enrollCourse";
-import { updateLessonProgress } from "@/app/[locale]/(main)/dashboard/actions/updateLessonProgress";
+import { updateLessonProgress } from "../support/progress-helpers";
 import { issueCertificate } from "../support/certificate-helpers";
 
 type Props = Record<string, any>;
@@ -116,7 +116,7 @@ describe("Analytics Event Integration", () => {
       const result = await updateLessonProgress({
         lessonId: lessons[0].id,
         completed: true,
-        watchTimeDelta: 300,
+        watchTimeDelta: 100,
       });
       expect(result.success).toBe(true);
 
@@ -132,7 +132,7 @@ describe("Analytics Event Integration", () => {
       expect(properties.lessonId).toBe(lessons[0].id);
       expect(properties.courseId).toBe(course.id);
       expect(properties.lessonOrder).toBe(1);
-      expect(properties.watchTime).toBe(300);
+      expect(properties.watchTime).toBe(100);
       expect(properties.completionPercentage).toBe(100);
       expect(properties.isFirstCompletion).toBe(true);
     });
@@ -156,12 +156,12 @@ describe("Analytics Event Integration", () => {
       await updateLessonProgress({
         lessonId: lessons[0].id,
         completed: true,
-        watchTimeDelta: 300,
+        watchTimeDelta: 100,
       });
       await updateLessonProgress({
         lessonId: lessons[1].id,
         completed: true,
-        watchTimeDelta: 450,
+        watchTimeDelta: 110,
       });
 
       const analyticsEvents = await eventsOf("LESSON_COMPLETED");
@@ -171,13 +171,13 @@ describe("Analytics Event Integration", () => {
       const lesson1Props = analyticsEvents[0].properties as Props;
       expect(lesson1Props.lessonId).toBe(lessons[0].id);
       expect(lesson1Props.lessonOrder).toBe(1);
-      expect(lesson1Props.watchTime).toBe(300);
+      expect(lesson1Props.watchTime).toBe(100);
 
       // Verify lesson 2 completion
       const lesson2Props = analyticsEvents[1].properties as Props;
       expect(lesson2Props.lessonId).toBe(lessons[1].id);
       expect(lesson2Props.lessonOrder).toBe(2);
-      expect(lesson2Props.watchTime).toBe(450);
+      expect(lesson2Props.watchTime).toBe(110);
     });
   });
 
@@ -188,7 +188,7 @@ describe("Analytics Event Integration", () => {
         await updateLessonProgress({
           lessonId: lesson.id,
           completed: true,
-          watchTimeDelta: 300,
+          watchTimeDelta: 100,
         });
       }
 
@@ -207,7 +207,7 @@ describe("Analytics Event Integration", () => {
       expect(properties.courseId).toBe(course.id);
       expect(properties.courseTitle).toBe(course.title);
       expect(properties.totalLessons).toBe(2);
-      expect(properties.totalWatchTime).toBe(600); // 2 lessons * 300s each
+      expect(properties.totalWatchTime).toBe(200); // 2 lessons * 100s each
     });
 
     test("asking for the certificate again does not record a second event", async () => {

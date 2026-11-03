@@ -86,4 +86,30 @@ describe("lesson HTML is reduced to a white list", () => {
     expect(c.querySelector("p")?.hasAttribute("class")).toBe(false);
     expect(c.querySelector("code")?.className ?? "").not.toContain("evil");
   });
+
+  it("never lets an author choose an id or a name: no collision with the application's anchors or window properties", () => {
+    const c = html(`<p id="main-content">a</p><a name="skip" id="__next">b</a><form id="x"></form><h2 id="chosen">Un titre</h2>`);
+    expect(c.querySelector("#main-content")).toBeNull();
+    expect(c.querySelector("#__next")).toBeNull();
+    expect(c.querySelector("[name]")).toBeNull();
+    // headings still get their anchor, from their text, set by the application (rehype-slug), not by the author
+    expect(c.querySelector("h2")?.id).toBe("un-titre");
+  });
+
+  it("drops roles, aria references and oversized or malformed free-text attributes", () => {
+    const long = "x".repeat(300);
+    const c = html(
+      `<div role="button" aria-describedby="a" aria-labelledby="b" title="${long}" lang="not a language!" dir="sideways">1</div>` +
+        `<p title="Astuce" lang="fr" dir="ltr" aria-label="Note">2</p>`,
+    );
+    const first = c.querySelector("div");
+    for (const attribute of ["role", "aria-describedby", "aria-labelledby", "title", "lang", "dir"]) {
+      expect(first?.hasAttribute(attribute), attribute).toBe(false);
+    }
+    const second = c.querySelector("p");
+    expect(second?.getAttribute("title")).toBe("Astuce");
+    expect(second?.getAttribute("lang")).toBe("fr");
+    expect(second?.getAttribute("dir")).toBe("ltr");
+    expect(second?.getAttribute("aria-label")).toBe("Note");
+  });
 });

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { isHttpUrl, UploadError, uploadImageFile } from "./direct-upload";
+import { isHttpsUrl, UploadError, uploadImageFile } from "./direct-upload";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 const TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
@@ -54,7 +54,7 @@ export function ImageField({ value, onChange, folder = "images", prefix = "cours
 
   function applyAddress() {
     const url = address.trim();
-    if (!isHttpUrl(url)) return setError("L'adresse doit commencer par http:// ou https://.");
+    if (!isHttpsUrl(url)) return setError("L'adresse doit commencer par https://.");
     setError(null);
     setBroken(false);
     onChange(url);

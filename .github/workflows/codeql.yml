@@ -9,6 +9,10 @@ on:
     - cron: '0 6 * * 1'  # Weekly on Mondays at 6 AM UTC
   workflow_dispatch:
 
+# Read-only by default; the analysis job below adds the one write it needs (security-events)
+permissions:
+  contents: read
+
 jobs:
   analyze:
     name: Analyze Code
@@ -32,6 +36,7 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
+          config-file: ./.github/codeql/codeql-config.yml
 
       - name: Autobuild
         uses: github/codeql-action/autobuild@v3
@@ -39,6 +44,6 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
         with:
+          # Results always go to code scanning (alerts, history, branch-protection checks): an analysis whose findings
+          # are discarded protects nothing
           category: "/language:${{matrix.language}}"
-          upload: "failure-only"
-        continue-on-error: true

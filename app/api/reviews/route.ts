@@ -216,6 +216,27 @@ export async function POST(request: NextRequest) {
   }
 }
 
+function parseReviewStatus(value: string | null): ReviewStatus | undefined {
+  return value && (Object.values(ReviewStatus) as string[]).includes(value) ? (value as ReviewStatus) : undefined;
+}
+
+/**
+ * Whether the viewer may read reviews that are not approved, report counts and voters for this query: an administrator,
+ * or an instructor asking about their own courses (their `instructorId`, or a course they teach).
+ */
+async function mayReadModerationData(
+  viewer: { id: string; role?: string | null } | null,
+  filters: { courseId?: string; instructorId?: string },
+): Promise<boolean> {
+  if (!viewer) return false;
+  if (viewer.role === "ADMIN") return true;
+  if (viewer.role !== "INSTRUCTOR") return false;
+  if (filters.instructorId) return filters.instructorId === viewer.id;
+  if (!filters.courseId) return false;
+  const course = await db.course.findUnique({ where: { id: filters.courseId }, select: { instructorId: true } });
+  return course?.instructorId === viewer.id;
+}
+
 /**
  * Get reviews with advanced filtering and search
  * GET /api/reviews?courseId=xxx&search=xxx&rating=5&verified=true&page=1&limit=20&sortBy=newest
@@ -238,8 +259,8 @@ export async function GET(request: NextRequest) {
         ? parseInt(searchParams.get("rating")!)
         : undefined,
       verified: searchParams.get("verified") === "true" ? true : undefined,
-      status:
-        (searchParams.get("status") as ReviewStatus) || ReviewStatus.APPROVED,
+      // Only a value of the enum is kept; whether it is honoured depends on who asks (see below)
+      status: parseReviewStatus(searchParams.get("status")),
       hasComment:
         searchParams.get("hasComment") === "true"
           ? true
@@ -303,8 +324,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Who is asking decides what they may see: the public gets approved reviews only, whatever `status` says
+    const session = await auth.api.getSession({ headers: request.headers }).catch(() => null);
+    const viewer = session?.user ?? null;
+    const privileged = await mayReadModerationData(viewer, filters);
+    filters.status = filters.status ?? ReviewStatus.APPROVED;
+
     // Use the search service
-    const result = await ReviewSearchService.searchReviews(filters, options);
+    const result = await ReviewSearchService.searchReviews(filters, {
+      ...options,
+      privileged,
+      viewerId: viewer?.id,
+    });
 
     return NextResponse.json({
       success: true,

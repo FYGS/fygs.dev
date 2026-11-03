@@ -19,6 +19,10 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../lib/generated/prisma/client";
 import { runSeed } from "./seed/run";
+import { assertSeedAllowed } from "./seed-guard";
+
+// Before anything touches a database: demo accounts never go to a real one by accident
+assertSeedAllowed();
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),

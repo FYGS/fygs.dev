@@ -192,6 +192,22 @@ function CodeBlock({ code, language, light }: { code: string; language: string; 
   );
 }
 
+/**
+ * Where a link may lead: http(s) addresses, shown with their host, and e-mail addresses. Anything else (javascript:,
+ * data:, file:, protocol-relative or relative paths) is not a link here.
+ */
+export function safeLinkTarget(href: string | undefined): { href: string; host: string } | null {
+  if (!href) return null;
+  try {
+    const url = new URL(href.trim());
+    if (url.protocol === "https:" || url.protocol === "http:") return { href: url.toString(), host: url.hostname };
+    if (url.protocol === "mailto:") return { href: url.toString(), host: "e-mail" };
+  } catch {
+    // not an absolute address
+  }
+  return null;
+}
+
 function buildComponents(light: boolean): Components {
   return {
     pre({ children }) {
@@ -207,11 +223,21 @@ function buildComponents(light: boolean): Components {
       );
     },
     a({ href, children }) {
+      const target = safeLinkTarget(href);
+      // Not a web or mail address (javascript:, data:, a relative path...): shown as text, never as a link
+      if (!target) return <span>{children}</span>;
       return (
-        <a href={href} target="_blank" rel="noopener noreferrer nofollow" className="text-primary underline underline-offset-2">
+        <a href={target.href} target="_blank" rel="noopener noreferrer nofollow" className="text-primary underline underline-offset-2">
           {children}
+          {/* The host the link really goes to: a model (or text it was shown) can word a link as anything */}
+          <span className="ml-1 text-[0.85em] text-muted-foreground no-underline">({target.host})</span>
         </a>
       );
+    },
+    // The tutor never draws images: loading one sends the browser to an address chosen by the text of the answer.
+    // The alt text is all that is shown (the server also strips them: lib/ai/output-filter.ts)
+    img({ alt }) {
+      return alt ? <span className="italic text-muted-foreground">{alt}</span> : null;
     },
     p: ({ children }) => <p className="my-2 leading-relaxed first:mt-0 last:mb-0">{children}</p>,
     ul: ({ children }) => <ul className="my-2 list-disc space-y-1 pl-5">{children}</ul>,
@@ -239,7 +265,8 @@ const COMPONENTS = { dark: buildComponents(false), light: buildComponents(true) 
 
 /**
  * Renders model output as Markdown. Raw HTML is never interpreted (no rehype-raw:
- * react-markdown escapes it) and unsafe URL schemes are dropped by react-markdown.
+ * react-markdown escapes it), images are never drawn (alt text only), links show their host and only lead to
+ * http(s) or mailto addresses.
  */
 export function AiMarkdown({
   content,

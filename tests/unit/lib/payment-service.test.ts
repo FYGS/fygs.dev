@@ -54,7 +54,20 @@ const stripeDefaults: Record<string, unknown> = {
       ],
     },
   },
-  "invoices.list": { data: [{ id: "in_1", amount_paid: 999, currency: "eur" }] },
+  "invoices.list": {
+    data: [
+      // a plan-change adjustment is skipped: the payment that opened the period is the one to refund
+      { id: "in_adjust", amount_paid: 50, currency: "eur", billing_reason: "subscription_update", created: 1700000500 },
+      {
+        id: "in_1",
+        amount_paid: 999,
+        currency: "eur",
+        billing_reason: "subscription_create",
+        created: 1700000000,
+        status_transitions: { paid_at: 1700000100 },
+      },
+    ],
+  },
   "invoicePayments.list": {
     data: [{ payment: { type: "payment_intent", payment_intent: "pi_1" } }],
   },
@@ -84,7 +97,7 @@ vi.mock("@/lib/stripe", () => {
         return sync ? exec() : (async () => exec())();
       },
     });
-  return { stripe: make([]) };
+  return { stripe: make([]), stripeKeyMode: () => "unknown" };
 });
 
 vi.mock("@/lib/structured-logger", () => ({
@@ -167,16 +180,6 @@ async function scenario(
 }
 
 const decimalLike = (n: number) => ({ toNumber: () => n });
-const sessionBase = {
-  id: "cs_1",
-  mode: "payment",
-  currency: "eur",
-  amount_total: 4990,
-  payment_status: "paid",
-  payment_intent: "pi_1",
-  metadata: { userId: "u1", productId: "c1", type: "course_purchase" },
-};
-
 describe("paymentService (pinned behaviour)", () => {
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ["Date"] });
@@ -282,92 +285,8 @@ describe("paymentService (pinned behaviour)", () => {
         { env: { STRIPE_WEBHOOK_SECRET: "whsec" }, stripe: { "webhooks.constructEvent": () => { throw new Error("bad"); } } },
         () => p.verifyWebhookSignature("{}", "sig"),
       ),
-    // handlePaymentSuccess
-    hpsNoUser: () => scenario({}, () => p.handlePaymentSuccess({ id: "cs_1", mode: "payment", metadata: {} } as never)),
-    hpsNoMetadata: () => scenario({}, () => p.handlePaymentSuccess({ id: "cs_1" } as never)),
-    hpsCourseNew: () =>
-      scenario(
-        { db: { "payment.findFirst": null, "enrollment.findUnique": null, "course.findFirst": { id: "c1", title: "React" } } },
-        () => p.handlePaymentSuccess(sessionBase as never),
-      ),
-    hpsCoursePending: () =>
-      scenario(
-        { db: { "payment.findFirst": { id: "pay1" }, "enrollment.findUnique": { id: "e1" } } },
-        () => p.handlePaymentSuccess(sessionBase as never),
-      ),
-    hpsCourseNoIntent: () => scenario({}, () => p.handlePaymentSuccess({ ...sessionBase, payment_intent: null } as never)),
-    hpsCoursePaymentFails: () =>
-      scenario({ db: { "payment.findFirst": new Error("db down") } }, () => p.handlePaymentSuccess(sessionBase as never)),
-    hpsCourseEnrollFails: () =>
-      scenario(
-        { db: { "payment.findFirst": null, "enrollment.findUnique": null, "course.findFirst": null } },
-        () => p.handlePaymentSuccess(sessionBase as never),
-      ),
-    hpsCourseAnalyticsFails: () =>
-      scenario(
-        { db: { "payment.findFirst": null, "enrollment.findUnique": { id: "e" } }, analytics: { coursePurchased: new Error("an") } },
-        () => p.handlePaymentSuccess(sessionBase as never),
-      ),
-    hpsSubNoId: () =>
-      scenario({}, () => p.handlePaymentSuccess({ ...sessionBase, mode: "subscription", subscription: null, metadata: { userId: "u1", type: "subscription" } } as never)),
-    hpsSubNew: () =>
-      scenario(
-        { db: { "payment.findFirst": null } },
-        () =>
-          p.handlePaymentSuccess({
-            ...sessionBase, mode: "subscription", subscription: "sub_1", payment_intent: null,
-            metadata: { userId: "u1", type: "subscription", priceId: "price_monthly_x" },
-          } as never),
-      ),
-    hpsSubPendingYearly: () =>
-      scenario(
-        { db: { "payment.findFirst": { id: "pay1" } } },
-        () =>
-          p.handlePaymentSuccess({
-            ...sessionBase, mode: "subscription", subscription: "sub_1",
-            metadata: { userId: "u1", type: "subscription", priceId: "price_yearly_x", billingCycle: "unknown" },
-          } as never),
-      ),
-    hpsSubExplicitCycle: () =>
-      scenario(
-        { db: { "payment.findFirst": null } },
-        () =>
-          p.handlePaymentSuccess({
-            ...sessionBase, mode: "subscription", subscription: "sub_1",
-            metadata: { userId: "u1", type: "subscription", priceId: "zzz", billingCycle: "yearly" },
-          } as never),
-      ),
-    hpsSubGrantFails: () =>
-      scenario(
-        { stripe: { "subscriptions.retrieve": new Error("stripe down") } },
-        () =>
-          p.handlePaymentSuccess({
-            ...sessionBase, mode: "subscription", subscription: "sub_1",
-            metadata: { userId: "u1", type: "subscription" },
-          } as never),
-      ),
-    hpsSubPaymentRecordFails: () =>
-      scenario(
-        { db: { "payment.findFirst": new Error("db") } },
-        () =>
-          p.handlePaymentSuccess({
-            ...sessionBase, mode: "subscription", subscription: "sub_1",
-            metadata: { userId: "u1", type: "subscription" },
-          } as never),
-      ),
-    hpsSubAnalyticsFails: () =>
-      scenario(
-        { db: { "payment.findFirst": null }, analytics: { subscriptionStarted: new Error("an") } },
-        () =>
-          p.handlePaymentSuccess({
-            ...sessionBase, mode: "subscription", subscription: "sub_1",
-            metadata: { userId: "u1", type: "subscription" },
-          } as never),
-      ),
-    hpsUnknownType: () =>
-      scenario({}, () => p.handlePaymentSuccess({ ...sessionBase, metadata: { userId: "u1", type: "weird" } } as never)),
-    hpsCourseNoProduct: () =>
-      scenario({}, () => p.handlePaymentSuccess({ ...sessionBase, metadata: { userId: "u1", type: "course_purchase" } } as never)),
+    // handlePaymentSuccess and the subscription grants are tested against a real database:
+    // tests/integration/payments/webhook-flow.test.ts, subscription-state.test.ts
     // access grants
     grantCourseExisting: () => scenario({ db: { "enrollment.findUnique": { id: "e1" } } }, () => p.grantCourseAccess("u1", "c1")),
     grantCourseOk: () =>
@@ -381,32 +300,6 @@ describe("paymentService (pinned behaviour)", () => {
     getSubFail: () => scenario({ stripe: { "subscriptions.retrieve": new Error("nope") } }, () => p.getSubscription("sub_1")),
     getSubEmpty: () => scenario({ stripe: { "subscriptions.retrieve": null } }, () => p.getSubscription("sub_1")),
   };
-
-  // grantSubscriptionAccess is private; exercise its variants via handlePaymentSuccess
-  const subSession = {
-    ...sessionBase, mode: "subscription", subscription: "sub_1",
-    metadata: { userId: "u1", type: "subscription" },
-  };
-  const grantVariants: Record<string, Record<string, unknown>> = {
-    customerObject: subscriptionFixture({ customer: { id: "cus_obj" } }),
-    customerMissing: subscriptionFixture({ customer: null }),
-    pastDue: subscriptionFixture({ status: "past_due" }),
-    canceled: subscriptionFixture({ status: "canceled", cancel_at_period_end: true }),
-    unknownStatus: subscriptionFixture({ status: "something_new" }),
-    noItems: subscriptionFixture({ items: undefined, plan: { id: "plan_legacy" }, billing_cycle_anchor: 1690000000 }),
-    yearlyNoPeriod: subscriptionFixture({
-      items: { data: [{ id: "si", price: { id: "price_y", recurring: { interval: "year" } } }] },
-      start_date: 1690000001,
-    }),
-    emptyItemsNoPrice: subscriptionFixture({ items: { data: [] } }),
-  };
-  for (const [name, sub] of Object.entries(grantVariants)) {
-    cases[`grantSub-${name}`] = () =>
-      scenario(
-        { db: { "payment.findFirst": null }, stripe: { "subscriptions.retrieve": sub } },
-        () => p.handlePaymentSuccess(subSession as never),
-      );
-  }
 
   for (const [name, run] of Object.entries(cases)) {
     it(name, async () => {

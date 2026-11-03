@@ -67,27 +67,82 @@ export function gradeExam(
 
 /** Wait between a failed sitting and the next one. */
 export const EXAM_RETAKE_COOLDOWN_MINUTES = 15;
+/** Sittings graded in any 24 hours: each failed one tells the learner which questions were missed. */
+export const EXAM_MAX_SITTINGS_PER_DAY = 3;
 /** Slack allowed on top of the time limit for latency and the page being slow to submit. */
 export const EXAM_GRACE_SECONDS = 60;
+/** How long a sitting of an exam without time limit stays open before it counts as abandoned. */
+export const EXAM_OPEN_SITTING_MAX_HOURS = 24;
 
-export type ExamRetakeDecision =
-  | { allowed: true }
-  | { allowed: false; reason: "PASSED" }
-  | { allowed: false; reason: "COOLDOWN"; retryAt: Date };
+const MINUTE_MS = 60_000;
+const HOUR_MS = 60 * MINUTE_MS;
 
-/** Whether a new sitting may start, from the last recorded one (`null` when never sat). */
-export function examRetakeDecision(
-  last: { completedAt: Date; passed: boolean } | null,
-  now: Date,
-): ExamRetakeDecision {
-  if (!last) return { allowed: true };
-  if (last.passed) return { allowed: false, reason: "PASSED" };
-  const retryAt = new Date(last.completedAt.getTime() + EXAM_RETAKE_COOLDOWN_MINUTES * 60_000);
-  return retryAt.getTime() > now.getTime() ? { allowed: false, reason: "COOLDOWN", retryAt } : { allowed: true };
+/** How long a sitting can be submitted after it started (time limit plus grace, or the open-sitting maximum). */
+export function examSittingWindowMs(timeLimitMinutes: number | null): number {
+  return timeLimitMinutes ? timeLimitMinutes * MINUTE_MS + EXAM_GRACE_SECONDS * 1000 : EXAM_OPEN_SITTING_MAX_HOURS * HOUR_MS;
 }
 
-/** Whether a sitting started at `startedAt` may still be submitted at `now` (no limit: always). */
+/** Whether a sitting started at `startedAt` may still be submitted at `now`. */
 export function withinTimeLimit(startedAt: number, now: number, timeLimitMinutes: number | null): boolean {
-  if (!timeLimitMinutes) return true;
-  return now - startedAt <= timeLimitMinutes * 60_000 + EXAM_GRACE_SECONDS * 1000;
+  return now - startedAt <= examSittingWindowMs(timeLimitMinutes);
+}
+
+export type ExamSittingDecision =
+  | { allowed: true }
+  | { allowed: false; reason: "PASSED" }
+  | { allowed: false; reason: "COOLDOWN" | "DAILY_LIMIT"; retryAt: Date };
+
+/**
+ * Whether a new sitting may start (and whether a submitted one may still be graded), from the history of the learner:
+ * `passedBefore` is true once any sitting was passed, `recent` are the end times of the sittings graded in the last
+ * 24 hours (abandoned ones included: a sitting that was started counts).
+ */
+export function examSittingDecision(
+  history: { passedBefore: boolean; recent: Date[] },
+  now: Date,
+): ExamSittingDecision {
+  if (history.passedBefore) return { allowed: false, reason: "PASSED" };
+  const recent = history.recent.filter((date) => now.getTime() - date.getTime() < 24 * HOUR_MS);
+  if (recent.length === 0) return { allowed: true };
+
+  const last = new Date(Math.max(...recent.map((date) => date.getTime())));
+  const cooldownEnd = new Date(last.getTime() + EXAM_RETAKE_COOLDOWN_MINUTES * MINUTE_MS);
+  if (cooldownEnd.getTime() > now.getTime()) return { allowed: false, reason: "COOLDOWN", retryAt: cooldownEnd };
+
+  if (recent.length >= EXAM_MAX_SITTINGS_PER_DAY) {
+    const oldest = new Date(Math.min(...recent.map((date) => date.getTime())));
+    return { allowed: false, reason: "DAILY_LIMIT", retryAt: new Date(oldest.getTime() + 24 * HOUR_MS) };
+  }
+  return { allowed: true };
+}
+
+/** What the learner is told when a sitting cannot start (the delay is formatted by the caller). */
+export function examBlockMessage(decision: Exclude<ExamSittingDecision, { allowed: true }>, when: string): string {
+  if (decision.reason === "PASSED") return "Vous avez déjà réussi cet examen.";
+  if (decision.reason === "COOLDOWN") return `Vous pourrez repasser l’examen ${when}.`;
+  return `Limite de ${EXAM_MAX_SITTINGS_PER_DAY} passages par jour atteinte : réessayez ${when}.`;
+}
+
+/** What the browser gets back for one question of a FAILED sitting: right or wrong, and its own answer. Nothing else. */
+export interface ExamOutcomeItem {
+  index: number;
+  isCorrect: boolean;
+  selected: number | null;
+}
+
+/**
+ * The correction shown after grading. Passing reveals everything (right answers and explanations: the learner has
+ * nothing left to gain from hiding them), and so does the author previewing their own exam. A failed sitting only says which questions were missed, so that failing
+ * on purpose is not a way to read the answers before the next sitting.
+ */
+export type ExamReview =
+  | { revealed: true; items: ExamReviewItem[] }
+  | { revealed: false; items: ExamOutcomeItem[] };
+
+export function projectReview(grade: ExamGrade, staff = false): ExamReview {
+  if (staff || grade.passed) return { revealed: true, items: grade.review };
+  return {
+    revealed: false,
+    items: grade.review.map(({ index, isCorrect, selected }) => ({ index, isCorrect, selected })),
+  };
 }

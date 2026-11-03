@@ -1,5 +1,10 @@
 import type * as SentryModule from "@sentry/nextjs";
+import { z } from "zod";
 import { IGNORED_ERRORS, monitoringOptions, scrubEvent } from "./lib/monitoring";
+
+// Zod compiles validators with `new Function` when it can and probes for it first; a strict Content-Security-Policy
+// reports that probe as a violation even though it is handled. Interpreting the schemas needs no code generation.
+z.config({ jitless: true });
 
 /**
  * Runs in the browser before the app. Error reporting starts only when NEXT_PUBLIC_SENTRY_DSN was set at build

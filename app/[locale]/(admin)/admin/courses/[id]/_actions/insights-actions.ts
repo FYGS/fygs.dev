@@ -74,7 +74,7 @@ export async function revokeCourseAccess(
     const g = await guardCourse(id.parse(courseId));
     if (!g.ok) return failure(g.error);
     if (g.user.role !== "ADMIN") return failure("Seul un administrateur peut retirer un accès offert.");
-    const r = await insights.revokeCourseAccess(g.course.id, id.parse(userId));
+    const r = await insights.revokeCourseAccess(g.course.id, id.parse(userId), g.user.id);
     if (!r.success) return r;
     revalidateCourse({ courseId: g.course.id, slugs: [g.course.slug] });
     return { success: true, removedEnrollment: r.removedEnrollment };

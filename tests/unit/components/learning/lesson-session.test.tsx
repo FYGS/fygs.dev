@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { screen, fireEvent, waitFor } from "@testing-library/react";
 import { LessonFooter } from "@/components/learning/lesson-footer";
 import { LessonSession } from "@/components/learning/lesson-session";
@@ -58,6 +58,21 @@ describe("marking a lesson as done", () => {
     expect(screen.getByRole("button", { name: "Marquer comme terminée" })).toBeTruthy();
   });
 
+  it("tells the learner what the server asks for when it is too early, and takes the lesson out of the done ones", async () => {
+    m.update.mockResolvedValue({
+      success: false,
+      error: "WATCH_MORE",
+      remainingSeconds: 40,
+      refusal: "Prenez encore 40 s sur cette leçon avant de la marquer comme terminée.",
+    });
+    lesson();
+    fireEvent.click(screen.getByRole("button", { name: "Marquer comme terminée" }));
+    await waitFor(() => expect(m.toastError).toHaveBeenCalledWith("Prenez encore 40 s sur cette leçon avant de la marquer comme terminée."));
+    expect(screen.getByRole("button", { name: "Marquer comme terminée" })).toBeTruthy();
+    // the plan does not keep the lesson ticked either
+    expect(screen.queryByText("(terminé)")).toBeNull();
+  });
+
   it("announces the certificate when this lesson finished the course", async () => {
     m.update.mockResolvedValue({ ...done, course: { percent: 100, isComplete: true, justIssued: true, certificate: { id: "c", code: "abc" } } });
     lesson();
@@ -77,6 +92,52 @@ describe("marking a lesson as done", () => {
     expect(screen.getByRole("button", { name: "Terminée" })).toBeTruthy();
     const next = screen.getByRole("link", { name: /Fonctions/ });
     expect(next.getAttribute("href")).toBe("/learn/react/lessons/fonctions");
+  });
+});
+
+describe("time on the page", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  const text = (props: { trackPresence: boolean; mode?: "full" | "preview" }) =>
+    renderInLearning(
+      <LessonSession lessonId="l1" initialCompleted={false} courseSlug="react" trackPresence={props.trackPresence}>
+        <LessonFooter lessonId="l1" />
+      </LessonSession>,
+      { mode: props.mode ?? "full" },
+    );
+
+  it("reports the time a text lesson stays open and visible, since the server asks for some before completion", async () => {
+    text({ trackPresence: true });
+    await vi.advanceTimersByTimeAsync(21_000);
+    expect(m.update).toHaveBeenCalled();
+    const sent = m.update.mock.calls.map((call) => call[0].watchTimeDelta ?? 0).reduce((a: number, b: number) => a + b, 0);
+    expect(sent).toBeGreaterThanOrEqual(15);
+    expect(sent).toBeLessThanOrEqual(25);
+  });
+
+  it("counts nothing while the tab is hidden", async () => {
+    Object.defineProperty(document, "visibilityState", { value: "hidden", configurable: true });
+    try {
+      text({ trackPresence: true });
+      await vi.advanceTimersByTimeAsync(30_000);
+      expect(m.update.mock.calls.every((call) => !call[0].watchTimeDelta)).toBe(true);
+    } finally {
+      Object.defineProperty(document, "visibilityState", { value: "visible", configurable: true });
+    }
+  });
+
+  it("leaves the counting to the video player when the lesson has one, and records nothing in a preview", async () => {
+    text({ trackPresence: false });
+    await vi.advanceTimersByTimeAsync(30_000);
+    expect(m.update).not.toHaveBeenCalled();
+    text({ trackPresence: true, mode: "preview" });
+    await vi.advanceTimersByTimeAsync(30_000);
+    expect(m.update).not.toHaveBeenCalled();
   });
 });
 

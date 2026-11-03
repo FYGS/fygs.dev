@@ -49,6 +49,20 @@ test.describe("enrolled learner (fr)", () => {
     const [enrollment] = await sql(`SELECT 1 FROM "Enrollment" WHERE "userId" = $1`, [user.id]);
     expect(enrollment).toBeTruthy();
 
+    // Straight away the server asks for some time on the lesson first: it says so, and the lesson stays to do
+    await page.getByRole("button", { name: "Marquer comme terminée" }).click();
+    await expect(page.getByText(/Prenez encore .* sur cette leçon avant de la marquer comme terminée/)).toBeVisible();
+    await expect(page.getByRole("button", { name: "Marquer comme terminée" })).toBeVisible();
+    expect(await sql(`SELECT 1 FROM "Progress" WHERE "userId" = $1 AND completed = true`, [user.id])).toHaveLength(0);
+
+    // Once the time has been spent (here written in the database: the e2e does not wait minutes), completion goes through
+    await sql(
+      `INSERT INTO "Progress" (id, "userId", "lessonId", completed, "watchTime", "updatedAt")
+       SELECT gen_random_uuid()::text, $1, l.id, false, 3600, now()
+       FROM "Lesson" l WHERE l."courseId" = $2 AND l.published = true ORDER BY l."order" LIMIT 1
+       ON CONFLICT ("userId", "lessonId") DO UPDATE SET "watchTime" = 3600`,
+      [user.id, await courseId()],
+    );
     await page.getByRole("button", { name: "Marquer comme terminée" }).click();
     await expect(page.getByRole("button", { name: "Terminée" })).toBeVisible();
     await expect

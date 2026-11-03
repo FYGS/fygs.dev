@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { useIntlayer } from "next-intlayer";
 import { useSearchParams } from "next/navigation";
+import { safeInternalPath } from "@/lib/safe-redirect";
 
 // export const metadata: Metadata = {
 //   title: "Inscription | FYGS Learning Platform",
@@ -14,7 +15,8 @@ import { useSearchParams } from "next/navigation";
 function RegisterPageContent() {
   const content = useIntlayer("auth");
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl");
+  const requested = searchParams.get("callbackUrl");
+  const callbackUrl = requested ? safeInternalPath(requested, "") || null : null;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-background via-background to-muted/20 p-3 sm:p-4">

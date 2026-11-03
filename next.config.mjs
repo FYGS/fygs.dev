@@ -110,14 +110,53 @@ const withPWA = withPWAInit({
   buildExcludes: [/chunks\/.*\.js$/, /static\/monaco\/.*\.worker\.js$/],
 });
 
+/**
+ * Hosts whose images the optimiser may fetch: the storage the application uploads to, taken from the environment, plus
+ * IMAGE_REMOTE_HOSTS (comma separated) for anything else. Read when the application is BUILT (the list is frozen into the
+ * build), so these variables must be available to the build, not only to the running container.
+ */
+function storageImageHosts() {
+  const hosts = new Set();
+  const add = (value) => {
+    try {
+      const url = new URL(/^[a-z]+:\/\//i.test(value) ? value : `https://${value}`);
+      if (url.protocol === "https:" && url.hostname) hosts.add(url.hostname);
+    } catch {
+      /* not a URL: ignored */
+    }
+  };
+  for (const value of [process.env.S3_PUBLIC_URL, process.env.MINIO_PUBLIC_URL, process.env.MINIO_API_URL]) {
+    if (value) add(value);
+  }
+  if (process.env.MINIO_ENDPOINT && process.env.MINIO_USE_SSL === "true") add(process.env.MINIO_ENDPOINT.split(":")[0]);
+  for (const host of (process.env.IMAGE_REMOTE_HOSTS ?? "").split(",")) {
+    if (host.trim()) add(host.trim());
+  }
+  if (hosts.size === 0 && process.env.NODE_ENV === "production") {
+    console.warn(
+      "[next.config] No storage host for the image optimiser: set S3_PUBLIC_URL (or MINIO_API_URL / IMAGE_REMOTE_HOSTS) for the build",
+    );
+  }
+  return [...hosts];
+}
+
+const siteHost = (() => {
+  try {
+    return new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "").host;
+  } catch {
+    return null;
+  }
+})();
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
+    // Only these quality values are served (Next 16 coerces anything else): the ones the components ask for
+    qualities: [75, 80, 85, 90],
+    // Optimised images are cached for a day at least: the optimiser is not asked again for the same file on every hit
+    minimumCacheTTL: 86400,
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "minio-b8kcs4owo80c4sgoos4ck8gw.154.12.226.201.sslip.io",
-      },
+      ...storageImageHosts().map((hostname) => ({ protocol: "https", hostname })),
       {
         protocol: "https",
         hostname: "avatars.githubusercontent.com",
@@ -149,6 +188,12 @@ const nextConfig = {
   // lucide-react, date-fns and recharts are optimised by default; these are barrel-heavy too.
   experimental: {
     optimizePackageImports: ["framer-motion", "@radix-ui/react-icons", "react-icons/fa6"],
+    // Server actions are public POST endpoints: they only accept requests whose Origin is this site (and the public host
+    // when a proxy forwards its own), and a body of at most 1 MB.
+    serverActions: {
+      bodySizeLimit: "1mb",
+      ...(siteHost ? { allowedOrigins: [siteHost] } : {}),
+    },
   },
   poweredByHeader: false,
   reactStrictMode: true,
@@ -166,13 +211,29 @@ const nextConfig = {
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=()",
+            // Payment only for this site and Stripe's own frame; the rest of the sensors and ad-tech APIs are off
+            value:
+              'camera=(), microphone=(), geolocation=(), payment=(self "https://js.stripe.com"), usb=(), serial=(), bluetooth=(), interest-cohort=(), browsing-topics=()',
           },
           {
+            // Two years, subdomains included, eligible for the browsers' preload list. `preload` is a commitment that every
+            // subdomain serves HTTPS for good: review the DNS before submitting the domain to hstspreload.org.
             key: "Strict-Transport-Security",
-            value: "max-age=31536000; includeSubDomains",
+            value: "max-age=63072000; includeSubDomains; preload",
           },
+          // A popup opened by this site (OAuth, payment) keeps its opener; other sites cannot reach this window.
+          // The playground route below tightens it to same-origin (cross-origin isolation for WebContainer).
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
         ],
+      },
+      // Responses of the API are for this site only, except the share images that other sites embed
+      {
+        source: "/api/:path*",
+        headers: [{ key: "Cross-Origin-Resource-Policy", value: "same-site" }],
+      },
+      {
+        source: "/api/og/:path*",
+        headers: [{ key: "Cross-Origin-Resource-Policy", value: "cross-origin" }],
       },
       {
         source: NON_PLAYGROUND_SOURCE,
@@ -182,12 +243,43 @@ const nextConfig = {
           { key: REPORTING_ENDPOINTS_HEADER, value: REPORTING_ENDPOINTS_VALUE },
         ],
       },
-      // The code sandbox: its own policy (eval for the worker, nothing else)
+      // The code sandboxes: their own policies (see lib/csp.mjs, buildSandboxCsp). The default one is the JavaScript
+      // runner's (eval for the worker, nothing else); the Python runner and the preview page override it below.
+      // They are embedded by the playground, which is cross-origin isolated (COEP require-corp): a frame in such a page
+      // must opt in with the same header, and its own subresources (the runner scripts, the Python runtime, the React
+      // bundle), requested from an opaque origin, need a CORP/CORS grant. Frames of other sites stay refused
+      // (frame-ancestors 'self').
       {
         source: SANDBOX_SOURCE,
         headers: [
           { key: cspHeader, value: buildSandboxCsp() },
+          { key: "Cross-Origin-Embedder-Policy", value: "require-corp" },
+          { key: "Cross-Origin-Resource-Policy", value: "cross-origin" },
           { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
+        ],
+      },
+      {
+        source: "/sandbox/python.html",
+        headers: [{ key: cspHeader, value: buildSandboxCsp("python") }],
+      },
+      {
+        source: "/sandbox/preview.html",
+        headers: [{ key: cspHeader, value: buildSandboxCsp("preview") }],
+      },
+      // The self-hosted Python runtime and the React bundle are fetched by pages with an opaque origin: CORS for any
+      // origin (they are public files), cached for a day (the paths carry no version)
+      {
+        source: "/sandbox/pyodide/:path*",
+        headers: [
+          { key: "Access-Control-Allow-Origin", value: "*" },
+          { key: "Cache-Control", value: "public, max-age=86400" },
+        ],
+      },
+      {
+        source: "/sandbox/vendor/:path*",
+        headers: [
+          { key: "Access-Control-Allow-Origin", value: "*" },
+          { key: "Cache-Control", value: "public, max-age=86400" },
         ],
       },
       // The playground page is cross-origin isolated (COEP require-corp, needed by

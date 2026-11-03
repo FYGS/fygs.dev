@@ -24,7 +24,7 @@ function say(message: unknown, source: Window | null = frame()!.contentWindow) {
 /** Waits for the page to post `run` to the (jsdom) frame and returns that message. */
 async function nextRun(spy: ReturnType<typeof vi.spyOn>) {
   await vi.waitFor(() => expect(spy).toHaveBeenCalled());
-  return spy.mock.calls.at(-1)![0] as { type: string; id: string; code: string; entry: string; timeLimitMs: number };
+  return spy.mock.calls.at(-1)![0] as { type: string; id: string; nonce: string; code: string; entry: string; timeLimitMs: number };
 }
 
 beforeEach(() => {
@@ -51,7 +51,7 @@ describe("runInSandbox", () => {
     const spy = vi.spyOn(iframe.contentWindow!, "postMessage");
     say({ type: "ready" }); // a second ready changes nothing
     const message = await nextRun(spy);
-    say({ type: "result", id: message.id, timedOut: false, results: [{ id: "1", passed: true, actual: "1", expected: "1", timeMs: 1 }], logs: [], totalMs: 3 });
+    say({ type: "result", id: message.id, nonce: message.nonce, timedOut: false, results: [{ id: "1", passed: true, actual: "1", expected: "1", timeMs: 1 }], logs: [], totalMs: 3 });
     await run;
   });
 
@@ -67,7 +67,7 @@ describe("runInSandbox", () => {
 
     say({
       type: "result",
-      id: message.id,
+      id: message.id, nonce: message.nonce,
       timedOut: false,
       results: [
         { id: "1", passed: true, actual: "1", expected: "1", timeMs: 1 },
@@ -87,7 +87,7 @@ describe("runInSandbox", () => {
       const spy = vi.spyOn(frame()!.contentWindow!, "postMessage");
       say({ type: "ready" });
       const message = await nextRun(spy);
-      say({ type: "result", id: message.id, timedOut: false, results: [], logs: [], totalMs: 1, ...extra });
+      say({ type: "result", id: message.id, nonce: message.nonce, timedOut: false, results: [], logs: [], totalMs: 1, ...extra });
       return run;
     };
 
@@ -106,15 +106,52 @@ describe("runInSandbox", () => {
     const message = await nextRun(spy);
 
     // another window (an extension, an embedded widget) forging an answer
-    say({ type: "result", id: message.id, timedOut: false, results: [{ id: "1", passed: true }], logs: [], totalMs: 1 }, window);
+    say({ type: "result", id: message.id, nonce: message.nonce, timedOut: false, results: [{ id: "1", passed: true }], logs: [], totalMs: 1 }, window);
     say({ type: "result", id: "run-999", timedOut: false, results: [], logs: [], totalMs: 1 }); // unknown run
     let settled = false;
     run.then(() => (settled = true), () => (settled = true));
     await Promise.resolve();
     expect(settled).toBe(false);
 
-    say({ type: "result", id: message.id, timedOut: false, results: [{ id: "1", passed: true, actual: "1", expected: "1", timeMs: 1 }], logs: [], totalMs: 1 });
+    say({ type: "result", id: message.id, nonce: message.nonce, timedOut: false, results: [{ id: "1", passed: true, actual: "1", expected: "1", timeMs: 1 }], logs: [], totalMs: 1 });
     await expect(run).resolves.toMatchObject({ passed: true });
+  });
+
+  it("gives every run its own unguessable nonce, and only accepts an answer that repeats it", async () => {
+    const run = runInSandbox(request);
+    await vi.waitFor(() => expect(frame()).not.toBeNull());
+    const spy = vi.spyOn(frame()!.contentWindow!, "postMessage");
+    say({ type: "ready" });
+    const message = await nextRun(spy);
+    expect(message.nonce).toMatch(/^[0-9a-f]{32}$/);
+
+    let settled = false;
+    run.then(() => (settled = true), () => (settled = true));
+    const forged = { type: "result", id: message.id, timedOut: false, results: [{ id: "1", passed: true }], logs: [], totalMs: 1 };
+    say({ ...forged }); // right frame, right run, no nonce
+    say({ ...forged, nonce: "0".repeat(32) }); // wrong nonce
+    say({ ...forged, nonce: 42 }); // not even a string
+    await Promise.resolve();
+    expect(settled).toBe(false);
+
+    say({ ...forged, nonce: message.nonce });
+    await expect(run).resolves.toMatchObject({ passed: true });
+  });
+
+  it("does not reuse a nonce from one run to the next", async () => {
+    const nonces: string[] = [];
+    for (let i = 0; i < 2; i++) {
+      const run = runInSandbox(request);
+      await vi.waitFor(() => expect(frame()).not.toBeNull());
+      const spy = vi.spyOn(frame()!.contentWindow!, "postMessage");
+      say({ type: "ready" });
+      const message = await nextRun(spy);
+      nonces.push(message.nonce);
+      say({ type: "result", id: message.id, nonce: message.nonce, timedOut: false, results: [{ id: "1", passed: true }], logs: [], totalMs: 1 });
+      await run;
+      spy.mockRestore();
+    }
+    expect(new Set(nonces).size).toBe(2);
   });
 
   it("runs one request at a time, in order", async () => {
@@ -128,12 +165,12 @@ describe("runInSandbox", () => {
     expect(one.code).toBe("first");
     expect(spy).toHaveBeenCalledTimes(1); // the second waits
 
-    say({ type: "result", id: one.id, timedOut: false, results: [{ id: "1", passed: true }], logs: [], totalMs: 1 });
+    say({ type: "result", id: one.id, nonce: one.nonce, timedOut: false, results: [{ id: "1", passed: true }], logs: [], totalMs: 1 });
     await first;
     await vi.waitFor(() => expect(spy).toHaveBeenCalledTimes(2));
-    const two = spy.mock.calls[1][0] as { id: string; code: string };
+    const two = spy.mock.calls[1][0] as { id: string; nonce: string; code: string };
     expect(two.code).toBe("second");
-    say({ type: "result", id: two.id, timedOut: false, results: [{ id: "1", passed: true }], logs: [], totalMs: 1 });
+    say({ type: "result", id: two.id, nonce: two.nonce, timedOut: false, results: [{ id: "1", passed: true }], logs: [], totalMs: 1 });
     await second;
   });
 
@@ -180,7 +217,7 @@ describe("runInSandbox", () => {
     const spy = vi.spyOn(frame()!.contentWindow!, "postMessage");
     say({ type: "ready" });
     const message = await nextRun(spy);
-    say({ type: "result", id: message.id, timedOut: false, results: [{ id: "1", passed: true }], logs: [], totalMs: 1 });
+    say({ type: "result", id: message.id, nonce: message.nonce, timedOut: false, results: [{ id: "1", passed: true }], logs: [], totalMs: 1 });
     await expect(after).resolves.toMatchObject({ passed: true });
   });
 });
@@ -193,7 +230,7 @@ describe("runScriptInSandbox", () => {
     say({ type: "ready" });
     const message = await nextRun(spy);
     expect(message).toMatchObject({ mode: "script", code: "console.log(1)", timeLimitMs: 2_000 });
-    say({ type: "result", id: message.id, timedOut: false, logs: ["1"], totalMs: 2, script, ...extra });
+    say({ type: "result", id: message.id, nonce: message.nonce, timedOut: false, logs: ["1"], totalMs: 2, script, ...extra });
     return run;
   };
 

@@ -4,6 +4,7 @@
  * one rule for every screen); access sources follow lib/access/entitlement. Callers check who may read the course.
  */
 import { db } from "@/lib/db";
+import { writeAudit } from "@/lib/audit";
 import { PaymentKind, PaymentStatus } from "@/lib/generated/prisma/browser";
 import { decideEntitlement, type EntitlementSource, type LapsedReason } from "@/lib/access/entitlement";
 import { loadCourseOutline } from "@/lib/learning/course-state";
@@ -337,6 +338,13 @@ export async function grantCourseAccess(
   } else {
     await db.enrollment.create({ data: { userId: user.id, courseId, enrolledAt: now, grantedById, grantedAt: now } });
   }
+  await writeAudit({
+    actorId: grantedById,
+    action: "access.granted",
+    targetType: "course",
+    targetId: courseId,
+    metadata: { userId: user.id, createdEnrollment: !existing },
+  });
   return { success: true, userId: user.id, name: user.name || user.email, created: !existing };
 }
 
@@ -348,6 +356,7 @@ export async function grantCourseAccess(
 export async function revokeCourseAccess(
   courseId: string,
   userId: string,
+  actorId?: string,
 ): Promise<Result<{ removedEnrollment: boolean }>> {
   const enrollment = await db.enrollment.findUnique({
     where: { userId_courseId: { userId, courseId } },
@@ -364,12 +373,14 @@ export async function revokeCourseAccess(
 
   if (createdByGrant && !started) {
     await db.enrollment.delete({ where: { userId_courseId: { userId, courseId } } });
+    await writeAudit({ actorId, action: "access.revoked", targetType: "course", targetId: courseId, metadata: { userId, removedEnrollment: true } });
     return { success: true, removedEnrollment: true };
   }
   await db.enrollment.update({
     where: { userId_courseId: { userId, courseId } },
     data: { grantedById: null, grantedAt: null },
   });
+  await writeAudit({ actorId, action: "access.revoked", targetType: "course", targetId: courseId, metadata: { userId, removedEnrollment: false } });
   return { success: true, removedEnrollment: false };
 }
 

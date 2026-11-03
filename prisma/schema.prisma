@@ -28,7 +28,7 @@ model Account {
 
 model Session {
   id        String   @id @default(cuid())
-  token     String
+  token     String   @unique
   userId    String
   expiresAt DateTime
   ipAddress String?
@@ -57,6 +57,11 @@ model User {
   communityLevel     Int                  @default(1) // User level based on activity
   lastActiveAt       DateTime? // Last community activity
   isBanned           Boolean              @default(false) // User ban status for moderation
+  twoFactorEnabled   Boolean?             @default(false) // TOTP second factor (better-auth two-factor plugin)
+  twoFactors         TwoFactor[]
+  examAttempts       ExamAttempt[]
+  auditLogs          AuditLog[]           @relation("AuditActor")
+  mediaObjects       MediaObject[]
   AnalyticsEvent     AnalyticsEvent[]
   certificates       Certificate[]
   instructedCourses  Course[]             @relation("CourseInstructor")
@@ -104,7 +109,7 @@ model User {
 model Verification {
   id         String   @id @default(cuid())
   identifier String
-  value      String   @unique
+  value      String
   expiresAt  DateTime
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -123,6 +128,8 @@ model Subscription {
   currentPeriodStart   DateTime?
   currentPeriodEnd     DateTime?
   cancelAtPeriodEnd    Boolean            @default(false)
+  /// `created` of the last Stripe event applied: an older event never overwrites a newer state
+  lastEventAt          DateTime?
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
   plan                 SubscriptionPlan   @default(FREE)
@@ -193,16 +200,18 @@ model Progress {
 }
 
 model Certificate {
-  id        String   @id @default(cuid())
+  id         String   @id @default(cuid())
   /// Public verification code, printed on the certificate
-  code      String   @unique @default(dbgenerated("md5(((random())::text || (clock_timestamp())::text))"))
-  userId    String
-  courseId  String
-  issuedAt  DateTime @default(now())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code       String   @unique @default(dbgenerated("replace((gen_random_uuid())::text, '-'::text, ''::text)"))
+  userId     String
+  courseId   String
+  /// Name printed at issue time: the certificate does not change when the account is renamed
+  holderName String?
+  issuedAt   DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, courseId])
 }
@@ -222,6 +231,7 @@ model Payment {
   course                Course?       @relation(fields: [courseId], references: [id])
   user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([stripePaymentIntentId])
   @@index([userId, kind, status])
   @@index([courseId])
 }
@@ -460,18 +470,19 @@ model QuizAttemptAnswer {
 }
 
 model FinalExam {
-  id           String       @id @default(cuid())
+  id           String        @id @default(cuid())
   courseId     String
   title        String
   description  String?
-  passingScore Int          @default(70) // Percentage needed to pass
+  passingScore Int           @default(70) // Percentage needed to pass
   timeLimit    Int? // Time limit in minutes (optional)
   questions    Json // Array of question objects
-  published    Boolean      @default(false)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  course       Course       @relation("CourseToFinalExam", fields: [courseId], references: [id], onDelete: Cascade)
-  results      ExamResult[] @relation("FinalExamToExamResult")
+  published    Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  course       Course        @relation("CourseToFinalExam", fields: [courseId], references: [id], onDelete: Cascade)
+  results      ExamResult[]  @relation("FinalExamToExamResult")
+  attempts     ExamAttempt[] @relation("FinalExamToExamAttempt")
 
   @@unique([courseId]) // One final exam per course
   @@index([courseId, published])
@@ -537,6 +548,8 @@ enum PaymentStatus {
   COMPLETED
   FAILED
   REFUNDED
+  /// Contested by the cardholder (chargeback): access is closed until the dispute is won
+  DISPUTED
 }
 
 enum PaymentKind {
@@ -862,10 +875,13 @@ model XpEvent {
   userId    String
   amount    Int
   reason    XpReason
+  /// What the points reward (lesson, quiz or course id; a date for streak bonuses): one award per reason and target
+  refId     String?
   metadata  Json? // e.g. { lessonId, quizId, courseId }
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, reason, refId])
   @@index([userId, createdAt])
 }
 
@@ -964,7 +980,7 @@ model PathEnrollment {
 
 model PathCertificate {
   id       String   @id @default(cuid())
-  code     String   @unique @default(dbgenerated("md5(((random())::text || (clock_timestamp())::text))"))
+  code     String   @unique @default(dbgenerated("replace((gen_random_uuid())::text, '-'::text, ''::text)"))
   userId   String
   pathId   String
   issuedAt DateTime @default(now())
@@ -982,4 +998,90 @@ model CourseSlugRedirect {
   course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@index([courseId])
+}
+
+/// One sitting of the final exam. `submit` claims it exactly once, so a start token cannot be replayed.
+model ExamAttempt {
+  id          String    @id @default(cuid())
+  userId      String
+  examId      String
+  startedAt   DateTime  @default(now())
+  submittedAt DateTime?
+  passed      Boolean?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exam        FinalExam @relation("FinalExamToExamAttempt", fields: [examId], references: [id], onDelete: Cascade)
+
+  @@index([userId, examId, startedAt])
+}
+
+enum ProcessedEventStatus {
+  PROCESSING
+  DONE
+}
+
+/// Stripe events seen, by event id: a delivery is processed once, and a crash mid-way leaves a lease that expires
+/// so that Stripe's retry can take over instead of being acknowledged and lost.
+model ProcessedStripeEvent {
+  id         String               @id // the Stripe event id
+  type       String
+  status     ProcessedEventStatus @default(PROCESSING)
+  leaseUntil DateTime
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+
+  @@index([createdAt])
+}
+
+/// Append-only trail of privileged actions (role changes, access grants, refunds, publication, deletions).
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String
+  targetType String
+  targetId   String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  actor      User?    @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([actorId, createdAt])
+  @@index([targetType, targetId])
+}
+
+/// better-auth two-factor plugin: TOTP secret and backup codes of a user.
+model TwoFactor {
+  id                      String    @id @default(cuid())
+  secret                  String
+  backupCodes             String
+  userId                  String
+  verified                Boolean?  @default(true)
+  failedVerificationCount Int?      @default(0)
+  lockedUntil             DateTime?
+  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([secret])
+  @@index([userId])
+  @@map("twoFactor")
+}
+
+enum MediaKind {
+  IMAGE
+  VIDEO
+  FILE
+  CAPTIONS
+}
+
+/// Every object an author uploaded: ownership for deletions, per-user quota, and the list the clean-up job reads.
+model MediaObject {
+  id          String    @id @default(cuid())
+  key         String    @unique
+  userId      String
+  kind        MediaKind
+  contentType String
+  sizeBytes   Int
+  createdAt   DateTime  @default(now())
+  deletedAt   DateTime?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }

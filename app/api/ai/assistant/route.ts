@@ -1,13 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { AnalyticsHelper } from "@/lib/analytics-helper";
-import { rateLimitHeaders, checkRateLimit } from "@/lib/rate-limit";
+import { rateLimitHeaders, checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { verifyHumanProof } from "@/lib/anti-automation";
 import { AiUpstreamError, getAiConfig, openCompletion } from "@/lib/ai/anthropic";
 import { generateOfflineAnswer } from "@/lib/ai/offline";
 import { buildModelPrompt } from "@/lib/ai/prompts";
 import { AI_LIMITS, assistantRequestSchema, type AssistantErrorCode } from "@/lib/ai/schema";
 import { formatSse } from "@/lib/ai/sse";
-import { getBudgetConfig, recordOutputTokens, reserveModelRequest, shouldLogExhaustion } from "@/lib/ai/budget";
+import { AiOutputFilter, filterAiOutput } from "@/lib/ai/output-filter";
+import {
+  estimateTokens,
+  getBudgetConfig,
+  reserveModelRequest,
+  settleModelRequest,
+  shouldLogExhaustion,
+  type BudgetDenial,
+  type BudgetScope,
+  type BudgetSubject,
+} from "@/lib/ai/budget";
 import { createLogger } from "@/lib/structured-logger";
 
 /**
@@ -37,11 +48,37 @@ const DAY = 24 * HOUR;
 const MAX_BODY_BYTES = AI_LIMITS.maxBodyChars * 4;
 const OFFLINE_CHUNK = 400;
 
-const BUDGET_NOTICE: Record<string, string> = {
-  fr: "_Le tuteur IA a atteint sa capacité quotidienne : voici une analyse locale à la place. Le modèle sera de nouveau disponible demain._\n\n",
-  en: "_The AI tutor has reached its daily capacity, so this is a local analysis instead. The model will be available again tomorrow._\n\n",
-  es: "_El tutor de IA ha alcanzado su capacidad diaria, así que esto es un análisis local. El modelo volverá a estar disponible mañana._\n\n",
+/** Why the answer comes from the local analyzer instead of the model (shown to the learner as a first line). */
+type OfflineReason = "budget" | "share" | "unavailable" | "proof";
+
+const OFFLINE_NOTICE: Record<OfflineReason, Record<string, string>> = {
+  budget: {
+    fr: "_Le tuteur IA a atteint sa capacité quotidienne : voici une analyse locale à la place. Le modèle sera de nouveau disponible demain._\n\n",
+    en: "_The AI tutor has reached its daily capacity, so this is a local analysis instead. The model will be available again tomorrow._\n\n",
+    es: "_El tutor de IA ha alcanzado su capacidad diaria, así que esto es un análisis local. El modelo volverá a estar disponible mañana._\n\n",
+  },
+  share: {
+    fr: "_Vous avez utilisé votre part quotidienne du tuteur IA : voici une analyse locale à la place. Elle se renouvelle demain._\n\n",
+    en: "_You have used your daily share of the AI tutor, so this is a local analysis instead. It renews tomorrow._\n\n",
+    es: "_Has usado tu parte diaria del tutor de IA, así que esto es un análisis local. Se renueva mañana._\n\n",
+  },
+  unavailable: {
+    fr: "_Le tuteur IA est momentanément indisponible : voici une analyse locale à la place._\n\n",
+    en: "_The AI tutor is temporarily unavailable, so this is a local analysis instead._\n\n",
+    es: "_El tutor de IA no está disponible por el momento, así que esto es un análisis local._\n\n",
+  },
+  proof: {
+    fr: "_Le tuteur IA a besoin d'une vérification que votre navigateur n'a pas pu faire : voici une analyse locale à la place. Rechargez la page pour réessayer._\n\n",
+    en: "_The AI tutor needs a check your browser could not complete, so this is a local analysis instead. Reload the page to try again._\n\n",
+    es: "_El tutor de IA necesita una comprobación que tu navegador no pudo completar, así que esto es un análisis local. Recarga la página para reintentar._\n\n",
+  },
 };
+
+/** What the budget refused, as the reason the learner is told about. */
+function offlineReasonFor(reason: BudgetDenial, scope: BudgetScope): OfflineReason {
+  if (reason === "store_unavailable") return "unavailable";
+  return scope === "subject" ? "share" : "budget";
+}
 
 const NO_STORE = { "Cache-Control": "no-store, no-transform" } as const;
 
@@ -119,13 +156,23 @@ export async function POST(request: NextRequest) {
   const userId = await getUserId(request.headers);
   const config = getAiConfig();
   const budget = getBudgetConfig();
+  // Who the budget share belongs to: the account, the visitor's (trusted) address, or "unknown address" for everyone
+  // whose address cannot be told: that last bucket is small on purpose
+  const clientIp = getClientIp(request.headers);
+  const subject: BudgetSubject = userId
+    ? { kind: "user", id: userId }
+    : clientIp === "unknown"
+      ? { kind: "unknown" }
+      : { kind: "guest", id: clientIp };
   // The offline analyzer costs next to nothing: only the burst limit applies to it
   let quotaHeaders: Record<string, string> = {};
   if (config) {
     const quota = await checkRateLimit(request, "ai-assistant", {
-      limit: userId ? USER_PER_HOUR : GUEST_PER_HOUR,
+      // visitors whose address is unknown share one bucket: it is deliberately tight
+      limit: userId ? USER_PER_HOUR : subject.kind === "unknown" ? Math.max(1, Math.floor(GUEST_PER_HOUR / 4)) : GUEST_PER_HOUR,
       windowSeconds: HOUR,
-      subject: userId ? `user:${userId}` : undefined,
+      subject: userId ? `user:${userId}` : subject.kind === "unknown" ? "ip:unknown" : undefined,
+      failMode: "closed",
     });
     quotaHeaders = rateLimitHeaders(quota);
     if (!quota.allowed) {
@@ -135,12 +182,17 @@ export async function POST(request: NextRequest) {
       });
     }
     // Daily ceiling on top of the hourly one, per account or per visitor IP
-    const dailyLimit = userId ? budget.userDailyRequests : budget.guestDailyRequests;
+    const dailyLimit = userId
+      ? budget.userDailyRequests
+      : subject.kind === "unknown"
+        ? Math.max(1, Math.floor(budget.guestDailyRequests / 10))
+        : budget.guestDailyRequests;
     if (dailyLimit > 0) {
       const daily = await checkRateLimit(request, "ai-assistant-day", {
         limit: dailyLimit,
         windowSeconds: DAY,
-        subject: userId ? `user:${userId}` : undefined,
+        subject: userId ? `user:${userId}` : subject.kind === "unknown" ? "ip:unknown" : undefined,
+        failMode: "closed",
       });
       if (!daily.allowed) {
         log.warn("ai.assistant.daily_cap_reached", {
@@ -184,10 +236,11 @@ export async function POST(request: NextRequest) {
     "X-Accel-Buffering": "no",
   };
 
-  // 5a. Offline mode (no key configured, or the daily budget is spent)
-  const respondOffline = (reason?: "budget") => {
-    const notice = reason === "budget" ? (BUDGET_NOTICE[body.locale] ?? BUDGET_NOTICE.en) : "";
-    const answer = notice + generateOfflineAnswer(body);
+  // 5a. Offline mode (no key configured, the budget is spent, or the visitor could not be verified)
+  const respondOffline = (reason?: OfflineReason) => {
+    const notice = reason ? (OFFLINE_NOTICE[reason][body.locale] ?? OFFLINE_NOTICE[reason].en) : "";
+    // The analyzer echoes the learner's own code and console: the same filter as for the model applies
+    const answer = filterAiOutput(notice + generateOfflineAnswer(body));
     const stream = new ReadableStream<Uint8Array>({
       start(controller) {
         controller.enqueue(encoder.encode(formatSse("meta", { mode: "offline", ...(reason ? { reason } : {}) })));
@@ -202,20 +255,35 @@ export async function POST(request: NextRequest) {
   };
   if (!config) return respondOffline();
 
-  // 5b-0. Global daily budget: degrade to offline instead of spending more
-  const reservation = await reserveModelRequest(budget);
+  // 5b-0. A visitor without an account proves that a browser did some work (see lib/anti-automation): without the
+  // proof the answer comes from the local analyzer, which costs nothing
+  if (!userId) {
+    const proof = await verifyHumanProof(request, "ai-guest");
+    if (!proof.ok) return respondOffline("proof");
+  }
+
+  // 5b-1. Build the prompt first: its size is part of what the budget reserves
+  const prompt = buildModelPrompt(body);
+  const inputTokens = estimateTokens(prompt.system.length + prompt.messages.reduce((n, m) => n + m.content.length, 0));
+
+  // 5b-2. Budget: the request must fit in the global caps and in this subject's share, or the local analyzer answers
+  const reservation = await reserveModelRequest(budget, { subject, inputTokens, maxOutputTokens: prompt.maxTokens });
   if (!reservation.allowed) {
     if (shouldLogExhaustion()) {
       log.error("ai.assistant.budget_exhausted", {
         eventType: "ai.assistant.budget_exhausted",
-        metadata: { exhausted: reservation.reason, budgetStore: reservation.degraded ? "memory" : "redis" },
+        metadata: {
+          exhausted: reservation.reason,
+          scope: reservation.scope,
+          subject: subject.kind,
+          budgetStore: reservation.degraded ? "memory" : "redis",
+        },
       });
     }
-    return respondOffline("budget");
+    return respondOffline(offlineReasonFor(reservation.reason, reservation.scope));
   }
 
   // 5b. Model-backed answer
-  const prompt = buildModelPrompt(body);
   const startedAt = Date.now();
   const base = { userId: userId ?? undefined, eventType: "ai.assistant" };
   let completion;
@@ -228,6 +296,8 @@ export async function POST(request: NextRequest) {
       signal: abort.signal,
     });
   } catch (error) {
+    // Nothing will be produced for this request: give the reservation back
+    void settleModelRequest(reservation, 0);
     if (abort.signal.aborted) return new Response(null, { status: 499 });
     if (error instanceof AiUpstreamError) {
       log.error("ai.assistant.upstream_error", {
@@ -247,12 +317,17 @@ export async function POST(request: NextRequest) {
       let outcome: "ok" | "error" | "aborted" = "ok";
       let errorCode: string | undefined;
       let firstTokenAt = 0;
+      // What the model writes is filtered before the browser sees it (images and active HTML never get through)
+      const filter = new AiOutputFilter();
       try {
         send("meta", { mode: "online", model: config.model });
         for await (const text of completion.text) {
           if (!firstTokenAt) firstTokenAt = Date.now();
-          send("delta", { text });
+          const safe = filter.push(text);
+          if (safe) send("delta", { text: safe });
         }
+        const rest = filter.flush();
+        if (rest) send("delta", { text: rest });
         send("done", { truncated: completion.truncated });
       } catch (error) {
         if (abort.signal.aborted) {
@@ -270,7 +345,8 @@ export async function POST(request: NextRequest) {
         // Account what was produced even when the stream was cut: the provider bills it
         const usage = completion.usage;
         const outputTokens = Math.max(usage.outputTokens, Math.ceil(completion.outputChars / 4));
-        void recordOutputTokens(outputTokens);
+        // Replace the worst case reserved at the start by what was really produced
+        void settleModelRequest(reservation, outputTokens);
         const entry = {
           ...base,
           duration: Date.now() - startedAt,

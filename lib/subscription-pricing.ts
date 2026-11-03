@@ -42,3 +42,14 @@ export function resolveRequestedPriceId(
   if (monthly) return { priceId: monthly, cycle: 'monthly' };
   return { priceId: yearly as string, cycle: 'yearly' };
 }
+
+/**
+ * Whether a Stripe price id is one of the two Premium plans. A subscription on any other price of the Stripe account
+ * (a test product, a private offer, a price created by mistake) never grants Premium. Without configured prices no
+ * plan can be sold, so nothing is known.
+ */
+export function isPlanPriceId(priceId: string | null | undefined): boolean {
+  if (!priceId) return false;
+  const { monthly, yearly } = getSubscriptionPrices();
+  return priceId === monthly || priceId === yearly;
+}

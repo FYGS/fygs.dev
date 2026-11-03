@@ -15,17 +15,17 @@ const h = vi.hoisted(() => ({
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn(async () => h.session) } } }));
 // Stripe is the only thing replaced: the subscription, audit and analytics rows are real.
 vi.mock("@/lib/payment-service", () => ({ paymentService: h.stripe }));
+vi.mock("@/lib/payments/notify", () => ({ notifyRefund: vi.fn(async () => {}), notifyDispute: vi.fn(async () => {}) }));
 
 import { requestRefund } from "@/app/[locale]/(main)/dashboard/actions/requestRefund";
 
 const DAY = 24 * 3600 * 1000;
-const payment = { paymentIntentId: "pi_123", amountPaidCents: 1990, currency: "eur" };
+const payment = { paymentIntentId: "pi_123", invoiceId: "in_123", amountPaidCents: 1990, currency: "eur" };
 
 beforeEach(async () => {
   vi.clearAllMocks();
   vi.spyOn(console, "error").mockImplementation(() => {});
   h.session = null;
-  h.stripe.getLatestSubscriptionPayment.mockResolvedValue(payment);
   h.stripe.refundPayment.mockResolvedValue("re_123");
   h.stripe.cancelImmediately.mockResolvedValue(undefined);
   await resetDatabase(db);
@@ -35,12 +35,11 @@ afterAll(async () => {
   await db.$disconnect();
 });
 
-async function subscribed(periodStartAgoMs: number, data = {}) {
+/** A subscriber whose last period was paid `paidAgoMs` ago: the refund window runs from that payment. */
+async function subscribed(paidAgoMs: number, data = {}) {
   const user = await createUser();
-  const sub = await createSubscription(user.id, {
-    currentPeriodStart: new Date(Date.now() - periodStartAgoMs),
-    ...data,
-  });
+  const sub = await createSubscription(user.id, { ...data });
+  h.stripe.getLatestSubscriptionPayment.mockResolvedValue({ ...payment, paidAt: new Date(Date.now() - paidAgoMs) });
   h.session = sessionFor(user.id);
   return { user, sub };
 }
@@ -99,17 +98,14 @@ describe("requestRefund (real database, Stripe mocked)", () => {
     expect(h.stripe.refundPayment).not.toHaveBeenCalled();
   });
 
-  it("validates the input and the period start", async () => {
+  it("validates the input", async () => {
     expect(await requestRefund({ subscriptionId: "" })).toMatchObject({ error: "VALIDATION_ERROR" });
-    const { sub } = await subscribed(DAY, { currentPeriodStart: null });
-    expect(await requestRefund({ subscriptionId: sub.stripeSubscriptionId! }))
-      .toMatchObject({ success: false, error: "INVALID_PERIOD_START" });
   });
 
   it("reports a missing payment and a Stripe failure without changing the subscription", async () => {
     const { sub } = await subscribed(DAY);
 
-    h.stripe.getLatestSubscriptionPayment.mockResolvedValueOnce({ ...payment, amountPaidCents: 0 });
+    h.stripe.getLatestSubscriptionPayment.mockResolvedValueOnce({ ...payment, amountPaidCents: 0, paidAt: new Date() });
     expect(await requestRefund({ subscriptionId: sub.stripeSubscriptionId! }))
       .toMatchObject({ success: false, error: "NO_PAYMENT_FOUND" });
 

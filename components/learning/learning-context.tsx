@@ -23,6 +23,8 @@ export interface LearningContextValue {
   hasSupports: boolean;
   /** Shows a lesson as done at once; the server refresh confirms it. */
   markLessonDone: (lessonId: string) => void;
+  /** Takes back `markLessonDone` when the server refused the completion. */
+  unmarkLessonDone: (lessonId: string) => void;
   isDone: (item: OutlineItem) => boolean;
 }
 
@@ -65,6 +67,14 @@ export function LearningProvider({
   const markLessonDone = useCallback((lessonId: string) => {
     setOptimistic((prev) => (prev.has(lessonId) ? prev : new Set(prev).add(lessonId)));
   }, []);
+  const unmarkLessonDone = useCallback((lessonId: string) => {
+    setOptimistic((prev) => {
+      if (!prev.has(lessonId)) return prev;
+      const next = new Set(prev);
+      next.delete(lessonId);
+      return next;
+    });
+  }, []);
 
   const value = useMemo<LearningContextValue>(() => {
     const completed = new Set([...completedLessonIds, ...optimistic]);
@@ -86,6 +96,7 @@ export function LearningProvider({
       progress,
       hasSupports,
       markLessonDone,
+      unmarkLessonDone,
       isDone: (item) =>
         item.kind === "lesson" ? completed.has(item.id) : item.kind === "quiz" ? passed.has(item.id) : examPassed,
     };
@@ -101,6 +112,7 @@ export function LearningProvider({
     hasSupports,
     optimistic,
     markLessonDone,
+    unmarkLessonDone,
   ]);
 
   return <LearningContext.Provider value={value}>{children}</LearningContext.Provider>;

@@ -17,6 +17,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useIntlayer } from "next-intlayer";
 import { hardNavigate } from "@/lib/browser-effects";
+import { safeInternalPath } from "@/lib/safe-redirect";
+import { honeypotFields } from "@/lib/anti-automation/honeypot";
 
 interface LoginFormProps {
   callbackUrl?: string;
@@ -24,6 +26,8 @@ interface LoginFormProps {
 
 export function LoginForm({ callbackUrl }: LoginFormProps) {
   const content = useIntlayer("login-form");
+  // Whatever the address bar said, only a path of this site is ever navigated to
+  const destination = safeInternalPath(callbackUrl);
 
   const loginSchema = z.object({
     email: z.string().email(content.form.email.error.invalid.value),
@@ -54,6 +58,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
         email: data.email,
         password: data.password,
         rememberMe: true,
+        callbackURL: destination,
       });
 
       if (!result.success) {
@@ -63,17 +68,15 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
         if (result.requiresVerification) {
           setPendingVerificationEmail(data.email);
         }
+      } else if (result.requiresTwoFactor) {
+        // The password was right: no session yet, a second factor is due
+        hardNavigate(`/auth/two-factor?callbackUrl=${encodeURIComponent(destination)}`);
       } else {
         toast.success(content.messages.success.title.value, {
           description: content.messages.success.description.value,
         });
-        // Redirect to callback URL or dashboard
-        const redirectUrl = callbackUrl
-          ? decodeURIComponent(callbackUrl)
-          : "/dashboard";
-
-        // Use window.location.href for better compatibility with external redirects
-        hardNavigate(redirectUrl);
+        // A full page load, so that every server-rendered part picks up the new session
+        hardNavigate(destination);
       }
     } catch {
       setError("root", { message: content.messages.error.generic.value });
@@ -85,11 +88,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
   const handleSocialLogin = async (provider: "github" | "google") => {
     setIsLoading(true);
     try {
-      // Store callback URL in sessionStorage for social login redirect
-      if (callbackUrl) {
-        sessionStorage.setItem("authCallbackUrl", callbackUrl);
-      }
-      await authService.signInWithProvider(provider, callbackUrl);
+      await authService.signInWithProvider(provider, destination);
     } catch (error) {
       console.error("Social login error:", error);
       toast.error(`${content.messages.error.socialLogin} ${provider}`, {
@@ -137,6 +136,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
 
       {/* Email/Password Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        {honeypotFields()}
         <div className="space-y-2">
           <Label htmlFor="email">{content.form.email.label}</Label>
           <Input
@@ -194,7 +194,8 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
               onClick={async () => {
                 try {
                   const result = await authService.sendVerificationEmail(
-                    pendingVerificationEmail
+                    pendingVerificationEmail,
+                    destination
                   );
                   if (result.success) {
                     toast.success(

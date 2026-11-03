@@ -3,7 +3,8 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 let client: S3Client | null = null;
 
-function s3() {
+/** The S3-compatible client (MinIO included), created once. */
+export function s3Client() {
   client ??= new S3Client({
     region: process.env.S3_REGION || "us-east-1",
     endpoint: process.env.S3_ENDPOINT,
@@ -15,6 +16,8 @@ function s3() {
   });
   return client;
 }
+
+export const mediaBucket = () => process.env.S3_BUCKET || "fygs-videos";
 
 /** What the author reads when files cannot be stored: they can still paste an address. */
 export const STORAGE_UNAVAILABLE_MESSAGE =
@@ -29,7 +32,7 @@ export class StorageUnavailableError extends Error {
 }
 
 /** Public base address of the stored files, without trailing slash, or null when it is missing or not absolute. */
-function publicBase(): string | null {
+export function publicBase(): string | null {
   const base = process.env.S3_PUBLIC_URL?.trim().replace(/\/+$/, "");
   return base && /^https?:\/\//i.test(base) ? base : null;
 }
@@ -39,32 +42,41 @@ export function isUploadStorageConfigured(): boolean {
   return Boolean(process.env.S3_ACCESS_KEY_ID && process.env.S3_SECRET_ACCESS_KEY && publicBase());
 }
 
-/** Characters that can sit in an object key without surprises. */
-export function safeExtension(filename: string, fallback: string): string {
-  const ext = filename.split(".").pop()?.toLowerCase() ?? "";
-  return /^[a-z0-9]{1,8}$/.test(ext) ? ext : fallback;
+/** How long an upload address stays valid: long enough for a large file on a slow line, short enough to be of no use later. */
+export const UPLOAD_URL_TTL_SECONDS = 15 * 60;
+
+/**
+ * The object key for an upload: `folder/<user>/<time>-<random>.<extension>`. Built here, never from anything the
+ * browser sent, and the extension comes from the content type the upload was accepted for.
+ */
+export function buildObjectKey(options: { folder: string; userId: string; extension: string }): string {
+  if (!/^[a-z0-9]{1,8}$/.test(options.extension)) throw new Error("Unsafe extension");
+  if (!/^[a-z0-9-]+$/i.test(options.userId) || !/^[a-z]+$/.test(options.folder)) throw new Error("Unsafe key part");
+  return `${options.folder}/${options.userId}/${Date.now()}-${crypto.randomUUID()}.${options.extension}`;
 }
 
 /**
- * A one-hour URL the browser PUTs the file to directly (no file goes through the Next.js server),
- * and the absolute public address the file will have afterwards.
+ * A short-lived URL the browser PUTs the file to directly (no file goes through the Next.js server), and the public
+ * address the file will have afterwards. The content type and the exact length are part of the signature: the storage
+ * refuses a PUT that announces another type or another size.
  */
 export async function presignUpload(options: {
-  folder: string;
-  userId: string;
-  extension: string;
+  key: string;
   contentType: string;
   size: number;
 }): Promise<{ uploadUrl: string; publicUrl: string; key: string }> {
   const base = publicBase();
   if (!isUploadStorageConfigured() || !base) throw new StorageUnavailableError();
-  const key = `${options.folder}/${options.userId}/${Date.now()}-${crypto.randomUUID()}.${options.extension}`;
   const command = new PutObjectCommand({
-    Bucket: process.env.S3_BUCKET || "fygs-videos",
-    Key: key,
+    Bucket: mediaBucket(),
+    Key: options.key,
     ContentType: options.contentType,
     ContentLength: options.size,
   });
-  const uploadUrl = await getSignedUrl(s3(), command, { expiresIn: 3600 });
-  return { uploadUrl, publicUrl: `${base}/${key}`, key };
+  const uploadUrl = await getSignedUrl(s3Client(), command, {
+    expiresIn: UPLOAD_URL_TTL_SECONDS,
+    // Sign these two headers explicitly, so that they cannot be changed on the way to the storage
+    signableHeaders: new Set(["content-type", "content-length"]),
+  });
+  return { uploadUrl, publicUrl: `${base}/${options.key}`, key: options.key };
 }

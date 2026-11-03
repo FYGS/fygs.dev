@@ -14,6 +14,8 @@ const eslintConfig = [
       "playwright-report/**",
       "next-env.d.ts",
       "lib/generated/**",
+      // Generated bundle (scripts/build-sandbox-vendor.mjs), checked by its SHA-384 hash instead
+      "public/sandbox/vendor/**",
     ],
   },
   {

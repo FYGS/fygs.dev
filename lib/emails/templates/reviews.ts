@@ -1,6 +1,14 @@
 import { SITE_URL } from "@/app/_lib/constants";
 
+import { escapeHtml, singleLine } from "@/lib/html-escape";
+
 import { createBaseTemplate } from "./base";
+
+/** Stars for a rating, whatever the value received (never throws, never longer than five). */
+const starsFor = (rating: number) => {
+  const filled = Math.min(5, Math.max(0, Math.round(Number(rating) || 0)));
+  return "★".repeat(filled) + "☆".repeat(5 - filled);
+};
 
 /** Review notification emails (instructors, moderators). */
 export class ReviewEmailTemplates {
@@ -26,27 +34,27 @@ export class ReviewEmailTemplates {
     reviewId: string;
     siteUrl?: string;
   }) {
-    const stars = "★".repeat(rating) + "☆".repeat(5 - rating);
+    const stars = starsFor(rating);
     const content = `
       <div class="header">
         <h1>⭐ Nouvel avis sur votre formation</h1>
         <p>Un étudiant vient d'évaluer votre cours</p>
       </div>
       <div class="content">
-        <h2>Bonjour ${instructorName} !</h2>
-        <p><strong>${reviewerName}</strong> vient de laisser un avis sur votre formation :</p>
+        <h2>Bonjour ${escapeHtml(instructorName)} !</h2>
+        <p><strong>${escapeHtml(reviewerName)}</strong> vient de laisser un avis sur votre formation :</p>
         
         <div class="highlight">
-          <h3>📚 ${courseTitle}</h3>
+          <h3>📚 ${escapeHtml(courseTitle)}</h3>
           <p class="rating" style="font-size: 24px; color: #fbbf24; margin: 10px 0;">${stars} (${rating}/5)</p>
           ${
             comment
-              ? `<p style="font-style: italic; color: #6b7280; background: #f9fafb; padding: 15px; border-radius: 8px; margin: 15px 0;">"${comment}"</p>`
+              ? `<p style="font-style: italic; color: #6b7280; background: #f9fafb; padding: 15px; border-radius: 8px; margin: 15px 0;">"${escapeHtml(comment)}"</p>`
               : ""
           }
         </div>
 
-        <a href="${siteUrl}/courses/${courseSlug}/reviews/${reviewId}" class="cta-button">Voir l'avis complet</a>
+        <a href="${escapeHtml(siteUrl)}/courses/${encodeURIComponent(courseSlug)}/reviews/${encodeURIComponent(reviewId)}" class="cta-button">Voir l'avis complet</a>
 
         <p style="margin-top: 25px;">
           ${
@@ -69,12 +77,12 @@ export class ReviewEmailTemplates {
       </div>
       <div class="footer">
         <p>FYGS Learning Platform</p>
-        <p><a href="${siteUrl}">fygs.dev</a> | <a href="${siteUrl}/dashboard/instructor">Tableau de bord instructeur</a></p>
+        <p><a href="${escapeHtml(siteUrl)}">fygs.dev</a> | <a href="${escapeHtml(siteUrl)}/dashboard/instructor">Tableau de bord instructeur</a></p>
       </div>
     `;
 
     return {
-      subject: `⭐ Nouvel avis ${rating}/5 sur "${courseTitle}"`,
+      subject: `⭐ Nouvel avis ${rating}/5 sur "${singleLine(courseTitle, 100)}"`,
       html: createBaseTemplate(content, "Nouvel avis"),
     };
   }
@@ -99,27 +107,27 @@ export class ReviewEmailTemplates {
     reviewId: string;
     siteUrl?: string;
   }) {
-    const stars = "★".repeat(originalRating) + "☆".repeat(5 - originalRating);
+    const stars = starsFor(originalRating);
     const content = `
       <div class="header">
         <h1>💬 Réponse à votre avis</h1>
         <p>L'instructeur a répondu à votre évaluation</p>
       </div>
       <div class="content">
-        <h2>Bonjour ${studentName} !</h2>
-        <p><strong>${instructorName}</strong> a répondu à votre avis sur :</p>
+        <h2>Bonjour ${escapeHtml(studentName)} !</h2>
+        <p><strong>${escapeHtml(instructorName)}</strong> a répondu à votre avis sur :</p>
         
         <div class="highlight">
-          <h3>📚 ${courseTitle}</h3>
+          <h3>📚 ${escapeHtml(courseTitle)}</h3>
           <p class="rating" style="font-size: 20px; color: #fbbf24; margin: 10px 0;">Votre note : ${stars} (${originalRating}/5)</p>
         </div>
 
         <div style="background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 20px; margin: 20px 0;">
-          <h4 style="color: #0ea5e9; margin-bottom: 10px;">💬 Réponse de ${instructorName} :</h4>
-          <p style="font-style: italic; line-height: 1.6;">"${replyContent}"</p>
+          <h4 style="color: #0ea5e9; margin-bottom: 10px;">💬 Réponse de ${escapeHtml(instructorName)} :</h4>
+          <p style="font-style: italic; line-height: 1.6;">"${escapeHtml(replyContent)}"</p>
         </div>
 
-        <a href="${siteUrl}/courses/${courseSlug}/reviews/${reviewId}" class="cta-button">Voir la conversation</a>
+        <a href="${escapeHtml(siteUrl)}/courses/${encodeURIComponent(courseSlug)}/reviews/${encodeURIComponent(reviewId)}" class="cta-button">Voir la conversation</a>
 
         <p style="margin-top: 25px;">
           Merci d'avoir partagé votre expérience ! Vos retours nous aident à améliorer constamment la qualité de nos formations.
@@ -127,12 +135,12 @@ export class ReviewEmailTemplates {
       </div>
       <div class="footer">
         <p>FYGS Learning Platform</p>
-        <p><a href="${siteUrl}">fygs.dev</a> | <a href="${siteUrl}/courses/${courseSlug}">Retour à la formation</a></p>
+        <p><a href="${escapeHtml(siteUrl)}">fygs.dev</a> | <a href="${escapeHtml(siteUrl)}/courses/${encodeURIComponent(courseSlug)}">Retour à la formation</a></p>
       </div>
     `;
 
     return {
-      subject: `💬 ${instructorName} a répondu à votre avis sur "${courseTitle}"`,
+      subject: `💬 ${singleLine(instructorName, 100)} a répondu à votre avis sur "${singleLine(courseTitle, 100)}"`,
       html: createBaseTemplate(content, "Réponse instructeur"),
     };
   }
@@ -161,39 +169,39 @@ export class ReviewEmailTemplates {
     reviewId: string;
     siteUrl?: string;
   }) {
-    const stars = "★".repeat(rating) + "☆".repeat(5 - rating);
+    const stars = starsFor(rating);
     const content = `
       <div class="header">
         <h1>🚨 Avis signalé</h1>
         <p>Intervention requise pour modération</p>
       </div>
       <div class="content">
-        <h2>Bonjour ${moderatorName},</h2>
+        <h2>Bonjour ${escapeHtml(moderatorName)},</h2>
         <p>Un avis a été signalé et nécessite votre attention :</p>
         
         <div class="highlight">
-          <h3>📚 Formation : ${courseTitle}</h3>
-          <p><strong>Auteur de l'avis :</strong> ${reviewerName}</p>
+          <h3>📚 Formation : ${escapeHtml(courseTitle)}</h3>
+          <p><strong>Auteur de l'avis :</strong> ${escapeHtml(reviewerName)}</p>
           <p><strong>Note :</strong> ${stars} (${rating}/5)</p>
           ${
             comment
-              ? `<p style="background: #f9fafb; padding: 15px; border-radius: 8px; margin: 15px 0;"><strong>Commentaire :</strong><br>"${comment}"</p>`
+              ? `<p style="background: #f9fafb; padding: 15px; border-radius: 8px; margin: 15px 0;"><strong>Commentaire :</strong><br>"${escapeHtml(comment)}"</p>`
               : ""
           }
         </div>
 
         <div style="background: #fef2f2; border: 1px solid #f87171; border-radius: 8px; padding: 20px; margin: 20px 0;">
           <h4 style="color: #dc2626; margin-bottom: 10px;">🚨 Détails du signalement :</h4>
-          <p><strong>Signalé par :</strong> ${reporterName}</p>
-          <p><strong>Raison :</strong> ${reportReason}</p>
+          <p><strong>Signalé par :</strong> ${escapeHtml(reporterName)}</p>
+          <p><strong>Raison :</strong> ${escapeHtml(reportReason)}</p>
           ${
             reportDetails
-              ? `<p><strong>Détails :</strong> ${reportDetails}</p>`
+              ? `<p><strong>Détails :</strong> ${escapeHtml(reportDetails)}</p>`
               : ""
           }
         </div>
 
-        <a href="${siteUrl}/admin/reviews/${reviewId}" class="cta-button" style="background: #dc2626;">Modérer cet avis</a>
+        <a href="${escapeHtml(siteUrl)}/admin/reviews/${encodeURIComponent(reviewId)}" class="cta-button" style="background: #dc2626;">Modérer cet avis</a>
 
         <div class="features-list">
           <h4>Actions disponibles :</h4>
@@ -207,12 +215,12 @@ export class ReviewEmailTemplates {
       </div>
       <div class="footer">
         <p>FYGS Learning Platform - Administration</p>
-        <p><a href="${siteUrl}/admin/reviews">Centre de modération</a></p>
+        <p><a href="${escapeHtml(siteUrl)}/admin/reviews">Centre de modération</a></p>
       </div>
     `;
 
     return {
-      subject: `🚨 [MODÉRATION] Avis signalé sur "${courseTitle}"`,
+      subject: `🚨 [MODÉRATION] Avis signalé sur "${singleLine(courseTitle, 100)}"`,
       html: createBaseTemplate(content, "Avis signalé"),
     };
   }
@@ -235,18 +243,18 @@ export class ReviewEmailTemplates {
     reviewId: string;
     siteUrl?: string;
   }) {
-    const stars = "★".repeat(rating) + "☆".repeat(5 - rating);
+    const stars = starsFor(rating);
     const content = `
       <div class="header">
         <h1>👍 Votre avis a été trouvé utile</h1>
         <p>D'autres étudiants apprécient votre contribution</p>
       </div>
       <div class="content">
-        <h2>Félicitations ${reviewerName} !</h2>
-        <p>Votre avis sur <strong>${courseTitle}</strong> vient de recevoir un nouveau vote "utile" !</p>
+        <h2>Félicitations ${escapeHtml(reviewerName)} !</h2>
+        <p>Votre avis sur <strong>${escapeHtml(courseTitle)}</strong> vient de recevoir un nouveau vote "utile" !</p>
         
         <div class="highlight">
-          <h3>📚 ${courseTitle}</h3>
+          <h3>📚 ${escapeHtml(courseTitle)}</h3>
           <p class="rating" style="font-size: 20px; color: #fbbf24; margin: 10px 0;">Votre note : ${stars} (${rating}/5)</p>
           <p style="font-size: 18px; color: #059669; font-weight: 600;">
             👍 ${totalHelpfulVotes} personne${
@@ -255,7 +263,7 @@ export class ReviewEmailTemplates {
           </p>
         </div>
 
-        <a href="${siteUrl}/courses/${courseSlug}/reviews/${reviewId}" class="cta-button">Voir votre avis</a>
+        <a href="${escapeHtml(siteUrl)}/courses/${encodeURIComponent(courseSlug)}/reviews/${encodeURIComponent(reviewId)}" class="cta-button">Voir votre avis</a>
 
         <p style="margin-top: 25px;">
           Merci pour votre contribution à la communauté ! Vos retours authentiques aident d'autres étudiants à faire les bons choix.
@@ -274,12 +282,12 @@ export class ReviewEmailTemplates {
       </div>
       <div class="footer">
         <p>FYGS Learning Platform</p>
-        <p><a href="${siteUrl}">fygs.dev</a> | <a href="${siteUrl}/profile/reviews">Mes avis</a></p>
+        <p><a href="${escapeHtml(siteUrl)}">fygs.dev</a> | <a href="${escapeHtml(siteUrl)}/profile/reviews">Mes avis</a></p>
       </div>
     `;
 
     return {
-      subject: `👍 Votre avis sur "${courseTitle}" a été trouvé utile !`,
+      subject: `👍 Votre avis sur "${singleLine(courseTitle, 100)}" a été trouvé utile !`,
       html: createBaseTemplate(content, "Avis utile"),
     };
   }
@@ -314,7 +322,7 @@ export class ReviewEmailTemplates {
         <p>Vos performances de la semaine</p>
       </div>
       <div class="content">
-        <h2>Bonjour ${instructorName} !</h2>
+        <h2>Bonjour ${escapeHtml(instructorName)} !</h2>
         <p>Voici un résumé de l'activité des avis sur vos formations cette semaine :</p>
         
         <div class="highlight">
@@ -354,7 +362,7 @@ export class ReviewEmailTemplates {
               ${topCourses
                 .map(
                   (course) => `
-                <li><strong>${course.title}</strong> - ${
+                <li><strong>${escapeHtml(course.title)}</strong> - ${
                     course.newReviews
                   } nouv. avis (${course.averageRating.toFixed(1)}/5)</li>
               `
@@ -366,7 +374,7 @@ export class ReviewEmailTemplates {
             : ""
         }
 
-        <a href="${siteUrl}/dashboard/instructor/reviews" class="cta-button">Voir tous mes avis</a>
+        <a href="${escapeHtml(siteUrl)}/dashboard/instructor/reviews" class="cta-button">Voir tous mes avis</a>
 
         <p style="margin-top: 25px;">
           ${
@@ -380,7 +388,7 @@ export class ReviewEmailTemplates {
       </div>
       <div class="footer">
         <p>FYGS Learning Platform</p>
-        <p><a href="${siteUrl}/dashboard/instructor">Tableau de bord instructeur</a></p>
+        <p><a href="${escapeHtml(siteUrl)}/dashboard/instructor">Tableau de bord instructeur</a></p>
       </div>
     `;
 

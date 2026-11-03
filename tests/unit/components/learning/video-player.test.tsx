@@ -166,6 +166,53 @@ describe("VideoPlayer", () => {
     expect(screen.getByRole("alert").textContent).toContain("La vidéo ne peut pas être lue");
   });
 
+  it("asks the site for a new signed address when the storage refuses the old one, and carries on from where it was", () => {
+    const { container } = render(<VideoPlayer title="Variables" videoUrl="/api/learn/media/lesson-1" durationHint={300} resumeAt={0} />);
+    const el = video(container);
+    const load = vi.fn();
+    el.load = load;
+    el.currentTime = 123;
+
+    // the address expired: a new one is requested (same route, new query), no error screen
+    act(() => {
+      el.dispatchEvent(new Event("error"));
+    });
+    expect(el.getAttribute("src")).toMatch(/^\/api\/learn\/media\/lesson-1\?refresh=\d+$/);
+    expect(load).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("alert")).toBeNull();
+
+    // and the player goes back to the moment it stopped, not to the start
+    el.currentTime = 0;
+    act(() => {
+      el.dispatchEvent(new Event("loadedmetadata"));
+    });
+    expect(el.currentTime).toBe(123);
+  });
+
+  it("gives up after a few refreshes instead of looping, and for a file that is not served by the site", () => {
+    const signed = render(<VideoPlayer title="Variables" videoUrl="/api/learn/media/lesson-1" durationHint={300} resumeAt={0} />);
+    const el = video(signed.container);
+    el.load = vi.fn();
+    for (let attempt = 0; attempt < 3; attempt++) {
+      act(() => {
+        el.dispatchEvent(new Event("error"));
+      });
+      expect(screen.queryByRole("alert")).toBeNull();
+    }
+    act(() => {
+      el.dispatchEvent(new Event("error"));
+    });
+    expect(screen.getByRole("alert").textContent).toContain("La vidéo ne peut pas être lue");
+    signed.unmount();
+
+    // an address outside the media route is never refreshed
+    const { container } = player();
+    act(() => {
+      video(container).dispatchEvent(new Event("error"));
+    });
+    expect(screen.getByRole("alert")).toBeTruthy();
+  });
+
   it("offers captions when the lesson has them, and shows or hides the track", () => {
     const { container } = render(
       <VideoPlayer title="Variables" videoUrl="/v.mp4" durationHint={300} resumeAt={0} captionsSrc="/api/learn/captions/l1" />,

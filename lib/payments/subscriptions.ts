@@ -84,6 +84,9 @@ export class SubscriptionManagement extends StripeBilling {
       }
       return true;
     } catch (error) {
+      // Cancelled meanwhile (the idempotency key expired, a dispute or another tab did it): the goal is reached
+      const current = await stripe.subscriptions.retrieve(stripeSubscriptionId).catch(() => null);
+      if (current?.status === "canceled") return true;
       console.error("Immediate cancellation failed", error);
       throw new Error("CANCEL_IMMEDIATE_FAILED");
     }
@@ -112,6 +115,14 @@ export class SubscriptionManagement extends StripeBilling {
       );
       return refund.id;
     } catch (error) {
+      // A retry after the idempotency key expired (24 h) finds the charge already refunded: that is success, the
+      // caller goes on to the rest of the operation instead of leaving it half done
+      if ((error as { code?: string } | null)?.code === "charge_already_refunded") {
+        const existing = await stripe.refunds
+          .list({ payment_intent: stripePaymentIntentId, limit: 1 })
+          .catch(() => null);
+        return existing?.data[0]?.id ?? "already_refunded";
+      }
       console.error("Refund failed", error);
       throw new Error("REFUND_FAILED");
     }
@@ -126,15 +137,26 @@ export class SubscriptionManagement extends StripeBilling {
     stripeSubscriptionId: string,
   ): Promise<{
     paymentIntentId: string;
+    invoiceId: string;
     amountPaidCents: number;
     currency: string;
+    /** When Stripe collected it: the refund window runs from here. */
+    paidAt: Date;
   } | null> {
     const invoices = await stripe.invoices.list({
       subscription: stripeSubscriptionId,
       status: "paid",
-      limit: 1,
+      limit: 10,
     });
-    const invoice = invoices.data[0];
+    // The payment that opened the period (first invoice or renewal). A plan switch produces small adjustment
+    // invoices: they neither are what the learner asks to get back nor re-open a refund window.
+    const invoice = invoices.data.find(
+      (candidate) =>
+        !!candidate.id &&
+        candidate.amount_paid > 0 &&
+        (candidate.billing_reason === "subscription_create" ||
+          candidate.billing_reason === "subscription_cycle"),
+    );
     if (!invoice?.id) return null;
 
     const payments = await stripe.invoicePayments.list({
@@ -151,10 +173,13 @@ export class SubscriptionManagement extends StripeBilling {
         ? payment.payment_intent
         : payment.payment_intent.id;
 
+    const paidAtSeconds = invoice.status_transitions?.paid_at ?? invoice.created;
     return {
       paymentIntentId,
+      invoiceId: invoice.id,
       amountPaidCents: invoice.amount_paid,
       currency: invoice.currency,
+      paidAt: new Date(paidAtSeconds * 1000),
     };
   }
 

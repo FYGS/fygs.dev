@@ -11,7 +11,7 @@ import {
   Smartphone,
   Tablet,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePlaygroundStore } from "../_stores/playground-store";
 
 type DeviceMode = "responsive" | "mobile" | "tablet" | "desktop";
@@ -22,6 +22,27 @@ const deviceWidths: Record<DeviceMode, string> = {
   tablet: "768px",
   desktop: "1280px",
 };
+
+/** Page that shows the learner's HTML in an opaque origin (public/sandbox/preview.js documents the protocol). */
+export const PREVIEW_HOST_URL = "/sandbox/preview.html";
+
+/** 128 random bits as hex: one per render, in the address fragment of the preview frame. */
+function newNonce(): string {
+  const bytes = new Uint8Array(16);
+  globalThis.crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/** The HTML to show: the store keeps it as a `data:text/html` address or as plain HTML. */
+function previewDocument(previewHtml: string | null, serverUrl: string | null): string | null {
+  if (!previewHtml || serverUrl) return null;
+  try {
+    return previewHtml.startsWith("data:text/html") ? decodeURIComponent(previewHtml.split(",")[1]) : previewHtml;
+  } catch (error) {
+    console.error("Preview error:", error);
+    return null;
+  }
+}
 
 export function PgPreview() {
   const previewHtml = usePlaygroundStore((s) => s.previewHtml);
@@ -38,20 +59,38 @@ export function PgPreview() {
     if (previewHtml && !serverUrl) setIsLoading(true);
   }
 
-  // Listen for console messages from the iframe
+  // One render = one fresh frame with its own nonce (a new `key` re-creates the frame, so nothing of the previous
+  // page survives a refresh). Adjusted during render, like the loading state above.
+  const html = previewDocument(previewHtml, serverUrl);
+  const [render, setRender] = useState<{ nonce: string; html: string } | null>(null);
+  if (html !== null && html !== render?.html) setRender({ nonce: newNonce(), html });
+  if (html === null && render !== null) setRender(null);
+  const renderRef = useRef(render);
+  useEffect(() => {
+    renderRef.current = render;
+  });
+
+  // Messages from the preview frame: its console, and the handshake that hands it the HTML
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      // Only the preview iframe may write to the console: any other window that
-      // can post a message to this page (opener, parent frame) is ignored.
+      // Only the preview iframe may speak here: any other window that can post a message to this page
+      // (opener, parent frame) is ignored.
       if (event.source !== iframeRef.current?.contentWindow) return;
-      if (event.data?.type === "console") {
-        const method = event.data.method as string;
-        const type =
-          method === "error" ? "error" : method === "warn" ? "warn" : "log";
+      const data = event.data as { type?: string; nonce?: string; method?: string; message?: unknown } | null;
+      const current = renderRef.current;
+      if (data?.type === "preview-ready") {
+        if (current && data.nonce === current.nonce) {
+          iframeRef.current?.contentWindow?.postMessage({ type: "render", nonce: current.nonce, html: current.html }, "*");
+        }
+        return;
+      }
+      if (data?.type === "console") {
+        const method = data.method as string;
+        const type = method === "error" ? "error" : method === "warn" ? "warn" : "log";
         // The previewed page is user code: bound what it can push into the console
         addConsoleEntry({
           type,
-          content: String(event.data.message ?? "").slice(0, 5000),
+          content: String(data.message ?? "").slice(0, 5000),
         });
       }
     };
@@ -60,48 +99,24 @@ export function PgPreview() {
     return () => window.removeEventListener("message", handleMessage);
   }, [addConsoleEntry]);
 
-  // Blob URL of the preview HTML (static HTML preview only: no dev server running)
-  const blobUrl = useMemo(() => {
-    if (!previewHtml || serverUrl) return null;
-
-    try {
-      const htmlContent = previewHtml.startsWith("data:text/html")
-        ? decodeURIComponent(previewHtml.split(",")[1])
-        : previewHtml;
-
-      const blob = new Blob([htmlContent], { type: "text/html" });
-      return URL.createObjectURL(blob);
-    } catch (error) {
-      console.error("Preview error:", error);
-      return null;
-    }
-  }, [previewHtml, serverUrl]);
-
-  // Release the blob once it is replaced or the preview unmounts
-  useEffect(() => {
-    return () => {
-      if (blobUrl) URL.revokeObjectURL(blobUrl);
-    };
-  }, [blobUrl]);
-
   const handleRefresh = () => {
-    if (iframeRef.current) {
-      setIsLoading(true);
-      if (serverUrl) {
-        iframeRef.current.src = serverUrl;
-      } else if (blobUrl) {
-        iframeRef.current.src = blobUrl;
-      }
+    setIsLoading(true);
+    if (serverUrl && iframeRef.current) {
+      iframeRef.current.src = serverUrl;
+    } else if (render) {
+      setRender({ nonce: newNonce(), html: render.html });
     }
   };
 
+  // Only a WebContainer dev server has an origin of its own and can be opened as a page. The learner's own HTML
+  // is never offered as a top-level page: opened that way it would no longer be sandboxed.
   const handleOpenExternal = () => {
-    const url = serverUrl || blobUrl;
-    if (url) window.open(url, "_blank");
+    if (serverUrl) window.open(serverUrl, "_blank", "noopener,noreferrer");
   };
+
+  const activeUrl = serverUrl || (render ? `${PREVIEW_HOST_URL}#${render.nonce}` : null);
 
   // Determine what to show
-  const activeUrl = serverUrl || blobUrl;
   const hasContent = !!activeUrl;
 
   // Show booting/installing state
@@ -197,15 +212,18 @@ export function PgPreview() {
           >
             <RefreshCw className={cn("h-3 w-3", isLoading && "animate-spin")} />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6"
-            onClick={handleOpenExternal}
-            title="Open in new tab"
-          >
-            <ExternalLink className="h-3 w-3" />
-          </Button>
+          {serverUrl && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
+              onClick={handleOpenExternal}
+              title="Open in new tab"
+              aria-label="Open the dev server in a new tab"
+            >
+              <ExternalLink className="h-3 w-3" />
+            </Button>
+          )}
         </div>
       </div>
 
@@ -223,6 +241,7 @@ export function PgPreview() {
         >
           {activeUrl && (
             <iframe
+              key={serverUrl ?? render?.nonce}
               ref={iframeRef}
               src={activeUrl}
               className="h-full w-full border-0"

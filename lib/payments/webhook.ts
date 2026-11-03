@@ -1,14 +1,13 @@
 import type Stripe from "stripe";
+import { PaymentKind, PaymentStatus } from "@/lib/generated/prisma/browser";
 import { db } from "../db";
-import {
-  Prisma,
-  PaymentStatus,
-  PaymentKind,
-} from "@/lib/generated/prisma/browser";
+import { writeAudit } from "../audit";
 import { Analytics } from "../analytics-helper";
 import { createLogger } from "../structured-logger";
 import { stripeRefId } from "../stripe-shapes";
 import { AccessGrants } from "./access";
+import { settlePayment } from "./settle";
+import type { ApplyOutcome } from "./subscription-state";
 import { syncPathEnrollments } from "../paths/enrollment";
 
 /** Handling of successful Stripe checkout sessions. */
@@ -24,8 +23,50 @@ export class PaymentWebhookHandler extends AccessGrants {
     }
   }
 
-  // Handle successful payment
-  async handlePaymentSuccess(session: Stripe.Checkout.Session): Promise<void> {
+  /**
+   * A second payment for a course the buyer already holds (two checkout sessions both paid): the newer payment is given
+   * back at once, so that the learner is not charged twice for one lifetime access.
+   */
+  private async refundDuplicatePurchase(
+    userId: string,
+    courseId: string,
+    paymentId: string,
+    paymentReference: string,
+    logger: ReturnType<typeof createLogger>,
+  ): Promise<boolean> {
+    if (!paymentReference.startsWith("pi_")) return false;
+    const other = await db.payment.findFirst({
+      where: { userId, courseId, kind: PaymentKind.COURSE, status: PaymentStatus.COMPLETED, id: { not: paymentId } },
+      select: { id: true },
+    });
+    if (!other) return false;
+
+    const refundId = await this.refundPayment(paymentReference, undefined, {
+      idempotencyKey: `duplicate-purchase:${paymentReference}`,
+    });
+    await db.payment.updateMany({
+      where: { id: paymentId, status: PaymentStatus.COMPLETED },
+      data: { status: PaymentStatus.REFUNDED },
+    });
+    await writeAudit({
+      actorId: null,
+      action: "payment.refunded",
+      targetType: "payment",
+      targetId: paymentId,
+      metadata: { reason: "duplicate_purchase", courseId, refundId, userId },
+    });
+    logger.warn("Duplicate course purchase refunded", {
+      eventType: "payment.duplicate_refunded",
+      userId,
+      resourceType: "payment",
+      resourceId: paymentId,
+      metadata: { courseId, refundId },
+    });
+    return true;
+  }
+
+  /** Handle a successful payment. Returns `duplicatePurchase` when the payment was a second one for a course already held. */
+  async handlePaymentSuccess(session: Stripe.Checkout.Session): Promise<{ duplicatePurchase: boolean }> {
     // Safely extract metadata with fallbacks
     const metadata = session.metadata || {};
     const userId = metadata.userId;
@@ -61,7 +102,7 @@ export class PaymentWebhookHandler extends AccessGrants {
           sessionMode: session.mode,
         },
       });
-      return;
+      return { duplicatePurchase: false };
     }
 
     try {
@@ -77,67 +118,30 @@ export class PaymentWebhookHandler extends AccessGrants {
 
         // Auto-enroll upon successful purchase to align with enrollment-required gating
         if (paymentReference) {
-          // First, try to find and update existing pending payment record
           try {
-            // The row this very session created (the checkout route stores the session
-            // id as placeholder), or one a previous delivery already completed;
-            // otherwise fall back to any pending purchase of that course.
-            const existingPayment =
-              (await db.payment.findFirst({
-                where: {
-                  userId,
-                  courseId: productId,
-                  kind: PaymentKind.COURSE,
-                  stripePaymentIntentId: { in: [session.id, paymentReference] },
-                },
-              })) ??
-              (await db.payment.findFirst({
-                where: {
-                  userId,
-                  courseId: productId,
-                  kind: PaymentKind.COURSE,
-                  status: PaymentStatus.PENDING,
-                },
-              }));
-
-            // Calculate safe amount
-            const amountTotal = session.amount_total || 0;
-            const amountDecimal = new Prisma.Decimal(
-              (amountTotal / 100).toFixed(2),
+            // The row this very session created at checkout (it stores the session id as placeholder), or one a
+            // previous delivery already settled; otherwise any pending purchase of that course
+            const settled = await settlePayment({
+              userId,
+              kind: PaymentKind.COURSE,
+              courseId: productId,
+              knownReferences: [session.id, paymentReference],
+              reference: paymentReference,
+              amountCents: session.amount_total || 0,
+              currency: session.currency || "eur",
+              description: `Achat formation ${productId}`,
+              adoptPending: true,
+            });
+            logger.info(
+              settled.alreadySettled
+                ? `Payment already settled for user ${userId}, course ${productId}`
+                : `Payment COMPLETED for user ${userId}, course ${productId}`,
             );
-
-            if (existingPayment) {
-              // Update existing payment record
-              await db.payment.update({
-                where: { id: existingPayment.id },
-                data: {
-                  stripePaymentIntentId: paymentReference,
-                  amount: amountDecimal,
-                  currency: session.currency || "eur",
-                  status: PaymentStatus.COMPLETED,
-                  description: `Achat formation ${productId}`,
-                },
-              });
-              logger.info(
-                `✅ Payment updated to COMPLETED for user ${userId}, course ${productId}`,
-              );
-            } else {
-              // Create new payment record
-              await db.payment.create({
-                data: {
-                  userId,
-                  stripePaymentIntentId: paymentReference,
-                  amount: amountDecimal,
-                  currency: session.currency || "eur",
-                  status: PaymentStatus.COMPLETED,
-                  description: `Achat formation ${productId}`,
-                  kind: PaymentKind.COURSE,
-                  courseId: productId,
-                },
-              });
-              logger.info(
-                `✅ Payment created for user ${userId}, course ${productId}`,
-              );
+            if (
+              !settled.alreadySettled &&
+              (await this.refundDuplicatePurchase(userId, productId, settled.paymentId, paymentReference, logger))
+            ) {
+              return { duplicatePurchase: true };
             }
           } catch (paymentError) {
             logger.error(`❌ Failed to record payment:`, {
@@ -219,17 +223,18 @@ export class PaymentWebhookHandler extends AccessGrants {
             resourceId: session.id,
             metadata: { userId, type },
           });
-          return;
+          return { duplicatePurchase: false };
         }
 
         const subscriptionId = stripeRefId(session.subscription) as string;
 
-        // Grant subscription access
+        // Grant subscription access (the state is read from Stripe and stored through the central rules)
+        let outcome: ApplyOutcome;
         try {
-          await this.grantSubscriptionAccess(userId, subscriptionId);
-          logger.info(`✅ Subscription access granted for user ${userId}`, {
+          outcome = await this.grantSubscriptionAccess(userId, subscriptionId);
+          logger.info(`Subscription access processed for user ${userId}`, {
             resourceId: session.id,
-            metadata: { subscriptionId },
+            metadata: { subscriptionId, outcome },
           });
         } catch (subscriptionError) {
           logger.error(`❌ Failed to grant subscription access:`, {
@@ -250,75 +255,30 @@ export class PaymentWebhookHandler extends AccessGrants {
           throw subscriptionError; // Critical
         }
 
+        // A duplicate was cancelled and refunded, a price outside the plans granted nothing: no payment to record
+        if (outcome === "duplicate_active" || outcome === "unknown_price") return { duplicatePurchase: false };
+
         await this.syncPaths(userId, logger);
 
         try {
-          // Calculate safe amount
-          const amountTotal = session.amount_total || 0;
-          const amountDecimal = new Prisma.Decimal(
-            (amountTotal / 100).toFixed(2),
-          );
-
-          // One payment row per invoice, like renewals (invoice.payment_succeeded):
-          // the first invoice is paid by the checkout, and both events describe the
-          // same payment, in any order. A subscription-mode session has no
+          // One payment row per invoice, like renewals (invoice.payment_succeeded): the first invoice is paid by the
+          // checkout, and both events describe the same payment, in any order. A subscription-mode session has no
           // PaymentIntent, so the session's invoice is the reference.
           const paymentReference = stripeRefId(session.invoice) ?? subscriptionId;
-
-          // The row either event already settled, the placeholder this session
-          // created at checkout, or else any pending subscription payment.
-          const existingPayment =
-            (await db.payment.findFirst({
-              where: {
-                userId,
-                kind: PaymentKind.SUBSCRIPTION,
-                stripePaymentIntentId: { in: [paymentReference, session.id] },
-              },
-            })) ??
-            (await db.payment.findFirst({
-              where: {
-                userId,
-                kind: PaymentKind.SUBSCRIPTION,
-                status: PaymentStatus.PENDING,
-              },
-            }));
-
-          if (existingPayment) {
-            // Update existing payment record
-            await db.payment.update({
-              where: { id: existingPayment.id },
-              data: {
-                stripePaymentIntentId: paymentReference,
-                amount: amountDecimal,
-                currency: session.currency || "eur",
-                status: PaymentStatus.COMPLETED,
-              },
-            });
-            logger.info(
-              `✅ Subscription payment updated to COMPLETED for user ${userId}`,
-              {
-                resourceId: session.id,
-                metadata: { subscriptionId },
-              },
-            );
-          } else {
-            // Create new payment record
-            await db.payment.create({
-              data: {
-                userId,
-                stripePaymentIntentId: paymentReference,
-                amount: amountDecimal,
-                currency: session.currency || "eur",
-                status: PaymentStatus.COMPLETED,
-                description: "Abonnement Premium",
-                kind: PaymentKind.SUBSCRIPTION,
-              },
-            });
-            logger.info(`✅ Subscription payment created for user ${userId}`, {
-              resourceId: session.id,
-              metadata: { subscriptionId },
-            });
-          }
+          const settled = await settlePayment({
+            userId,
+            kind: PaymentKind.SUBSCRIPTION,
+            knownReferences: [paymentReference, session.id],
+            reference: paymentReference,
+            amountCents: session.amount_total || 0,
+            currency: session.currency || "eur",
+            description: "Abonnement Premium",
+            adoptPending: true,
+          });
+          logger.info(`Subscription payment ${settled.alreadySettled ? "already settled" : "COMPLETED"} for user ${userId}`, {
+            resourceId: session.id,
+            metadata: { subscriptionId },
+          });
         } catch (paymentError) {
           logger.error(`❌ Failed to record subscription payment:`, {
             resourceId: session.id,
@@ -400,5 +360,6 @@ export class PaymentWebhookHandler extends AccessGrants {
       });
       throw error; // Rethrow to trigger webhook retry
     }
+    return { duplicatePurchase: false };
   }
 }

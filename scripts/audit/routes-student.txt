@@ -13,3 +13,4 @@
 /fr/tech-mastry/qa
 /fr/dashboard/certificates
 /fr/parcours
+/fr/profile/security

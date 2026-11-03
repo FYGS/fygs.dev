@@ -126,12 +126,36 @@ describe("AI tutor - global daily budget", () => {
   });
 
   it("degrades once the output-token budget is spent, using the usage reported by the stream", async () => {
-    vi.stubEnv("AI_DAILY_OUTPUT_TOKEN_BUDGET", "100");
+    // "explain" reserves its worst case (1 400 tokens) up front and gives back what the answer did not use
+    vi.stubEnv("AI_DAILY_OUTPUT_TOKEN_BUDGET", "1500");
+    vi.stubEnv("AI_GUEST_SHARE", "1");
     fetchMock.mockImplementation(() => Promise.resolve(okStream(150)));
     await (await call()).text();
     await vi.waitFor(async () => expect((await getBudgetUsage()).outputTokens).toBe(150));
+    // 150 used + 1 400 to reserve does not fit in 1 500
     const evs = await parse(await call());
     expect(JSON.parse(evs[0].data)).toMatchObject({ mode: "offline", reason: "budget" });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("refuses before calling the model when the worst case of one answer cannot fit", async () => {
+    vi.stubEnv("AI_DAILY_OUTPUT_TOKEN_BUDGET", "1000");
+    vi.stubEnv("AI_GUEST_SHARE", "1");
+    fetchMock.mockImplementation(() => Promise.resolve(okStream()));
+    const evs = await parse(await call());
+    expect(JSON.parse(evs[0].data)).toMatchObject({ mode: "offline", reason: "budget" });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("keeps one visitor from using more than its share of the day", async () => {
+    // 1 % of 100 requests: a single request per visitor address
+    vi.stubEnv("AI_DAILY_REQUEST_BUDGET", "100");
+    fetchMock.mockImplementation(() => Promise.resolve(okStream()));
+    const same = { "x-forwarded-for": "203.0.113.200" };
+    await (await call(payload(), same)).text();
+    vi.setSystemTime(Date.now() + 11_000);
+    const evs = await parse(await call(payload(), same));
+    expect(JSON.parse(evs[0].data)).toMatchObject({ mode: "offline", reason: "share" });
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 

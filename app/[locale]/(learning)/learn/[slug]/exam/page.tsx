@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { ExamRunner } from "@/components/learning/exam-runner";
-import { examRetakeDecision, parseExamQuestions } from "@/lib/learning/exam";
+import { parseExamQuestions } from "@/lib/learning/exam";
+import { getExamStartBlock } from "@/lib/learning/exam-sittings";
 import { getLearningContext, leaveStep } from "@/lib/learning/page-context";
-import { formatRetryDelay } from "@/lib/quiz-attempt-policy";
 
 interface ExamPageProps {
   params: Promise<{ slug: string }>;
@@ -25,7 +25,7 @@ export default async function ExamPage({ params }: ExamPageProps) {
   const staff = ctx.mode === "staff";
 
   const exam = await db.finalExam.findFirst({
-    where: { courseId: ctx.course.id, ...(staff ? {} : { published: true }) },
+    where: { courseId: ctx.course.id, ...(staff ? {} : { published: true, course: { published: true } }) },
     select: { id: true, title: true, description: true, passingScore: true, timeLimit: true, questions: true },
   });
   const questionCount = exam ? parseExamQuestions(exam.questions).length : 0;
@@ -37,12 +37,8 @@ export default async function ExamPage({ params }: ExamPageProps) {
         where: { userId_examId: { userId: user.id, examId: exam.id } },
         select: { percentage: true, passed: true, completedAt: true },
       });
-  const decision = examRetakeDecision(last, new Date());
-  const blockedMessage = decision.allowed
-    ? null
-    : decision.reason === "PASSED"
-      ? "Vous avez réussi cet examen."
-      : `Vous pourrez repasser l’examen ${formatRetryDelay(decision.retryAt, new Date())}.`;
+  // The same rule as the one the server applies when a sitting starts (cooldown, daily cap, already passed)
+  const blockedMessage = staff ? null : await getExamStartBlock(user.id, exam.id);
 
   return (
     <div className="space-y-6">

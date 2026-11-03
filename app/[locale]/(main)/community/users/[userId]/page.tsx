@@ -92,7 +92,7 @@ async function UserProfileContent({ params, searchParams }: UserProfilePageProps
 
                   {/* User Badges and Level */}
                   <UserBadges 
-                    user={userProfile.user as any}
+                    user={userProfile.user}
                     showLevel={true}
                     showBadges={true}
                     size="lg"
@@ -121,21 +121,21 @@ async function UserProfileContent({ params, searchParams }: UserProfilePageProps
                   <div className="space-y-2">
                     {userProfile.user.githubUrl && (
                       <Button variant="outline" size="sm" asChild className="w-full">
-                        <Link href={userProfile.user.githubUrl} target="_blank">
+                        <Link href={userProfile.user.githubUrl} target="_blank" rel="noopener noreferrer nofollow ugc">
                           GitHub Profile
                         </Link>
                       </Button>
                     )}
                     {userProfile.user.linkedinUrl && (
                       <Button variant="outline" size="sm" asChild className="w-full">
-                        <Link href={userProfile.user.linkedinUrl} target="_blank">
+                        <Link href={userProfile.user.linkedinUrl} target="_blank" rel="noopener noreferrer nofollow ugc">
                           LinkedIn Profile
                         </Link>
                       </Button>
                     )}
                     {userProfile.user.websiteUrl && (
                       <Button variant="outline" size="sm" asChild className="w-full">
-                        <Link href={userProfile.user.websiteUrl} target="_blank">
+                        <Link href={userProfile.user.websiteUrl} target="_blank" rel="noopener noreferrer nofollow ugc">
                           Personal Website
                         </Link>
                       </Button>

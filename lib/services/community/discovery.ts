@@ -10,6 +10,8 @@ import type {
 import { Prisma } from "@/lib/generated/prisma/browser";
 import { DiscussionOrder } from "./order";
 import { DiscussionQueries } from "./discussions";
+import { PUBLIC_USER_WITH_BADGES_SELECT } from "./public-user";
+import { clampPaging } from "./pagination";
 
 /** Search, trending and personalised recommendations. */
 export class DiscoveryQueries {
@@ -21,8 +23,8 @@ export class DiscoveryQueries {
     filters: Partial<DiscussionFilters> = {},
     userId?: string
   ): Promise<DiscussionsResponse> {
-    const { page = 1, limit = 20, sort = "latest" } = filters;
-    const skip = (page - 1) * limit;
+    const { sort = "latest" } = filters;
+    const { page, limit, skip } = clampPaging(filters.page, filters.limit);
 
     // Build search conditions
     const searchConditions: Prisma.DiscussionWhereInput = {
@@ -286,24 +288,13 @@ export class DiscoveryQueries {
         },
       },
       take: 3,
-      include: {
-        userBadges: {
-          include: { badge: true },
-        },
-        _count: {
-          select: {
-            discussions: true,
-            discussionReplies: true,
-            discussionVotes: true,
-          },
-        },
-      },
+      select: PUBLIC_USER_WITH_BADGES_SELECT,
     });
 
     return {
       discussions: recommendedDiscussions.discussions,
       topics: recommendedTopics as CommunityTopic[],
-      mentors: mentors as CommunityUser[],
+      mentors: mentors satisfies CommunityUser[],
       reasons: [
         "Based on your course enrollments",
         "Popular in your followed topics",

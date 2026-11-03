@@ -54,7 +54,8 @@ export function normalizeTrailerUrl(raw: string | null | undefined): string | nu
   if (!value) return null;
   try {
     const url = new URL(value);
-    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : undefined;
+    // https only: a plain http address cannot be shown in a page that forbids mixed content, and can be altered on the way
+    return url.protocol === "https:" ? url.toString() : undefined;
   } catch {
     return undefined;
   }

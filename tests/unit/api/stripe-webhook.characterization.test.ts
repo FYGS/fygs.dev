@@ -18,10 +18,11 @@ const h = vi.hoisted(() => ({
 
 const SigError = h.SigError;
 
-// Duplicate-delivery handling has its own test (stripe-webhook.idempotency.test.ts).
-vi.mock("@/lib/rate-limit", () => ({
-  ensureIdempotent: async () => true,
-  releaseIdempotent: async () => {},
+// Duplicate-delivery handling has its own tests (stripe-webhook.idempotency.test.ts, integration/payments/event-claims).
+vi.mock("@/lib/payments/event-claims", () => ({
+  claimEvent: async () => ({ state: "claimed" }),
+  completeEvent: async () => {},
+  releaseEvent: async () => {},
 }));
 
 vi.mock("next/headers", () => ({
@@ -48,6 +49,7 @@ vi.mock("@/lib/payment-service", () => ({
     handlePaymentSuccess: async (s: unknown) => {
       h.log.push(["pay.handlePaymentSuccess", s]);
       if (h.pay.successError) throw h.pay.successError;
+      return { duplicatePurchase: false };
     },
     getSubscription: async (id: string) => {
       h.log.push(["pay.getSubscription", id]);
@@ -147,33 +149,6 @@ const session = (over: Record<string, unknown> = {}) => ({
   metadata: { userId: "u1", productId: "c1", type: "course_purchase" },
   ...over,
 });
-const subMeta = { userId: "u1" };
-const sub = (over: Record<string, unknown> = {}) => ({
-  id: "sub_1",
-  status: "active",
-  customer: "cus_1",
-  metadata: subMeta,
-  cancel_at_period_end: false,
-  billing_cycle_anchor: 1800000000,
-  start_date: 1700000000,
-  items: {
-    data: [
-      {
-        current_period_start: 1900000000,
-        current_period_end: 1902592000,
-        price: { id: "price_x", unit_amount: 1999 },
-      },
-    ],
-  },
-  ...over,
-});
-const invoice = (over: Record<string, unknown> = {}) => ({
-  id: "in_1",
-  subscription: "sub_1",
-  amount_paid: 1999,
-  currency: "eur",
-  ...over,
-});
 const course = { "course.findUnique": { title: "TS", description: "d", slug: "ts" } };
 
 const scenarios: Record<string, () => Promise<unknown>> = {
@@ -238,91 +213,9 @@ const scenarios: Record<string, () => Promise<unknown>> = {
   checkoutBadCreated: () =>
     run(ev("checkout.session.completed", session({ created: Number.NaN })), {}),
 
-  // customer.subscription.created / updated
-  subCreatedActive: () => run(ev("customer.subscription.created", sub()), { db: userOnly }),
-  subCreatedYearlyMeta: () =>
-    run(ev("customer.subscription.created", sub({ metadata: { userId: "u1", billingCycle: "yearly" } })), {
-      db: userOnly,
-    }),
-  subCreatedUserMissing: () => run(ev("customer.subscription.created", sub())),
-  subCreatedNoPrice: () =>
-    run(ev("customer.subscription.created", sub({ items: { data: [] } })), { db: noName }),
-  subCreatedNoItemsAtAll: () =>
-    run(ev("customer.subscription.created", sub({ items: undefined, cancel_at_period_end: true })), { db: userOnly }),
-  subCreatedFallbackDates: () =>
-    run(
-      ev("customer.subscription.created", sub({ items: { data: [{ price: { id: "price_y" } }] } })),
-      { db: userOnly },
-    ),
-  subUpdatedActive: () => run(ev("customer.subscription.updated", sub()), { db: userOnly }),
-  subUpdatedIncomplete: () => run(ev("customer.subscription.updated", sub({ status: "incomplete" })), { db: userOnly }),
-  subUpdatedPastDue: () => run(ev("customer.subscription.updated", sub({ status: "past_due", cancel_at_period_end: true }))),
-  subUpdatedUnknownStatus: () => run(ev("customer.subscription.updated", sub({ status: "mystery" }))),
-  subUpdatedNoUserId: () => run(ev("customer.subscription.updated", sub({ metadata: {} }))),
-  subUpdatedNoMetadata: () => run(ev("customer.subscription.updated", sub({ metadata: undefined }))),
-  subUpsertFails: () =>
-    run(ev("customer.subscription.created", sub()), { db: { "subscription.upsert": new Error("upsert") } }),
-  subEmailFails: () =>
-    run(ev("customer.subscription.created", sub()), { db: userOnly, emailFail: ["sendPremiumSubscriptionEmail"] }),
-  subUpdatedUserLookupFails: () =>
-    run(ev("customer.subscription.updated", sub()), { db: { "user.findUnique": new Error("db") } }),
-
-  // customer.subscription.deleted
-  subDeleted: () => run(ev("customer.subscription.deleted", sub()), { db: userOnly }),
-  subDeletedNoName: () => run(ev("customer.subscription.deleted", sub()), { db: noName }),
-  subDeletedUserMissing: () => run(ev("customer.subscription.deleted", sub())),
-  subDeletedNoUserId: () => run(ev("customer.subscription.deleted", sub({ metadata: {} }))),
-  subDeletedUpdateFails: () =>
-    run(ev("customer.subscription.deleted", sub()), { db: { "subscription.update": new Error("nf") } }),
-  subDeletedEmailFails: () =>
-    run(ev("customer.subscription.deleted", sub()), { db: userOnly, emailFail: ["sendSubscriptionCanceledEmail"] }),
-
-  // invoice.payment_succeeded
-  invoicePaidNew: () =>
-    run(ev("invoice.payment_succeeded", invoice()), { getSub: { metadata: subMeta } }),
-  invoicePaidExisting: () =>
-    run(ev("invoice.payment_succeeded", invoice({ amount_paid: undefined, currency: undefined })), {
-      getSub: { metadata: subMeta },
-      db: { "payment.findFirst": { id: "pay_1" } },
-    }),
-  invoicePaidNoSubscription: () => run(ev("invoice.payment_succeeded", invoice({ subscription: null }))),
-  invoicePaidNoUser: () =>
-    run(ev("invoice.payment_succeeded", invoice()), { getSub: { metadata: {} } }),
-  invoicePaidRecordFails: () =>
-    run(ev("invoice.payment_succeeded", invoice()), {
-      getSub: { metadata: subMeta },
-      db: { "payment.create": new Error("dup") },
-    }),
-  invoicePaidRecordFailsNonError: () =>
-    run(ev("invoice.payment_succeeded", invoice()), {
-      getSub: { metadata: subMeta },
-      db: { "payment.findFirst": "x" as unknown as Error },
-    }),
-  invoicePaidUpdateManyFails: () =>
-    run(ev("invoice.payment_succeeded", invoice()), {
-      getSub: { metadata: subMeta },
-      db: { "subscription.updateMany": new Error("db") },
-    }),
-  invoicePaidGetSubFails: () =>
-    run(ev("invoice.payment_succeeded", invoice()), { getSubError: new Error("stripe") }),
-
-  // invoice.payment_failed
-  invoiceFailed: () =>
-    run(ev("invoice.payment_failed", invoice()), { getSub: { metadata: subMeta }, db: userOnly }),
-  invoiceFailedNoName: () =>
-    run(ev("invoice.payment_failed", invoice()), { getSub: { metadata: subMeta }, db: noName }),
-  invoiceFailedUserMissing: () =>
-    run(ev("invoice.payment_failed", invoice()), { getSub: { metadata: subMeta } }),
-  invoiceFailedNoSubscription: () => run(ev("invoice.payment_failed", invoice({ subscription: null }))),
-  invoiceFailedNoUser: () => run(ev("invoice.payment_failed", invoice()), { getSub: { metadata: {} } }),
-  invoiceFailedEmailFails: () =>
-    run(ev("invoice.payment_failed", invoice()), {
-      getSub: { metadata: subMeta },
-      db: userOnly,
-      emailFail: ["sendPaymentFailedEmail"],
-    }),
-  invoiceFailedGetSubFails: () =>
-    run(ev("invoice.payment_failed", invoice()), { getSubError: new Error("stripe") }),
+  // The subscription and invoice handlers read Stripe's current state and store it through the central rules
+  // (lib/payments/subscription-state.ts): their behaviour is tested against a real database in
+  // tests/integration/payments/*.
 };
 
 describe("POST /api/stripe/webhook (pinned behaviour)", () => {

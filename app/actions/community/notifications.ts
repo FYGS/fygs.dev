@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
+import { clampPaging } from "@/lib/services/community/pagination";
 
 /**
  * Get user notifications
@@ -22,8 +23,8 @@ export async function getNotifications(
       return { success: false, error: "Unauthorized" };
     }
 
-    const { filter, page = 1, limit = 20 } = options;
-    const skip = (page - 1) * limit;
+    const { filter } = options;
+    const { limit, skip } = clampPaging(options.page, options.limit);
 
     const whereClause: any = {
       recipientId: userId,

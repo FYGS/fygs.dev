@@ -195,7 +195,9 @@ export async function createQuickTag(
     const clean = z.string().trim().min(2, "Le nom du tag est trop court.").max(40, "Le nom du tag est trop long.").parse(name);
     const existing = await db.tag.findFirst({ where: { name: { equals: clean, mode: "insensitive" } } });
     if (existing) return { success: true, tag: { id: existing.id, name: existing.name, color: existing.color } };
-    const tag = await db.tag.create({ data: { name: clean, color } });
+    // The colour ends up in styles and badges: a #RRGGBB value only, whatever the client sent
+    const safeColor = /^#[0-9A-Fa-f]{6}$/.test(color) ? color : "#6366F1";
+    const tag = await db.tag.create({ data: { name: clean, color: safeColor } });
     return { success: true, tag: { id: tag.id, name: tag.name, color: tag.color } };
   } catch (error) {
     if (error instanceof z.ZodError) return failure(error.issues[0]?.message ?? "Nom invalide.");

@@ -16,7 +16,8 @@ export async function POST(req: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: req.headers });
     const body = await req.json().catch(() => ({}));
-    const { courseId, rank } = body;
+    const courseId = typeof body.courseId === 'string' && body.courseId.length <= 40 ? body.courseId : null;
+    const rank = Number.isInteger(body.rank) && body.rank >= 0 && body.rank < 1000 ? (body.rank as number) : undefined;
     if (!courseId) return NextResponse.json({ error: 'MISSING_COURSE_ID' }, { status: 400 });
     const userId = session?.user?.id;
     // Enrich with course metadata if available (category/level) for better reinforcement

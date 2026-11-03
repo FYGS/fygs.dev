@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { readBodyText } from "@/lib/http/read-body";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { createLogger } from "@/lib/structured-logger";
 import { parseCspReports, violationKey, ViolationThrottle } from "@/lib/csp-report";
@@ -34,13 +35,10 @@ export async function POST(request: NextRequest) {
   const limited = await enforceRateLimit(request, "csp-report", { limit: 30, windowSeconds: 60 });
   if (limited) return noContent();
 
-  let text: string;
-  try {
-    text = await request.text();
-  } catch {
-    return noContent();
-  }
-  if (text.length > MAX_BODY_BYTES) return new Response(null, { status: 413 });
+  // Streamed with a cap: a chunked body without Content-Length cannot make the server buffer more than the limit
+  const body = await readBodyText(request, MAX_BODY_BYTES);
+  if (!body.ok) return body.status === 413 ? new Response(null, { status: 413 }) : noContent();
+  const text = body.text;
 
   let payload: unknown;
   try {

@@ -7,19 +7,21 @@ const m = vi.hoisted(() => ({
   quizFindUnique: vi.fn(),
   resultUpsert: vi.fn(),
   attemptFindMany: vi.fn(),
+  attemptFindFirst: vi.fn(),
   attemptCreate: vi.fn(),
   attemptUpdateMany: vi.fn(),
-  answerUpsert: vi.fn(),
+  answerCreateMany: vi.fn(),
+  answerFindUnique: vi.fn(),
+  recorded: { selectedOption: 0 },
   resultFindUnique: vi.fn(),
   completeCourse: vi.fn(),
   rewardQuiz: vi.fn(),
-  isStaff: vi.fn(),
 }));
 
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@/lib/learning/completion", () => ({ completeCourseIfDone: m.completeCourse }));
 vi.mock("@/lib/learning/rewards", () => ({ rewardQuizPassed: m.rewardQuiz }));
-vi.mock("@/lib/learning/access", () => ({ isCourseStaff: m.isStaff }));
+vi.mock("@/lib/learning/locks", () => ({ advisoryLock: vi.fn(async () => undefined) }));
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: m.getSession } } }));
 vi.mock("next/headers", () => ({ headers: vi.fn(() => Promise.resolve(new Headers())) }));
@@ -34,9 +36,13 @@ vi.mock("@/lib/db", () => ({
     quizQuestion: { findFirst: m.questionFindFirst },
     quiz: { findUnique: m.quizFindUnique },
     quizResult: { upsert: m.resultUpsert, findUnique: m.resultFindUnique },
-    quizAttempt: { findMany: m.attemptFindMany, create: m.attemptCreate, updateMany: m.attemptUpdateMany },
-    quizAttemptAnswer: { upsert: m.answerUpsert },
-    $transaction: (operations: Promise<unknown>[]) => Promise.all(operations),
+    quizAttempt: { findMany: m.attemptFindMany, updateMany: m.attemptUpdateMany },
+    quizAttemptAnswer: { createMany: m.answerCreateMany, findUnique: m.answerFindUnique },
+    // the array form saves a result, the function form is the sitting opened under a lock
+    $transaction: (arg: Promise<unknown>[] | ((tx: unknown) => Promise<unknown>)) =>
+      typeof arg === "function"
+        ? arg({ quizAttempt: { findFirst: m.attemptFindFirst, findMany: m.attemptFindMany, create: m.attemptCreate } })
+        : Promise.all(arg),
   },
 }));
 
@@ -47,17 +53,16 @@ const questions = [
   { id: "q2", options: ["a", "b"], correct: 0, explanation: null },
   { id: "q3", options: ["a", "b", "c", "d"], correct: 3, explanation: "d it is" },
 ];
-const quiz = { courseId: "course-1", course: { slug: "course-one" }, questions };
+const quiz = { courseId: "course-1", course: { slug: "course-one", published: true }, questions };
 
 beforeEach(() => {
   vi.clearAllMocks();
   m.getSession.mockResolvedValue({ user: { id: "user-1" } });
-  m.checkCourseAccess.mockResolvedValue({ canAccessCourse: true });
+  m.checkCourseAccess.mockResolvedValue({ canAccessCourse: true, recordsProgress: true });
   m.quizFindUnique.mockResolvedValue(quiz);
   m.resultUpsert.mockResolvedValue({});
   m.resultFindUnique.mockResolvedValue(null);
   m.rewardQuiz.mockResolvedValue(null);
-  m.isStaff.mockResolvedValue(false);
   m.completeCourse.mockResolvedValue({
     progress: { percent: 50 },
     isComplete: false,
@@ -66,25 +71,36 @@ beforeEach(() => {
   });
   // no sitting in progress and none finished: the first answer starts one
   m.attemptFindMany.mockResolvedValue([]);
+  m.attemptFindFirst.mockResolvedValue(null);
   m.attemptCreate.mockResolvedValue({ id: "attempt-1" });
   m.attemptUpdateMany.mockResolvedValue({ count: 1 });
-  m.answerUpsert.mockResolvedValue({});
+  // insert-if-absent, then read back what is recorded
+  m.answerCreateMany.mockImplementation(async ({ data }: { data: { selectedOption: number }[] }) => {
+    m.recorded = { selectedOption: data[0].selectedOption };
+    return { count: 1 };
+  });
+  m.answerFindUnique.mockImplementation(async () => ({ selectedOption: m.recorded.selectedOption }));
 });
 
 const openAttempt = (answers: { questionId: string; selectedOption: number }[]) => ({
   id: "attempt-open",
   answers: answers.map((answer) => ({ ...answer, answeredAt: new Date("2026-10-20T10:00:00Z") })),
 });
-/** findMany is asked twice: for the open sittings, then (to start one) for the finished ones */
-const sittings = (open: unknown[], finished: unknown[] = []) =>
-  m.attemptFindMany.mockImplementation(async (args: { where: { submittedAt: unknown } }) =>
+/**
+ * The sittings of the learner: `open` are the ones in progress (read for the recorded answers, and the newest one is the
+ * sitting a new answer joins), `finished` are the ones that count for the cooldown and the daily cap.
+ */
+const sittings = (open: { id: string }[], finished: unknown[] = []) => {
+  m.attemptFindMany.mockImplementation(async (args: { where: { submittedAt?: unknown } }) =>
     args.where.submittedAt === null ? open : finished,
   );
+  m.attemptFindFirst.mockResolvedValue(open.length > 0 ? { id: open[open.length - 1].id } : null);
+};
 
 describe("checkQuizAnswer", () => {
   const input = { quizId: "quiz-1", questionId: "q1", selectedOption: 1 };
   beforeEach(() => {
-    m.questionFindFirst.mockResolvedValue({ ...questions[0], quiz: { courseId: "course-1" } });
+    m.questionFindFirst.mockResolvedValue({ ...questions[0], quiz: { courseId: "course-1", course: { published: true } } });
   });
 
   it("rejects an anonymous caller without revealing anything", async () => {
@@ -143,17 +159,19 @@ describe("checkQuizAnswer", () => {
 describe("checkQuizAnswer: the first answer is final", () => {
   const input = { quizId: "quiz-1", questionId: "q1", selectedOption: 0 };
   beforeEach(() => {
-    m.questionFindFirst.mockResolvedValue({ ...questions[0], quiz: { courseId: "course-1" } });
+    m.questionFindFirst.mockResolvedValue({ ...questions[0], quiz: { courseId: "course-1", course: { published: true } } });
   });
 
   it("starts a sitting and records the answer on it", async () => {
     await checkQuizAnswer(input);
 
-    expect(m.attemptCreate).toHaveBeenCalledWith({ data: { userId: "user-1", quizId: "quiz-1" }, select: { id: true } });
-    expect(m.answerUpsert).toHaveBeenCalledWith({
-      where: { attemptId_questionId: { attemptId: "attempt-1", questionId: "q1" } },
-      create: { attemptId: "attempt-1", questionId: "q1", selectedOption: 0 },
-      update: {},
+    expect(m.attemptCreate).toHaveBeenCalledWith({
+      data: { userId: "user-1", quizId: "quiz-1", startedAt: expect.any(Date) },
+      select: { id: true },
+    });
+    expect(m.answerCreateMany).toHaveBeenCalledWith({
+      data: [{ attemptId: "attempt-1", questionId: "q1", selectedOption: 0 }],
+      skipDuplicates: true,
     });
   });
 
@@ -163,7 +181,7 @@ describe("checkQuizAnswer: the first answer is final", () => {
     const retry = await checkQuizAnswer({ ...input, selectedOption: 1 });
 
     expect(retry).toMatchObject({ success: true, isCorrect: false });
-    expect(m.answerUpsert).not.toHaveBeenCalled();
+    expect(m.answerCreateMany).not.toHaveBeenCalled();
     expect(m.attemptCreate).not.toHaveBeenCalled();
   });
 
@@ -183,9 +201,7 @@ describe("checkQuizAnswer: the first answer is final", () => {
     await checkQuizAnswer(input);
 
     expect(m.attemptCreate).not.toHaveBeenCalled();
-    expect(m.answerUpsert.mock.calls[0][0].where).toEqual({
-      attemptId_questionId: { attemptId: "attempt-open", questionId: "q1" },
-    });
+    expect(m.answerCreateMany.mock.calls[0][0].data).toEqual([{ attemptId: "attempt-open", questionId: "q1", selectedOption: 0 }]);
   });
 
   it("refuses to start a new sitting during the cooldown, without revealing the answer", async () => {
@@ -197,7 +213,7 @@ describe("checkQuizAnswer: the first answer is final", () => {
     expect(result).not.toHaveProperty("correctOption");
     if (!result.success) expect(result.error).toMatch(/^Vous pourrez refaire ce quiz dans \d+ min$/);
     expect(m.attemptCreate).not.toHaveBeenCalled();
-    expect(m.answerUpsert).not.toHaveBeenCalled();
+    expect(m.answerCreateMany).not.toHaveBeenCalled();
   });
 
   it("refuses a sixth sitting in 24 hours", async () => {
@@ -208,6 +224,16 @@ describe("checkQuizAnswer: the first answer is final", () => {
 
     expect(result.success).toBe(false);
     if (!result.success) expect(result.error).toMatch(/^Limite de 5 tentatives par jour atteinte, réessayez dans /);
+  });
+
+  it("reports the answer a parallel request recorded first, not the option this request sent", async () => {
+    // the insert finds the question already answered (0, wrong): this request sent 1 (right)
+    m.answerCreateMany.mockResolvedValue({ count: 0 });
+    m.answerFindUnique.mockResolvedValue({ selectedOption: 0 });
+
+    const result = await checkQuizAnswer({ ...input, selectedOption: 1 });
+
+    expect(result).toMatchObject({ success: true, selectedOption: 0, isCorrect: false });
   });
 
   it("allows a new sitting once the cooldown has passed", async () => {
@@ -362,7 +388,7 @@ describe("submitQuizAnswers", () => {
   });
 
   it("refuses a quiz without questions", async () => {
-    m.quizFindUnique.mockResolvedValue({ courseId: "course-1", questions: [] });
+    m.quizFindUnique.mockResolvedValue({ courseId: "course-1", course: { slug: "course-one", published: true }, questions: [] });
     expect(await submitQuizAnswers({ quizId: "quiz-1", courseId: "course-1", answers: [] })).toEqual({
       success: false,
       error: "Quiz incomplet",

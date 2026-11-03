@@ -3,11 +3,14 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { getLessonAccess } from "@/lib/learning/lesson-access";
-import { isFetchableCaptionsUrl } from "@/lib/learning/captions";
+import { SafeFetchError, safeFetchText } from "@/lib/net/safe-fetch";
+import { logger } from "@/lib/structured-logger";
 
 export const runtime = "nodejs";
 
 const MAX_BYTES = 2 * 1024 * 1024;
+/** What a captions file is served as; object storage often says octet-stream. */
+const CAPTIONS_CONTENT_TYPES = ["text/vtt", "text/plain", "application/octet-stream", "binary/octet-stream"] as const;
 
 /**
  * The WebVTT captions of a lesson's video, served from the site's own origin: a browser only shows a text track
@@ -23,17 +26,20 @@ export async function GET(request: Request, { params }: { params: Promise<{ less
   const access = await getLessonAccess(session?.user ? { id: session.user.id, role: session.user.role } : null, lessonId);
   if (!access?.canOpen || !access.captionsUrl) return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
 
+  // Every failure gets the same answer: which one it was would tell an attacker what the server can reach
   let source: string;
   try {
-    if (!isFetchableCaptionsUrl(access.captionsUrl)) throw new Error("address");
-    const upstream = await fetch(access.captionsUrl, { cache: "no-store", redirect: "error", signal: AbortSignal.timeout(10_000) });
-    if (!upstream.ok) throw new Error(`upstream ${upstream.status}`);
-    source = await upstream.text();
-  } catch {
+    source = await safeFetchText(access.captionsUrl, {
+      maxBytes: MAX_BYTES,
+      timeoutMs: 10_000,
+      contentTypes: CAPTIONS_CONTENT_TYPES,
+    });
+    if (!source.trimStart().startsWith("WEBVTT")) throw new SafeFetchError("BAD_CONTENT_TYPE", "not WebVTT");
+  } catch (error) {
+    logger.warn("captions.fetch_failed", {
+      metadata: { lessonId, reason: error instanceof SafeFetchError ? error.code : "ERROR" },
+    });
     return NextResponse.json({ error: "UNAVAILABLE" }, { status: 502 });
-  }
-  if (source.length > MAX_BYTES || !source.trimStart().startsWith("WEBVTT")) {
-    return NextResponse.json({ error: "NOT_WEBVTT" }, { status: 422 });
   }
 
   const download = new URL(request.url).searchParams.get("download") === "1";

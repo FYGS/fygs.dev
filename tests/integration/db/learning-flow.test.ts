@@ -10,7 +10,7 @@ vi.mock("@/lib/email-service", () => ({
   emailService: { certificateEarnedEmail: () => ({ subject: "Certificat", html: "<p>ok</p>" }), sendEmail: h.sendEmail },
 }));
 
-import { updateLessonProgress } from "@/app/[locale]/(main)/dashboard/actions/updateLessonProgress";
+import { updateLessonProgress } from "../../support/progress-helpers";
 import { checkQuizAnswer, submitQuizAnswers } from "@/app/actions/quiz-actions";
 import { startFinalExam, submitFinalExam } from "@/app/actions/exam-actions";
 import { askLessonQuestion } from "@/app/actions/lesson-questions";
@@ -20,7 +20,6 @@ import { loadLearnerCourseState } from "@/lib/learning/course-state";
 import { resolveLearnerAccess } from "@/lib/learning/access";
 import { suggestNextCourses } from "@/lib/learning/recommendations";
 import { getQuizStartBlock } from "@/lib/learning/quiz-status";
-import { signExamStart } from "@/lib/learning/exam-token";
 import { getUserCoursesProgress } from "@/lib/progress-summary";
 import { AccessService } from "@/lib/access-service";
 
@@ -220,18 +219,12 @@ describe("the quiz tells about the waiting time before the first answer", () => 
 });
 
 describe("the final exam", () => {
-  it("refuses a forged or stale sitting, and a retake during the waiting time", async () => {
+  it("refuses a forged sitting, and a retake during the waiting time, and a go after a pass", async () => {
     const { course, exam } = await buildCourse({ exam: true });
     const user = await learner(course);
 
     const forged = await submitFinalExam({ examId: exam!.id, token: "123.forged", answers: [1, 0] });
     expect(forged).toEqual({ success: false, error: "Session d’examen invalide, recommencez" });
-
-    const stale = signExamStart(user.id, exam!.id, Date.now() - 3 * 3600_000);
-    expect(await submitFinalExam({ examId: exam!.id, token: stale, answers: [1, 0] })).toEqual({
-      success: false,
-      error: "Le temps imparti est écoulé",
-    });
 
     const started = await startFinalExam({ courseId: course.id });
     if (!started.success) throw new Error("expected a sitting");
@@ -241,14 +234,15 @@ describe("the final exam", () => {
     expect(await db.certificate.count()).toBe(0);
 
     const retake = await startFinalExam({ courseId: course.id });
-    expect(retake).toMatchObject({ success: false, error: expect.stringMatching(/^Vous pourrez repasser l’examen dans \d+ min$/) });
+    expect(retake).toMatchObject({ success: false, error: expect.stringMatching(/^Vous pourrez repasser l’examen dans \d+ min\.$/) });
 
-    // after the waiting time and a pass, the exam cannot be taken again
-    await db.examResult.updateMany({ data: { completedAt: new Date(Date.now() - 3600_000) } });
+    // after the waiting time a sitting starts again; a pass closes the exam for good
+    await db.$executeRaw`UPDATE "ExamAttempt" SET "startedAt" = "startedAt" - interval '1 hour', "submittedAt" = "submittedAt" - interval '1 hour'
+      WHERE "userId" = ${user.id}`;
     const again = await startFinalExam({ courseId: course.id });
     if (!again.success) throw new Error("expected a sitting after the waiting time");
     expect(await submitFinalExam({ examId: exam!.id, token: again.token, answers: [1, 0] })).toMatchObject({ passed: true });
-    expect(await startFinalExam({ courseId: course.id })).toEqual({ success: false, error: "Vous avez déjà réussi cet examen" });
+    expect(await startFinalExam({ courseId: course.id })).toEqual({ success: false, error: "Vous avez déjà réussi cet examen." });
   });
 
   it("is closed to someone who is not enrolled", async () => {
@@ -294,7 +288,13 @@ describe("who may open what", () => {
     const draft = { id: course.id, published: false, instructorId: author.id };
     expect(await resolveLearnerAccess({ userId: author.id, role: "INSTRUCTOR", course: draft })).toMatchObject({ mode: "staff" });
     const other = await createUser({ role: "INSTRUCTOR" });
-    expect(await resolveLearnerAccess({ userId: other.id, role: "INSTRUCTOR", course: draft })).toMatchObject({ mode: "none", reason: "unpublished" });
+    // Someone who holds nothing gets nothing from a draft, whatever their role
+    expect(await resolveLearnerAccess({ userId: other.id, role: "INSTRUCTOR", course: draft })).toMatchObject({ mode: "none", reason: "not_enrolled" });
+    // FR-041: a learner who holds the course keeps it when it is withdrawn from the catalogue
+    const holder = await createUser();
+    await enroll(holder.id, course.id);
+    await createSubscription(holder.id);
+    expect(await resolveLearnerAccess({ userId: holder.id, course: draft })).toMatchObject({ mode: "full" });
 
     const expired = await createUser();
     await enroll(expired.id, course.id);

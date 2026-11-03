@@ -9,7 +9,6 @@ import { revalidatePath } from "next/cache";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { logger } from "@/lib/structured-logger";
 import { PASSING_SCORE } from "@/lib/learning/outline";
-import { isCourseStaff } from "@/lib/learning/access";
 import { completeCourseIfDone } from "@/lib/learning/completion";
 import { rewardQuizPassed } from "@/lib/learning/rewards";
 import {
@@ -18,7 +17,9 @@ import {
   formatRetryDelay,
   quizAttemptExpiry,
   quizDayStart,
+  sittingEndTimes,
 } from "@/lib/quiz-attempt-policy";
+import { advisoryLock } from "@/lib/learning/locks";
 
 /**
  * Quiz grading happens on the server. The browser never receives the correct
@@ -115,34 +116,44 @@ async function getOpenAttempts(userId: string, quizId: string, now: Date): Promi
 }
 
 /**
- * Starts a sitting if the cooldown and the daily cap allow it. The error is the message
- * shown to the learner when they do not.
+ * The sitting a learner answers in: the one already open, else a new one if the cooldown and the daily cap allow it.
+ * Runs under a lock per learner and quiz, so parallel first answers share one sitting instead of each opening their own
+ * (which would multiply the sittings the limits are meant to count). Sittings count from the time they started, whether
+ * or not they were submitted. The error is the message shown to the learner when no sitting can start.
  */
-async function startAttempt(
+async function ensureAttempt(
   userId: string,
   quizId: string,
   now: Date,
 ): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
-  const finished = await db.quizAttempt.findMany({
-    where: { userId, quizId, submittedAt: { gt: quizDayStart(now) } },
-    select: { submittedAt: true },
+  return db.$transaction(async (tx) => {
+    await advisoryLock(tx, `quiz:${userId}:${quizId}`);
+
+    const open = await tx.quizAttempt.findFirst({
+      where: { userId, quizId, submittedAt: null, startedAt: { gt: quizAttemptExpiry(now) } },
+      orderBy: { startedAt: "desc" },
+      select: { id: true },
+    });
+    if (open) return { ok: true as const, id: open.id };
+
+    const sittings = await tx.quizAttempt.findMany({
+      where: { userId, quizId, startedAt: { gt: quizDayStart(now) } },
+      select: { startedAt: true, submittedAt: true },
+    });
+    const decision = canStartQuizAttempt(sittingEndTimes(sittings, now), now);
+    if (!decision.allowed) {
+      const when = formatRetryDelay(decision.retryAt, now);
+      return {
+        ok: false as const,
+        error:
+          decision.reason === "COOLDOWN"
+            ? `Vous pourrez refaire ce quiz ${when}`
+            : `Limite de ${QUIZ_MAX_ATTEMPTS_PER_DAY} tentatives par jour atteinte, réessayez ${when}`,
+      };
+    }
+    const created = await tx.quizAttempt.create({ data: { userId, quizId, startedAt: now }, select: { id: true } });
+    return { ok: true as const, id: created.id };
   });
-  const decision = canStartQuizAttempt(
-    finished.flatMap((attempt) => (attempt.submittedAt ? [attempt.submittedAt] : [])),
-    now,
-  );
-  if (!decision.allowed) {
-    const when = formatRetryDelay(decision.retryAt, now);
-    return {
-      ok: false,
-      error:
-        decision.reason === "COOLDOWN"
-          ? `Vous pourrez refaire ce quiz ${when}`
-          : `Limite de ${QUIZ_MAX_ATTEMPTS_PER_DAY} tentatives par jour atteinte, réessayez ${when}`,
-    };
-  }
-  const created = await db.quizAttempt.create({ data: { userId, quizId }, select: { id: true } });
-  return { ok: true, id: created.id };
 }
 
 /** First answer recorded for each question across the open sittings: it cannot be changed. */
@@ -198,8 +209,9 @@ export async function checkQuizAnswer(
       userId,
       question.quiz.courseId,
     );
-    const staffPreview = !access.canAccessCourse && (await isCourseStaff(userId, question.quiz.courseId));
-    if (!access.canAccessCourse && !staffPreview) return { success: false, error: "Accès refusé" };
+    if (!access.canAccessCourse) return { success: false, error: "Accès refusé" };
+    // The author (or an admin) trying the quiz holds no learner's right: feedback is shown, nothing is recorded
+    const staffPreview = !access.recordsProgress;
 
     if (selectedOption >= question.options.length) {
       return { success: false, error: "Réponse invalide" };
@@ -222,19 +234,19 @@ export async function checkQuizAnswer(
     let effectiveOption = recordedAnswers(open).get(questionId);
 
     if (effectiveOption === undefined) {
-      let attemptId = open.at(-1)?.id;
-      if (!attemptId) {
-        const started = await startAttempt(userId, quizId, now);
-        if (!started.ok) return { success: false, error: started.error };
-        attemptId = started.id;
-      }
-      // a parallel request may have recorded this question first: its answer wins
-      await db.quizAttemptAnswer.upsert({
-        where: { attemptId_questionId: { attemptId, questionId } },
-        create: { attemptId, questionId, selectedOption },
-        update: {},
+      const started = await ensureAttempt(userId, quizId, now);
+      if (!started.ok) return { success: false, error: started.error };
+      // Insert-if-absent, then read back: when a parallel request recorded this question first, its answer is the one
+      // that counts and the one this response reports (never the option this request happened to send)
+      await db.quizAttemptAnswer.createMany({
+        data: [{ attemptId: started.id, questionId, selectedOption }],
+        skipDuplicates: true,
       });
-      effectiveOption = selectedOption;
+      const recorded = await db.quizAttemptAnswer.findUnique({
+        where: { attemptId_questionId: { attemptId: started.id, questionId } },
+        select: { selectedOption: true },
+      });
+      effectiveOption = recorded?.selectedOption ?? selectedOption;
     }
 
     return {
@@ -290,8 +302,8 @@ export async function submitQuizAnswers(
     }
 
     const access = await AccessService.checkCourseAccess(userId, courseId);
-    const staffPreview = !access.canAccessCourse && (await isCourseStaff(userId, courseId));
-    if (!access.canAccessCourse && !staffPreview) return { success: false, error: "Accès refusé" };
+    if (!access.canAccessCourse) return { success: false, error: "Accès refusé" };
+    const staffPreview = !access.recordsProgress;
 
     const submitted = new Map<string, number>();
     for (const answer of answers) {
@@ -336,7 +348,7 @@ export async function submitQuizAnswers(
     const attemptIds = open.map((attempt) => attempt.id);
     if (attemptIds.length === 0) {
       // answered without asking for feedback (direct call): still one sitting
-      const started = await startAttempt(userId, quizId, now);
+      const started = await ensureAttempt(userId, quizId, now);
       if (!started.ok) return { success: false, error: started.error };
       attemptIds.push(started.id);
     }

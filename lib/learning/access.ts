@@ -33,7 +33,7 @@ export interface LearnerAccessInput {
 export interface LearnerAccess {
   mode: LearnerMode;
   /** Why `none`: shown on the course page. */
-  reason?: "not_enrolled" | "premium_locked" | "unpublished";
+  reason?: "not_enrolled" | "premium_locked";
   signedIn: boolean;
   isEnrolled: boolean;
   /** An ACTIVE or TRIALING subscription: premium courses are open to it once enrolled. */
@@ -69,7 +69,7 @@ export async function resolveLearnerAccess(input: LearnerAccessInput): Promise<L
   };
 
   if (entitlement?.entitled && entitlement.source === "staff") return { mode: "staff", ...base };
-  if (!course.published) return { mode: "none", reason: "unpublished", ...base };
+  // FR-041: a withdrawn course stays open to the people who hold it (its free sample closes: `preview` is empty then)
   if (entitlement?.entitled) return { mode: "full", ...base };
   if (preview.length > 0) return { mode: "preview", ...base };
   return { mode: "none", reason: base.isEnrolled ? "premium_locked" : "not_enrolled", ...base };

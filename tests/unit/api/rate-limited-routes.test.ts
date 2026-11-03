@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 
 // The real limiter runs here. REDIS_URL is not set, so it uses the in-process
 // fallback, which is exactly what protects the app when Redis is down.
-const m = vi.hoisted(() => ({ sendContactFormEmails: vi.fn() }));
+const m = vi.hoisted(() => ({ sendContactFormEmails: vi.fn(), sendEmail: vi.fn() }));
 
 // Redis is unreachable: the limiter runs on its in-process fallback, whatever the environment
 vi.mock("@/lib/redis", () => ({
@@ -14,7 +14,11 @@ vi.mock("@/lib/redis", () => ({
 }));
 
 vi.mock("@/lib/email-service", () => ({
-  emailService: { sendContactFormEmails: m.sendContactFormEmails },
+  emailService: {
+    sendContactFormEmails: m.sendContactFormEmails,
+    contactFormAdminEmail: () => ({ subject: "s", html: "h" }),
+    sendEmail: m.sendEmail,
+  },
 }));
 vi.mock("@/app/actions/ai-code-actions", () => ({
   analyzeCode: vi.fn().mockResolvedValue({ hint: "ok" }),
@@ -46,6 +50,7 @@ beforeEach(() => {
   process.env.EMAIL_SERVER_USER = "u";
   process.env.EMAIL_SERVER_PASSWORD = "p";
   m.sendContactFormEmails.mockResolvedValue({ adminSent: true, userSent: true });
+  m.sendEmail.mockResolvedValue(true);
 });
 
 describe("rate-limited routes", () => {
@@ -60,8 +65,38 @@ describe("rate-limited routes", () => {
     expect(blocked.status).toBe(429);
     expect(Number(blocked.headers.get("Retry-After"))).toBeGreaterThan(0);
     expect(await blocked.json()).toMatchObject({ error: "Too many requests" });
-    // the blocked requests never reached the mail service
-    expect(m.sendContactFormEmails).toHaveBeenCalledTimes(5);
+    // the blocked requests never reached the mail service: 3 confirmations to that mailbox, then the owner only
+    expect(m.sendContactFormEmails).toHaveBeenCalledTimes(3);
+    expect(m.sendEmail).toHaveBeenCalledTimes(2);
+  });
+
+  it("contact: a mailbox gets at most three confirmations a day, the owner still gets every message", async () => {
+    for (let n = 0; n < 4; n++) {
+      const response = await contactPOST(post("/api/contact", contact, `198.51.100.${n + 1}`));
+      expect(response.status).toBe(200);
+    }
+    expect(m.sendContactFormEmails).toHaveBeenCalledTimes(3);
+    expect(m.sendEmail).toHaveBeenCalledTimes(1); // the 4th message: no confirmation, owner notified
+  });
+
+  it("contact: no confirmation is sent to a disposable address", async () => {
+    const response = await contactPOST(post("/api/contact", { ...contact, email: "someone@mailinator.com" }, "203.0.113.50"));
+    expect(response.status).toBe(200);
+    expect(m.sendContactFormEmails).not.toHaveBeenCalled();
+    expect(m.sendEmail).toHaveBeenCalledTimes(1);
+  });
+
+  it("contact: a filled honeypot is told it worked and nothing is sent", async () => {
+    const response = await contactPOST(post("/api/contact", { ...contact, fx_trap: "https://spam.example" }, "203.0.113.51"));
+    expect(response.status).toBe(200);
+    expect(m.sendContactFormEmails).not.toHaveBeenCalled();
+    expect(m.sendEmail).not.toHaveBeenCalled();
+  });
+
+  it("contact: a body over 16 KB is refused before being parsed", async () => {
+    const response = await contactPOST(post("/api/contact", { ...contact, message: "x".repeat(20_000) }, "203.0.113.52"));
+    expect(response.status).toBe(413);
+    expect(m.sendContactFormEmails).not.toHaveBeenCalled();
   });
 
   it("contact: another client has its own budget", async () => {

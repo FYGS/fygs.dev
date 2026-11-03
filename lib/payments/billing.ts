@@ -1,8 +1,24 @@
 import type Stripe from "stripe";
-import { stripe } from "../stripe";
+import { stripe, stripeKeyMode } from "../stripe";
 import { db } from "../db";
 import { WebhookSignatureError } from "./errors";
 import type { CheckoutSessionData, SubscriptionData } from "./types";
+
+/**
+ * Promotion codes in Checkout are off unless STRIPE_ALLOW_PROMOTION_CODES=true. A code that makes the total 0 grants
+ * the access for free by design (the payment is recorded with the session as reference); enable them knowingly, and
+ * restrict each coupon to the product and a maximum number of redemptions in the Stripe dashboard.
+ */
+export function promotionCodesAllowed(): boolean {
+  return process.env.STRIPE_ALLOW_PROMOTION_CODES === "true";
+}
+
+/** Webhook secrets in the order they are tried: the current one, then the previous one during a rotation. */
+export function webhookSecrets(): string[] {
+  return [process.env.STRIPE_WEBHOOK_SECRET, process.env.STRIPE_WEBHOOK_SECRET_PREVIOUS].filter(
+    (secret): secret is string => !!secret,
+  );
+}
 
 /** Stripe checkout sessions and webhook signature checks. */
 export class StripeBilling {
@@ -28,37 +44,40 @@ export class StripeBilling {
         ),
       );
 
-      const session = await stripe.checkout.sessions.create({
-        mode: "payment",
-        line_items: [
-          {
-            price_data: {
-              currency: "eur",
-              product_data: {
-                name: `Formation - ${course.title}`,
-                description: "Accès à vie à la formation",
+      const session = await stripe.checkout.sessions.create(
+        {
+          mode: "payment",
+          line_items: [
+            {
+              price_data: {
+                currency: "eur",
+                product_data: {
+                  name: `Formation - ${course.title}`,
+                  description: "Accès à vie à la formation",
+                },
+                unit_amount: amountCents,
               },
-              unit_amount: amountCents,
+              quantity: 1,
             },
-            quantity: 1,
+          ],
+          customer_email: data.customerEmail,
+          success_url: data.successUrl,
+          cancel_url: data.cancelUrl,
+          metadata: {
+            userId: data.userId,
+            productId: data.productId,
+            type: "course_purchase",
+            courseSlug: course.slug,
           },
-        ],
-        customer_email: data.customerEmail,
-        success_url: data.successUrl,
-        cancel_url: data.cancelUrl,
-        metadata: {
-          userId: data.userId,
-          productId: data.productId,
-          type: "course_purchase",
-          courseSlug: course.slug,
+          allow_promotion_codes: promotionCodesAllowed(),
+          // A one-time payment gets a real invoice (PDF from the receipt link on the billing page)
+          invoice_creation: {
+            enabled: true,
+            invoice_data: { description: `Formation « ${course.title} »` },
+          },
         },
-        allow_promotion_codes: true,
-        // A one-time payment gets a real invoice (PDF from the receipt link on the billing page)
-        invoice_creation: {
-          enabled: true,
-          invoice_data: { description: `Formation « ${course.title} »` },
-        },
-      });
+        data.idempotencyKey ? { idempotencyKey: data.idempotencyKey } : undefined,
+      );
 
       if (!session.url) {
         throw new Error("Failed to create checkout session");
@@ -86,32 +105,37 @@ export class StripeBilling {
       if (data.priceId === monthlyEnv) billingCycle = "monthly";
       if (data.priceId === yearlyEnv) billingCycle = "yearly";
 
-      const session = await stripe.checkout.sessions.create({
-        mode: "subscription",
-        line_items: [
-          {
-            price: data.priceId,
-            quantity: 1,
-          },
-        ],
-        customer_email: data.customerEmail,
-        success_url: data.successUrl,
-        cancel_url: data.cancelUrl,
-        metadata: {
-          userId: data.userId,
-          type: "subscription",
-          priceId: data.priceId,
-          billingCycle: billingCycle || "unknown",
-        },
-        subscription_data: {
+      const session = await stripe.checkout.sessions.create(
+        {
+          mode: "subscription",
+          line_items: [
+            {
+              price: data.priceId,
+              quantity: 1,
+            },
+          ],
+          // One Stripe customer per person (a new one for every checkout let the same buyer collect a new trial or
+          // coupon each time); the e-mail only seeds a customer that does not exist yet
+          ...(data.customerId ? { customer: data.customerId } : { customer_email: data.customerEmail }),
+          success_url: data.successUrl,
+          cancel_url: data.cancelUrl,
           metadata: {
             userId: data.userId,
+            type: "subscription",
             priceId: data.priceId,
             billingCycle: billingCycle || "unknown",
           },
+          subscription_data: {
+            metadata: {
+              userId: data.userId,
+              priceId: data.priceId,
+              billingCycle: billingCycle || "unknown",
+            },
+          },
+          allow_promotion_codes: promotionCodesAllowed(),
         },
-        allow_promotion_codes: true,
-      });
+        data.idempotencyKey ? { idempotencyKey: data.idempotencyKey } : undefined,
+      );
 
       if (!session.url) {
         throw new Error("Failed to create subscription session");
@@ -127,18 +151,36 @@ export class StripeBilling {
     }
   }
 
-  // Verify webhook signature
+  /**
+   * Verifies the signature on the RAW body, against the current secret and, during a rotation, the previous one.
+   * An event from the other mode than the configured key (a test event reaching a live deployment, or the reverse)
+   * is refused as if unsigned: it must never grant or revoke anything.
+   */
   verifyWebhookSignature(payload: string, signature: string): Stripe.Event {
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-    if (!webhookSecret) {
+    const secrets = webhookSecrets();
+    if (secrets.length === 0) {
       throw new Error("STRIPE_WEBHOOK_SECRET is required");
     }
 
-    try {
-      return stripe.webhooks.constructEvent(payload, signature, webhookSecret);
-    } catch (error) {
-      console.error("Webhook signature verification failed:", error);
+    let event: Stripe.Event | undefined;
+    for (const secret of secrets) {
+      try {
+        event = stripe.webhooks.constructEvent(payload, signature, secret);
+        break;
+      } catch {
+        // try the next secret
+      }
+    }
+    if (!event) {
+      console.error("Webhook signature verification failed");
       throw new WebhookSignatureError();
     }
+
+    const mode = stripeKeyMode();
+    if (mode !== "unknown" && event.livemode !== (mode === "live")) {
+      console.error(`Webhook event ${event.id} is a ${event.livemode ? "live" : "test"} event but the key is a ${mode} key`);
+      throw new WebhookSignatureError("Webhook event of another mode");
+    }
+    return event;
   }
 }

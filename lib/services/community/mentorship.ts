@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import type {
   CommunityUser,
 } from "@/types/community";
+import { PUBLIC_USER_WITH_BADGES_SELECT, withSafeLinks } from "./public-user";
 
 /** Mentorship queries. */
 export class MentorshipQueries {
@@ -17,24 +18,11 @@ export class MentorshipQueries {
             gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Active in last 30 days
           },
         },
-        include: {
-          userBadges: {
-            include: {
-              badge: true,
-            },
-          },
-          _count: {
-            select: {
-              discussions: true,
-              discussionReplies: true,
-              discussionVotes: true,
-            },
-          },
-        },
+        select: PUBLIC_USER_WITH_BADGES_SELECT,
         orderBy: [{ communityLevel: "desc" }, { communityPoints: "desc" }],
       });
 
-      return mentors as CommunityUser[];
+      return mentors.map(withSafeLinks) satisfies CommunityUser[];
     } catch (error) {
       console.error("Error fetching available mentors:", error);
       return [];

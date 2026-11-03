@@ -7,13 +7,25 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { startFinalExam, submitFinalExam, type StartExamResult, type SubmitExamResult } from "@/app/actions/exam-actions";
-import { EXAM_RETAKE_COOLDOWN_MINUTES } from "@/lib/learning/exam";
+import { EXAM_MAX_SITTINGS_PER_DAY, EXAM_RETAKE_COOLDOWN_MINUTES } from "@/lib/learning/exam";
 import { cn } from "@/lib/utils";
 import { ItemNavigation } from "./item-navigation";
 import { useLearning } from "./learning-context";
 
 type Started = Extract<StartExamResult, { success: true }>;
 type Graded = Extract<SubmitExamResult, { success: true }>;
+type RevealedItem = Extract<Graded["review"], { revealed: true }>["items"][number];
+
+/** What the learner is told to do after a failed sitting. */
+function nextSittingText(next: Graded["next"]): string {
+  if (!next) return "";
+  if (next.sittingsLeftToday <= 0) return "Vous avez utilisé tous vos passages du jour : revenez demain.";
+  if (next.retryAt) {
+    const minutes = Math.max(1, Math.ceil((new Date(next.retryAt).getTime() - Date.now()) / 60_000));
+    return `Vous pourrez repasser l’examen dans ${minutes} min (${next.sittingsLeftToday} passage${next.sittingsLeftToday > 1 ? "s" : ""} restant${next.sittingsLeftToday > 1 ? "s" : ""} aujourd’hui).`;
+  }
+  return "Vous pouvez repasser l’examen.";
+}
 
 interface ExamRunnerProps {
   courseId: string;
@@ -103,6 +115,7 @@ export function ExamRunner({ courseId, exam, last, blockedMessage }: ExamRunnerP
         toast.error(response.error);
         return;
       }
+      if (response.resumed) toast.info("Examen repris : le chronomètre n’a pas été relancé.");
       submitted.current = false;
       setAnswers(response.exam.questions.map(() => null));
       setNow(Date.now());
@@ -130,7 +143,8 @@ export function ExamRunner({ courseId, exam, last, blockedMessage }: ExamRunnerP
           </p>
           {!result.passed && mode === "full" && (
             <p className="text-sm text-muted-foreground">
-              Relisez la correction ci-dessous. Vous pourrez repasser l’examen dans {EXAM_RETAKE_COOLDOWN_MINUTES} min.
+              {nextSittingText(result.next)} Les bonnes réponses s’affichent quand vous réussissez l’examen : revoyez les leçons des
+              questions manquées avant de repasser.
             </p>
           )}
           {mode === "full" && result.course.justIssued && (
@@ -146,12 +160,13 @@ export function ExamRunner({ courseId, exam, last, blockedMessage }: ExamRunnerP
 
         <section aria-labelledby="exam-review" className="space-y-3">
           <h3 id="exam-review" className="text-lg font-semibold">
-            Correction
+            {result.review.revealed ? "Correction" : "Vos réponses"}
           </h3>
           <ol className="space-y-3">
-            {result.review.map((r, i) => {
+            {result.review.items.map((r, i) => {
               const q = paper[r.index];
               const chosen = r.selected === null ? null : q?.options[r.selected];
+              const revealed = result.review.revealed ? (r as RevealedItem) : null;
               return (
                 <li key={r.index} className={cn("space-y-2 rounded-lg border p-4 text-sm", r.isCorrect ? "border-emerald-600/40" : "border-red-600/40")}>
                   <p className="flex items-start gap-2 font-medium">
@@ -168,8 +183,8 @@ export function ExamRunner({ courseId, exam, last, blockedMessage }: ExamRunnerP
                   <p className={r.isCorrect ? "text-emerald-800 dark:text-emerald-300" : "text-red-800 dark:text-red-300"}>
                     {chosen === null || chosen === undefined ? "Pas de réponse." : `Votre réponse : ${chosen}`}
                   </p>
-                  {!r.isCorrect && q && <p>Bonne réponse : {q.options[r.correctOption]}</p>}
-                  {r.explanation && <p className="text-muted-foreground">{r.explanation}</p>}
+                  {revealed && !r.isCorrect && q && <p>Bonne réponse : {q.options[revealed.correctOption]}</p>}
+                  {revealed?.explanation && <p className="text-muted-foreground">{revealed.explanation}</p>}
                 </li>
               );
             })}
@@ -266,7 +281,11 @@ export function ExamRunner({ courseId, exam, last, blockedMessage }: ExamRunnerP
         </li>
         <li>Seuil de réussite : {exam.passingScore} %.</li>
         <li>{exam.timeLimit ? `Durée : ${exam.timeLimit} minutes. L’examen est envoyé automatiquement à la fin du temps.` : "Pas de limite de temps."}</li>
-        <li>La correction s’affiche après l’envoi. En cas d’échec, vous pourrez repasser l’examen après {EXAM_RETAKE_COOLDOWN_MINUTES} minutes.</li>
+        <li>
+          Après l’envoi, vous voyez quelles questions sont justes ; les bonnes réponses et les explications s’affichent quand vous
+          réussissez. En cas d’échec, vous pourrez repasser l’examen après {EXAM_RETAKE_COOLDOWN_MINUTES} minutes, {EXAM_MAX_SITTINGS_PER_DAY}{" "}
+          passages au plus par jour.
+        </li>
       </ul>
       {last && (
         <div className="flex items-center gap-2 text-sm">

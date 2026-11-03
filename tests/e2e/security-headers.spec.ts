@@ -15,9 +15,10 @@ test.describe("security headers", () => {
       expect(h["strict-transport-security"], path).toContain("max-age=");
       expect(h["content-security-policy"], path).toMatch(/default-src/);
       expect(h["content-security-policy"], path).toMatch(/frame-ancestors/);
-      // cross-origin isolation would break third-party embeds: playground only
+      // cross-origin isolation would break third-party embeds (Stripe, video): the playground only. Elsewhere the
+      // window may still open popups (OAuth, payment) but is not reachable by the windows it opens.
       expect(h["cross-origin-embedder-policy"], path).toBeUndefined();
-      expect(h["cross-origin-opener-policy"], path).toBeUndefined();
+      expect(h["cross-origin-opener-policy"], path).toBe("same-origin-allow-popups");
     }
   });
 

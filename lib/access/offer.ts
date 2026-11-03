@@ -77,6 +77,10 @@ export const LAPSED_REASON_TEXT: Record<LapsedReason, { title: string; body: str
     title: "Votre achat a été remboursé",
     body: "L’accès s’est arrêté avec le remboursement. Votre progression est conservée si vous rachetez la formation ou vous abonnez.",
   },
+  disputed: {
+    title: "Votre paiement est contesté auprès de votre banque",
+    body: "L’accès est suspendu jusqu’à la décision de la banque ; il revient si le paiement est confirmé. Une question ? Écrivez-nous depuis la page Contact.",
+  },
   premium_required: {
     title: "Cette formation est désormais Premium",
     body: "Elle est maintenant réservée aux abonnés et aux acheteurs. Votre progression est conservée.",

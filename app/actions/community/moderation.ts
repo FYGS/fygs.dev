@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
+import { writeAudit } from "@/lib/audit";
 import { USER_ADMIN_MESSAGES, changeUserRole, setUserBan } from "@/lib/services/user-admin";
 
 /**
@@ -34,6 +35,13 @@ export async function moderateContent(formData: FormData) {
           isLocked: action === "moderate", // Lock moderated discussions
         },
       });
+      await writeAudit({
+        actorId: session.user.id,
+        action: "content.moderated",
+        targetType: "discussion",
+        targetId: discussionId,
+        metadata: { operation: action === "moderate" ? "closed_and_locked" : "reopened" },
+      });
       revalidatePath("/community/discussions");
       revalidatePath("/admin/community/moderation");
     } else if (replyId) {
@@ -41,6 +49,13 @@ export async function moderateContent(formData: FormData) {
       if (action === "delete") {
         await db.discussionReply.delete({
           where: { id: replyId },
+        });
+        await writeAudit({
+          actorId: session.user.id,
+          action: "content.moderated",
+          targetType: "discussion_reply",
+          targetId: replyId,
+          metadata: { operation: "deleted" },
         });
       }
       revalidatePath("/community/discussions");

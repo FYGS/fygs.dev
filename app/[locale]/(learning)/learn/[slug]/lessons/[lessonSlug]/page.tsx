@@ -11,7 +11,7 @@ import { LessonSession } from "@/components/learning/lesson-session";
 import { LessonTabs } from "@/components/learning/lesson-tabs";
 import { VideoPlayer } from "@/components/learning/video-player";
 import { formatSeconds } from "@/lib/format-duration";
-import { lessonCaptionsPath } from "@/lib/learning/captions";
+import { lessonCaptionsPath, lessonMediaPath } from "@/lib/learning/captions";
 import { getLearningContext, learnLoginHref, leaveStep } from "@/lib/learning/page-context";
 import { parseVideoSource } from "@/lib/learning/video-source";
 
@@ -40,7 +40,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
   const here = `/learn/${ctx.course.slug}/lessons/${lessonSlug}`;
 
   const lesson = await db.lesson.findFirst({
-    where: { slug: lessonSlug, courseId: ctx.course.id, ...(staff ? {} : { published: true }) },
+    where: { slug: lessonSlug, courseId: ctx.course.id, ...(staff ? {} : { published: true, course: { published: true } }) },
     select: {
       id: true,
       slug: true,
@@ -60,7 +60,8 @@ export default async function LessonPage({ params }: LessonPageProps) {
   const { outline } = ctx.state;
   const item = outline.items.find((i) => i.kind === "lesson" && i.id === lesson.id);
   // A lesson that is not a free sample: a visitor signs in first, a signed-in learner sees what opens the course
-  if (item && !ctx.canOpen(item)) {
+  // Fails closed: a lesson that is not in the learner's outline is not shown at all
+  if (!item || !ctx.canOpen(item)) {
     leaveStep(ctx, here);
   }
 
@@ -103,7 +104,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
   const captionsSrc = lesson.captionsUrl ? lessonCaptionsPath(lesson.id) : null;
 
   return (
-    <LessonSession lessonId={lesson.id} initialCompleted={completed} courseSlug={ctx.course.slug}>
+    <LessonSession lessonId={lesson.id} initialCompleted={completed} courseSlug={ctx.course.slug} trackPresence={video?.kind !== "file"}>
       <article className="space-y-6" aria-labelledby="lesson-title">
         {staff && (
           <p role="note" className="rounded-md border border-dashed bg-muted/40 p-3 text-sm">
@@ -124,7 +125,8 @@ export default async function LessonPage({ params }: LessonPageProps) {
           <VideoPlayer
             key={lesson.id}
             title={lesson.title}
-            videoUrl={video.src}
+            // The stored address never reaches the browser: the route checks the right to open the lesson, then signs
+            videoUrl={lessonMediaPath(lesson.id)}
             durationHint={lesson.duration}
             resumeAt={completed ? 0 : (progress?.lastPosition ?? 0)}
             captionsSrc={captionsSrc}

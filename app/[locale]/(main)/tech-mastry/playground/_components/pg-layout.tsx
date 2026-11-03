@@ -19,6 +19,7 @@ import { PgCommandPalette } from "./pg-command-palette";
 import { PgConsole } from "./pg-console";
 import { PgFileTree } from "./pg-file-tree";
 import { PgPreview } from "./pg-preview";
+import { PgSharedNotice } from "./pg-shared-notice";
 import { PgSettingsDialog } from "./pg-settings-dialog";
 import { PgStatusBar } from "./pg-status-bar";
 import { PgTabBar } from "./pg-tab-bar";
@@ -198,6 +199,8 @@ export function PgLayout() {
           <h1 className="sr-only">Playground</h1>
           {/* Top Toolbar */}
           <PgToolbar />
+          {/* A project opened from a link: read it before running it */}
+          <PgSharedNotice />
 
           {/* Main Area */}
           <div className="flex min-h-0 flex-1 overflow-hidden">

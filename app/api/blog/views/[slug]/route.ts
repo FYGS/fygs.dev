@@ -1,6 +1,7 @@
 import { incrementViewCount } from "@/lib/reading-stats";
 import { NextRequest, NextResponse } from "next/server";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { isValidBlogSlug } from "@/lib/blog-slug";
 
 export async function POST(
   _request: NextRequest,
@@ -13,6 +14,10 @@ export async function POST(
   if (limited) return limited;
 
   const { slug } = await params;
+  // The slug becomes a Redis key: a plain blog slug only, or anyone could create keys at will
+  if (!isValidBlogSlug(slug)) {
+    return NextResponse.json({ success: false, error: "Invalid slug" }, { status: 400 });
+  }
 
   try {
     // Always increment the view count on every request

@@ -1,11 +1,13 @@
 import { ImageResponse } from "next/og";
 import type { NextRequest } from "next/server";
+import { OG_CACHE_HEADERS, ogNumber, ogRateLimit, ogText } from "@/lib/og-guard";
 
 /** Share image of a learning path without a cover: its title and number of courses. */
 export async function GET(request: NextRequest) {
-  const { searchParams } = request.nextUrl;
-  const title = (searchParams.get("title") ?? "Parcours d'apprentissage").slice(0, 80);
-  const courses = Math.min(Math.max(parseInt(searchParams.get("courses") ?? "", 10) || 0, 0), 99);
+  const limited = await ogRateLimit(request);
+  if (limited) return limited;
+  const title = ogText(request, "title", "Parcours d'apprentissage", 80);
+  const courses = ogNumber(request, "courses", 0, 99);
 
   return new ImageResponse(
     (
@@ -31,6 +33,6 @@ export async function GET(request: NextRequest) {
         )}
       </div>
     ),
-    { width: 1200, height: 630 },
+    { width: 1200, height: 630, headers: OG_CACHE_HEADERS },
   );
 }

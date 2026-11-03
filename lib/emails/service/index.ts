@@ -1,6 +1,7 @@
 import { authEmailTemplates } from "./auth-templates";
 import { CommunityEmailSenders } from "./community-senders";
 import { contactEmailTemplates } from "./contact-templates";
+import { SecurityEmailTemplates } from "../templates/security";
 import type { ContactFormData, EmailTemplate } from "./types";
 
 export type {
@@ -38,6 +39,19 @@ class EmailService extends CommunityEmailSenders {
 
   welcomeEmail(name: string): EmailTemplate {
     return authEmailTemplates.welcomeEmail(name);
+  }
+
+  // Account security (lib/emails/templates/security.ts)
+  emailChangeConfirmation(name: string, newEmail: string, confirmUrl: string): EmailTemplate {
+    return SecurityEmailTemplates.emailChangeConfirmation(name, newEmail, confirmUrl);
+  }
+
+  twoFactorChanged(name: string, enabled: boolean): EmailTemplate {
+    return SecurityEmailTemplates.twoFactorChanged(name, enabled);
+  }
+
+  accountDeleted(name: string): EmailTemplate {
+    return SecurityEmailTemplates.accountDeleted(name);
   }
 
   enrollmentConfirmationEmail(

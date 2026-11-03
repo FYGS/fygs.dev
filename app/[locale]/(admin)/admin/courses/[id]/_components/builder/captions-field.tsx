@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { isHttpUrl, UploadError, uploadCaptionsFile } from "@/components/admin/direct-upload";
+import { isHttpsUrl, UploadError, uploadCaptionsFile } from "@/components/admin/direct-upload";
 import { CAPTIONS_ACCEPT } from "@/lib/resource-types";
 import { TRANSCRIPT_MAX_LENGTH } from "@/lib/curriculum/limits";
 
@@ -29,7 +29,7 @@ export function CaptionsField({ captionsUrl, transcript, hasVideo, onCaptionsCha
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [address, setAddress] = useState(captionsUrl);
-  const invalid = address.trim() !== "" && !isHttpUrl(address);
+  const invalid = address.trim() !== "" && !isHttpsUrl(address);
 
   async function upload(file: File) {
     setError(null);
@@ -74,7 +74,7 @@ export function CaptionsField({ captionsUrl, transcript, hasVideo, onCaptionsCha
             onChange={(e) => {
               const value = e.target.value;
               setAddress(value);
-              if (!value.trim() || isHttpUrl(value)) onCaptionsChange(value.trim());
+              if (!value.trim() || isHttpsUrl(value)) onCaptionsChange(value.trim());
             }}
           />
           <Button type="button" variant="outline" size="sm" onClick={() => fileInput.current?.click()} disabled={busy}>
@@ -97,7 +97,7 @@ export function CaptionsField({ captionsUrl, transcript, hasVideo, onCaptionsCha
           )}
         </div>
         <p className={invalid ? "text-xs text-destructive" : "text-xs text-muted-foreground"}>
-          {invalid ? "L'adresse doit commencer par http:// ou https://." : "Le format lu par les navigateurs pour les sous-titres. 2 Mo au plus."}
+          {invalid ? "L'adresse doit commencer par https:// (nom de domaine public, port 443)." : "Le format lu par les navigateurs pour les sous-titres. 2 Mo au plus."}
         </p>
         <input
           ref={fileInput}

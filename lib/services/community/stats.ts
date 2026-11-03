@@ -5,6 +5,7 @@ import type {
   CommunityUser,
   CommunityStats,
 } from "@/types/community";
+import { PUBLIC_USER_WITH_BADGES_SELECT } from "./public-user";
 
 /** Community-wide statistics and their helper queries. */
 export class StatsQueries {
@@ -55,21 +56,10 @@ export class StatsQueries {
         communityPoints: "desc",
       },
       take: limit,
-      include: {
-        userBadges: {
-          include: { badge: true },
-        },
-        _count: {
-          select: {
-            discussions: true,
-            discussionReplies: true,
-            discussionVotes: true,
-          },
-        },
-      },
+      select: PUBLIC_USER_WITH_BADGES_SELECT,
     });
 
-    return users as CommunityUser[];
+    return users satisfies CommunityUser[];
   }
 
   private static async getTrendingTopics(

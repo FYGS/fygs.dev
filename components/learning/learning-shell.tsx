@@ -34,19 +34,18 @@ function MobileBar() {
   return (
     <nav
       aria-label="Étape précédente ou suivante"
-      className="safe-area-pb fixed inset-x-0 bottom-0 z-30 flex items-center gap-2 border-t bg-background px-3 py-2 md:hidden"
+      className="learning-mobile-bar safe-area-pb fixed inset-x-0 bottom-0 z-30 flex items-center gap-2 border-t bg-background px-3 pt-2 md:hidden"
     >
-      <Button variant="ghost" size="icon" asChild={!!previous} disabled={!previous} className="h-10 w-10 shrink-0">
-        {previous ? (
+      {previous ? (
+        <Button variant="ghost" size="icon" asChild className="h-10 w-10 shrink-0">
           <Link href={href(previous)} aria-label={`Précédent : ${previous.title}`}>
             <ChevronLeft className="h-5 w-5" aria-hidden />
           </Link>
-        ) : (
-          <span aria-hidden>
-            <ChevronLeft className="h-5 w-5 opacity-40" />
-          </span>
-        )}
-      </Button>
+        </Button>
+      ) : (
+        // Nothing before: keep the space so the bar does not shift, but no control a screen reader would meet unnamed
+        <span aria-hidden className="h-10 w-10 shrink-0" />
+      )}
       <div className="flex min-w-0 flex-1 items-center gap-2">
         {mode !== "preview" ? (
           <>
@@ -57,17 +56,15 @@ function MobileBar() {
           <span className="flex-1 text-center text-xs text-muted-foreground">Aperçu gratuit</span>
         )}
       </div>
-      <Button variant="ghost" size="icon" asChild={!!next} disabled={!next} className="h-10 w-10 shrink-0">
-        {next ? (
+      {next ? (
+        <Button variant="ghost" size="icon" asChild className="h-10 w-10 shrink-0">
           <Link href={href(next)} aria-label={`Suivant : ${next.title}`}>
             <ChevronRight className="h-5 w-5" aria-hidden />
           </Link>
-        ) : (
-          <span aria-hidden>
-            <ChevronRight className="h-5 w-5 opacity-40" />
-          </span>
-        )}
-      </Button>
+        </Button>
+      ) : (
+        <span aria-hidden className="h-10 w-10 shrink-0" />
+      )}
     </nav>
   );
 }

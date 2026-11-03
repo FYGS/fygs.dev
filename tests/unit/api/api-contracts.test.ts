@@ -40,6 +40,13 @@ vi.mock("@/lib/payment-service", () => ({
   WebhookSignatureError: m.WebhookSignatureError,
 }));
 vi.mock("@/lib/analytics-helper", () => ({ Analytics: {}, AnalyticsHelper: {} }));
+// The durable event claim is covered against a real database (tests/integration/payments/event-claims.test.ts)
+vi.mock("@/lib/payments/event-claims", () => ({
+  claimEvent: async () => ({ state: "claimed" }),
+  completeEvent: async () => {},
+  releaseEvent: async () => {},
+}));
+vi.mock("@/lib/stripe", () => ({ stripe: {}, stripeKeyMode: () => "unknown", assertStripeKeyMode: () => {} }));
 
 import { PATCH, GET } from "@/app/api/profile/route";
 import { POST as contactPOST } from "@/app/api/contact/route";
@@ -74,70 +81,57 @@ describe("PATCH /api/profile", () => {
 
   it("400 with French field details on invalid input", async () => {
     m.getSession.mockResolvedValue(session);
-    const res = await PATCH(
-      jsonRequest("/api/profile", "PATCH", { name: "J", email: "nope" }),
-    );
+    const res = await PATCH(jsonRequest("/api/profile", "PATCH", { name: "J" }));
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body.error).toBe("Données invalides");
-    expect(body.details.map((d: { message: string }) => d.message).sort()).toEqual([
-      "Email invalide",
+    expect(body.details.map((d: { message: string }) => d.message)).toEqual([
       "Le nom doit contenir au moins 2 caractères",
     ]);
     expect(m.userUpdate).not.toHaveBeenCalled();
   });
 
-  it("400 when the email belongs to another account", async () => {
+  it("400 for any field but the name: the e-mail address cannot be changed through this route", async () => {
     m.getSession.mockResolvedValue(session);
-    m.userFindUnique.mockResolvedValue({ id: "someone-else" });
-    const res = await PATCH(
-      jsonRequest("/api/profile", "PATCH", { name: "John Doe", email: "taken@example.com" }),
-    );
-    expect(res.status).toBe(400);
-    expect(await res.json()).toEqual({
-      error: "Cet email est déjà utilisé par un autre compte",
-    });
+    for (const body of [
+      { name: "John Doe", email: "taken@example.com" },
+      { name: "John Doe", role: "ADMIN" },
+      { name: "John Doe", emailVerified: true },
+    ]) {
+      const res = await PATCH(jsonRequest("/api/profile", "PATCH", body));
+      expect(res.status, JSON.stringify(body)).toBe(400);
+    }
     expect(m.userUpdate).not.toHaveBeenCalled();
   });
 
-  it("200 keeps emailVerified untouched when the email does not change", async () => {
+  it("400 for a name that is too long or made of invisible characters", async () => {
+    m.getSession.mockResolvedValue(session);
+    for (const name of ["x".repeat(500), "‮​  "]) {
+      const res = await PATCH(jsonRequest("/api/profile", "PATCH", { name }));
+      expect(res.status).toBe(400);
+    }
+    expect(m.userUpdate).not.toHaveBeenCalled();
+  });
+
+  it("200 updates the name only, cleaned, and never touches the e-mail", async () => {
     m.getSession.mockResolvedValue(session);
     const user = { id: "user-1", name: "John Doe", email: "me@example.com", emailVerified: true, image: null };
     m.userUpdate.mockResolvedValue(user);
-    const res = await PATCH(
-      jsonRequest("/api/profile", "PATCH", { name: "John Doe", email: "me@example.com" }),
-    );
+    const res = await PATCH(jsonRequest("/api/profile", "PATCH", { name: "  John‮   Doe " }));
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ message: "Profil mis à jour avec succès", user });
-    expect(m.userFindUnique).not.toHaveBeenCalled();
-    expect(m.userUpdate.mock.calls[0][0].data.emailVerified).toBeUndefined();
-  });
-
-  it("200 resets emailVerified to false when the email changes", async () => {
-    m.getSession.mockResolvedValue(session);
-    m.userFindUnique.mockResolvedValue(null);
-    m.userUpdate.mockResolvedValue({ id: "user-1" });
-    const res = await PATCH(
-      jsonRequest("/api/profile", "PATCH", { name: "John Doe", email: "new@example.com" }),
-    );
-    expect(res.status).toBe(200);
     const call = m.userUpdate.mock.calls[0][0];
     expect(call.where).toEqual({ id: "user-1" });
-    expect(call.data.emailVerified).toBe(false);
-    expect(call.select).toEqual({
-      id: true,
-      name: true,
-      email: true,
-      emailVerified: true,
-      image: true,
-    });
+    expect(call.data).toEqual({ name: "John Doe" });
+    expect(call.select).toEqual({ id: true, name: true, email: true, emailVerified: true, image: true });
+    expect(m.userFindUnique).not.toHaveBeenCalled();
   });
 
   it("500 { error: 'Erreur interne du serveur' } when the database fails", async () => {
     m.getSession.mockResolvedValue(session);
     m.userUpdate.mockRejectedValue(new Error("db down"));
     const res = await PATCH(
-      jsonRequest("/api/profile", "PATCH", { name: "John Doe", email: "me@example.com" }),
+      jsonRequest("/api/profile", "PATCH", { name: "John Doe" }),
     );
     expect(res.status).toBe(500);
     expect(await res.json()).toEqual({ error: "Erreur interne du serveur" });

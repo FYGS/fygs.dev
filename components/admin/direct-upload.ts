@@ -139,11 +139,10 @@ export async function uploadImageFile(file: File, options: { folder: string; pre
   return result.url;
 }
 
-/** An http(s) address, as typed by the author. */
-export function isHttpUrl(value: string): boolean {
+/** An https address, as typed by the author (plain http is refused by the server and by the content-security policy). */
+export function isHttpsUrl(value: string): boolean {
   try {
-    const url = new URL(value.trim());
-    return url.protocol === "http:" || url.protocol === "https:";
+    return new URL(value.trim()).protocol === "https:";
   } catch {
     return false;
   }

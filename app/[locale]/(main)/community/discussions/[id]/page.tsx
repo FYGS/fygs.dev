@@ -143,7 +143,7 @@ async function DiscussionContent({ params, searchParams }: DiscussionPageProps) 
                       <span className="font-medium">{discussion.author.name}</span>
                     </Link>
                     <UserBadges 
-                      user={discussion.author as any}
+                      user={discussion.author}
                       showLevel={true}
                       showBadges={false}
                       size="sm"
@@ -168,9 +168,15 @@ async function DiscussionContent({ params, searchParams }: DiscussionPageProps) 
                     isLocked={discussion.isLocked}
                     isSolved={discussion.isSolved}
                     isAuthor={session.user.id === discussion.authorId}
+                    // Same rule as the server (updateDiscussion): an administrator, or the instructor of this
+                    // discussion's course; any other instructor sees no moderation controls
                     isModerator={
                       session.user.role === "ADMIN" ||
-                      session.user.role === "INSTRUCTOR"
+                      (session.user.role === "INSTRUCTOR" &&
+                        origin?.course?.instructorId === session.user.id)
+                    }
+                    canDelete={
+                      session.user.id === discussion.authorId || session.user.role === "ADMIN"
                     }
                   />
                 )}

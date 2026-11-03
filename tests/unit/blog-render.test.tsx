@@ -19,7 +19,8 @@ describe("blog posts render", () => {
   for (const slug of slugs) {
     it(slug, async () => {
       const post = await getBlogPost(slug);
-      const html = renderToStaticMarkup(createElement("div", null, post.content));
+      expect(post).not.toBeNull();
+      const html = renderToStaticMarkup(createElement("div", null, post!.content));
       expect(html.length).toBeGreaterThan(200);
       expect(html).not.toMatch(/Expressions? (are|is) not allowed|Could not parse expression/);
     });

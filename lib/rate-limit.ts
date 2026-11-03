@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import redis from "./redis";
 import { logger } from "./structured-logger";
+import { ipBucketOf, markHot } from "./anti-automation/hot-buckets";
 
 /**
  * Rate limiting.
@@ -24,15 +25,29 @@ export interface RateLimitResult {
   retryAfter: number;
   /** True when Redis could not be used and the fallback decided. */
   degraded: boolean;
+  /** True when the store was down and the caller asked to fail closed: the refusal is ours, not the client's doing. */
+  unavailable?: boolean;
 }
 
 export interface RateLimitOptions {
   /**
    * What to do when Redis is unavailable: "memory" (default) keeps limiting in
-   * this process; "closed" refuses the request.
+   * this process; "closed" refuses the request (503, see enforceRateLimit).
+   * "closed" only applies when a shared store IS configured and unreachable. A
+   * deployment that runs without Redis on purpose (one instance, in-process
+   * counters, like the end-to-end harness) keeps limiting in memory: refusing
+   * there would take the sign-in and the contact form offline for good.
    */
   failMode?: "memory" | "closed";
 }
+
+/** Whether a Redis URL is configured (the same variables lib/redis.ts reads). */
+function sharedStoreConfigured(): boolean {
+  const legacy = process.env.blog_stats_KV_REST_API_URL ?? "";
+  return Boolean(process.env.REDIS_URL) || /^rediss?:\/\//.test(legacy);
+}
+
+const refusesWhenStoreDown = (options: RateLimitOptions) => options.failMode === "closed" && sharedStoreConfigured();
 
 const REDIS_TIMEOUT_MS = 500;
 // Circuit breaker: once Redis has failed, stop waiting on it for a few seconds.
@@ -247,6 +262,7 @@ function refuse(limit: number, nowMs: number): RateLimitResult {
     reset: Math.ceil((nowMs + 1000) / 1000),
     retryAfter: 1,
     degraded: true,
+    unavailable: true,
   };
 }
 
@@ -267,7 +283,7 @@ export async function rateLimit(
 
   if (nowMs < redisDownUntilMs) {
     fallbackDecisions += 1;
-    return options.failMode === "closed"
+    return refusesWhenStoreDown(options)
       ? refuse(limit, nowMs)
       : memoryCheck(key, limit, windowSeconds, nowMs, true);
   }
@@ -290,7 +306,7 @@ export async function rateLimit(
     redisDownUntilMs = nowMs + REDIS_RETRY_AFTER_MS;
     fallbackDecisions += 1;
     logDegraded(error, nowMs);
-    if (options.failMode === "closed") return refuse(limit, nowMs);
+    if (refusesWhenStoreDown(options)) return refuse(limit, nowMs);
     return memoryCheck(key, limit, windowSeconds, nowMs, true);
   }
 }
@@ -304,11 +320,19 @@ const IP_PATTERN = /^[0-9a-fA-F:.]{3,45}$/;
  * received the request from, so the client is the entry `TRUSTED_PROXY_HOPS`
  * from the right (default 1: a single proxy such as Traefik/Coolify). Taking the
  * leftmost entry would let a client choose its own bucket by sending the header.
- * Returns "unknown" when no trustworthy address is available (local dev).
+ *
+ * `X-Real-IP` is only believed when the operator configured `TRUSTED_PROXY_HOPS`
+ * explicitly (they then vouch that the proxy overwrites the header) and
+ * `X-Forwarded-For` is absent. Without that statement a client could pick its own
+ * bucket by sending it.
+ *
+ * Returns "unknown" when no trustworthy address is available (local dev, or the
+ * application port reached directly).
  */
 export function getClientIp(
   headers: Headers,
-  trustedHops = Number(process.env.TRUSTED_PROXY_HOPS ?? 1),
+  trustedHops: number = Number(process.env.TRUSTED_PROXY_HOPS ?? 1),
+  realIpTrusted: boolean = process.env.TRUSTED_PROXY_HOPS !== undefined && process.env.TRUSTED_PROXY_HOPS !== "",
 ): string {
   if (!Number.isInteger(trustedHops) || trustedHops < 1) return "unknown";
 
@@ -317,11 +341,21 @@ export function getClientIp(
     const parts = forwarded.split(",").map((p) => p.trim()).filter(Boolean);
     const candidate = parts[Math.max(0, parts.length - trustedHops)];
     if (candidate && IP_PATTERN.test(candidate)) return candidate;
+    return "unknown";
   }
-  const real = headers.get("x-real-ip")?.trim();
-  if (real && IP_PATTERN.test(real)) return real;
+  if (realIpTrusted) {
+    const real = headers.get("x-real-ip")?.trim();
+    if (real && IP_PATTERN.test(real)) return real;
+  }
   return "unknown";
 }
+
+/**
+ * Everyone whose address cannot be told shares the "unknown" bucket: in production that is a client that bypassed the
+ * proxy, or a misconfigured one. It gets a fraction of the normal budget so that it can neither lock everybody else out
+ * easily nor be a free path around the limits.
+ */
+const UNKNOWN_BUCKET_DIVISOR = 5;
 
 export interface EnforceOptions extends RateLimitOptions {
   limit: number;
@@ -351,10 +385,16 @@ export async function checkRateLimit(
   options: EnforceOptions,
 ): Promise<RateLimitResult> {
   const headers = source instanceof Headers ? source : source.headers;
-  const subject = options.subject ?? `ip:${getClientIp(headers)}`;
-  return rateLimit(`${name}:${subject}`, options.limit, options.windowSeconds, {
+  const ip = options.subject ? null : getClientIp(headers);
+  const subject = options.subject ?? `ip:${ip}`;
+  const strict = ip === "unknown" && process.env.NODE_ENV === "production";
+  const limit = strict ? Math.max(1, Math.floor(options.limit / UNKNOWN_BUCKET_DIVISOR)) : options.limit;
+  const result = await rateLimit(`${name}:${subject}`, limit, options.windowSeconds, {
     failMode: options.failMode,
   });
+  // A refused network is asked for more proof-of-work for a while (lib/anti-automation/pow.ts)
+  if (!result.allowed && !result.unavailable && ip) markHot(ipBucketOf(ip));
+  return result;
 }
 
 /**
@@ -371,6 +411,13 @@ export async function enforceRateLimit(
 ): Promise<NextResponse | null> {
   const result = await checkRateLimit(source, name, options);
   if (result.allowed) return null;
+  if (result.unavailable) {
+    // failMode "closed" and the shared store is down: say so, do not blame the client
+    return NextResponse.json(
+      { error: "Service temporarily unavailable", retryAfter: result.retryAfter },
+      { status: 503, headers: { "Retry-After": String(result.retryAfter), "Cache-Control": "no-store" } },
+    );
+  }
   return NextResponse.json(
     { error: "Too many requests", retryAfter: result.retryAfter },
     { status: 429, headers: rateLimitHeaders(result) },

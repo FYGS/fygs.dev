@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { Role } from "@/lib/generated/prisma/client";
+import { writeAudit } from "@/lib/audit";
 
 /**
  * Changes to another account made by an administrator: its role, and its ban from the community.
@@ -48,6 +49,11 @@ export async function changeUserRole(actorId: string, targetId: string, role: st
     }
 
     await tx.user.update({ where: { id: targetId }, data: { role: role as Role } });
+    // Committed or rolled back with the change itself
+    await writeAudit(
+      { actorId, action: "user.role_changed", targetType: "user", targetId, metadata: { from: target.role, to: role } },
+      tx,
+    );
     return { ok: true } as const;
   });
 }
@@ -59,6 +65,9 @@ export async function setUserBan(actorId: string, targetId: string, banned: bool
   if (!target) return { ok: false, code: "NOT_FOUND" };
   if (banned && target.role === Role.ADMIN) return { ok: false, code: "PROTECTED_ADMIN" };
 
-  await db.user.update({ where: { id: targetId }, data: { isBanned: banned } });
+  await db.$transaction(async (tx) => {
+    await tx.user.update({ where: { id: targetId }, data: { isBanned: banned } });
+    await writeAudit({ actorId, action: banned ? "user.banned" : "user.unbanned", targetType: "user", targetId }, tx);
+  });
   return { ok: true };
 }

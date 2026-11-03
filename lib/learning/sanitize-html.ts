@@ -34,7 +34,16 @@ const ALLOWED_TAGS = new Set(TEXT_TAGS);
 /** Removed together with what is inside them (their content is code, not text). */
 const DROP_WITH_CONTENT = new Set(["script", "style", "template", "object", "embed", "applet", "noscript", "textarea", "select", "option", "button", "form", "svg", "math", "link", "meta", "base", "title", "head"]);
 
-const GLOBAL_ATTRIBUTES = ["id", "title", "lang", "dir", "className", "role", "ariaLabel", "ariaHidden", "ariaDescribedBy"];
+/**
+ * Attributes allowed on every element. Deliberately absent: `id` and `name` (an author-chosen id can collide with the
+ * application's own anchors, skip links and lookups, or shadow a window property: heading ids come from rehype-slug,
+ * which runs after this plugin), `role` and `aria-describedby`/`aria-labelledby` (they re-purpose an element or point at
+ * ids that no longer exist), `style`, `data-*` and every event handler.
+ */
+const GLOBAL_ATTRIBUTES = ["title", "lang", "dir", "className", "ariaLabel", "ariaHidden"];
+/** Free-text attributes are kept short: a tooltip or a label is not a place for a paragraph. */
+const MAX_LABEL_LENGTH = 200;
+const LANGUAGE_TAG = /^[a-zA-Z]{2,3}(-[a-zA-Z0-9]{2,8}){0,3}$/;
 const TAG_ATTRIBUTES: Record<string, string[]> = {
   a: ["href", "target", "rel", "hrefLang"],
   img: ["src", "alt", "width", "height", "loading", "srcSet", "sizes"],
@@ -95,6 +104,10 @@ function cleanProperties(tag: string, properties: Record<string, unknown> = {}):
     }
     if (name === "srcSet" && typeof value === "string" && value.split(",").some((part) => !isSafeUrl(part.trim().split(/\s+/)[0]))) continue;
     if (name === "target" && value !== "_blank" && value !== "_self") continue;
+    if ((name === "title" || name === "ariaLabel") && (typeof value !== "string" || value.length > MAX_LABEL_LENGTH)) continue;
+    if (name === "lang" && (typeof value !== "string" || !LANGUAGE_TAG.test(value))) continue;
+    if (name === "dir" && value !== "ltr" && value !== "rtl" && value !== "auto") continue;
+    if (name === "ariaHidden" && value !== true && value !== false && value !== "true" && value !== "false") continue;
     clean[name] = value;
   }
 

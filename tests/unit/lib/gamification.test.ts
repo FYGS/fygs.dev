@@ -1,171 +1,134 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import {
-  awardXp,
-  updateStreak,
-} from "@/lib/gamification";
+import { awardXp, updateStreak } from "@/lib/gamification";
 
-// Mock Prisma
-vi.mock("@/lib/db", () => ({
-  db: {
-    xpEvent: {
-      create: vi
-        .fn()
-        .mockResolvedValue({
-          id: "xp1",
-          amount: 10,
-          reason: "LESSON_COMPLETED",
-        }),
-      aggregate: vi.fn().mockResolvedValue({ _sum: { amount: 45 } }),
-    },
-    user: {
-      findUnique: vi
-        .fn()
-        .mockResolvedValue({ communityPoints: 250, communityLevel: 3 }),
-      update: vi.fn().mockResolvedValue({}),
-    },
-    userStreak: {
-      findUnique: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-    },
-  },
+const m = vi.hoisted(() => ({
+  xpCreate: vi.fn(),
+  userUpdate: vi.fn(),
+  streakFind: vi.fn(),
+  streakCreate: vi.fn(),
+  streakUpdate: vi.fn(),
+  executeRaw: vi.fn(),
 }));
 
-const { db } = await import("@/lib/db");
+vi.mock("@/lib/db", () => {
+  const tx = {
+    $executeRaw: m.executeRaw,
+    userStreak: { findUnique: m.streakFind, create: m.streakCreate, update: m.streakUpdate },
+  };
+  return {
+    db: {
+      xpEvent: { create: m.xpCreate },
+      user: { update: m.userUpdate },
+      // the array form groups the XP event with the points, the function form is a transaction with a lock
+      $transaction: (arg: Promise<unknown>[] | ((client: unknown) => Promise<unknown>)) =>
+        typeof arg === "function" ? arg(tx) : Promise.all(arg),
+    },
+  };
+});
 
-describe("Gamification Service", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
+const uniqueViolation = Object.assign(new Error("Unique constraint failed"), { code: "P2002" });
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  m.xpCreate.mockImplementation(async ({ data }: { data: { amount: number; reason: string } }) => ({ id: "xp", ...data }));
+  m.userUpdate.mockResolvedValue({});
+  m.streakCreate.mockResolvedValue({});
+  m.streakUpdate.mockResolvedValue({});
+});
+
+describe("awardXp", () => {
+  it("creates the XP event for its target and adds the points", async () => {
+    const result = await awardXp("user-1", "LESSON_COMPLETED", "lesson-1", { lessonId: "l1" });
+
+    expect(m.xpCreate).toHaveBeenCalledWith({
+      data: { userId: "user-1", amount: 10, reason: "LESSON_COMPLETED", refId: "lesson-1", metadata: { lessonId: "l1" } },
+    });
+    expect(m.userUpdate).toHaveBeenCalledWith({ where: { id: "user-1" }, data: { communityPoints: { increment: 10 } } });
+    expect(result?.amount).toBe(10);
   });
 
-  describe("awardXp", () => {
-    it("creates XP event and updates user points", async () => {
-      const result = await awardXp("user-1", "LESSON_COMPLETED", {
-        lessonId: "l1",
-      });
-
-      expect(db.xpEvent.create).toHaveBeenCalledWith({
-        data: {
-          userId: "user-1",
-          amount: 10,
-          reason: "LESSON_COMPLETED",
-          metadata: { lessonId: "l1" },
-        },
-      });
-      expect(db.user.update).toHaveBeenCalledWith({
-        where: { id: "user-1" },
-        data: { communityPoints: { increment: 10 } },
-      });
-      expect(result.amount).toBe(10);
-    });
-
-    it("awards correct XP for quiz passed", async () => {
-      vi.mocked(db.xpEvent.create).mockResolvedValueOnce({
-        id: "xp2",
-        amount: 25,
-        reason: "QUIZ_PASSED",
-      } as never);
-
-      await awardXp("user-1", "QUIZ_PASSED", { quizId: "q1" });
-
-      expect(db.xpEvent.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({ amount: 25, reason: "QUIZ_PASSED" }),
-        }),
-      );
-    });
-
-    it("awards correct XP for course completed", async () => {
-      vi.mocked(db.xpEvent.create).mockResolvedValueOnce({
-        id: "xp3",
-        amount: 100,
-        reason: "COURSE_COMPLETED",
-      } as never);
-
-      await awardXp("user-1", "COURSE_COMPLETED", { courseId: "c1" });
-
-      expect(db.xpEvent.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({ amount: 100 }),
-        }),
-      );
-    });
+  it("awards the amount of each reason", async () => {
+    expect((await awardXp("user-1", "QUIZ_PASSED", "q1"))?.amount).toBe(25);
+    expect((await awardXp("user-1", "COURSE_COMPLETED", "c1"))?.amount).toBe(100);
+    expect((await awardXp("user-1", "FIRST_LESSON", "first-lesson"))?.amount).toBe(20);
   });
 
-  describe("updateStreak", () => {
-    it("creates a new streak for first activity", async () => {
-      vi.mocked(db.userStreak.findUnique).mockResolvedValueOnce(null);
-      vi.mocked(db.userStreak.create).mockResolvedValueOnce({} as never);
+  it("gives nothing the second time for the same target: the database refuses it", async () => {
+    m.xpCreate.mockRejectedValueOnce(uniqueViolation);
 
-      const result = await updateStreak("user-1");
+    expect(await awardXp("user-1", "LESSON_COMPLETED", "lesson-1")).toBeNull();
+  });
 
-      expect(db.userStreak.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
-            userId: "user-1",
-            currentStreak: 1,
-            longestStreak: 1,
-          }),
-        }),
-      );
-      expect(result.currentStreak).toBe(1);
-      expect(result.isNewDay).toBe(true);
-    });
+  it("does not hide other failures", async () => {
+    m.xpCreate.mockRejectedValueOnce(new Error("connection lost"));
 
-    it("returns same streak if already active today", async () => {
-      vi.mocked(db.userStreak.findUnique).mockResolvedValueOnce({
-        currentStreak: 5,
-        longestStreak: 10,
-        lastActivityAt: new Date(), // today
-      } as never);
+    await expect(awardXp("user-1", "LESSON_COMPLETED", "lesson-1")).rejects.toThrow("connection lost");
+  });
+});
 
-      const result = await updateStreak("user-1");
+describe("updateStreak", () => {
+  it("works under a lock per user", async () => {
+    m.streakFind.mockResolvedValueOnce(null);
 
-      expect(result.currentStreak).toBe(5);
-      expect(result.isNewDay).toBe(false);
-      expect(db.userStreak.update).not.toHaveBeenCalled();
-    });
+    await updateStreak("user-1");
 
-    it("extends streak if last activity was yesterday", async () => {
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
+    expect(m.executeRaw).toHaveBeenCalledTimes(1);
+  });
 
-      vi.mocked(db.userStreak.findUnique).mockResolvedValueOnce({
-        currentStreak: 3,
-        longestStreak: 5,
-        lastActivityAt: yesterday,
-      } as never);
-      vi.mocked(db.userStreak.update).mockResolvedValueOnce({} as never);
+  it("creates a new streak for first activity", async () => {
+    m.streakFind.mockResolvedValueOnce(null);
 
-      const result = await updateStreak("user-1");
+    const result = await updateStreak("user-1");
 
-      expect(result.currentStreak).toBe(4);
-      expect(result.isNewDay).toBe(true);
-      expect(db.userStreak.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
-            currentStreak: 4,
-            longestStreak: 5,
-          }),
-        }),
-      );
-    });
+    expect(m.streakCreate).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ userId: "user-1", currentStreak: 1, longestStreak: 1 }) }),
+    );
+    expect(result).toEqual({ currentStreak: 1, isNewDay: true });
+  });
 
-    it("resets streak if gap is more than 1 day", async () => {
-      const threeDaysAgo = new Date();
-      threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+  it("returns the same streak if already active today", async () => {
+    m.streakFind.mockResolvedValueOnce({ currentStreak: 5, longestStreak: 10, lastActivityAt: new Date() });
 
-      vi.mocked(db.userStreak.findUnique).mockResolvedValueOnce({
-        currentStreak: 10,
-        longestStreak: 10,
-        lastActivityAt: threeDaysAgo,
-      } as never);
-      vi.mocked(db.userStreak.update).mockResolvedValueOnce({} as never);
+    const result = await updateStreak("user-1");
 
-      const result = await updateStreak("user-1");
+    expect(result).toEqual({ currentStreak: 5, isNewDay: false });
+    expect(m.streakUpdate).not.toHaveBeenCalled();
+  });
 
-      expect(result.currentStreak).toBe(1);
-      expect(result.isNewDay).toBe(true);
-    });
+  it("extends the streak if the last activity was yesterday", async () => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    m.streakFind.mockResolvedValueOnce({ currentStreak: 3, longestStreak: 5, lastActivityAt: yesterday });
+
+    const result = await updateStreak("user-1");
+
+    expect(result).toEqual({ currentStreak: 4, isNewDay: true });
+    expect(m.streakUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ currentStreak: 4, longestStreak: 5 }) }),
+    );
+    expect(m.xpCreate).not.toHaveBeenCalled(); // no bonus at 4 days
+  });
+
+  it("pays the 7-day bonus once, keyed by the streak and the day", async () => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    m.streakFind.mockResolvedValueOnce({ currentStreak: 6, longestStreak: 6, lastActivityAt: yesterday });
+
+    await updateStreak("user-1");
+
+    expect(m.xpCreate).toHaveBeenCalledTimes(1);
+    const data = m.xpCreate.mock.calls[0][0].data;
+    expect(data).toMatchObject({ reason: "STREAK_BONUS", amount: 5 });
+    expect(data.refId).toMatch(/^streak-7-\d{4}-\d{1,2}-\d{1,2}$/);
+  });
+
+  it("resets the streak if the gap is more than one day", async () => {
+    const threeDaysAgo = new Date();
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+    m.streakFind.mockResolvedValueOnce({ currentStreak: 10, longestStreak: 10, lastActivityAt: threeDaysAgo });
+
+    const result = await updateStreak("user-1");
+
+    expect(result).toEqual({ currentStreak: 1, isNewDay: true });
   });
 });

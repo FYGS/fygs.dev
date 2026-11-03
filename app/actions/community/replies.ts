@@ -6,7 +6,9 @@ import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import {
   createReplySchema,
+  updateReplySchema,
 } from "@/types/community";
+import { AUTHOR_SELECT } from "@/lib/services/community/public-user";
 import type {
   ReplyActionResult,
   ActionResult,
@@ -39,62 +41,64 @@ export async function createReply(
 
     const validatedData = createReplySchema.parse(rawData);
 
-    const reply = await db.discussionReply.create({
-      data: {
-        content: validatedData.content,
-        authorId: session.user.id,
-        discussionId: validatedData.discussionId,
-        parentId: validatedData.parentId,
-        isModerator:
-          session.user.role === "ADMIN" || session.user.role === "INSTRUCTOR",
-      },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            image: true,
-            role: true,
-            communityLevel: true,
-          },
-        },
-        _count: {
-          select: {
-            votes: true,
-            children: true,
-          },
-        },
-      },
-    });
-
-    // Update discussion reply count and last activity
-    await db.discussion.update({
+    // The discussion must exist, be open (not locked by a moderator, not closed or archived)
+    const discussion = await db.discussion.findUnique({
       where: { id: validatedData.discussionId },
-      data: {
-        replyCount: { increment: 1 },
-        lastActivityAt: new Date(),
-      },
+      include: { author: true, course: { select: { instructorId: true } } },
     });
+    if (!discussion) {
+      return { success: false, error: "Discussion not found" };
+    }
+    if (discussion.isLocked || discussion.status !== "ACTIVE") {
+      return { success: false, error: "Discussion is closed to new replies" };
+    }
 
-    // Award points for reply
-    await db.user.update({
-      where: { id: session.user.id },
-      data: {
-        communityPoints: { increment: 5 },
-        lastActiveAt: new Date(),
-      },
+    // A reply to a reply stays in the same discussion
+    if (validatedData.parentId) {
+      const parent = await db.discussionReply.findUnique({
+        where: { id: validatedData.parentId },
+        select: { discussionId: true },
+      });
+      if (!parent || parent.discussionId !== discussion.id) {
+        return { success: false, error: "Parent reply not found" };
+      }
+    }
+
+    // The "moderator" mark is for those who moderate THIS discussion: an administrator, or the instructor of its course
+    const moderatesHere =
+      session.user.role === "ADMIN" ||
+      (session.user.role === "INSTRUCTOR" && discussion.course?.instructorId === session.user.id);
+
+    const reply = await db.$transaction(async (tx) => {
+      const created = await tx.discussionReply.create({
+        data: {
+          content: validatedData.content,
+          authorId: session.user.id,
+          discussionId: discussion.id,
+          parentId: validatedData.parentId,
+          isModerator: moderatesHere,
+        },
+        include: {
+          author: { select: AUTHOR_SELECT },
+          _count: { select: { votes: true, children: true } },
+        },
+      });
+      await tx.discussion.update({
+        where: { id: discussion.id },
+        data: { replyCount: { increment: 1 }, lastActivityAt: new Date() },
+      });
+      await tx.user.update({
+        where: { id: session.user.id },
+        data: { communityPoints: { increment: 5 }, lastActiveAt: new Date() },
+      });
+      return created;
     });
 
     // Check for badges
     await checkAndAwardBadges(session.user.id, "REPLY_CREATED");
 
     // Create notification for discussion author
-    const discussion = await db.discussion.findUnique({
-      where: { id: validatedData.discussionId },
-      include: { author: true },
-    });
-
-    if (discussion && discussion.authorId !== session.user.id) {
+    if (discussion.authorId !== session.user.id) {
       await db.notification.create({
         data: {
           recipientId: discussion.authorId,
@@ -103,7 +107,7 @@ export async function createReply(
           title: "Nouvelle réponse à votre discussion",
           message: `${session.user.name || "Un membre"} a répondu à « ${discussion.title} »`,
           data: {
-            discussionId: validatedData.discussionId,
+            discussionId: discussion.id,
             replyId: reply.id,
           },
         },
@@ -126,12 +130,12 @@ export async function createReply(
       );
     }
 
-    revalidatePath(`/community/discussions/${discussion?.id}`);
+    revalidatePath(`/community/discussions/${discussion.id}`);
 
     return {
       success: true,
       data: reply,
-      reply: reply as any,
+      reply,
       message: "Reply posted successfully!",
     };
   } catch (error) {
@@ -165,6 +169,7 @@ export async function updateReply(
     // Check if reply exists and user owns it
     const reply = await db.discussionReply.findUnique({
       where: { id: replyId },
+      include: { discussion: { select: { isLocked: true, status: true } } },
     });
 
     if (!reply) {
@@ -175,10 +180,22 @@ export async function updateReply(
       return { success: false, error: "Unauthorized" };
     }
 
+    // Ownership is settled first; only then is the new text judged
+    const parsedContent = updateReplySchema.safeParse({ content });
+    if (!parsedContent.success) {
+      return { success: false, error: parsedContent.error.issues[0]?.message ?? "Invalid content" };
+    }
+    const validContent = parsedContent.data.content;
+
+    // A moderator's lock also freezes what was already said
+    if (reply.discussion.isLocked || reply.discussion.status !== "ACTIVE") {
+      return { success: false, error: "Discussion is closed" };
+    }
+
     // Update the reply
     const updatedReply = await db.discussionReply.update({
       where: { id: replyId },
-      data: { content },
+      data: { content: validContent },
     });
 
     revalidatePath(`/community/discussions/${reply.discussionId}`);

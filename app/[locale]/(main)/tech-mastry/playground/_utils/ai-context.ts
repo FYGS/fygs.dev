@@ -27,6 +27,8 @@ export function buildPlaygroundContext(): AssistantContext {
 
   return {
     surface: "playground",
+    // Code received through a link was written by someone else: the assistant is told to be suspicious of it
+    origin: state.projectId === "shared" ? "shared-link" : "own",
     language: active?.language,
     activeFile: active
       ? { name: active.path, content: active.content.slice(0, AI_LIMITS.maxFileChars) }

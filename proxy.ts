@@ -4,6 +4,9 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { isTranslatedPath } from "@/lib/locale-utils";
 import { LEARN_PATH_HEADER, learnPathOf } from "@/lib/learning/request-path";
+import { getClientIp } from "@/lib/rate-limit";
+import { checkWriteOrigin, isCrossOriginExempt, stripInboundHeaders } from "@/lib/request-guard";
+import { buildNonceCsp, generateNonce, nonceEnforced, usesNonceCsp } from "@/lib/csp.mjs";
 
 
 // Available locales from intlayer config
@@ -136,6 +139,63 @@ function isProtectedRoute(path: string): boolean {
   );
 }
 
+/** The playground and the code sandbox carry the policy of their own (next.config.mjs): the proxy leaves them alone. */
+function hasOwnCsp(pathWithoutLocale: string): boolean {
+  return pathWithoutLocale === "/tech-mastry/playground" || pathWithoutLocale.startsWith("/tech-mastry/playground/");
+}
+
+/**
+ * Lets the request through with the headers a client must not control removed (the internal middleware header, any
+ * Content-Security-Policy or nonce a client sent: only this proxy creates those), plus the extra ones it adds.
+ */
+function pass(request: NextRequest, extra: Record<string, string> = {}): NextResponse {
+  const { headers, changed } = stripInboundHeaders(request.headers);
+  for (const [name, value] of Object.entries(extra)) headers.set(name, value);
+  if (!changed && Object.keys(extra).length === 0) return NextResponse.next();
+  return NextResponse.next({ request: { headers } });
+}
+
+/**
+ * Continues to a PAGE with its Content-Security-Policy.
+ *  - Pages rendered for each request (signed-in areas, see lib/csp.mjs NONCE_ROUTE_PREFIXES) get a fresh nonce and an
+ *    enforced policy without 'unsafe-inline' for scripts. The policy goes into the request headers too: that is where
+ *    Next.js reads the nonce to stamp it on its own scripts. The response header replaces the static one of next.config.
+ *  - Every other page keeps the static policy, and ALSO receives the nonce policy in Report-Only mode, so violations that
+ *    enforcing it would cause are measured on real traffic (/api/csp-report).
+ *  - CSP_NONCE_ENFORCE=0 turns the enforcement off everywhere (the nonce policy is then only reported).
+ */
+function pageResponse(request: NextRequest, pathWithoutLocale: string, extra: Record<string, string> = {}): NextResponse {
+  if (hasOwnCsp(pathWithoutLocale)) return pass(request, extra);
+
+  const { headers } = stripInboundHeaders(request.headers);
+  for (const [name, value] of Object.entries(extra)) headers.set(name, value);
+
+  const nonce = generateNonce();
+  const perRequest = usesNonceCsp(pathWithoutLocale);
+
+  if (perRequest && nonceEnforced()) {
+    const policy = buildNonceCsp(nonce);
+    headers.set("content-security-policy", policy);
+    headers.set("x-nonce", nonce);
+    const response = NextResponse.next({ request: { headers } });
+    response.headers.set("Content-Security-Policy", policy);
+    return response;
+  }
+
+  const reportOnly = buildNonceCsp(nonce, { reportOnly: true });
+  if (perRequest) {
+    // Enforcement switched off for a route rendered per request: Next still stamps the nonce, the policy only reports
+    headers.set("content-security-policy-report-only", reportOnly);
+    headers.set("x-nonce", nonce);
+  }
+  const response = NextResponse.next({ request: { headers } });
+  response.headers.set("Content-Security-Policy-Report-Only", reportOnly);
+  return response;
+}
+
+const jsonRefusal = (status: number, error: string) =>
+  NextResponse.json({ error }, { status, headers: { "Cache-Control": "no-store" } });
+
 // Determine if request should bypass middleware logic
 function shouldBypass(path: string): boolean {
   return (
@@ -153,7 +213,8 @@ function checkMaintenance(request: NextRequest): NextResponse | null {
   const path = request.nextUrl.pathname;
   if (path === "/maintenance") return null;
   if (maintenanceConfig.allowedPaths?.includes(path)) return null;
-  const ip = request.headers.get("x-forwarded-for") || "";
+  // The address the trusted proxy saw, never the raw header (a client could write "127.0.0.1" in it)
+  const ip = getClientIp(request.headers);
   if (maintenanceConfig.allowedIPs?.includes(ip)) return null;
   const now = new Date();
   if (maintenanceConfig.startTime && maintenanceConfig.endTime) {
@@ -173,14 +234,21 @@ export async function proxy(request: NextRequest) {
     const newHostname = hostname.replace(/^www\./, "");
     const url = nextUrl.clone();
     url.host = newHostname;
+    // Short-lived: the redirect is built from the Host header, so a cache must not remember it for a year
     return NextResponse.redirect(url, {
       status: 301,
-      headers: { "Cache-Control": "public, max-age=31536000, immutable" },
+      headers: { "Cache-Control": "public, max-age=3600", Vary: "Host" },
     });
   }
 
+  // Cookie-authenticated JSON endpoints: a write must come from this site (see lib/request-guard.ts)
+  if (pathname.startsWith("/api/") && !isCrossOriginExempt(pathname)) {
+    const verdict = checkWriteOrigin(request.method, request.headers, nextUrl);
+    if (!verdict.ok) return jsonRefusal(403, "cross_origin_request");
+  }
+
   // Early bypass for assets and API routes (before locale detection)
-  if (shouldBypass(pathname)) return NextResponse.next();
+  if (shouldBypass(pathname)) return pass(request);
 
   // Extract current locale from path
   let currentLocale = extractLocaleFromPath(pathname);
@@ -283,14 +351,9 @@ export async function proxy(request: NextRequest) {
 
   // The learning area brings a visitor back to the exact step they asked for (lib/learning/request-path.ts)
   const learnPath = learnPathOf(pathname, nextUrl.search);
-  if (learnPath) {
-    const forwarded = new Headers(request.headers);
-    forwarded.set(LEARN_PATH_HEADER, learnPath);
-    return NextResponse.next({ request: { headers: forwarded } });
-  }
 
   // Allow request to continue for public routes or authorized protected routes
-  return NextResponse.next();
+  return pageResponse(request, getPathWithoutLocale(pathname), learnPath ? { [LEARN_PATH_HEADER]: learnPath } : {});
 }
 
 export const config = {
@@ -299,6 +362,8 @@ export const config = {
     // Including: root (/), www subdomain, and all non-localized paths
     // Excluding: API routes, static files, Next.js internals, and file extensions
     "/",
+    // The API is matched too, for the cross-site write check and the removal of internal headers (lib/request-guard.ts)
+    "/api/:path*",
     "/((?!api|static|assets|robots|sitemap|sw|service-worker|manifest|.*\\..*|_next).*)",
   ],
 };

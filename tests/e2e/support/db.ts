@@ -3,6 +3,8 @@ import { randomUUID } from "node:crypto";
 import { hashPassword } from "better-auth/crypto";
 import { Pool } from "pg";
 
+import { enrollTwoFactor } from "./two-factor";
+
 // Plain `pg` on purpose: Playwright loads test files as CommonJS and the generated Prisma
 // client is ESM-only (import.meta), so the tests talk SQL to the disposable database.
 
@@ -63,5 +65,7 @@ export async function createUser(options: { email?: string; name?: string; role?
   );
   const password = options.password ?? PASSWORD;
   await addPassword(id, password);
+  // Staff accounts hold their role only with a second factor: enrol them like a person would
+  if (options.role === "ADMIN" || options.role === "INSTRUCTOR") await enrollTwoFactor(sql, id);
   return { id, email, password };
 }

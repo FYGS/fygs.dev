@@ -2,6 +2,7 @@ import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { db } from "@/lib/db";
 import { resetDatabase } from "../../support/test-db";
 import { createCourse, createUser, enroll, sessionFor } from "../../support/factories";
+import { ageProgress } from "../../support/progress-helpers";
 
 const h = vi.hoisted(() => ({
   session: null as { user: { id: string; role?: string; name?: string } } | null,
@@ -90,6 +91,7 @@ describe("who may open a lesson, and what is recorded", () => {
     const ok = await recordLessonProgress({ id: student.id }, { lessonId: sample.id, watchTimeDelta: 30, lastPosition: 42 });
     expect(ok).toMatchObject({ success: true, progress: { watchTime: 30, lastPosition: 42, completed: false } });
     // two reports add up (the database adds, nothing is overwritten)
+    await ageProgress(student.id, sample.id, 60);
     await recordLessonProgress({ id: student.id }, { lessonId: sample.id, watchTimeDelta: 15 });
     expect((await db.progress.findFirstOrThrow({ where: { userId: student.id } })).watchTime).toBe(45);
   });

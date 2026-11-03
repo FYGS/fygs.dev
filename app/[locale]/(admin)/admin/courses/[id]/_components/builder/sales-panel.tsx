@@ -131,7 +131,7 @@ export function SalesPanel({ info, update, snapshot, onGoToSection }: Props) {
         <VideoUpload value={info.trailerUrl} onChange={(url) => update({ trailerUrl: url })} label="Adresse de la bande-annonce" />
         {trailerInvalid && (
           <p role="alert" className="text-sm text-destructive">
-            Cette adresse n&apos;est pas valide (http ou https). Elle n&apos;est pas enregistrée.
+            Cette adresse n&apos;est pas valide (elle doit commencer par https://). Elle n&apos;est pas enregistrée.
           </p>
         )}
       </section>

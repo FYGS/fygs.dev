@@ -34,6 +34,8 @@ interface DiscussionActionsProps {
   isSolved?: boolean;
   isAuthor: boolean;
   isModerator?: boolean;
+  /** Delete is for the author and administrators only (the server refuses anyone else). */
+  canDelete?: boolean;
 }
 
 export function DiscussionActions({
@@ -44,6 +46,7 @@ export function DiscussionActions({
   isSolved = false,
   isAuthor,
   isModerator = false,
+  canDelete = isAuthor,
 }: DiscussionActionsProps) {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
@@ -187,7 +190,7 @@ export function DiscussionActions({
             </>
           )}
           
-          {(isAuthor || isModerator) && (
+          {canDelete && (
             <>
               <DropdownMenuSeparator />
               <DropdownMenuItem

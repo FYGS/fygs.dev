@@ -49,7 +49,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CODE_LANGUAGES, normalizeLinkUrl } from "@/lib/curriculum/content";
 import { cn } from "@/lib/utils";
-import { isHttpUrl, UploadError, uploadImageFile } from "./direct-upload";
+import { isHttpsUrl, UploadError, uploadImageFile } from "./direct-upload";
 
 const lowlight = createLowlight();
 for (const [name, language] of Object.entries({ bash, css, go, java, javascript, json, php, python, rust, sql, typescript, xml, yaml })) {
@@ -370,7 +370,7 @@ function ImageDialog({
   const altId = useId();
   const [url, setUrl] = useState(state.url);
   const [alt, setAlt] = useState(state.alt);
-  const valid = isHttpUrl(url);
+  const valid = isHttpsUrl(url);
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>

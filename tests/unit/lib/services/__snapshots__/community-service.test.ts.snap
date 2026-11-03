@@ -25,7 +25,7 @@ exports[`CommunityService (pinned queries and results) > exposes the same static
 exports[`CommunityService (pinned queries and results) > getAvailableMentors [empty] 1`] = `
 {
   "callCount": 1,
-  "calls": "102f5222e9c3426defee1706e9f2823f900aadc8e457df7e603e24b17174b281",
+  "calls": "81475cf5521644608bf1c76692e9d465ab8c471132fd6c7d908d36f4bc7169e8",
   "error": undefined,
   "order": [
     "user.findMany",
@@ -37,19 +37,19 @@ exports[`CommunityService (pinned queries and results) > getAvailableMentors [em
 exports[`CommunityService (pinned queries and results) > getAvailableMentors [rich] 1`] = `
 {
   "callCount": 1,
-  "calls": "102f5222e9c3426defee1706e9f2823f900aadc8e457df7e603e24b17174b281",
+  "calls": "81475cf5521644608bf1c76692e9d465ab8c471132fd6c7d908d36f4bc7169e8",
   "error": undefined,
   "order": [
     "user.findMany",
   ],
-  "outcome": "45c6ee951f538f5620ccd326fc4e5df2df89c34624f41346083a1604ccadf28f",
+  "outcome": "d9c380f92c11a42f62d686f217fd8e59a23afd466096268665c8a120f34f9a85",
 }
 `;
 
 exports[`CommunityService (pinned queries and results) > getCommunityStats [empty] 1`] = `
 {
   "callCount": 7,
-  "calls": "8acbf8a3301ae67919249232d4049abb65e549c6617d6a1e089d58824a9fac38",
+  "calls": "f0a110e880524e84244272831e1e888185a9f84dc3de6e1a68b6cac8a54d5228",
   "error": undefined,
   "order": [
     "user.count",
@@ -67,7 +67,7 @@ exports[`CommunityService (pinned queries and results) > getCommunityStats [empt
 exports[`CommunityService (pinned queries and results) > getCommunityStats [rich] 1`] = `
 {
   "callCount": 7,
-  "calls": "8acbf8a3301ae67919249232d4049abb65e549c6617d6a1e089d58824a9fac38",
+  "calls": "f0a110e880524e84244272831e1e888185a9f84dc3de6e1a68b6cac8a54d5228",
   "error": undefined,
   "order": [
     "user.count",
@@ -819,7 +819,7 @@ exports[`CommunityService (pinned queries and results) > getUserBookmarksPage [r
 exports[`CommunityService (pinned queries and results) > getUserProfile [empty] 1`] = `
 {
   "callCount": 4,
-  "calls": "8d37147055d90525c21b09593722b4cd1aa500f74a2de6c8dd84faa3f64617c1",
+  "calls": "dc6b54b87103421017689f937a7452d4a18a823bf766cbde184367c78f519026",
   "error": undefined,
   "order": [
     "user.findUnique",
@@ -834,7 +834,7 @@ exports[`CommunityService (pinned queries and results) > getUserProfile [empty] 
 exports[`CommunityService (pinned queries and results) > getUserProfile [rich] 1`] = `
 {
   "callCount": 4,
-  "calls": "8d37147055d90525c21b09593722b4cd1aa500f74a2de6c8dd84faa3f64617c1",
+  "calls": "dc6b54b87103421017689f937a7452d4a18a823bf766cbde184367c78f519026",
   "error": undefined,
   "order": [
     "user.findUnique",
@@ -842,7 +842,7 @@ exports[`CommunityService (pinned queries and results) > getUserProfile [rich] 1
     "discussionReply.count",
     "discussionVote.count",
   ],
-  "outcome": "b98f2faf7c5d11f8b9ddc154ab3082e7809fe36f56db3d3ddec6aac4ec0d1411",
+  "outcome": "c768db1518b06a1a7b87bede9d6337504a43736e996adea18953afcf30338c1c",
 }
 `;
 

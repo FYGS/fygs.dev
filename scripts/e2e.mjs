@@ -16,6 +16,7 @@
  * embedded one in every child process.
  */
 import { spawn, spawnSync } from "node:child_process";
+import { randomBytes } from "node:crypto";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import net from "node:net";
 import { tmpdir } from "node:os";
@@ -133,6 +134,7 @@ try {
   const mailFile = path.join(tmpDir, "mail.jsonl");
   writeFileSync(mailFile, "");
 
+  const authSecret = randomBytes(36).toString("base64url");
   const port = await freePort(BUILD_PORT);
   const baseURL = `http://localhost:${port}`;
 
@@ -142,7 +144,12 @@ try {
     DATABASE_URL: db.url,
     DATABASE_URL_UNPOOLED: db.url,
     TEST_DATABASE_URL: db.url,
-    BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET || "e2e-only-secret-".padEnd(48, "x"),
+    // `next start` runs as a production server: it refuses a weak secret (lib/env-guard.ts), so each run draws its own
+    BETTER_AUTH_SECRET: authSecret,
+    CRON_SECRET: randomBytes(36).toString("base64url"),
+    ADMIN_API_KEY: randomBytes(36).toString("base64url"),
+    // browsers of the harness do not solve the proof of work (lib/anti-automation): the server does not ask for it
+    HUMAN_PROOF_MODE: "off",
     BETTER_AUTH_URL: baseURL,
     NEXT_PUBLIC_SITE_URL: `http://localhost:${BUILD_PORT}`,
     EMAIL_TRANSPORT: "capture",
@@ -179,7 +186,9 @@ try {
   await waitFor(`${baseURL}/api/health`, 120_000, () => server.exitCode === null);
   console.log(`[e2e] app ready on ${baseURL}`);
 
-  const testEnv = { E2E_BASE_URL: baseURL, E2E_MAIL_FILE: mailFile, DATABASE_URL: db.url };
+  // The tests enrol the staff accounts in two-factor authentication with a known TOTP secret, which the server stores
+  // encrypted with its own secret: they need it (tests/e2e/support/two-factor.ts)
+  const testEnv = { E2E_BASE_URL: baseURL, E2E_MAIL_FILE: mailFile, DATABASE_URL: db.url, E2E_AUTH_SECRET: authSecret };
   if (serveOnly) {
     writeFileSync(path.join(root, ".e2e-serve.json"), JSON.stringify(testEnv, null, 2));
     console.log(`[e2e] --serve: environment written to .e2e-serve.json; Ctrl+C to stop`);

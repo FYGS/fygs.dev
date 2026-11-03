@@ -1,6 +1,7 @@
 import type Stripe from "stripe";
 import { db } from "@/lib/db";
 import { SubscriptionStatus } from "@/lib/generated/prisma/browser";
+import { applySubscriptionEnded } from "@/lib/payments/subscription-state";
 import { emailService } from "@/lib/email-service";
 import { Analytics } from "@/lib/analytics-helper";
 import { logger } from "../_lib/logger";
@@ -9,17 +10,21 @@ export async function handleSubscriptionDeleted(event: Stripe.CustomerSubscripti
   try {
     const subscription = event.data.object;
 
-    // Webhook is the single source of truth for subscription cancellations
+    // Keyed on the Stripe subscription id, not on the user: the end of an OLD subscription (a user who cancelled and
+    // subscribed again) must not cancel the current one
     const userId = subscription.metadata?.userId;
-    if (userId) {
-      await db.subscription.update({
-        where: { userId },
-        data: {
-          status: SubscriptionStatus.CANCELED,
-          currentPeriodEnd: new Date(),
-        },
+    const outcome = await applySubscriptionEnded(subscription.id);
+    if (outcome === "not_current") {
+      logger.info("Ended subscription is not the user's current one: nothing to change", {
+        eventType: "subscription.ended_not_current",
+        userId,
+        resourceType: "subscription",
+        resourceId: subscription.id,
       });
+      return;
+    }
 
+    if (userId) {
       // Send cancellation confirmation email
       try {
         const user = await db.user.findUnique({

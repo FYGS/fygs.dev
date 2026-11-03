@@ -5,6 +5,12 @@ Each section says what was decided, why, how to operate it, and what could not b
 
 ## 1. Content-Security-Policy
 
+> **Update 2026-11-03.** The decision below still holds for the statically generated public pages, but the signed-in and
+> credential areas (`/admin`, `/dashboard`, `/profile`, `/learn`, `/community`, `/certificates`, `/auth`) are rendered per
+> request and now carry a per-request nonce with `'strict-dynamic'` and no `'unsafe-inline'`. See
+> [SECURITY-OPERATIONS.md](SECURITY-OPERATIONS.md) and `lib/csp.mjs` (`CSP_NONCE_ENFORCE=0` switches back to reporting).
+> The reasoning against nonces on the ~540 prerendered pages below is unchanged.
+
 ### Decision
 
 Keep `'unsafe-inline'` in the **enforced** `script-src`, add `script-src-attr 'none'` to it,

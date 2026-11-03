@@ -11,6 +11,7 @@ import { defaultMetadata } from "../../_lib/metadata";
 import { ReportStatus, ReviewStatus, Role } from "@/lib/generated/prisma/browser";
 import { db } from "@/lib/db";
 import { countQuestionsToAnswer } from "@/lib/curriculum/lesson-questions";
+import { STAFF_TWO_FACTOR_SETUP_HREF } from "@/lib/staff-2fa";
 
 export const metadata: Metadata = {
   ...defaultMetadata,
@@ -36,6 +37,11 @@ export default async function AdminLayout({
   // Vérifier l'authentification et les permissions
   if (!session) {
     redirect("/auth/login?callbackUrl=/admin");
+  }
+
+  // Staff without a second factor hold no staff powers (the session reports them as students): set it up first
+  if (session.user.pendingStaffRole) {
+    redirect(STAFF_TWO_FACTOR_SETUP_HREF);
   }
 
   // Vérifier le rôle admin ou instructeur

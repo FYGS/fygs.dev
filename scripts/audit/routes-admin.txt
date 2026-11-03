@@ -20,3 +20,4 @@
 /fr/admin/paths
 /fr/admin/paths/new
 # The course builder and a path editor of the seed are appended by the audit run (ids come from the seed).
+/fr/admin/questions

@@ -6,6 +6,7 @@ import { Download, ExternalLink, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatFileSize } from "@/lib/format-size";
+import { lessonResourcePath } from "@/lib/learning/media-paths";
 import { LessonNotes, type LessonNote } from "./lesson-notes";
 import { LessonQuestions, type LessonQuestion } from "./lesson-questions";
 
@@ -100,7 +101,7 @@ export function LessonTabs({
             {resources.map((r) => (
               <li key={r.id}>
                 <a
-                  href={r.url}
+                  href={r.kind === "FILE" ? lessonResourcePath(r.id) : r.url}
                   {...(r.kind === "FILE" ? { download: true } : { target: "_blank", rel: "noopener noreferrer" })}
                   className="flex items-center gap-3 p-3 text-sm hover:bg-accent/40"
                 >

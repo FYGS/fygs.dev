@@ -7,6 +7,8 @@ import { randomUUID } from "node:crypto";
 import { hashPassword } from "better-auth/crypto";
 import pg from "pg";
 
+import { enrollStaff } from "./staff-two-factor.mjs";
+
 const url = process.env.DATABASE_URL;
 const parsed = url ? new URL(url) : null;
 if (!parsed || !["localhost", "127.0.0.1"].includes(parsed.hostname) || !/test/i.test(parsed.pathname)) {
@@ -24,6 +26,8 @@ async function withPassword(user) {
       [randomUUID(), user.id, await hashPassword(AUDIT_PASSWORD)],
     );
   }
+  // staff hold their role only with a second factor: enrol them (the audits answer the challenge)
+  if (user.role === "ADMIN" || user.role === "INSTRUCTOR") await enrollStaff(pool, user.id);
   console.log(`${user.role}|${user.email}|${AUDIT_PASSWORD}`);
 }
 

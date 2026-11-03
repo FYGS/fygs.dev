@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { CourseAccessTier } from "@/lib/generated/prisma/browser";
+import type { LapsedReason } from "@/lib/access/entitlement";
 import type { AccessSource, LearnerPage, LearnerRow } from "@/lib/curriculum/insights";
 import { grantCourseAccess, loadCourseLearners, revokeCourseAccess } from "../../_actions/insights-actions";
 
@@ -30,11 +31,13 @@ const SOURCE_LABELS: Record<AccessSource, string> = {
   grant: "Accès offert",
 };
 
-const LAPSED_LABELS = {
+// Exhaustive on purpose: a new reason of access loss does not compile until it has its label here
+const LAPSED_LABELS: Record<LapsedReason, string> = {
   subscription_ended: "Abonnement terminé",
   refunded: "Achat remboursé",
+  disputed: "Paiement contesté",
   premium_required: "Devenue premium",
-} as const;
+};
 
 const dateFormat = new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeZone: "Europe/Paris" });
 

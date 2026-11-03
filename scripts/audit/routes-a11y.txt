@@ -25,3 +25,4 @@
 /en/privacy
 /fr/formations
 /fr/parcours
+/fr/auth/two-factor

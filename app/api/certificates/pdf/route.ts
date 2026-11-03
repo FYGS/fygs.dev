@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { certificateVerifyUrl, findCertificateByCode, type CertificateRecord } from "@/lib/learning/certificates";
+import { MAX_COURSES_CHARS, MAX_LINES, MAX_NAME_CHARS, MAX_TITLE_CHARS, clip } from "@/lib/learning/certificate-text";
 
 // Needs Node runtime because auth/email service transitively pulls in nodemailer (depends on 'stream').
 export const runtime = "nodejs";
@@ -55,7 +56,7 @@ function renderCertificatePdf(certificate: CertificateRecord): ArrayBuffer {
     doc.setFont("helvetica", style);
     doc.setFontSize(size);
     // long titles are wrapped rather than running off the page
-    const lines = doc.splitTextToSize(text, w - 160) as string[];
+    const lines = (doc.splitTextToSize(text, w - 160) as string[]).slice(0, MAX_LINES);
     lines.forEach((line, i) => doc.text(line, (w - doc.getTextWidth(line)) / 2, y + i * size * 1.15));
     return lines.length;
   };
@@ -71,12 +72,12 @@ function renderCertificatePdf(certificate: CertificateRecord): ArrayBuffer {
   center("FYGS", 110, 26, "bold");
   center(isPath ? "CERTIFICAT DE PARCOURS" : "CERTIFICAT DE RÉUSSITE", 155, 32, "bold");
   center("Décerné à", 200, 15);
-  center(certificate.holderName, 238, 28, "bold");
+  center(clip(certificate.holderName, MAX_NAME_CHARS), 238, 28, "bold");
   center(isPath ? "pour avoir mené à terme le parcours" : "pour avoir terminé la formation", 274, 14);
-  const titleLines = center(certificate.title, 308, 22, "bold");
+  const titleLines = center(clip(certificate.title, MAX_TITLE_CHARS), 308, 22, "bold");
   let y = 308 + titleLines * 26 + 8;
   if (isPath && certificate.courseTitles.length > 0) {
-    center(certificate.courseTitles.join(" · "), y, 11);
+    center(clip(certificate.courseTitles.join(" · "), MAX_COURSES_CHARS), y, 11);
     y += 22;
   }
   center(`Délivré le ${longDate.format(certificate.issuedAt)}`, y + 10, 13);

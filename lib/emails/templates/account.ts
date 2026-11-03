@@ -2,6 +2,7 @@ import { SITE_URL } from "@/app/_lib/constants";
 
 import { createBaseTemplate, type CourseTemplateProps, type EmailTemplateProps, type PasswordChangeTemplateProps, type SubscriptionTemplateProps } from "./base";
 import { formatPrice } from "@/lib/price-format";
+import { escapeHtml, singleLine } from "@/lib/html-escape";
 
 /** Account, course purchase and subscription/billing emails. */
 export class AccountEmailTemplates {
@@ -16,7 +17,7 @@ export class AccountEmailTemplates {
         <p>Votre parcours d'apprentissage commence maintenant</p>
       </div>
       <div class="content">
-        <h2>Salut ${userName} !</h2>
+        <h2>Salut ${escapeHtml(userName)} !</h2>
         <p>Félicitations ! Vous venez de rejoindre la communauté FYGS, la plateforme d'apprentissage moderne qui va transformer votre carrière en développement.</p>
         
         <div class="highlight">
@@ -24,7 +25,7 @@ export class AccountEmailTemplates {
           <p>Explorez notre catalogue de formations premium et découvrez les technologies les plus demandées du marché.</p>
         </div>
 
-        <a href="${siteUrl}/formations" class="cta-button">Découvrir les formations</a>
+        <a href="${escapeHtml(siteUrl)}/formations" class="cta-button">Découvrir les formations</a>
 
         <div class="features-list">
           <h3>Ce qui vous attend :</h3>
@@ -41,7 +42,7 @@ export class AccountEmailTemplates {
       </div>
       <div class="footer">
         <p>FYGS Learning Platform</p>
-        <p><a href="${siteUrl}">fygs.dev</a> | <a href="${siteUrl}/contact">Contact</a> | <a href="${siteUrl}/privacy">Confidentialité</a></p>
+        <p><a href="${escapeHtml(siteUrl)}">fygs.dev</a> | <a href="${escapeHtml(siteUrl)}/contact">Contact</a> | <a href="${escapeHtml(siteUrl)}/privacy">Confidentialité</a></p>
       </div>
     `;
 
@@ -65,15 +66,15 @@ export class AccountEmailTemplates {
         <p>Votre formation est maintenant accessible</p>
       </div>
       <div class="content">
-        <h2>Merci ${userName} !</h2>
-        <p>Votre achat de la formation <strong>"${courseTitle}"</strong> a été confirmé avec succès.</p>
+        <h2>Merci ${escapeHtml(userName)} !</h2>
+        <p>Votre achat de la formation <strong>"${escapeHtml(courseTitle)}"</strong> a été confirmé avec succès.</p>
         
         <div class="highlight">
           <p><strong>💡 Votre formation est prête !</strong></p>
           <p>Vous avez maintenant un accès à vie à tous les contenus de cette formation.</p>
         </div>
 
-        <a href="${siteUrl}/formations/${courseSlug}" class="cta-button">Commencer la formation</a>
+        <a href="${escapeHtml(siteUrl)}/formations/${encodeURIComponent(courseSlug)}" class="cta-button">Commencer la formation</a>
 
         <div class="features-list">
           <h3>Inclus dans votre achat :</h3>
@@ -96,12 +97,12 @@ export class AccountEmailTemplates {
       </div>
       <div class="footer">
         <p>FYGS Learning Platform</p>
-        <p><a href="${siteUrl}/dashboard">Mon tableau de bord</a> | <a href="${siteUrl}/contact">Support</a></p>
+        <p><a href="${escapeHtml(siteUrl)}/dashboard">Mon tableau de bord</a> | <a href="${escapeHtml(siteUrl)}/contact">Support</a></p>
       </div>
     `;
 
     return {
-      subject: `✅ Formation "${courseTitle}" - Accès confirmé !`,
+      subject: `✅ Formation "${singleLine(courseTitle, 120)}" - Accès confirmé !`,
       html: createBaseTemplate(content, "Achat confirmé"),
     };
   }
@@ -120,15 +121,15 @@ export class AccountEmailTemplates {
         <p>Accès illimité à toutes nos formations</p>
       </div>
       <div class="content">
-        <h2>Félicitations ${userName} !</h2>
-        <p>Votre abonnement <strong>${planName}</strong> est maintenant actif. Vous avez désormais accès à l'intégralité du catalogue FYGS !</p>
+        <h2>Félicitations ${escapeHtml(userName)} !</h2>
+        <p>Votre abonnement <strong>${escapeHtml(planName)}</strong> est maintenant actif. Vous avez désormais accès à l'intégralité du catalogue FYGS !</p>
         
         <div class="highlight">
           <p><strong>🎯 Accès Premium Activé</strong></p>
           <p>Toutes nos formations sont maintenant à votre disposition, sans limitation.</p>
         </div>
 
-        <a href="${siteUrl}/formations" class="cta-button">Explorer toutes les formations</a>
+        <a href="${escapeHtml(siteUrl)}/formations" class="cta-button">Explorer toutes les formations</a>
 
         <div class="features-list">
           <h3>Vos avantages Premium :</h3>
@@ -146,11 +147,11 @@ export class AccountEmailTemplates {
       billingPeriod === "monthly" ? "mois" : "an"
     }</p>
         
-        <p>Gérez votre abonnement depuis votre <a href="${siteUrl}/dashboard/billing">espace facturation</a></p>
+        <p>Gérez votre abonnement depuis votre <a href="${escapeHtml(siteUrl)}/dashboard/billing">espace facturation</a></p>
       </div>
       <div class="footer">
         <p>FYGS Learning Platform - Abonnement Premium</p>
-        <p><a href="${siteUrl}/dashboard">Tableau de bord</a> | <a href="${siteUrl}/dashboard/billing">Facturation</a></p>
+        <p><a href="${escapeHtml(siteUrl)}/dashboard">Tableau de bord</a> | <a href="${escapeHtml(siteUrl)}/dashboard/billing">Facturation</a></p>
       </div>
     `;
 
@@ -175,8 +176,8 @@ export class AccountEmailTemplates {
         <p>Vos modifications ont été enregistrées</p>
       </div>
       <div class="content">
-        <h2>Bonjour ${userName},</h2>
-        <p>Votre abonnement <strong>${planName}</strong> a été mis à jour avec succès.</p>
+        <h2>Bonjour ${escapeHtml(userName)},</h2>
+        <p>Votre abonnement <strong>${escapeHtml(planName)}</strong> a été mis à jour avec succès.</p>
         
         <div class="highlight">
           <p><strong>Nouvel abonnement :</strong> ${formatPrice(price, { freeLabel: false })}/${
@@ -184,12 +185,12 @@ export class AccountEmailTemplates {
     }</p>
           ${
             nextBillingDate
-              ? `<p><strong>Prochaine facturation :</strong> ${nextBillingDate}</p>`
+              ? `<p><strong>Prochaine facturation :</strong> ${escapeHtml(nextBillingDate)}</p>`
               : ""
           }
         </div>
 
-        <a href="${siteUrl}/dashboard/billing" class="cta-button">Gérer mon abonnement</a>
+        <a href="${escapeHtml(siteUrl)}/dashboard/billing" class="cta-button">Gérer mon abonnement</a>
 
         <p>Ces modifications prendront effet lors de votre prochaine période de facturation.</p>
         
@@ -197,7 +198,7 @@ export class AccountEmailTemplates {
       </div>
       <div class="footer">
         <p>FYGS Learning Platform</p>
-        <p><a href="${siteUrl}/dashboard/billing">Facturation</a> | <a href="${siteUrl}/contact">Support</a></p>
+        <p><a href="${escapeHtml(siteUrl)}/dashboard/billing">Facturation</a> | <a href="${escapeHtml(siteUrl)}/contact">Support</a></p>
       </div>
     `;
 
@@ -220,14 +221,14 @@ export class AccountEmailTemplates {
         <p>Votre sécurité est notre priorité</p>
       </div>
       <div class="content">
-        <h2>Bonjour ${userName},</h2>
-        <p>Votre mot de passe a été modifié avec succès le <strong>${changeDate}</strong>.</p>
+        <h2>Bonjour ${escapeHtml(userName)},</h2>
+        <p>Votre mot de passe a été modifié avec succès le <strong>${escapeHtml(changeDate)}</strong>.</p>
         
         <div class="highlight">
           <p><strong>🛡️ Détails de la modification :</strong></p>
-          <p><strong>Date :</strong> ${changeDate}</p>
+          <p><strong>Date :</strong> ${escapeHtml(changeDate)}</p>
           ${
-            ipAddress ? `<p><strong>Adresse IP :</strong> ${ipAddress}</p>` : ""
+            ipAddress ? `<p><strong>Adresse IP :</strong> ${escapeHtml(ipAddress)}</p>` : ""
           }
         </div>
 
@@ -238,13 +239,13 @@ export class AccountEmailTemplates {
           <li>Contactez notre support à <a href="mailto:security@fygs.dev">security@fygs.dev</a></li>
         </ol>
 
-        <a href="${siteUrl}/profile" class="cta-button">Gérer mon profil</a>
+        <a href="${escapeHtml(siteUrl)}/profile" class="cta-button">Gérer mon profil</a>
 
         <p>Pour votre sécurité, nous vous recommandons d'utiliser un mot de passe unique et complexe.</p>
       </div>
       <div class="footer">
         <p>FYGS Learning Platform - Équipe Sécurité</p>
-        <p><a href="${siteUrl}/profile">Mon profil</a> | <a href="mailto:security@fygs.dev">Sécurité</a></p>
+        <p><a href="${escapeHtml(siteUrl)}/profile">Mon profil</a> | <a href="mailto:security@fygs.dev">Sécurité</a></p>
       </div>
     `;
 
@@ -262,7 +263,7 @@ export class AccountEmailTemplates {
         <p>Action requise pour maintenir votre accès</p>
       </div>
       <div class="content">
-        <h2>Bonjour ${userName},</h2>
+        <h2>Bonjour ${escapeHtml(userName)},</h2>
         <p>Nous n'avons pas pu traiter le paiement de votre abonnement FYGS Premium.</p>
         
         <div class="highlight" style="border-left-color: #ef4444;">
@@ -270,7 +271,7 @@ export class AccountEmailTemplates {
           <p>Mettez à jour vos informations de paiement dans les 7 jours pour éviter la suspension de votre accès.</p>
         </div>
 
-        <a href="${siteUrl}/dashboard/billing" class="cta-button" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">Mettre à jour le paiement</a>
+        <a href="${escapeHtml(siteUrl)}/dashboard/billing" class="cta-button" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">Mettre à jour le paiement</a>
 
         <p><strong>Que faire ?</strong></p>
         <ol>
@@ -283,7 +284,7 @@ export class AccountEmailTemplates {
       </div>
       <div class="footer">
         <p>FYGS Learning Platform - Service Facturation</p>
-        <p><a href="${siteUrl}/dashboard/billing">Facturation</a> | <a href="mailto:billing@fygs.dev">Support Paiement</a></p>
+        <p><a href="${escapeHtml(siteUrl)}/dashboard/billing">Facturation</a> | <a href="mailto:billing@fygs.dev">Support Paiement</a></p>
       </div>
     `;
 
@@ -304,7 +305,7 @@ export class AccountEmailTemplates {
         <p>Nous espérons vous revoir bientôt</p>
       </div>
       <div class="content">
-        <h2>Au revoir ${userName},</h2>
+        <h2>Au revoir ${escapeHtml(userName)},</h2>
         <p>Votre abonnement FYGS Premium a été annulé avec succès.</p>
         
         <div class="highlight">
@@ -314,7 +315,7 @@ export class AccountEmailTemplates {
 
         <p><strong>Vos formations individuelles restent accessibles</strong> - Seul l'accès Premium sera suspendu.</p>
 
-        <a href="${siteUrl}/formations" class="cta-button">Parcourir les formations</a>
+        <a href="${escapeHtml(siteUrl)}/formations" class="cta-button">Parcourir les formations</a>
 
         <p>Vous nous manquez déjà ! Si vous changez d'avis, vous pouvez réactiver votre abonnement à tout moment.</p>
         
@@ -322,7 +323,7 @@ export class AccountEmailTemplates {
       </div>
       <div class="footer">
         <p>FYGS Learning Platform</p>
-        <p><a href="${siteUrl}/pricing">Réabonnement</a> | <a href="${siteUrl}/contact">Nous dire pourquoi</a></p>
+        <p><a href="${escapeHtml(siteUrl)}/pricing">Réabonnement</a> | <a href="${escapeHtml(siteUrl)}/contact">Nous dire pourquoi</a></p>
       </div>
     `;
 
@@ -343,18 +344,18 @@ export class AccountEmailTemplates {
         <p>Votre accès Premium est désormais désactivé</p>
       </div>
       <div class="content">
-        <h2>Bonjour ${userName},</h2>
+        <h2>Bonjour ${escapeHtml(userName)},</h2>
         <p>Votre abonnement Premium a été résilié immédiatement comme demandé. Vous n'avez plus accès au catalogue illimité.</p>
         <div class="highlight" style="border-left-color:#ef4444;">
           <p><strong>Ce que cela signifie :</strong></p>
           <p>- Accès Premium retiré dès maintenant<br/>- Vos formations achetées individuellement restent disponibles<br/>- Aucune facturation future</p>
         </div>
         <p>Vous pouvez réactiver un abonnement à tout moment.</p>
-        <a href="${siteUrl}/pricing" class="cta-button" style="background: linear-gradient(135deg,#2563eb 0%,#4338ca 100%);">Voir les offres</a>
+        <a href="${escapeHtml(siteUrl)}/pricing" class="cta-button" style="background: linear-gradient(135deg,#2563eb 0%,#4338ca 100%);">Voir les offres</a>
       </div>
       <div class="footer">
         <p>FYGS Learning Platform</p>
-        <p><a href="${siteUrl}/pricing">Revenir en Premium</a></p>
+        <p><a href="${escapeHtml(siteUrl)}/pricing">Revenir en Premium</a></p>
       </div>
     `;
     return {
@@ -378,25 +379,25 @@ export class AccountEmailTemplates {
         <p>Votre nouvelle formule est en place</p>
       </div>
       <div class="content">
-        <h2>Bonjour ${userName},</h2>
-        <p>Votre abonnement a été basculé vers la formule <strong>${planName}</strong> (${formatPrice(price, { freeLabel: false })} / ${
+        <h2>Bonjour ${escapeHtml(userName)},</h2>
+        <p>Votre abonnement a été basculé vers la formule <strong>${escapeHtml(planName)}</strong> (${formatPrice(price, { freeLabel: false })} / ${
       billingPeriod === "monthly" ? "mois" : "an"
     }).</p>
         <div class="highlight">
           <p><strong>Détails :</strong></p>
           ${
             nextBillingDate
-              ? `<p>Nouvelle prochaine facturation : <strong>${nextBillingDate}</strong></p>`
+              ? `<p>Nouvelle prochaine facturation : <strong>${escapeHtml(nextBillingDate)}</strong></p>`
               : ""
           }
           <p>Une facture de régularisation (proration) peut apparaître selon votre précédent cycle.</p>
         </div>
         <p>Vous pouvez consulter l'historique dans votre espace facturation.</p>
-        <a href="${siteUrl}/dashboard/billing" class="cta-button">Voir la facturation</a>
+        <a href="${escapeHtml(siteUrl)}/dashboard/billing" class="cta-button">Voir la facturation</a>
       </div>
       <div class="footer">
         <p>FYGS Learning Platform</p>
-        <p><a href="${siteUrl}/dashboard/billing">Facturation</a></p>
+        <p><a href="${escapeHtml(siteUrl)}/dashboard/billing">Facturation</a></p>
       </div>
     `;
     return {
@@ -423,21 +424,21 @@ export class AccountEmailTemplates {
         <p>Votre demande a été traitée</p>
       </div>
       <div class="content">
-        <h2>Bonjour ${userName},</h2>
+        <h2>Bonjour ${escapeHtml(userName)},</h2>
         <p>Votre remboursement ${
           amount ? `de <strong>${formatPrice(amount, { freeLabel: false })}</strong>` : ""
         } a été traité avec succès${
-      courseTitle ? ` pour la formation <strong>${courseTitle}</strong>` : ""
+      courseTitle ? ` pour la formation <strong>${escapeHtml(courseTitle)}</strong>` : ""
     }.</p>
         <div class="highlight">
           <p>Le crédit apparaîtra sur votre moyen de paiement dans 5 à 10 jours ouvrés.</p>
         </div>
         <p>Vous pouvez continuer d'explorer nos formations gratuites ou revenir plus tard.</p>
-        <a href="${siteUrl}/formations" class="cta-button">Explorer</a>
+        <a href="${escapeHtml(siteUrl)}/formations" class="cta-button">Explorer</a>
       </div>
       <div class="footer">
         <p>FYGS Learning Platform</p>
-        <p><a href="${siteUrl}/contact">Support</a></p>
+        <p><a href="${escapeHtml(siteUrl)}/contact">Support</a></p>
       </div>
     `;
     return {

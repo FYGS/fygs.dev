@@ -29,7 +29,7 @@ describe("VideoUpload", () => {
     fireEvent.change(screen.getByLabelText("Adresse de la vidéo"), { target: { value: "https://youtu.be/abc" } });
     expect(onChange).toHaveBeenCalledWith("https://youtu.be/abc");
     rerender(<VideoUpload value="pas-une-adresse" onChange={onChange} label="Adresse de la vidéo" />);
-    expect(screen.getByText("L'adresse doit commencer par http:// ou https://.")).toBeTruthy();
+    expect(screen.getByText("L'adresse doit commencer par https://.")).toBeTruthy();
   });
 
   it("starts on the address when a video is set, and can remove it", () => {

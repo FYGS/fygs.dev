@@ -44,6 +44,12 @@ export async function submitCourseReview(input: { courseId: string; rating: numb
     where: { userId_courseId: { userId: user.id, courseId } },
     select: { id: true },
   });
+  // A first review goes through the same eligibility as the reviews API (followed enough of the course, account and
+  // enrolment old enough, not suspended); rewriting your own review needs the right to the course, checked above
+  if (!existing) {
+    const eligibility = await ReviewPermissionsService.canCreateReview(user.id, courseId);
+    if (!eligibility.allowed) return { ok: false, message: eligibility.reason ?? "Vous ne pouvez pas encore laisser d'avis." };
+  }
   const limit = await ReviewPermissionsService.checkRateLimit(user.id, existing ? "edit" : "create");
   if (!limit.allowed) return { ok: false, message: limit.reason ?? "Trop de tentatives, réessayez plus tard." };
 

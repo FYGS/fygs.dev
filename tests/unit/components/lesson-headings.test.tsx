@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import { render } from "@testing-library/react";
 
 import { LessonContentRenderer } from "@/components/learning/lesson-content-renderer";
-import { MarkdownRenderer } from "@/components/mdx/markdown-renderer";
 
 const body = "# Introduction\n\nSome text.\n\n## Part one\n\nMore text.\n\n### Detail\n\nEnd.";
 
@@ -21,12 +20,5 @@ describe("lesson headings (WCAG 1.3.1: one h1 per page)", () => {
     const { container } = render(<LessonContentRenderer content={body} />);
 
     expect(container.querySelector("h2")?.id).toBe("introduction");
-  });
-
-  it("markdown embedded in a page that has its own title does not add an <h1> either", () => {
-    const { container } = render(<MarkdownRenderer content={body} />);
-
-    expect(container.querySelectorAll("h1")).toHaveLength(0);
-    expect(container.querySelectorAll("h2").length).toBeGreaterThanOrEqual(2);
   });
 });

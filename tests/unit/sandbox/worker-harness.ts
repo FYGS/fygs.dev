@@ -27,11 +27,17 @@ export interface WorkerRequest {
 /** Runs the sandbox worker body exactly as the sandbox does, in a context that only has `self` and `console`. */
 export function runWorker(request: WorkerRequest): WorkerMessage[] {
   const messages: WorkerMessage[] = [];
-  const self: { postMessage: (m: WorkerMessage) => void; onmessage?: (e: { data: unknown }) => void } = {
+  const port: { postMessage: (m: WorkerMessage) => void; onmessage?: (e: { data: unknown }) => void } = {
     postMessage: (m) => messages.push(JSON.parse(JSON.stringify(m))),
   };
+  const self: {
+    postMessage: (m: unknown) => void;
+    onmessage?: (e: { data: unknown; ports?: unknown[] }) => void;
+  } = { postMessage: () => {} };
   vm.runInNewContext(`(${workerMain.toString()})()`, { self, console: {} });
-  self.onmessage!({ data: request });
+  // Same handshake as the sandbox page: init hands the worker its private port, requests travel on that port
+  self.onmessage!({ data: { type: "init" }, ports: [port] });
+  port.onmessage!({ data: request });
   return messages;
 }
 

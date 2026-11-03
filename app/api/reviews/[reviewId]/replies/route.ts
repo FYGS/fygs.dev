@@ -91,12 +91,6 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             role: true,
           },
         },
-        review: {
-          include: {
-            user: true,
-            course: true,
-          },
-        },
       },
     });
 
@@ -154,6 +148,28 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { reviewId } = await params;
+
+    // The replies of a review follow its visibility: a pending, rejected or flagged review (and what was said under
+    // it) is for its author, an administrator and the instructor of its course only
+    const review = await db.review.findUnique({
+      where: { id: reviewId },
+      select: { status: true, userId: true, course: { select: { instructorId: true } } },
+    });
+    if (!review) {
+      return NextResponse.json({ error: "Avis non trouvé" }, { status: 404 });
+    }
+    if (review.status !== "APPROVED") {
+      const session = await auth.api.getSession({ headers: request.headers }).catch(() => null);
+      const viewer = session?.user;
+      const mayRead =
+        !!viewer &&
+        (viewer.id === review.userId ||
+          viewer.role === "ADMIN" ||
+          (viewer.role === "INSTRUCTOR" && review.course.instructorId === viewer.id));
+      if (!mayRead) {
+        return NextResponse.json({ error: "Avis non trouvé" }, { status: 404 });
+      }
+    }
 
     // Get all replies for the review
     const replies = await db.reviewReply.findMany({

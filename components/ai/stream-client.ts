@@ -26,6 +26,8 @@ export interface StreamOptions {
   signal?: AbortSignal;
   endpoint?: string;
   fetchImpl?: typeof fetch;
+  /** Extra request headers, e.g. the proof of work a visitor without an account sends (lib/anti-automation/client). */
+  headers?: Record<string, string>;
 }
 
 const KNOWN_CODES: ReadonlySet<string> = new Set<AssistantErrorCode>([
@@ -62,13 +64,13 @@ export async function streamAssistant(
   handlers: StreamHandlers,
   options: StreamOptions = {},
 ): Promise<void> {
-  const { signal, endpoint = ASSISTANT_ENDPOINT, fetchImpl = fetch } = options;
+  const { signal, endpoint = ASSISTANT_ENDPOINT, fetchImpl = fetch, headers } = options;
 
   let response: Response;
   try {
     response = await fetchImpl(endpoint, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
+      headers: { ...headers, "Content-Type": "application/json", Accept: "text/event-stream" },
       body: JSON.stringify(request),
       signal,
       cache: "no-store",

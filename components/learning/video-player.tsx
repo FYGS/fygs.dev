@@ -46,6 +46,9 @@ interface VideoPlayerProps {
 }
 
 const CAPTIONS_PREFERENCE = "fygs:captions";
+/** Uploaded videos are served through the site, which redirects to a short-lived signed address. */
+const SIGNED_ROUTE = /^\/api\/learn\/media\//;
+const MAX_ADDRESS_REFRESHES = 3;
 
 /** The learner's last captions choice in this browser (false when unknown or storage is refused). */
 function storedCaptionsChoice(): boolean {
@@ -73,6 +76,9 @@ export function VideoPlayer({ title, videoUrl, durationHint, resumeAt, captionsS
   const containerRef = useRef<HTMLDivElement>(null);
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTick = useRef<number | null>(null);
+  // A signed address lives a few minutes: when the storage refuses it, the player asks the site for a new one and
+  // carries on from where it was (`reload.at`), a few times at most.
+  const reload = useRef<{ count: number; at: number | null; playing: boolean }>({ count: 0, at: null, playing: false });
 
   const [playing, setPlaying] = useState(false);
   const [time, setTime] = useState(0);
@@ -165,6 +171,13 @@ export function VideoPlayer({ title, videoUrl, durationHint, resumeAt, captionsS
     const onLoaded = () => {
       setDuration(video.duration);
       setLoading(false);
+      if (reload.current.at !== null) {
+        // new signed address: back to the moment the old one stopped working, not to the saved resume point
+        video.currentTime = reload.current.at;
+        if (reload.current.playing) video.play().catch(() => setPlaying(false));
+        reload.current.at = null;
+        return;
+      }
       // captions follow the learner's last choice, once the track exists
       if (captionsSrc && storedCaptionsChoice()) setCaptionsOn(true);
       const d = video.duration;
@@ -214,6 +227,13 @@ export function VideoPlayer({ title, videoUrl, durationHint, resumeAt, captionsS
       setLoading(false);
     };
     const onError = () => {
+      if (SIGNED_ROUTE.test(videoUrl) && reload.current.count < MAX_ADDRESS_REFRESHES) {
+        reload.current = { count: reload.current.count + 1, at: video.currentTime, playing: !video.paused };
+        video.src = `${videoUrl}?refresh=${Date.now()}`;
+        video.load();
+        setLoading(true);
+        return;
+      }
       setError(true);
       setLoading(false);
     };
@@ -235,7 +255,7 @@ export function VideoPlayer({ title, videoUrl, durationHint, resumeAt, captionsS
     return () => {
       for (const [name, handler] of events) video.removeEventListener(name, handler);
     };
-  }, [resumeAt, progress, completed, complete, showControlsBriefly, captionsSrc]);
+  }, [resumeAt, progress, completed, complete, showControlsBriefly, captionsSrc, videoUrl]);
 
   useEffect(() => {
     const onChange = () => setFullscreen(document.fullscreenElement === containerRef.current);

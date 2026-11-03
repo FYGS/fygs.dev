@@ -207,21 +207,21 @@ async function MentorshipContent({ searchParams }: MentorshipPageProps) {
                                 <div className="flex gap-1">
                                   {mentor.githubUrl && (
                                     <Button variant="ghost" size="sm" asChild>
-                                      <Link href={mentor.githubUrl} target="_blank">
+                                      <Link href={mentor.githubUrl} target="_blank" rel="noopener noreferrer nofollow ugc">
                                         <Github className="h-4 w-4" />
                                       </Link>
                                     </Button>
                                   )}
                                   {mentor.linkedinUrl && (
                                     <Button variant="ghost" size="sm" asChild>
-                                      <Link href={mentor.linkedinUrl} target="_blank">
+                                      <Link href={mentor.linkedinUrl} target="_blank" rel="noopener noreferrer nofollow ugc">
                                         <Linkedin className="h-4 w-4" />
                                       </Link>
                                     </Button>
                                   )}
                                   {mentor.websiteUrl && (
                                     <Button variant="ghost" size="sm" asChild>
-                                      <Link href={mentor.websiteUrl} target="_blank">
+                                      <Link href={mentor.websiteUrl} target="_blank" rel="noopener noreferrer nofollow ugc">
                                         <Globe className="h-4 w-4" />
                                       </Link>
                                     </Button>

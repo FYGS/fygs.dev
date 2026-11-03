@@ -9,6 +9,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { waitForSettledPage } from "./settle.mjs";
+import { signInWithSecondFactor } from "./staff-two-factor.mjs";
 
 const root = path.resolve(import.meta.dirname, "../..");
 const { chromium } = await import(pathToFileURL(path.join(root, "node_modules/@playwright/test/index.mjs")).href);
@@ -36,12 +37,7 @@ let session;
 if (signInEmail) {
   const loginContext = await browser.newContext();
   await loginContext.addCookies([{ name: "locale_selected", value: "true", url: base }]);
-  const ip = `10.${Math.floor(Math.random() * 250) + 1}.${Math.floor(Math.random() * 250) + 1}.${Math.floor(Math.random() * 250) + 1}`;
-  const signIn = await loginContext.request.post(base + "/api/auth/sign-in/email", {
-    data: { email: signInEmail, password: signInPassword },
-    headers: { origin: new URL(base).origin, "x-forwarded-for": ip },
-  });
-  if (!signIn.ok()) throw new Error(`sign-in as ${signInEmail} answered ${signIn.status()}`);
+  await signInWithSecondFactor(loginContext, base, signInEmail, signInPassword);
   session = await loginContext.storageState();
   await loginContext.close();
 }

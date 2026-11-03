@@ -1,6 +1,7 @@
 import { test as base, expect, type Cookie, type Page } from "@playwright/test";
 
 import { PASSWORD, uniqueIp } from "./db";
+import { STAFF_TOTP_SECRET, totpNow } from "./two-factor";
 
 export { expect };
 
@@ -70,6 +71,14 @@ export async function signInViaApi(page: Page, email: string, password = PASSWOR
     headers: { origin: new URL(process.env.E2E_BASE_URL!).origin, "x-forwarded-for": uniqueIp() },
   });
   expect(res.ok(), `sign-in API answered ${res.status()}`).toBe(true);
+  // A staff account answers with a second-factor challenge: give the code an authenticator would show
+  if ((await res.json().catch(() => null))?.twoFactorRedirect) {
+    const verified = await page.request.post("/api/auth/two-factor/verify-totp", {
+      data: { code: totpNow(STAFF_TOTP_SECRET) },
+      headers: { origin: new URL(process.env.E2E_BASE_URL!).origin, "x-forwarded-for": uniqueIp() },
+    });
+    expect(verified.ok(), `second factor answered ${verified.status()}`).toBe(true);
+  }
   sessionCookies.set(
     email,
     (await page.context().cookies()).filter((c) => !["locale_selected", "NEXT_LOCALE"].includes(c.name)),

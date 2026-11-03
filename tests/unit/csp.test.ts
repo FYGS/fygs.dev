@@ -36,14 +36,45 @@ describe("Content-Security-Policy", () => {
     expect(directive(buildGlobalCsp(true), "script-src")).toContain("'unsafe-eval'");
   });
 
-  it("gives the playground the CDNs, eval and frames it needs", () => {
+  it("gives the playground the eval and frames it needs, but no third-party script host", () => {
     const csp = buildPlaygroundCsp();
     const script = directive(csp, "script-src");
-    for (const origin of ["https://cdn.jsdelivr.net", "https://unpkg.com", "https://esm.sh", "'unsafe-eval'", "'wasm-unsafe-eval'", "blob:"]) {
-      expect(script).toContain(origin);
+    for (const origin of ["'self'", "'unsafe-eval'", "blob:"]) expect(script).toContain(origin);
+    // the previews and Python run in sandbox pages with their own policy: the page itself loads no CDN script
+    for (const origin of ["cdn.jsdelivr.net", "unpkg.com", "esm.sh", "'wasm-unsafe-eval'"]) {
+      expect(script).not.toContain(origin);
     }
     expect(directive(csp, "frame-src")).toContain("https:");
+    expect(directive(csp, "frame-src")).not.toMatch(/blob:|data:/);
     expect(directive(csp, "object-src")).toBe("object-src 'none'");
+  });
+
+  describe("Python sandbox policy", () => {
+    const csp = buildSandboxCsp("python");
+
+    it("allows WebAssembly and the runtime's own files, and no network", () => {
+      expect(directive(csp, "default-src")).toBe("default-src 'none'");
+      const script = directive(csp, "script-src");
+      expect(script).toContain("'self'");
+      expect(script).toContain("'wasm-unsafe-eval'");
+      expect(script).not.toContain("'unsafe-inline'");
+      expect(csp).not.toMatch(/https?:/);
+      expect(directive(csp, "connect-src")).toBe("connect-src 'self'");
+      expect(directive(csp, "frame-ancestors")).toBe("frame-ancestors 'self'");
+      expect(directive(csp, "form-action")).toBe("form-action 'none'");
+    });
+  });
+
+  describe("preview sandbox policy", () => {
+    const csp = buildSandboxCsp("preview");
+
+    it("is the only place the CDNs may run scripts, and it cannot be framed by other sites or submit forms", () => {
+      const script = directive(csp, "script-src");
+      for (const origin of ["https://cdn.jsdelivr.net", "https://unpkg.com", "https://esm.sh"]) expect(script).toContain(origin);
+      expect(directive(csp, "frame-ancestors")).toBe("frame-ancestors 'self'");
+      expect(directive(csp, "form-action")).toBe("form-action 'none'");
+      expect(directive(csp, "object-src")).toBe("object-src 'none'");
+    });
   });
 
   it("applies the site-wide policy to every route except the playground", () => {

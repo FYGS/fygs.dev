@@ -4,6 +4,7 @@ import { LocaleSelectorModal } from "@/components/ui/locale-selector-modal";
 import { cn } from "@/lib/utils";
 import { PageMemoryProvider } from "@/providers/page-memory-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
+import { THEME_INIT_SCRIPT } from "@/lib/theme-init-script.mjs";
 import { TransitionProvider } from "@/providers/transition-provider";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
@@ -97,6 +98,8 @@ const LocaleLayout: NextLayoutIntlayer = async (props) => {
         <meta name="msapplication-TileColor" content="#0F172A" />
         {/* Structured data */}
         <JsonLd />
+        {/* Applies the stored theme before the first paint; allowed by its hash in the Content-Security-Policy */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body
         className={cn(

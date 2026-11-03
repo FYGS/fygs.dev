@@ -2,6 +2,7 @@ import type Stripe from "stripe";
 import { paymentService } from "@/lib/payment-service";
 import { db } from "@/lib/db";
 import { SubscriptionStatus } from "@/lib/generated/prisma/browser";
+import { applySubscriptionState, subscriptionStateFromStripe } from "@/lib/payments/subscription-state";
 import { emailService } from "@/lib/email-service";
 import { Analytics } from "@/lib/analytics-helper";
 import { logger } from "../_lib/logger";
@@ -19,16 +20,18 @@ export async function handleInvoicePaymentFailed(event: Stripe.InvoicePaymentFai
       const userId = subscription.metadata?.userId;
 
       if (userId) {
-        // Update subscription status to PAST_DUE
-        await db.subscription.updateMany({
-          where: {
+        // Stripe's current state (past_due, or already cancelled after the retries), stored through the central rules
+        const outcome = await applySubscriptionState(subscriptionStateFromStripe(userId, subscription));
+        if (outcome !== "applied") {
+          logger.info("Payment failure not applied to the stored subscription", {
+            eventType: "payment.failed_not_applied",
             userId,
-            stripeSubscriptionId: subscriptionId,
-          },
-          data: {
-            status: SubscriptionStatus.PAST_DUE,
-          },
-        });
+            resourceType: "subscription",
+            resourceId: subscriptionId,
+            metadata: { outcome },
+          });
+          return;
+        }
 
         const user = await db.user.findUnique({
           where: { id: userId },

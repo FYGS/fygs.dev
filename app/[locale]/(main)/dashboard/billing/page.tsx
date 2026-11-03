@@ -37,6 +37,7 @@ const PAYMENT_STATUS: Record<PaymentStatus, { label: string; className: string }
   COMPLETED: { label: "Payé", className: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200" },
   REFUNDED: { label: "Remboursé", className: "bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200" },
   FAILED: { label: "Échec", className: "bg-rose-100 text-rose-900 dark:bg-rose-950 dark:text-rose-200" },
+  DISPUTED: { label: "Contesté", className: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200" },
   PENDING: { label: "En cours", className: "bg-muted text-foreground" },
 };
 
@@ -45,7 +46,14 @@ const AUDIT_LABELS: Record<string, string> = {
   REFUND_PROCESSED: "Remboursement",
   REFUND_RECORD: "Remboursement",
   CHARGE_REFUNDED: "Remboursement",
+  REFUND_FAILED: "Remboursement échoué",
+  DISPUTE_OPENED: "Paiement contesté",
+  DISPUTE_WON: "Contestation rejetée par la banque",
+  DISPUTE_LOST: "Contestation acceptée par la banque",
 };
+
+/** The payments that open a paid period: a first subscription or a renewal. Plan-change adjustments are not them. */
+const PERIOD_PAYMENT_DESCRIPTIONS = new Set(["Abonnement Premium", "Renouvellement abonnement Premium"]);
 
 /** The moment the page is built, and the cut-off under which an unpaid checkout is no longer listed. */
 function clock() {
@@ -93,6 +101,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
         status: true,
         description: true,
         createdAt: true,
+        updatedAt: true,
         kind: true,
         stripePaymentIntentId: true,
         course: { select: { id: true, title: true, slug: true } },
@@ -111,11 +120,21 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
   const cycle = classifyBillingCycle(subscription?.priceId ?? undefined);
   const prices = getSubscriptionPrices();
   const availableCycles = (["monthly", "yearly"] as const).filter((c) => Boolean(prices[c]));
+  // The refund window runs from the day the last period was PAID (a plan change neither moves nor reopens it)
+  const lastPeriodPaidAt = payments
+    .filter(
+      (p) =>
+        p.kind === PaymentKind.SUBSCRIPTION &&
+        p.status === PaymentStatus.COMPLETED &&
+        PERIOD_PAYMENT_DESCRIPTIONS.has(p.description ?? ""),
+    )
+    .map((p) => p.updatedAt)
+    .sort((a, b) => b.getTime() - a.getTime())[0];
   const subscriptionRefund =
-    subscription?.status === SubscriptionStatus.ACTIVE && subscription.currentPeriodStart && subscription.stripeSubscriptionId
+    subscription?.status === SubscriptionStatus.ACTIVE && lastPeriodPaidAt && subscription.stripeSubscriptionId
       ? {
-          eligible: isRefundEligible(subscription.currentPeriodStart, now),
-          deadline: getRefundDeadline(subscription.currentPeriodStart),
+          eligible: isRefundEligible(lastPeriodPaidAt, now),
+          deadline: getRefundDeadline(lastPeriodPaidAt),
           subscriptionId: subscription.stripeSubscriptionId,
         }
       : null;
@@ -227,7 +246,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
                 const decision =
                   payment.status === PaymentStatus.COMPLETED && payment.stripePaymentIntentId?.startsWith("pi_")
                     ? courseRefundDecision({
-                        purchasedAt: payment.createdAt,
+                        purchasedAt: payment.updatedAt, // when the payment was settled, not when the checkout opened
                         amount: Number(payment.amount),
                         completed: finished.has(payment.course!.id),
                         now,

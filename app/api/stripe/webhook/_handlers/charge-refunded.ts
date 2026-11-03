@@ -1,6 +1,7 @@
 import type Stripe from "stripe";
 import { db } from "@/lib/db";
 import { PaymentStatus } from "@/lib/generated/prisma/browser";
+import { writeAudit } from "@/lib/audit";
 import { logger } from "../_lib/logger";
 
 const refId = (ref: string | { id: string } | null | undefined): string | null =>
@@ -87,6 +88,14 @@ export async function handleChargeRefunded(
             paymentKind: payment.kind,
           },
         },
+      });
+
+      await writeAudit({
+        actorId: null,
+        action: "payment.refunded",
+        targetType: "payment",
+        targetId: payment.id,
+        metadata: { chargeId: charge.id, amountRefundedCents: charge.amount_refunded, fullyRefunded, kind: payment.kind },
       });
 
       logger.info(

@@ -5,10 +5,13 @@ import { Award, Crown, Shield, Star, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { CommunityUser } from "@/types/community";
+import type { CommunityUser } from "@/types/community";
+
+/** What the badge strip reads of a member: level, points and (optionally) badges. Never a whole user row. */
+export type BadgeBearer = Pick<CommunityUser, "communityLevel"> & Partial<Pick<CommunityUser, "communityPoints" | "userBadges">>;
 
 interface UserBadgeProps {
-  user: CommunityUser;
+  user: BadgeBearer;
   showLevel?: boolean;
   showPoints?: boolean;
   showBadges?: boolean;

@@ -2,6 +2,7 @@ import { z } from "zod";
 import { TranspileError, transpileFileStrict } from "./typescript-transpiler";
 import { buildPreviewHtml } from "./preview-html";
 import { executePython } from "./python-executor";
+import { SANDBOX_REACT } from "./sandbox-vendor.generated";
 import {
   executeInWebContainer,
   executeQuickRun,
@@ -488,8 +489,9 @@ function buildReactProjectHtml(
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>React Preview</title>
-  <script src="https://unpkg.com/react@18/umd/react.development.js"><\/script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"><\/script>
+  <!-- React and ReactDOM come from the site itself (scripts/build-sandbox-vendor.mjs), with an integrity hash:
+       not from a CDN that could change under the learner or be compromised -->
+  <script src="${SANDBOX_REACT.path}" integrity="${SANDBOX_REACT.integrity}" crossorigin="anonymous"><\/script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: system-ui, -apple-system, sans-serif; }

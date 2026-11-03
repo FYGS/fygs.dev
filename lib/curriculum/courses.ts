@@ -153,7 +153,7 @@ export async function updateCourseInfo(
   }
   if (patch.trailerUrl !== undefined) {
     const trailer = normalizeTrailerUrl(patch.trailerUrl);
-    if (trailer === undefined) return fail("L'adresse de la bande-annonce n'est pas valide (http ou https).");
+    if (trailer === undefined) return fail("L'adresse de la bande-annonce n'est pas valide (elle doit commencer par https://).");
     data.trailerUrl = trailer;
   }
   for (const key of ["publicPrerequisites", "publicStructure", "publicResources", "publicEvaluation"] as const) {

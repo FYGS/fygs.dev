@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useLessonProgress } from "@/hooks/use-lesson-progress";
@@ -38,17 +38,38 @@ interface LessonSessionProps {
   lessonId: string;
   initialCompleted: boolean;
   courseSlug: string;
+  /**
+   * The lesson has no video this page plays itself (text, or a YouTube/Vimeo embed): the time the page stays open and
+   * visible is reported as time spent, because the server asks for some before it accepts a completion.
+   */
+  trackPresence?: boolean;
   children: React.ReactNode;
 }
 
-export function LessonSession({ lessonId, initialCompleted, courseSlug, children }: LessonSessionProps) {
-  const { mode, markLessonDone } = useLearning();
+/** Presence is counted in steps of this many seconds while the page is visible. */
+const PRESENCE_STEP_SECONDS = 5;
+
+export function LessonSession({ lessonId, initialCompleted, courseSlug, trackPresence = false, children }: LessonSessionProps) {
+  const { mode, markLessonDone, unmarkLessonDone } = useLearning();
   const router = useRouter();
   const recording = mode === "full";
   const progress = useLessonProgress({ lessonId, enabled: recording });
   const [completed, setCompleted] = useState(initialCompleted);
   const [completing, setCompleting] = useState(false);
   const player = useRef<PlayerApi | null>(null);
+
+  // Time on the page counts for a lesson without a video of its own
+  useEffect(() => {
+    if (!recording || !trackPresence || initialCompleted) return;
+    progress.start();
+    const tick = setInterval(() => {
+      if (document.visibilityState === "visible") progress.addWatched(PRESENCE_STEP_SECONDS);
+    }, PRESENCE_STEP_SECONDS * 1000);
+    return () => {
+      clearInterval(tick);
+      progress.stop();
+    };
+  }, [recording, trackPresence, initialCompleted, progress]);
 
   const complete = useCallback(async () => {
     if (!recording || completed || completing) return;
@@ -60,7 +81,9 @@ export function LessonSession({ lessonId, initialCompleted, courseSlug, children
     setCompleting(false);
     if (!result?.success) {
       setCompleted(false);
-      toast.error("La leçon n’a pas pu être enregistrée comme terminée. Réessayez.");
+      unmarkLessonDone(lessonId);
+      // The server says what is missing (time to spend, pace); anything else is a failure to retry
+      toast.error(result?.refusal ?? "La leçon n’a pas pu être enregistrée comme terminée. Réessayez.");
       return;
     }
     if (result.reward) toast.success(`+${result.reward.xp} XP`, { description: "Leçon terminée" });
@@ -70,7 +93,7 @@ export function LessonSession({ lessonId, initialCompleted, courseSlug, children
         action: { label: "Voir", onClick: () => router.push(`/learn/${courseSlug}/completed`) },
       });
     }
-  }, [recording, completed, completing, markLessonDone, lessonId, progress, router, courseSlug]);
+  }, [recording, completed, completing, markLessonDone, unmarkLessonDone, lessonId, progress, router, courseSlug]);
 
   const registerPlayer = useCallback((api: PlayerApi | null) => {
     player.current = api;

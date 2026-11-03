@@ -17,6 +17,23 @@ const HOUR_MS = 60 * MINUTE_MS;
 export const quizAttemptExpiry = (now: Date) => new Date(now.getTime() - QUIZ_ATTEMPT_TTL_HOURS * HOUR_MS);
 export const quizDayStart = (now: Date) => new Date(now.getTime() - 24 * HOUR_MS);
 
+/**
+ * The moments to count a learner's sittings from, for the cooldown and the daily cap: a submitted sitting counts from
+ * the time it was submitted, a sitting left unsubmitted until it expired counts from the time it started. A sitting that
+ * is still open is not counted: it is the one being continued. Counting abandoned sittings is what stops "answer
+ * everything, read the corrections, never submit" from being a way around the limits.
+ */
+export function sittingEndTimes(
+  attempts: { startedAt: Date; submittedAt: Date | null }[],
+  now: Date,
+): Date[] {
+  const expiry = quizAttemptExpiry(now).getTime();
+  return attempts.flatMap((attempt) => {
+    if (attempt.submittedAt) return [attempt.submittedAt];
+    return attempt.startedAt.getTime() <= expiry ? [attempt.startedAt] : [];
+  });
+}
+
 export type QuizAttemptDecision =
   | { allowed: true }
   | { allowed: false; reason: "COOLDOWN" | "DAILY_LIMIT"; retryAt: Date };

@@ -51,6 +51,23 @@ describe("LessonTabs", () => {
     expect(screen.getByRole("link", { name: /Télécharger les sous-titres/ }).getAttribute("href")).toBe("/api/learn/captions/l1?download=1");
   });
 
+  it("never shows the stored address of an uploaded file: a download goes through the site, a link goes to its own address", () => {
+    tabs({
+      resources: [
+        { id: "r1", title: "Support de cours", url: "https://media.fygs.test/resources/u1/1-a.pdf", kind: "FILE", sizeBytes: 2048 },
+        { id: "r2", title: "Documentation", url: "https://developer.example.org/docs", kind: "LINK", sizeBytes: null },
+      ],
+    });
+    openTab(/Ressources/);
+    const file = screen.getByRole("link", { name: /Support de cours/ });
+    expect(file.getAttribute("href")).toBe("/api/learn/resource/r1");
+    expect(file.hasAttribute("download")).toBe(true);
+    const link = screen.getByRole("link", { name: /Documentation/ });
+    expect(link.getAttribute("href")).toBe("https://developer.example.org/docs");
+    expect(link.getAttribute("rel")).toContain("noopener");
+    expect(document.body.innerHTML).not.toContain("media.fygs.test");
+  });
+
   it("asks a visitor to sign in for notes and questions, and brings them back to the lesson", () => {
     tabs({ signedIn: false, canAsk: false });
     openTab(/Mes notes/);

@@ -11,8 +11,9 @@ import { db } from "@/lib/db";
  *
  * - A FREE course is open to a signed-in learner who enrolled.
  * - A PREMIUM course is open, once enrolled, with a lifetime purchase (a COMPLETED course payment; a refund
- *   marks it REFUNDED), with an ACTIVE or TRIALING subscription, or with an access granted by an administrator
- *   (`Enrollment.grantedAt`).
+ *   marks it REFUNDED, a chargeback DISPUTED until it is decided), with an ACTIVE or TRIALING subscription whose
+ *   period has not been over for more than `SUBSCRIPTION_GRACE_DAYS` without a renewal, or with an access granted
+ *   by an administrator (`Enrollment.grantedAt`).
  * - The author of the course and administrators may look at everything (`staff`); what they do is not recorded
  *   unless they also hold a real entitlement.
  *
@@ -29,6 +30,8 @@ export type LapsedReason =
   | "subscription_ended"
   /** Their purchase was refunded. */
   | "refunded"
+  /** Their payment is contested with the bank (chargeback): access is suspended until it is decided. */
+  | "disputed"
   /** The course became premium after they enrolled for free. */
   | "premium_required";
 
@@ -44,6 +47,8 @@ export interface EntitlementFacts {
   granted: boolean;
   purchased: boolean;
   refunded: boolean;
+  /** The purchase is contested with the bank. */
+  disputed?: boolean;
   subscription: SubscriptionSnapshot | null;
   isStaff: boolean;
 }
@@ -57,9 +62,28 @@ export interface EntitlementDecision {
   lapsed: LapsedReason | null;
 }
 
-/** The subscription statuses that open premium courses. */
-export function isSubscriptionActive(subscription: Pick<SubscriptionSnapshot, "status"> | null | undefined): boolean {
-  return subscription?.status === SubscriptionStatus.ACTIVE || subscription?.status === SubscriptionStatus.TRIALING;
+/**
+ * How long after the end of its period a subscription that Stripe still reports ACTIVE keeps opening courses. Stripe
+ * normally renews (new period) or cancels (status change) on time and tells us; the grace covers a late delivery. Past
+ * it, a missing renewal event must not leave the access open for ever.
+ */
+export const SUBSCRIPTION_GRACE_DAYS = 3;
+const GRACE_MS = SUBSCRIPTION_GRACE_DAYS * 24 * 60 * 60 * 1000;
+
+/**
+ * Whether a subscription opens premium courses: ACTIVE or TRIALING (a cancellation scheduled for the end of the period
+ * keeps it active until then), and not left behind by more than the grace period. Callers that only know the status
+ * (no period end) get the status rule alone.
+ */
+export function isSubscriptionActive(
+  subscription: (Pick<SubscriptionSnapshot, "status"> & { currentPeriodEnd?: Date | null }) | null | undefined,
+  now: Date = new Date(),
+): boolean {
+  if (!subscription) return false;
+  if (subscription.status !== SubscriptionStatus.ACTIVE && subscription.status !== SubscriptionStatus.TRIALING) return false;
+  const end = subscription.currentPeriodEnd;
+  if (end instanceof Date && !Number.isNaN(end.getTime()) && now.getTime() > end.getTime() + GRACE_MS) return false;
+  return true;
 }
 
 /** The rule, without the database. */
@@ -75,7 +99,13 @@ export function decideEntitlement(facts: EntitlementFacts): EntitlementDecision 
 
   let lapsed: LapsedReason | null = null;
   if (facts.enrolled && !eligible) {
-    lapsed = facts.refunded ? "refunded" : facts.subscription ? "subscription_ended" : "premium_required";
+    lapsed = facts.disputed
+      ? "disputed"
+      : facts.refunded
+        ? "refunded"
+        : facts.subscription
+          ? "subscription_ended"
+          : "premium_required";
   }
   if (facts.isStaff) return { eligible, entitled: true, source: "staff", lapsed: null };
   return { eligible, entitled: false, source: eligible ? source : null, lapsed };
@@ -89,7 +119,7 @@ export interface CourseEntitlement extends EntitlementDecision {
   enrolled: boolean;
   /** Access given by an administrator. */
   granted: boolean;
-  /** A lifetime purchase that still counts (completed, not refunded). */
+  /** A lifetime purchase that still counts (completed, not refunded, not contested). */
   purchased: boolean;
   isStaff: boolean;
 }
@@ -140,7 +170,7 @@ export async function getEntitlements(viewer: Viewer | string | null, courseIds:
             userId,
             kind: PaymentKind.COURSE,
             courseId: { in: ids },
-            status: { in: [PaymentStatus.COMPLETED, PaymentStatus.REFUNDED] },
+            status: { in: [PaymentStatus.COMPLETED, PaymentStatus.REFUNDED, PaymentStatus.DISPUTED] },
           },
           select: { courseId: true, status: true },
         })
@@ -151,6 +181,7 @@ export async function getEntitlements(viewer: Viewer | string | null, courseIds:
   const enrollmentByCourse = new Map(enrollments.map((e) => [e.courseId, e]));
   const purchased = new Set(payments.filter((p) => p.status === PaymentStatus.COMPLETED).map((p) => p.courseId));
   const refunded = new Set(payments.filter((p) => p.status === PaymentStatus.REFUNDED).map((p) => p.courseId));
+  const disputed = new Set(payments.filter((p) => p.status === PaymentStatus.DISPUTED).map((p) => p.courseId));
 
   const map = new Map<string, CourseEntitlement>();
   for (const course of courses) {
@@ -162,6 +193,7 @@ export async function getEntitlements(viewer: Viewer | string | null, courseIds:
       granted: !!enrollment?.grantedAt,
       purchased: purchased.has(course.id),
       refunded: refunded.has(course.id) && !purchased.has(course.id),
+      disputed: disputed.has(course.id) && !purchased.has(course.id),
       subscription,
       isStaff,
     };
@@ -191,10 +223,20 @@ export async function getEntitlement(viewer: Viewer | string | null, courseId: s
   return (await getEntitlements(viewer, [courseId])).courses.get(courseId) ?? null;
 }
 
-/** Whether the viewer holds an active (or trialing) subscription. */
+/** Whether the viewer holds an active (or trialing) subscription, grace period included. */
 export async function hasActiveSubscription(userId: string): Promise<boolean> {
-  const subscription = await db.subscription.findUnique({ where: { userId }, select: { status: true } });
+  const subscription = await db.subscription.findUnique({ where: { userId }, select: { status: true, currentPeriodEnd: true } });
   return isSubscriptionActive(subscription);
+}
+
+/**
+ * A learner who holds a real right to a published course and followed it: enrolled and eligible by a purchase,
+ * subscription, free course or granted access. Staff do not count (they look at courses, they do not learn in them):
+ * this is what reviews, certificates and anything that rewards learning ask for.
+ */
+export async function isEntitledLearner(userId: string, courseId: string): Promise<boolean> {
+  const entitlement = await getEntitlement(userId, courseId);
+  return !!entitlement && entitlement.published && entitlement.entitled && entitlement.source !== "staff";
 }
 
 /**

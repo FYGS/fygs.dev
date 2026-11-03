@@ -1,5 +1,6 @@
 import { SITE_URL } from "@/app/_lib/constants";
 import { LEVEL_LABELS } from "@/lib/courses/labels";
+import { serializeJsonLd } from "@/lib/jsonld";
 import type { PathDetail } from "@/lib/paths/queries";
 
 /** schema.org description of a path: a course made of ordered courses. */
@@ -26,5 +27,5 @@ export function PathStructuredData({ path }: { path: PathDetail }) {
     })),
   };
   // "<" is escaped so that no text of a path can close the script element
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }} />;
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(data) }} />;
 }

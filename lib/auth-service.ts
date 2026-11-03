@@ -1,18 +1,48 @@
 "use client";
 
 import { changePassword, requestPasswordReset, resetPassword, sendVerificationEmail, signIn, signOut, signUp } from "./auth-client";
+import { solveHumanProof } from "./anti-automation/client";
+import { HONEYPOT_FIELD } from "./anti-automation/honeypot";
+import type { HumanProofAction } from "./anti-automation/types";
+import { safeInternalPath } from "./safe-redirect";
+
+/** The hidden trap field of the form on screen, when something filled it: sent as a header (the body is JSON). */
+function honeypotHeaders(): Record<string, string> {
+    if (typeof document === "undefined") return {};
+    const trap = document.querySelector<HTMLInputElement>(`input[name="${HONEYPOT_FIELD}"]`);
+    const value = trap?.value.trim();
+    return value ? { "x-fx-trap": value.slice(0, 64) } : {};
+}
+
+/**
+ * Headers proving the request comes from a browser that did a little work (see lib/anti-automation), and carrying the
+ * honeypot when it was filled. Never blocks the form: when no proof can be made the server decides.
+ */
+async function humanProofFetchOptions(action: HumanProofAction): Promise<{ headers: Record<string, string> }> {
+    let proof: Record<string, string> = {};
+    try {
+        proof = await solveHumanProof(action);
+    } catch {
+        proof = {};
+    }
+    return { headers: { ...proof, ...honeypotHeaders() } };
+}
 
 export interface AuthCredentials {
     email: string;
     password: string;
     name?: string;
     rememberMe?: boolean;
+    /** Where to go once signed in: a path of this site (anything else becomes /dashboard). */
+    callbackURL?: string;
 }
 
 export interface AuthResult {
     success: boolean;
     error?: string;
     requiresVerification?: boolean;
+    /** The password was right and a second factor is due: go to /auth/two-factor. */
+    requiresTwoFactor?: boolean;
 }
 
 export class AuthService {
@@ -31,7 +61,8 @@ export class AuthService {
                 email: credentials.email,
                 password: credentials.password,
                 rememberMe: credentials.rememberMe ?? true,
-                callbackURL: credentials.callbackURL || "/dashboard",
+                callbackURL: safeInternalPath(credentials.callbackURL),
+                fetchOptions: await humanProofFetchOptions("sign-in"),
             });
 
             if (result.error) {
@@ -41,6 +72,10 @@ export class AuthService {
                     error: result.error.message || "Email ou mot de passe incorrect",
                     requiresVerification: status === 403,
                 };
+            }
+
+            if ((result.data as { twoFactorRedirect?: boolean } | null)?.twoFactorRedirect) {
+                return { success: true, requiresTwoFactor: true };
             }
 
             return { success: true };
@@ -66,7 +101,8 @@ export class AuthService {
                 email: credentials.email,
                 password: credentials.password,
                 name: credentials.name,
-                callbackURL: "/dashboard",
+                callbackURL: safeInternalPath(credentials.callbackURL),
+                fetchOptions: await humanProofFetchOptions("sign-up"),
             });
 
             if (result.error) {
@@ -89,7 +125,7 @@ export class AuthService {
     async signInWithProvider(provider: "github" | "google", callbackURL?: string): Promise<void> {
         await signIn.social({
             provider,
-            callbackURL: callbackURL || "/dashboard",
+            callbackURL: safeInternalPath(callbackURL),
             // errorCallbackURL: "/auth/login",
         });
     }
@@ -110,12 +146,13 @@ export class AuthService {
         }
     }
 
-    async sendVerificationEmail(email: string): Promise<AuthResult> {
+    async sendVerificationEmail(email: string, callbackPath?: string | null): Promise<AuthResult> {
         try {
             const origin = typeof window !== "undefined" ? window.location.origin : "";
             const result = await sendVerificationEmail({
                 email,
-                callbackURL: `${origin}/dashboard`,
+                callbackURL: `${origin}${safeInternalPath(callbackPath)}`,
+                fetchOptions: await humanProofFetchOptions("sign-up"),
             });
 
             if (result.error) {
@@ -141,6 +178,7 @@ export class AuthService {
             const result = await requestPasswordReset({
                 email,
                 redirectTo: `${origin}/auth/reset-password`,
+                fetchOptions: await humanProofFetchOptions("password-reset"),
             });
 
             if (result.error) {

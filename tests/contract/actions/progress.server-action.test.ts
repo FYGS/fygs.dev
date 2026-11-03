@@ -2,6 +2,7 @@ import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { db } from "@/lib/db";
 import { updateLessonProgress } from "@/app/[locale]/(main)/dashboard/actions/updateLessonProgress";
 import { auth } from "@/lib/auth";
+import { ageProgress } from "../../support/progress-helpers";
 
 // Mock auth for testing
 vi.mock("@/lib/auth", () => ({
@@ -238,6 +239,8 @@ describe("Update Lesson Progress Server Action Contract Tests", () => {
           watchTime: 100,
         },
       });
+      // time is credited as it passes: the previous report is a minute old
+      await ageProgress(testUserId, testLessonId, 60);
 
       const result = await updateLessonProgress({
         lessonId: testLessonId,
@@ -260,7 +263,8 @@ describe("Update Lesson Progress Server Action Contract Tests", () => {
       expect(result1.success).toBe(true);
       expect(result1.progress!.watchTime).toBe(60);
 
-      // Second update
+      // Second update, two minutes later
+      await ageProgress(testUserId, testLessonId, 120);
       const result2 = await updateLessonProgress({
         lessonId: testLessonId,
         watchTimeDelta: 90,
@@ -268,7 +272,8 @@ describe("Update Lesson Progress Server Action Contract Tests", () => {
       expect(result2.success).toBe(true);
       expect(result2.progress!.watchTime).toBe(150); // 60 + 90
 
-      // Third update
+      // Third update, a minute later
+      await ageProgress(testUserId, testLessonId, 60);
       const result3 = await updateLessonProgress({
         lessonId: testLessonId,
         watchTimeDelta: 30,
@@ -308,6 +313,7 @@ describe("Update Lesson Progress Server Action Contract Tests", () => {
           completedAt: originalCompletedAt,
         },
       });
+      await ageProgress(testUserId, testLessonId, 60);
 
       const result = await updateLessonProgress({
         lessonId: testLessonId,
@@ -396,7 +402,8 @@ describe("Update Lesson Progress Server Action Contract Tests", () => {
         expect(result.progress).toBeDefined();
       });
 
-      // Final watch time should be sum of all deltas (3 * 30 = 90)
+      // Time follows the clock: the first report earns its 30 s, the two that come straight after earn the slack (10 s)
+      // each. Reports in a burst cannot make up an hour of lesson. Every report is still applied (none is lost).
       const finalProgress = await db.progress.findUnique({
         where: {
           userId_lessonId: {
@@ -406,8 +413,8 @@ describe("Update Lesson Progress Server Action Contract Tests", () => {
         },
       });
 
-      // (increments are applied by the database: none may be lost)
-      expect(finalProgress!.watchTime).toBe(90);
+      expect(finalProgress!.watchTime).toBeGreaterThanOrEqual(50);
+      expect(finalProgress!.watchTime).toBeLessThanOrEqual(56);
 
       // Should only have one progress record
       const progressCount = await db.progress.count({

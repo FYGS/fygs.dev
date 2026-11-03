@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { ReviewPermissionsService } from "@/lib/services/review-permissions";
 import { ReviewNotificationService } from "@/lib/services/review-notification";
 import { createReportSchema } from "@/lib/validators/review-validators";
+import { shouldAutoFlag } from "@/lib/services/review-reports";
 import { db } from "@/lib/db";
 import { ReportStatus } from "@/lib/generated/prisma/browser";
 import { logger } from "@/lib/structured-logger";
@@ -88,25 +89,25 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Create the report
-    const report = await db.reviewReport.create({
-      data: {
-        reviewId,
-        userId: session.user.id,
-        reason,
-        details: details || null,
-        status: ReportStatus.PENDING,
-      },
-      include: {
-        user: true,
-        review: {
-          include: {
-            user: true,
-            course: true,
-          },
+    // Create the report (one per reporter and review: the unique key also settles two simultaneous requests)
+    let report;
+    try {
+      report = await db.reviewReport.create({
+        data: {
+          reviewId,
+          userId: session.user.id,
+          reason,
+          details: details || null,
+          status: ReportStatus.PENDING,
         },
-      },
-    });
+        select: { id: true, reason: true, createdAt: true },
+      });
+    } catch (error) {
+      if ((error as { code?: string } | null)?.code === "P2002") {
+        return NextResponse.json({ error: "Vous avez déjà signalé cet avis" }, { status: 400 });
+      }
+      throw error;
+    }
 
     // Update report count on review
     const reportCount = await db.reviewReport.count({
@@ -140,20 +141,23 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       },
     });
 
-    // If report count reaches threshold, flag the review
-    const REPORT_THRESHOLD = 3;
-    if (reportCount >= REPORT_THRESHOLD) {
-      await db.review.update({
-        where: { id: reviewId },
+    // A review is hidden automatically only when enough CREDIBLE people reported it: distinct accounts (one report each),
+    // with a verified e-mail and at least a week old. Fresh throw-away accounts cannot take a review down; their
+    // reports still reach the moderators, who decide.
+    if (await shouldAutoFlag(reviewId)) {
+      const flagged = await db.review.updateMany({
+        where: { id: reviewId, status: "APPROVED" },
         data: { status: "FLAGGED" },
       });
 
-      logger.warn("Review auto-flagged due to reports", {
-        metadata: {
-          reviewId,
-          reportCount,
-        },
-      });
+      if (flagged.count > 0) {
+        logger.warn("Review auto-flagged due to reports", {
+          metadata: {
+            reviewId,
+            reportCount,
+          },
+        });
+      }
     }
 
     return NextResponse.json(

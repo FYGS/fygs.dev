@@ -225,6 +225,33 @@ describe("lessons", () => {
     expect((await curriculum.updateLesson(a, { duration: 90 })).success).toBe(true);
   });
 
+  it("accepts https media addresses only, and captions only from a public https name on port 443", async () => {
+    const course = await newCourse();
+    const m = await moduleOf(course.id);
+    const [a] = await lessonsOf(course.id, m, ["A"]);
+
+    // a plain http address could be altered on the way and is blocked by the content-security policy anyway
+    expect((await curriculum.updateLesson(a, { videoUrl: "http://cdn.example.com/v.mp4" })).success).toBe(false);
+    expect((await curriculum.updateLesson(a, { videoUrl: "https://cdn.example.com/v.mp4" })).success).toBe(true);
+
+    // the server will fetch the captions: it refuses, at save time, an address it would refuse to connect to
+    for (const address of [
+      "http://cdn.example.com/c.vtt",
+      "https://127.0.0.1/c.vtt",
+      "https://169.254.169.254/latest/meta-data",
+      "https://localhost/c.vtt",
+      "https://cdn.example.com:8443/c.vtt",
+      "https://user:pw@cdn.example.com/c.vtt",
+      "https://intranet/c.vtt",
+    ]) {
+      expect((await curriculum.updateLesson(a, { captionsUrl: address })).success, address).toBe(false);
+    }
+    expect((await curriculum.updateLesson(a, { captionsUrl: "https://cdn.example.com/c.vtt" })).success).toBe(true);
+
+    expect((await curriculum.addResource(a, { title: "Doc", url: "http://cdn.example.com/doc.pdf", kind: "LINK" } as never)).success).toBe(false);
+    expect((await curriculum.addResource(a, { title: "Doc", url: "https://cdn.example.com/doc.pdf", kind: "LINK" } as never)).success).toBe(true);
+  });
+
   it("publishes a whole module but leaves the empty lessons as drafts", async () => {
     const course = await newCourse();
     const m = await moduleOf(course.id);

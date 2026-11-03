@@ -187,7 +187,7 @@ export function ReplyCard({
                 </div>
                 
                 <UserBadges 
-                  user={reply.author as any}
+                  user={reply.author}
                   showLevel={true}
                   showBadges={true}
                   maxBadges={2}

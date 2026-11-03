@@ -7,6 +7,7 @@ import type {
 } from "@/types/community";
 import { Prisma } from "@/lib/generated/prisma/browser";
 import { DiscussionOrder } from "./order";
+import { clampPaging } from "./pagination";
 
 /** Discussion listing, detail and replies. */
 export class DiscussionQueries {
@@ -18,8 +19,6 @@ export class DiscussionQueries {
     userId?: string
   ): Promise<DiscussionsResponse> {
     const {
-      page,
-      limit,
       sort,
       topicId,
       courseId,
@@ -28,7 +27,8 @@ export class DiscussionQueries {
       status,
       search,
     } = filters;
-    const skip = (page - 1) * limit;
+    // The page and size come from a query string or an action argument: never trust them as they are
+    const { page, limit, skip } = clampPaging(filters.page, filters.limit);
 
     // Build where clause
     const where: Prisma.DiscussionWhereInput = {

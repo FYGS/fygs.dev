@@ -7,6 +7,7 @@ import type {
   ActionResult,
 } from "@/types/community";
 import { communityWriteBlock } from "./_rate-limit";
+import { clampPaging } from "@/lib/services/community/pagination";
 
 /**
  * Follow/unfollow a topic
@@ -144,8 +145,8 @@ export async function toggleUserFollow(
  */
 export async function getUserFollowers(
   userId: string,
-  page = 1,
-  limit = 20
+  pageArg = 1,
+  limitArg = 20
 ): Promise<ActionResult> {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
@@ -153,7 +154,7 @@ export async function getUserFollowers(
       return { success: false, error: "Authentication required" };
     }
 
-    const skip = (page - 1) * limit;
+    const { page, limit, skip } = clampPaging(pageArg, limitArg);
 
     const [followers, total] = await Promise.all([
       db.userFollow.findMany({
@@ -202,8 +203,8 @@ export async function getUserFollowers(
  */
 export async function getUserFollowing(
   userId: string,
-  page = 1,
-  limit = 20
+  pageArg = 1,
+  limitArg = 20
 ): Promise<ActionResult> {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
@@ -211,7 +212,7 @@ export async function getUserFollowing(
       return { success: false, error: "Authentication required" };
     }
 
-    const skip = (page - 1) * limit;
+    const { page, limit, skip } = clampPaging(pageArg, limitArg);
 
     const [following, total] = await Promise.all([
       db.userFollow.findMany({

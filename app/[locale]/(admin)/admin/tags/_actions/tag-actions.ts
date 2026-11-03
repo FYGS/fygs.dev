@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { headers } from "next/headers";
 import { z } from "zod";
 import { Role } from "@/lib/generated/prisma/browser";
+import { writeAudit } from "@/lib/audit";
 
 const createTagSchema = z.object({
   name: z
@@ -194,6 +195,13 @@ export async function updateTag(
       where: { id: tagId },
       data: validatedData,
     });
+    await writeAudit({
+      actorId: session.user.id,
+      action: "tag.changed",
+      targetType: "tag",
+      targetId: tag.id,
+      metadata: { operation: "update", before: { name: existingTag.name, color: existingTag.color }, after: { name: tag.name, color: tag.color } },
+    });
 
     // Créer un événement analytics pour le suivi
     await db.analyticsEvent.create({
@@ -291,6 +299,13 @@ export async function deleteTag(
     // Supprimer le tag
     await db.tag.delete({
       where: { id: tagId },
+    });
+    await writeAudit({
+      actorId: session.user.id,
+      action: "tag.changed",
+      targetType: "tag",
+      targetId: existingTag.id,
+      metadata: { operation: "delete", name: existingTag.name },
     });
 
     // Créer un événement analytics pour le suivi

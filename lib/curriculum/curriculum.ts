@@ -7,6 +7,7 @@
  * lessons, quizzes and supports with it.
  */
 import { db } from "@/lib/db";
+import { isFetchableCaptionsUrl } from "@/lib/learning/captions";
 import { slugify, uniqueSlug } from "@/lib/text/slug";
 import { isEmptyHtml } from "./content";
 import { TRANSCRIPT_MAX_LENGTH } from "./limits";
@@ -384,10 +385,10 @@ export async function getLessonDetail(lessonId: string): Promise<LessonDetail | 
   };
 }
 
-function isHttpUrl(value: string): boolean {
+/** Media and resource addresses are https only (the content-security policy refuses plain http media anyway). */
+function isHttpsUrl(value: string): boolean {
   try {
-    const url = new URL(value);
-    return url.protocol === "https:" || url.protocol === "http:";
+    return new URL(value).protocol === "https:";
   } catch {
     return false;
   }
@@ -422,7 +423,7 @@ export async function updateLesson(lessonId: string, patch: LessonPatch): Promis
   }
   if (patch.videoUrl !== undefined) {
     const v = patch.videoUrl?.trim() ?? "";
-    if (v && !isHttpUrl(v)) return fail("L'adresse de la vidéo n'est pas valide (http ou https).");
+    if (v && !isHttpsUrl(v)) return fail("L'adresse de la vidéo n'est pas valide (elle doit commencer par https://).");
     data.videoUrl = v || null;
   }
   if (patch.duration !== undefined) {
@@ -435,7 +436,7 @@ export async function updateLesson(lessonId: string, patch: LessonPatch): Promis
   if (patch.isPreview !== undefined) data.isPreview = patch.isPreview;
   if (patch.captionsUrl !== undefined) {
     const c = patch.captionsUrl?.trim() ?? "";
-    if (c && !isHttpUrl(c)) return fail("L'adresse des sous-titres n'est pas valide (http ou https, fichier .vtt).");
+    if (c && !isFetchableCaptionsUrl(c)) return fail("L'adresse des sous-titres n'est pas valide (https://, port 443, un nom de domaine public, fichier .vtt).");
     data.captionsUrl = c || null;
   }
   if (patch.transcript !== undefined) {
@@ -552,7 +553,7 @@ export async function addResource(lessonId: string, input: ResourceInput): Promi
   const title = input.title.trim();
   if (!title) return fail("Le titre de la ressource est requis.");
   if (title.length > 150) return fail("Le titre de la ressource est trop long (150 caractères maximum).");
-  if (!isHttpUrl(input.url.trim())) return fail("L'adresse de la ressource n'est pas valide (http ou https).");
+  if (!isHttpsUrl(input.url.trim())) return fail("L'adresse de la ressource n'est pas valide (elle doit commencer par https://).");
 
   const created = await retryOnConflict(async () => {
     const siblings = await db.lessonResource.findMany({ where: { lessonId }, select: { order: true } });

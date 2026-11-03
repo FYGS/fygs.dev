@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { VIDEO_CONTENT_TYPES, VIDEO_FORMATS_LABEL } from "@/lib/resource-types";
 import { cn } from "@/lib/utils";
-import { isHttpUrl, UploadError, uploadVideoFile } from "./direct-upload";
+import { isHttpsUrl, UploadError, uploadVideoFile } from "./direct-upload";
 
 type UploadStatus = "idle" | "uploading" | "done" | "error";
 
@@ -32,7 +32,7 @@ export function VideoUpload({ value, onChange, className, label = "Adresse de la
   const [dragActive, setDragActive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const urlId = useId();
-  const urlInvalid = mode === "url" && value.trim() !== "" && !isHttpUrl(value);
+  const urlInvalid = mode === "url" && value.trim() !== "" && !isHttpsUrl(value);
 
   const handleFile = useCallback(
     async (file: File) => {
@@ -107,7 +107,7 @@ export function VideoUpload({ value, onChange, className, label = "Adresse de la
             onChange={(e) => onChange(e.target.value)}
           />
           <p className={cn("text-xs", urlInvalid ? "text-destructive" : "text-muted-foreground")}>
-            {urlInvalid ? "L'adresse doit commencer par http:// ou https://." : "Un fichier vidéo en ligne, ou une page YouTube ou Vimeo."}
+            {urlInvalid ? "L'adresse doit commencer par https://." : "Un fichier vidéo en ligne, ou une page YouTube ou Vimeo."}
           </p>
         </div>
       ) : status === "uploading" ? (

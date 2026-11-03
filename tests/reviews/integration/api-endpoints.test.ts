@@ -78,8 +78,11 @@ async function seedCourse() {
   return { instructor, course };
 }
 
-/** A student who may write a review: account and enrollment are old enough. */
-async function seedEligibleStudent(courseId: string, emailVerified = true) {
+/**
+ * A student who may write a review: account and enrollment are old enough and the course was followed to the end
+ * (a review needs at least 20 % of the course; `completedShare` lets a test follow less).
+ */
+async function seedEligibleStudent(courseId: string, emailVerified = true, completedShare = 1) {
   const student = await createUser({
     emailVerified,
     createdAt: hoursAgo(72),
@@ -87,6 +90,16 @@ async function seedEligibleStudent(courseId: string, emailVerified = true) {
   await db.enrollment.create({
     data: { userId: student.id, courseId, enrolledAt: hoursAgo(48) },
   });
+  if ((await db.lesson.count({ where: { courseId } })) === 0) {
+    await Promise.all(
+      [1, 2, 3, 4, 5].map((order) =>
+        db.lesson.create({ data: { courseId, title: `Lesson ${order}`, slug: `lesson-${order}`, order, published: true } }),
+      ),
+    );
+  }
+  const lessons = await db.lesson.findMany({ where: { courseId, published: true }, orderBy: { order: "asc" } });
+  const done = lessons.slice(0, Math.floor(lessons.length * completedShare));
+  await db.progress.createMany({ data: done.map((lesson) => ({ userId: student.id, lessonId: lesson.id, completed: true })) });
   return student;
 }
 
@@ -364,6 +377,25 @@ describe("Review API Integration Tests", () => {
 
       expect(response.status).toBe(403);
       expect(data.requiresAction).toBe("enroll");
+      expect(await db.review.count()).toBe(0);
+    });
+
+    it("should refuse a review from a learner who followed less than 20 % of the course", async () => {
+      const { course } = await seedCourse();
+      const student = await seedEligibleStudent(course.id, true, 0);
+      signIn(student);
+
+      const response = await createReview(
+        jsonRequest(BASE, "POST", {
+          courseId: course.id,
+          rating: 5,
+          comment: "I only opened the first page but I already have an opinion.",
+        }),
+      );
+      const data = await response.json();
+
+      expect(response.status).toBe(403);
+      expect(data.requiresAction).toBe("learn");
       expect(await db.review.count()).toBe(0);
     });
 

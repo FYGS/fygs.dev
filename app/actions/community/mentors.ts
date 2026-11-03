@@ -10,6 +10,7 @@ import type {
   ActionResult,
 } from "@/types/community";
 import { communityWriteBlock } from "./_rate-limit";
+import { withSafeLinks } from "@/lib/services/community/public-user";
 
 /**
  * Create a mentor request
@@ -35,6 +36,29 @@ export async function createMentorRequest(
     };
 
     const validatedData = mentorRequestSchema.parse(rawData);
+
+    if (validatedData.mentorId === session.user.id) {
+      return { success: false, error: "You cannot ask yourself for mentorship" };
+    }
+
+    // The target must be someone who mentors (an instructor), and the course, if any, must be one of theirs:
+    // a request cannot be aimed at an arbitrary account, nor make an unrelated course appear in the mail
+    const mentor = await db.user.findUnique({
+      where: { id: validatedData.mentorId },
+      select: { role: true, isBanned: true },
+    });
+    if (!mentor || mentor.role !== "INSTRUCTOR" || mentor.isBanned) {
+      return { success: false, error: "Mentor not found" };
+    }
+    if (validatedData.courseId) {
+      const course = await db.course.findFirst({
+        where: { id: validatedData.courseId, instructorId: validatedData.mentorId },
+        select: { id: true },
+      });
+      if (!course) {
+        return { success: false, error: "This course is not taught by this mentor" };
+      }
+    }
 
     // Check if request already exists
     const existingRequest = await db.mentorRequest.findFirst({
@@ -145,7 +169,7 @@ export async function getAvailableMentors(): Promise<ActionResult> {
 
     return {
       success: true,
-      data: mentors,
+      data: mentors.map(withSafeLinks),
     };
   } catch (error) {
     console.error("Error fetching mentors:", error);
@@ -241,6 +265,10 @@ export async function respondToMentorRequest(
 
     if (request.mentorId !== session.user.id) {
       return { success: false, error: "Unauthorized" };
+    }
+    // An answer is final: a declined or accepted request cannot be flipped (and re-notify the student)
+    if (request.status !== "PENDING") {
+      return { success: false, error: "Request already answered" };
     }
 
     const status = action === "accept" ? "ACCEPTED" : "DECLINED";

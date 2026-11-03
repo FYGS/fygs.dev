@@ -1,6 +1,9 @@
 import { SITE_BASE_URL } from "@/app/_lib/constants";
 
+import { escapeHtml } from "@/lib/html-escape";
+
 import type { EmailTemplate } from "./types";
+import { emailLink } from "../templates/links";
 import { certificateEarnedTemplate, enrollmentConfirmationTemplate } from "../templates/learning";
 
 /** Account emails (verification, password reset, welcome). */
@@ -13,7 +16,7 @@ export class AuthEmailTemplates {
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>${subject}</title>
+          <title>${escapeHtml(subject)}</title>
           <style>
             body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -29,11 +32,11 @@ export class AuthEmailTemplates {
               <h1>🚀 Bienvenue sur FYGS Learning Platform</h1>
             </div>
             <div class="content">
-              <h2>Salut ${name} !</h2>
+              <h2>Salut ${escapeHtml(name)} !</h2>
               <p>Merci de vous être inscrit sur notre plateforme d'apprentissage premium. Pour commencer votre parcours d'apprentissage, veuillez vérifier votre adresse email en cliquant sur le bouton ci-dessous :</p>
               
               <div style="text-align: center;">
-                <a href="${verificationUrl}" class="button">Vérifier mon email</a>
+                <a href="${emailLink(verificationUrl)}" class="button">Vérifier mon email</a>
               </div>
               
               <p>Ce lien expirera dans 24 heures pour des raisons de sécurité.</p>
@@ -62,7 +65,7 @@ export class AuthEmailTemplates {
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>${subject}</title>
+          <title>${escapeHtml(subject)}</title>
           <style>
             body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -79,11 +82,11 @@ export class AuthEmailTemplates {
               <h1>🔐 Réinitialisation de mot de passe</h1>
             </div>
             <div class="content">
-              <h2>Salut ${name} !</h2>
+              <h2>Salut ${escapeHtml(name)} !</h2>
               <p>Nous avons reçu une demande de réinitialisation de mot de passe pour votre compte FYGS Learning Platform.</p>
               
               <div style="text-align: center;">
-                <a href="${resetUrl}" class="button">Réinitialiser mon mot de passe</a>
+                <a href="${emailLink(resetUrl)}" class="button">Réinitialiser mon mot de passe</a>
               </div>
               
               <div class="warning">
@@ -115,7 +118,7 @@ export class AuthEmailTemplates {
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>${subject}</title>
+          <title>${escapeHtml(subject)}</title>
           <style>
             body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -129,7 +132,7 @@ export class AuthEmailTemplates {
         <body>
           <div class="container">
             <div class="header">
-              <h1>🚀 Bienvenue ${name} !</h1>
+              <h1>🚀 Bienvenue ${escapeHtml(name)} !</h1>
               <p>Votre parcours d'apprentissage commence maintenant</p>
             </div>
             <div class="content">

@@ -1,8 +1,9 @@
-import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from "lz-string";
+import { compressToEncodedURIComponent } from "lz-string";
 import type {
   EditorFile,
   PlaygroundStore,
 } from "../../_types";
+import { SHARED_PROJECT_ERRORS, parseSharedProject } from "../../_utils/shared-project";
 import { defaultFiles, defaultLayout } from "../defaults";
 import { detectLanguage } from "../helpers";
 import type { PlaygroundGet, PlaygroundSet } from "./types";
@@ -17,6 +18,7 @@ export const createWorkspaceSlice = (
   | "resetPlayground"
   | "exportAsUrl"
   | "importFromUrl"
+  | "dismissSharedNotice"
 > => ({
   // ── Template Actions ──
   loadTemplate: (template) => {
@@ -40,6 +42,7 @@ export const createWorkspaceSlice = (
       previewHtml: null,
       serverUrl: null,
       status: "idle",
+      sharedNotice: null,
     });
   },
 
@@ -60,6 +63,7 @@ export const createWorkspaceSlice = (
       previewHtml: null,
       serverUrl: null,
       status: "idle",
+      sharedNotice: null,
       layout: defaultLayout,
     });
   },
@@ -78,41 +82,35 @@ export const createWorkspaceSlice = (
   },
 
   importFromUrl: (encoded) => {
-    try {
-      const decompressed = decompressFromEncodedURIComponent(encoded);
-      if (!decompressed) return;
-
-      const data = JSON.parse(decompressed) as Array<{
-        p: string;
-        c: string;
-        e?: boolean;
-      }>;
-
-      const files: EditorFile[] = data.map((d) => ({
-        id: crypto.randomUUID(),
-        name: d.p.split("/").pop() || d.p,
-        path: d.p,
-        content: d.c,
-        language: detectLanguage(d.p),
-        isEntryPoint: d.e || false,
-      }));
-
-      if (files.length === 0) return;
-
-      set({
-        projectId: "shared",
-        files,
-        activeFileId: files[0].id,
-        openTabs: [
-          { fileId: files[0].id, isPinned: false, isPreview: false },
-        ],
-        consoleEntries: [],
-        previewHtml: null,
-        serverUrl: null,
-        status: "idle",
-      });
-    } catch (error) {
-      console.error("Failed to import from URL:", error);
+    // The link was made by someone else: validate everything, run nothing (the learner reads the code and decides)
+    const parsed = parseSharedProject(encoded);
+    if (!parsed.ok) {
+      set({ sharedNotice: { kind: "invalid", message: SHARED_PROJECT_ERRORS[parsed.reason] } });
+      return;
     }
+
+    const files: EditorFile[] = parsed.files.map((d) => ({
+      id: crypto.randomUUID(),
+      name: d.path.split("/").pop() || d.path,
+      path: d.path,
+      content: d.content,
+      language: detectLanguage(d.path),
+      isEntryPoint: d.isEntryPoint,
+    }));
+
+    set({
+      // "shared" marks code written by someone else: the assistant is told to be suspicious of it (ai-context.ts)
+      projectId: "shared",
+      files,
+      activeFileId: files[0].id,
+      openTabs: [{ fileId: files[0].id, isPinned: false, isPreview: false }],
+      consoleEntries: [],
+      previewHtml: null,
+      serverUrl: null,
+      status: "idle",
+      sharedNotice: { kind: "review", files: files.length },
+    });
   },
+
+  dismissSharedNotice: () => set({ sharedNotice: null }),
 });

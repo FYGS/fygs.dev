@@ -22,6 +22,9 @@ export function canEditCourse(
 export async function requireAuthor(): Promise<Guarded<unknown>> {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) return { ok: false, error: "Vous devez être connecté." };
+  if (session.user.pendingStaffRole) {
+    return { ok: false, error: "Activez la double authentification dans Profil > Sécurité pour utiliser vos droits de formateur." };
+  }
   const role = session.user.role;
   if (role !== "ADMIN" && role !== "INSTRUCTOR") {
     return { ok: false, error: "Vous n'avez pas les permissions pour gérer des formations." };

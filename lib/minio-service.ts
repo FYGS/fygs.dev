@@ -10,10 +10,14 @@ interface MinIOConfig {
   bucketName: string;
 }
 
+/** The folders of the image bucket. Only these hold public images; the upload route refuses any other folder. */
+export const IMAGE_FOLDERS = ["images", "courses", "lessons", "paths", "avatars"] as const;
+
 export class MinIOService {
   private client: Client;
   private bucketName: string;
   private logger = logger;
+  private publicPolicyApplied = false;
 
   constructor(config: MinIOConfig) {
     this.client = new Client({
@@ -39,23 +43,23 @@ export class MinIOService {
         });
       }
 
-      // Set bucket policy to allow public read access for images
-      const policy = {
-        Version: "2012-10-17",
-        Statement: [
-          {
-            Effect: "Allow",
-            Principal: "*",
-            Action: ["s3:GetObject"],
-            Resource: [`arn:aws:s3:::${this.bucketName}/*`],
-          },
-        ],
-      };
-
-      await this.client.setBucketPolicy(
-        this.bucketName,
-        JSON.stringify(policy)
-      );
+      // Public read is applied once, only to the image folders, and only when the owner asked for it
+      // (MINIO_PUBLIC_IMAGES=1): the rest of the bucket, if it holds anything else, is never made public here.
+      if (process.env.MINIO_PUBLIC_IMAGES === "1" && !this.publicPolicyApplied) {
+        const policy = {
+          Version: "2012-10-17",
+          Statement: [
+            {
+              Effect: "Allow",
+              Principal: "*",
+              Action: ["s3:GetObject"],
+              Resource: IMAGE_FOLDERS.map((folder) => `arn:aws:s3:::${this.bucketName}/${folder}/*`),
+            },
+          ],
+        };
+        await this.client.setBucketPolicy(this.bucketName, JSON.stringify(policy));
+        this.publicPolicyApplied = true;
+      }
       this.logger.info("MinIO service initialized successfully");
     } catch (error) {
       this.logger.error("Failed to initialize MinIO service", {
@@ -108,55 +112,14 @@ export class MinIOService {
   }
 
   /**
-   * Upload an image with optimization and validation
+   * Store an image under an object name the caller built (folder and file name never come from the browser). The
+   * type is the one detected in the bytes, so it can be neither a script nor a page served as an image.
    */
-  async uploadImage(
-    file: File | Buffer,
-    fileName: string,
-    folder: string = "images"
-  ): Promise<string> {
-    try {
-      let buffer: Buffer;
-      let size: number;
-
-      if (file instanceof File) {
-        const arrayBuffer = await file.arrayBuffer();
-        buffer = Buffer.from(arrayBuffer);
-        size = file.size;
-      } else {
-        buffer = file;
-        size = buffer.length;
-      }
-
-      // Validate file size (max 5MB)
-      const maxSize = 5 * 1024 * 1024; // 5MB
-      if (size > maxSize) {
-        throw new Error("File size exceeds 5MB limit");
-      }
-
-      // Generate unique object name
-      const timestamp = Date.now();
-      const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, "_");
-      const objectName = `${folder}/${timestamp}_${sanitizedFileName}`;
-
-      // Set metadata
-      const metaData = {
-        "Content-Type": this.getContentType(fileName),
-        "Cache-Control": "public, max-age=31536000", // 1 year cache
-        "X-Upload-Date": new Date().toISOString(),
-      };
-
-      return await this.uploadFile(objectName, buffer, size, metaData);
-    } catch (error) {
-      this.logger.error("Failed to upload image", {
-        metadata: {
-          fileName,
-          folder,
-          error: error instanceof Error ? error.message : String(error),
-        },
-      });
-      throw error;
-    }
+  async putImage(objectName: string, buffer: Buffer, contentType: string): Promise<string> {
+    return this.uploadFile(objectName, buffer, buffer.length, {
+      "Content-Type": contentType,
+      "Cache-Control": "public, max-age=31536000", // 1 year cache
+    });
   }
 
   /**
@@ -258,54 +221,6 @@ export class MinIOService {
       });
       throw error;
     }
-  }
-
-  /**
-   * Get content type based on file extension
-   */
-  private getContentType(fileName: string): string {
-    const extension = fileName.split(".").pop()?.toLowerCase();
-
-    const contentTypes: Record<string, string> = {
-      jpg: "image/jpeg",
-      jpeg: "image/jpeg",
-      png: "image/png",
-      gif: "image/gif",
-      webp: "image/webp",
-      svg: "image/svg+xml",
-      pdf: "application/pdf",
-      mp4: "video/mp4",
-      webm: "video/webm",
-    };
-
-    return contentTypes[extension || ""] || "application/octet-stream";
-  }
-
-  /**
-   * Validate file type for images
-   */
-  static isValidImageFile(fileName: string): boolean {
-    const allowedExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
-    const extension = fileName.split(".").pop()?.toLowerCase();
-    return allowedExtensions.includes(extension || "");
-  }
-
-  /**
-   * Generate a safe file name
-   */
-  static generateSafeFileName(originalName: string, prefix?: string): string {
-    const timestamp = Date.now();
-    const randomString = Math.random().toString(36).substring(2, 8);
-    const extension = originalName.split(".").pop()?.toLowerCase();
-    const baseName = originalName
-      .replace(/\.[^/.]+$/, "")
-      .replace(/[^a-zA-Z0-9]/g, "_");
-
-    const fileName = prefix
-      ? `${prefix}_${timestamp}_${randomString}_${baseName}.${extension}`
-      : `${timestamp}_${randomString}_${baseName}.${extension}`;
-
-    return fileName;
   }
 }
 

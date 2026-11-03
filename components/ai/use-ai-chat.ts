@@ -16,6 +16,8 @@ import {
   type StoredMessage,
 } from "./chat-storage";
 import { AssistantClientError, streamAssistant } from "./stream-client";
+import { solveHumanProof } from "@/lib/anti-automation/client";
+import { useSession } from "@/lib/auth-client";
 
 export type ChatMessage = StoredMessage;
 
@@ -80,6 +82,10 @@ export function useAiChat(options: UseAiChatOptions) {
   const { scopeKey, surface, locale, endpoint, fetchImpl } = options;
   const getContextRef = useRef(options.getContext);
   const scopeKeyRef = useRef(scopeKey);
+  // A visitor without an account proves in the background that a browser is asking (signed-in users are not asked)
+  const { data: session } = useSession();
+  const isGuest = !session?.user;
+  const isGuestRef = useRef(true);
 
   const [messages, setMessages] = useState<ChatMessage[]>(() => loadConversation(scopeKey));
   const [status, setStatus] = useState<ChatStatus>("idle");
@@ -110,6 +116,7 @@ export function useAiChat(options: UseAiChatOptions) {
     getContextRef.current = options.getContext;
     scopeKeyRef.current = scopeKey;
     messagesRef.current = messages;
+    isGuestRef.current = isGuest;
   });
 
   // An answer in flight belongs to the conversation it was asked in
@@ -181,6 +188,7 @@ export function useAiChat(options: UseAiChatOptions) {
       };
 
       try {
+        const proofHeaders = isGuestRef.current ? await solveHumanProof("ai-guest") : undefined;
         await streamAssistant(
           request,
           {
@@ -194,7 +202,7 @@ export function useAiChat(options: UseAiChatOptions) {
               if (done.truncated) updateLast((m) => ({ ...m, truncated: true }));
             },
           },
-          { signal: controller.signal, endpoint, fetchImpl },
+          { signal: controller.signal, endpoint, fetchImpl, headers: proofHeaders },
         );
       } catch (err) {
         flush();

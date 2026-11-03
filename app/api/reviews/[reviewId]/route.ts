@@ -25,8 +25,17 @@ interface RouteParams {
  * GET /api/reviews/[reviewId]
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
+  const limited = await enforceRateLimit(request, "review-read", {
+    limit: 120,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   try {
     const { reviewId } = await params;
+
+    const session = await auth.api.getSession({ headers: request.headers }).catch(() => null);
+    const viewer = session?.user ?? null;
 
     const review = await db.review.findUnique({
       where: { id: reviewId },
@@ -44,6 +53,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             id: true,
             title: true,
             slug: true,
+            instructorId: true,
           },
         },
         votes: {
@@ -83,28 +93,31 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Avis non trouvé" }, { status: 404 });
     }
 
-    // Check if user can view this review
-    if (review.status !== ReviewStatus.APPROVED) {
-      const session = await auth.api.getSession({
-        headers: request.headers,
-      });
+    // Moderation data (non-approved reviews, who voted, how many reports) is for the review's author, an
+    // administrator and the instructor OF THIS COURSE: another instructor is a member of the public here
+    const isAuthor = viewer?.id === review.userId;
+    const isStaffOfCourse =
+      viewer?.role === "ADMIN" ||
+      (viewer?.role === "INSTRUCTOR" && review.course.instructorId === viewer.id);
 
-      // Only review author, course instructor, or admin can view non-approved reviews
-      const canView =
-        session?.user &&
-        (session.user.id === review.userId ||
-          session.user.role === "ADMIN" ||
-          (session.user.role === "INSTRUCTOR" &&
-            review.courseId === review.courseId)); // Simplified check
-
-      if (!canView) {
-        return NextResponse.json({ error: "Avis non trouvé" }, { status: 404 });
-      }
+    if (review.status !== ReviewStatus.APPROVED && !isAuthor && !isStaffOfCourse) {
+      return NextResponse.json({ error: "Avis non trouvé" }, { status: 404 });
     }
+
+    const { votes, course, _count, ...rest } = review;
+    const publicReview = {
+      ...rest,
+      course: { id: course.id, title: course.title, slug: course.slug },
+      // The public sees the counts and its own vote, never who voted
+      votes: isStaffOfCourse
+        ? votes
+        : votes.filter((vote) => vote.userId === viewer?.id).map(({ id, helpful }) => ({ id, helpful })),
+      _count: isStaffOfCourse ? _count : { votes: _count.votes },
+    };
 
     return NextResponse.json({
       success: true,
-      review,
+      review: publicReview,
     });
   } catch (error) {
     logger.error("Failed to fetch review", {

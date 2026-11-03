@@ -1,7 +1,7 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { db } from "@/lib/db";
 import { enrollCourse } from "@/app/[locale]/(main)/dashboard/actions/enrollCourse";
-import { updateLessonProgress } from "@/app/[locale]/(main)/dashboard/actions/updateLessonProgress";
+import { updateLessonProgress } from "../support/progress-helpers";
 import { cancelSubscription } from "@/app/[locale]/(main)/dashboard/actions/cancelSubscription";
 import { issueCertificate } from "../support/certificate-helpers";
 import { AccessService } from "@/lib/access-service";

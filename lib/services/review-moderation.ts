@@ -3,6 +3,7 @@ import { ReportStatus, ReviewStatus } from "@/lib/generated/prisma/client";
 import { logger } from "@/lib/structured-logger";
 import { ReviewAnalyticsService } from "./review-analytics";
 import { ReviewNotificationService } from "./review-notification";
+import { writeAudit } from "@/lib/audit";
 
 export type ModerationDecision = "APPROVE" | "REJECT";
 
@@ -54,6 +55,16 @@ export async function moderateReview(input: {
         note: input.note?.trim() || null,
       },
     });
+    await writeAudit(
+      {
+        actorId: input.moderatorId,
+        action: "review.moderated",
+        targetType: "review",
+        targetId: review.id,
+        metadata: { from: review.status, to: target },
+      },
+      tx,
+    );
     // an approval says the reports were unfounded; a rejection settles them
     await tx.reviewReport.updateMany({
       where: { reviewId: review.id, status: ReportStatus.PENDING },

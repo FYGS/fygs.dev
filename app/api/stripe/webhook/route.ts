@@ -1,7 +1,8 @@
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { paymentService, WebhookSignatureError } from "@/lib/payment-service";
-import { ensureIdempotent, releaseIdempotent } from "@/lib/rate-limit";
+import { claimEvent, completeEvent, releaseEvent } from "@/lib/payments/event-claims";
+import { assertStripeKeyMode } from "@/lib/stripe";
 import { logger } from "./_lib/logger";
 import { handleCheckoutSessionCompleted } from "./_handlers/checkout-session-completed";
 import { handleSubscriptionUpserted } from "./_handlers/subscription-upserted";
@@ -10,19 +11,55 @@ import { handleInvoicePaymentSucceeded } from "./_handlers/invoice-payment-succe
 import { handleInvoicePaymentFailed } from "./_handlers/invoice-payment-failed";
 import { handleChargeRefunded } from "./_handlers/charge-refunded";
 import { handleCheckoutAsyncPaymentFailed } from "./_handlers/checkout-async-payment-failed";
+import { handleChargeDisputeClosed, handleChargeDisputeCreated } from "./_handlers/charge-dispute";
+import { handleRefundUpdated } from "./_handlers/refund-updated";
 
 // Disable body parsing for webhooks
 export const runtime = "nodejs";
 
-// Stripe retries a failing event for up to 3 days.
-const EVENT_CLAIM_TTL_SECONDS = 3 * 24 * 60 * 60;
+/** A Stripe event is a few KB; nothing legitimate comes close to this. Larger bodies are refused unread. */
+const MAX_BODY_BYTES = 1_000_000;
+
+class BodyTooLargeError extends Error {}
+
+/** The raw body as text (the signature is computed on it), refusing to buffer more than the limit. */
+async function readBody(req: NextRequest): Promise<string> {
+  const declared = Number(req.headers.get("content-length"));
+  if (Number.isFinite(declared) && declared > MAX_BODY_BYTES) throw new BodyTooLargeError();
+  if (!req.body) return req.text();
+
+  const reader = req.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > MAX_BODY_BYTES) {
+      await reader.cancel().catch(() => undefined);
+      throw new BodyTooLargeError();
+    }
+    chunks.push(value);
+  }
+  return Buffer.concat(chunks).toString("utf8");
+}
 
 export async function POST(req: NextRequest) {
   let body: string;
   let signature: string | null;
 
   try {
-    body = await req.text();
+    assertStripeKeyMode();
+  } catch (error) {
+    logger.error("Stripe key does not match the expected mode", {
+      eventType: "webhook.key_mode_mismatch",
+      metadata: { error: error instanceof Error ? error.message : String(error) },
+    });
+    return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
+  }
+
+  try {
+    body = await readBody(req);
     const headersList = await headers();
     signature = headersList.get("stripe-signature");
 
@@ -33,6 +70,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing signature" }, { status: 400 });
     }
   } catch (error) {
+    if (error instanceof BodyTooLargeError) {
+      logger.error("Webhook body too large", { eventType: "webhook.body_too_large" });
+      return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+    }
     logger.error(
       "Error reading webhook request",
       {
@@ -62,17 +103,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
   }
 
-  // Stripe delivers at least once and retries on any non-2xx: process each event
-  // id once. The claim is released when the handler fails so the retry can run.
-  const idempotencyKey = `stripe-event:${event.id}`;
-  const firstDelivery = await ensureIdempotent(idempotencyKey, EVENT_CLAIM_TTL_SECONDS);
-  if (!firstDelivery) {
+  // Stripe delivers at least once and retries on any non-2xx. The claim lives in the database with a lease (see
+  // lib/payments/event-claims.ts): a duplicate of a processed event is acknowledged, a delivery that arrives while the
+  // first is still running is refused so that Stripe retries (and takes over if the first one died), and a handler that
+  // fails releases the claim so that the retry runs at once.
+  const claim = await claimEvent(event.id, event.type);
+  if (claim.state === "duplicate") {
     logger.info("Duplicate Stripe webhook event ignored", {
       eventType: "webhook.duplicate_event",
       resourceType: "stripe_event",
       resourceId: event.id,
     });
     return NextResponse.json({ received: true, duplicate: true });
+  }
+  if (claim.state === "in_progress") {
+    logger.warn("Stripe webhook event is being processed by another delivery", {
+      eventType: "webhook.event_in_progress",
+      resourceType: "stripe_event",
+      resourceId: event.id,
+    });
+    return NextResponse.json({ error: "Event is being processed" }, { status: 409 });
   }
 
   try {
@@ -99,6 +149,22 @@ export async function POST(req: NextRequest) {
 
       case "charge.refunded": {
         await handleChargeRefunded(event);
+        break;
+      }
+
+      case "charge.dispute.created": {
+        await handleChargeDisputeCreated(event);
+        break;
+      }
+
+      case "charge.dispute.closed": {
+        await handleChargeDisputeClosed(event);
+        break;
+      }
+
+      case "refund.updated":
+      case "charge.refund.updated": {
+        await handleRefundUpdated(event);
         break;
       }
 
@@ -132,7 +198,7 @@ export async function POST(req: NextRequest) {
         });
     }
   } catch (error) {
-    await releaseIdempotent(idempotencyKey);
+    await releaseEvent(event.id).catch(() => undefined);
     // Log the full error details with stack trace
     logger.error("Webhook handler failed", {
       eventType: "webhook.handler_error",
@@ -149,6 +215,16 @@ export async function POST(req: NextRequest) {
       { status: 500 },
     );
   }
+
+  await completeEvent(event.id).catch((error: unknown) =>
+    // The event is processed; if this write fails Stripe's retry is acknowledged only after the lease expires and the
+    // handlers (idempotent) run again
+    logger.error("Could not mark the Stripe event as processed", {
+      eventType: "webhook.complete_failed",
+      resourceId: event.id,
+      metadata: { error: error instanceof Error ? error.message : String(error) },
+    }),
+  );
 
   // On success, return a 200 response that Stripe can acknowledge
   logger.info("Webhook processed successfully", {

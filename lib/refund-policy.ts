@@ -34,3 +34,24 @@ export function courseRefundDecision(input: {
   if (input.completed) return { refundable: false, reason: "COURSE_COMPLETED" };
   return { refundable: true };
 }
+
+/**
+ * A refund is a way back from a purchase, not a free trial: after a refund the same product (the Premium subscription,
+ * or that course) cannot be bought again for this long. Without it, subscribe -> use -> refund -> subscribe again would
+ * give Premium for nothing, at the platform's cost (payment fees are not returned).
+ */
+export const REFUND_COOLDOWN_MONTHS = 12;
+
+/** The day a new purchase of the product refunded at `refundedAt` becomes possible again. */
+export function refundCooldownEnd(refundedAt: Date): Date {
+  const end = new Date(refundedAt.getTime());
+  end.setUTCMonth(end.getUTCMonth() + REFUND_COOLDOWN_MONTHS);
+  return end;
+}
+
+export function isInRefundCooldown(refundedAt: Date, now: Date = new Date()): boolean {
+  return now.getTime() < refundCooldownEnd(refundedAt).getTime();
+}
+
+/** Where a learner is sent when a rule above refuses them. */
+export const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "fygs.dev@gmail.com";

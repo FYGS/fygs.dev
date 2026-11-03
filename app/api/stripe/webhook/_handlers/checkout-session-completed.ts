@@ -47,7 +47,9 @@ export async function handleCheckoutSessionCompleted(
       // Webhook is the single source of truth for payment success
       try {
         // Handle payment success with proper error catching
-        await paymentService.handlePaymentSuccess(session);
+        const { duplicatePurchase } = await paymentService.handlePaymentSuccess(session);
+        // A second payment for a course already held was refunded: no purchase e-mail for it
+        if (duplicatePurchase) return;
 
         // Log successful payment processing
         logger.info("Successfully processed payment", {

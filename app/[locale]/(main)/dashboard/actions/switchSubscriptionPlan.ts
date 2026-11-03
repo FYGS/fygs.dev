@@ -10,6 +10,7 @@ import { paymentService } from '@/lib/payment-service'
 import { AnalyticsHelper } from '@/lib/analytics-helper'
 import { getSubscriptionPeriod } from '@/lib/stripe-shapes'
 import { resolveRequestedPriceId } from '@/lib/subscription-pricing'
+import { withPurchaseLock } from '@/lib/payments/locks'
 
 const switchPlanSchema = z.object({
   newPriceId: z.string().min(1, 'Price ID is required'),
@@ -102,30 +103,43 @@ export async function switchSubscriptionPlan(
       }
     }
 
-    // Switch subscription plan via Stripe
-    await paymentService.switchSubscriptionPrice(
-      subscription.stripeSubscriptionId,
-      resolvedPriceInfo.priceId
-    )
+    // Under the buyer's purchase lock (shared with refunds and checkout): a refund that ends the subscription and a
+    // plan change cannot interleave. The state stored is the one Stripe reports after the change.
+    const updatedSubscription = await withPurchaseLock(userId, null, async (tx) => {
+      const fresh = await tx.subscription.findUnique({ where: { id: subscription.id } })
+      if (!fresh || !isSubscriptionActive(fresh)) return null
 
-    // Get updated subscription from Stripe
-    const stripeSubscription = await paymentService.getSubscription(
-      subscription.stripeSubscriptionId
-    )
+      await paymentService.switchSubscriptionPrice(
+        fresh.stripeSubscriptionId!,
+        resolvedPriceInfo.priceId
+      )
 
-    // Update local subscription record. The period lives on the subscription item
-    // (since API 2025-03-31 there is no root current_period_*): reading the root
-    // gave NaN dates and failed the update after Stripe had already switched.
-    const period = getSubscriptionPeriod(stripeSubscription)
-    const updatedSubscription = await db.subscription.update({
-      where: { id: subscription.id },
-      data: {
-        priceId: resolvedPriceInfo.priceId,
-        ...(period.start ? { currentPeriodStart: new Date(period.start * 1000) } : {}),
-        ...(period.end ? { currentPeriodEnd: new Date(period.end * 1000) } : {}),
-        cancelAtPeriodEnd: false
-      }
+      const stripeSubscription = await paymentService.getSubscription(
+        fresh.stripeSubscriptionId!
+      )
+
+      // The period lives on the subscription item (since API 2025-03-31 there is no root current_period_*): reading
+      // the root gave NaN dates and failed the update after Stripe had already switched.
+      const period = getSubscriptionPeriod(stripeSubscription)
+      return tx.subscription.update({
+        where: { id: subscription.id },
+        data: {
+          priceId: resolvedPriceInfo.priceId,
+          ...(period.start ? { currentPeriodStart: new Date(period.start * 1000) } : {}),
+          ...(period.end ? { currentPeriodEnd: new Date(period.end * 1000) } : {}),
+          cancelAtPeriodEnd: false,
+          lastEventAt: new Date(),
+        },
+      })
     })
+
+    if (!updatedSubscription) {
+      return {
+        success: false,
+        message: "Subscription is not active",
+        error: "NO_ACTIVE_SUBSCRIPTION",
+      }
+    }
 
     // Only two cycles exist and the plan is different from the current one
     const newCycle = resolvedPriceInfo.cycle

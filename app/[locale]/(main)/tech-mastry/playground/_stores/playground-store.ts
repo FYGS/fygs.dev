@@ -44,6 +44,9 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
       // ── Layout State ──
       layout: defaultLayout,
 
+      // ── Link received from someone else (not persisted: it must be acknowledged again after a reload) ──
+      sharedNotice: null,
+
       // ── AI assistant ──
       aiPanelOpen: false,
       aiAsk: null,

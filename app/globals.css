@@ -807,3 +807,16 @@
     color: var(--color-rose-700);
   }
 }
+
+/* A bar fixed to the bottom edge of a phone keeps clear of the home-indicator area (needs viewport-fit=cover). */
+@utility safe-area-pb {
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* The floating theme and shortcuts buttons sit above the learning area's bottom bar on small screens instead of over its
+   "next" button. Unlayered on purpose: it must win over the utility classes of the toolbar. */
+@media (max-width: 767px) {
+  body:has(.learning-mobile-bar) .shortcuts-toolbar {
+    bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
+  }
+}

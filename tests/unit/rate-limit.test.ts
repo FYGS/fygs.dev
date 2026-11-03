@@ -103,10 +103,21 @@ describe("rateLimit (Redis unavailable)", () => {
     expect(results.every((r) => r.degraded)).toBe(true);
   });
 
-  it("failMode 'closed' refuses outright", async () => {
+  it("failMode 'closed' refuses outright when a shared store is configured", async () => {
+    vi.stubEnv("REDIS_URL", "redis://redis.invalid:6379");
     const result = await rateLimit("k", 100, 60, { failMode: "closed" });
-    expect(result).toMatchObject({ allowed: false, degraded: true });
+    expect(result).toMatchObject({ allowed: false, degraded: true, unavailable: true });
     expect(result.retryAfter).toBeGreaterThanOrEqual(1);
+    vi.unstubAllEnvs();
+  });
+
+  it("failMode 'closed' keeps limiting in memory when no shared store is configured (single instance by design)", async () => {
+    vi.stubEnv("REDIS_URL", "");
+    vi.stubEnv("blog_stats_KV_REST_API_URL", "");
+    const result = await rateLimit("k", 100, 60, { failMode: "closed" });
+    expect(result).toMatchObject({ allowed: true, degraded: true });
+    expect(result.unavailable).toBeUndefined();
+    vi.unstubAllEnvs();
   });
 
   it("falls back when Redis hangs instead of holding the request", async () => {
@@ -152,11 +163,13 @@ describe("circuit breaker", () => {
   });
 
   it("failMode 'closed' also refuses without calling Redis while open", async () => {
+    vi.stubEnv("REDIS_URL", "redis://redis.invalid:6379");
     redisMock.evalFn.mockRejectedValue(new Error("down"));
     await rateLimit("a", 3, 60);
     const result = await rateLimit("b", 3, 60, { failMode: "closed" });
-    expect(result).toMatchObject({ allowed: false, degraded: true });
+    expect(result).toMatchObject({ allowed: false, degraded: true, unavailable: true });
     expect(redisMock.evalFn).toHaveBeenCalledTimes(1);
+    vi.unstubAllEnvs();
   });
 
   it("tries Redis again after the pause and recovers", async () => {
@@ -193,8 +206,12 @@ describe("getClientIp", () => {
     expect(getClientIp(h({ "x-forwarded-for": "9.9.9.9, 203.0.113.9, 10.0.0.2" }), 2)).toBe("203.0.113.9");
   });
 
-  it("falls back to x-real-ip", () => {
-    expect(getClientIp(h({ "x-real-ip": "198.51.100.4" }), 1)).toBe("198.51.100.4");
+  it("believes x-real-ip only when the operator vouched for the proxy, and only without x-forwarded-for", () => {
+    // Not configured: a client could send the header itself
+    expect(getClientIp(h({ "x-real-ip": "198.51.100.4" }), 1, false)).toBe("unknown");
+    expect(getClientIp(h({ "x-real-ip": "198.51.100.4" }), 1, true)).toBe("198.51.100.4");
+    // x-forwarded-for wins, x-real-ip never overrides it
+    expect(getClientIp(h({ "x-forwarded-for": "203.0.113.9", "x-real-ip": "198.51.100.4" }), 1, true)).toBe("203.0.113.9");
   });
 
   it("understands IPv6", () => {
@@ -210,6 +227,14 @@ describe("getClientIp", () => {
   it("reads TRUSTED_PROXY_HOPS from the environment", () => {
     vi.stubEnv("TRUSTED_PROXY_HOPS", "2");
     expect(getClientIp(h({ "x-forwarded-for": "9.9.9.9, 203.0.113.9, 10.0.0.2" }))).toBe("203.0.113.9");
+    vi.unstubAllEnvs();
+  });
+
+  it("trusts x-real-ip from the environment only when TRUSTED_PROXY_HOPS is set", () => {
+    vi.stubEnv("TRUSTED_PROXY_HOPS", "");
+    expect(getClientIp(h({ "x-real-ip": "198.51.100.4" }))).toBe("unknown");
+    vi.stubEnv("TRUSTED_PROXY_HOPS", "1");
+    expect(getClientIp(h({ "x-real-ip": "198.51.100.4" }))).toBe("198.51.100.4");
     vi.unstubAllEnvs();
   });
 });

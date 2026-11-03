@@ -3,6 +3,7 @@ import type {
   CommunityUser,
   UserProfileResponse,
 } from "@/types/community";
+import { PUBLIC_USER_WITH_BADGES_SELECT, withSafeLinks } from "./public-user";
 
 /** Per-user data: notifications, bookmarks, replies, profile. */
 export class UserQueries {
@@ -149,15 +150,10 @@ export class UserQueries {
   ): Promise<UserProfileResponse | null> {
     try {
       const [user, discussions, replies, upvotes] = await Promise.all([
+        // Public fields only: this object reaches a client component, so it must not carry the e-mail or the ban state
         db.user.findUnique({
           where: { id: userId },
-          include: {
-            userBadges: {
-              include: {
-                badge: true,
-              },
-            },
-          },
+          select: PUBLIC_USER_WITH_BADGES_SELECT,
         }),
         db.discussion.findMany({
           where: { authorId: userId, status: "ACTIVE" },
@@ -208,20 +204,20 @@ export class UserQueries {
 
       return {
         user: {
-          ...user,
+          ...withSafeLinks(user),
           userBadges: user.userBadges || [],
           _count: {
             discussions: discussions.length,
             discussionReplies: replies,
             discussionVotes: upvotes,
           },
-        } as CommunityUser,
+        } satisfies CommunityUser,
         stats: {
           totalDiscussions: discussions.length,
           totalReplies: replies,
           totalUpvotes: upvotes,
           joinedDate: user.createdAt,
-          lastActive: user.lastActiveAt || user.updatedAt,
+          lastActive: user.lastActiveAt || user.createdAt,
         },
         recentActivity: discussions,
       };

@@ -7,7 +7,10 @@
  */
 
 import { db } from "./db";
+import { AccessService } from "./access-service";
+import { cleanDisplayName } from "./html-escape";
 import { loadLearnerCourseState } from "./learning/course-state";
+import { withPurchaseLock } from "./payments/locks";
 
 export interface CertificateIssuanceResult {
   success: boolean;
@@ -52,8 +55,9 @@ export class CertificateService {
     }
 
     try {
-      // Use transaction to ensure atomicity and prevent race conditions
-      const result = await db.$transaction(async (tx) => {
+      // Under the buyer's purchase lock (lib/payments/locks.ts): a refund of this learner and this issuance exclude each
+      // other, whichever takes the lock first. The learner must still be entitled once the lock is held.
+      const result = await withPurchaseLock(userId, courseId, async (tx) => {
         // Check if certificate already exists (idempotent guard)
         const existingCertificate = await tx.certificate.findUnique({
           where: { userId_courseId: { userId, courseId } },
@@ -78,6 +82,12 @@ export class CertificateService {
           throw new Error("User not enrolled in course");
         }
 
+        // Entitlement, read after the lock was taken: a refund committed before this point has closed the access
+        const access = await AccessService.checkCourseAccess(userId, courseId);
+        if (!access.canAccessCourse) {
+          throw new Error("User is no longer entitled to the course");
+        }
+
         // Re-verify completion from the records, whatever the caller claims
         const { progress } = await loadLearnerCourseState(userId, courseId);
         if (!progress.isComplete) {
@@ -86,8 +96,10 @@ export class CertificateService {
           );
         }
 
+        // The name printed is the one at issue time, cleaned: renaming the account later does not rewrite a certificate
+        const holder = await tx.user.findUnique({ where: { id: userId }, select: { name: true } });
         const certificate = await tx.certificate.create({
-          data: { userId, courseId, issuedAt: new Date() },
+          data: { userId, courseId, issuedAt: new Date(), holderName: cleanDisplayName(holder?.name) || null },
           select: certificateSelect,
         });
 

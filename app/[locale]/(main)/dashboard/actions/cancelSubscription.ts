@@ -10,6 +10,7 @@ import { isRefundEligible } from "@/lib/refund-policy";
 import { AnalyticsHelper } from "@/lib/analytics-helper";
 import { auth } from "@/lib/auth";
 import { SubscriptionStatus } from "@/lib/generated/prisma/browser";
+import { writeAudit } from "@/lib/audit";
 
 const cancelSubscriptionSchema = z.object({
   reason: z.string().optional(),
@@ -181,6 +182,17 @@ export async function cancelSubscription(
             },
           },
         });
+
+        await writeAudit(
+          {
+            actorId: userId,
+            action: "subscription.canceled",
+            targetType: "subscription",
+            targetId: subscription.id,
+            metadata: { immediate: shouldCancelImmediately, atPeriodEnd: !shouldCancelImmediately },
+          },
+          tx,
+        );
 
         return { claimed: true as const };
       },

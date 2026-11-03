@@ -41,8 +41,8 @@ export async function GET(request: NextRequest) {
             .map((r) => parseInt(r))
         : undefined,
       verified: searchParams.get("verified") === "true" ? true : undefined,
-      status:
-        (searchParams.get("status") as ReviewStatus) || ReviewStatus.APPROVED,
+      // Searching is public: only approved reviews are searched, whatever `status` the request carries
+      status: ReviewStatus.APPROVED,
       hasComment: searchParams.get("hasComment") === "true" ? true : undefined,
       hasReplies: searchParams.get("hasReplies") === "true" ? true : undefined,
       minHelpfulVotes: searchParams.get("minHelpfulVotes")
@@ -116,7 +116,8 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { query, courseId, limit = 10 } = body;
+    const { query, courseId } = body;
+    const limit = Math.min(20, Math.max(1, Math.floor(Number(body.limit)) || 10));
 
     if (!query || query.length < 2) {
       return NextResponse.json({ suggestions: [] });

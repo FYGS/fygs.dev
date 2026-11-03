@@ -1,6 +1,13 @@
 import { SITE_BASE_URL } from "@/app/_lib/constants";
 
+import { escapeHtml, singleLine } from "@/lib/html-escape";
+
 import type { ContactFormData, EmailTemplate } from "./types";
+
+/** An address in a mailto: link: percent-encoded (the @ stays readable), never able to leave the attribute. */
+const mailtoAddress = (value: string) => encodeURIComponent(String(value ?? "")).replace(/%40/g, "@");
+/** Text put in a mailto: query (subject, body): percent-encoded, one line. */
+const mailtoText = (value: string, maxLength = 150) => encodeURIComponent(singleLine(value, maxLength));
 
 /** Contact form emails (admin notification and user confirmation). */
 export class ContactEmailTemplates {
@@ -55,9 +62,10 @@ export class ContactEmailTemplates {
       }
     };
 
+    // The subject is a header: one line, bounded, whatever the visitor typed
     const adminSubject = `${getTypeIcon(type)} [FYGS.dev] ${getTypeLabel(
       type
-    )} - ${subject}`;
+    )} - ${singleLine(subject, 150)}`;
 
     const html = `
         <!DOCTYPE html>
@@ -65,7 +73,7 @@ export class ContactEmailTemplates {
         <head>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>${adminSubject}</title>
+            <title>${escapeHtml(adminSubject)}</title>
             <style>
                 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1f2937; margin: 0; padding: 0; background-color: #f9fafb; }
                 .container { max-width: 700px; margin: 0 auto; background: white; }
@@ -112,20 +120,20 @@ export class ContactEmailTemplates {
                         <div class="metadata">
                             <div class="metadata-item">
                                 <div class="metadata-label">Nom</div>
-                                <div class="metadata-value">${name}</div>
+                                <div class="metadata-value">${escapeHtml(name)}</div>
                             </div>
                             <div class="metadata-item">
                                 <div class="metadata-label">Email</div>
-                                <div class="metadata-value"><a href="mailto:${email}" style="color: ${getTypeColor(
+                                <div class="metadata-value"><a href="mailto:${mailtoAddress(email)}" style="color: ${getTypeColor(
       type
-    )};">${email}</a></div>
+    )};">${escapeHtml(email)}</a></div>
                             </div>
                             ${
                               company
                                 ? `
                             <div class="metadata-item">
                                 <div class="metadata-label">Entreprise</div>
-                                <div class="metadata-value">${company}</div>
+                                <div class="metadata-value">${escapeHtml(company)}</div>
                             </div>
                             `
                                 : ""
@@ -135,7 +143,7 @@ export class ContactEmailTemplates {
                                 ? `
                             <div class="metadata-item">
                                 <div class="metadata-label">Poste</div>
-                                <div class="metadata-value">${position}</div>
+                                <div class="metadata-value">${escapeHtml(position)}</div>
                             </div>
                             `
                                 : ""
@@ -144,22 +152,22 @@ export class ContactEmailTemplates {
                     </div>
 
                     <div class="message-box">
-                        <h3 style="margin: 0 0 15px 0; color: #1f2937;">💬 Sujet: ${subject}</h3>
+                        <h3 style="margin: 0 0 15px 0; color: #1f2937;">💬 Sujet: ${escapeHtml(subject)}</h3>
                         <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border-left: 4px solid ${getTypeColor(
                           type
                         )};">
-                            <p style="margin: 0; white-space: pre-wrap; line-height: 1.7;">${message}</p>
+                            <p style="margin: 0; white-space: pre-wrap; line-height: 1.7;">${escapeHtml(message)}</p>
                         </div>
                     </div>
 
                     <div class="quick-actions">
-                        <a href="mailto:${email}?subject=Re: ${subject}" class="action-btn">
+                        <a href="mailto:${mailtoAddress(email)}?subject=Re: ${mailtoText(subject)}" class="action-btn">
                             📧 Répondre par email
                         </a>
                         ${
                           type === "recruitment"
                             ? `
-                        <a href="mailto:${email}?subject=Re: ${subject}&body=Bonjour ${name},%0D%0A%0D%0AMerci pour votre intérêt concernant mes services. Je serais ravi de discuter de cette opportunité avec vous.%0D%0A%0D%0APouvons-nous planifier un appel cette semaine ?%0D%0A%0D%0ACordialement,%0D%0AFernand" class="action-btn">
+                        <a href="mailto:${mailtoAddress(email)}?subject=Re: ${mailtoText(subject)}&body=Bonjour ${mailtoText(name, 80)},%0D%0A%0D%0AMerci pour votre intérêt concernant mes services. Je serais ravi de discuter de cette opportunité avec vous.%0D%0A%0D%0APouvons-nous planifier un appel cette semaine ?%0D%0A%0D%0ACordialement,%0D%0AFernand" class="action-btn">
                             💼 Réponse recrutement
                         </a>
                         `
@@ -168,7 +176,7 @@ export class ContactEmailTemplates {
                         ${
                           type === "collaboration"
                             ? `
-                        <a href="mailto:${email}?subject=Re: ${subject}&body=Bonjour ${name},%0D%0A%0D%0AMerci pour votre proposition de collaboration. Votre projet m'intéresse.%0D%0A%0D%0APouvons-nous organiser une visioconférence pour en discuter plus en détail ?%0D%0A%0D%0ACordialement,%0D%0AFernand" class="action-btn">
+                        <a href="mailto:${mailtoAddress(email)}?subject=Re: ${mailtoText(subject)}&body=Bonjour ${mailtoText(name, 80)},%0D%0A%0D%0AMerci pour votre proposition de collaboration. Votre projet m'intéresse.%0D%0A%0D%0APouvons-nous organiser une visioconférence pour en discuter plus en détail ?%0D%0A%0D%0ACordialement,%0D%0AFernand" class="action-btn">
                             🤝 Réponse collaboration
                         </a>
                         `
@@ -177,7 +185,7 @@ export class ContactEmailTemplates {
                         ${
                           type === "training"
                             ? `
-                        <a href="mailto:${email}?subject=Re: ${subject}&body=Bonjour ${name},%0D%0A%0D%0AMerci pour votre intérêt pour nos formations. Je serais ravi de vous accompagner dans votre apprentissage.%0D%0A%0D%0AConsultez notre catalogue: ${SITE_BASE_URL}/formations%0D%0A%0D%0ACordialement,%0D%0AFernand" class="action-btn">
+                        <a href="mailto:${mailtoAddress(email)}?subject=Re: ${mailtoText(subject)}&body=Bonjour ${mailtoText(name, 80)},%0D%0A%0D%0AMerci pour votre intérêt pour nos formations. Je serais ravi de vous accompagner dans votre apprentissage.%0D%0A%0D%0AConsultez notre catalogue: ${SITE_BASE_URL}/formations%0D%0A%0D%0ACordialement,%0D%0AFernand" class="action-btn">
                             📚 Réponse formation
                         </a>
                         `
@@ -281,7 +289,7 @@ export class ContactEmailTemplates {
         <head>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>${subject}</title>
+            <title>${escapeHtml(subject)}</title>
             <style>
                 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1f2937; margin: 0; padding: 0; background-color: #f9fafb; }
                 .container { max-width: 600px; margin: 0 auto; background: white; }
@@ -302,7 +310,7 @@ export class ContactEmailTemplates {
             <div class="container">
                 <div class="header">
                     <h1>✅ Message Reçu !</h1>
-                    <p style="margin: 10px 0 0 0; opacity: 0.9;">Merci ${name} pour votre confiance</p>
+                    <p style="margin: 10px 0 0 0; opacity: 0.9;">Merci ${escapeHtml(name)} pour votre confiance</p>
                 </div>
                 
                 <div class="content">
@@ -311,7 +319,7 @@ export class ContactEmailTemplates {
                     </div>
 
                     <p style="font-size: 16px; line-height: 1.7; margin-bottom: 25px;">
-                        Bonjour <strong>${name}</strong>,
+                        Bonjour <strong>${escapeHtml(name)}</strong>,
                     </p>
 
                     <p style="font-size: 16px; line-height: 1.7; margin-bottom: 25px;">

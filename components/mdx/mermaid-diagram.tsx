@@ -1,5 +1,6 @@
 "use client";
 
+import { cleanMermaidSvg } from "@/lib/mermaid-svg";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
@@ -59,13 +60,17 @@ export function MermaidDiagram({
         },
         fontFamily: "inherit",
         fontSize: 14,
-        securityLevel: "loose",
+        // "strict": labels are encoded and click handlers are off. ("loose" lets a diagram source run scripts.)
+        securityLevel: "strict",
       });
 
       const sanitized = sanitizeChart(chart);
       const renderId = `${uniqueId}-${retryCount}`;
       const { svg: renderedSvg } = await mermaid.render(renderId, sanitized);
-      setSvg(renderedSvg);
+      // Second line of defence: whatever is still active in the markup is removed before it is inserted
+      const safeSvg = cleanMermaidSvg(renderedSvg);
+      if (!safeSvg) throw new Error("Le diagramme n'a pas pu être affiché en toute sécurité");
+      setSvg(safeSvg);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Diagram render failed");
     }

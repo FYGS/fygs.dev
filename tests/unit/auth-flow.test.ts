@@ -9,6 +9,9 @@ vi.mock("@/lib/email-service", () => ({
     sendEmail: vi.fn(async (m: { to: string; html: string }) => void sent.push(m)),
     passwordReset: (_n: string, url: string) => ({ subject: "reset", html: url }),
     emailVerification: (_n: string, url: string) => ({ subject: "verify", html: url }),
+    sendPasswordChangedEmail: vi.fn(async () => undefined),
+    twoFactorChanged: () => ({ subject: "2fa", html: "" }),
+    emailChangeConfirmation: () => ({ subject: "change", html: "" }),
   },
 }));
 

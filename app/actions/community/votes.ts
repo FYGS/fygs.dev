@@ -34,73 +34,85 @@ export async function vote(formData: FormData): Promise<VoteActionResult> {
     };
 
     const validatedData = voteSchema.parse(rawData);
+    const isDiscussion = validatedData.targetType === "discussion";
+    const targetWhere = isDiscussion
+      ? { discussionId: validatedData.targetId }
+      : { replyId: validatedData.targetId };
 
-    // Check if user already voted
-    const existingVote = await db.discussionVote.findFirst({
-      where: {
-        userId: session.user.id,
-        ...(validatedData.targetType === "discussion"
-          ? { discussionId: validatedData.targetId }
-          : { replyId: validatedData.targetId }),
-      },
-    });
+    // The target must exist and be open; nobody votes on their own content (it would farm points)
+    const target = isDiscussion
+      ? await db.discussion.findUnique({
+          where: { id: validatedData.targetId },
+          select: { authorId: true, isLocked: true, status: true },
+        })
+      : await db.discussionReply
+          .findUnique({
+            where: { id: validatedData.targetId },
+            select: { authorId: true, discussion: { select: { isLocked: true, status: true } } },
+          })
+          .then((reply) => (reply ? { authorId: reply.authorId, ...reply.discussion } : null));
+    if (!target) {
+      return { success: false, error: "Target not found" };
+    }
+    if (target.authorId === session.user.id) {
+      return { success: false, error: "You cannot vote on your own content" };
+    }
+    if (target.isLocked || target.status !== "ACTIVE") {
+      return { success: false, error: "Discussion is closed" };
+    }
 
-    let voteResult;
+    // One writer at a time per target: the counters are recomputed from the vote rows, so they always equal them,
+    // however many requests arrive together (a toggle fired 50 times cannot drift them)
+    const outcome = await db.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${validatedData.targetId}::text))`;
 
-    if (existingVote) {
-      if (existingVote.voteType === validatedData.voteType) {
-        // Remove vote if same type
-        await db.discussionVote.delete({
-          where: { id: existingVote.id },
-        });
-        voteResult = { type: validatedData.voteType, removed: true };
-      } else {
-        // Update vote type
-        await db.discussionVote.update({
-          where: { id: existingVote.id },
+      const existing = await tx.discussionVote.findFirst({
+        where: { userId: session.user.id, ...targetWhere },
+      });
+      const hadUpvote = existing?.voteType === "UPVOTE";
+
+      let removed = false;
+      if (existing && existing.voteType === validatedData.voteType) {
+        await tx.discussionVote.delete({ where: { id: existing.id } });
+        removed = true;
+      } else if (existing) {
+        await tx.discussionVote.update({
+          where: { id: existing.id },
           data: { voteType: validatedData.voteType },
         });
-        voteResult = { type: validatedData.voteType, changed: true };
+      } else {
+        await tx.discussionVote.create({
+          data: { userId: session.user.id, voteType: validatedData.voteType, ...targetWhere },
+        });
       }
-    } else {
-      // Create new vote
-      await db.discussionVote.create({
-        data: {
-          userId: session.user.id,
-          voteType: validatedData.voteType,
-          ...(validatedData.targetType === "discussion"
-            ? { discussionId: validatedData.targetId }
-            : { replyId: validatedData.targetId }),
-        },
-      });
-      voteResult = { type: validatedData.voteType, created: true };
-    }
 
-    // Update vote counts
-    const updateData =
-      validatedData.voteType === "UPVOTE"
-        ? { upvoteCount: { increment: voteResult.removed ? -1 : 1 } }
-        : { downvoteCount: { increment: voteResult.removed ? -1 : 1 } };
+      const [upvoteCount, downvoteCount] = await Promise.all([
+        tx.discussionVote.count({ where: { ...targetWhere, voteType: "UPVOTE" } }),
+        tx.discussionVote.count({ where: { ...targetWhere, voteType: "DOWNVOTE" } }),
+      ]);
+      if (isDiscussion) {
+        await tx.discussion.update({ where: { id: validatedData.targetId }, data: { upvoteCount, downvoteCount } });
+      } else {
+        await tx.discussionReply.update({ where: { id: validatedData.targetId }, data: { upvoteCount, downvoteCount } });
+      }
 
-    if (validatedData.targetType === "discussion") {
-      await db.discussion.update({
-        where: { id: validatedData.targetId },
-        data: updateData,
-      });
-    } else {
-      await db.discussionReply.update({
-        where: { id: validatedData.targetId },
-        data: updateData,
-      });
-    }
+      // The author's points follow the upvotes they hold NOW: +1 when one is given, -1 when it is taken back
+      // or turned into a downvote. Toggling therefore earns nothing.
+      const hasUpvote = !removed && validatedData.voteType === "UPVOTE";
+      const delta = (hasUpvote ? 1 : 0) - (hadUpvote ? 1 : 0);
+      if (delta > 0) {
+        await tx.user.update({ where: { id: target.authorId }, data: { communityPoints: { increment: 1 } } });
+      } else if (delta < 0) {
+        await tx.user.updateMany({
+          where: { id: target.authorId, communityPoints: { gte: 1 } },
+          data: { communityPoints: { decrement: 1 } },
+        });
+      }
 
-    // Award points for helpful voting
-    if (validatedData.voteType === "UPVOTE" && !voteResult.removed) {
-      await db.user.update({
-        where: { id: session.user.id },
-        data: { communityPoints: { increment: 1 } },
-      });
-    }
+      return { removed, upvoteCount, downvoteCount };
+    });
+
+    const voteResult = { type: validatedData.voteType, removed: outcome.removed };
 
     revalidatePath("/community");
 
@@ -108,7 +120,7 @@ export async function vote(formData: FormData): Promise<VoteActionResult> {
       success: true,
       vote: {
         type: validatedData.voteType,
-        count: 0, // Would need to calculate actual count
+        count: outcome.upvoteCount - outcome.downvoteCount,
         userVoted: !voteResult.removed,
       },
       message: voteResult.removed ? "Vote removed" : "Vote recorded",

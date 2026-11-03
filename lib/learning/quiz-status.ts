@@ -5,6 +5,7 @@ import {
   formatRetryDelay,
   quizAttemptExpiry,
   quizDayStart,
+  sittingEndTimes,
 } from "@/lib/quiz-attempt-policy";
 
 /** An answer already given in the sitting in progress, with the correction the learner has already seen. */
@@ -69,14 +70,11 @@ export async function getQuizStartBlock(userId: string, quizId: string, now = ne
   });
   if (open > 0) return null; // a sitting is in progress: the learner continues it
 
-  const finished = await db.quizAttempt.findMany({
-    where: { userId, quizId, submittedAt: { gt: quizDayStart(now) } },
-    select: { submittedAt: true },
+  const sittings = await db.quizAttempt.findMany({
+    where: { userId, quizId, startedAt: { gt: quizDayStart(now) } },
+    select: { startedAt: true, submittedAt: true },
   });
-  const decision = canStartQuizAttempt(
-    finished.flatMap((a) => (a.submittedAt ? [a.submittedAt] : [])),
-    now,
-  );
+  const decision = canStartQuizAttempt(sittingEndTimes(sittings, now), now);
   if (decision.allowed) return null;
   const when = formatRetryDelay(decision.retryAt, now);
   return decision.reason === "COOLDOWN"

@@ -48,6 +48,9 @@ describe("emailService (pinned behaviour)", () => {
       host: "smtp.test",
       port: 465,
       secure: true,
+      // Implicit TLS on 465; any other port with a remote host must upgrade with STARTTLS (smtpOptions, tested separately)
+      requireTLS: false,
+      tls: { minVersion: "TLSv1.2" },
       auth: { user: "user", pass: "pw" },
     });
     expect(sendMail.mock.calls).toEqual([

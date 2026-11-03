@@ -5,12 +5,14 @@ vi.mock("@/lib/access-service", () => ({ AccessService: {} }));
 
 import { buildCurriculumView, curriculumStats } from "@/lib/learning/curriculum-view";
 import {
-  examRetakeDecision,
+  examSittingDecision,
+  examSittingWindowMs,
+  projectReview,
   gradeExam,
   parseExamQuestions,
   withinTimeLimit,
 } from "@/lib/learning/exam";
-import { signExamStart, verifyExamStart } from "@/lib/learning/exam-token";
+import { isPreviewAttempt, previewAttemptId, previewAttemptStart, signExamAttempt, verifyExamAttempt } from "@/lib/learning/exam-token";
 import { formatTime } from "@/lib/learning/format-time";
 import { canOpenItem, outlineHasFlaggedPreview } from "@/lib/learning/access";
 import { findCurrentItem } from "@/components/learning/use-current-item";
@@ -107,25 +109,78 @@ describe("final exam rules", () => {
     expect(gradeExam(questions, [1, null], 50).passed).toBe(true);
   });
 
-  it("allows a retake only after the waiting time, never after a pass", () => {
+  describe("sittings", () => {
     const now = new Date("2026-10-23T12:00:00Z");
-    expect(examRetakeDecision(null, now)).toEqual({ allowed: true });
-    expect(examRetakeDecision({ completedAt: new Date("2026-10-23T11:50:00Z"), passed: true }, now)).toEqual({
-      allowed: false,
-      reason: "PASSED",
+    const minutesAgo = (n: number) => new Date(now.getTime() - n * 60_000);
+
+    it("allows a first sitting", () => {
+      expect(examSittingDecision({ passedBefore: false, recent: [] }, now)).toEqual({ allowed: true });
     });
-    const soon = examRetakeDecision({ completedAt: new Date("2026-10-23T11:50:00Z"), passed: false }, now);
-    expect(soon).toMatchObject({ allowed: false, reason: "COOLDOWN" });
-    expect(examRetakeDecision({ completedAt: new Date("2026-10-23T11:30:00Z"), passed: false }, now)).toEqual({ allowed: true });
+
+    it("never allows another sitting after a pass", () => {
+      expect(examSittingDecision({ passedBefore: true, recent: [] }, now)).toEqual({ allowed: false, reason: "PASSED" });
+    });
+
+    it("makes the learner wait 15 minutes after a sitting", () => {
+      const soon = examSittingDecision({ passedBefore: false, recent: [minutesAgo(10)] }, now);
+      expect(soon).toMatchObject({ allowed: false, reason: "COOLDOWN" });
+      if (!soon.allowed && soon.reason === "COOLDOWN") expect(soon.retryAt.toISOString()).toBe("2026-10-23T12:05:00.000Z");
+      expect(examSittingDecision({ passedBefore: false, recent: [minutesAgo(30)] }, now)).toEqual({ allowed: true });
+    });
+
+    it("allows three sittings in a day, then waits for the oldest to leave the window", () => {
+      const three = [minutesAgo(600), minutesAgo(300), minutesAgo(120)];
+      const blocked = examSittingDecision({ passedBefore: false, recent: three }, now);
+      expect(blocked).toMatchObject({ allowed: false, reason: "DAILY_LIMIT" });
+      if (!blocked.allowed && blocked.reason === "DAILY_LIMIT") {
+        expect(blocked.retryAt.getTime()).toBe(minutesAgo(600).getTime() + 24 * 3_600_000);
+      }
+      expect(examSittingDecision({ passedBefore: false, recent: [minutesAgo(1500), minutesAgo(300), minutesAgo(120)] }, now)).toEqual({ allowed: true });
+    });
   });
 
-  it("signs the start of a sitting so the time limit cannot be dodged", () => {
-    const token = signExamStart("user-1", "exam-1", 1_000_000);
-    expect(verifyExamStart(token, "user-1", "exam-1")).toBe(1_000_000);
-    expect(verifyExamStart(token, "user-2", "exam-1")).toBeNull();
-    expect(verifyExamStart(token, "user-1", "exam-2")).toBeNull();
-    expect(verifyExamStart(token.replace("1000000", "2000000"), "user-1", "exam-1")).toBeNull();
-    expect(verifyExamStart("nonsense", "user-1", "exam-1")).toBeNull();
+  it("shows a failed sitting only which questions were missed, and a passed one everything", () => {
+    const questions = parseExamQuestions(stored);
+    const failed = projectReview(gradeExam(questions, [0, 1], 70));
+    expect(failed.revealed).toBe(false);
+    expect(failed.items).toEqual([
+      { index: 0, isCorrect: false, selected: 0 },
+      { index: 1, isCorrect: false, selected: 1 },
+    ]);
+    const wire = JSON.stringify(failed);
+    for (const secret of ["correctOption", "explanation"]) expect(wire).not.toContain(secret);
+
+    const passed = projectReview(gradeExam(questions, [1, 0], 70));
+    expect(passed.revealed).toBe(true);
+    expect(JSON.stringify(passed)).toContain("correctOption");
+
+    // the author trying their own exam sees the correction whatever the score
+    expect(projectReview(gradeExam(questions, [0, 1], 70), true).revealed).toBe(true);
+  });
+
+  it("signs a sitting for one learner and one exam, with a key of its own", () => {
+    const token = signExamAttempt("user-1", "exam-1", "attempt-1");
+    expect(verifyExamAttempt(token, "user-1", "exam-1")).toBe("attempt-1");
+    expect(verifyExamAttempt(token, "user-2", "exam-1")).toBeNull();
+    expect(verifyExamAttempt(token, "user-1", "exam-2")).toBeNull();
+    expect(verifyExamAttempt(token.replace("attempt-1", "attempt-2"), "user-1", "exam-1")).toBeNull();
+    expect(verifyExamAttempt(`${token}x`, "user-1", "exam-1")).toBeNull();
+    for (const bad of ["nonsense", ".", "a.", ".b", ""]) expect(verifyExamAttempt(bad, "user-1", "exam-1")).toBeNull();
+  });
+
+  it("recognises the throw-away sitting of an author", () => {
+    const id = previewAttemptId(1_234_567);
+    expect(isPreviewAttempt(id)).toBe(true);
+    expect(previewAttemptStart(id)).toBe(1_234_567);
+    expect(isPreviewAttempt("cmabc123")).toBe(false);
+    expect(previewAttemptStart("preview-nope")).toBeNull();
+  });
+
+  it("keeps a sitting open for its limit plus a minute, or a day when there is no limit", () => {
+    expect(examSittingWindowMs(60)).toBe(61 * 60_000);
+    expect(examSittingWindowMs(null)).toBe(24 * 3_600_000);
+    expect(withinTimeLimit(0, 24 * 3_600_000, null)).toBe(true);
+    expect(withinTimeLimit(0, 24 * 3_600_000 + 1, null)).toBe(false);
   });
 
   it("enforces the time limit with a small grace", () => {

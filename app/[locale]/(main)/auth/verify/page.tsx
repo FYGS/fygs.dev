@@ -14,6 +14,7 @@ import { Mail, CheckCircle, Clock, RefreshCw } from "lucide-react";
 import { authService } from "@/lib/auth-service";
 import { toast } from "sonner";
 import { useIntlayer } from "next-intlayer";
+import { safeInternalPath } from "@/lib/safe-redirect";
 
 function VerifyEmailContent() {
   const content = useIntlayer("auth");
@@ -25,7 +26,8 @@ function VerifyEmailContent() {
 
   // Get email from URL params if available
   const emailFromParams = searchParams.get("email");
-  const callbackUrl = searchParams.get("callbackUrl");
+  const requested = searchParams.get("callbackUrl");
+  const callbackUrl = requested ? safeInternalPath(requested, "") || null : null;
 
   const schema = z.object({
     email: z.string().email(content.verify.title.value),
@@ -56,7 +58,7 @@ function VerifyEmailContent() {
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
     try {
-      const result = await authService.sendVerificationEmail(data.email);
+      const result = await authService.sendVerificationEmail(data.email, callbackUrl);
 
       if (!result.success) {
         setError("email", {
@@ -79,7 +81,7 @@ function VerifyEmailContent() {
 
     setIsLoading(true);
     try {
-      const result = await authService.sendVerificationEmail(emailFromParams);
+      const result = await authService.sendVerificationEmail(emailFromParams, callbackUrl);
 
       if (result.success) {
         setSent(true);

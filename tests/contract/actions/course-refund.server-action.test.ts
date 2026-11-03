@@ -10,6 +10,7 @@ const h = vi.hoisted(() => ({ refund: vi.fn() }));
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
 vi.mock("next/headers", () => ({ headers: vi.fn(() => Promise.resolve(new Headers())) }));
 vi.mock("@/lib/payment-service", () => ({ paymentService: { refundPayment: h.refund } }));
+vi.mock("@/lib/payments/notify", () => ({ notifyRefund: vi.fn(async () => {}), notifyDispute: vi.fn(async () => {}) }));
 
 import { requestCourseRefund } from "@/app/[locale]/(main)/dashboard/actions/requestCourseRefund";
 
@@ -27,7 +28,9 @@ async function buyer(daysAgo = 2) {
       kind: PaymentKind.COURSE,
       status: PaymentStatus.COMPLETED,
       stripePaymentIntentId: `pi_${user.id.slice(-8)}`,
+      // the refund window runs from the day the payment was settled (updatedAt), not from the pending row
       createdAt: new Date(Date.now() - daysAgo * DAY),
+      updatedAt: new Date(Date.now() - daysAgo * DAY),
     },
   });
   vi.mocked(auth.api.getSession).mockResolvedValue({ user: { id: user.id } } as never);

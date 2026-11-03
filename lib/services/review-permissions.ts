@@ -1,6 +1,11 @@
 import { db } from "@/lib/db";
 import { Role, ReviewStatus } from "@/lib/generated/prisma/browser";
 import { logger } from "@/lib/structured-logger";
+import { isEntitledLearner } from "@/lib/access/entitlement";
+import { loadLearnerCourseState } from "@/lib/learning/course-state";
+
+/** A review is a learner's opinion: they must have followed enough of the course to have one. */
+export const MIN_PROGRESS_FOR_REVIEW_PERCENT = 20;
 
 /**
  * Comprehensive Review Permissions and Validation Service
@@ -42,16 +47,21 @@ export class ReviewPermissionsService {
       // Check if user is suspended (role check - no SUSPENDED role in enum)
       // Note: Suspension would be handled by a separate field or system
 
-      // Check enrollment requirement
-      const enrollment = user.enrollments[0];
-      if (!enrollment) {
+      if (user.isBanned) {
+        return { allowed: false, reason: "Votre compte est suspendu" };
+      }
+
+      // One rule for every way of writing a review (this API and the course page): the learner holds a real right to
+      // the course now (an enrolment alone is not enough: a lapsed or refunded one, or staff, do not count)
+      if (!(await isEntitledLearner(userId, courseId))) {
         return {
           allowed: false,
           reason:
-            "Vous devez être inscrit à cette formation pour laisser un avis",
+            "Seuls les apprenants qui suivent la formation (accès actif) peuvent laisser un avis",
           requiresAction: "enroll",
         };
       }
+      const enrollment = user.enrollments[0];
 
       // Check if course requires completion for reviews (removed as not in schema)
       if (enrollment.completedAt === null) {
@@ -79,13 +89,23 @@ export class ReviewPermissionsService {
       }
 
       // Check minimum time since enrollment
-      const enrollmentAge = Date.now() - enrollment.enrolledAt.getTime();
+      const enrollmentAge = Date.now() - (enrollment?.enrolledAt ?? user.createdAt).getTime();
       const hoursSinceEnrollment = enrollmentAge / (1000 * 60 * 60);
 
       if (hoursSinceEnrollment < 1) {
         return {
           allowed: false,
           reason: "Vous devez attendre au moins 1 heure après inscription",
+        };
+      }
+
+      // Enough of the course followed: 20 % of its steps, or all of it
+      const { progress } = await loadLearnerCourseState(userId, courseId);
+      if (!progress.isComplete && progress.percent < MIN_PROGRESS_FOR_REVIEW_PERCENT) {
+        return {
+          allowed: false,
+          reason: `Suivez au moins ${MIN_PROGRESS_FOR_REVIEW_PERCENT} % de la formation pour donner votre avis`,
+          requiresAction: "learn",
         };
       }
 
