@@ -93,12 +93,3 @@ export function stripInboundHeaders(headers: Headers): { headers: Headers; chang
   }
   return { headers: copy, changed };
 }
-
-/** The methods the application answers. TRACE, CONNECT and anything exotic are refused before reaching a page. */
-const ALLOWED_METHODS = new Set(["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]);
-
-export function isMethodAllowed(method: string): boolean {
-  return ALLOWED_METHODS.has(method.toUpperCase());
-}
-
-export const ALLOW_HEADER = [...ALLOWED_METHODS].join(", ");
