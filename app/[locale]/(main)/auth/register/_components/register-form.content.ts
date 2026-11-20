@@ -72,9 +72,9 @@ const registerFormContent = {
         }),
         error: {
           minLength: t({
-            en: "Password must contain at least 8 characters",
-            fr: "Le mot de passe doit contenir au moins 8 caractères",
-            es: "La contraseña debe contener al menos 8 caracteres",
+            en: "Password must contain at least 12 characters",
+            fr: "Le mot de passe doit contenir au moins 12 caractères",
+            es: "La contraseña debe contener al menos 12 caracteres",
           }),
         },
       },

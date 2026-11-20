@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { MIN_PASSWORD_LENGTH } from "@/lib/password-policy";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -14,7 +15,7 @@ import { toast } from "sonner";
 const passwordSchema = z
   .object({
     currentPassword: z.string().min(1, "Le mot de passe actuel est requis"),
-    newPassword: z.string().min(8, "Le nouveau mot de passe doit contenir au moins 8 caractères"),
+    newPassword: z.string().min(MIN_PASSWORD_LENGTH, `Le nouveau mot de passe doit contenir au moins ${MIN_PASSWORD_LENGTH} caractères`),
     confirmPassword: z.string(),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {

@@ -25,6 +25,8 @@ import { type NextLayoutIntlayer, IntlayerClientProvider } from "next-intlayer";
 import { getHTMLTextDir } from "intlayer";
 import { generateI18nMetadata } from "@/app/_lib/i18n-metadata";
 import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { isValidLocale } from "@/lib/locale-utils";
 export { generateStaticParams } from "next-intlayer";
 
 const AnekTelugu = Anek_Telugu({
@@ -79,6 +81,8 @@ export async function generateMetadata({
 const LocaleLayout: NextLayoutIntlayer = async (props) => {
   const { children, params } = props;
   const { locale } = await params;
+  // A first segment that is not a locale (`/.env`, `/wp-admin`...) is a 404, never a page rendered with that text as its language
+  if (!locale || !isValidLocale(locale)) notFound();
 
   return (
     <html lang={locale} dir={getHTMLTextDir(locale)} suppressHydrationWarning>

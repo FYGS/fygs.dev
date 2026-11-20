@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { MIN_PASSWORD_LENGTH } from "@/lib/password-policy";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -33,7 +34,7 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
     .object({
       name: z.string().min(2, content.form.name.error.minLength.value),
       email: z.string().email(content.form.email.error.invalid.value),
-      password: z.string().min(8, content.form.password.error.minLength.value),
+      password: z.string().min(MIN_PASSWORD_LENGTH, content.form.password.error.minLength.value),
       confirmPassword: z.string(),
       acceptTerms: z
         .union([z.boolean(), z.string()])

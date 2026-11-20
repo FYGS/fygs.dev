@@ -6,10 +6,9 @@ import { enforceRateLimit } from "@/lib/rate-limit";
 
 // GET /api/maintenance - Obtenir l'état de maintenance
 export async function GET() {
+  // Only whether the site is in maintenance: the window and the rest of the configuration are not public
   return NextResponse.json({
     enabled: maintenanceConfig.enabled,
-    startTime: maintenanceConfig.startTime,
-    endTime: maintenanceConfig.endTime,
   });
 }
 

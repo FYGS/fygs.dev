@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, Suspense } from "react";
+import { MIN_PASSWORD_LENGTH } from "@/lib/password-policy";
 import { useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -15,7 +16,7 @@ import { toast } from "sonner";
 
 const schema = z
   .object({
-    password: z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères"),
+    password: z.string().min(MIN_PASSWORD_LENGTH, `Le mot de passe doit contenir au moins ${MIN_PASSWORD_LENGTH} caractères`),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {

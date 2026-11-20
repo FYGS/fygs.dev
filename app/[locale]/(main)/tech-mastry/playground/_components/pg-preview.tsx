@@ -1,5 +1,6 @@
 "use client";
 
+import { previewSandbox } from "@/app/_lib/preview-sandbox";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -245,11 +246,7 @@ export function PgPreview() {
               ref={iframeRef}
               src={activeUrl}
               className="h-full w-full border-0"
-              sandbox={
-                serverUrl
-                  ? "allow-scripts allow-modals allow-forms allow-same-origin allow-popups"
-                  : "allow-scripts allow-modals allow-forms"
-              }
+              sandbox={previewSandbox(serverUrl, typeof window === "undefined" ? "" : window.location.origin)}
               title="Preview"
               onLoad={() => setIsLoading(false)}
             />

@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth";
 import { isTranslatedPath } from "@/lib/locale-utils";
 import { LEARN_PATH_HEADER, learnPathOf } from "@/lib/learning/request-path";
 import { getClientIp } from "@/lib/rate-limit";
-import { checkWriteOrigin, isCrossOriginExempt, stripInboundHeaders } from "@/lib/request-guard";
+import { ALLOW_HEADER, checkWriteOrigin, isCrossOriginExempt, isMethodAllowed, stripInboundHeaders } from "@/lib/request-guard";
 import { buildNonceCsp, generateNonce, nonceEnforced, usesNonceCsp } from "@/lib/csp.mjs";
 
 
@@ -225,6 +225,9 @@ function checkMaintenance(request: NextRequest): NextResponse | null {
 }
 
 export async function proxy(request: NextRequest) {
+  if (!isMethodAllowed(request.method)) {
+    return new NextResponse(null, { status: 405, headers: { Allow: ALLOW_HEADER, "Cache-Control": "no-store" } });
+  }
   const { nextUrl } = request;
   const pathname = nextUrl.pathname;
   const hostname = request.headers.get("host") || "";

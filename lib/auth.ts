@@ -1,4 +1,5 @@
 import { betterAuth, type BetterAuthOptions } from "better-auth";
+import { MIN_PASSWORD_LENGTH } from "@/lib/password-policy";
 import { APIError, createAuthMiddleware, getSessionFromCtx, isAPIError } from "better-auth/api";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
@@ -99,7 +100,7 @@ export function createAuth(database: AuthDatabase) {
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: true,
-      minPasswordLength: 8,
+      minPasswordLength: MIN_PASSWORD_LENGTH,
       maxPasswordLength: 128,
       resetPasswordTokenExpiresIn: 60 * 60,
       // A password reset is what someone does when they fear a stolen session: it must end every session
