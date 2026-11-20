@@ -112,6 +112,18 @@ pnpm format:check
 git push origin feature/amazing-feature
 ```
 
+### ✅ Local checks
+
+```bash
+pnpm lint                 # also generates the intlayer dictionaries
+pnpm tsc --noEmit         # needs those dictionaries: run `pnpm intlayer build` first on a fresh checkout,
+                          # otherwise it reports TS7006 (implicit any) on every translated component
+pnpm test                 # unit tests
+```
+
+On Windows, `.gitattributes` keeps `public/sandbox/**` byte for byte (the previews are pinned by hash) and snapshots in LF.
+After changing these rules, re-extract the files (`git rm --cached` is not needed: delete them and `git checkout -- <path>`).
+
 ### 📝 Commit Convention
 
 We use [Conventional Commits](https://www.conventionalcommits.org/):

@@ -1,2 +1,6 @@
 *.sh text eol=lf
 Dockerfile text eol=lf
+# The sandbox files are served as is and pinned by hash (tests/unit/sandbox/vendor-bundle.test.ts): never convert their line endings
+public/sandbox/** -text
+# Vitest writes snapshots with LF
+*.snap text eol=lf
