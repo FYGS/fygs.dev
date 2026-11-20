@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { writeAudit } from "@/lib/audit";
-import { IMAGE_FOLDERS } from "@/lib/minio-service";
+import { IMAGE_FOLDERS } from "@/lib/image-storage";
 
 /**
  * Who may delete an image from the image storage. An object is deleted only if its key is one the upload route could

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { IMAGE_FOLDERS, isImageStorageConfigured, minioService } from "@/lib/minio-service";
+import { IMAGE_FOLDERS, isImageStorageConfigured, imageStorage } from "@/lib/image-storage";
 import { STORAGE_UNAVAILABLE_MESSAGE } from "@/lib/s3-presign";
 import { logger } from "@/lib/structured-logger";
 import { enforceRateLimit } from "@/lib/rate-limit";
@@ -99,8 +99,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<UploadRes
   }
 
   try {
-    await minioService.initialize();
-    const url = await minioService.putImage(objectName, buffer, type);
+    await imageStorage.initialize();
+    const url = await imageStorage.putImage(objectName, buffer, type);
     uploadLogger.info("Image uploaded", { metadata: { objectName, folder, userId: author.id } });
     return NextResponse.json({ success: true, url });
   } catch (error) {
@@ -138,7 +138,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    await minioService.deleteFile(decision.key);
+    await imageStorage.deleteFile(decision.key);
     await recordImageDeleted(author, decision.key);
     return NextResponse.json({ success: true });
   } catch (error) {

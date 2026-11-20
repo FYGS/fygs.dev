@@ -59,3 +59,7 @@ public/worker-*.js.map
 /playwright-report/
 /test-results/
 /.e2e-serve.json
+
+# Coolify API token of this project (never committed)
+.env.coolify.local
+.env.*.local

@@ -15,7 +15,7 @@ images, lesson videos, lesson resources, captions.
 | Ownership | Only the owner of an image, or an administrator, can delete it, and only a key the upload route could have written. Each deletion is written to the audit log. |
 | Reading paid media | The learner's browser never receives the stored address. The lesson page points the player at `/api/learn/media/<lessonId>`, downloads at `/api/learn/resource/<resourceId>`; both check the right to open the lesson (same rule as the lesson page and the captions) and redirect to a **15 minute signed address**. A refused viewer gets the same 404 as a lesson that does not exist. The player asks for a new address by itself if one expires during playback. |
 | Captions | Served by the site (`/api/learn/captions/<lessonId>`), fetched by the server with a hardened client (`lib/net/safe-fetch.ts`: https and port 443 only, the name is resolved by the server and every answer must be a public address, the checked address is the one connected to, no redirect, 2 MB cap while streaming, 10 s). Any failure gives the same answer. |
-| Public images | The public-read policy is applied only to the image folders (`images`, `courses`, `lessons`, `paths`, `avatars`) and only when `MINIO_PUBLIC_IMAGES=1`. Nothing else in that bucket is made public by the application. |
+| Public images | The public-read policy is applied only to the image folders (`images`, `courses`, `lessons`, `paths`, `avatars`) and only when `S3_IMAGES_PUBLIC_POLICY=1`. Nothing else in that bucket is made public by the application. |
 
 ## What the owner must do
 
@@ -25,18 +25,17 @@ The code can sign addresses; only the storage decides whether an unsigned addres
    `GetObject` policy on it. After that a copied address stops working after 15 minutes, and a refund or a lapsed subscription
    ends access to the files too. Existing lessons keep working: their stored `videoUrl` is turned into a signed address by
    the route.
-2. **Keep the image bucket (`MINIO_BUCKET_NAME`, default `fygs-dev`) public for the image folders only.**
-   Set `MINIO_PUBLIC_IMAGES=1` once in the environment so that the application applies that policy, or apply an equivalent
+2. **Keep the image bucket (`S3_IMAGES_BUCKET`, default `S3_BUCKET`) public for the image folders only.**
+   Set `S3_IMAGES_PUBLIC_POLICY=1` once in the environment so that the application applies that policy, or apply an equivalent
    policy yourself. A bucket policy persists: a new environment shows images only after this step. If both buckets are the
    same bucket, the policy still covers only the image folders, so videos are private.
-3. **Use two keys**: one allowed to read/write/delete in the media bucket only (`S3_*`), one for the image bucket only (`MINIO_*`).
+3. **Use two keys**: one allowed to read/write/delete in the media bucket only (`S3_*`), one for the image bucket only (`S3_IMAGES_ACCESS_KEY_ID` / `S3_IMAGES_SECRET_ACCESS_KEY`).
    The cleanup script needs delete rights on the bucket it cleans.
 4. **Response headers of the storage** (a CDN or proxy in front can add them): `X-Content-Type-Options: nosniff` on every
    object; `Content-Disposition: attachment` for the resources bucket if you serve it directly; a restrictive CORS
    configuration (only the site origin, `GET`/`HEAD` for the media bucket, `PUT` for the upload origin if the browser uploads
    straight to it: `Access-Control-Allow-Origin: https://fygs.dev`, never `*`).
-5. **Use an owned domain** for the storage in `S3_PUBLIC_URL`, `MINIO_API_URL` and `images.remotePatterns` of `next.config.mjs`
-   (the current configuration names a shared `sslip.io` host that embeds the server address).
+5. **Use an owned domain** for the storage in `S3_PUBLIC_URL` and `S3_IMAGES_PUBLIC_URL`; `next.config.mjs` adds their hosts to `images.remotePatterns` at build time.
 6. **Check it** after deploying (replace the address with a real stored one):
 
    ```

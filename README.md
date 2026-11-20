@@ -35,7 +35,7 @@ authentification Better Auth, PostgreSQL via Prisma, paiements Stripe. L'espace 
 | **Auth** | Better Auth (e-mail et mot de passe, Google, GitHub) |
 | **Base de données** | PostgreSQL + Prisma 7 (adapter pg), migrations versionnées |
 | **Paiement** | Stripe (achat à l'unité, abonnement mensuel ou annuel, remboursements, factures, portail) |
-| **Fichiers** | Stockage compatible S3 (vidéos, ressources, sous-titres) et MinIO (images) |
+| **Fichiers** | Stockage compatible S3 (vidéos, ressources, sous-titres, images) |
 | **Cache / limites** | Redis (ioredis), repli en mémoire |
 | **i18n** | Intlayer (pages publiques fr/en/es ; espace applicatif en français) |
 | **Tests** | Vitest (unitaires, intégration sur PostgreSQL jetable), Playwright (e2e), axe-core (accessibilité) |

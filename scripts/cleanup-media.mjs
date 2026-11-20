@@ -7,9 +7,9 @@
  *   node scripts/cleanup-media.mjs                    dry run: lists what would be removed
  *   node scripts/cleanup-media.mjs --apply            removes it from the storage and marks it deleted
  *   options: --older-than-days=2   (default 2: an upload address lives 15 minutes, a day is plenty)
- *            --target=media|images (media: S3_* storage, videos/resources/captions; images: MINIO_* storage)
+ *            --target=media|images (media: S3_* storage, videos/resources/captions; images: S3_IMAGES_* storage, S3_* when unset)
  *
- * Needs DATABASE_URL, and S3_* (media) or MINIO_* (images). Refuses to touch an object that any column still points at.
+ * Needs DATABASE_URL, and the S3_* variables. Refuses to touch an object that any column still points at.
  * Run it from a trusted machine or a scheduled job, with a storage key allowed to delete in that bucket only.
  */
 import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
@@ -31,32 +31,22 @@ if (!process.env.DATABASE_URL) {
 const kinds = target === "images" ? ["IMAGE"] : ["VIDEO", "FILE", "CAPTIONS"];
 
 function storage() {
-  if (target === "images") {
-    const api = process.env.MINIO_API_URL ?? `${process.env.MINIO_USE_SSL === "true" ? "https" : "http"}://${process.env.MINIO_ENDPOINT ?? "localhost:9000"}`;
-    return {
-      bucket: process.env.MINIO_BUCKET_NAME ?? "fygs-dev",
-      publicBase: `${api.replace(/\/+$/, "")}/${process.env.MINIO_BUCKET_NAME ?? "fygs-dev"}`,
-      client: new S3Client({
-        region: "us-east-1",
-        endpoint: api,
-        forcePathStyle: true,
-        credentials: { accessKeyId: process.env.MINIO_ACCESS_KEY ?? "", secretAccessKey: process.env.MINIO_SECRET_KEY ?? "" },
-      }),
-    };
-  }
-  const publicBase = process.env.S3_PUBLIC_URL?.trim().replace(/\/+$/, "");
-  if (!publicBase || !process.env.S3_ACCESS_KEY_ID || !process.env.S3_SECRET_ACCESS_KEY) {
-    console.error("S3_PUBLIC_URL, S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY are required for --target=media");
+  const images = target === "images";
+  const publicBase = (images ? process.env.S3_IMAGES_PUBLIC_URL || process.env.S3_PUBLIC_URL : process.env.S3_PUBLIC_URL)?.trim().replace(/\/+$/, "");
+  const accessKeyId = (images && process.env.S3_IMAGES_ACCESS_KEY_ID) || process.env.S3_ACCESS_KEY_ID;
+  const secretAccessKey = (images && process.env.S3_IMAGES_SECRET_ACCESS_KEY) || process.env.S3_SECRET_ACCESS_KEY;
+  if (!publicBase || !accessKeyId || !secretAccessKey) {
+    console.error(`${images ? "S3_IMAGES_PUBLIC_URL (or S3_PUBLIC_URL)" : "S3_PUBLIC_URL"} and the S3 access key are required for --target=${target}`);
     process.exit(2);
   }
   return {
-    bucket: process.env.S3_BUCKET ?? "fygs-videos",
+    bucket: (images && process.env.S3_IMAGES_BUCKET) || process.env.S3_BUCKET || "fygs-videos",
     publicBase,
     client: new S3Client({
       region: process.env.S3_REGION ?? "us-east-1",
       endpoint: process.env.S3_ENDPOINT,
       forcePathStyle: true,
-      credentials: { accessKeyId: process.env.S3_ACCESS_KEY_ID, secretAccessKey: process.env.S3_SECRET_ACCESS_KEY },
+      credentials: { accessKeyId, secretAccessKey },
     }),
   };
 }

@@ -64,7 +64,7 @@ function hostOf(value: string | undefined): string | null {
 
 /** Our own storage hosts, from the environment (uploaded avatars). */
 function storageHosts(env: NodeJS.ProcessEnv): string[] {
-  return [hostOf(env.S3_PUBLIC_URL), hostOf(env.MINIO_PUBLIC_URL), hostOf(env.MINIO_ENDPOINT)].filter(
+  return [hostOf(env.S3_PUBLIC_URL), hostOf(env.S3_IMAGES_PUBLIC_URL)].filter(
     (host): host is string => host !== null,
   );
 }

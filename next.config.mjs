@@ -125,16 +125,15 @@ function storageImageHosts() {
       /* not a URL: ignored */
     }
   };
-  for (const value of [process.env.S3_PUBLIC_URL, process.env.MINIO_PUBLIC_URL, process.env.MINIO_API_URL]) {
+  for (const value of [process.env.S3_PUBLIC_URL, process.env.S3_IMAGES_PUBLIC_URL]) {
     if (value) add(value);
   }
-  if (process.env.MINIO_ENDPOINT && process.env.MINIO_USE_SSL === "true") add(process.env.MINIO_ENDPOINT.split(":")[0]);
   for (const host of (process.env.IMAGE_REMOTE_HOSTS ?? "").split(",")) {
     if (host.trim()) add(host.trim());
   }
   if (hosts.size === 0 && process.env.NODE_ENV === "production") {
     console.warn(
-      "[next.config] No storage host for the image optimiser: set S3_PUBLIC_URL (or MINIO_API_URL / IMAGE_REMOTE_HOSTS) for the build",
+      "[next.config] No storage host for the image optimiser: set S3_PUBLIC_URL (or S3_IMAGES_PUBLIC_URL / IMAGE_REMOTE_HOSTS) for the build",
     );
   }
   return [...hosts];
@@ -195,6 +194,8 @@ const nextConfig = {
       ...(siteHost ? { allowedOrigins: [siteHost] } : {}),
     },
   },
+  // Self-contained server (.next/standalone) for the Docker image (see Dockerfile)
+  output: "standalone",
   poweredByHeader: false,
   reactStrictMode: true,
 

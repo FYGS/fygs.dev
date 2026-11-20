@@ -20,10 +20,10 @@ const h = vi.hoisted(() => ({
 }));
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn(async () => h.session) } } }));
 vi.mock("@/lib/rate-limit", () => ({ checkRateLimit: vi.fn(async () => ({ allowed: true })), enforceRateLimit: vi.fn(async () => null) }));
-vi.mock("@/lib/minio-service", async (original) => ({
-  ...(await original<typeof import("@/lib/minio-service")>()),
+vi.mock("@/lib/image-storage", async (original) => ({
+  ...(await original<typeof import("@/lib/image-storage")>()),
   isImageStorageConfigured: () => true,
-  minioService: { initialize: vi.fn(async () => undefined), putImage: h.putImage, deleteFile: h.deleteFile },
+  imageStorage: { initialize: vi.fn(async () => undefined), putImage: h.putImage, deleteFile: h.deleteFile },
 }));
 
 import { QuotaExceededError, mediaUsage, releaseMedia, reserveMedia } from "@/lib/media/quota";

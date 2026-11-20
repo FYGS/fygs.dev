@@ -7,6 +7,11 @@
 
 ## [Unreleased] - 2026-10
 
+### Deployment
+- Production image: multi-stage `Dockerfile` (Next.js `output: "standalone"`, Node 22, non-root, `tini`, health check on `/api/health`), `.dockerignore`, and `docker-entrypoint.sh` that applies the pending migrations (`RUN_MIGRATIONS=1`, direct connection through `MIGRATE_DATABASE_URL`) before the server starts. Procedure for Coolify in `docs/COOLIFY.md`.
+- MinIO removed: images use the same S3-compatible client as the paid media (`lib/image-storage.ts`, `S3_*` variables, `S3_IMAGES_*` optional). `MINIO_*` variables are gone; `S3_IMAGES_PUBLIC_POLICY=1` replaces `MINIO_PUBLIC_IMAGES=1`.
+- `pnpm-lock.yaml` matches `package.json` again (the `webpack` specifier differed because of the override, so `pnpm install --frozen-lockfile` failed, in CI too).
+
 ### Security
 - Security audit of 2026-11 (seven independent reviews, see docs/SECURITY-HARDENING-TRACKER.md). Sign-in redirects only go to paths of the site (a crafted `callbackUrl` ran code in the site's origin); a password reset ends the other sessions; the e-mail address changes only through a confirmation sent to both addresses; staff accounts (administrators and instructors) must use a second factor (TOTP, backup codes), without it they hold no role; the server refuses to start in production with a weak `BETTER_AUTH_SECRET` or without `BETTER_AUTH_URL`; the seed and reset scripts refuse a non-local database; accounts can be erased (anonymised) from the profile page; an append-only audit log records privileged actions.
 - Final exam: a sitting is a database row claimed once (a start token could be replayed to read the answers of a failed sitting and pass on a second submission); a failed sitting shows right or wrong per question, never the answers. Quiz sittings count from their start; lesson completion needs the time a lesson takes; points are awarded once per target; certificates freeze the holder's name and use a cryptographic verification code.
