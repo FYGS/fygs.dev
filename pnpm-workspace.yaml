@@ -7,8 +7,11 @@ onlyBuiltDependencies:
   - "@embedded-postgres/darwin-x64"
   - "@embedded-postgres/darwin-arm64"
 overrides:
+  # effect (via @hookform/resolvers): ReDoS fixed in 3.22.1; zod (via the intlayer CLI): memory exhaustion fixed in 4.6.6
+  effect: ">=3.22.1 <4"
+  zod: ">=4.6.6"
   # next-pwa -> workbox-build -> rollup-plugin-terser pins serialize-javascript 4 (RCE advisory)
-  serialize-javascript: ">=7.1.2"
+  serialize-javascript: ">=7.1.3"
   # Advisories on transitive dependencies (patched releases exist)
   stream-json: ">=3.6.0"
   decode-uri-component: ">=0.5.0"
