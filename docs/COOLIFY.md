@@ -101,6 +101,11 @@ Details, keys and checks: [storage-hardening.md](storage-hardening.md).
 - **Health check**: turn Coolify's own check **off**. It runs `curl` inside the container, which the image does not have (the log says
   `curl: not found` and the check passes anyway). The image's `HEALTHCHECK` (`wget` on `http://127.0.0.1:3000/api/health`, start period 30 s)
   is then the one Coolify waits for.
+- **Container hardening** (Application > Advanced > Custom Docker Options), verified from inside the running container:
+  `--cap-drop=ALL --security-opt=no-new-privileges:true --read-only --tmpfs /tmp:rw,nosuid,size=128m --tmpfs /app/.next/cache:rw,nosuid,noexec,uid=1001,gid=65533,size=256m --pids-limit=512`,
+  memory 1g with no swap, runtime variable `HOME=/tmp` (the Prisma CLI of the entrypoint writes a cache under `$HOME`).
+  Observed: root filesystem read-only (`touch /app/x` fails), `/tmp` and the image cache writable, `CapEff` empty, `NoNewPrivs` 1, uid 1001.
+  The image optimiser cache is in memory: it is lost at each restart, which only costs a re-optimisation.
 - Domains: `https://fygs.dev`; add `www.fygs.dev` and redirect it to the apex. DNS: A records to the VPS.
 - Webhook: Coolify gives a deploy webhook; store it as the `COOLIFY_WEBHOOK_URL` secret of GitHub Actions only if you want
   automatic deployments after a green CI.
