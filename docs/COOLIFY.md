@@ -71,12 +71,25 @@ Never set `SEED_ALLOW_PROD`, `NODE_TLS_REJECT_UNAUTHORIZED=0` or `DEBUG`.
 ## 4. File storage (SeaweedFS on Coolify)
 
 MinIO is gone; the code talks to any S3-compatible service through the AWS SDK (`lib/s3-presign.ts`, `lib/image-storage.ts`).
-The service `fygs-v2-s3` runs SeaweedFS (same image as the S3 of the Bons Profs project) with a single S3 port (8333) and its
-identities defined in the compose file:
+The service `fygs-v2-s3` runs SeaweedFS (same image as the S3 of the Bons Profs project) with a single S3 port (8333). Its identities are
+defined in the compose file, each with the least rights it needs, **and none of them is the root key**:
 
-- `app`: the access key of the application (`S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` = the service variables `S3_KEY` / `S3_SECRET`),
-  all rights;
-- `anonymous`: `Read:fygs-images` only. Public images are served straight from the bucket, everything else needs a signature.
+| Identity | Rights | Used by |
+|----------|--------|---------|
+| `media` | `Read`, `Write` (includes delete), `List`, `Tagging` on `fygs-videos` only | the application: `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` (service variables `S3_KEY` / `S3_SECRET`) |
+| `images` | the same on `fygs-images` only | the application: `S3_IMAGES_ACCESS_KEY_ID` / `S3_IMAGES_SECRET_ACCESS_KEY` (service variables `S3_IMAGES_KEY` / `S3_IMAGES_SECRET`) |
+| `admin` | `Admin` (create and delete buckets) | nobody at run time: only to create a bucket by hand; its key is in the owner's password manager and in the service variables `S3_ADMIN_*`, never in the application |
+| `anonymous` | `Read:fygs-images` | the public, for the images |
+
+Verified (with `aws s3api` against the running service): the media key cannot write to `fygs-images` nor create a bucket, the images key
+cannot read `fygs-videos`, public image 200, private video 403, listing 403.
+
+Response headers and CORS come from a Traefik middleware declared in the compose labels (`fygs-s3-headers`, attached to the two HTTPS
+routers that Coolify generates for the domains): `X-Content-Type-Options: nosniff`, and CORS limited to the site origins (`GET, HEAD, PUT`),
+so a browser upload of a video works from the site and not from another origin. **Keep the router names in the compose labels in sync**
+with the ones Coolify generates (`https-0-<uuid>-s3-c082`: read them in the service's generated compose) and add the final origin
+(`https://fygs.dev`, already listed) when the domain changes. The S3 container itself runs with `cap_drop: ALL`, `no-new-privileges`,
+a read-only root file system and a 16 MB `tmpfs` for `/tmp`.
 
 | Bucket | Content | Access | Variables |
 |--------|---------|--------|-----------|
@@ -89,9 +102,7 @@ above does the job). The stored image addresses contain the public base: **choos
 Buckets are created once with the application key (`aws s3api create-bucket --bucket fygs-videos --endpoint-url https://s3.fygs.dev`,
 same for `fygs-images`). Verified on the temporary domain: public image 200, private video 403, listing of the public bucket 403.
 
-To do outside the code: DNS A record `s3.fygs.dev` to the server; CORS for browser uploads of videos (`PUT` from `https://fygs.dev`
-only: SeaweedFS answers CORS from its own configuration, test an upload from the instructor screen); a Traefik middleware that adds
-`X-Content-Type-Options: nosniff` on the S3 domain (the storage does not send it). Back up the `s3-data` volume.
+To do outside the code: DNS A record `s3.fygs.dev` to the server; test a real video upload from the instructor screen; back up the `s3-data` volume.
 
 Details, keys and checks: [storage-hardening.md](storage-hardening.md).
 
