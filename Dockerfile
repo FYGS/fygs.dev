@@ -2,10 +2,8 @@
 # Production image of fygs.dev (Next.js standalone), deployable as is on Coolify (build pack: Dockerfile).
 # docker-entrypoint.sh applies the pending migrations when RUN_MIGRATIONS=1, then starts the server (see docs/COOLIFY.md).
 
-ARG NODE_VERSION=22
-
 # ---------- 1. Dependencies ----------
-FROM node:${NODE_VERSION}-alpine AS deps
+FROM node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 RUN corepack enable
@@ -15,7 +13,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile --ignore-scripts
 
 # ---------- 2. Build ----------
-FROM node:${NODE_VERSION}-alpine AS builder
+FROM node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a AS builder
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 RUN corepack enable
@@ -54,7 +52,7 @@ RUN pnpm prisma generate \
  && node -p "require('prisma/package.json').version" > /prisma-version
 
 # ---------- 3. Migration tools (prisma CLI only, same version as the project) ----------
-FROM node:${NODE_VERSION}-alpine AS migrate
+FROM node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a AS migrate
 RUN apk add --no-cache openssl
 WORKDIR /opt/migrate
 COPY --from=builder /prisma-version /prisma-version
@@ -68,7 +66,7 @@ COPY prisma ./prisma
 COPY prisma.config.ts ./
 
 # ---------- 4. Runtime ----------
-FROM node:${NODE_VERSION}-alpine AS runner
+FROM node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a AS runner
 RUN apk add --no-cache libc6-compat openssl tini
 WORKDIR /app
 

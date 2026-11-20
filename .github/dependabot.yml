@@ -13,6 +13,9 @@ updates:
       timezone: Europe/Paris
     open-pull-requests-limit: 10
     labels: [dependencies]
+    # A release younger than 3 days is not proposed (security updates ignore the cooldown)
+    cooldown:
+      default-days: 3
     groups:
       minor-and-patch:
         update-types: [minor, patch]
@@ -38,3 +41,15 @@ updates:
         patterns: ["*"]
     commit-message:
       prefix: "ci"
+
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Paris
+    open-pull-requests-limit: 3
+    labels: [dependencies]
+    commit-message:
+      prefix: "chore(docker)"

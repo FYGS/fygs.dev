@@ -20,3 +20,7 @@ overrides:
   "dompurify@<=3.4.15": ">=3.4.17"
   # @tailwindcss/typography pins postcss-selector-parser 6.0.10 (quadratic-complexity advisory, fixed in 7.1.6)
   "@tailwindcss/typography>postcss-selector-parser": ">=7.1.7"
+# Supply chain: a version published less than 3 days ago is not installed (a compromised release is usually pulled within hours).
+# To take a fix for a published advisory at once, list that package and version in minimumReleaseAgeExclude and remove it afterwards.
+minimumReleaseAge: 4320
+minimumReleaseAgeExclude: []
