@@ -3,25 +3,29 @@
 Target: the Coolify server shared with other projects (prisma-consulting), until fygs.dev gets its own VPS. The procedure is the
 same on the new server: only the Coolify URL and the DNS change.
 
-> **Shared server.** Create and touch only resources of the `fygs-prod` project. Never edit, restart or delete a resource of
-> another project (`prisma-uat`, `prisma-prod`...).
+> **Shared server.** Work only in the Coolify project **FYGS DEV**. Never edit, restart or delete a resource of another project
+> (`Bons Profs`, `prisma-uat`, `BRVM Analytics`, `Educonnect`...).
+>
+> **The current site is already served by this Coolify**: application `fygs.dev:main-...` (Railpack, branch `main`, domains
+> `fygs.dev` and `www.fygs.dev`). The refonte is deployed next to it as `fygs-v2` on a temporary domain, validated, then the domains
+> are moved (section 11). The old application is not modified until then.
 
 ## 1. What runs where
 
 ```
-Browser --HTTPS--> Traefik (Coolify) --> fygs-web  (Dockerfile, Next.js standalone, port 3000)
-                                           |--> PostgreSQL  Neon (external, TLS)        DATABASE_URL
-                                           |--> Redis       Coolify resource, private   REDIS_URL
-                                           |--> S3 storage  external or Coolify          S3_*
+Browser --HTTPS--> Traefik (Coolify) --> fygs-v2  (Dockerfile, Next.js standalone, port 3000)
+                                           |--> PostgreSQL  staging: fygs-v2-staging-db (Coolify) / production: Neon (TLS)   DATABASE_URL
+                                           |--> Redis       fygs-v2-redis (Coolify, private)                                REDIS_URL
+                                           |--> S3 storage  fygs-v2-s3 (SeaweedFS, Coolify)                                 S3_*
                                            '--> SMTP / Stripe / Sentry (optional)
 ```
 
-| Resource | Type | Notes |
-|----------|------|-------|
-| `fygs-web` | Application, build pack **Dockerfile**, branch of the deployment, port `3000` | Domain `https://fygs.dev` (and `www` redirected to it) |
-| `fygs-redis` | Database > Redis | **Not public.** Memory limit 128m. Use its *internal* URL |
-| Database | **Neon** (already in use) | No PostgreSQL resource to create. Use a branch for tests |
-| `fygs-garage` | Garage (S3-compatible, see section 4) | Private, only `s3.` and `img.` domains are published. MinIO is no longer used anywhere |
+| Resource (project FYGS DEV) | Type | Notes |
+|-----------------------------|------|-------|
+| `fygs-v2` | Application, build pack **Dockerfile**, branch `feature/refactor-harmonize-codebase` (then `main`), port 3000 | Temporary domain `https://fygs-v2.51.68.121.128.sslip.io`; final `https://fygs.dev` |
+| `fygs-v2-redis` | Redis 7, **not public**, 128m | internal URL `redis://default:<password>@<uuid>:6379/0` |
+| `fygs-v2-staging-db` | PostgreSQL 16, not public | recette only (disposable); production keeps using **Neon** |
+| `fygs-v2-s3` | SeaweedFS service, one S3 API on port 8333 | domains `s3.fygs.dev` (needs a DNS A record) and a `sslip.io` one |
 
 ## 2. Build variables (tick "Build Variable")
 
@@ -64,45 +68,39 @@ The server **refuses to start** in production when a required one is missing or 
 
 Never set `SEED_ALLOW_PROD`, `NODE_TLS_REJECT_UNAUTHORIZED=0` or `DEBUG`.
 
-## 4. File storage (Garage on Coolify)
+## 4. File storage (SeaweedFS on Coolify)
 
 MinIO is gone; the code talks to any S3-compatible service through the AWS SDK (`lib/s3-presign.ts`, `lib/image-storage.ts`).
-The chosen service is **Garage**, as a Coolify resource of the `fygs-prod` project (its volume holds the data: back it up).
+The service `fygs-v2-s3` runs SeaweedFS (same image as the S3 of the Bons Profs project) with a single S3 port (8333) and its
+identities defined in the compose file:
 
-Garage has no bucket policies, so public and private files live in **two buckets**:
+- `app`: the access key of the application (`S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` = the service variables `S3_KEY` / `S3_SECRET`),
+  all rights;
+- `anonymous`: `Read:fygs-images` only. Public images are served straight from the bucket, everything else needs a signature.
 
 | Bucket | Content | Access | Variables |
 |--------|---------|--------|-----------|
-| `fygs-videos` | videos, resources, captions | **private**: the site signs 15-minute addresses | `S3_BUCKET`, `S3_PUBLIC_URL` (the S3 API address of that bucket: `https://s3.fygs.dev/fygs-videos`, used only to recognise stored addresses) |
-| `fygs-images` | covers, avatars, lesson pictures | **public read** through Garage's *website* endpoint | `S3_IMAGES_BUCKET=fygs-images`, `S3_IMAGES_PUBLIC_URL=https://img.fygs.dev` |
+| `fygs-videos` | videos, resources, captions | **private**: the site signs 15-minute addresses | `S3_BUCKET`, `S3_PUBLIC_URL=https://s3.fygs.dev/fygs-videos` (only used to recognise stored addresses) |
+| `fygs-images` | covers, avatars, lesson pictures | public read (anonymous identity) | `S3_IMAGES_BUCKET=fygs-images`, `S3_IMAGES_PUBLIC_URL=https://s3.fygs.dev/fygs-images` |
 
-Setup (Garage CLI, in the Garage container):
+`S3_ENDPOINT=https://s3.fygs.dev`, `S3_REGION=us-east-1`, no `S3_IMAGES_PUBLIC_POLICY` (SeaweedFS has no bucket policies, the identity
+above does the job). The stored image addresses contain the public base: **choose the final domain before the first real upload**.
 
-```
-garage layout assign -z dc1 -c 20G <node-id> && garage layout apply --version 1
-garage bucket create fygs-videos && garage bucket create fygs-images
-garage key create fygs-app                          # prints the access key id and the secret: S3_ACCESS_KEY_ID / S3_SECRET_ACCESS_KEY
-garage bucket allow --read --write --owner fygs-videos --key fygs-app
-garage bucket allow --read --write --owner fygs-images --key fygs-app
-garage bucket website --allow fygs-images           # public read of the images bucket only
-```
+Buckets are created once with the application key (`aws s3api create-bucket --bucket fygs-videos --endpoint-url https://s3.fygs.dev`,
+same for `fygs-images`). Verified on the temporary domain: public image 200, private video 403, listing of the public bucket 403.
 
-- `S3_ENDPOINT=https://s3.fygs.dev` (Garage S3 API, port 3900), `S3_REGION=garage`, no `S3_IMAGES_PUBLIC_POLICY`.
-- Domains in Coolify: `s3.fygs.dev` to port 3900 (API), `img.fygs.dev` to port 3902 (web endpoint, the website bucket is chosen by
-  the `Host` header: set `root_domain`/`bucket alias` so that `img.fygs.dev` maps to `fygs-images`, see the Garage documentation for
-  `[s3_web] root_domain` and `garage bucket alias`).
-- CORS on `fygs-videos` for browser uploads of videos and resources: `PUT` from `https://fygs.dev` only
-  (`aws s3api put-bucket-cors`, Garage supports it).
-- Keep the Garage ports (3900, 3902, admin 3903, RPC 3901) closed on the host: only Traefik reaches them.
+To do outside the code: DNS A record `s3.fygs.dev` to the server; CORS for browser uploads of videos (`PUT` from `https://fygs.dev`
+only: SeaweedFS answers CORS from its own configuration, test an upload from the instructor screen); a Traefik middleware that adds
+`X-Content-Type-Options: nosniff` on the S3 domain (the storage does not send it). Back up the `s3-data` volume.
 
-Details, keys and checks: [storage-hardening.md](storage-hardening.md). After the first deploy, run its two `curl -sI` checks
-(private video = 403, public image = 200 with `nosniff`).
+Details, keys and checks: [storage-hardening.md](storage-hardening.md).
 
 ## 5. Application settings in Coolify
 
 - Build pack **Dockerfile**, base directory `/`, port `3000`.
-- **Health check**: path `/api/health`, host **`127.0.0.1`** (not `localhost`: IPv6 makes the probe fail), port `3000`, start period 30 s.
-  The image has the same probe built in.
+- **Health check**: turn Coolify's own check **off**. It runs `curl` inside the container, which the image does not have (the log says
+  `curl: not found` and the check passes anyway). The image's `HEALTHCHECK` (`wget` on `http://127.0.0.1:3000/api/health`, start period 30 s)
+  is then the one Coolify waits for.
 - Domains: `https://fygs.dev`; add `www.fygs.dev` and redirect it to the apex. DNS: A records to the VPS.
 - Webhook: Coolify gives a deploy webhook; store it as the `COOLIFY_WEBHOOK_URL` secret of GitHub Actions only if you want
   automatic deployments after a green CI.
@@ -135,11 +133,14 @@ If the database is empty (new project), `migrate deploy` creates everything, the
 
 ## 7. Scheduled job
 
-Coolify > `fygs-web` > Scheduled Tasks, or an external cron, `0 7 * * 1` (Monday, 07:00):
+Coolify > `fygs-v2` > Scheduled Tasks, or an external cron, `0 7 * * 1` (Monday, 07:00):
 
 ```
 curl -fsS -H "Authorization: Bearer $CRON_SECRET" https://fygs.dev/api/cron/weekly-review-summaries
 ```
+
+(Scheduled Tasks of `fygs-v2` run a command inside the container, which has `wget` but not `curl`: use
+`wget -qO- --header="Authorization: Bearer $CRON_SECRET" http://127.0.0.1:3000/api/cron/weekly-review-summaries`.)
 
 (the route answers `GET`).
 
@@ -162,5 +163,17 @@ Follow section 4 of [SECURITY-OPERATIONS.md](SECURITY-OPERATIONS.md), plus:
 
 ## 10. Rollback
 
-Coolify > `fygs-web` > Deployments > redeploy the previous successful deployment. Migrations are forward-only: a rollback of the
+Coolify > `fygs-v2` > Deployments > redeploy the previous successful deployment. Migrations are forward-only: a rollback of the
 application after a destructive migration needs the Neon branch of step 1 of section 6, so keep it until the release is validated.
+
+## 11. Cutover from the current site (Railpack app) to `fygs-v2`
+
+Do it only when the recette on the temporary domain is green and the points below are done.
+
+1. Neon: snapshot branch, baseline and duplicate checks (section 6), `MIGRATE_DATABASE_URL` = direct Neon URL, `DATABASE_URL` = Neon URL.
+2. Live Stripe keys, webhook `https://fygs.dev/api/stripe/webhook` and its signing secret (**the current site runs with `sk_test` keys**),
+   `STRIPE_EXPECT_MODE=live`. OAuth redirect URIs and SMTP/SPF/DKIM for `fygs.dev`.
+3. Build variables switched to the final domains (`NEXT_PUBLIC_SITE_URL`, `S3_PUBLIC_URL`, `S3_IMAGES_PUBLIC_URL`), `BETTER_AUTH_URL`,
+   `HUMAN_PROOF_MODE=report` then `enforce`, `REDIS_URL` of `fygs-v2-redis`.
+4. Remove `fygs.dev` and `www.fygs.dev` from the old application (it stays stopped, not deleted, for a week), add them to `fygs-v2`, redeploy.
+5. Check section 9, watch the logs for an hour. Rollback: give the domains back to the old application and start it.
