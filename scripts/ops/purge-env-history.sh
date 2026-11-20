@@ -209,7 +209,7 @@ has_filter_repo() { git filter-repo --version >/dev/null 2>&1; }
 run_wizard() {
 
 TOTAL_STAGES=8
-ENV_FILE="${ENV_FILE:-$HOME/.config/fygs-dev/purge.env}"
+ENV_FILE="${WIZARD_ENV_FILE:-$HOME/.config/fygs-dev/purge.env}"   # the library defaults to ./.env: never write secrets there
 mkdir -p "$(dirname "$ENV_FILE")"
 
 banner "fygs.dev: remove .env files from the whole git history (issue #40)"

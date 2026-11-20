@@ -255,7 +255,7 @@ http_code() { curl -s -m 20 -o /dev/null -w '%{http_code}' "$1" || true; }
 run_wizard() {
 
 TOTAL_STAGES=13
-ENV_FILE="${ENV_FILE:-$HOME/.config/fygs-dev/rotation.env}"
+ENV_FILE="${WIZARD_ENV_FILE:-$HOME/.config/fygs-dev/rotation.env}"   # the library defaults to ./.env: never write secrets there
 mkdir -p "$(dirname "$ENV_FILE")"
 
 banner "fygs.dev: rotate every secret that is in the git history (issue #40)"

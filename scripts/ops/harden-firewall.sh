@@ -232,7 +232,7 @@ tcp_open() { timeout 4 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null; }
 run_wizard() {
 
 TOTAL_STAGES=10
-ENV_FILE="${ENV_FILE:-$HOME/.config/fygs-dev/firewall.env}"
+ENV_FILE="${WIZARD_ENV_FILE:-$HOME/.config/fygs-dev/firewall.env}"   # the library defaults to ./.env: never write secrets there
 mkdir -p "$(dirname "$ENV_FILE")"
 
 banner "fygs.dev: close SSH, Coolify (8000) and realtime (6001) to the public (issue #41)"
