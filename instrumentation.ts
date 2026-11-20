@@ -16,8 +16,8 @@ export async function register() {
   if (process.env.NEXT_PHASE !== "phase-production-build") {
     // A production server with a weak secret or a missing public URL does not start (lib/env-guard.ts); it does
     // nothing in development, tests and builds
-    const { assertProductionEnv } = await import("./lib/env-guard");
-    for (const warning of assertProductionEnv().warnings) console.warn(`[env] ${warning}`);
+    const { guardProductionEnv } = await import("./lib/env-guard");
+    guardProductionEnv();
     const { reportDatabaseUrl } = await import("./lib/database-url");
     reportDatabaseUrl();
   }

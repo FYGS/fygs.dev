@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { assertProductionEnv, checkProductionEnv } from "@/lib/env-guard";
+import { assertProductionEnv, checkProductionEnv, guardProductionEnv } from "@/lib/env-guard";
 
 const STRONG = "Xk9#vQ2mZp7LwR4tYb8NcD1sFh6JgA3eU5oIq0WzE";
 
@@ -86,5 +86,42 @@ describe("assertProductionEnv", () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("NEXT_PHASE", "");
     expect(assertProductionEnv({ ...goodEnv(), CRON_SECRET: undefined }).warnings.join()).toMatch(/CRON_SECRET/);
+  });
+});
+
+describe("guardProductionEnv", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
+  });
+
+  it("ends the process with code 1 and prints every problem when the production environment is unsafe", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    const error = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const exit = vi.fn();
+    guardProductionEnv({ BETTER_AUTH_SECRET: "short" }, exit);
+    expect(exit).toHaveBeenCalledExactlyOnceWith(1);
+    const printed = String(error.mock.calls[0]?.[0]);
+    expect(printed).toContain("Refusing to start");
+    expect(printed).toContain("BETTER_AUTH_SECRET");
+    expect(printed).toContain("DATABASE_URL is not set");
+  });
+
+  it("starts, and only prints the warnings, when the environment is sound", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const exit = vi.fn();
+    const { TRUSTED_PROXY_HOPS: _omitted, ...withoutHops } = goodEnv();
+    const report = guardProductionEnv(withoutHops, exit);
+    expect(exit).not.toHaveBeenCalled();
+    expect(report.errors).toEqual([]);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("TRUSTED_PROXY_HOPS is not set"));
+  });
+
+  it("does nothing outside a running production server", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    const exit = vi.fn();
+    expect(guardProductionEnv({}, exit)).toEqual({ errors: [], warnings: [] });
+    expect(exit).not.toHaveBeenCalled();
   });
 });

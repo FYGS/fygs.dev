@@ -81,3 +81,24 @@ export function assertProductionEnv(env: NodeJS.ProcessEnv = process.env): EnvRe
   }
   return report;
 }
+
+/**
+ * What the server does at start: print the warnings, and when the production environment is unsafe, print every problem and
+ * stop the process. Next.js keeps a server alive when the instrumentation hook throws (every request then fails and the
+ * container only turns "unhealthy"), so the process is ended explicitly: the orchestrator sees a crash with a clear message
+ * and keeps the previous version running. `exit` is injectable for tests.
+ */
+export function guardProductionEnv(
+  env: NodeJS.ProcessEnv = process.env,
+  exit: (code: number) => void = (code) => process.exit(code),
+): EnvReport {
+  try {
+    const report = assertProductionEnv(env);
+    for (const warning of report.warnings) console.warn(`[env] ${warning}`);
+    return report;
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    exit(1);
+    return { errors: [error instanceof Error ? error.message : String(error)], warnings: [] };
+  }
+}
