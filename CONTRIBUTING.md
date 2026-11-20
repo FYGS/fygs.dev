@@ -121,6 +121,9 @@ pnpm tsc --noEmit         # needs those dictionaries: run `pnpm intlayer build` 
 pnpm test                 # unit tests
 ```
 
+After `pnpm up`, run `pnpm install --no-frozen-lockfile` once: the `webpack` override of `pnpm-workspace.yaml` rewrites the specifier
+that the lockfile must record, and `pnpm up` does not, which makes `pnpm install --frozen-lockfile` fail (in CI too).
+
 On Windows, `.gitattributes` keeps `public/sandbox/**` byte for byte (the previews are pinned by hash) and snapshots in LF.
 After changing these rules, re-extract the files (`git rm --cached` is not needed: delete them and `git checkout -- <path>`).
 
