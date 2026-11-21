@@ -204,6 +204,10 @@ BACKUP_DIR="${BACKUP_DIR:-$HOME/fygs-dev-backups}"
 WORK_DIR="${WORK_DIR:-$(mktemp -d)}"
 PURGE_PATHS=(.env .env.production .env.local .env.test .env.development)
 
+# pip --user installs scripts in a directory that is rarely on PATH (notably on Windows): add it for this run
+_user_scripts="$(python -c "import sysconfig,os;print(sysconfig.get_path('scripts', 'nt_user' if os.name == 'nt' else 'posix_user'))" 2>/dev/null | tr -d '' || true)"
+[[ -n "$_user_scripts" ]] && PATH="$(cygpath -u "$_user_scripts" 2>/dev/null || printf %s "$_user_scripts"):$PATH"
+
 has_filter_repo() { git filter-repo --version >/dev/null 2>&1; }
 
 run_wizard() {
