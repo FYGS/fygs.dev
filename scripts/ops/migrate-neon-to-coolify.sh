@@ -13,6 +13,7 @@ export MSYS_NO_PATHCONV=1
 
 COOLIFY_URL="https://deploy.bonsprofs.com"
 COOLIFY_FILE="$HOME/.config/fygs-dev/coolify.env"
+COOLIFY_FILE_PY="$(cygpath -m "$COOLIFY_FILE" 2>/dev/null || printf %s "$COOLIFY_FILE")"   # native python needs a Windows-style path
 LIVE_APP="ljml6qqgunnoa1iyvgctcl7t"
 DB_CONTAINER="pvtgqray7cjuyjqgssacgmry"     # fygs-v2-staging-db (postgres:16)
 SSH_TARGET="${SSH_TARGET:-root@51.68.121.128}"
@@ -28,7 +29,7 @@ ask_yes() { read -r -p "$1 [y/N] " a; [[ "$a" == "y" || "$a" == "Y" ]]; }
 
 # live_var KEY -> value of a runtime variable of the live app (stdout; callers keep it in a variable, never echo it)
 live_var() {
-  COOLIFY_FILE="$COOLIFY_FILE" COOLIFY_URL="$COOLIFY_URL" python - "$LIVE_APP" "$1" <<'PY'
+  COOLIFY_FILE="$COOLIFY_FILE_PY" COOLIFY_URL="$COOLIFY_URL" python - "$LIVE_APP" "$1" <<'PY'
 import json, os, sys, urllib.request
 app, key = sys.argv[1:3]
 tok = [l.split("=", 1)[1].strip().strip('"') for l in open(os.environ["COOLIFY_FILE"]) if l.startswith("COOLIFY_API_KEY")][0]
@@ -99,7 +100,7 @@ stage_cutover() {
   say "  The site restarts (1-2 minutes). Rows written on Neon after the dump are lost."
   ask_yes "Switch the live site to the new database?" || exit 0
   for k in DATABASE_URL MIGRATE_DATABASE_URL; do
-    VALUE="$PROD_DATABASE_URL" COOLIFY_FILE="$COOLIFY_FILE" COOLIFY_URL="$COOLIFY_URL" python - "$LIVE_APP" "$k" <<'PY'
+    VALUE="$PROD_DATABASE_URL" COOLIFY_FILE="$COOLIFY_FILE_PY" COOLIFY_URL="$COOLIFY_URL" python - "$LIVE_APP" "$k" <<'PY'
 import json, os, sys, urllib.request, urllib.error
 app, key = sys.argv[1:3]
 tok = [l.split("=", 1)[1].strip().strip('"') for l in open(os.environ["COOLIFY_FILE"]) if l.startswith("COOLIFY_API_KEY")][0]

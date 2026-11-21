@@ -212,7 +212,7 @@ gen_secret() { openssl rand -base64 48 | tr -dc 'A-Za-z0-9' | head -c "${1:-48}"
 # The value travels in the environment (never on a command line) and nothing the API answers is printed:
 # it echoes variable values back.
 coolify_env() {
-  COOLIFY_FILE="$COOLIFY_FILE" COOLIFY_URL="$COOLIFY_URL" python - "$@" <<'PY'
+  COOLIFY_FILE="$(cygpath -m "$COOLIFY_FILE" 2>/dev/null || printf %s "$COOLIFY_FILE")" COOLIFY_URL="$COOLIFY_URL" python - "$@" <<'PY'
 import json, os, sys, urllib.request, urllib.error
 app, action, key = sys.argv[1:4]
 value = os.environ.get("VALUE", "")
