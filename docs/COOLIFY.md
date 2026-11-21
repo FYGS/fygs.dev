@@ -129,20 +129,18 @@ Details, keys and checks: [storage-hardening.md](storage-hardening.md).
 (direct connection: the advisory lock of Prisma does not work through a pooler). A failed migration stops the new container before
 it serves anything, so Coolify keeps the previous version up.
 
-### First deployment against the existing Neon database
+### Production database
 
-The Neon database predates this branch (old schema, 15 migrations, possibly created with `db push`). Before the first deploy:
+The old Neon project only held throwaway development data (no real enrolment) and its account is lost, so it is **not migrated**.
+Production runs on `fygs-prod-db` (Postgres 17, Coolify), with one database and one role per site:
 
-1. **Snapshot**: create a Neon branch from the production branch (point-in-time) and keep it until the release is validated.
-2. **Look**: on a copy (the Neon branch), run `select migration_name, finished_at from _prisma_migrations order by started_at;`.
-   - Table missing: the schema came from `db push`. Mark the migrations already reflected in the schema as applied, with
-     `prisma migrate resolve --applied <name>` for each, up to the last one that matches what the database has, then let `migrate
-     deploy` apply the rest.  Then `prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code` against the copy must report no difference.
-   - Table present and its 15 names match the first 15 folders of `prisma/migrations`: nothing to resolve, `migrate deploy` applies the 7 newer ones (`20261020140000_add_quiz_attempts` to `20261102100000_security_hardening`).
-3. **Duplicates**: run the duplicate checks at the top of `prisma/migrations/20261102100000_security_hardening/migration.sql`.
-   That migration adds unique indexes and fails if duplicates exist.
-4. **Rehearse** on the Neon copy: point a local container at it with `RUN_MIGRATIONS=1`, then open the site.
-5. Only then deploy to production.
+| Database / role | Used by |
+|---|---|
+| `fygs_prod` | the current live site (a copy of the old dev data, dropped at cutover) |
+| `fygs_v2` | `fygs-v2` at cutover: starts **empty**, `migrate deploy` creates the 22 migrations |
+
+Both `DATABASE_URL` and `MIGRATE_DATABASE_URL` point to the internal host (`<uuid>:5432`, no pooler needed). `fygs-v2-staging-db`
+(Postgres 16) stays for the recette. Then seed the content once from a trusted machine as described below.
 
 If the database is empty (new project), `migrate deploy` creates everything, then run `pnpm db:seed` once from a trusted machine
 (it refuses a non-local database unless `SEED_ALLOW_PROD=1` and `SEED_CONFIRM_DATABASE` are set; unset them afterwards).
@@ -186,7 +184,7 @@ application after a destructive migration needs the Neon branch of step 1 of sec
 
 Do it only when the recette on the temporary domain is green and the points below are done.
 
-1. Neon: snapshot branch, baseline and duplicate checks (section 6), `MIGRATE_DATABASE_URL` = direct Neon URL, `DATABASE_URL` = Neon URL.
+1. Database: `DATABASE_URL` and `MIGRATE_DATABASE_URL` of `fygs-v2` = the internal URL of database `fygs_v2` on `fygs-prod-db` (empty; `migrate deploy` builds it), then the seed.
 2. Live Stripe keys, webhook `https://fygs.dev/api/stripe/webhook` and its signing secret (**the current site runs with `sk_test` keys**),
    `STRIPE_EXPECT_MODE=live`. OAuth redirect URIs and SMTP/SPF/DKIM for `fygs.dev`.
 3. Build variables switched to the final domains (`NEXT_PUBLIC_SITE_URL`, `S3_PUBLIC_URL`, `S3_IMAGES_PUBLIC_URL`), `BETTER_AUTH_URL`,
