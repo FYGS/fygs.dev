@@ -10,7 +10,7 @@
 #   fygs-firewall.sh status                                  show the chain and its packet counters
 #
 # What it does
-#   - Ports published by Docker (8000 Coolify dashboard, 6001 Coolify realtime) are filtered in DOCKER-USER, matched on the
+#   - Ports published by Docker (8000 Coolify dashboard, 6001 realtime and 6002 terminal) are filtered in DOCKER-USER, matched on the
 #     ORIGINAL destination port (ufw and INPUT rules do not see them: Docker NATs them in front of INPUT).
 #   - SSH (22) is a host service: filtered in INPUT.
 #   - Private ranges and loopback always pass: Coolify reaches the host's SSH from its own container (host.docker.internal),
@@ -19,7 +19,7 @@
 set -eu
 
 CHAIN=FYGS-ADMIN
-DOCKER_PORTS="8000 6001"
+DOCKER_PORTS="8000 6001 6002"
 HOST_PORTS="22"
 CONF=/etc/fygs-firewall.conf
 KEEP=/run/fygs-fw-keep
@@ -79,7 +79,7 @@ apply_rules() {
     iptables -I INPUT 1 -p tcp --dport "$p" -m conntrack --ctstate NEW -j "$CHAIN"
   done
 
-  # IPv6: Docker's userland proxy answers on [::] and those packets do reach INPUT, so filter all three ports there
+  # IPv6: Docker's userland proxy answers on [::] and those packets do reach INPUT, so filter all the ports there
   if have6; then
     remove_v6
     ip6tables -N "$CHAIN"

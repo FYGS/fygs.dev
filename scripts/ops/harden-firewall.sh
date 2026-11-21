@@ -235,7 +235,7 @@ TOTAL_STAGES=10
 ENV_FILE="${WIZARD_ENV_FILE:-$HOME/.config/fygs-dev/firewall.env}"   # the library defaults to ./.env: never write secrets there
 mkdir -p "$(dirname "$ENV_FILE")"
 
-banner "fygs.dev: close SSH, Coolify (8000) and realtime (6001) to the public (issue #41)"
+banner "fygs.dev: close SSH, Coolify (8000) and realtime/terminal (6001, 6002) to the public (issue #41)"
 
 # ── 1. Preflight ───────────────────────────────────────────────────────────
 stage "Before touching the server"
@@ -272,7 +272,7 @@ stage "What listens on the server today"
 rroot 'echo "--- os:"; (. /etc/os-release && echo "$PRETTY_NAME"); echo "--- listeners (tcp):"; ss -tlnH | awk "{print \$4}" | sort -u | tr "\n" " "; echo; echo "--- iptables / ufw:"; command -v iptables >/dev/null && echo "iptables present" || echo "NO iptables"; command -v ufw >/dev/null && ufw status | head -3 || true; echo "--- docker published ports:"; docker ps --format "{{.Names}}: {{.Ports}}" 2>/dev/null | grep -E "8000|6001|6002" | cut -c1-120 || true' || warn "inspection failed"
 say ""
 say "Public view of this server right now, from this machine:"
-for p in 22 80 443 8000 6001; do tcp_open "$VPS_IP_DEFAULT" "$p" && say "  port $p  OPEN" || say "  port $p  closed/filtered"; done
+for p in 22 80 443 8000 6001 6002; do tcp_open "$VPS_IP_DEFAULT" "$p" && say "  port $p  OPEN" || say "  port $p  closed/filtered"; done
 say ""
 say "Baseline of every site (saved to compare after the change):"
 BASELINE_FILE="$(mktemp)"
@@ -281,7 +281,7 @@ cat "$BASELINE_FILE" | sed 's/^/  /'
 pause
 
 # ── 4. Admin addresses ─────────────────────────────────────────────────────
-stage "Who may reach 22, 8000 and 6001"
+stage "Who may reach 22, 8000, 6001 and 6002"
 my4=$(curl -s -m 10 https://api.ipify.org || true)
 my6=$(curl -s -m 10 https://api6.ipify.org || true)
 say "Your public IPv4: ${my4:-unknown}"
@@ -303,7 +303,7 @@ pause
 
 # ── 5. Install with a dead-man switch ──────────────────────────────────────
 stage "Install the rules, with an automatic undo after 2 minutes"
-say "Public rules stay as they are: 80 and 443 remain open. Only 22, 8000 and 6001 become admin-only."
+say "Public rules stay as they are: 80 and 443 remain open. Only 22, 8000, 6001 and 6002 become admin-only."
 say ""
 confirm "Copy the script and apply the rules now?" || { say "Nothing was changed."; exit 0; }
 scp -o BatchMode=yes -P "$SSH_PORT" "$SERVER_SCRIPT" "$SSH_TARGET:/tmp/fygs-firewall.sh" >/dev/null
@@ -345,7 +345,7 @@ if confirm "Install the systemd unit?"; then
   rroot "printf '%s\n' '[Unit]' 'Description=fygs admin-only ports (issue 41)' 'After=docker.service network-online.target' 'Wants=network-online.target' '' '[Service]' 'Type=oneshot' 'RemainAfterExit=yes' 'ExecStart=$REMOTE_SCRIPT apply-from-conf' 'ExecStop=$REMOTE_SCRIPT rollback' '' '[Install]' 'WantedBy=multi-user.target' > /etc/systemd/system/fygs-firewall.service && systemctl daemon-reload && systemctl enable fygs-firewall.service"
   say "${GREEN}✓${RESET} enabled. To change the addresses later: $REMOTE_SCRIPT save '<addresses>' and apply."
 else
-  warn "Not persisted: after a reboot the three ports are public again."
+  warn "Not persisted: after a reboot the four ports are public again."
 fi
 pause
 
@@ -374,12 +374,12 @@ stage "Check from ANOTHER network"
 say "From this machine you are an admin address, so the ports look open. The real test is from outside:"
 step "Switch to a phone hotspot (or any other network)."
 step "In a bash shell, run:"
-say "      for p in 22 80 443 8000 6001; do (exec 3<>/dev/tcp/$VPS_IP_DEFAULT/\$p) 2>/dev/null && echo \"\$p OPEN\" || echo \"\$p closed\"; done"
-step "Expected: 80 and 443 OPEN; 22, 8000 and 6001 closed."
+say "      for p in 22 80 443 8000 6001 6002; do (exec 3<>/dev/tcp/$VPS_IP_DEFAULT/\$p) 2>/dev/null && echo \"\$p OPEN\" || echo \"\$p closed\"; done"
+step "Expected: 80 and 443 OPEN; 22, 8000, 6001 and 6002 closed."
 say ""
 say "Packet counters on the server (the DROP line grows when scanners hit the closed ports):"
 rroot "$REMOTE_SCRIPT status" | grep -E "DROP|Chain" | head -6 | sed 's/^/  /' || true
-confirm "From the other network: only 80 and 443 are open?" || warn "Then something is still exposed: re-run stage 5 or tell me the result."
+confirm "From the other network: only 80 and 443 are open (22, 8000, 6001, 6002 closed)?" || warn "Then something is still exposed: re-run stage 5 or tell me the result."
 
 # ── 10. Provider firewall ──────────────────────────────────────────────────
 stage "Optional: a second wall at the provider"
@@ -387,7 +387,7 @@ say "A provider-level firewall drops traffic before it reaches the server at all
 open_url "https://www.ovh.com/manager/"
 step "Look in OVH Manager for a network firewall that applies to this server's public IP ($VPS_IP_DEFAULT)."
 note "I do not know whether your product offers one; availability depends on the product. If it does, mirror the same policy: allow 80/443 from anywhere,"
-note "22, 8000 and 6001 only from your admin addresses. Do not rely on it alone: the rules installed above are the ones verified."
+note "22, 8000, 6001 and 6002 only from your admin addresses. Do not rely on it alone: the rules installed above are the ones verified."
 pause
 # ──────────────────────────────────────────────────────────────────────────
 
