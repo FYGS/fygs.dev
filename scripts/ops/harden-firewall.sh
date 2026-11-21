@@ -231,7 +231,7 @@ tcp_open() { timeout 4 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null; }
 
 run_wizard() {
 
-TOTAL_STAGES=10
+TOTAL_STAGES=11
 ENV_FILE="${WIZARD_ENV_FILE:-$HOME/.config/fygs-dev/firewall.env}"   # the library defaults to ./.env: never write secrets there
 mkdir -p "$(dirname "$ENV_FILE")"
 
@@ -267,6 +267,47 @@ if [[ "$SSH_TARGET" != root@* ]]; then
 fi
 pause
 
+# ── 2b. Tailscale ─────────────────────────────────────────────────────────
+stage "Tailscale: a private way in that does not depend on your IP"
+say "Tailscale makes a private network between your PC and the server. SSH and the admin ports will be reachable only through it,"
+say "so a changing home IP can never lock you out. It is free for personal use; sign in with your GitHub or Google account."
+say ""
+if confirm "Set up Tailscale now (recommended)?"; then
+  open_url "https://tailscale.com/download/windows"
+  step "Install Tailscale on THIS PC (or: winget install --id Tailscale.Tailscale -e), start it and sign in. Remember which account you used."
+  confirm "Is Tailscale running on this PC and signed in?" || { say "Stopped. Re-run when ready. Nothing was changed."; exit 0; }
+  say ""
+  warn "Next, the official installer from tailscale.com is downloaded and run as root on the SHARED server (it adds Tailscale's apt repository)."
+  confirm "Install Tailscale on the server?" || { say "Stopped. Nothing was changed."; exit 0; }
+  rroot "command -v tailscale >/dev/null 2>&1 || (curl -fsSL https://tailscale.com/install.sh -o /tmp/tailscale-install.sh && sh /tmp/tailscale-install.sh && rm -f /tmp/tailscale-install.sh)"
+  rroot "rm -f /tmp/ts-up.log; nohup tailscale up --accept-dns=false --hostname=vps-coolify >/tmp/ts-up.log 2>&1 &" || true
+  sleep 8
+  TS_URL=$(rroot "cat /tmp/ts-up.log 2>/dev/null" | grep -o 'https://login.tailscale.com/[^ ]*' | head -1 || true)
+  if [[ -n "$TS_URL" ]]; then
+    open_url "$TS_URL"
+    step "Sign in with the SAME account as on your PC and approve the machine 'vps-coolify'."
+  else
+    say "Already connected, or the login link did not show. Server says:"; rroot "tailscale status 2>&1 | head -5"
+  fi
+  pause "Press Enter once the machine is approved…"
+  TS_IP=$(rroot "tailscale ip -4 2>/dev/null" | head -1 | tr -d '' || true)
+  [[ "$TS_IP" =~ ^100\.[0-9]+\.[0-9]+\.[0-9]+$ ]] || { warn "the server has no Tailscale address yet ($TS_IP). Check the approval, then re-run."; exit 1; }
+  say "Server address on the private network: $TS_IP"
+  open_url "https://login.tailscale.com/admin/machines"
+  step "On the machine 'vps-coolify': ⋯ → 'Disable key expiry'. WITHOUT this, the server drops off your private network after about 6 months and SSH is lost."
+  confirm "Key expiry disabled for vps-coolify?" || { warn "Do it before going on, otherwise you will lock yourself out later."; exit 1; }
+  TS_TARGET="${SSH_TARGET%@*}@$TS_IP"
+  if ssh -o BatchMode=yes -o ConnectTimeout=10 -p "$SSH_PORT" "$TS_TARGET" true 2>/dev/null; then
+    say "${GREEN}✓${RESET} SSH works through the private network ($TS_TARGET)"
+    SSH_TARGET="$TS_TARGET"; write_env SSH_TARGET "$SSH_TARGET"; write_env TAILSCALE_IP "$TS_IP"
+  else
+    warn "SSH through $TS_IP failed (is Tailscale connected on this PC?). Fix it first: stopping before any change."; exit 1
+  fi
+else
+  warn "Without Tailscale, SSH is reachable only from the addresses you list: a new home IP means using the OVH rescue console."
+fi
+pause
+
 # ── 3. Inspect ─────────────────────────────────────────────────────────────
 stage "What listens on the server today"
 rroot 'echo "--- os:"; (. /etc/os-release && echo "$PRETTY_NAME"); echo "--- listeners (tcp):"; ss -tlnH | awk "{print \$4}" | sort -u | tr "\n" " "; echo; echo "--- iptables / ufw:"; command -v iptables >/dev/null && echo "iptables present" || echo "NO iptables"; command -v ufw >/dev/null && ufw status | head -3 || true; echo "--- docker published ports:"; docker ps --format "{{.Names}}: {{.Ports}}" 2>/dev/null | grep -E "8000|6001|6002" | cut -c1-120 || true' || warn "inspection failed"
@@ -287,9 +328,8 @@ my6=$(curl -s -m 10 https://api6.ipify.org || true)
 say "Your public IPv4: ${my4:-unknown}"
 say "Your public IPv6: ${my6:-none}"
 say ""
-warn "If your home or office address changes, you will be locked out of SSH and the dashboard by address."
-note "A stable fix is a VPN with a fixed exit address (WireGuard on a small VPS, Tailscale exit node), then list that address here."
-note "Until then, the provider console (KVM / rescue) is the way back in. Add every address you may connect from."
+note "With Tailscale set up, these addresses are only a bonus: the private network always gets in, whatever your IP."
+note "The provider console (OVH KVM / rescue) remains the last resort if everything else fails."
 say ""
 ask ADMIN_ADDRESSES "Admin addresses, space separated (CIDR ok) [Enter = ${my4:-your IPv4}]:"
 ADMIN_ADDRESSES="${ADMIN_ADDRESSES:-$my4}"

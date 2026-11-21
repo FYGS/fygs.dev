@@ -13,6 +13,7 @@
 #   - Ports published by Docker (8000 Coolify dashboard, 6001 realtime and 6002 terminal) are filtered in DOCKER-USER, matched on the
 #     ORIGINAL destination port (ufw and INPUT rules do not see them: Docker NATs them in front of INPUT).
 #   - SSH (22) is a host service: filtered in INPUT.
+#   - Traffic arriving on the tailscale0 interface (the admin's private Tailscale network) always passes: no fixed IP needed.
 #   - Private ranges and loopback always pass: Coolify reaches the host's SSH from its own container (host.docker.internal),
 #     and the containers talk to each other through these ports.
 #   - 80 and 443 stay public (Traefik). Nothing else is touched.
@@ -64,11 +65,12 @@ apply_rules() {
       *) v4="$v4 $a" ;;
     esac
   done
-  [ -n "$v4$v6" ] || { echo "no admin address given: refusing (it would lock everyone out)" >&2; exit 2; }
+  [ -n "$v4$v6" ] || { echo "no admin address given: refusing (it would lock everyone out)" >&2; exit 2; }   # a placeholder like 192.0.2.1 is fine when Tailscale is the way in
 
   wait_docker_user
   remove_v4
   iptables -N "$CHAIN"
+  iptables -A "$CHAIN" -i tailscale0 -j RETURN   # the private Tailscale network: how the admin gets in from anywhere
   for r in $PRIVATE; do iptables -A "$CHAIN" -s "$r" -j RETURN; done
   for a in $v4; do iptables -A "$CHAIN" -s "$a" -j RETURN; done
   iptables -A "$CHAIN" -j DROP
@@ -83,6 +85,7 @@ apply_rules() {
   if have6; then
     remove_v6
     ip6tables -N "$CHAIN"
+    ip6tables -A "$CHAIN" -i tailscale0 -j RETURN
     ip6tables -A "$CHAIN" -s ::1/128 -j RETURN
     ip6tables -A "$CHAIN" -s fe80::/10 -j RETURN
     ip6tables -A "$CHAIN" -s fc00::/7 -j RETURN
