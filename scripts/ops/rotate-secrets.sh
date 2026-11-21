@@ -254,7 +254,7 @@ http_code() { curl -s -m 20 -o /dev/null -w '%{http_code}' "$1" || true; }
 
 run_wizard() {
 
-TOTAL_STAGES=13
+TOTAL_STAGES=12
 ENV_FILE="${WIZARD_ENV_FILE:-$HOME/.config/fygs-dev/rotation.env}"   # the library defaults to ./.env: never write secrets there
 mkdir -p "$(dirname "$ENV_FILE")"
 
@@ -267,13 +267,13 @@ for tool in openssl curl python git; do
 done
 [[ -f "$COOLIFY_FILE" ]] && say "✓ Coolify token ($COOLIFY_FILE)" || { warn "no Coolify token at $COOLIFY_FILE"; exit 1; }
 say ""
-say "Values rotated: session secret, database password, Gmail app password, Google and GitHub OAuth secrets,"
+say "Values rotated: session secret, Gmail app password, Google and GitHub OAuth secrets,"
 say "Stripe secret key and webhook secret. The OpenAI key is revoked (the code uses Anthropic, not OpenAI)."
 say ""
 say "New values are kept in $ENV_FILE (mode 0600, outside the repository). They go to Coolify for the LIVE site and for fygs-v2."
 say ""
-warn "Order matters: every old value stays valid until stage 10, except the database password (stage 8), which cuts the live site"
-warn "until stage 9 has applied the new URL. Stages 3-7 can be done calmly; do 8 and 9 back to back."
+note "The database is already on Coolify (scripts/ops/migrate-neon-to-coolify.sh): the old Neon password only opened throwaway dev data."
+warn "Order matters: every old value stays valid until the revoke stage. Stages 3-6 can be done calmly."
 warn "Everyone is signed out at the end (the session secret changes): expected."
 say ""
 confirm "Start the rotation?" || { say "Nothing was changed."; exit 0; }
@@ -304,7 +304,7 @@ stage "Google OAuth: a second client secret"
 open_url "https://console.cloud.google.com/apis/credentials"
 step "Open the OAuth 2.0 Client ID used by fygs.dev (the one whose redirect URI is https://fygs.dev/api/auth/callback/google)."
 step "In 'Client secrets', click 'Add secret' and copy the new secret (shown once)."
-note "Google keeps both secrets valid; the old one is deleted at stage 10. If the UI differs, see the Google Cloud docs on client secrets."
+note "Google keeps both secrets valid; the old one is deleted at the revoke stage. If the UI differs, see the Google Cloud docs on client secrets."
 ask_secret NEW_GOOGLE_CLIENT_SECRET "Paste the new Google client secret:"
 write_env NEW_GOOGLE_CLIENT_SECRET "$NEW_GOOGLE_CLIENT_SECRET"
 pause
@@ -334,30 +334,12 @@ ask_secret NEW_STRIPE_WEBHOOK_SECRET "Paste the new webhook signing secret (whse
 write_env NEW_STRIPE_WEBHOOK_SECRET "$NEW_STRIPE_WEBHOOK_SECRET"
 pause
 
-# ── 7. Neon ────────────────────────────────────────────────────────────────
-stage "Neon: reset the database role password"
-warn "This is the one step that cuts the LIVE site: the old URL stops working at once. Stage 8 applies the new one right after."
-open_url "https://console.neon.tech/"
-step "Open the project of fygs.dev, then the production branch."
-step "Roles & Databases → ⋯ next to the role the application uses (usually neondb_owner) → Reset password. Copy the new password."
-step "Connection Details: copy the URL with 'Pooled connection' ON (application) and the one with it OFF (migrations, host without '-pooler')."
-note "If the UI differs from this description, see https://neon.com/docs/manage/roles"
-confirm "Ready to reset the password now and paste the two URLs?" || { say "Stopped before touching the database. Re-run to continue."; exit 0; }
-ask_secret NEW_DATABASE_URL "Paste the POOLED connection string:"
-ask_secret NEW_MIGRATE_DATABASE_URL "Paste the DIRECT connection string (no -pooler):"
-[[ "$NEW_DATABASE_URL" == postgres* && "$NEW_MIGRATE_DATABASE_URL" == postgres* ]] || { warn "both values must start with postgres"; exit 1; }
-[[ "$NEW_DATABASE_URL" == *sslmode=* ]] || NEW_DATABASE_URL="${NEW_DATABASE_URL}$([[ "$NEW_DATABASE_URL" == *\?* ]] && echo '&' || echo '?')sslmode=require"
-[[ "$NEW_MIGRATE_DATABASE_URL" == *sslmode=* ]] || NEW_MIGRATE_DATABASE_URL="${NEW_MIGRATE_DATABASE_URL}$([[ "$NEW_MIGRATE_DATABASE_URL" == *\?* ]] && echo '&' || echo '?')sslmode=require"
-write_env NEW_DATABASE_URL "$NEW_DATABASE_URL"
-write_env NEW_MIGRATE_DATABASE_URL "$NEW_MIGRATE_DATABASE_URL"
-
-# ── 8. Apply ───────────────────────────────────────────────────────────────
+# ── 7. Apply ───────────────────────────────────────────────────────────────
 stage "Apply the new values in Coolify (live site and fygs-v2)"
 say "Nothing the API answers is printed (it echoes the values)."
 say ""
 say "LIVE site:"
 VALUE="$LIVE_BETTER_AUTH_SECRET"      coolify_env "$LIVE_APP" set BETTER_AUTH_SECRET
-VALUE="$NEW_DATABASE_URL"             coolify_env "$LIVE_APP" set DATABASE_URL
 VALUE="$NEW_EMAIL_SERVER_PASSWORD"    coolify_env "$LIVE_APP" set EMAIL_SERVER_PASSWORD
 VALUE="$NEW_GOOGLE_CLIENT_SECRET"     coolify_env "$LIVE_APP" set GOOGLE_CLIENT_SECRET
 VALUE="$NEW_GITHUB_CLIENT_SECRET"     coolify_env "$LIVE_APP" set GITHUB_CLIENT_SECRET
@@ -365,20 +347,18 @@ VALUE="$NEW_STRIPE_SECRET_KEY"        coolify_env "$LIVE_APP" set STRIPE_SECRET_
 VALUE="$NEW_STRIPE_WEBHOOK_SECRET"    coolify_env "$LIVE_APP" set STRIPE_WEBHOOK_SECRET
 coolify_env "$LIVE_APP" delete OPENAI_API_KEY
 say ""
-say "fygs-v2 (its database stays the staging one for now; BETTER_AUTH_SECRET, CRON_SECRET and ADMIN_API_KEY are its own and were never exposed):"
+say "fygs-v2 (BETTER_AUTH_SECRET, CRON_SECRET and ADMIN_API_KEY are its own and were never exposed):"
 VALUE="$NEW_EMAIL_SERVER_PASSWORD"    coolify_env "$V2_APP" set EMAIL_SERVER_PASSWORD
 VALUE="$NEW_GOOGLE_CLIENT_SECRET"     coolify_env "$V2_APP" set GOOGLE_CLIENT_SECRET
 VALUE="$NEW_GITHUB_CLIENT_SECRET"     coolify_env "$V2_APP" set GITHUB_CLIENT_SECRET
 VALUE="$NEW_STRIPE_SECRET_KEY"        coolify_env "$V2_APP" set STRIPE_SECRET_KEY
 VALUE="$NEW_STRIPE_WEBHOOK_SECRET"    coolify_env "$V2_APP" set STRIPE_WEBHOOK_SECRET
-VALUE="$NEW_MIGRATE_DATABASE_URL"     coolify_env "$V2_APP" set NEON_MIGRATE_DATABASE_URL_PENDING
-note "The direct Neon URL is parked on fygs-v2 under NEON_MIGRATE_DATABASE_URL_PENDING (not used) until the baseline of issue #43 is done."
 say ""
 coolify_restart "$LIVE_APP"
 coolify_restart "$V2_APP"
 pause "Restarts are queued. Press Enter to check them…"
 
-# ── 9. Verify ──────────────────────────────────────────────────────────────
+# ── 8. Verify ──────────────────────────────────────────────────────────────
 stage "Check that both sites are back"
 say "Waiting up to 3 minutes for https://fygs.dev …"
 ok=0
@@ -391,12 +371,12 @@ say "fygs-v2 health: $(curl -s -m 15 https://fygs-v2.51.68.121.128.sslip.io/api/
 say ""
 step "Open https://fygs.dev, sign in with Google, GitHub and e-mail/password, and send a test e-mail (password reset)."
 step "Make a test payment in Stripe test mode."
-confirm "Do all of these work with the NEW values?" || { warn "Do not go on to stage 10: fix this first, the old values still work."; exit 1; }
+confirm "Do all of these work with the NEW values?" || { warn "Do not go on to the revoke stage: fix this first, the old values still work."; exit 1; }
 
-# ── 10. Revoke the old values ──────────────────────────────────────────────
+# ── 9. Revoke the old values ──────────────────────────────────────────────
 stage "Revoke what the git history exposed"
 open_url "https://console.cloud.google.com/apis/credentials"
-step "Google OAuth client: delete the OLD client secret (the one that is not the one you added at stage 4)."
+step "Google OAuth client: delete the OLD client secret (the one that is not the one you added in the Google OAuth stage)."
 open_url "https://github.com/settings/developers"
 step "GitHub OAuth app: delete the OLD client secret."
 open_url "https://myaccount.google.com/apppasswords"
@@ -407,17 +387,12 @@ open_url "https://dashboard.stripe.com/test/apikeys"
 step "Stripe: on the rolled key, choose 'Expire now' for the OLD secret key; same for the old webhook secret."
 confirm "All five are revoked?" || { warn "The exposed values stay valid until you do this. Re-run, it remembers what you entered."; exit 1; }
 
-# ── 11. Prove the old values are dead ──────────────────────────────────────
+# ── 10. Prove the old values are dead ──────────────────────────────────────
 stage "Check that the exposed values no longer work"
 hist=$(git -C "$REPO_ROOT" log --all --format=%h -- .env.production 2>/dev/null | head -1 || true)
 if [[ -n "$hist" ]]; then
-  OLD_DB=$(git -C "$REPO_ROOT" show "$hist:.env.production" 2>/dev/null | grep '^DATABASE_URL=' | head -1 | cut -d= -f2- | tr -d '"\r' || true)
   OLD_SK=$(git -C "$REPO_ROOT" show "$hist:.env.production" 2>/dev/null | grep '^STRIPE_SECRET_KEY=' | head -1 | cut -d= -f2- | tr -d '"\r' || true)
-  if [[ -n "$OLD_DB" && -d "$REPO_ROOT/node_modules/pg" ]] && command -v node >/dev/null 2>&1; then
-    U="$OLD_DB" node -e 'const {Client}=require(process.argv[1]+"/node_modules/pg");const c=new Client({connectionString:process.env.U,connectionTimeoutMillis:8000});c.connect().then(()=>{console.log("  ✗ the OLD database credentials STILL WORK");process.exit(0)}).catch(e=>{console.log("  ✓ old database credentials rejected ("+(e.code||e.message.slice(0,50))+")")})' "$REPO_ROOT"
-  else
-    note "database check skipped (no node_modules/pg here): run pnpm install first to enable it"
-  fi
+  note "The old Neon database cannot be revoked (the account is lost): it only held throwaway dev data. Ask Neon support to delete the project."
   if [[ -n "$OLD_SK" ]]; then
     code=$(curl -s -m 20 -o /dev/null -w '%{http_code}' https://api.stripe.com/v1/balance -u "$OLD_SK:" || true)
     [[ "$code" == "401" ]] && say "${GREEN}✓${RESET} old Stripe key rejected (401)" || warn "old Stripe key answers $code (expected 401): did you choose 'Expire now'?"
@@ -427,14 +402,14 @@ else
 fi
 pause
 
-# ── 12. History ────────────────────────────────────────────────────────────
+# ── 11. History ────────────────────────────────────────────────────────────
 stage "The git history still contains the dead values"
 say "They are harmless now, but remove them so that nobody has to wonder:"
 step "Run scripts/ops/purge-env-history.sh (backup, rewrite, force-push, with a confirmation at each step)."
 step "GitHub keeps the old commits reachable through pull-request refs: ask GitHub Support to run a garbage collection (the script gives the link)."
 pause
 
-# ── 13. Record ─────────────────────────────────────────────────────────────
+# ── 12. Record ─────────────────────────────────────────────────────────────
 stage "Close the loop"
 step "Comment on issue #40 that the rotation is done (the old values are dead, the new ones are in Coolify only)."
 step "Keep $ENV_FILE only until you have stored the values in your password manager, then delete it: shred -u '$ENV_FILE' (or rm)."
