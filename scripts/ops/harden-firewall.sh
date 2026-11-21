@@ -290,7 +290,7 @@ if confirm "Set up Tailscale now (recommended)?"; then
     say "Already connected, or the login link did not show. Server says:"; rroot "tailscale status 2>&1 | head -5"
   fi
   pause "Press Enter once the machine is approved…"
-  TS_IP=$(rroot "tailscale ip -4 2>/dev/null" | head -1 | tr -d '' || true)
+  TS_IP=$(rroot "tailscale ip -4 2>/dev/null" | head -1 | tr -d "[:space:]" || true)
   [[ "$TS_IP" =~ ^100\.[0-9]+\.[0-9]+\.[0-9]+$ ]] || { warn "the server has no Tailscale address yet ($TS_IP). Check the approval, then re-run."; exit 1; }
   say "Server address on the private network: $TS_IP"
   open_url "https://login.tailscale.com/admin/machines"
