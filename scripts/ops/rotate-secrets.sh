@@ -305,6 +305,11 @@ open_url "https://console.cloud.google.com/apis/credentials"
 step "Open the OAuth 2.0 Client ID used by fygs.dev (the one whose redirect URI is https://fygs.dev/api/auth/callback/google)."
 step "In 'Client secrets', click 'Add secret' and copy the new secret (shown once)."
 note "Google keeps both secrets valid; the old one is deleted at the revoke stage. If the UI differs, see the Google Cloud docs on client secrets."
+step "Add https://fygs.dev/api/auth/callback/google to 'Authorized redirect URIs' and https://fygs.dev to 'Authorized JavaScript origins' (exactly, no trailing slash)."
+note "The client ID and the secret must belong to the SAME client: the ID goes to Coolify together with the secret (an ID is not secret)."
+ask NEW_GOOGLE_CLIENT_ID "Client ID of that client (…apps.googleusercontent.com):"
+[[ "$NEW_GOOGLE_CLIENT_ID" == *.apps.googleusercontent.com ]] || { warn "that does not look like a Google client ID"; exit 1; }
+write_env NEW_GOOGLE_CLIENT_ID "$NEW_GOOGLE_CLIENT_ID"
 ask_secret NEW_GOOGLE_CLIENT_SECRET "Paste the new Google client secret:"
 write_env NEW_GOOGLE_CLIENT_SECRET "$NEW_GOOGLE_CLIENT_SECRET"
 pause
@@ -341,6 +346,7 @@ say ""
 say "LIVE site:"
 VALUE="$LIVE_BETTER_AUTH_SECRET"      coolify_env "$LIVE_APP" set BETTER_AUTH_SECRET
 VALUE="$NEW_EMAIL_SERVER_PASSWORD"    coolify_env "$LIVE_APP" set EMAIL_SERVER_PASSWORD
+VALUE="$NEW_GOOGLE_CLIENT_ID"         coolify_env "$LIVE_APP" set GOOGLE_CLIENT_ID
 VALUE="$NEW_GOOGLE_CLIENT_SECRET"     coolify_env "$LIVE_APP" set GOOGLE_CLIENT_SECRET
 VALUE="$NEW_GITHUB_CLIENT_SECRET"     coolify_env "$LIVE_APP" set GITHUB_CLIENT_SECRET
 VALUE="$NEW_STRIPE_SECRET_KEY"        coolify_env "$LIVE_APP" set STRIPE_SECRET_KEY
@@ -349,6 +355,7 @@ coolify_env "$LIVE_APP" delete OPENAI_API_KEY
 say ""
 say "fygs-v2 (BETTER_AUTH_SECRET, CRON_SECRET and ADMIN_API_KEY are its own and were never exposed):"
 VALUE="$NEW_EMAIL_SERVER_PASSWORD"    coolify_env "$V2_APP" set EMAIL_SERVER_PASSWORD
+VALUE="$NEW_GOOGLE_CLIENT_ID"         coolify_env "$V2_APP" set GOOGLE_CLIENT_ID
 VALUE="$NEW_GOOGLE_CLIENT_SECRET"     coolify_env "$V2_APP" set GOOGLE_CLIENT_SECRET
 VALUE="$NEW_GITHUB_CLIENT_SECRET"     coolify_env "$V2_APP" set GITHUB_CLIENT_SECRET
 VALUE="$NEW_STRIPE_SECRET_KEY"        coolify_env "$V2_APP" set STRIPE_SECRET_KEY
@@ -376,7 +383,7 @@ confirm "Do all of these work with the NEW values?" || { warn "Do not go on to t
 # ── 9. Revoke the old values ──────────────────────────────────────────────
 stage "Revoke what the git history exposed"
 open_url "https://console.cloud.google.com/apis/credentials"
-step "Google OAuth client: delete the OLD client secret (the one that is not the one you added in the Google OAuth stage)."
+step "Google: the exposed secret belongs to the client 616225891630-93kb40thk… : find it in every Google Cloud project you own and DELETE that whole client (or its secret). If you cannot find it, note it in issue #40."
 open_url "https://github.com/settings/developers"
 step "GitHub OAuth app: delete the OLD client secret."
 open_url "https://myaccount.google.com/apppasswords"
