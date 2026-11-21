@@ -14,7 +14,7 @@ same on the new server: only the Coolify URL and the DNS change.
 
 ```
 Browser --HTTPS--> Traefik (Coolify) --> fygs-v2  (Dockerfile, Next.js standalone, port 3000)
-                                           |--> PostgreSQL  staging: fygs-v2-staging-db (Coolify) / production: Neon (TLS)   DATABASE_URL
+                                           |--> PostgreSQL  staging: fygs-v2-staging-db (Coolify) / production: fygs-prod-db (Coolify)   DATABASE_URL
                                            |--> Redis       fygs-v2-redis (Coolify, private)                                REDIS_URL
                                            |--> S3 storage  fygs-v2-s3 (SeaweedFS, Coolify)                                 S3_*
                                            '--> SMTP / Stripe / Sentry (optional)
@@ -24,7 +24,7 @@ Browser --HTTPS--> Traefik (Coolify) --> fygs-v2  (Dockerfile, Next.js standalon
 |-----------------------------|------|-------|
 | `fygs-v2` | Application, build pack **Dockerfile**, branch `feature/refactor-harmonize-codebase` (then `main`), port 3000 | Temporary domain `https://fygs-v2.51.68.121.128.sslip.io`; final `https://fygs.dev` |
 | `fygs-v2-redis` | Redis 7, **not public**, 128m | internal URL `redis://default:<password>@<uuid>:6379/0` |
-| `fygs-v2-staging-db` | PostgreSQL 16, not public | recette only (disposable); production keeps using **Neon** |
+| `fygs-v2-staging-db` | PostgreSQL 16, not public | recette only (disposable); production uses `fygs-prod-db` (Postgres 17) |
 | `fygs-v2-s3` | SeaweedFS service, one S3 API on port 8333 | domains `s3.fygs.dev` (needs a DNS A record) and a `sslip.io` one |
 
 ## 2. Build variables (tick "Build Variable")
@@ -51,8 +51,8 @@ The server **refuses to start** in production when a required one is missing or 
 | `NODE_ENV` | yes | `production` |
 | `BETTER_AUTH_URL` | yes | `https://fygs.dev` |
 | `BETTER_AUTH_SECRET` | yes | `openssl rand -base64 48` (new value, never the development one) |
-| `DATABASE_URL` | yes | Neon URL with `?sslmode=require` (pooled `-pooler` host is fine for the application) |
-| `MIGRATE_DATABASE_URL` | yes | Neon **direct** URL (no `-pooler`), used only by the migration |
+| `DATABASE_URL` | yes | internal URL `postgresql://fygs_v2:…@<fygs-prod-db uuid>:5432/fygs_v2` (no TLS needed on the internal Docker network) |
+| `MIGRATE_DATABASE_URL` | yes | same internal URL (direct connection), used only by the migration |
 | `RUN_MIGRATIONS` | yes | `1` |
 | `REDIS_URL` | yes | internal URL of `fygs-redis` |
 | `TRUSTED_PROXY_HOPS` | yes | `1` (Traefik alone), `2` if Cloudflare is placed in front |
@@ -178,7 +178,7 @@ Follow section 4 of [SECURITY-OPERATIONS.md](SECURITY-OPERATIONS.md), plus:
 ## 10. Rollback
 
 Coolify > `fygs-v2` > Deployments > redeploy the previous successful deployment. Migrations are forward-only: a rollback of the
-application after a destructive migration needs the Neon branch of step 1 of section 6, so keep it until the release is validated.
+application after a destructive migration needs a `pg_dump` of `fygs_v2` taken just before the release, so keep it until the release is validated.
 
 ## 11. Cutover from the current site (Railpack app) to `fygs-v2`
 
