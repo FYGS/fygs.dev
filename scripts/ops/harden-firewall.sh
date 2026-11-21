@@ -391,15 +391,15 @@ pause
 
 # ── 8. SSH hardening ───────────────────────────────────────────────────────
 stage "Optional: harden sshd"
-say "Password logins off, root by key only, 3 tries, no X11. A drop-in file is tested with 'sshd -t' before it is loaded,"
+say "Password logins off, root by key only, 3 tries, no X11. A drop-in file named 00-* (sshd keeps the FIRST value it reads, so it must come before 50-cloud-init.conf) is tested with 'sshd -t' before it is loaded,"
 say "and a fresh key-based connection must still work or the file is removed."
 if confirm "Apply the sshd hardening?"; then
-  rroot "mkdir -p /etc/ssh/sshd_config.d && printf '%s\n' 'PasswordAuthentication no' 'KbdInteractiveAuthentication no' 'PermitRootLogin prohibit-password' 'MaxAuthTries 3' 'X11Forwarding no' > /etc/ssh/sshd_config.d/99-fygs.conf && sshd -t"
+  rroot "mkdir -p /etc/ssh/sshd_config.d && printf '%s\n' 'PasswordAuthentication no' 'KbdInteractiveAuthentication no' 'PermitRootLogin prohibit-password' 'MaxAuthTries 3' 'X11Forwarding no' > /etc/ssh/sshd_config.d/00-fygs.conf && sshd -t"
   rroot "systemctl reload ssh 2>/dev/null || systemctl reload sshd"
   if rssh 'echo still-in'; then
     say "${GREEN}✓${RESET} a fresh key-based connection works"
   else
-    warn "Cannot connect: use the provider console and delete /etc/ssh/sshd_config.d/99-fygs.conf, then reload sshd."; exit 1
+    warn "Cannot connect: use the provider console and delete /etc/ssh/sshd_config.d/00-fygs.conf, then reload sshd."; exit 1
   fi
   if confirm "Install fail2ban too (Debian/Ubuntu)?"; then
     rroot "DEBIAN_FRONTEND=noninteractive apt-get install -y fail2ban >/dev/null && systemctl enable --now fail2ban" && say "${GREEN}✓${RESET} fail2ban running"
