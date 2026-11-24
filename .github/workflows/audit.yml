@@ -1,13 +1,13 @@
 name: Dependency audit
 
 # Blocking: a known high or critical advisory in the lockfile fails the job, unless .github/audit-allowlist.json carries a
-# dated decision for it. Runs on every pull request, on pushes to main/develop, and weekly (new advisories appear without
+# dated decision for it. Runs on every pull request, on pushes to main/staging/develop, and weekly (new advisories appear without
 # any change in the repository).
 on:
   pull_request:
-    branches: [ main ]
+    branches: [ main, staging, develop ]
   push:
-    branches: [ main, develop ]
+    branches: [ main, staging, develop ]
   schedule:
     - cron: '0 5 * * 1' # Mondays, 05:00 UTC
   workflow_dispatch:
