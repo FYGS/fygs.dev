@@ -87,39 +87,61 @@ async function newLearner(browser, tag) {
 
 const snap = (page, name) => page.screenshot({ path: join(OUT, `${name}.png`), fullPage: true }).catch(() => {});
 
-async function subscribe(page, planLabel = /Commencer maintenant/) {
-  await page.goto("/fr/pricing");
-  await page.getByRole("button", { name: planLabel }).first().click();
+const CARD_OK = "4242424242424242";
+const CARD_DECLINED = "4000000000000002";
+const CARD_DISPUTE = "4000000000000259"; // charge succeeds, the cardholder then disputes it
+const SUBMIT = /Payer et s.abonner|S.abonner|^Payer/;
+const NUMBER = 'input[name="number"], input#cardNumber, input[autocomplete="cc-number"]';
+const CVC = 'input[name="cvc"], input#cardCvc, input[autocomplete="cc-csc"]';
+
+const paymentFrame = (page) => page.frames().find((f) => f.url().includes("elements-inner-payment") || f.url().includes("elements-inner-habanero")) ?? null;
+async function typeInto(frame, selector, value) {
+  const f = frame.locator(selector).first();
+  await f.click();
+  await f.press("Control+A");
+  await f.pressSequentially(value, { delay: 25 });
+}
+
+/** On Stripe's hosted page: open the card method, fill the card, pay. */
+async function payWithCard(page, card, { expect = "success" } = {}) {
   await page.waitForURL(/^https:\/\/checkout\.stripe\.com\//, { timeout: 45_000, waitUntil: "commit" });
-  // Stripe's payment form lives in an iframe: open the card method, then fill the card fields inside it
-  const frame = await until(() => page.frames().find((f) => f.url().includes("elements-inner-payment") || f.url().includes("elements-inner-habanero")) ?? null, "Stripe payment frame", 45_000);
-  const card = frame.getByRole("button", { name: /^Carte bancaire/ });
-  await card.waitFor({ timeout: 30_000 });
-  await card.click();
-  const fields = async () => frame.locator("input").evaluateAll((els) => els.map((x) => x.name || x.id || x.type));
-  await frame.locator('input[name="number"], input#cardNumber, input[autocomplete="cc-number"]').first().waitFor({ timeout: 20_000 }).catch(async (e) => {
+  const frame = await until(() => paymentFrame(page), "Stripe payment frame", 45_000);
+  const method = frame.getByRole("button", { name: /^Carte bancaire/ });
+  for (let attempt = 0; attempt < 4; attempt++) {
+    if (await frame.locator(NUMBER).first().isVisible().catch(() => false)) break;
+    if (await method.isVisible({ timeout: 5_000 }).catch(() => false)) await method.click().catch(() => {});
+    await frame.locator(NUMBER).first().waitFor({ timeout: 6_000 }).catch(() => {});
+  }
+  await frame.locator(NUMBER).first().waitFor({ timeout: 10_000 }).catch(async (e) => {
     await snap(page, "checkout-unexpected");
-    console.log(`  checkout fields: ${JSON.stringify(await fields())}`);
+    console.log(`  checkout: ${page.url().slice(0, 50)} buttons=${JSON.stringify((await frame.getByRole("button").allInnerTexts()).map((t) => t.trim().slice(0, 40))).slice(0, 260)} inputs=${JSON.stringify(await frame.locator("input").evaluateAll((els) => els.map((x) => x.name || x.id || x.type))).slice(0, 200)}`);
     throw e;
   });
-  const type = async (selector, value) => {
-    const f = frame.locator(selector).first();
-    await f.click();
-    await f.pressSequentially(value, { delay: 25 });
-  };
-  await type('input[name="number"], input#cardNumber, input[autocomplete="cc-number"]', "4242424242424242");
-  await type('input[name="expiry"], input#cardExpiry, input[autocomplete="cc-exp"]', "1234");
-  await type('input[name="cvc"], input#cardCvc, input[autocomplete="cc-csc"]', "123");
+  await typeInto(frame, NUMBER, card);
+  await typeInto(frame, 'input[name="expiry"], input#cardExpiry, input[autocomplete="cc-exp"]', "1234");
+  await typeInto(frame, CVC, "123");
   const holder = frame.locator('input[name="billingName"], input#billingName, input[autocomplete="cc-name"]').first();
   if (await holder.count()) await holder.fill("Recette Stripe");
   const postal = frame.locator('input[name="postalCode"], input#billingPostalCode, input[autocomplete="postal-code"]').first();
   if (await postal.count()) await postal.fill("75001").catch(() => {});
   await snap(page, "checkout-filled");
-  await frame.getByRole("button", { name: /Payer et s.abonner|S.abonner/ }).click();
-  await page.waitForURL((u) => u.hostname === "staging.fygs.dev", { timeout: 90_000 });
+  await frame.getByRole("button", { name: SUBMIT }).last().click();
+  if (expect === "success") await page.waitForURL((u) => u.hostname === "staging.fygs.dev", { timeout: 90_000 });
 }
 
+async function subscribe(page, card = CARD_OK, options) {
+  await page.goto("/fr/pricing");
+  await ready(page);
+  await page.getByRole("button", { name: /Commencer maintenant/ }).first().click();
+  await payWithCard(page, card, options);
+}
 
+async function buyCourse(page, slug, card = CARD_OK, options) {
+  await page.goto(`/fr/formations/${slug}`);
+  await ready(page);
+  await page.getByRole("button", { name: /Acheter/ }).first().click();
+  await payWithCard(page, card, options);
+}
 
 /** A brand-new account is first offered a language: choose French, like a person would. */
 async function ready(page) {
@@ -251,16 +273,194 @@ async function scenarioB(browser) {
   check("B1 Stripe keeps the subscription until the period end, with no further charge", s.status === "active" && s.cancel_at_period_end);
   const row = (await db.query(`select status, "cancelAtPeriodEnd" from "Subscription" where id = $1`, [sub.id])).rows[0];
   check("B2 the database says ACTIVE with cancelAtPeriodEnd", row.status === "ACTIVE" && row.cancelAtPeriodEnd === true);
-  await page.reload();
-  check("B3 the page tells the learner access lasts until the end of the period", /vous gardez Premium jusqu/.test(await page.locator("main").innerText()));
+  const b3 = await until(async () => {
+    await page.reload();
+    await ready(page);
+    return /vous gardez Premium jusqu/.test(await page.locator("main").innerText());
+  }, "the page announcing the scheduled stop", 40_000).catch(() => false);
+  check("B3 the page tells the learner access lasts until the end of the period", b3);
   await L.ctx.close();
 }
+
+const stripePost = async (path, params) => {
+  const r = await fetch(`https://api.stripe.com/v1/${path}`, {
+    method: "POST",
+    headers: { authorization: `Basic ${Buffer.from(`${SK}:`).toString("base64")}`, "content-type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams(params),
+  });
+  const j = await r.json();
+  if (j.error) throw new Error(`stripe POST ${path}: ${j.error.message}`);
+  return j;
+};
+const COURSE_A = "backend-architecture-nodejs-scalable";
+const COURSE_B = "react-advanced-patterns-performance";
+const payRows = async (userId, kind) => (await db.query(`select status, amount from "Payment" where "userId" = $1 and kind = $2 order by "createdAt"`, [userId, kind])).rows;
+const mainText = async (page) => page.locator("main").innerText();
+
+// ── scenario C: a course bought on its own, then refunded ───────────────────────────────────────────────────────────
+async function scenarioC(browser) {
+  console.log("\nScenario C — one course bought on its own, then refunded");
+  const L = await newLearner(browser, "c");
+  const { page, userId } = L;
+  await buyCourse(page, COURSE_A);
+  const rows = await until(async () => {
+    const r = await payRows(userId, "COURSE");
+    return r.some((x) => x.status === "COMPLETED") ? r : null;
+  }, "course payment (webhook)");
+  check("C1 one COMPLETED course payment of 199.99", rows.length === 1 && Number(rows[0].amount) === 199.99, rows.map((x) => `${x.status} ${Number(x.amount)}`).join(", "));
+  const charge = (await stripe("charges?limit=5")).data.find((c) => c.amount === 19999 && c.paid);
+  check("C2 Stripe holds a paid charge of 199.99", Boolean(charge));
+  await page.goto(`/fr/formations/${COURSE_A}`);
+  await ready(page);
+  const owned = await mainText(page);
+  check("C3 the course page no longer offers to buy it", !/Acheter\s*·/.test(owned), (owned.match(/Acheter[^\n]*/) || ["no buy button"])[0]);
+  await page.goto("/fr/dashboard/billing");
+  await snap(page, "billing-course-bought");
+  await confirmDialog(page, /Demander un remboursement/, /Confirmer le remboursement/);
+  await until(async () => (await payRows(userId, "COURSE"))[0]?.status === "REFUNDED", "course payment REFUNDED");
+  check("C4 the course payment row is REFUNDED", true);
+  const ch = await stripe(`charges/${charge.id}`);
+  check("C5 Stripe refunded the charge in full", ch.amount_refunded === 19999, `${ch.amount_refunded / 100}`);
+  const audit = (await db.query(`select type, amount from "InvoiceAudit" where "userId" = $1 and type like 'REFUND%'`, [userId])).rows;
+  check("C6 a refund audit of 199.99 exists", audit.some((a) => Number(a.amount) === 199.99), audit.map((a) => `${a.type} ${Number(a.amount)}`).join(", "));
+  await page.goto(`/fr/formations/${COURSE_A}`);
+  await ready(page);
+  const after = await mainText(page);
+  check("C7 access is closed again after the refund (the buy offer is back)", /Acheter|Racheter/.test(after), (after.match(/(Racheter|Acheter)[^\n]*/) || ["none"])[0]);
+  await L.ctx.close();
+}
+
+// ── scenario D: refused card, recovery, failed renewal ──────────────────────────────────────────────────────────────
+async function scenarioD(browser) {
+  console.log("\nScenario D — refused card at checkout, retry with a good card, then a failed renewal");
+  const L = await newLearner(browser, "d");
+  const { page, userId } = L;
+  await subscribe(page, CARD_DECLINED, { expect: "none" });
+  const declined = await until(async () => {
+    for (const f of page.frames()) if (await f.getByText(/refusée|declined|insuffisants/i).first().isVisible().catch(() => false)) return true;
+    return false;
+  }, "decline message on the checkout page", 30_000).catch(() => false);
+  await snap(page, "checkout-declined");
+  check("D1 the refused card is reported on Stripe's page, the learner stays there", declined && /checkout\.stripe\.com/.test(page.url()));
+  const active = (await db.query(`select count(*)::int n from "Subscription" where "userId" = $1 and status = 'ACTIVE' and "stripeSubscriptionId" is not null`, [userId])).rows[0].n;
+  const paid = (await payRows(userId, "SUBSCRIPTION")).filter((p) => p.status === "COMPLETED").length;
+  check("D2 nothing was granted: no active subscription, no completed payment", active === 0 && paid === 0, `active ${active}, completed ${paid}`);
+  // recovery on the same page with a good card
+  const frame = paymentFrame(page);
+  await typeInto(frame, NUMBER, CARD_OK);
+  await typeInto(frame, CVC, "123");
+  await frame.getByRole("button", { name: SUBMIT }).last().click();
+  await page.waitForURL((u) => u.hostname === "staging.fygs.dev", { timeout: 90_000 });
+  const sub = await until(async () => (await db.query(`select * from "Subscription" where "userId" = $1 and status = 'ACTIVE' and "stripeSubscriptionId" is not null`, [userId])).rows[0], "subscription after the retry");
+  check("D3 retrying with a good card on the same page completes the subscription", Boolean(sub));
+
+  // failed renewal: the default card becomes one that fails when charged, then a new period is invoiced at once
+  const stripeSub = await stripe(`subscriptions/${sub.stripeSubscriptionId}`);
+  const bad = await stripePost("payment_methods/pm_card_chargeCustomerFail/attach", { customer: stripeSub.customer });
+  await stripePost(`customers/${stripeSub.customer}`, { "invoice_settings[default_payment_method]": bad.id });
+  // A charge that must happen now and fails: moving the subscription to the yearly price invoices 261 EUR at once; the card
+  // refuses it and, with allow_incomplete, the subscription stays but turns past_due (what a failed renewal looks like)
+  const yearly = "price_1SBfFOHORHAFva9IYfXuLWhc"; // the yearly Premium price of the fygs Stripe account (test mode)
+  await stripePost(`subscriptions/${sub.stripeSubscriptionId}`, {
+    default_payment_method: bad.id,
+    "items[0][id]": stripeSub.items.data[0].id,
+    "items[0][price]": yearly,
+    proration_behavior: "always_invoice",
+    payment_behavior: "allow_incomplete",
+  });
+  const past = await until(async () => {
+    const row = (await db.query(`select status from "Subscription" where id = $1`, [sub.id])).rows[0];
+    return row?.status === "PAST_DUE" ? row : null;
+  }, "PAST_DUE after the failed charge", 120_000).catch(() => null);
+  const live = await stripe(`subscriptions/${sub.stripeSubscriptionId}`);
+  check("D4 Stripe reports the renewal failed (past_due)", live.status === "past_due", live.status);
+  check("D5 the database follows: PAST_DUE", Boolean(past), past ? "PAST_DUE" : "status unchanged");
+  await page.goto("/fr/dashboard/billing");
+  await ready(page);
+  await snap(page, "billing-past-due");
+  check("D6 the billing page tells the learner to update the payment method", /dernier prélèvement a échoué/.test(await mainText(page)));
+  await L.ctx.close();
+}
+
+// ── scenario E: disputes ────────────────────────────────────────────────────────────────────────────────────────────
+let webhookEndpoint = null;
+/** Ask Stripe to deliver again the events of a charge (the handler refuses them until the payment is recorded). */
+async function resendDisputeEvents(chargeId, types = ["charge.dispute.created"]) {
+  webhookEndpoint ??= (await stripe("webhook_endpoints?limit=20")).data.find((e) => e.url === `${BASE}/api/stripe/webhook`)?.id;
+  for (const type of types) {
+    const events = (await stripe(`events?type=${type}&limit=10`)).data.filter((e) => e.data.object.charge === chargeId);
+    for (const e of events) await stripePost(`events/${e.id}/retry`, { webhook_endpoint: webhookEndpoint }).catch(() => {});
+  }
+}
+
+async function closeDispute(chargeId, outcome) {
+  const d = await until(async () => (await stripe(`disputes?charge=${chargeId}&limit=1`)).data[0], "dispute on the charge", 90_000);
+  await stripePost(`disputes/${d.id}`, { "evidence[uncategorized_text]": `${outcome}_evidence`, submit: "true" });
+  return d.id;
+}
+
+async function scenarioE(browser) {
+  console.log("\nScenario E — a disputed subscription payment (lost) and a disputed course payment (won)");
+  // E1: subscription, dispute lost
+  const L1 = await newLearner(browser, "e1");
+  await subscribe(L1.page, CARD_DISPUTE);
+  const sub = await until(async () => (await db.query(`select * from "Subscription" where "userId" = $1 and "stripeSubscriptionId" is not null`, [L1.userId])).rows[0], "subscription");
+  const customer = (await stripe(`subscriptions/${sub.stripeSubscriptionId}`)).customer;
+  const charge = (await stripe(`charges?customer=${customer}&limit=3`)).data[0];
+  // recorded = settled, whether the dispute was already applied to it or not
+  await until(async () => (await payRows(L1.userId, "SUBSCRIPTION")).some((p) => p.status !== "PENDING"), "subscription payment recorded");
+  await resendDisputeEvents(charge.id);
+  const opened = await until(async () => (await payRows(L1.userId, "SUBSCRIPTION")).some((p) => p.status === "DISPUTED"), "payment DISPUTED", 120_000).catch(() => false);
+  check("E1 the opened dispute turns the subscription payment into DISPUTED", opened);
+  const ended = await until(async () => ["CANCELED", "UNPAID"].includes((await db.query(`select status from "Subscription" where id = $1`, [sub.id])).rows[0].status), "subscription ended", 60_000).catch(() => false);
+  check("E2 the disputed subscription is ended so the card is not billed again", ended);
+  const audits1 = (await db.query(`select type from "InvoiceAudit" where "userId" = $1`, [L1.userId])).rows.map((a) => a.type);
+  check("E3 a DISPUTE_OPENED audit exists", audits1.includes("DISPUTE_OPENED"), audits1.join(","));
+  await closeDispute(charge.id, "losing");
+  await sleep(8000);
+  await resendDisputeEvents(charge.id, ["charge.dispute.closed"]);
+  const lost = await until(async () => (await payRows(L1.userId, "SUBSCRIPTION")).some((p) => p.status === "REFUNDED"), "payment REFUNDED after the lost dispute", 180_000).catch(() => false);
+  check("E4 a lost dispute ends as REFUNDED (the money is gone, so is the access)", lost);
+  await L1.ctx.close();
+
+  // E2: course, dispute won
+  const L2 = await newLearner(browser, "e2");
+  await buyCourse(L2.page, COURSE_B, CARD_DISPUTE);
+  await until(async () => (await payRows(L2.userId, "COURSE")).some((p) => p.status !== "PENDING"), "course payment recorded");
+  const refCourse = (await db.query(`select "stripePaymentIntentId" ref from "Payment" where "userId" = $1 and kind = 'COURSE'`, [L2.userId])).rows[0].ref;
+  const piCourse = refCourse.startsWith("pi_") ? refCourse : (await stripe(`checkout/sessions/${refCourse}`)).payment_intent;
+  const chCourse = (await stripe(`payment_intents/${piCourse}`)).latest_charge;
+  await resendDisputeEvents(chCourse);
+  const opened2 = await until(async () => (await payRows(L2.userId, "COURSE")).some((p) => p.status === "DISPUTED"), "course payment DISPUTED", 120_000).catch(() => false);
+  check("E5 the opened dispute turns the course payment into DISPUTED", opened2);
+  await L2.page.goto(`/fr/formations/${COURSE_B}`);
+  await ready(L2.page);
+  check("E6 access is suspended while the dispute is open (the buy offer is back)", /Acheter|Racheter/.test(await mainText(L2.page)));
+  const ch2 = chCourse;
+  await closeDispute(ch2, "winning");
+  await sleep(8000);
+  await resendDisputeEvents(ch2, ["charge.dispute.closed"]);
+  const won = await until(async () => (await payRows(L2.userId, "COURSE")).some((p) => p.status === "COMPLETED"), "payment COMPLETED after the won dispute", 180_000).catch(() => false);
+  check("E7 a won dispute puts the payment back to COMPLETED", won);
+  await L2.page.goto(`/fr/formations/${COURSE_B}`);
+  await ready(L2.page);
+  check("E8 access returns after the won dispute", !/Acheter\s*·/.test(await mainText(L2.page)));
+  await L2.ctx.close();
+}
+
+const SCENARIOS = { A: scenarioA, B: scenarioB, C: scenarioC, D: scenarioD, E: scenarioE };
+const wanted = (process.env.RECETTE_SCENARIOS || "A,B,C,D,E").split(",").map((x) => x.trim().toUpperCase());
 
 // System Chrome first: the browsers Playwright downloads on this machine do not match its version
 const browser = await chromium.launch({ headless: true, channel: "chrome" }).catch(() => chromium.launch({ headless: true }));
 try {
-  await scenarioA(browser);
-  await scenarioB(browser);
+  for (const name of wanted) {
+    try {
+      await SCENARIOS[name](browser);
+    } catch (e) {
+      check(`UNEXPECTED in scenario ${name}: ${e.message}`.replace(/\s+/g, " ").slice(0, 170), false);
+    }
+  }
 } catch (e) {
   check(`UNEXPECTED: ${e.message}`.slice(0, 160), false);
   console.error(e.stack?.split("\n").slice(0, 4).join("\n"));
