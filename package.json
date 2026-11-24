@@ -33,8 +33,8 @@
     "resize-screenshots": "node scripts/resize-screenshots.js"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1174.0",
-    "@aws-sdk/s3-request-presigner": "^3.1174.0",
+    "@aws-sdk/client-s3": "^3.1175.0",
+    "@aws-sdk/s3-request-presigner": "^3.1175.0",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
@@ -78,8 +78,8 @@
     "@tiptap/starter-kit": "^3.35.0",
     "@types/d3": "^7.4.3",
     "@types/react-syntax-highlighter": "^15.5.13",
-    "@types/three": "^0.186.0",
-    "@types/web": "^0.0.359",
+    "@types/three": "^0.187.0",
+    "@types/web": "^0.0.367",
     "@vercel/og": "^1.0.3",
     "@webcontainer/api": "^1.6.4",
     "better-auth": "^1.7.27",
@@ -137,7 +137,7 @@
     "tailwind-merge": "^3.7.1",
     "tailwind-scrollbar": "^4.0.2",
     "tailwindcss-animate": "^1.0.7",
-    "three": "^0.186.1",
+    "three": "^0.187.0",
     "zod": "^4.6.7",
     "zustand": "^5.1.0"
   },
