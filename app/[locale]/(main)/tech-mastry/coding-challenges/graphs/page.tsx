@@ -1,12 +1,8 @@
-import { Metadata } from "next";
 import { ChallengeHeader } from "../_components/challenge-header";
 import { GraphChallenge } from "./_components/graph-challenge";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Graph Problems | Coding Challenges",
-  description:
-    "Maîtrisez les algorithmes de graphes: plus court chemin, cycles, MST",
-};
+export const metadata = topicMetadata("/tech-mastry/coding-challenges/graphs");
 
 const challengeData = {
   title: "Graph Problems",
@@ -19,9 +15,9 @@ const challengeData = {
 
 export default function GraphsChallengePage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <ChallengeHeader {...challengeData} />
       <GraphChallenge />
-    </main>
+    </div>
   );
 }

@@ -1,18 +1,14 @@
-import { Metadata } from "next";
 import { ReactBasicsContent } from "./_components/content";
 import { ReactBasicsHero } from "./_components/hero";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "React Fondamentaux | TechMastry",
-  description:
-    "Maîtrisez les concepts fondamentaux de React: composants, hooks, props, state et context API",
-};
+export const metadata = topicMetadata("/tech-mastry/frontend/react-basics");
 
 export default function ReactBasicsPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <ReactBasicsHero />
       <ReactBasicsContent />
-    </main>
+    </div>
   );
 }

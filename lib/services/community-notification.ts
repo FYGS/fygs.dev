@@ -12,7 +12,7 @@ import {
   DiscussionReply,
   MentorRequest,
   Badge,
-} from "@prisma/client";
+} from "@/lib/generated/prisma/browser";
 
 type ReplyWithAuthor = DiscussionReply & {
   author: User;

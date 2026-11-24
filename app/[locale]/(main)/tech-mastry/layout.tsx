@@ -5,8 +5,11 @@ import { ArrowUpRight, Menu } from "lucide-react";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Breadcrumbs } from "./_components/breadcrumbs";
+import { ProgressTracker } from "./_components/progress-tracker";
 import { SearchBar } from "./_components/search-bar";
 import { TopicsNav } from "./_components/topics-nav";
+import { TopicFooter, TopicHeader } from "./_components/topic/topic-chrome";
+import { TopicStructuredData } from "./_components/topic/topic-structured-data";
 import { generateRouteMetadata } from "../_lib/metadata-helpers";
 import { sectionSEO } from "@/app/_lib/seo-config";
 import type { LocalesValues } from "intlayer";
@@ -26,6 +29,7 @@ export default function InterviewPrepLayout({
 }) {
   return (
     <div className="relative flex min-h-screen bg-background">
+      <ProgressTracker />
       {/* Mobile Navigation Trigger */}
       <Sheet>
         <SheetTrigger asChild>
@@ -156,7 +160,7 @@ export default function InterviewPrepLayout({
         </header>
 
         {/* Content Area */}
-        <main className="flex-1">
+        <div className="flex-1">
           <div className="w-full max-w-[1920px] mx-auto px-6 py-8 lg:px-8 lg:py-10 xl:px-12 2xl:px-16">
             <Suspense
               fallback={
@@ -169,10 +173,13 @@ export default function InterviewPrepLayout({
                 </div>
               }
             >
+              <TopicStructuredData />
+              <TopicHeader />
               {children}
+              <TopicFooter />
             </Suspense>
           </div>
-        </main>
+        </div>
 
         {/* Footer */}
         <footer className="border-t bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60">

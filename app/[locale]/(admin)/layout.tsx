@@ -5,11 +5,13 @@ import { headers } from "next/headers";
 import { AdminSidebar } from "./admin/_components/admin-sidebar";
 import { AdminHeader } from "./admin/_components/admin-header";
 import { AdminBreadcrumb } from "./admin/_components/admin-breadcrumb";
-import { Toaster } from "@/components/ui/sonner";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { defaultMetadata } from "../../_lib/metadata";
-import { Role } from "@prisma/client";
+import { ReportStatus, ReviewStatus, Role } from "@/lib/generated/prisma/browser";
+import { db } from "@/lib/db";
+import { countQuestionsToAnswer } from "@/lib/curriculum/lesson-questions";
+import { STAFF_TWO_FACTOR_SETUP_HREF } from "@/lib/staff-2fa";
 
 export const metadata: Metadata = {
   ...defaultMetadata,
@@ -37,6 +39,11 @@ export default async function AdminLayout({
     redirect("/auth/login?callbackUrl=/admin");
   }
 
+  // Staff without a second factor hold no staff powers (the session reports them as students): set it up first
+  if (session.user.pendingStaffRole) {
+    redirect(STAFF_TWO_FACTOR_SETUP_HREF);
+  }
+
   // Vérifier le rôle admin ou instructeur
   if (
     session.user.role !== Role.ADMIN &&
@@ -45,11 +52,37 @@ export default async function AdminLayout({
     redirect("/dashboard");
   }
 
+  // Questions asked from the lessons wait for the course's team (an instructor sees those of their courses)
+  const questionsToAnswer = await countQuestionsToAnswer({ id: session.user.id, role: session.user.role === Role.ADMIN ? "ADMIN" : "INSTRUCTOR" });
+  const questionAlert = {
+    label: "Questions d'apprenants sans réponse",
+    count: questionsToAnswer,
+    href: "/admin/questions",
+  };
+
+  // Only an administrator moderates: the counts are for them
+  const moderationAlerts =
+    session.user.role === Role.ADMIN
+      ? [
+          {
+            label: "Avis à modérer",
+            count: await db.review.count({ where: { status: { in: [ReviewStatus.PENDING, ReviewStatus.FLAGGED] } } }),
+            href: "/admin/reviews/moderation",
+          },
+          {
+            label: "Signalements d'avis à traiter",
+            count: await db.reviewReport.count({ where: { status: ReportStatus.PENDING } }),
+            href: "/admin/reviews/moderation",
+          },
+        ]
+      : [];
+  const alerts = [questionAlert, ...moderationAlerts];
+
   return (
     <>
       <div className="flex h-screen overflow-hidden">
         {/* Sidebar */}
-        <AdminSidebar userRole={session.user.role || Role.STUDENT} />
+        <AdminSidebar userRole={session.user.role || Role.STUDENT} counters={{ questions: questionsToAnswer }} />
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
@@ -62,6 +95,7 @@ export default async function AdminLayout({
               image: session.user.image || null,
               role: session.user.role || Role.STUDENT,
             }}
+            alerts={alerts}
           />
 
           {/* Breadcrumb */}
@@ -69,15 +103,13 @@ export default async function AdminLayout({
 
           {/* Page Content */}
           <ScrollArea className="flex-1 p-6" type="auto" scrollHideDelay={300}>
-            <div className="max-w-7xl mx-auto space-y-6 h-full">
+            <main id="main-content" tabIndex={-1} className="max-w-7xl mx-auto space-y-6 h-full outline-hidden">
               <ErrorBoundary>{children}</ErrorBoundary>
-            </div>
+            </main>
           </ScrollArea>
         </div>
       </div>
 
-      {/* Toast Notifications */}
-      <Toaster position="top-right" expand={true} richColors closeButton />
     </>
   );
 }

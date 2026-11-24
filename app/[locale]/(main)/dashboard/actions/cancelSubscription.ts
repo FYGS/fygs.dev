@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import { isSubscriptionActive } from "@/lib/access/entitlement";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
@@ -8,7 +9,8 @@ import { paymentService } from "@/lib/payment-service";
 import { isRefundEligible } from "@/lib/refund-policy";
 import { AnalyticsHelper } from "@/lib/analytics-helper";
 import { auth } from "@/lib/auth";
-import { SubscriptionStatus } from "@prisma/client";
+import { SubscriptionStatus } from "@/lib/generated/prisma/browser";
+import { writeAudit } from "@/lib/audit";
 
 const cancelSubscriptionSchema = z.object({
   reason: z.string().optional(),
@@ -29,6 +31,8 @@ export type CancelSubscriptionResult = {
     reason: string;
     amount?: number;
   };
+  /** True when a concurrent request had already cancelled the subscription */
+  alreadyCancelled?: boolean;
   error?: string;
 };
 
@@ -74,7 +78,8 @@ export async function cancelSubscription(
       };
     }
 
-    if (subscription.status !== SubscriptionStatus.ACTIVE) {
+    // ACTIVE or TRIALING: a trial is a running subscription (lib/access/entitlement.ts)
+    if (!isSubscriptionActive(subscription)) {
       return {
         success: false,
         message: "Subscription is not active",
@@ -120,41 +125,103 @@ export async function cancelSubscription(
     const shouldCancelImmediately =
       immediate && (isInTrialPeriod || refundInfo.eligible);
 
-    // Call Stripe API for cancellation
-    if (shouldCancelImmediately) {
-      await paymentService.cancelImmediately(
-        subscription.stripeSubscriptionId!
-      );
-    } else {
-      await paymentService.cancelSubscription(
-        subscription.stripeSubscriptionId!
-      );
+    // Serialize concurrent requests on the subscription row. The conditional
+    // update is the claim: it takes the row lock, so a second request blocks
+    // until the first commits, re-evaluates the WHERE clause, and matches
+    // nothing. Stripe is only called by the claim winner; if Stripe fails the
+    // transaction rolls the claim back so the user can retry.
+    const outcome = await db.$transaction(
+      async (tx) => {
+        const claim = await tx.subscription.updateMany({
+          where: shouldCancelImmediately
+            ? { id: subscription.id, status: SubscriptionStatus.ACTIVE }
+            : {
+                id: subscription.id,
+                status: SubscriptionStatus.ACTIVE,
+                cancelAtPeriodEnd: false,
+              },
+          data: shouldCancelImmediately
+            ? {
+                status: SubscriptionStatus.CANCELED,
+                cancelAtPeriodEnd: false,
+                updatedAt: cancelTimestamp,
+              }
+            : { cancelAtPeriodEnd: true, updatedAt: cancelTimestamp },
+        });
+
+        if (claim.count === 0) {
+          return { claimed: false as const };
+        }
+
+        // Stripe is the only side effect with a cost: the key makes a retry
+        // (e.g. commit failed after Stripe succeeded) return the first result.
+        if (shouldCancelImmediately) {
+          await paymentService.cancelImmediately(
+            subscription.stripeSubscriptionId!,
+            { idempotencyKey: `cancel:${subscription.id}:immediate` }
+          );
+        } else {
+          await paymentService.cancelSubscription(
+            subscription.stripeSubscriptionId!
+          );
+        }
+
+        // Create audit log for refund decision
+        await tx.invoiceAudit.create({
+          data: {
+            userId,
+            subscriptionId: subscription.id,
+            type: refundInfo.eligible ? "REFUND_ELIGIBLE" : "REFUND_INELIGIBLE",
+            metadata: {
+              cancelTimestamp: cancelTimestamp.toISOString(),
+              periodStart: subscription.currentPeriodStart?.toISOString(),
+              reason: refundInfo.reason,
+              immediate: shouldCancelImmediately,
+              inTrialPeriod: isInTrialPeriod,
+              userReason: reason ?? null,
+            },
+          },
+        });
+
+        await writeAudit(
+          {
+            actorId: userId,
+            action: "subscription.canceled",
+            targetType: "subscription",
+            targetId: subscription.id,
+            metadata: { immediate: shouldCancelImmediately, atPeriodEnd: !shouldCancelImmediately },
+          },
+          tx,
+        );
+
+        return { claimed: true as const };
+      },
+      { maxWait: 5000, timeout: 20000 }
+    );
+
+    const result = await db.subscription.findUniqueOrThrow({
+      where: { id: subscription.id },
+      select: {
+        id: true,
+        status: true,
+        cancelAtPeriodEnd: true,
+        currentPeriodEnd: true,
+      },
+    });
+
+    if (!outcome.claimed) {
+      // A concurrent request already did the work: same end state, no new Stripe call
+      return {
+        success: true,
+        message: "Subscription is already cancelled",
+        alreadyCancelled: true,
+        subscription: result,
+        refund: refundInfo,
+      };
     }
 
-    // Use transaction for atomic updates
-    const result = await db.$transaction(async (tx) => {
-      // Update subscription
-      const updatedSubscription = await tx.subscription.update({
-        where: { id: subscription.id },
-        data: shouldCancelImmediately
-          ? {
-              status: SubscriptionStatus.CANCELED,
-              cancelAtPeriodEnd: false,
-              updatedAt: cancelTimestamp,
-            }
-          : {
-              cancelAtPeriodEnd: true,
-              updatedAt: cancelTimestamp,
-            },
-        select: {
-          id: true,
-          status: true,
-          cancelAtPeriodEnd: true,
-          currentPeriodEnd: true,
-        },
-      });
-
-      // Log analytics event
+    // Analytics must never fail a completed cancellation
+    try {
       await AnalyticsHelper.recordSubscriptionEvent(
         userId,
         "SUBSCRIPTION_CANCELED",
@@ -165,38 +232,10 @@ export async function cancelSubscription(
           timestamp: cancelTimestamp.toISOString(),
         }
       );
-
-      // Create audit log for refund decision
-      await tx.invoiceAudit.create({
-        data: {
-          userId,
-          subscriptionId: subscription.id,
-          type: refundInfo.eligible ? "REFUND_ELIGIBLE" : "REFUND_INELIGIBLE",
-          metadata: {
-            cancelTimestamp: cancelTimestamp.toISOString(),
-            periodStart: subscription.currentPeriodStart?.toISOString(),
-            reason: refundInfo.reason,
-            immediate: shouldCancelImmediately,
-            inTrialPeriod: isInTrialPeriod,
-          },
-        },
-      });
-
-      // Log refund analytics
-      if (refundInfo.eligible) {
-        await AnalyticsHelper.recordRefund(userId, {
-          originalAmount: 0, // TODO: Get actual amount from subscription
-          refundAmount: 0, // TODO: Calculate refund amount
-          currency: "EUR",
-          reason: reason || "User initiated",
-          eligibilityWindow: 14,
-          subscriptionId: subscription.id,
-          timestamp: cancelTimestamp.toISOString(),
-        });
-      }
-
-      return updatedSubscription;
-    });
+      // No refund event here: this action never refunds, requestRefund does (and records the real amount)
+    } catch (analyticsError) {
+      console.warn("Cancellation analytics failed", analyticsError);
+    }
 
     // Revalidate relevant paths
     revalidatePath("/dashboard");

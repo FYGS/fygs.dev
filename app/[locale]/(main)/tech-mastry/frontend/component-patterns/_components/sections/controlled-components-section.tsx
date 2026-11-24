@@ -123,11 +123,12 @@ function ParentComponent() {
 }
 
 // 3. Composant non contrôlé
-function UncontrolledInput({ defaultValue, onChange }) {
+function UncontrolledInput({ name, defaultValue, onChange }) {
   // La valeur est gérée par le DOM, pas par React
   return (
     <input
       type="text"
+      name={name} // nécessaire pour form.elements.uncontrolledInput
       defaultValue={defaultValue} // Valeur initiale seulement
       onChange={(e) => onChange?.(e.target.value)} // Notification des changements (optionnel)
     />
@@ -257,7 +258,7 @@ function FlexibleInput({
           },
           {
             question: "Comment gérer des formulaires complexes avec des champs interdépendants en utilisant des composants contrôlés?",
-            answer: "Gestion de formulaires complexes avec champs interdépendants: 1) État centralisé: Utiliser un seul objet d'état pour toutes les valeurs du formulaire: `const [formValues, setFormValues] = useState({ type: 'personal', name: '', email: '', company: '' });` 2) Mises à jour partielles: Utiliser le spread operator pour les mises à jour: `setFormValues({...formValues, [name]: value});` 3) Validation conditionnelle: Créer des fonctions de validation qui prennent en compte les dépendances: `validateField(name, value, formValues)` 4) Affichage conditionnel: Rendre les champs en fonction d'autres valeurs: `{formValues.type === 'business' && <BusinessFields />}` 5) Effets pour la synchronisation: Utiliser useEffect pour synchroniser les champs dépendants: `useEffect(() => { if (formValues.type === 'personal') setFormValues(v => ({...v, company: ''})); }, [formValues.type]);` 6) Gestion d'état avec useReducer: Pour les logiques complexes: `const [state, dispatch] = useReducer(formReducer, initialState);` 7) Extraction de la logique dans des hooks: Créer des hooks personnalisés pour réutiliser la logique: `useFormWithDependencies()` 8) Bibliothèques spécialisées: Considérer Formik ou React Hook Form pour les cas très complexes. 9) Décomposition en sous-formulaires: Diviser le formulaire en sections logiques tout en maintenant un état global. Cette approche permet de gérer efficacement les interdépendances tout en maintenant un code lisible et maintenable.",
+            answer: "Gestion de formulaires complexes avec champs interdépendants: 1) État centralisé: Utiliser un seul objet d'état pour toutes les valeurs du formulaire: `const [formValues, setFormValues] = useState({ type: 'personal', name: '', email: '', company: '' });` 2) Mises à jour partielles: Utiliser le spread operator pour les mises à jour: `setFormValues(prev => ({...prev, [name]: value}));` 3) Validation conditionnelle: Créer des fonctions de validation qui prennent en compte les dépendances: `validateField(name, value, formValues)` 4) Affichage conditionnel: Rendre les champs en fonction d'autres valeurs: `{formValues.type === 'business' && <BusinessFields />}` 5) Synchronisation dans le gestionnaire d'événement: ajuster les champs dépendants au moment du changement plutôt que dans un useEffect (qui provoque un rendu supplémentaire): `setFormValues(prev => ({...prev, [name]: value, ...(name === 'type' && value === 'personal' ? { company: '' } : {})}));` 6) Gestion d'état avec useReducer: Pour les logiques complexes: `const [state, dispatch] = useReducer(formReducer, initialState);` 7) Extraction de la logique dans des hooks: Créer des hooks personnalisés pour réutiliser la logique: `useFormWithDependencies()` 8) Bibliothèques spécialisées: Considérer Formik ou React Hook Form pour les cas très complexes. 9) Décomposition en sous-formulaires: Diviser le formulaire en sections logiques tout en maintenant un état global. Cette approche permet de gérer efficacement les interdépendances tout en maintenant un code lisible et maintenable.",
             difficulty: "hard",
             tags: ["React", "Forms", "State Management"]
           },

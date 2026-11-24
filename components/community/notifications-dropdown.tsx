@@ -56,21 +56,6 @@ export function NotificationsDropdown({
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  // Real-time polling for new notifications every 30 seconds
-  useEffect(() => {
-    if (!userId) return;
-
-    // Initial load
-    loadNotifications();
-
-    // Poll for new notifications
-    const interval = setInterval(() => {
-      loadNotifications();
-    }, 30000); // 30 seconds
-
-    return () => clearInterval(interval);
-  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const loadNotifications = async () => {
     if (!userId || isLoading) return;
     
@@ -87,6 +72,23 @@ export function NotificationsDropdown({
       setIsLoading(false);
     }
   };
+
+  // Real-time polling for new notifications every 30 seconds
+  useEffect(() => {
+    if (!userId) return;
+
+    // Initial load
+    queueMicrotask(() => {
+      void loadNotifications();
+    });
+
+    // Poll for new notifications
+    const interval = setInterval(() => {
+      loadNotifications();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const markAsRead = async (notificationIds?: string[]) => {
     if (!userId) return;
@@ -280,7 +282,7 @@ export function NotificationsDropdown({
   return (
     <DropdownMenu open={isOpen} onOpenChange={handleDropdownOpenChange}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="relative">
+        <Button variant="ghost" size="sm" className="relative" aria-label={unreadCount > 0 ? `Notifications (${unreadCount > 99 ? "99+" : unreadCount} non lues)` : "Notifications"}>
           {unreadCount > 0 ? (
             <BellDot className="h-5 w-5" />
           ) : (

@@ -32,84 +32,90 @@ async function CommunityContent({ searchParams }: CommunityPageProps) {
   const page = parseInt(resolvedSearchParams.page || "1");
   const pageSize = 20;
 
-  try {
-    // Fetch data in parallel
-    const [discussionsResult, topics, followedTopics, unreadNotificationsCount] = await Promise.all([
-      CommunityService.getDiscussions({
-        topicId: topicIds[0],
-        sort: sortBy,
-        search: searchTerm,
-        page,
-        limit: pageSize,
-        userId: session?.user?.id,
-      }),
-      CommunityService.getTopics(session?.user?.id),
-      session?.user?.id 
-        ? CommunityService.getFollowedTopics(session.user.id)
-        : Promise.resolve([]),
-      session?.user?.id
-        ? CommunityService.getUnreadNotificationsCount(session.user.id)
-        : Promise.resolve(0),
-    ]);
+  const loaded = await (async () => {
+    try {
+      // Fetch data in parallel
+      const [discussionsResult, topics, followedTopics, unreadNotificationsCount] = await Promise.all([
+        CommunityService.getDiscussions({
+          topicId: topicIds[0],
+          sort: sortBy,
+          search: searchTerm,
+          page,
+          limit: pageSize,
+          userId: session?.user?.id,
+        }),
+        CommunityService.getTopics(session?.user?.id),
+        session?.user?.id 
+          ? CommunityService.getFollowedTopics(session.user.id)
+          : Promise.resolve([]),
+        session?.user?.id
+          ? CommunityService.getUnreadNotificationsCount(session.user.id)
+          : Promise.resolve(0),
+      ]);
 
-    const discussions = discussionsResult.discussions || [];
-    // Remove unused variable
-    // const followedTopicIds = followedTopics.map((t: any) => t.id);
+      const discussions = discussionsResult.discussions || [];
+      // Remove unused variable
+      // const followedTopicIds = followedTopics.map((t: any) => t.id);
 
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex gap-6">
-            {/* Sidebar */}
-            <CommunitySidebar
+      return { discussionsResult, topics, followedTopics, unreadNotificationsCount, discussions };
+    } catch (error) {
+      console.error("Error loading community page:", error);
+      notFound();
+    }
+  })();
+
+  const { discussionsResult, topics, followedTopics, unreadNotificationsCount, discussions } = loaded;
+
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-6">
+        <div className="flex gap-6">
+          {/* Sidebar */}
+          <CommunitySidebar
+            topics={topics}
+            followedTopics={followedTopics.map((t: any) => t.id)}
+            unreadNotifications={unreadNotificationsCount}
+            userId={session?.user?.id}
+          />
+
+          {/* Main Content */}
+          <div className="flex-1 space-y-6">
+            {/* Header */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-2xl font-bold">Community Discussions</h1>
+                  <p className="text-muted-foreground">
+                    Share knowledge, ask questions, and connect with fellow learners
+                  </p>
+                </div>
+              </div>
+              
+              {/* Search Bar */}
+              <SearchBar placeholder="Search discussions, topics, or content..." />
+            </div>
+
+            {/* Filters and Interactive Elements */}
+            <CommunityFilters
               topics={topics}
-              followedTopics={followedTopics.map((t: any) => t.id)}
-              unreadNotifications={unreadNotificationsCount}
-              userId={session?.user?.id}
+              selectedTopics={topicIds}
+              sortBy={sortBy}
+              filterBy={filterBy}
+              session={session}
             />
 
-            {/* Main Content */}
-            <div className="flex-1 space-y-6">
-              {/* Header */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h1 className="text-2xl font-bold">Community Discussions</h1>
-                    <p className="text-muted-foreground">
-                      Share knowledge, ask questions, and connect with fellow learners
-                    </p>
-                  </div>
-                </div>
-                
-                {/* Search Bar */}
-                <SearchBar placeholder="Search discussions, topics, or content..." />
-              </div>
-
-              {/* Filters and Interactive Elements */}
-              <CommunityFilters
-                topics={topics}
-                selectedTopics={topicIds}
-                sortBy={sortBy}
-                filterBy={filterBy}
-                session={session}
-              />
-
-              {/* Discussions List */}
-              <DiscussionsList
-                discussions={discussions}
-                currentUserId={session?.user?.id}
-                totalPages={discussionsResult.pagination?.totalPages || 1}
-                currentPage={page}
-              />
-            </div>
+            {/* Discussions List */}
+            <DiscussionsList
+              discussions={discussions}
+              currentUserId={session?.user?.id}
+              totalPages={discussionsResult.pagination?.totalPages || 1}
+              currentPage={page}
+            />
           </div>
         </div>
       </div>
-    );
-  } catch (error) {
-    console.error("Error loading community page:", error);
-    notFound();
-  }
+    </div>
+  );
 }
 
 export default function CommunityPage({ searchParams }: CommunityPageProps) {

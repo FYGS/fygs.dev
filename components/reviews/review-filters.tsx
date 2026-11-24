@@ -149,6 +149,7 @@ export function ReviewFilterPanel({
             size="sm"
             onClick={() => handleSearchChange("")}
             className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+            aria-label="Effacer la recherche"
           >
             <X className="h-3 w-3" />
           </Button>
@@ -162,7 +163,7 @@ export function ReviewFilterPanel({
           value={filters.sortBy || "newest"}
           onValueChange={(value) => updateFilter('sortBy', value)}
         >
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-[160px]" aria-label="Trier par">
             <SelectValue placeholder="Trier par" />
           </SelectTrigger>
           <SelectContent>
@@ -481,7 +482,7 @@ export function ReviewFilterPanel({
                       updateFilter('dateFrom', date);
                       setDateFromOpen(false);
                     }}
-                    initialFocus
+                    autoFocus
                   />
                 </PopoverContent>
               </Popover>
@@ -511,7 +512,7 @@ export function ReviewFilterPanel({
                       updateFilter('dateTo', date);
                       setDateToOpen(false);
                     }}
-                    initialFocus
+                    autoFocus
                   />
                 </PopoverContent>
               </Popover>

@@ -27,6 +27,15 @@ export const mockUsers = {
   },
 };
 
+/** Author of the second seeded vote (votes need a real user row). */
+export const otherUser = {
+  id: "user_other_999",
+  name: "Other Student",
+  email: "other@test.com",
+  image: null,
+  role: "STUDENT" as const,
+};
+
 export const mockCourses = {
   published: {
     id: "course_published_123",
@@ -107,7 +116,7 @@ export const mockReviewVotes = [
   {
     id: "vote_not_helpful_456",
     reviewId: mockReviews.approved.id,
-    userId: "user_other_999",
+    userId: otherUser.id,
     helpful: false,
     createdAt: new Date("2024-01-17"),
   },
@@ -139,11 +148,9 @@ export const mockReviewReports = [
     reviewId: mockReviews.reported.id,
     userId: mockUsers.instructor.id,
     reason: "SPAM" as const,
-    description:
-      "This review contains spam content and irrelevant information.",
+    details: "This review contains spam content and irrelevant information.",
     status: "PENDING" as const,
     createdAt: new Date("2024-01-26"),
-    updatedAt: new Date("2024-01-26"),
   },
 ];
 
@@ -180,7 +187,7 @@ export const createMockCourse = (
  * Database seed data for integration tests
  */
 export const seedData = {
-  users: [mockUsers.student, mockUsers.instructor, mockUsers.admin],
+  users: [mockUsers.student, mockUsers.instructor, mockUsers.admin, otherUser],
   courses: [mockCourses.published, mockCourses.draft],
   reviews: [mockReviews.approved, mockReviews.pending, mockReviews.reported],
   reviewVotes: mockReviewVotes,

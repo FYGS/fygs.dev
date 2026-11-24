@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { ReviewStatus, Prisma } from "@prisma/client";
+import { ReviewStatus, Prisma } from "@/lib/generated/prisma/browser";
 import { cache } from "react";
 
 export interface ReviewSearchFilters {
@@ -34,7 +34,33 @@ export interface ReviewSearchOptions {
   includeStats?: boolean;
   includeReplies?: boolean;
   includeVotes?: boolean;
+  /**
+   * The caller has checked that the viewer may read reviews that are not approved (an administrator, or an instructor
+   * looking at their own courses) and may see reports and voters. Default false: the search answers like it would
+   * to the public. Never set it from a request parameter.
+   */
+  privileged?: boolean;
+  /** The signed-in viewer: they get their own vote on each review, and can list their own reviews whatever their status. */
+  viewerId?: string;
 }
+
+/**
+ * What the public may ask for. A review is public once approved: other statuses (pending, rejected, flagged), report
+ * counts and the list of who voted are moderation data. Without `privileged`, the status is forced to APPROVED
+ * (a viewer listing their OWN reviews keeps the status they asked for) and the report filter is dropped.
+ */
+export function scopeReviewFilters(
+  filters: ReviewSearchFilters,
+  { privileged, viewerId }: { privileged: boolean; viewerId?: string },
+): ReviewSearchFilters {
+  if (privileged) return filters;
+  const own = viewerId !== undefined && filters.userId === viewerId;
+  const { reportCount: _dropped, ...rest } = filters;
+  void _dropped;
+  return { ...rest, ...(own ? {} : { status: ReviewStatus.APPROVED }) };
+}
+
+const MAX_REVIEW_PAGE_SIZE = 100;
 
 export interface ReviewSearchResult {
   reviews: any[];
@@ -60,6 +86,24 @@ export interface ReviewSearchResult {
   };
 }
 
+/**
+ * The review search could not be answered (database down, schema drift, ...).
+ * The original error is kept as `cause` for diagnostics; its message may embed
+ * query details, so callers must not log it verbatim.
+ */
+export class ReviewSearchUnavailableError extends Error {
+  readonly code: string | undefined;
+
+  constructor(cause: unknown) {
+    super("Review search is temporarily unavailable", { cause });
+    this.name = "ReviewSearchUnavailableError";
+    this.code =
+      cause && typeof cause === "object" && "code" in cause
+        ? String((cause as { code?: unknown }).code)
+        : undefined;
+  }
+}
+
 export class ReviewSearchService {
   /**
    * Search reviews with advanced filtering and sorting
@@ -69,17 +113,21 @@ export class ReviewSearchService {
     options: ReviewSearchOptions = {},
   ): Promise<ReviewSearchResult> {
     const {
-      page = 1,
-      limit = 20,
       sortBy = "newest",
       includeStats = false,
       includeReplies = true,
       includeVotes = true,
+      privileged = false,
+      viewerId,
     } = options;
+    // Paging comes from a query string: negative, fractional or huge values are brought back into range
+    const page = Math.min(10_000, Math.max(1, Math.floor(Number(options.page)) || 1));
+    const limit = Math.min(MAX_REVIEW_PAGE_SIZE, Math.max(1, Math.floor(Number(options.limit)) || 20));
 
     try {
+      const scoped = scopeReviewFilters(filters, { privileged, viewerId });
       // Build where clause
-      const where = this.buildWhereClause(filters);
+      const where = this.buildWhereClause(scoped);
 
       // Build order clause
       const orderBy = this.buildOrderClause(sortBy, filters.search);
@@ -100,7 +148,6 @@ export class ReviewSearchService {
               name: true,
               image: true,
               role: true,
-              emailVerified: true,
             },
           },
           course: {
@@ -110,15 +157,13 @@ export class ReviewSearchService {
               slug: true,
             },
           },
-          ...(includeVotes && {
-            votes: {
-              select: {
-                id: true,
-                userId: true,
-                helpful: true,
-              },
-            },
-          }),
+          // The public only gets its own vote (to show "you found this helpful"); the voters are moderation data
+          ...(includeVotes &&
+            (privileged
+              ? { votes: { select: { id: true, userId: true, helpful: true } } }
+              : viewerId
+                ? { votes: { where: { userId: viewerId }, select: { id: true, helpful: true } } }
+                : {})),
           ...(includeReplies && {
             replies: {
               include: {
@@ -140,7 +185,7 @@ export class ReviewSearchService {
             select: {
               votes: true,
               replies: true,
-              reports: true,
+              ...(privileged && { reports: true }),
             },
           },
         },
@@ -169,73 +214,16 @@ export class ReviewSearchService {
       }
 
       // Add facets for filtering UI
-      if (filters.courseId) {
-        result.facets = await this.getFacets(filters);
+      if (scoped.courseId) {
+        result.facets = await this.getFacets(scoped, privileged);
       }
 
       return result;
     } catch (error) {
-      // Graceful compatibility fallback: some environments may not have
-      // the Review.status column migrated yet.
-      if (this.isMissingReviewStatusColumnError(error)) {
-        // If caller explicitly relies on status filtering (e.g. moderation queue),
-        // return an empty result instead of incorrect data.
-        if (filters.status !== undefined) {
-          console.warn(
-            "[ReviewSearchService.searchReviews] Review.status column missing; returning empty status-filtered result.",
-          );
-          return {
-            reviews: [],
-            pagination: {
-              page,
-              limit,
-              totalCount: 0,
-              totalPages: 0,
-              hasNextPage: false,
-              hasPrevPage: false,
-            },
-          };
-        }
-      }
-
-      console.error("[ReviewSearchService.searchReviews] Query failed:", error);
-      return {
-        reviews: [],
-        pagination: {
-          page,
-          limit,
-          totalCount: 0,
-          totalPages: 0,
-          hasNextPage: false,
-          hasPrevPage: false,
-        },
-      };
+      // An empty result must mean "no review matches", never "the query failed":
+      // callers decide how to degrade (503 for the API, a banner for admin pages).
+      throw new ReviewSearchUnavailableError(error);
     }
-  }
-
-  private static isMissingReviewStatusColumnError(error: unknown): boolean {
-    if (!error || typeof error !== "object") {
-      return false;
-    }
-
-    const prismaError = error as {
-      code?: string;
-      message?: string;
-      meta?: { column?: string };
-    };
-
-    if (prismaError.code !== "P2022") {
-      return false;
-    }
-
-    const message = prismaError.message || "";
-    const column = prismaError.meta?.column || "";
-
-    return (
-      message.includes("Review.status") ||
-      message.includes("column `Review.status`") ||
-      column.includes("Review.status")
-    );
   }
 
   /**
@@ -309,8 +297,10 @@ export class ReviewSearchService {
       status: [ReviewStatus.PENDING],
     };
 
+    // Callers are the moderation page and route, which check the role (and scope instructors to their courses) first
     return this.searchReviews(moderationFilters, {
       ...options,
+      privileged: true,
       sortBy: "oldest",
       includeStats: true,
     });
@@ -532,8 +522,12 @@ export class ReviewSearchService {
   /**
    * Get facets for filtering UI
    */
-  private static async getFacets(filters: ReviewSearchFilters) {
-    const baseWhere = this.buildWhereClause({ courseId: filters.courseId });
+  private static async getFacets(filters: ReviewSearchFilters, privileged: boolean) {
+    // The public sees counts of approved reviews only: other statuses would reveal what was hidden
+    const baseWhere = this.buildWhereClause({
+      courseId: filters.courseId,
+      ...(privileged ? {} : { status: ReviewStatus.APPROVED }),
+    });
 
     const [ratingFacets, statusFacets, dateRangeFacets] = await Promise.all([
       // Rating facets
@@ -560,10 +554,14 @@ export class ReviewSearchService {
         value: facet.rating,
         count: facet._count.rating,
       })),
-      statuses: statusFacets.map((facet) => ({
-        value: facet.status,
-        count: facet._count.status,
-      })),
+      statuses: privileged
+        ? statusFacets.map((facet) => ({
+            value: facet.status,
+            count: facet._count.status,
+          }))
+        : statusFacets
+            .filter((facet) => facet.status === ReviewStatus.APPROVED)
+            .map((facet) => ({ value: facet.status, count: facet._count.status })),
       dateRanges: dateRangeFacets,
     };
   }

@@ -1,15 +1,12 @@
-import { Metadata } from "next";
 import { CareerLadder } from "./_components/career-ladder";
 import { TrendingUp } from "lucide-react";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Progression de Carrière | TechMastry",
-  description: "Échelle de carrière Junior → Principal, matrice de compétences et IC vs Management track",
-};
+export const metadata = topicMetadata("/tech-mastry/career/progression");
 
 export default function ProgressionPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <section className="text-center space-y-6">
         <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-blue-500/10 text-blue-500">
           <TrendingUp className="w-8 h-8" />
@@ -23,6 +20,6 @@ export default function ProgressionPage() {
         </div>
       </section>
       <CareerLadder />
-    </main>
+    </div>
   );
 }

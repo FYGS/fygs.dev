@@ -9,8 +9,8 @@ const testTypes = [
   {
     name: "Tests Unitaires (Vitest)",
     description: "Tester des fonctions et modules isolés. Rapides et nombreux.",
-    code: `import { describe, it, expect, vi } from 'vitest';
-import { formatCurrency, validateEmail } from './utils';
+    code: `import { describe, it, expect, vi, afterEach } from 'vitest';
+import { formatCurrency, validateEmail, fetchUser } from './utils';
 
 describe('formatCurrency', () => {
   it('formats positive amounts', () => {
@@ -22,7 +22,8 @@ describe('formatCurrency', () => {
   });
 
   it('formats with custom locale', () => {
-    expect(formatCurrency(1234.56, 'fr-FR')).toBe('1 234,56 €');
+    // Intl insère des espaces insécables (U+202F, U+00A0) : on les normalise
+    expect(formatCurrency(1234.56, 'fr-FR').replace(/\\s/g, ' ')).toBe('1 234,56 €');
   });
 });
 
@@ -39,12 +40,15 @@ describe('validateEmail', () => {
 
 // Mocking
 describe('API service', () => {
+  // Restaure les globaux simulés pour ne pas polluer les tests suivants
+  afterEach(() => vi.unstubAllGlobals());
+
   it('fetches user data', async () => {
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ name: 'John' }),
     });
-    global.fetch = mockFetch;
+    vi.stubGlobal('fetch', mockFetch);
 
     const user = await fetchUser('123');
     expect(user.name).toBe('John');
@@ -56,8 +60,10 @@ describe('API service', () => {
     name: "Tests de Composants (Testing Library)",
     description:
       "Tester les composants React comme l'utilisateur les voit et interagit.",
-    code: `import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+    code: `import { describe, it, expect, vi } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import '@testing-library/jest-dom/vitest'; // matchers : toBeInTheDocument, toBeDisabled...
 import { LoginForm } from './LoginForm';
 
 describe('LoginForm', () => {
@@ -109,6 +115,45 @@ describe('LoginForm', () => {
 });`,
   },
   {
+    name: "Mock d'API (MSW)",
+    description:
+      "Simuler le réseau au niveau des requêtes HTTP plutôt que de mocker fetch ou axios.",
+    code: `// src/mocks/handlers.ts
+import { http, HttpResponse } from 'msw/http';
+
+export const handlers = [
+  http.get('/api/users/:id', ({ params }) => {
+    return HttpResponse.json({ id: params.id, name: 'John' });
+  }),
+];
+
+// src/mocks/node.ts
+import { setupServer } from 'msw/node';
+import { handlers } from './handlers';
+
+export const server = setupServer(...handlers);
+
+// vitest.setup.ts (à déclarer dans setupFiles)
+import { beforeAll, afterEach, afterAll } from 'vitest';
+import { server } from './src/mocks/node';
+
+beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+afterEach(() => server.resetHandlers()); // retire les handlers ajoutés par un test
+afterAll(() => server.close());
+
+// Dans un test : surcharger un handler pour simuler une erreur serveur
+import { it, expect } from 'vitest';
+import { http, HttpResponse } from 'msw/http';
+import { server } from './mocks/node';
+
+it('affiche une erreur quand l API répond 500', async () => {
+  server.use(
+    http.get('/api/users/:id', () => new HttpResponse(null, { status: 500 })),
+  );
+  // render(<UserCard id="1" />) puis vérifier le message d'erreur
+});`,
+  },
+  {
     name: "Tests E2E (Playwright)",
     description:
       "Tester les parcours utilisateur complets dans un vrai navigateur.",
@@ -153,7 +198,7 @@ test.describe('Search Feature', () => {
     // Wait for results
     const results = page.getByTestId('search-results');
     await expect(results).toBeVisible();
-    await expect(results.getByRole('link')).toHaveCount.greaterThan(0);
+    await expect(results.getByRole('link').first()).toBeVisible();
     
     // Click first result
     await results.getByRole('link').first().click();
@@ -164,7 +209,8 @@ test.describe('Search Feature', () => {
   {
     name: "Hooks Testing",
     description: "Tester les custom hooks React de manière isolée.",
-    code: `import { renderHook, act } from '@testing-library/react';
+    code: `import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { renderHook, act } from '@testing-library/react';
 import { useCounter } from './useCounter';
 import { useDebounce } from './useDebounce';
 
@@ -209,7 +255,7 @@ describe('useDebounce', () => {
     rerender({ value: 'updated' });
     expect(result.current).toBe('initial'); // Not yet updated
     
-    act(() => vi.advanceTimersByTime(500));
+    act(() => { vi.advanceTimersByTime(500); });
     expect(result.current).toBe('updated'); // Now updated
   });
 });`,
@@ -219,19 +265,16 @@ describe('useDebounce', () => {
 const pyramid = [
   {
     name: "E2E",
-    pct: 10,
     color: "bg-red-500",
     desc: "Peu, lents, parcours critiques",
   },
   {
     name: "Intégration",
-    pct: 30,
     color: "bg-yellow-500",
     desc: "Composants + services",
   },
   {
     name: "Unitaires",
-    pct: 60,
     color: "bg-green-500",
     desc: "Nombreux, rapides, isolés",
   },
@@ -245,6 +288,11 @@ export function TestingGuide() {
       {/* Testing Pyramid */}
       <Card className="p-6">
         <h2 className="text-xl font-bold mb-4">Pyramide des Tests</h2>
+        <p className="text-sm text-muted-foreground">
+          Un repère de proportion, pas une règle chiffrée : plus un test est
+          haut dans la pyramide, plus il est lent, coûteux et fragile, donc
+          moins il y en a.
+        </p>
         <div className="flex flex-col items-center gap-2 py-4">
           {pyramid.map((level, i) => (
             <div
@@ -258,7 +306,7 @@ export function TestingGuide() {
                   level.color,
                 )}
               >
-                {level.name} ({level.pct}%)
+                {level.name}
               </div>
               <span className="text-xs text-muted-foreground whitespace-nowrap">
                 {level.desc}
@@ -298,7 +346,7 @@ export function TestingGuide() {
             <Code2 className="w-4 h-4 text-primary" />
             Exemple
           </h3>
-          <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+          <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
             <code>{testTypes[activeTest].code}</code>
           </pre>
         </div>

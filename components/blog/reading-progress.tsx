@@ -38,7 +38,8 @@ export function ReadingProgress() {
       };
     });
 
-    setSections(markers);
+    const frame = requestAnimationFrame(() => setSections(markers));
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   return (
@@ -55,7 +56,7 @@ export function ReadingProgress() {
         {sections.map((section) => (
           <button
             key={section.id}
-            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 cursor-pointer hidden sm:block"
+            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 cursor-pointer hidden sm:flex h-6 w-6 items-center justify-center"
             style={{ left: `${section.position}%` }}
             onClick={() => {
               document

@@ -1,20 +1,16 @@
-import { Metadata } from "next";
 import { StorageHero } from "./_components/hero";
 import { SqlVsNoSqlVisualization } from "./_components/sql-vs-nosql-visualization";
 import { DatabaseShardingVisualization } from "./_components/database-sharding-visualization";
 import { DatabaseReplicationVisualization } from "./_components/database-replication-visualization";
 import { AcidCapVisualization } from "./_components/acid-cap-visualization";
 import { DatabasePerformanceComparison } from "./_components/database-performance-comparison";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Stockage & Bases de Données | System Design",
-  description:
-    "Comprendre les différents types de bases de données, leurs propriétés et leurs performances",
-};
+export const metadata = topicMetadata("/tech-mastry/system-design/storage");
 
 export default function StoragePage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <StorageHero />
 
       <section className="space-y-12">
@@ -110,6 +106,6 @@ export default function StoragePage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

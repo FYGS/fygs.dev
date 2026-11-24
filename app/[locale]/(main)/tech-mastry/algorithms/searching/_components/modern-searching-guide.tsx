@@ -17,12 +17,24 @@ import { useState } from "react";
 import { AdditionalAlgorithms } from "./sections/additional-algorithms";
 import { DetailedCaseStudies } from "./sections/case-studies";
 import { SearchingAlgorithmsOverview } from "./sections/searching-algorithms-overview";
-import { SearchingComparison } from "./sections/searching-comparison";
-import { SearchingExercisesImproved } from "./sections/searching-exercises-improved";
 import { SearchingQuizzes } from "./sections/searching-quizzes";
 import { SearchingRealWorldCases } from "./sections/searching-real-world-cases";
 import { SearchingVisualization } from "./sections/searching-visualization";
-import { Visualization3D } from "./sections/3d-visualization";
+import dynamic from "next/dynamic";
+
+// Heavy dependencies (d3, monaco, three) are only fetched when their tab is opened.
+const SearchingComparison = dynamic(
+  () => import("./sections/searching-comparison").then((m) => m.SearchingComparison),
+  { ssr: false },
+);
+const SearchingExercisesImproved = dynamic(
+  () => import("./sections/searching-exercises-improved").then((m) => m.SearchingExercisesImproved),
+  { ssr: false },
+);
+const Visualization3D = dynamic(
+  () => import("./sections/3d-visualization").then((m) => m.Visualization3D),
+  { ssr: false },
+);
 
 // Types pour les onglets
 type TabValue =

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,8 +14,9 @@ import {
   ChevronUp
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+
+// Same zone on the server and in the browser, or the dates of the server HTML do not hydrate
+const dateTime = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeStyle: "short", timeZone: "Europe/Paris" });
 
 interface ReviewReply {
   id: string;
@@ -70,13 +71,12 @@ export function ReviewReplies({
   }, [reviewId, isLoading]);
 
   // Update replies when initialReplies changes (real-time updates)
-  useEffect(() => {
-    if (initialReplies.length > replies.length) {
-      setReplies(initialReplies);
-      setHasLoaded(true);
-      setIsExpanded(true);
-    }
-  }, [initialReplies, replies.length]);
+  // (derived during render; the guard stops once replies caught up)
+  if (initialReplies.length > replies.length) {
+    setReplies(initialReplies);
+    setHasLoaded(true);
+    setIsExpanded(true);
+  }
 
   const handleToggleExpanded = () => {
     if (!isExpanded && !hasLoaded) {
@@ -208,9 +208,7 @@ export function ReviewReplies({
                     </div>
 
                     <p className="text-xs text-muted-foreground">
-                      {format(new Date(reply.createdAt), "d MMMM yyyy 'à' HH:mm", {
-                        locale: fr
-                      })}
+                      {dateTime.format(new Date(reply.createdAt))}
                     </p>
                   </div>
                 </div>

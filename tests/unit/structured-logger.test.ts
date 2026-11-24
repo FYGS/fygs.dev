@@ -70,7 +70,8 @@ describe('Structured Logger', () => {
         message: 'Test error message',
         userId: 'test-user'
       })
-      expect(logCall[2]).toBe(testError)
+      // The error is redacted into a plain object: message and stack can carry personal data
+      expect(logCall[2]).toMatchObject({ name: 'Error', message: 'Test error' })
     })
   })
 
@@ -260,10 +261,10 @@ describe('Structured Logger', () => {
       expect(logData.userId).toBe('test-user')
       expect(logData.operation).toBe('test-operation')
 
-      // Should remove PII fields from metadata
-      expect(logData.metadata?.email).toBeUndefined()
-      expect(logData.metadata?.name).toBeUndefined()
-      expect(logData.metadata?.phone).toBeUndefined()
+      // Should redact PII fields in metadata (the key stays, the value is replaced)
+      expect(logData.metadata?.email).toBe('[REDACTED]')
+      expect(logData.metadata?.name).toBe('[REDACTED]')
+      expect(logData.metadata?.phone).toBe('[REDACTED]')
     })
 
     test('removes PII fields from metadata', () => {
@@ -284,10 +285,10 @@ describe('Structured Logger', () => {
       // Should preserve non-PII metadata
       expect(logData.metadata.courseId).toBe('course-123')
 
-      // Should remove PII metadata
-      expect(logData.metadata.email).toBeUndefined()
-      expect(logData.metadata.firstName).toBeUndefined()
-      expect(logData.metadata.ip).toBeUndefined()
+      // Should redact PII metadata
+      expect(logData.metadata.email).toBe('[REDACTED]')
+      expect(logData.metadata.firstName).toBe('[REDACTED]')
+      expect(logData.metadata.ip).toBe('[REDACTED]')
     })
   })
 
@@ -374,7 +375,7 @@ describe('Structured Logger', () => {
       expect(consoleSpy.error).toHaveBeenCalledOnce()
       const errorLog = consoleSpy.error.mock.calls[0]
       expect(errorLog[1].message).toMatch(/^FAILING_OPERATION failed after \d+ms$/)
-      expect(errorLog[2]).toBe(testError)
+      expect(errorLog[2]).toMatchObject({ name: 'Error', message: 'Operation failed' })
     })
 
     test('preserves function argument types and return types', async () => {

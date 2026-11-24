@@ -4,12 +4,22 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
-import { CoursesHeader } from "./_components/courses-header";
+import { COURSE_CATEGORY_FILTERS, CoursesHeader } from "./_components/courses-header";
 import { CoursesTable } from "./_components/courses-table";
 import { CoursesStats } from "./_components/courses-stats";
 import { PaginationService, extractPaginationParams } from "@/lib/pagination-utils";
 import { serializeCourse } from "@/lib/serialization-utils";
-import { Role } from "@prisma/client";
+import { courseMinutesFromLessons, displayedCourseMinutes } from "@/lib/format-duration";
+import { Prisma, Role } from "@/lib/generated/prisma/browser";
+
+type AdminCourseRow = Prisma.CourseGetPayload<{
+  include: {
+    lessons: { select: { id: true; published: true; duration: true } };
+    enrollments: { select: { id: true } };
+    reviews: { select: { rating: true } };
+    tags: { include: { tag: { select: { name: true; color: true } } } };
+  };
+}>;
 
 export const metadata: Metadata = {
   title: "Gestion des Formations | Admin FYGS",
@@ -20,13 +30,14 @@ async function getCoursesData(searchParams: URLSearchParams, session: { user: { 
   const paginationParams = extractPaginationParams(searchParams);
   
   // Extraire les filtres spécifiques
-  const category = searchParams.get('category') || '';
-  const level = searchParams.get('level') || '';
+  // the values come from the URL: anything the schema does not know is ignored, never handed to the query
+  const category = (COURSE_CATEGORY_FILTERS.find((option) => option.value === searchParams.get('category'))?.value) ?? '';
+  const level = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'].find((value) => value === searchParams.get('level')) ?? '';
   const status = searchParams.get('status') || '';
   
   // Construire les filtres
   const filters: Record<string, unknown> = {};
-  if (category && category !== 'all') {
+  if (category) {
     filters.category = category;
   }
   if (level && level !== 'all') {
@@ -36,6 +47,8 @@ async function getCoursesData(searchParams: URLSearchParams, session: { user: { 
     filters.published = true;
   } else if (status === 'draft') {
     filters.published = false;
+  } else if (status === 'featured') {
+    filters.featured = true;
   }
 
   // Add instructor ownership filter - ADMIN sees all, INSTRUCTOR sees only their own
@@ -45,7 +58,7 @@ async function getCoursesData(searchParams: URLSearchParams, session: { user: { 
   
   const [coursesResult, stats] = await Promise.all([
     // Récupérer les cours avec pagination
-    PaginationService.paginateWithIncludes(
+    PaginationService.paginateWithIncludes<AdminCourseRow>(
       db.course,
       {
         ...paginationParams,
@@ -53,7 +66,7 @@ async function getCoursesData(searchParams: URLSearchParams, session: { user: { 
       },
       {
         lessons: {
-          select: { id: true, published: true },
+          select: { id: true, published: true, duration: true },
         },
         enrollments: {
           select: { id: true },
@@ -105,8 +118,17 @@ async function getCoursesData(searchParams: URLSearchParams, session: { user: { 
     })),
   ]);
 
-  // Sérialiser les cours
-  const serializedCourses = coursesResult.data.map(serializeCourse);
+  // Sérialiser les cours et fournir les champs que CoursesTable affiche
+  const serializedCourses = coursesResult.data.map((course) => ({
+    ...serializeCourse(course),
+    lessonsCount: course.lessons.length,
+    publishedLessonsCount: course.lessons.filter((l) => l.published).length,
+    // what learners see: the published lessons' total, else the author's estimate
+    displayMinutes:
+      displayedCourseMinutes(courseMinutesFromLessons(course.lessons.filter((l) => l.published).map((l) => l.duration)), course.duration) || null,
+    enrollmentsCount: course.enrollments.length,
+    tags: course.tags.map(({ tag }) => ({ name: tag.name, color: tag.color })),
+  }));
 
   return {
     courses: serializedCourses,
@@ -183,7 +205,13 @@ async function CoursesContent({
   return (
     <>
       {/* Header avec actions */}
-      <CoursesHeader />
+      <CoursesHeader
+        filters={{
+          q: searchParams.get('q') || '',
+          status: searchParams.get('status') || '',
+          category: COURSE_CATEGORY_FILTERS.find((option) => option.value === searchParams.get('category'))?.value ?? '',
+        }}
+      />
 
       {/* Statistiques */}
       <CoursesStats stats={stats} />

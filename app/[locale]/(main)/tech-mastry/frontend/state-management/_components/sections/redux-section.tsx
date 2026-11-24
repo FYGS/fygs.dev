@@ -25,7 +25,7 @@ export function ReduxSection() {
           <p className="text-muted-foreground mb-4">
             Redux est une bibliothèque populaire pour gérer l&apos;état global d&apos;une application de manière prévisible, avec un flux de données unidirectionnel et des mises à jour immuables.
           </p>
-          
+
           <div className="flex flex-wrap gap-2 mb-4">
             <Badge>Single Store</Badge>
             <Badge>Immutable Updates</Badge>
@@ -34,11 +34,11 @@ export function ReduxSection() {
           </div>
         </CardContent>
       </Card>
-      
+
       <CodeExample
         title="Configuration de base de Redux"
         description="Comment configurer un store Redux avec Redux Toolkit"
-        code={`// store.js
+        code={`// store.ts (Redux Toolkit 2.x, React-Redux 9)
 import { configureStore } from '@reduxjs/toolkit';
 import counterReducer from './counterSlice';
 import todosReducer from './todosSlice';
@@ -50,32 +50,50 @@ export const store = configureStore({
   },
 });
 
-// counterSlice.js
-import { createSlice } from '@reduxjs/toolkit';
+// Types déduits du store
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+
+// hooks.ts - hooks pré-typés (react-redux 9.1+ : .withTypes)
+import { useDispatch, useSelector } from 'react-redux';
+export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
+export const useAppSelector = useSelector.withTypes<RootState>();
+
+// counterSlice.ts
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+
+interface CounterState {
+  value: number;
+}
+
+const initialState: CounterState = { value: 0 };
 
 const counterSlice = createSlice({
   name: 'counter',
-  initialState: {
-    value: 0,
-  },
+  initialState,
   reducers: {
+    // Immer permet d'écrire du code "mutable" dans createSlice
     increment: (state) => {
       state.value += 1;
     },
     decrement: (state) => {
       state.value -= 1;
     },
-    incrementByAmount: (state, action) => {
+    incrementByAmount: (state, action: PayloadAction<number>) => {
       state.value += action.payload;
     },
+  },
+  // Sélecteurs colocalisés avec le slice (RTK 2.0+)
+  selectors: {
+    selectCount: (state) => state.value,
   },
 });
 
 export const { increment, decrement, incrementByAmount } = counterSlice.actions;
+export const { selectCount } = counterSlice.selectors;
 export default counterSlice.reducer;
 
-// App.jsx
-import React from 'react';
+// App.tsx
 import { Provider } from 'react-redux';
 import { store } from './store';
 import Counter from './Counter';
@@ -93,14 +111,13 @@ function App() {
   );
 }
 
-// Counter.jsx
-import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { increment, decrement } from './counterSlice';
+// Counter.tsx
+import { useAppSelector, useAppDispatch } from './hooks';
+import { increment, decrement, selectCount } from './counterSlice';
 
 function Counter() {
-  const count = useSelector((state) => state.counter.value);
-  const dispatch = useDispatch();
+  const count = useAppSelector(selectCount);
+  const dispatch = useAppDispatch();
 
   return (
     <div>
@@ -150,7 +167,8 @@ function Counter() {
           "Utilisez Redux Toolkit plutôt que Redux vanilla pour réduire le boilerplate",
           "Organisez votre état en 'slices' pour une meilleure séparation des préoccupations",
           "Utilisez les DevTools Redux pour déboguer l'état et les actions",
-          "Normalisez vos données pour éviter la duplication et faciliter les mises à jour"
+          "Normalisez vos données pour éviter la duplication et faciliter les mises à jour",
+          "Redux Toolkit 2.x : la notation objet de extraReducers est supprimée, utilisez le builder callback ; avec TypeScript, préférez les hooks pré-typés useAppDispatch / useAppSelector (.withTypes)"
         ]}
         interviewQuestions={[
           {
@@ -167,7 +185,7 @@ function Counter() {
           }
         ]}
       />
-      
+
       <CodeExample
         title="Gestion des Actions Asynchrones avec Redux Toolkit"
         description="Utilisation de createAsyncThunk pour gérer les appels API"
@@ -334,13 +352,13 @@ function UserList() {
           },
           {
             question: "Comment optimiseriez-vous les performances d'une application Redux?",
-            answer: "Pour optimiser les performances d'une application Redux: 1) Utilisez des sélecteurs mémoïsés avec Reselect pour éviter des calculs inutiles. 2) Normalisez votre état pour éviter les duplications et faciliter les mises à jour. 3) Utilisez React.memo, useMemo et useCallback pour éviter les re-rendus inutiles. 4) Implémentez une logique de 'shallow equality' dans mapStateToProps ou useSelector. 5) Utilisez des middlewares comme redux-batch pour combiner plusieurs actions en une seule mise à jour. 6) Évitez de stocker des données dérivées dans le store; calculez-les avec des sélecteurs. 7) Pour les grandes listes, utilisez la virtualisation (react-window, react-virtualized). 8) Utilisez l'immutabilité structurelle pour des comparaisons rapides. 9) Considérez des alternatives comme Redux Toolkit ou Zustand pour les applications plus petites.",
+            answer: "Pour optimiser les performances d'une application Redux: 1) Utilisez des sélecteurs mémoïsés avec Reselect pour éviter des calculs inutiles. 2) Normalisez votre état pour éviter les duplications et faciliter les mises à jour. 3) Utilisez React.memo, useMemo et useCallback pour éviter les re-rendus inutiles. 4) Implémentez une logique de 'shallow equality' dans mapStateToProps ou useSelector. 5) Profitez du batching automatique de React 18 (les mises à jour déclenchées par plusieurs dispatch successifs sont regroupées en un seul rendu). 6) Évitez de stocker des données dérivées dans le store; calculez-les avec des sélecteurs. 7) Pour les grandes listes, utilisez la virtualisation (react-window, react-virtualized). 8) Utilisez l'immutabilité structurelle pour des comparaisons rapides. 9) Pour les applications plus petites, des alternatives plus légères comme Zustand peuvent suffire.",
             difficulty: "hard",
             tags: ["Performance", "Optimisation"]
           }
         ]}
       />
-      
+
       <InterviewQuestions
         title="Questions d'Entretien sur Redux"
         questions={[

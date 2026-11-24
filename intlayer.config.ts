@@ -11,9 +11,8 @@ const config: IntlayerConfig = {
     requiredLocales: [Locales.FRENCH],
     defaultLocale: Locales.FRENCH,
   },
-  // content: {
-  //   contentDir: ["./content/locale"]
-  // },
+  // Dictionaries (*.content.ts) are discovered by glob: colocated with their
+  // component, or in ./content for the ones shared across pages.
 };
 
 export default config;

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ReportReason } from "@prisma/client";
+import { ReportReason } from "@/lib/generated/prisma/browser";
 import { db } from "@/lib/db";
 
 /**
@@ -58,8 +58,7 @@ export const createReplySchema = z.object({
 export const createVoteSchema = z.object({
   reviewId: z.string().cuid("ID d'avis invalide"),
   helpful: z.boolean({
-    required_error: "Le type de vote est requis",
-    invalid_type_error: "Le type de vote doit être un booléen",
+    error: (issue) => (issue.input === undefined ? "Le type de vote est requis" : "Le type de vote doit être un booléen"),
   }),
 });
 
@@ -67,8 +66,7 @@ export const createVoteSchema = z.object({
 export const createReportSchema = z.object({
   reviewId: z.string().cuid("ID d'avis invalide"),
   reason: z.nativeEnum(ReportReason, {
-    required_error: "La raison du signalement est requise",
-    invalid_type_error: "Raison de signalement invalide",
+    error: (issue) => (issue.input === undefined ? "La raison du signalement est requise" : "Raison de signalement invalide"),
   }),
   details: z
     .string()
@@ -87,8 +85,7 @@ export const contentFilterSchema = z.object({
 export const moderationActionSchema = z.object({
   reviewId: z.string().cuid("ID d'avis invalide"),
   action: z.enum(["approve", "reject", "flag", "delete"], {
-    required_error: "L'action est requise",
-    invalid_type_error: "Action invalide",
+    error: (issue) => (issue.input === undefined ? "L'action est requise" : "Action invalide"),
   }),
   reason: z
     .string()
@@ -110,8 +107,7 @@ export const bulkModerationSchema = z.object({
     .min(1, "Au moins un avis doit être sélectionné")
     .max(100, "Maximum 100 avis peuvent être traités en lot"),
   action: z.enum(["approve", "reject", "delete"], {
-    required_error: "L'action est requise",
-    invalid_type_error: "Action invalide",
+    error: (issue) => (issue.input === undefined ? "L'action est requise" : "Action invalide"),
   }),
   reason: z
     .string()
@@ -150,9 +146,7 @@ export const reviewFiltersSchema = z.object({
 
 // Export filters validation
 export const exportFiltersSchema = z.object({
-  format: z.enum(["csv", "json", "xlsx"], {
-    required_error: "Le format d'export est requis",
-  }),
+  format: z.enum(["csv", "json", "xlsx"], { error: "Le format d'export est requis" }),
   filters: reviewFiltersSchema.optional(),
   fields: z.array(z.string()).min(1, "Au moins un champ doit être sélectionné"),
   includePersonalData: z.boolean().default(false),
@@ -162,7 +156,7 @@ export const exportFiltersSchema = z.object({
 export const antiSpamSchema = z.object({
   userId: z.string().cuid(),
   content: z.string(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 /**
@@ -199,6 +193,43 @@ export class ReviewContentValidator {
   ];
 
   /**
+   * Whole-word matcher per forbidden term (Unicode-aware, case-insensitive).
+   * A term only matches when it is not glued to a letter, mark, digit or
+   * underscore on a side where the term itself starts/ends with one, so
+   * "ass" no longer matches "class" or "assistant", while "@gmail.com" still
+   * matches inside "john@gmail.com". Spaces inside a phrase match any run of
+   * whitespace.
+   */
+  private static forbiddenMatchers:
+    | ReadonlyArray<{ word: string; regex: RegExp }>
+    | undefined;
+
+  private static buildForbiddenMatchers() {
+    const wordChar = String.raw`[\p{L}\p{M}\p{N}_]`;
+    return this.FORBIDDEN_WORDS.map((word) => {
+      const escaped = word
+        .trim()
+        .split(/\s+/)
+        .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`))
+        .join(String.raw`\s+`);
+      const left = new RegExp(`^${wordChar}`, "u").test(word)
+        ? `(?<!${wordChar})`
+        : "";
+      const right = new RegExp(`${wordChar}$`, "u").test(word)
+        ? `(?!${wordChar})`
+        : "";
+      return { word, regex: new RegExp(`${left}${escaped}${right}`, "iu") };
+    });
+  }
+
+  static findForbiddenWords(content: string): string[] {
+    this.forbiddenMatchers ??= this.buildForbiddenMatchers();
+    return this.forbiddenMatchers
+      .filter(({ regex }) => regex.test(content))
+      .map(({ word }) => word);
+  }
+
+  /**
    * Validate review content for spam and inappropriate content
    */
   static validateContent(content: string): {
@@ -210,10 +241,7 @@ export class ReviewContentValidator {
     let confidence = 1.0;
 
     // Check forbidden words
-    const lowerContent = content.toLowerCase();
-    const forbiddenFound = this.FORBIDDEN_WORDS.filter((word) =>
-      lowerContent.includes(word.toLowerCase())
-    );
+    const forbiddenFound = this.findForbiddenWords(content);
 
     if (forbiddenFound.length > 0) {
       issues.push(`Contenu inapproprié détecté: ${forbiddenFound.join(", ")}`);

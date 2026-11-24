@@ -1,18 +1,14 @@
-import { Metadata } from "next";
 import { ComponentPatternsContent } from "./_components/content";
 import { ComponentPatternsHero } from "./_components/hero";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Component Patterns | TechMastry",
-  description:
-    "Maîtrisez les patterns de conception de composants React: Compound Components, Render Props, HOCs, et Custom Hooks",
-};
+export const metadata = topicMetadata("/tech-mastry/frontend/component-patterns");
 
 export default function ComponentPatternsPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <ComponentPatternsHero />
       <ComponentPatternsContent />
-    </main>
+    </div>
   );
 }

@@ -18,6 +18,7 @@ export function NavigationIndicator({
 
   return (
     <div
+      aria-hidden="true"
       className={cn(
         "fixed top-[72px] left-0 right-0 h-0.5 bg-border/50",
         className

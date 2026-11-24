@@ -1,0 +1,22 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`complexity sorting step generators > bubble sort produces a pinned step list 1`] = `
+{
+  "count": 60,
+  "digest": "be1f3ca9",
+}
+`;
+
+exports[`complexity sorting step generators > merge sort produces a pinned step list 1`] = `
+{
+  "count": 39,
+  "digest": "073f4c6f",
+}
+`;
+
+exports[`complexity sorting step generators > quick sort produces a pinned step list 1`] = `
+{
+  "count": 44,
+  "digest": "90eaeb7c",
+}
+`;

@@ -47,7 +47,7 @@ function StatCard({ title, value, icon: Icon, description, color = "text-primary
       <CardContent>
         <div className="space-y-1">
           <div className="text-2xl font-bold">
-            {value.toLocaleString()}
+            {value.toLocaleString("fr-FR")}
           </div>
           
           {description && (
@@ -60,7 +60,7 @@ function StatCard({ title, value, icon: Icon, description, color = "text-primary
             <div className="flex items-center gap-1 text-xs">
               <TrendingUp className={`h-3 w-3 ${trend.isPositive ? 'text-green-600' : 'text-red-600'}`} />
               <span className={trend.isPositive ? 'text-green-600' : 'text-red-600'}>
-                {trend.isPositive ? '+' : ''}{trend.value}%
+                {trend.isPositive ? '+' : ''}{trend.value} %
               </span>
               <span className="text-muted-foreground">vs mois dernier</span>
             </div>
@@ -81,7 +81,7 @@ export function CoursesStats({ stats }: CoursesStatsProps) {
         title="Total des cours"
         value={stats.total}
         icon={BookOpen}
-        description={`${publishedRate}% publiés`}
+        description={`${publishedRate} % publiés`}
         color="text-blue-600"
         trend={{ value: 12, isPositive: true }}
       />

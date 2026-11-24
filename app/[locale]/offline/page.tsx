@@ -11,7 +11,7 @@ export default function OfflinePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted flex items-center justify-center p-4">
+    <main id="main-content" tabIndex={-1} className="min-h-screen bg-gradient-to-b from-background to-muted flex items-center justify-center p-4">
       <motion.div
         className="max-w-2xl mx-auto text-center space-y-8"
         initial={{ opacity: 0, y: 20 }}
@@ -93,6 +93,6 @@ export default function OfflinePage() {
           </Link>
         </motion.div>
       </motion.div>
-    </div>
+    </main>
   );
 }

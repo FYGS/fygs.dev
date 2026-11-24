@@ -4,6 +4,7 @@ import { LocaleSelectorModal } from "@/components/ui/locale-selector-modal";
 import { cn } from "@/lib/utils";
 import { PageMemoryProvider } from "@/providers/page-memory-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
+import { THEME_INIT_SCRIPT } from "@/lib/theme-init-script.mjs";
 import { TransitionProvider } from "@/providers/transition-provider";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
@@ -16,11 +17,16 @@ import { NotificationProvider } from "@/components/providers/notification-provid
 import { KeyboardShortcutsProvider } from "@/providers/keyboard-shortcuts-provider";
 import { ShortcutsGuideProvider } from "@/providers/shortcuts-guide-provider";
 import { ShortcutsToolbar } from "@/components/shortcuts-toolbar";
+import { SkipLink } from "@/components/a11y/skip-link";
+import { MotionProvider } from "@/providers/motion-provider";
+import { ServiceWorkerRegistration } from "@/components/pwa/service-worker-registration";
 
 import { type NextLayoutIntlayer, IntlayerClientProvider } from "next-intlayer";
 import { getHTMLTextDir } from "intlayer";
 import { generateI18nMetadata } from "@/app/_lib/i18n-metadata";
 import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { isValidLocale } from "@/lib/locale-utils";
 export { generateStaticParams } from "next-intlayer";
 
 const AnekTelugu = Anek_Telugu({
@@ -75,6 +81,8 @@ export async function generateMetadata({
 const LocaleLayout: NextLayoutIntlayer = async (props) => {
   const { children, params } = props;
   const { locale } = await params;
+  // A first segment that is not a locale (`/.env`, `/wp-admin`...) is a 404, never a page rendered with that text as its language
+  if (!locale || !isValidLocale(locale)) notFound();
 
   return (
     <html lang={locale} dir={getHTMLTextDir(locale)} suppressHydrationWarning>
@@ -94,6 +102,8 @@ const LocaleLayout: NextLayoutIntlayer = async (props) => {
         <meta name="msapplication-TileColor" content="#0F172A" />
         {/* Structured data */}
         <JsonLd />
+        {/* Applies the stored theme before the first paint; allowed by its hash in the Content-Security-Policy */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body
         className={cn(
@@ -107,7 +117,9 @@ const LocaleLayout: NextLayoutIntlayer = async (props) => {
           : {})}
         suppressHydrationWarning
       >
+        <SkipLink locale={locale} />
         <ThemeProvider defaultTheme="dark">
+          <MotionProvider>
           <ShortcutsGuideProvider>
             <KeyboardShortcutsProvider>
               <PageMemoryProvider>
@@ -118,10 +130,8 @@ const LocaleLayout: NextLayoutIntlayer = async (props) => {
                       <ShortcutsToolbar />
                       <LocaleSelectorModal />
                       <PageTransition>
-                        <main>
-                          <NuqsAdapter>{children}</NuqsAdapter>
-                          <Toaster richColors closeButton />
-                        </main>
+                        <NuqsAdapter>{children}</NuqsAdapter>
+                        <Toaster richColors closeButton />
                       </PageTransition>
                       <NotificationProvider />
                     </IntlayerClientProvider>
@@ -130,31 +140,9 @@ const LocaleLayout: NextLayoutIntlayer = async (props) => {
               </PageMemoryProvider>
             </KeyboardShortcutsProvider>
           </ShortcutsGuideProvider>
+          </MotionProvider>
         </ThemeProvider>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  var registerSW = function() {
-                    navigator.serviceWorker.register('/sw.js', { scope: '/' })
-                      .then(function(reg) {
-                        // Check for updates periodically
-                        reg.update();
-                        setInterval(function() { reg.update(); }, 60 * 60 * 1000);
-                      })
-                      .catch(function() {});
-                  };
-                  if ('requestIdleCallback' in window) {
-                    requestIdleCallback(registerSW);
-                  } else {
-                    setTimeout(registerSW, 1000);
-                  }
-                });
-              }
-            `,
-          }}
-        />
+        <ServiceWorkerRegistration locale={locale} />
       </body>
     </html>
   );

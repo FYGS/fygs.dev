@@ -1,7 +1,6 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -9,202 +8,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { memo, useCallback, useMemo, useState } from "react";
 import { CodeExample } from "../ui/code-example";
 import { InterviewQuestions } from "../ui/interview-questions";
-
-// Regular component that will re-render on every parent render
-function RegularComponent({ label }: { label: string }) {
-  console.log(`RegularComponent rendered: ${label}`);
-  return (
-    <div className="p-4 border rounded-md bg-gray-800">
-      <p>{label}</p>
-    </div>
-  );
-}
-
-// Memoized component that will only re-render when its props change
-const MemoizedComponent = memo(function MemoizedComponent({
-  label,
-}: {
-  label: string;
-}) {
-  console.log(`MemoizedComponent rendered: ${label}`);
-  return (
-    <div className="p-4 border rounded-md bg-gray-800">
-      <p>{label}</p>
-    </div>
-  );
-});
-
-// Demo component to show the difference between regular and memoized components
-function ReactMemoDemo() {
-  const [count, setCount] = useState(0);
-  const [text, setText] = useState("Hello World");
-
-  return (
-    <div className="space-y-4">
-      <div className="flex gap-4 items-center">
-        <Button onClick={() => setCount(count + 1)}>
-          Increment Count: {count}
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() =>
-            setText(text === "Hello World" ? "Hello React" : "Hello World")
-          }
-        >
-          Toggle Text
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <h3 className="text-sm font-medium">Regular Component</h3>
-          <RegularComponent label={text} />
-          <p className="text-xs text-muted-foreground">
-            Re-renders on every parent render
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <h3 className="text-sm font-medium">Memoized Component</h3>
-          <MemoizedComponent label={text} />
-          <p className="text-xs text-muted-foreground">
-            Only re-renders when props change
-          </p>
-        </div>
-      </div>
-
-      <div className="bg-gray-900 p-2 rounded-md">
-        <p className="text-xs">
-          Open the console to see render logs. Click &quot;Increment Count&quot; to see
-          the difference.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-// Demo component for useCallback
-function UseCallbackDemo() {
-  const [count, setCount] = useState(0);
-
-  // Function without useCallback - new reference on every render
-  const handleClickWithoutCallback = () => {
-    console.log("Button clicked without callback");
-    alert("Button clicked! Count: " + count);
-  };
-
-  // Function with useCallback - same reference unless dependencies change
-  const handleClickWithCallback = useCallback(() => {
-    console.log("Button clicked with callback");
-    alert("Button clicked! Count: " + count);
-  }, [count]); // Only changes when count changes
-
-  return (
-    <div className="space-y-4">
-      <div className="flex gap-4 items-center">
-        <Button onClick={() => setCount(count + 1)}>
-          Increment Count: {count}
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="p-4 border rounded-md space-y-2">
-          <h3 className="text-sm font-medium">Without useCallback</h3>
-          <Button onClick={handleClickWithoutCallback}>Click Me</Button>
-          <p className="text-xs text-muted-foreground">
-            New function reference on every render
-          </p>
-        </div>
-
-        <div className="p-4 border rounded-md space-y-2">
-          <h3 className="text-sm font-medium">With useCallback</h3>
-          <Button onClick={handleClickWithCallback}>Click Me</Button>
-          <p className="text-xs text-muted-foreground">
-            Stable function reference (until count changes)
-          </p>
-        </div>
-      </div>
-
-      <div className="bg-gray-900 p-2 rounded-md">
-        <p className="text-xs">
-          Open the console to see logs. The real benefit is when passing these
-          functions as props to memoized child components.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-// Demo component for useMemo
-function UseMemoDemo() {
-  const [count, setCount] = useState(0);
-  const [text, setText] = useState("");
-
-  // Expensive calculation without memoization
-  const calculateWithoutMemo = () => {
-    console.log("Calculating without memo...");
-    let sum = 0;
-    for (let i = 1; i <= 1000; i++) {
-      sum += i;
-    }
-    return sum;
-  };
-
-  // Expensive calculation with memoization
-  const calculateWithMemo = useMemo(() => {
-    console.log("Calculating with memo...");
-    let sum = 0;
-    for (let i = 1; i <= 1000; i++) {
-      sum += i;
-    }
-    return sum;
-  }, []); // Empty dependency array means this only runs once
-
-  return (
-    <div className="space-y-4">
-      <div className="flex gap-4 items-center">
-        <Button onClick={() => setCount(count + 1)}>
-          Increment Count: {count}
-        </Button>
-        <input
-          type="text"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Type something..."
-          className="px-3 py-2 border rounded-md"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="p-4 border rounded-md space-y-2">
-          <h3 className="text-sm font-medium">Without useMemo</h3>
-          <p>Result: {calculateWithoutMemo()}</p>
-          <p className="text-xs text-muted-foreground">
-            Recalculates on every render
-          </p>
-        </div>
-
-        <div className="p-4 border rounded-md space-y-2">
-          <h3 className="text-sm font-medium">With useMemo</h3>
-          <p>Result: {calculateWithMemo}</p>
-          <p className="text-xs text-muted-foreground">
-            Calculates only once (empty dependency array)
-          </p>
-        </div>
-      </div>
-
-      <div className="bg-gray-900 p-2 rounded-md">
-        <p className="text-xs">
-          Open the console to see calculation logs. Interact with the buttons
-          and input to see the difference.
-        </p>
-      </div>
-    </div>
-  );
-}
+import { ReactMemoDemo } from "./memoization-section/react-memo-demo";
+import { UseCallbackDemo } from "./memoization-section/use-callback-demo";
+import { UseMemoDemo } from "./memoization-section/use-memo-demo";
 
 export function MemoizationSection() {
   return (
@@ -222,6 +30,15 @@ export function MemoizationSection() {
             Memoization is a performance optimization technique that caches the
             results of expensive function calls and returns the cached result
             when the same inputs occur again.
+          </p>
+          <p className="text-muted-foreground mb-4">
+            Note: the React Compiler (stable since version 1.0, opt-in in
+            Next.js 16 with <code>reactCompiler: true</code>) automatically
+            memoizes components and values at build time, so manual{" "}
+            <code>React.memo</code>, <code>useMemo</code> and{" "}
+            <code>useCallback</code> become less necessary in compiled code.
+            Understanding them remains useful for existing code, for escape
+            hatches, and for interviews.
           </p>
 
           <div className="flex flex-wrap gap-2 mb-4">
@@ -310,7 +127,7 @@ const MemoizedWithCustomComparison = React.memo(
               </li>
               <li>
                 <strong>Function components only</strong>: It works only with
-                function components, not class components (use{" "}
+                function components and is not meant for class components (use{" "}
                 <code>PureComponent</code> for those).
               </li>
               <li>
@@ -319,10 +136,10 @@ const MemoizedWithCustomComparison = React.memo(
                 expensive to render and re-renders often with the same props.
               </li>
               <li>
-                <strong>Doesn&apos;t prevent children renders</strong>: If a
-                parent component re-renders, React will still attempt to
-                re-render the children, but <code>React.memo</code> can skip the
-                actual DOM update if props haven&apos;t changed.
+                <strong>Props only</strong>: <code>React.memo</code> only skips
+                the re-render caused by a parent re-rendering with equal props.
+                It does not prevent re-renders caused by the component&apos;s
+                own state or by a context it consumes.
               </li>
             </ol>
 
@@ -356,7 +173,7 @@ const MemoizedWithCustomComparison = React.memo(
           {
             question: "What are the limitations of React.memo?",
             answer:
-              "Limitations of React.memo include: 1) It only performs shallow comparison of props by default. 2) It doesn't prevent renders when the context changes. 3) It doesn't help with state changes within the component. 4) It adds overhead for the comparison, which might not be worth it for simple components. 5) It doesn't work with class components (use PureComponent instead). 6) It doesn't prevent the function component from being called, it just potentially skips the reconciliation. 7) It can be ineffective if you pass new object references or inline functions as props on each render.",
+              "Limitations of React.memo include: 1) It only performs shallow comparison of props by default. 2) It doesn't prevent renders when the context changes. 3) It doesn't help with state changes within the component. 4) It adds overhead for the comparison, which might not be worth it for simple components. 5) It is designed for function components (use PureComponent for class components). 6) It is only a performance optimization: React may still re-render the component in some cases, so your code must not rely on it for correctness. 7) It can be ineffective if you pass new object references or inline functions as props on each render.",
             difficulty: "hard",
             tags: ["React", "Performance", "Limitations"],
           },
@@ -501,7 +318,7 @@ function App() {
           {
             question: "When would you use useMemo vs. useCallback?",
             answer:
-              "Use useMemo vs. useCallback in these scenarios: 1) useMemo: For memoizing expensive calculated values like filtered arrays, sorted data, or complex objects. Example: `const sortedItems = useMemo(() => items.sort(), [items])`. 2) useCallback: For memoizing function references to prevent unnecessary re-renders of child components that receive functions as props. Example: `const handleClick = useCallback(() => console.log(value), [value])`. The key difference is that useMemo returns a memoized value from a function, while useCallback returns a memoized function itself. Both accept a dependency array and only recompute when dependencies change. A simplified way to think about it: useCallback(fn, deps) is equivalent to useMemo(() => fn, deps).",
+              "Use useMemo vs. useCallback in these scenarios: 1) useMemo: For memoizing expensive calculated values like filtered arrays, sorted data, or complex objects. Example: `const sortedItems = useMemo(() => [...items].sort(), [items])`. 2) useCallback: For memoizing function references to prevent unnecessary re-renders of child components that receive functions as props. Example: `const handleClick = useCallback(() => console.log(value), [value])`. The key difference is that useMemo returns a memoized value from a function, while useCallback returns a memoized function itself. Both accept a dependency array and only recompute when dependencies change. A simplified way to think about it: useCallback(fn, deps) is equivalent to useMemo(() => fn, deps).",
             difficulty: "hard",
             tags: ["React", "Hooks", "Best Practices"],
           },
@@ -686,7 +503,7 @@ function ParentComponent() {
             question:
               "How does the dependency array in useMemo and useCallback work, and what happens if you provide an empty array?",
             answer:
-              "The dependency array in useMemo and useCallback works as follows: 1) Purpose: It tells React when to recalculate the memoized value or recreate the memoized function. 2) Comparison: React uses Object.is comparison on each dependency to determine if any have changed since the last render. 3) Behavior: If any dependency has changed, the memoized value is recalculated or the function is recreated. 4) Empty array []: This means the value or function should never be recalculated/recreated after the initial render. It's equivalent to componentDidMount in class components. 5) No array: If you omit the dependency array entirely, the value/function will be recalculated on every render, defeating the purpose of memoization. 6) Incorrect dependencies: If you don't include all values used in the calculation, you may get stale values or unexpected behavior. The ESLint rule 'exhaustive-deps' can help catch missing dependencies. When you provide an empty array, the memoized value is calculated only once during the initial render and then reused for the component's lifetime, regardless of any state or prop changes.",
+              "The dependency array in useMemo and useCallback works as follows: 1) Purpose: It tells React when to recalculate the memoized value or recreate the memoized function. 2) Comparison: React uses Object.is comparison on each dependency to determine if any have changed since the last render. 3) Behavior: If any dependency has changed, the memoized value is recalculated or the function is recreated. 4) Empty array []: This means the value or function should never be recalculated/recreated after the initial render. (This is not an equivalent of componentDidMount, which is what useEffect with [] is closer to.) 5) No array: If you omit the dependency array entirely, the value/function will be recalculated on every render, defeating the purpose of memoization. 6) Incorrect dependencies: If you don't include all values used in the calculation, you may get stale values or unexpected behavior. The ESLint rule 'exhaustive-deps' can help catch missing dependencies. When you provide an empty array, the memoized value is calculated only once during the initial render and then reused for the component's lifetime, regardless of any state or prop changes.",
             difficulty: "medium",
             tags: ["React", "Hooks", "Dependencies"],
           },

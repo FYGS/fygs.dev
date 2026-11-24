@@ -30,11 +30,22 @@ type ArrayElement = {
   state: ElementState;
 };
 
+function createSortedArray(size: number): ArrayElement[] {
+  const newArray: ArrayElement[] = [];
+  for (let i = 0; i < size; i++) {
+    newArray.push({
+      value: i * 2 + 1, // Valeurs impaires pour un tableau trié
+      state: "default",
+    });
+  }
+  return newArray;
+}
+
 export function ExponentialSearch() {
   // État pour le tableau et la cible
-  const [array, setArray] = useState<ArrayElement[]>([]);
-  const [target, setTarget] = useState<number>(15);
   const arraySize = 15; // Taille fixe pour simplifier
+  const [array, setArray] = useState<ArrayElement[]>(() => createSortedArray(arraySize));
+  const [target, setTarget] = useState<number>(15);
 
   // État pour l'animation
   const [isRunning, setIsRunning] = useState<boolean>(false);
@@ -70,21 +81,10 @@ export function ExponentialSearch() {
 
   // Générer un tableau trié
   const generateArray = useCallback(() => {
-    const newArray: ArrayElement[] = [];
-    for (let i = 0; i < arraySize; i++) {
-      newArray.push({
-        value: i * 2 + 1, // Valeurs impaires pour un tableau trié
-        state: "default",
-      });
-    }
+    const newArray = createSortedArray(arraySize);
     setArray(newArray);
     resetVisualization();
   }, [arraySize, resetVisualization]);
-
-  // Initialiser le tableau
-  useEffect(() => {
-    generateArray();
-  }, [generateArray]); // Dépendance ajoutée pour éviter l'avertissement ESLint
 
   // Type pour les étapes de l'algorithme
   type SearchStep = {

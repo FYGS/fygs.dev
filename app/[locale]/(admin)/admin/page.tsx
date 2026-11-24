@@ -2,17 +2,22 @@ import { Metadata } from "next";
 import { db } from "@/lib/db";
 import { AdminDashboardStats } from "./_components/admin-dashboard-stats";
 import { RecentActivity } from "./_components/recent-activity";
+import { getRecentActivity } from "@/lib/services/admin-activity";
+import { getMonthlySeries } from "@/lib/services/admin-analytics";
 import { RevenueChart } from "./_components/revenue-chart";
 import { PopularCourses } from "./_components/popular-courses";
 import { UserGrowthChart } from "./_components/user-growth-chart";
-import { QuickActions } from "./_components/quick-actions";
+import { InstructorHome } from "./_components/instructor-home";
 import {
   serializeRevenueData,
   serializeCourse,
   safeNumber,
 } from "@/lib/serialization-utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { PaymentStatus } from "@prisma/client";
+import { PaymentStatus } from "@/lib/generated/prisma/browser";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Dashboard Admin | FYGS Learning Platform",
@@ -111,22 +116,27 @@ async function getAdminStats() {
 }
 
 export default async function AdminDashboardPage() {
-  const stats = await getAdminStats();
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) redirect("/auth/login?callbackUrl=/admin");
+  // platform figures (revenue, every user, every learner) are for administrators; an instructor gets their own home
+  if (session.user.role !== "ADMIN") {
+    return <InstructorHome userId={session.user.id} name={session.user.name || session.user.email} now={new Date()} />;
+  }
+
+  const [stats, recentActivity, series] = await Promise.all([getAdminStats(), getRecentActivity(), getMonthlySeries(12)]);
+  const userGrowth = series.users;
 
   return (
     <div className="space-y-8">
       {/* Header */}
       <div className="space-y-2">
         <h1 className="text-3xl font-bold text-gradient-heading">
-          Dashboard Admin
+          Vue d&apos;ensemble
         </h1>
         <p className="text-muted-foreground">
           Vue d&apos;ensemble des performances de la plateforme FYGS Learning
         </p>
       </div>
-
-      {/* Quick Actions */}
-      <QuickActions />
 
       {/* Stats Cards */}
       <AdminDashboardStats
@@ -144,7 +154,7 @@ export default async function AdminDashboardPage() {
         <RevenueChart data={stats.monthlyRevenue} />
 
         {/* User Growth Chart */}
-        <UserGrowthChart />
+        <UserGrowthChart data={userGrowth} />
       </div>
 
       {/* Popular Courses and Recent Activity */}
@@ -156,7 +166,7 @@ export default async function AdminDashboardPage() {
 
         {/* Recent Activity */}
         <ScrollArea className="h-[500px] rounded-md border">
-          <RecentActivity />
+          <RecentActivity activities={recentActivity} />
         </ScrollArea>
       </div>
     </div>

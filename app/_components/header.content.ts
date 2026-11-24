@@ -32,6 +32,14 @@ const headerContent = {
       ],
       secondary: [
         {
+          href: "/parcours",
+          label: t({
+            en: "Learning paths",
+            fr: "Parcours",
+            es: "Rutas",
+          }),
+        },
+        {
           href: "/blog",
           label: t({
             en: "Blog",

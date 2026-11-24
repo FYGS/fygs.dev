@@ -3,7 +3,7 @@
 import { toast } from "sonner";
 import { Check, Copy, Download, Share2, Terminal } from "lucide-react";
 import { useState } from "react";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { PrismAsyncLight as SyntaxHighlighter } from "react-syntax-highlighter";
 import {
   vscDarkPlus,
   vs,

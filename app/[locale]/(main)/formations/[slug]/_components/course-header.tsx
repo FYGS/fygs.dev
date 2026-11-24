@@ -1,117 +1,93 @@
-import { Badge } from "@/components/ui/badge";
-import { Clock, Users, Star, Calendar } from "lucide-react";
+import { Calendar, Clock, Star, UserRound, Users } from "lucide-react";
 import { CourseThumbnail } from "@/components/marketing/course-thumbnail";
-import { SerializedCourse } from "../types";
+import { Badge } from "@/components/ui/badge";
+import { categoryLabel, LEVEL_BADGE_CLASSES, levelLabel } from "@/lib/courses/labels";
+import { formatMinutes } from "@/lib/format-duration";
+import { formatNumber } from "@/lib/price-format";
 
 interface CourseHeaderProps {
-  course: SerializedCourse;
+  title: string;
+  description: string;
+  thumbnail: string | null;
+  category: string;
+  level: string;
+  tags: { name: string; color: string }[];
+  enrollmentCount: number;
+  averageRating: number;
+  reviewCount: number;
+  updatedAt: string;
+  /** Total of the lesson durations, in minutes (0 when none is announced). */
+  minutes: number;
+  instructorName: string | null;
+  /** Hide the image when the page shows the trailer instead. */
+  showThumbnail?: boolean;
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  JAVASCRIPT: "JavaScript",
-  TYPESCRIPT: "TypeScript",
-  FRONTEND: "Frontend",
-  BACKEND: "Backend",
-  FULLSTACK: "Fullstack",
-  CLOUD: "Cloud",
-  AI: "IA",
-  DEVOPS: "DevOps",
-  PRODUCTIVITY: "Productivité",
-};
-
-const LEVEL_LABELS: Record<string, string> = {
-  BEGINNER: "Débutant",
-  INTERMEDIATE: "Intermédiaire",
-  ADVANCED: "Avancé",
-  EXPERT: "Expert",
-};
-
-export function CourseHeader({ course }: CourseHeaderProps) {
-  const totalDuration = course.lessons.reduce(
-    (acc, lesson) => acc + (lesson.duration || 0),
-    0,
-  );
-  const totalHours = Math.round(totalDuration / 3600);
-  const enrollmentCount = course.enrollments.length;
-  const averageRating =
-    course.reviews.length > 0
-      ? course.reviews.reduce((acc, review) => acc + review.rating, 0) /
-        course.reviews.length
-      : 0;
-
+export function CourseHeader({
+  title,
+  description,
+  thumbnail,
+  category,
+  level,
+  tags,
+  enrollmentCount,
+  averageRating,
+  reviewCount,
+  updatedAt,
+  minutes,
+  instructorName,
+  showThumbnail = true,
+}: CourseHeaderProps) {
+  const duration = formatMinutes(minutes);
   return (
     <div className="space-y-6">
-      {/* Video/Thumbnail */}
-      <div className="aspect-video relative overflow-hidden rounded-xl border border-border shadow-sm">
-        <CourseThumbnail
-          src={course.thumbnail}
-          alt={course.title}
-          priority
-          className="h-full w-full rounded-none"
-        />
-      </div>
+      {showThumbnail && (
+        <div className="relative aspect-video overflow-hidden rounded-xl border shadow-sm">
+          <CourseThumbnail src={thumbnail} alt="" priority className="h-full w-full rounded-none" />
+        </div>
+      )}
 
-      {/* Course Info */}
       <div className="space-y-4">
         <div className="flex flex-wrap gap-2">
-          <Badge
-            variant="secondary"
-            className="bg-emerald-900 text-emerald-200 border-emerald-700"
-          >
-            {CATEGORY_LABELS[course.category]}
+          <Badge variant="secondary">{categoryLabel(category)}</Badge>
+          <Badge variant="secondary" className={LEVEL_BADGE_CLASSES[level as keyof typeof LEVEL_BADGE_CLASSES] ?? ""}>
+            {levelLabel(level)}
           </Badge>
-          <Badge
-            variant="outline"
-            className="border-border text-muted-foreground"
-          >
-            {LEVEL_LABELS[course.level]}
-          </Badge>
-          {course.tags.map((courseTag) => (
-            <Badge
-              key={courseTag.tag.name}
-              variant="outline"
-              className="border-border text-muted-foreground"
-              style={{ borderColor: courseTag.tag.color }}
-            >
-              {courseTag.tag.name}
+          {tags.map((tag) => (
+            <Badge key={tag.name} variant="outline" style={{ borderColor: tag.color }}>
+              {tag.name}
             </Badge>
           ))}
         </div>
 
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
-          {course.title}
-        </h1>
+        <h1 className="text-3xl font-bold tracking-tight md:text-4xl">{title}</h1>
+        <p className="text-lg leading-relaxed text-muted-foreground">{description}</p>
 
-        <p className="text-lg text-muted-foreground leading-relaxed">
-          {course.description}
-        </p>
-
-        {/* Stats */}
-        <div className="flex flex-wrap gap-6 text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            <span>{totalHours} heures de contenu</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            <span>{enrollmentCount} étudiants inscrits</span>
-          </div>
-          {averageRating > 0 && (
-            <div className="flex items-center gap-2">
-              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-              <span>
-                {averageRating.toFixed(1)} ({course.reviews.length} avis)
-              </span>
-            </div>
+        <ul className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
+          {instructorName && (
+            <li className="flex items-center gap-2">
+              <UserRound className="h-4 w-4" aria-hidden /> Par {instructorName}
+            </li>
           )}
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4" />
-            <span>
-              Mis à jour le{" "}
-              {new Date(course.createdAt).toLocaleDateString("fr-FR")}
-            </span>
-          </div>
-        </div>
+          {duration && (
+            <li className="flex items-center gap-2">
+              <Clock className="h-4 w-4" aria-hidden /> {duration} de contenu
+            </li>
+          )}
+          <li className="flex items-center gap-2">
+            <Users className="h-4 w-4" aria-hidden /> {formatNumber(enrollmentCount)} apprenant{enrollmentCount > 1 ? "s" : ""}
+          </li>
+          {reviewCount > 0 && (
+            <li className="flex items-center gap-2">
+              <Star className="h-4 w-4 fill-amber-500 text-amber-500" aria-hidden />
+              {averageRating.toFixed(1).replace(".", ",")} ({formatNumber(reviewCount)} avis)
+            </li>
+          )}
+          <li className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" aria-hidden /> Mise à jour le{" "}
+            {new Date(updatedAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+          </li>
+        </ul>
       </div>
     </div>
   );

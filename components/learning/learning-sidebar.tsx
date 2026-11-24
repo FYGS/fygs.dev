@@ -1,218 +1,151 @@
 "use client";
 
+import { useState } from "react";
+import Link from "next/link";
+import { Check, ChevronDown, ChevronRight, FileText, GraduationCap, HelpCircle, Images, PlayCircle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import {
-  Check,
-  Play,
-  Lock,
-  ChevronDown,
-  ChevronRight,
-  FileText,
-  HelpCircle,
-} from "lucide-react";
-import Link from "next/link";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { useState } from "react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-
-interface CourseItem {
-  id: string;
-  title: string;
-  slug: string;
-  order: number;
-  type: "lesson" | "quiz";
-  url: string;
-}
-
-interface Module {
-  id: string;
-  title: string;
-  items: CourseItem[];
-}
-
-interface ProgressData {
-  itemId: string;
-  completed: boolean;
-  type: "lesson" | "quiz";
-}
+import { itemHref, type OutlineItem } from "@/lib/learning/outline";
+import { useLearning } from "./learning-context";
+import { useCurrentItem } from "./use-current-item";
 
 interface LearningSidebarProps {
-  lessons: CourseItem[];
-  modules: Module[];
-  currentLessonId: string;
-  progressData: ProgressData[];
-  open: boolean;
+  /** Hidden from view and from the keyboard (collapsed, or closed on a small screen). */
+  hidden: boolean;
+  /** Called when a link is followed, so a small screen can close the panel. */
+  onNavigate: () => void;
+  collapsedOnDesktop: boolean;
+  /** Open over the page on a small screen: announced as a dialog. */
+  modal?: boolean;
 }
 
-export function LearningSidebar({
-  lessons,
-  modules,
-  currentLessonId,
-  progressData,
-  open,
-}: LearningSidebarProps) {
-  const progressMap = progressData.reduce(
-    (acc, p) => {
-      acc[p.itemId] = p;
-      return acc;
-    },
-    {} as Record<string, ProgressData>,
-  );
+function ItemIcon({ item, done, current }: { item: OutlineItem; done: boolean; current: boolean }) {
+  if (done) return <Check className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" aria-hidden />;
+  if (current) return <PlayCircle className="h-4 w-4 shrink-0 text-primary" aria-hidden />;
+  if (item.kind === "quiz") return <HelpCircle className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />;
+  if (item.kind === "exam") return <GraduationCap className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />;
+  return <FileText className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />;
+}
 
-  const allItems = [...lessons, ...modules.flatMap((m) => m.items)];
+const KIND_LABEL = { lesson: "Leçon", quiz: "Quiz", exam: "Examen final" } as const;
 
-  const currentModuleIndex = modules.findIndex((m) =>
-    m.items.some((item) => item.id === currentLessonId),
-  );
+export function LearningSidebar({ hidden, onNavigate, collapsedOnDesktop, modal = false }: LearningSidebarProps) {
+  const { outline, courseSlug, openableIds, isDone, progress, mode, hasSupports } = useLearning();
+  const currentItem = useCurrentItem();
+  const nextId = progress.next?.id;
+  const exam = outline.items.find((i) => i.kind === "exam");
 
-  const [openModules, setOpenModules] = useState<Record<number, boolean>>(
-    currentModuleIndex >= 0 ? { [currentModuleIndex]: true } : { 0: true },
-  );
-
-  const toggleModule = (index: number) => {
-    setOpenModules((prev) => ({ ...prev, [index]: !prev[index] }));
+  const currentSection = outline.sections.findIndex((s) => s.items.some((i) => i.id === currentItem?.id));
+  const [closedSections, setClosedSections] = useState<Record<number, boolean>>({});
+  const isOpen = (index: number) => {
+    const explicit = closedSections[index];
+    if (explicit !== undefined) return !explicit;
+    // Until the learner chooses, the section being worked on is open
+    return currentSection === -1 ? index === 0 : index === currentSection;
   };
 
-  let globalIndex = 0;
+  const renderItem = (item: OutlineItem) => {
+    const done = isDone(item);
+    const current = currentItem?.id === item.id;
+    const openable = openableIds.has(item.id);
+    const href = openable ? itemHref(courseSlug, item) : `/formations/${courseSlug}`;
+    return (
+      <li key={item.id}>
+        <Link
+          href={href}
+          onClick={onNavigate}
+          aria-current={current ? "page" : undefined}
+          className={cn(
+            "flex items-center gap-2.5 rounded-md p-2 text-sm transition-colors",
+            current ? "bg-primary/10 font-medium text-primary" : "hover:bg-accent/60",
+          )}
+        >
+          <ItemIcon item={item} done={done} current={current} />
+          <span className="min-w-0 flex-1 truncate">
+            <span className="sr-only">{KIND_LABEL[item.kind]} : </span>
+            {item.title}
+          </span>
+          {!openable && <span className="shrink-0 text-xs text-muted-foreground">Inscrits</span>}
+          {item.kind !== "quiz" && item.draft && (
+            <Badge variant="outline" className="shrink-0 text-xs">
+              Brouillon
+            </Badge>
+          )}
+          {done && <span className="sr-only">(terminé)</span>}
+          {!done && !current && item.id === nextId && openable && (
+            <Badge variant="secondary" className="shrink-0 text-xs">
+              Suivant
+            </Badge>
+          )}
+        </Link>
+      </li>
+    );
+  };
 
   return (
     <aside
+      id="learning-sidebar"
+      aria-label="Plan de la formation"
+      {...(modal ? { role: "dialog", "aria-modal": true } : {})}
+      inert={hidden}
       className={cn(
-        "fixed left-0 top-14 bottom-0 z-40 w-80 border-r bg-background transition-transform duration-300 ease-in-out",
-        open ? "translate-x-0" : "-translate-x-full",
+        "fixed bottom-0 left-0 top-14 z-50 w-80 max-w-[85vw] border-r bg-background transition-transform duration-300 ease-in-out",
+        // Small screens: slides in over the page. Large screens: docked unless collapsed.
+        hidden ? "-translate-x-full" : "translate-x-0",
+        !collapsedOnDesktop && "md:translate-x-0",
       )}
     >
       <ScrollArea className="h-full">
-        <div className="p-4 space-y-3">
-          {/* Standalone lessons */}
-          {lessons.length > 0 && (
-            <div className="space-y-1">
-              {lessons.map((item) => {
-                const node = renderItem(
-                  item,
-                  globalIndex,
-                  progressMap,
-                  allItems,
-                  currentLessonId,
-                );
-                globalIndex++;
-                return node;
-              })}
-            </div>
+        <nav className="space-y-2 p-4">
+          {mode === "preview" && (
+            <p className="rounded-md border border-dashed p-3 text-xs text-muted-foreground">
+              Vous voyez les leçons d’aperçu. Le reste du contenu est réservé aux inscrits.
+            </p>
           )}
-
-          {/* Modules */}
-          {modules.map((mod, modIdx) => {
-            const moduleCompleted = mod.items.every(
-              (item) => progressMap[item.id]?.completed,
-            );
-            const moduleItemCount = mod.items.length;
-            const moduleDone = mod.items.filter(
-              (item) => progressMap[item.id]?.completed,
-            ).length;
-
+          {outline.sections.map((section, index) => {
+            const done = section.items.filter((i) => isDone(i)).length;
+            const list = <ul className="space-y-0.5">{section.items.map(renderItem)}</ul>;
+            if (!section.module) return <div key="standalone">{list}</div>;
             return (
               <Collapsible
-                key={mod.id}
-                open={openModules[modIdx] ?? false}
-                onOpenChange={() => toggleModule(modIdx)}
+                key={section.module.id}
+                open={isOpen(index)}
+                onOpenChange={(open) => setClosedSections((prev) => ({ ...prev, [index]: !open }))}
               >
-                <CollapsibleTrigger className="flex items-center justify-between w-full p-2.5 rounded-lg hover:bg-accent/50 transition-colors">
-                  <div className="flex items-center gap-2 min-w-0">
-                    {openModules[modIdx] ? (
-                      <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <CollapsibleTrigger className="flex w-full items-center justify-between gap-2 rounded-lg p-2.5 text-left hover:bg-accent/60">
+                  <span className="flex min-w-0 items-center gap-2">
+                    {isOpen(index) ? (
+                      <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
                     ) : (
-                      <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
                     )}
-                    <span className="text-sm font-medium truncate">
-                      {mod.title}
-                    </span>
-                  </div>
-                  <Badge
-                    variant={moduleCompleted ? "default" : "secondary"}
-                    className="text-xs shrink-0"
-                  >
-                    {moduleDone}/{moduleItemCount}
+                    <span className="truncate text-sm font-medium">{section.module.title}</span>
+                  </span>
+                  <Badge variant={done === section.items.length ? "default" : "secondary"} className="shrink-0 text-xs">
+                    <span className="sr-only">Terminé : </span>
+                    {done}/{section.items.length}
                   </Badge>
                 </CollapsibleTrigger>
-                <CollapsibleContent className="pl-4 space-y-1 mt-1">
-                  {mod.items.map((item) => {
-                    const node = renderItem(
-                      item,
-                      globalIndex,
-                      progressMap,
-                      allItems,
-                      currentLessonId,
-                    );
-                    globalIndex++;
-                    return node;
-                  })}
-                </CollapsibleContent>
+                <CollapsibleContent className="mt-1 pl-4">{list}</CollapsibleContent>
               </Collapsible>
             );
           })}
-        </div>
+          {exam && (
+            <ul className="border-t pt-2">{renderItem(exam)}</ul>
+          )}
+          {hasSupports && (
+            <Link
+              href={`/learn/${courseSlug}/supports`}
+              onClick={onNavigate}
+              className="flex items-center gap-2.5 rounded-md border-t p-2 pt-3 text-sm text-muted-foreground hover:text-foreground"
+            >
+              <Images className="h-4 w-4" aria-hidden /> Supports visuels
+            </Link>
+          )}
+        </nav>
       </ScrollArea>
     </aside>
-  );
-}
-
-function renderItem(
-  item: CourseItem,
-  globalIndex: number,
-  progressMap: Record<string, ProgressData>,
-  allItems: CourseItem[],
-  currentLessonId: string,
-) {
-  const isCompleted = progressMap[item.id]?.completed || false;
-  const isCurrent = item.id === currentLessonId;
-  const isAccessible =
-    globalIndex === 0 ||
-    progressMap[allItems[globalIndex - 1]?.id]?.completed ||
-    false;
-
-  const icon = isCompleted ? (
-    <Check className="h-4 w-4 text-green-500 shrink-0" />
-  ) : isCurrent ? (
-    <Play className="h-4 w-4 text-primary shrink-0" />
-  ) : !isAccessible ? (
-    <Lock className="h-4 w-4 text-muted-foreground/60 shrink-0" />
-  ) : item.type === "quiz" ? (
-    <HelpCircle className="h-4 w-4 text-muted-foreground shrink-0" />
-  ) : (
-    <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-  );
-
-  const content = (
-    <div
-      className={cn(
-        "flex items-center gap-2.5 p-2 rounded-md transition-colors text-sm",
-        isCurrent && "bg-primary/10 text-primary font-medium",
-        !isCurrent && isAccessible && "hover:bg-accent/50",
-        !isAccessible && "opacity-50 cursor-not-allowed",
-      )}
-    >
-      {icon}
-      <span className="truncate">{item.title}</span>
-    </div>
-  );
-
-  if (!isAccessible) {
-    return (
-      <div key={item.id} className="cursor-not-allowed">
-        {content}
-      </div>
-    );
-  }
-
-  return (
-    <Link key={item.id} href={item.url} className="block">
-      {content}
-    </Link>
   );
 }

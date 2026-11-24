@@ -109,7 +109,7 @@ const examples: OptimizationExample[] = [
 }`,
         explanation:
           "Cette solution utilise un ensemble (Set) pour garder une trace des éléments déjà vus. Pour chaque élément, nous vérifions s'il est déjà dans l'ensemble. Si oui, nous avons trouvé un doublon. Sinon, nous l'ajoutons à l'ensemble.",
-        complexity: "O(n) en temps, O(n) en espace",
+        complexity: "O(n) en temps (en moyenne), O(n) en espace",
         pros: [
           "Optimal en termes de complexité temporelle",
           "Ne modifie pas le tableau d'origine",
@@ -252,7 +252,7 @@ const examples: OptimizationExample[] = [
       },
       {
         title: "Optimisation des Sommes Cumulées",
-        description: "Éliminer une boucle en précalculant les sommes cumulées",
+        description: "Éliminer une boucle en cumulant la somme au fil de l'itération",
         code: `function maxSubArray(nums) {
   const n = nums.length;
   let maxSum = nums[0];

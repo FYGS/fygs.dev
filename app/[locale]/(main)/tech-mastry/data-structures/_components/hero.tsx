@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import {
   Database,
   Code2,
-  Binary,
   GitMerge,
   Layers,
   Hash,
@@ -23,7 +22,6 @@ const dsConcepts = [
   { icon: ArrowUpDown, label: "Heaps", color: "text-violet-400" },
   { icon: Layers, label: "Stacks", color: "text-teal-400" },
   { icon: Braces, label: "Queues", color: "text-orange-400" },
-  { icon: Binary, label: "Tries", color: "text-rose-400" },
 ];
 
 export function DataStructuresHero() {

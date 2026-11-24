@@ -12,16 +12,16 @@ export function SortingVisualizations() {
   return (
     <div className="space-y-6">
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold">Algorithm Visualizations</h2>
+        <h2 className="text-2xl font-bold">Visualisations d&apos;Algorithmes</h2>
         <p className="text-muted-foreground">
-          Interactive visualizations to help you understand how different algorithms work
+          Visualisations interactives pour comprendre le fonctionnement des différents algorithmes
         </p>
       </div>
 
       <Card className="p-6">
         <div className="flex flex-wrap gap-4 mb-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Array Size</label>
+            <label className="text-sm font-medium">Taille du tableau</label>
             <input
               type="range"
               min="5"
@@ -30,11 +30,11 @@ export function SortingVisualizations() {
               onChange={(e) => setArraySize(parseInt(e.target.value))}
               className="w-32"
             />
-            <div className="text-sm">{arraySize} elements</div>
+            <div className="text-sm">{arraySize} éléments</div>
           </div>
           
           <div className="space-y-2">
-            <label className="text-sm font-medium">Speed</label>
+            <label className="text-sm font-medium">Vitesse</label>
             <input
               type="range"
               min="1"
@@ -49,8 +49,8 @@ export function SortingVisualizations() {
 
         <Tabs defaultValue="sorting" className="w-full">
           <TabsList className="grid grid-cols-2 w-full max-w-md mx-auto">
-            <TabsTrigger value="sorting">Sorting</TabsTrigger>
-            <TabsTrigger value="searching">Searching</TabsTrigger>
+            <TabsTrigger value="sorting">Tri</TabsTrigger>
+            <TabsTrigger value="searching">Recherche</TabsTrigger>
           </TabsList>
           
           <TabsContent value="sorting" className="mt-6">
@@ -62,7 +62,7 @@ export function SortingVisualizations() {
           
           <TabsContent value="searching" className="mt-6">
             <div className="text-center py-12 text-muted-foreground">
-              Searching algorithm visualizations coming soon...
+              Les visualisations des algorithmes de recherche arrivent bientôt…
             </div>
           </TabsContent>
         </Tabs>

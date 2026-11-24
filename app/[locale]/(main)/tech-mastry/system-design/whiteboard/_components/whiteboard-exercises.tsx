@@ -43,9 +43,9 @@ const exercises: DesignExercise[] = [
         "Analytics : nombre de clics, géolocalisation",
       ],
       nonFunctional: [
-        "Haute disponibilité (99.9%)",
-        "Faible latence de redirection (< 100ms)",
-        "100M URLs créées/jour, 10:1 ratio lecture/écriture",
+        "Haute disponibilité (99,9 % : ~8,8 h d'indisponibilité/an, un lien cassé est visible mais non vital)",
+        "Faible latence de redirection (< 100 ms : la redirection s'ajoute au chargement de la page cible, elle doit rester imperceptible)",
+        "Hypothèse : 100M URLs créées/jour, ratio lecture/écriture de 10:1 (souvent bien supérieur en réalité)",
       ],
     },
     steps: [
@@ -68,13 +68,13 @@ const exercises: DesignExercise[] = [
         questions: [
           "100M URLs/jour → ~1200/sec écriture, ~12000/sec lecture",
           "Stockage : 100M × 365 × 5 ans × 500 bytes ≈ 90 TB",
-          "Cache : 20% des URLs = 80% du trafic → ~20GB en mémoire",
+          "Cache : 20% des URLs = 80% du trafic → ~100GB en mémoire",
         ],
         tips: ["Round les chiffres pour simplifier", "Montrer votre raisonnement"],
         solution: `QPS écriture : 100M / (24 × 3600) ≈ 1200/s
 QPS lecture : 1200 × 10 = 12000/s
 Stockage 5 ans : 100M × 365 × 5 × 500B = 91.25 TB
-Cache (règle 80/20) : 12000/s × 86400 × 0.2 × 500B ≈ 20 GB`,
+Cache (règle 80/20) : 12000/s × 86400 × 0.2 × 500B ≈ 100 GB (répartis sur quelques nœuds Redis)`,
       },
       {
         title: "3. API Design",
@@ -90,7 +90,7 @@ Cache (règle 80/20) : 12000/s × 86400 × 0.2 × 500B ≈ 20 GB`,
       {
         title: "4. Architecture haut niveau",
         description: "Dessiner les composants principaux et les flux.",
-        duration: "10 min",
+        duration: "7 min",
         questions: [
           "Load Balancer → API Servers (stateless)",
           "Base de données pour le mapping URL",
@@ -154,8 +154,8 @@ Cache (règle 80/20) : 12000/s × 86400 × 0.2 × 500B ≈ 20 GB`,
         "Historique de messages persistant",
       ],
       nonFunctional: [
-        "Livraison en temps réel (< 200ms)",
-        "Haute disponibilité (99.99%)",
+        "Livraison en temps réel (< 200 ms : seuil en dessous duquel la conversation paraît instantanée)",
+        "Haute disponibilité (99,99 % : ~53 min d'indisponibilité/an, un chat est un service de communication critique)",
         "Cohérence éventuelle acceptable pour le statut",
         "500M utilisateurs actifs, 50M messages/heure",
       ],
@@ -180,7 +180,7 @@ Cache (règle 80/20) : 12000/s × 86400 × 0.2 × 500B ≈ 20 GB`,
           "Chat Server (WebSocket Gateway) → gère les connexions",
           "Message Queue (Kafka) pour la distribution asynchrone",
           "Session Service → mapping user ↔ serveur",
-          "Database → stockage des messages (Cassandra idéal)",
+          "Database → stockage des messages (base wide-column type Cassandra, par exemple)",
         ],
         tips: ["Séparer le online (WebSocket) du offline (push notifications)"],
         solution: `User A → WS Gateway A → Message Queue (Kafka)
@@ -212,19 +212,19 @@ Cache (règle 80/20) : 12000/s × 86400 × 0.2 × 500B ≈ 20 GB`,
           "Retry avec idempotency (message ID unique)",
           "Stockage offline → sync au reconnect",
         ],
-        tips: ["At-least-once delivery + idempotency = exactly-once semantics"],
+        tips: ["At-least-once delivery + consommateur idempotent = effet « exactly-once » (le vrai exactly-once de bout en bout n'existe pas)"],
       },
       {
         title: "5. Scalabilité",
         description: "Comment supporter des millions d'utilisateurs.",
-        duration: "10 min",
+        duration: "15 min",
         questions: [
           "Consistent hashing pour distribuer les connexions WebSocket",
-          "Cassandra : partitionnement par (conversation_id, message_timestamp)",
+          "Exemple avec Cassandra : partition key = conversation_id (+ bucket temporel), clustering key = message_id/timestamp",
           "Redis : cache des derniers messages + session mapping",
           "CDN pour les médias (S3 + CloudFront)",
         ],
-        tips: ["1 serveur WebSocket ≈ 50K connexions → calcul du nombre de serveurs"],
+        tips: ["1 serveur WebSocket ≈ 50K connexions (hypothèse prudente) → calcul du nombre de serveurs"],
       },
     ],
   },
@@ -379,7 +379,7 @@ export function WhiteboardExercises() {
                           {isSolutionVisible ? "Masquer" : "Voir"} la solution
                         </button>
                         {isSolutionVisible && (
-                          <pre className="mt-2 bg-muted p-3 rounded-lg text-xs overflow-x-auto">
+                          <pre className="mt-2 bg-muted p-3 rounded-lg text-xs overflow-x-auto" tabIndex={0}>
                             <code>{step.solution}</code>
                           </pre>
                         )}
@@ -414,7 +414,7 @@ export function WhiteboardExercises() {
         </div>
         <div className="flex justify-between mt-2 text-xs text-muted-foreground">
           <span>Début (0 min)</span>
-          <span>Fin (45 min)</span>
+          <span>Fin (35 à 45 min selon l&apos;exercice)</span>
         </div>
       </Card>
 

@@ -1,0 +1,27 @@
+{
+  "id": "re_fixture1",
+  "object": "refund",
+  "amount": 900,
+  "balance_transaction": "txn_fixture1",
+  "charge": "ch_fixture1",
+  "created": 1792187194,
+  "currency": "eur",
+  "customer": "cus_fixture1",
+  "customer_account": null,
+  "destination_details": {
+    "card": {
+      "reference_status": "pending",
+      "reference_type": "acquirer_reference_number",
+      "type": "refund"
+    },
+    "type": "card"
+  },
+  "metadata": {},
+  "payment_intent": "pi_fixture1",
+  "payment_method": "pm_fixture1",
+  "reason": null,
+  "receipt_number": null,
+  "source_transfer_reversal": null,
+  "status": "succeeded",
+  "transfer_reversal": null
+}

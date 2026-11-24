@@ -100,11 +100,11 @@ export function RecentActivity({ userId }: RecentActivityProps) {
           </div>
 
           <div className="flex-1 min-w-0">
-            <h4 className="font-medium truncate">{enrollment.course.title}</h4>
+            <h3 className="font-medium truncate">{enrollment.course.title}</h3>
             <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
               <Calendar className="h-3 w-3" />
               <span>
-                Inscrit le {new Date(enrollment.enrolledAt).toLocaleDateString("fr-FR")}
+                Inscrit le {new Date(enrollment.enrolledAt).toLocaleDateString("fr-FR", { timeZone: "Europe/Paris" })}
               </span>
               {enrollment.completedAt && (
                 <>
@@ -129,8 +129,11 @@ export function RecentActivity({ userId }: RecentActivityProps) {
             )}
             
             <Button variant="ghost" size="sm" asChild>
-              <Link href={`/formations/${enrollment.course.slug}`}>
-                <ExternalLink className="h-4 w-4" />
+              <Link
+                href={`/formations/${enrollment.course.slug}`}
+                aria-label={`Ouvrir la formation ${enrollment.course.title}`}
+              >
+                <ExternalLink className="h-4 w-4" aria-hidden="true" />
               </Link>
             </Button>
           </div>

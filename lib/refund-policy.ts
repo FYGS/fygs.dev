@@ -1,111 +1,57 @@
 /**
- * Refund Policy Implementation
- *
- * Implements 14-day refund window using precise timestamp arithmetic
- * as defined in FR-006 and research decision documents.
+ * Refund policy, the same for the subscription and for a course bought on its own: a refund can be asked for within
+ * 14 days (FR-006). For a course, it must not be finished yet (no certificate issued): the course was followed to
+ * its end, there is nothing left to give back. Exact timestamp arithmetic, no rounding to days.
  */
+
+export const REFUND_WINDOW_DAYS = 14;
+const REFUND_WINDOW_MS = REFUND_WINDOW_DAYS * 24 * 60 * 60 * 1000;
 
 /**
- * Calculate refund eligibility based on subscription period start and cancellation timestamps
- *
- * @param subscriptionPeriodStart - The Stripe current_period_start timestamp
- * @param cancellationTimestamp - When the user initiated cancellation
- * @returns true if cancellation occurred within 14 days (14 * 24 * 60 * 60 * 1000 ms) of period start
+ * Whether a refund asked at `requestedAt` is within the window that opened at `windowStart` (the subscription's
+ * current period start, or the day a course was bought).
  */
-export function isRefundEligible(
-  subscriptionPeriodStart: Date,
-  cancellationTimestamp: Date
-): boolean {
-  // 14 days in milliseconds: 14 * 24 * 60 * 60 * 1000
-  const REFUND_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
+export function isRefundEligible(windowStart: Date, requestedAt: Date): boolean {
+  return requestedAt.getTime() < windowStart.getTime() + REFUND_WINDOW_MS;
+}
 
-  const periodStartMs = subscriptionPeriodStart.getTime();
-  const cancellationMs = cancellationTimestamp.getTime();
-  const refundDeadlineMs = periodStartMs + REFUND_WINDOW_MS;
+/** The exact moment the refund window that opened at `windowStart` closes. */
+export function getRefundDeadline(windowStart: Date): Date {
+  return new Date(windowStart.getTime() + REFUND_WINDOW_MS);
+}
 
-  return cancellationMs < refundDeadlineMs;
+export type CourseRefundRefusal = "WINDOW_EXPIRED" | "COURSE_COMPLETED" | "NOT_REFUNDABLE";
+
+/** Whether a course purchase can still be refunded, and why not. */
+export function courseRefundDecision(input: {
+  purchasedAt: Date;
+  amount: number;
+  completed: boolean;
+  now?: Date;
+}): { refundable: true } | { refundable: false; reason: CourseRefundRefusal } {
+  if (!(input.amount > 0)) return { refundable: false, reason: "NOT_REFUNDABLE" };
+  if (!isRefundEligible(input.purchasedAt, input.now ?? new Date())) return { refundable: false, reason: "WINDOW_EXPIRED" };
+  if (input.completed) return { refundable: false, reason: "COURSE_COMPLETED" };
+  return { refundable: true };
 }
 
 /**
- * Calculate the refund deadline for a given subscription period start
- *
- * @param subscriptionPeriodStart - The Stripe current_period_start timestamp
- * @returns The exact timestamp when refund eligibility expires
+ * A refund is a way back from a purchase, not a free trial: after a refund the same product (the Premium subscription,
+ * or that course) cannot be bought again for this long. Without it, subscribe -> use -> refund -> subscribe again would
+ * give Premium for nothing, at the platform's cost (payment fees are not returned).
  */
-export function getRefundDeadline(subscriptionPeriodStart: Date): Date {
-  const REFUND_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
-  return new Date(subscriptionPeriodStart.getTime() + REFUND_WINDOW_MS);
+export const REFUND_COOLDOWN_MONTHS = 12;
+
+/** The day a new purchase of the product refunded at `refundedAt` becomes possible again. */
+export function refundCooldownEnd(refundedAt: Date): Date {
+  const end = new Date(refundedAt.getTime());
+  end.setUTCMonth(end.getUTCMonth() + REFUND_COOLDOWN_MONTHS);
+  return end;
 }
 
-/**
- * Get remaining time in refund window
- *
- * @param subscriptionPeriodStart - The Stripe current_period_start timestamp
- * @param currentTimestamp - Current time (defaults to now)
- * @returns Milliseconds remaining in refund window, or 0 if expired
- */
-export function getRefundWindowRemaining(
-  subscriptionPeriodStart: Date,
-  currentTimestamp: Date = new Date()
-): number {
-  const deadline = getRefundDeadline(subscriptionPeriodStart);
-  const remaining = deadline.getTime() - currentTimestamp.getTime();
-  return Math.max(0, remaining);
+export function isInRefundCooldown(refundedAt: Date, now: Date = new Date()): boolean {
+  return now.getTime() < refundCooldownEnd(refundedAt).getTime();
 }
 
-// Boundary tests colocated as per task requirements
-// Note: These tests are intended for runtime via test framework
-export const boundaryTests = {
-  "exact 15-day boundary - eligible at 14 days 23:59:59": () => {
-    const start = new Date("2024-01-01T00:00:00.000Z");
-    const cancel = new Date("2024-01-15T23:59:59.999Z"); // 1ms before deadline
-    return isRefundEligible(start, cancel) === true;
-  },
-
-  "exact 15-day boundary - ineligible at 15 days 00:00:00": () => {
-    const start = new Date("2024-01-01T00:00:00.000Z");
-    const cancel = new Date("2024-01-16T00:00:00.000Z"); // Exactly at deadline
-    return isRefundEligible(start, cancel) === false;
-  },
-
-  "immediate cancellation is eligible": () => {
-    const start = new Date("2024-01-01T12:00:00.000Z");
-    const cancel = new Date("2024-01-01T12:00:00.001Z"); // 1ms after start
-    return isRefundEligible(start, cancel) === true;
-  },
-
-  "cancellation before subscription start is eligible": () => {
-    const start = new Date("2024-01-01T12:00:00.000Z");
-    const cancel = new Date("2024-01-01T11:59:59.999Z"); // Before start
-    return isRefundEligible(start, cancel) === true;
-  },
-
-  "leap year boundary handling": () => {
-    const start = new Date("2024-02-20T00:00:00.000Z"); // 2024 is leap year
-    const cancel = new Date("2024-03-05T23:59:59.999Z"); // 14 days later
-    return isRefundEligible(start, cancel) === true;
-  },
-
-  "getRefundDeadline precision": () => {
-    const start = new Date("2024-01-01T00:00:00.000Z");
-    const deadline = getRefundDeadline(start);
-    return deadline.toISOString() === "2024-01-16T00:00:00.000Z";
-  },
-
-  "getRefundWindowRemaining at various points": () => {
-    const start = new Date("2024-01-01T00:00:00.000Z");
-    const oneDay = new Date("2024-01-02T00:00:00.000Z");
-    const deadline = new Date("2024-01-16T00:00:00.000Z");
-    const past = new Date("2024-01-17T00:00:00.000Z");
-
-    const oneDayRemaining = getRefundWindowRemaining(start, oneDay);
-    const atDeadline = getRefundWindowRemaining(start, deadline);
-    const pastDeadline = getRefundWindowRemaining(start, past);
-
-    return (
-      oneDayRemaining === 14 * 24 * 60 * 60 * 1000 &&
-      atDeadline === 0 &&
-      pastDeadline === 0
-    );
-  },
-};
+/** Where a learner is sent when a rule above refuses them. */
+export const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "fygs.dev@gmail.com";

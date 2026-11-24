@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { logger } from "@/lib/structured-logger";
-import { ReviewStatus } from "@prisma/client";
+import { ReviewStatus } from "@/lib/generated/prisma/browser";
 
 /**
  * Advanced Review Analytics and Aggregation Service

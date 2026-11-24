@@ -263,13 +263,18 @@ export function Testimonials() {
                     setCurrentIndex(index);
                     setIsAutoPlaying(false);
                   }}
-                  className={`w-3 h-3 rounded-full transition-colors ${
-                    index === currentIndex
-                      ? "bg-primary scale-125"
-                      : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
-                  }`}
+                  className="group flex size-6 items-center justify-center rounded-full"
                   aria-label={`${content.navigation.goTo.value} ${index + 1}`}
-                />
+                  aria-current={index === currentIndex ? "true" : undefined}
+                >
+                  <span
+                    className={`size-3 rounded-full transition-colors ${
+                      index === currentIndex
+                        ? "bg-primary scale-125"
+                        : "bg-muted-foreground/30 group-hover:bg-muted-foreground/50"
+                    }`}
+                  />
+                </button>
               ))}
             </div>
 

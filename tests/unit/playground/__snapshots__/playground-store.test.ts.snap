@@ -1,0 +1,7423 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`playground store (pinned) > console entries: dedupe and cap 1`] = `
+{
+  "bigLen": 601,
+  "first": "m499",
+  "last": "m1099",
+  "small": [
+    {
+      "content": "x",
+      "count": 3,
+      "id": "uuid-1",
+      "timestamp": 1907749230000,
+      "type": "log",
+    },
+    {
+      "content": "x",
+      "id": "uuid-4",
+      "timestamp": 1907749230000,
+      "type": "error",
+    },
+  ],
+}
+`;
+
+exports[`playground store (pinned) > console entries: dedupe and cap 2`] = `
+{
+  "activeFileId": "default-ts",
+  "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+  "consoleEntries": [],
+  "errors": [],
+  "files": [
+    {
+      "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+      "id": "default-ts",
+      "isEntryPoint": true,
+      "language": "typescript",
+      "name": "index.ts",
+      "path": "index.ts",
+    },
+  ],
+  "history": {
+    "maxSnapshots": 50,
+    "snapshots": [],
+  },
+  "language": "typescript",
+  "layout": {
+    "activeOutputTab": "console",
+    "layout": "default",
+    "showConsole": true,
+    "showFileExplorer": true,
+    "showPreview": true,
+  },
+  "logs": [],
+  "openTabs": [
+    {
+      "fileId": "default-ts",
+      "isPinned": false,
+      "isPreview": false,
+    },
+  ],
+  "output": "",
+  "previewHtml": null,
+  "serverUrl": null,
+  "settings": {
+    "autoComplete": true,
+    "bracketPairColorization": true,
+    "cursorBlinking": "smooth",
+    "cursorStyle": "line",
+    "fontSize": 14,
+    "formatOnPaste": false,
+    "formatOnSave": false,
+    "lineNumbers": "on",
+    "minimap": false,
+    "renderWhitespace": "selection",
+    "smoothScrolling": true,
+    "stickyScroll": true,
+    "tabSize": 2,
+    "wordWrap": "on",
+  },
+  "status": "idle",
+  "theme": "vs-dark",
+  "wcStatus": "idle",
+}
+`;
+
+exports[`playground store (pinned) > deleteFile never removes the last file; closeTab picks the neighbour 1`] = `
+{
+  "activeFileId": "default-ts",
+  "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+  "consoleEntries": [],
+  "errors": [],
+  "files": [
+    {
+      "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+      "id": "default-ts",
+      "isEntryPoint": true,
+      "language": "typescript",
+      "name": "index.ts",
+      "path": "index.ts",
+    },
+  ],
+  "history": {
+    "maxSnapshots": 50,
+    "snapshots": [],
+  },
+  "language": "typescript",
+  "layout": {
+    "activeOutputTab": "console",
+    "layout": "default",
+    "showConsole": true,
+    "showFileExplorer": true,
+    "showPreview": true,
+  },
+  "logs": [],
+  "openTabs": [
+    {
+      "fileId": "default-ts",
+      "isPinned": false,
+      "isPreview": false,
+    },
+  ],
+  "output": "",
+  "previewHtml": null,
+  "serverUrl": null,
+  "settings": {
+    "autoComplete": true,
+    "bracketPairColorization": true,
+    "cursorBlinking": "smooth",
+    "cursorStyle": "line",
+    "fontSize": 14,
+    "formatOnPaste": false,
+    "formatOnSave": false,
+    "lineNumbers": "on",
+    "minimap": false,
+    "renderWhitespace": "selection",
+    "smoothScrolling": true,
+    "stickyScroll": true,
+    "tabSize": 2,
+    "wordWrap": "on",
+  },
+  "status": "idle",
+  "theme": "vs-dark",
+  "wcStatus": "idle",
+}
+`;
+
+exports[`playground store (pinned) > execution > dataUrlPreview 1`] = `
+{
+  "calls": [
+    [
+      "execCode",
+      {
+        "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        "entryPoint": "index.ts",
+        "files": {
+          "index.ts": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        },
+        "language": "typescript",
+        "packageJson": undefined,
+        "runScript": undefined,
+        "signal": "<signal>",
+      },
+    ],
+  ],
+  "persisted": {
+    "state": {
+      "activeFileId": "default-ts",
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": true,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [
+          {
+            "files": [
+              {
+                "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+                "language": "typescript",
+                "name": "index.ts",
+                "path": "index.ts",
+              },
+            ],
+            "id": "uuid-3",
+            "label": "Auto-save after execution",
+            "timestamp": 1907749230000,
+          },
+        ],
+      },
+      "layout": {
+        "activeOutputTab": "preview",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "openTabs": [
+        {
+          "fileId": "default-ts",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "projectId": "default",
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "theme": "vs-dark",
+    },
+    "version": 0,
+  },
+  "state": {
+    "activeFileId": "default-ts",
+    "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+    "consoleEntries": [
+      {
+        "content": "Running...",
+        "id": "uuid-1",
+        "timestamp": 1907749230000,
+        "type": "info",
+      },
+      {
+        "content": "✅ Execution completed successfully",
+        "id": "uuid-2",
+        "timestamp": 1907749230000,
+        "type": "info",
+      },
+    ],
+    "errors": [],
+    "files": [
+      {
+        "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        "id": "default-ts",
+        "isEntryPoint": true,
+        "language": "typescript",
+        "name": "index.ts",
+        "path": "index.ts",
+      },
+    ],
+    "history": {
+      "maxSnapshots": 50,
+      "snapshots": [
+        {
+          "files": [
+            {
+              "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+              "language": "typescript",
+              "name": "index.ts",
+              "path": "index.ts",
+            },
+          ],
+          "id": "uuid-3",
+          "label": "Auto-save after execution",
+          "timestamp": 1907749230000,
+        },
+      ],
+    },
+    "language": "typescript",
+    "layout": {
+      "activeOutputTab": "preview",
+      "layout": "default",
+      "showConsole": true,
+      "showFileExplorer": true,
+      "showPreview": true,
+    },
+    "logs": [
+      "Running...",
+      "✅ Execution completed successfully",
+    ],
+    "openTabs": [
+      {
+        "fileId": "default-ts",
+        "isPinned": false,
+        "isPreview": false,
+      },
+    ],
+    "output": "",
+    "previewHtml": "data:text/html;base64,AAA",
+    "serverUrl": null,
+    "settings": {
+      "autoComplete": true,
+      "bracketPairColorization": true,
+      "cursorBlinking": "smooth",
+      "cursorStyle": "line",
+      "fontSize": 14,
+      "formatOnPaste": false,
+      "formatOnSave": false,
+      "lineNumbers": "on",
+      "minimap": false,
+      "renderWhitespace": "selection",
+      "smoothScrolling": true,
+      "stickyScroll": true,
+      "tabSize": 2,
+      "wordWrap": "on",
+    },
+    "status": "success",
+    "theme": "vs-dark",
+    "wcStatus": "idle",
+  },
+}
+`;
+
+exports[`playground store (pinned) > execution > errors 1`] = `
+{
+  "calls": [
+    [
+      "execCode",
+      {
+        "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        "entryPoint": "index.ts",
+        "files": {
+          "index.ts": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        },
+        "language": "typescript",
+        "packageJson": undefined,
+        "runScript": undefined,
+        "signal": "<signal>",
+      },
+    ],
+  ],
+  "persisted": {
+    "state": {
+      "activeFileId": "default-ts",
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": true,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [],
+      },
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "openTabs": [
+        {
+          "fileId": "default-ts",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "projectId": "default",
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "theme": "vs-dark",
+    },
+    "version": 0,
+  },
+  "state": {
+    "activeFileId": "default-ts",
+    "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+    "consoleEntries": [
+      {
+        "content": "Running...",
+        "id": "uuid-1",
+        "timestamp": 1907749230000,
+        "type": "info",
+      },
+      {
+        "content": "l",
+        "id": "uuid-2",
+        "timestamp": 1907749230000,
+        "type": "log",
+      },
+      {
+        "content": "bad",
+        "id": "uuid-3",
+        "timestamp": 1907749230000,
+        "type": "error",
+      },
+    ],
+    "errors": [
+      "bad",
+    ],
+    "files": [
+      {
+        "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        "id": "default-ts",
+        "isEntryPoint": true,
+        "language": "typescript",
+        "name": "index.ts",
+        "path": "index.ts",
+      },
+    ],
+    "history": {
+      "maxSnapshots": 50,
+      "snapshots": [],
+    },
+    "language": "typescript",
+    "layout": {
+      "activeOutputTab": "console",
+      "layout": "default",
+      "showConsole": true,
+      "showFileExplorer": true,
+      "showPreview": true,
+    },
+    "logs": [
+      "Running...",
+      "l",
+    ],
+    "openTabs": [
+      {
+        "fileId": "default-ts",
+        "isPinned": false,
+        "isPreview": false,
+      },
+    ],
+    "output": "",
+    "previewHtml": null,
+    "serverUrl": null,
+    "settings": {
+      "autoComplete": true,
+      "bracketPairColorization": true,
+      "cursorBlinking": "smooth",
+      "cursorStyle": "line",
+      "fontSize": 14,
+      "formatOnPaste": false,
+      "formatOnSave": false,
+      "lineNumbers": "on",
+      "minimap": false,
+      "renderWhitespace": "selection",
+      "smoothScrolling": true,
+      "stickyScroll": true,
+      "tabSize": 2,
+      "wordWrap": "on",
+    },
+    "status": "error",
+    "theme": "vs-dark",
+    "wcStatus": "idle",
+  },
+}
+`;
+
+exports[`playground store (pinned) > execution > htmlPreview 1`] = `
+{
+  "calls": [
+    [
+      "execCode",
+      {
+        "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        "entryPoint": "index.ts",
+        "files": {
+          "index.ts": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        },
+        "language": "typescript",
+        "packageJson": undefined,
+        "runScript": undefined,
+        "signal": "<signal>",
+      },
+    ],
+  ],
+  "persisted": {
+    "state": {
+      "activeFileId": "default-ts",
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": true,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [
+          {
+            "files": [
+              {
+                "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+                "language": "typescript",
+                "name": "index.ts",
+                "path": "index.ts",
+              },
+            ],
+            "id": "uuid-3",
+            "label": "Auto-save after execution",
+            "timestamp": 1907749230000,
+          },
+        ],
+      },
+      "layout": {
+        "activeOutputTab": "preview",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "openTabs": [
+        {
+          "fileId": "default-ts",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "projectId": "default",
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "theme": "vs-dark",
+    },
+    "version": 0,
+  },
+  "state": {
+    "activeFileId": "default-ts",
+    "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+    "consoleEntries": [
+      {
+        "content": "Running...",
+        "id": "uuid-1",
+        "timestamp": 1907749230000,
+        "type": "info",
+      },
+      {
+        "content": "✅ Execution completed successfully",
+        "id": "uuid-2",
+        "timestamp": 1907749230000,
+        "type": "info",
+      },
+    ],
+    "errors": [],
+    "files": [
+      {
+        "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        "id": "default-ts",
+        "isEntryPoint": true,
+        "language": "typescript",
+        "name": "index.ts",
+        "path": "index.ts",
+      },
+    ],
+    "history": {
+      "maxSnapshots": 50,
+      "snapshots": [
+        {
+          "files": [
+            {
+              "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+              "language": "typescript",
+              "name": "index.ts",
+              "path": "index.ts",
+            },
+          ],
+          "id": "uuid-3",
+          "label": "Auto-save after execution",
+          "timestamp": 1907749230000,
+        },
+      ],
+    },
+    "language": "typescript",
+    "layout": {
+      "activeOutputTab": "preview",
+      "layout": "default",
+      "showConsole": true,
+      "showFileExplorer": true,
+      "showPreview": true,
+    },
+    "logs": [
+      "Running...",
+      "✅ Execution completed successfully",
+    ],
+    "openTabs": [
+      {
+        "fileId": "default-ts",
+        "isPinned": false,
+        "isPreview": false,
+      },
+    ],
+    "output": "",
+    "previewHtml": "<!DOCTYPE html><html></html>",
+    "serverUrl": null,
+    "settings": {
+      "autoComplete": true,
+      "bracketPairColorization": true,
+      "cursorBlinking": "smooth",
+      "cursorStyle": "line",
+      "fontSize": 14,
+      "formatOnPaste": false,
+      "formatOnSave": false,
+      "lineNumbers": "on",
+      "minimap": false,
+      "renderWhitespace": "selection",
+      "smoothScrolling": true,
+      "stickyScroll": true,
+      "tabSize": 2,
+      "wordWrap": "on",
+    },
+    "status": "success",
+    "theme": "vs-dark",
+    "wcStatus": "idle",
+  },
+}
+`;
+
+exports[`playground store (pinned) > execution > plainOk 1`] = `
+{
+  "calls": [
+    [
+      "execCode",
+      {
+        "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        "entryPoint": "index.ts",
+        "files": {
+          "index.ts": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        },
+        "language": "typescript",
+        "packageJson": undefined,
+        "runScript": undefined,
+        "signal": "<signal>",
+      },
+    ],
+  ],
+  "persisted": {
+    "state": {
+      "activeFileId": "default-ts",
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": true,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [
+          {
+            "files": [
+              {
+                "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+                "language": "typescript",
+                "name": "index.ts",
+                "path": "index.ts",
+              },
+            ],
+            "id": "uuid-5",
+            "label": "Auto-save after execution",
+            "timestamp": 1907749230000,
+          },
+        ],
+      },
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "openTabs": [
+        {
+          "fileId": "default-ts",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "projectId": "default",
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "theme": "vs-dark",
+    },
+    "version": 0,
+  },
+  "state": {
+    "activeFileId": "default-ts",
+    "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+    "consoleEntries": [
+      {
+        "content": "Running...",
+        "id": "uuid-1",
+        "timestamp": 1907749230000,
+        "type": "info",
+      },
+      {
+        "content": "hello",
+        "id": "uuid-2",
+        "timestamp": 1907749230000,
+        "type": "result",
+      },
+      {
+        "content": "l1",
+        "id": "uuid-3",
+        "timestamp": 1907749230000,
+        "type": "log",
+      },
+      {
+        "content": "✅ Execution completed successfully",
+        "id": "uuid-4",
+        "timestamp": 1907749230000,
+        "type": "info",
+      },
+    ],
+    "errors": [],
+    "files": [
+      {
+        "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        "id": "default-ts",
+        "isEntryPoint": true,
+        "language": "typescript",
+        "name": "index.ts",
+        "path": "index.ts",
+      },
+    ],
+    "history": {
+      "maxSnapshots": 50,
+      "snapshots": [
+        {
+          "files": [
+            {
+              "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+              "language": "typescript",
+              "name": "index.ts",
+              "path": "index.ts",
+            },
+          ],
+          "id": "uuid-5",
+          "label": "Auto-save after execution",
+          "timestamp": 1907749230000,
+        },
+      ],
+    },
+    "language": "typescript",
+    "layout": {
+      "activeOutputTab": "console",
+      "layout": "default",
+      "showConsole": true,
+      "showFileExplorer": true,
+      "showPreview": true,
+    },
+    "logs": [
+      "Running...",
+      "l1",
+      "✅ Execution completed successfully",
+    ],
+    "openTabs": [
+      {
+        "fileId": "default-ts",
+        "isPinned": false,
+        "isPreview": false,
+      },
+    ],
+    "output": "hello",
+    "previewHtml": null,
+    "serverUrl": null,
+    "settings": {
+      "autoComplete": true,
+      "bracketPairColorization": true,
+      "cursorBlinking": "smooth",
+      "cursorStyle": "line",
+      "fontSize": 14,
+      "formatOnPaste": false,
+      "formatOnSave": false,
+      "lineNumbers": "on",
+      "minimap": false,
+      "renderWhitespace": "selection",
+      "smoothScrolling": true,
+      "stickyScroll": true,
+      "tabSize": 2,
+      "wordWrap": "on",
+    },
+    "status": "success",
+    "theme": "vs-dark",
+    "wcStatus": "idle",
+  },
+}
+`;
+
+exports[`playground store (pinned) > execution > python 1`] = `
+{
+  "calls": [
+    [
+      "execCode",
+      {
+        "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        "entryPoint": "index.ts",
+        "files": {
+          "index.ts": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        },
+        "language": "python",
+        "packageJson": undefined,
+        "runScript": undefined,
+        "signal": "<signal>",
+      },
+    ],
+  ],
+  "persisted": {
+    "state": {
+      "activeFileId": "default-ts",
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": true,
+          "language": "python",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [
+          {
+            "files": [
+              {
+                "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+                "language": "python",
+                "name": "index.ts",
+                "path": "index.ts",
+              },
+            ],
+            "id": "uuid-4",
+            "label": "Auto-save after execution",
+            "timestamp": 1907749230000,
+          },
+        ],
+      },
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "openTabs": [
+        {
+          "fileId": "default-ts",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "projectId": "default",
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "theme": "vs-dark",
+    },
+    "version": 0,
+  },
+  "state": {
+    "activeFileId": "default-ts",
+    "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+    "consoleEntries": [
+      {
+        "content": "Loading Python runtime (Pyodide)...",
+        "id": "uuid-1",
+        "timestamp": 1907749230000,
+        "type": "info",
+      },
+      {
+        "content": "py",
+        "id": "uuid-2",
+        "timestamp": 1907749230000,
+        "type": "result",
+      },
+      {
+        "content": "✅ Execution completed successfully",
+        "id": "uuid-3",
+        "timestamp": 1907749230000,
+        "type": "info",
+      },
+    ],
+    "errors": [],
+    "files": [
+      {
+        "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        "id": "default-ts",
+        "isEntryPoint": true,
+        "language": "python",
+        "name": "index.ts",
+        "path": "index.ts",
+      },
+    ],
+    "history": {
+      "maxSnapshots": 50,
+      "snapshots": [
+        {
+          "files": [
+            {
+              "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+              "language": "python",
+              "name": "index.ts",
+              "path": "index.ts",
+            },
+          ],
+          "id": "uuid-4",
+          "label": "Auto-save after execution",
+          "timestamp": 1907749230000,
+        },
+      ],
+    },
+    "language": "python",
+    "layout": {
+      "activeOutputTab": "console",
+      "layout": "default",
+      "showConsole": true,
+      "showFileExplorer": true,
+      "showPreview": true,
+    },
+    "logs": [
+      "Loading Python runtime (Pyodide)...",
+      "✅ Execution completed successfully",
+    ],
+    "openTabs": [
+      {
+        "fileId": "default-ts",
+        "isPinned": false,
+        "isPreview": false,
+      },
+    ],
+    "output": "py",
+    "previewHtml": null,
+    "serverUrl": null,
+    "settings": {
+      "autoComplete": true,
+      "bracketPairColorization": true,
+      "cursorBlinking": "smooth",
+      "cursorStyle": "line",
+      "fontSize": 14,
+      "formatOnPaste": false,
+      "formatOnSave": false,
+      "lineNumbers": "on",
+      "minimap": false,
+      "renderWhitespace": "selection",
+      "smoothScrolling": true,
+      "stickyScroll": true,
+      "tabSize": 2,
+      "wordWrap": "on",
+    },
+    "status": "success",
+    "theme": "vs-dark",
+    "wcStatus": "idle",
+  },
+}
+`;
+
+exports[`playground store (pinned) > execution > stopExecution 1`] = `
+{
+  "calls": [
+    [
+      "killCurrentProcess",
+    ],
+  ],
+  "state": {
+    "activeFileId": "default-ts",
+    "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+    "consoleEntries": [
+      {
+        "content": "Execution stopped",
+        "id": "uuid-1",
+        "timestamp": 1907749230000,
+        "type": "warn",
+      },
+    ],
+    "errors": [],
+    "files": [
+      {
+        "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        "id": "default-ts",
+        "isEntryPoint": true,
+        "language": "typescript",
+        "name": "index.ts",
+        "path": "index.ts",
+      },
+    ],
+    "history": {
+      "maxSnapshots": 50,
+      "snapshots": [],
+    },
+    "language": "typescript",
+    "layout": {
+      "activeOutputTab": "console",
+      "layout": "default",
+      "showConsole": true,
+      "showFileExplorer": true,
+      "showPreview": true,
+    },
+    "logs": [
+      "Execution stopped",
+    ],
+    "openTabs": [
+      {
+        "fileId": "default-ts",
+        "isPinned": false,
+        "isPreview": false,
+      },
+    ],
+    "output": "",
+    "previewHtml": null,
+    "serverUrl": null,
+    "settings": {
+      "autoComplete": true,
+      "bracketPairColorization": true,
+      "cursorBlinking": "smooth",
+      "cursorStyle": "line",
+      "fontSize": 14,
+      "formatOnPaste": false,
+      "formatOnSave": false,
+      "lineNumbers": "on",
+      "minimap": false,
+      "renderWhitespace": "selection",
+      "smoothScrolling": true,
+      "stickyScroll": true,
+      "tabSize": 2,
+      "wordWrap": "on",
+    },
+    "status": "idle",
+    "theme": "vs-dark",
+    "wcStatus": "idle",
+  },
+}
+`;
+
+exports[`playground store (pinned) > execution > throws 1`] = `
+{
+  "calls": [
+    [
+      "execCode",
+      {
+        "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        "entryPoint": "index.ts",
+        "files": {
+          "index.ts": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        },
+        "language": "typescript",
+        "packageJson": undefined,
+        "runScript": undefined,
+        "signal": "<signal>",
+      },
+    ],
+  ],
+  "persisted": {
+    "state": {
+      "activeFileId": "default-ts",
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": true,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [],
+      },
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "openTabs": [
+        {
+          "fileId": "default-ts",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "projectId": "default",
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "theme": "vs-dark",
+    },
+    "version": 0,
+  },
+  "state": {
+    "activeFileId": "default-ts",
+    "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+    "consoleEntries": [
+      {
+        "content": "Running...",
+        "id": "uuid-1",
+        "timestamp": 1907749230000,
+        "type": "info",
+      },
+      {
+        "content": "exec exploded",
+        "id": "uuid-2",
+        "timestamp": 1907749230000,
+        "type": "error",
+      },
+    ],
+    "errors": [
+      "exec exploded",
+    ],
+    "files": [
+      {
+        "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        "id": "default-ts",
+        "isEntryPoint": true,
+        "language": "typescript",
+        "name": "index.ts",
+        "path": "index.ts",
+      },
+    ],
+    "history": {
+      "maxSnapshots": 50,
+      "snapshots": [],
+    },
+    "language": "typescript",
+    "layout": {
+      "activeOutputTab": "console",
+      "layout": "default",
+      "showConsole": true,
+      "showFileExplorer": true,
+      "showPreview": true,
+    },
+    "logs": [
+      "Running...",
+    ],
+    "openTabs": [
+      {
+        "fileId": "default-ts",
+        "isPinned": false,
+        "isPreview": false,
+      },
+    ],
+    "output": "",
+    "previewHtml": null,
+    "serverUrl": null,
+    "settings": {
+      "autoComplete": true,
+      "bracketPairColorization": true,
+      "cursorBlinking": "smooth",
+      "cursorStyle": "line",
+      "fontSize": 14,
+      "formatOnPaste": false,
+      "formatOnSave": false,
+      "lineNumbers": "on",
+      "minimap": false,
+      "renderWhitespace": "selection",
+      "smoothScrolling": true,
+      "stickyScroll": true,
+      "tabSize": 2,
+      "wordWrap": "on",
+    },
+    "status": "error",
+    "theme": "vs-dark",
+    "wcStatus": "idle",
+  },
+}
+`;
+
+exports[`playground store (pinned) > execution > throwsNonError 1`] = `
+{
+  "calls": [
+    [
+      "execCode",
+      {
+        "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        "entryPoint": "index.ts",
+        "files": {
+          "index.ts": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        },
+        "language": "typescript",
+        "packageJson": undefined,
+        "runScript": undefined,
+        "signal": "<signal>",
+      },
+    ],
+  ],
+  "persisted": {
+    "state": {
+      "activeFileId": "default-ts",
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": true,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [],
+      },
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "openTabs": [
+        {
+          "fileId": "default-ts",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "projectId": "default",
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "theme": "vs-dark",
+    },
+    "version": 0,
+  },
+  "state": {
+    "activeFileId": "default-ts",
+    "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+    "consoleEntries": [
+      {
+        "content": "Running...",
+        "id": "uuid-1",
+        "timestamp": 1907749230000,
+        "type": "info",
+      },
+      {
+        "content": "Cannot read properties of undefined (reading 'forEach')",
+        "id": "uuid-2",
+        "timestamp": 1907749230000,
+        "type": "error",
+      },
+    ],
+    "errors": [
+      "Cannot read properties of undefined (reading 'forEach')",
+    ],
+    "files": [
+      {
+        "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        "id": "default-ts",
+        "isEntryPoint": true,
+        "language": "typescript",
+        "name": "index.ts",
+        "path": "index.ts",
+      },
+    ],
+    "history": {
+      "maxSnapshots": 50,
+      "snapshots": [],
+    },
+    "language": "typescript",
+    "layout": {
+      "activeOutputTab": "console",
+      "layout": "default",
+      "showConsole": true,
+      "showFileExplorer": true,
+      "showPreview": true,
+    },
+    "logs": [
+      "Running...",
+    ],
+    "openTabs": [
+      {
+        "fileId": "default-ts",
+        "isPinned": false,
+        "isPreview": false,
+      },
+    ],
+    "output": "",
+    "previewHtml": null,
+    "serverUrl": null,
+    "settings": {
+      "autoComplete": true,
+      "bracketPairColorization": true,
+      "cursorBlinking": "smooth",
+      "cursorStyle": "line",
+      "fontSize": 14,
+      "formatOnPaste": false,
+      "formatOnSave": false,
+      "lineNumbers": "on",
+      "minimap": false,
+      "renderWhitespace": "selection",
+      "smoothScrolling": true,
+      "stickyScroll": true,
+      "tabSize": 2,
+      "wordWrap": "on",
+    },
+    "status": "error",
+    "theme": "vs-dark",
+    "wcStatus": "idle",
+  },
+}
+`;
+
+exports[`playground store (pinned) > execution > wcNodeStreamed 1`] = `
+{
+  "calls": [
+    [
+      "onWebContainerEvent",
+    ],
+    [
+      "execCode",
+      {
+        "code": "{}",
+        "entryPoint": "index.ts",
+        "files": {
+          "index.ts": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "package.json": "{}",
+        },
+        "language": "json",
+        "packageJson": "{}",
+        "runScript": "dev",
+        "signal": "<signal>",
+      },
+    ],
+    [
+      "unsubscribe",
+    ],
+  ],
+  "persisted": {
+    "state": {
+      "activeFileId": "uuid-1",
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": true,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+        {
+          "content": "{}",
+          "id": "uuid-1",
+          "language": "json",
+          "name": "package.json",
+          "path": "package.json",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [
+          {
+            "files": [
+              {
+                "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+                "language": "typescript",
+                "name": "index.ts",
+                "path": "index.ts",
+              },
+              {
+                "content": "{}",
+                "language": "json",
+                "name": "package.json",
+                "path": "package.json",
+              },
+            ],
+            "id": "uuid-7",
+            "label": "Auto-save after execution",
+            "timestamp": 1907749230000,
+          },
+        ],
+      },
+      "layout": {
+        "activeOutputTab": "preview",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "openTabs": [
+        {
+          "fileId": "default-ts",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-1",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "projectId": "default",
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "theme": "vs-dark",
+    },
+    "version": 0,
+  },
+  "state": {
+    "activeFileId": "uuid-1",
+    "code": "{}",
+    "consoleEntries": [
+      {
+        "content": "Running in WebContainer (real Node.js)...",
+        "id": "uuid-2",
+        "timestamp": 1907749230000,
+        "type": "info",
+      },
+      {
+        "content": "streamed",
+        "id": "uuid-3",
+        "timestamp": 1907749230000,
+        "type": "log",
+      },
+      {
+        "content": "streamed err",
+        "id": "uuid-4",
+        "timestamp": 1907749230000,
+        "type": "error",
+      },
+      {
+        "content": "🌐 Server ready at http://localhost:3111",
+        "id": "uuid-5",
+        "timestamp": 1907749230000,
+        "type": "info",
+      },
+      {
+        "content": "✅ Execution completed successfully",
+        "id": "uuid-6",
+        "timestamp": 1907749230000,
+        "type": "info",
+      },
+    ],
+    "errors": [
+      "streamed err",
+    ],
+    "files": [
+      {
+        "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        "id": "default-ts",
+        "isEntryPoint": true,
+        "language": "typescript",
+        "name": "index.ts",
+        "path": "index.ts",
+      },
+      {
+        "content": "{}",
+        "id": "uuid-1",
+        "language": "json",
+        "name": "package.json",
+        "path": "package.json",
+      },
+    ],
+    "history": {
+      "maxSnapshots": 50,
+      "snapshots": [
+        {
+          "files": [
+            {
+              "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+              "language": "typescript",
+              "name": "index.ts",
+              "path": "index.ts",
+            },
+            {
+              "content": "{}",
+              "language": "json",
+              "name": "package.json",
+              "path": "package.json",
+            },
+          ],
+          "id": "uuid-7",
+          "label": "Auto-save after execution",
+          "timestamp": 1907749230000,
+        },
+      ],
+    },
+    "language": "json",
+    "layout": {
+      "activeOutputTab": "preview",
+      "layout": "default",
+      "showConsole": true,
+      "showFileExplorer": true,
+      "showPreview": true,
+    },
+    "logs": [
+      "Running in WebContainer (real Node.js)...",
+      "streamed",
+      "🌐 Server ready at http://localhost:3111",
+      "✅ Execution completed successfully",
+    ],
+    "openTabs": [
+      {
+        "fileId": "default-ts",
+        "isPinned": false,
+        "isPreview": false,
+      },
+      {
+        "fileId": "uuid-1",
+        "isPinned": false,
+        "isPreview": false,
+      },
+    ],
+    "output": "",
+    "previewHtml": null,
+    "serverUrl": "http://localhost:3111",
+    "settings": {
+      "autoComplete": true,
+      "bracketPairColorization": true,
+      "cursorBlinking": "smooth",
+      "cursorStyle": "line",
+      "fontSize": 14,
+      "formatOnPaste": false,
+      "formatOnSave": false,
+      "lineNumbers": "on",
+      "minimap": false,
+      "renderWhitespace": "selection",
+      "smoothScrolling": true,
+      "stickyScroll": true,
+      "tabSize": 2,
+      "wordWrap": "on",
+    },
+    "status": "success",
+    "theme": "vs-dark",
+    "wcStatus": "ready",
+  },
+}
+`;
+
+exports[`playground store (pinned) > execution > wcNotStreamed 1`] = `
+{
+  "calls": [
+    [
+      "onWebContainerEvent",
+    ],
+    [
+      "execCode",
+      {
+        "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        "entryPoint": "index.ts",
+        "files": {
+          "index.ts": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        },
+        "language": "typescript",
+        "packageJson": undefined,
+        "runScript": undefined,
+        "signal": "<signal>",
+      },
+    ],
+    [
+      "unsubscribe",
+    ],
+  ],
+  "persisted": {
+    "state": {
+      "activeFileId": "default-ts",
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": true,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [
+          {
+            "files": [
+              {
+                "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+                "language": "typescript",
+                "name": "index.ts",
+                "path": "index.ts",
+              },
+            ],
+            "id": "uuid-5",
+            "label": "Auto-save after execution",
+            "timestamp": 1907749230000,
+          },
+        ],
+      },
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "openTabs": [
+        {
+          "fileId": "default-ts",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "projectId": "default",
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "theme": "vs-dark",
+    },
+    "version": 0,
+  },
+  "state": {
+    "activeFileId": "default-ts",
+    "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+    "consoleEntries": [
+      {
+        "content": "Running in WebContainer (real Node.js)...",
+        "id": "uuid-1",
+        "timestamp": 1907749230000,
+        "type": "info",
+      },
+      {
+        "content": "o",
+        "id": "uuid-2",
+        "timestamp": 1907749230000,
+        "type": "result",
+      },
+      {
+        "content": "a",
+        "id": "uuid-3",
+        "timestamp": 1907749230000,
+        "type": "log",
+      },
+      {
+        "content": "✅ Execution completed successfully",
+        "id": "uuid-4",
+        "timestamp": 1907749230000,
+        "type": "info",
+      },
+    ],
+    "errors": [],
+    "files": [
+      {
+        "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        "id": "default-ts",
+        "isEntryPoint": true,
+        "language": "typescript",
+        "name": "index.ts",
+        "path": "index.ts",
+      },
+    ],
+    "history": {
+      "maxSnapshots": 50,
+      "snapshots": [
+        {
+          "files": [
+            {
+              "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+              "language": "typescript",
+              "name": "index.ts",
+              "path": "index.ts",
+            },
+          ],
+          "id": "uuid-5",
+          "label": "Auto-save after execution",
+          "timestamp": 1907749230000,
+        },
+      ],
+    },
+    "language": "typescript",
+    "layout": {
+      "activeOutputTab": "console",
+      "layout": "default",
+      "showConsole": true,
+      "showFileExplorer": true,
+      "showPreview": true,
+    },
+    "logs": [
+      "Running in WebContainer (real Node.js)...",
+      "a",
+      "✅ Execution completed successfully",
+    ],
+    "openTabs": [
+      {
+        "fileId": "default-ts",
+        "isPinned": false,
+        "isPreview": false,
+      },
+    ],
+    "output": "o",
+    "previewHtml": null,
+    "serverUrl": null,
+    "settings": {
+      "autoComplete": true,
+      "bracketPairColorization": true,
+      "cursorBlinking": "smooth",
+      "cursorStyle": "line",
+      "fontSize": 14,
+      "formatOnPaste": false,
+      "formatOnSave": false,
+      "lineNumbers": "on",
+      "minimap": false,
+      "renderWhitespace": "selection",
+      "smoothScrolling": true,
+      "stickyScroll": true,
+      "tabSize": 2,
+      "wordWrap": "on",
+    },
+    "status": "success",
+    "theme": "vs-dark",
+    "wcStatus": "idle",
+  },
+}
+`;
+
+exports[`playground store (pinned) > execution > wcStreamedHtml 1`] = `
+{
+  "calls": [
+    [
+      "onWebContainerEvent",
+    ],
+    [
+      "execCode",
+      {
+        "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        "entryPoint": "index.ts",
+        "files": {
+          "index.ts": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        },
+        "language": "typescript",
+        "packageJson": undefined,
+        "runScript": undefined,
+        "signal": "<signal>",
+      },
+    ],
+    [
+      "unsubscribe",
+    ],
+  ],
+  "persisted": {
+    "state": {
+      "activeFileId": "default-ts",
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": true,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [
+          {
+            "files": [
+              {
+                "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+                "language": "typescript",
+                "name": "index.ts",
+                "path": "index.ts",
+              },
+            ],
+            "id": "uuid-4",
+            "label": "Auto-save after execution",
+            "timestamp": 1907749230000,
+          },
+        ],
+      },
+      "layout": {
+        "activeOutputTab": "preview",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "openTabs": [
+        {
+          "fileId": "default-ts",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "projectId": "default",
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "theme": "vs-dark",
+    },
+    "version": 0,
+  },
+  "state": {
+    "activeFileId": "default-ts",
+    "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+    "consoleEntries": [
+      {
+        "content": "Running in WebContainer (real Node.js)...",
+        "id": "uuid-1",
+        "timestamp": 1907749230000,
+        "type": "info",
+      },
+      {
+        "content": "x",
+        "id": "uuid-2",
+        "timestamp": 1907749230000,
+        "type": "log",
+      },
+      {
+        "content": "✅ Execution completed successfully",
+        "id": "uuid-3",
+        "timestamp": 1907749230000,
+        "type": "info",
+      },
+    ],
+    "errors": [],
+    "files": [
+      {
+        "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        "id": "default-ts",
+        "isEntryPoint": true,
+        "language": "typescript",
+        "name": "index.ts",
+        "path": "index.ts",
+      },
+    ],
+    "history": {
+      "maxSnapshots": 50,
+      "snapshots": [
+        {
+          "files": [
+            {
+              "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+              "language": "typescript",
+              "name": "index.ts",
+              "path": "index.ts",
+            },
+          ],
+          "id": "uuid-4",
+          "label": "Auto-save after execution",
+          "timestamp": 1907749230000,
+        },
+      ],
+    },
+    "language": "typescript",
+    "layout": {
+      "activeOutputTab": "preview",
+      "layout": "default",
+      "showConsole": true,
+      "showFileExplorer": true,
+      "showPreview": true,
+    },
+    "logs": [
+      "Running in WebContainer (real Node.js)...",
+      "x",
+      "✅ Execution completed successfully",
+    ],
+    "openTabs": [
+      {
+        "fileId": "default-ts",
+        "isPinned": false,
+        "isPreview": false,
+      },
+    ],
+    "output": "",
+    "previewHtml": "<!DOCTYPE html>",
+    "serverUrl": null,
+    "settings": {
+      "autoComplete": true,
+      "bracketPairColorization": true,
+      "cursorBlinking": "smooth",
+      "cursorStyle": "line",
+      "fontSize": 14,
+      "formatOnPaste": false,
+      "formatOnSave": false,
+      "lineNumbers": "on",
+      "minimap": false,
+      "renderWhitespace": "selection",
+      "smoothScrolling": true,
+      "stickyScroll": true,
+      "tabSize": 2,
+      "wordWrap": "on",
+    },
+    "status": "success",
+    "theme": "vs-dark",
+    "wcStatus": "idle",
+  },
+}
+`;
+
+exports[`playground store (pinned) > file, tab, editor, layout, history, template and sharing actions 1`] = `
+[
+  [
+    "createFile a",
+    {
+      "activeFileId": "uuid-1",
+      "code": "const a = 1;",
+      "consoleEntries": [],
+      "errors": [],
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": true,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+        {
+          "content": "const a = 1;",
+          "id": "uuid-1",
+          "language": "typescript",
+          "name": "a.ts",
+          "path": "src/a.ts",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [],
+      },
+      "language": "typescript",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "logs": [],
+      "openTabs": [
+        {
+          "fileId": "default-ts",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-1",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "vs-dark",
+      "wcStatus": "idle",
+    },
+  ],
+  [
+    "createFile duplicate path",
+    {
+      "activeFileId": "uuid-1",
+      "code": "const a = 1;",
+      "consoleEntries": [],
+      "errors": [],
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": true,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+        {
+          "content": "const a = 1;",
+          "id": "uuid-1",
+          "language": "typescript",
+          "name": "a.ts",
+          "path": "src/a.ts",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [],
+      },
+      "language": "typescript",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "logs": [],
+      "openTabs": [
+        {
+          "fileId": "default-ts",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-1",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-2",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "vs-dark",
+      "wcStatus": "idle",
+    },
+  ],
+  [
+    "ids",
+    "uuid-1",
+    "uuid-2",
+  ],
+  [
+    "createFile b, readme",
+    {
+      "activeFileId": "uuid-4",
+      "code": "# hi",
+      "consoleEntries": [],
+      "errors": [],
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": true,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+        {
+          "content": "const a = 1;",
+          "id": "uuid-1",
+          "language": "typescript",
+          "name": "a.ts",
+          "path": "src/a.ts",
+        },
+        {
+          "content": "",
+          "id": "uuid-3",
+          "language": "python",
+          "name": "b.py",
+          "path": "src/lib/b.py",
+        },
+        {
+          "content": "# hi",
+          "id": "uuid-4",
+          "language": "markdown",
+          "name": "README.md",
+          "path": "README.md",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [],
+      },
+      "language": "markdown",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "logs": [],
+      "openTabs": [
+        {
+          "fileId": "default-ts",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-1",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-2",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-3",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-4",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "vs-dark",
+      "wcStatus": "idle",
+    },
+  ],
+  [
+    "update + rename",
+    {
+      "activeFileId": "uuid-4",
+      "code": "# hi",
+      "consoleEntries": [],
+      "errors": [],
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": true,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+        {
+          "content": "const a = 2;",
+          "id": "uuid-1",
+          "isDirty": true,
+          "language": "javascript",
+          "name": "renamed.js",
+          "path": "src/renamed.js",
+        },
+        {
+          "content": "",
+          "id": "uuid-3",
+          "language": "python",
+          "name": "b.py",
+          "path": "src/lib/b.py",
+        },
+        {
+          "content": "# hi",
+          "id": "uuid-4",
+          "language": "markdown",
+          "name": "README.md",
+          "path": "README.md",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [],
+      },
+      "language": "markdown",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "logs": [],
+      "openTabs": [
+        {
+          "fileId": "default-ts",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-1",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-2",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-3",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-4",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "vs-dark",
+      "wcStatus": "idle",
+    },
+  ],
+  [
+    "setEntryPoint",
+    {
+      "activeFileId": "uuid-4",
+      "code": "# hi",
+      "consoleEntries": [],
+      "errors": [],
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": false,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+        {
+          "content": "const a = 2;",
+          "id": "uuid-1",
+          "isDirty": true,
+          "isEntryPoint": false,
+          "language": "javascript",
+          "name": "renamed.js",
+          "path": "src/renamed.js",
+        },
+        {
+          "content": "",
+          "id": "uuid-3",
+          "isEntryPoint": true,
+          "language": "python",
+          "name": "b.py",
+          "path": "src/lib/b.py",
+        },
+        {
+          "content": "# hi",
+          "id": "uuid-4",
+          "isEntryPoint": false,
+          "language": "markdown",
+          "name": "README.md",
+          "path": "README.md",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [],
+      },
+      "language": "markdown",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "logs": [],
+      "openTabs": [
+        {
+          "fileId": "default-ts",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-1",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-2",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-3",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-4",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "vs-dark",
+      "wcStatus": "idle",
+    },
+  ],
+  [
+    "tree",
+    [
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "fileId": "uuid-3",
+                "name": "b.py",
+                "path": "src/lib/b.py",
+                "type": "file",
+              },
+            ],
+            "name": "lib",
+            "path": "src/lib",
+            "type": "directory",
+          },
+          {
+            "fileId": "uuid-1",
+            "name": "renamed.js",
+            "path": "src/renamed.js",
+            "type": "file",
+          },
+        ],
+        "name": "src",
+        "path": "src",
+        "type": "directory",
+      },
+      {
+        "fileId": "default-ts",
+        "name": "index.ts",
+        "path": "index.ts",
+        "type": "file",
+      },
+      {
+        "fileId": "uuid-4",
+        "name": "README.md",
+        "path": "README.md",
+        "type": "file",
+      },
+    ],
+    "uuid-3",
+    "uuid-4",
+    "src/renamed.js",
+    "uuid-4",
+    "markdown",
+  ],
+  [
+    "setActiveFile",
+    {
+      "activeFileId": "uuid-1",
+      "code": "const a = 2;",
+      "consoleEntries": [],
+      "errors": [],
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": false,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+        {
+          "content": "const a = 2;",
+          "id": "uuid-1",
+          "isDirty": true,
+          "isEntryPoint": false,
+          "language": "javascript",
+          "name": "renamed.js",
+          "path": "src/renamed.js",
+        },
+        {
+          "content": "",
+          "id": "uuid-3",
+          "isEntryPoint": true,
+          "language": "python",
+          "name": "b.py",
+          "path": "src/lib/b.py",
+        },
+        {
+          "content": "# hi",
+          "id": "uuid-4",
+          "isEntryPoint": false,
+          "language": "markdown",
+          "name": "README.md",
+          "path": "README.md",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [],
+      },
+      "language": "javascript",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "logs": [],
+      "openTabs": [
+        {
+          "fileId": "default-ts",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-1",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-2",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-3",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-4",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "vs-dark",
+      "wcStatus": "idle",
+    },
+  ],
+  [
+    "openTab preview",
+    {
+      "activeFileId": "uuid-1",
+      "code": "const a = 2;",
+      "consoleEntries": [],
+      "errors": [],
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": false,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+        {
+          "content": "const a = 2;",
+          "id": "uuid-1",
+          "isDirty": true,
+          "isEntryPoint": false,
+          "language": "javascript",
+          "name": "renamed.js",
+          "path": "src/renamed.js",
+        },
+        {
+          "content": "",
+          "id": "uuid-3",
+          "isEntryPoint": true,
+          "language": "python",
+          "name": "b.py",
+          "path": "src/lib/b.py",
+        },
+        {
+          "content": "# hi",
+          "id": "uuid-4",
+          "isEntryPoint": false,
+          "language": "markdown",
+          "name": "README.md",
+          "path": "README.md",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [],
+      },
+      "language": "javascript",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "logs": [],
+      "openTabs": [
+        {
+          "fileId": "default-ts",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-1",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-2",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-3",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-4",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "vs-dark",
+      "wcStatus": "idle",
+    },
+  ],
+  [
+    "openTab permanent",
+    {
+      "activeFileId": "uuid-1",
+      "code": "const a = 2;",
+      "consoleEntries": [],
+      "errors": [],
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": false,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+        {
+          "content": "const a = 2;",
+          "id": "uuid-1",
+          "isDirty": true,
+          "isEntryPoint": false,
+          "language": "javascript",
+          "name": "renamed.js",
+          "path": "src/renamed.js",
+        },
+        {
+          "content": "",
+          "id": "uuid-3",
+          "isEntryPoint": true,
+          "language": "python",
+          "name": "b.py",
+          "path": "src/lib/b.py",
+        },
+        {
+          "content": "# hi",
+          "id": "uuid-4",
+          "isEntryPoint": false,
+          "language": "markdown",
+          "name": "README.md",
+          "path": "README.md",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [],
+      },
+      "language": "javascript",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "logs": [],
+      "openTabs": [
+        {
+          "fileId": "default-ts",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-1",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-2",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-3",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-4",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "vs-dark",
+      "wcStatus": "idle",
+    },
+  ],
+  [
+    "pinTab",
+    {
+      "activeFileId": "uuid-1",
+      "code": "const a = 2;",
+      "consoleEntries": [],
+      "errors": [],
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": false,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+        {
+          "content": "const a = 2;",
+          "id": "uuid-1",
+          "isDirty": true,
+          "isEntryPoint": false,
+          "language": "javascript",
+          "name": "renamed.js",
+          "path": "src/renamed.js",
+        },
+        {
+          "content": "",
+          "id": "uuid-3",
+          "isEntryPoint": true,
+          "language": "python",
+          "name": "b.py",
+          "path": "src/lib/b.py",
+        },
+        {
+          "content": "# hi",
+          "id": "uuid-4",
+          "isEntryPoint": false,
+          "language": "markdown",
+          "name": "README.md",
+          "path": "README.md",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [],
+      },
+      "language": "javascript",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "logs": [],
+      "openTabs": [
+        {
+          "fileId": "default-ts",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-1",
+          "isPinned": true,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-2",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-3",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-4",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "vs-dark",
+      "wcStatus": "idle",
+    },
+  ],
+  [
+    "reorderTabs",
+    {
+      "activeFileId": "uuid-1",
+      "code": "const a = 2;",
+      "consoleEntries": [],
+      "errors": [],
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": false,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+        {
+          "content": "const a = 2;",
+          "id": "uuid-1",
+          "isDirty": true,
+          "isEntryPoint": false,
+          "language": "javascript",
+          "name": "renamed.js",
+          "path": "src/renamed.js",
+        },
+        {
+          "content": "",
+          "id": "uuid-3",
+          "isEntryPoint": true,
+          "language": "python",
+          "name": "b.py",
+          "path": "src/lib/b.py",
+        },
+        {
+          "content": "# hi",
+          "id": "uuid-4",
+          "isEntryPoint": false,
+          "language": "markdown",
+          "name": "README.md",
+          "path": "README.md",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [],
+      },
+      "language": "javascript",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "logs": [],
+      "openTabs": [
+        {
+          "fileId": "uuid-1",
+          "isPinned": true,
+          "isPreview": false,
+        },
+        {
+          "fileId": "default-ts",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-2",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-3",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-4",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "vs-dark",
+      "wcStatus": "idle",
+    },
+  ],
+  [
+    "closeTab active",
+    {
+      "activeFileId": "default-ts",
+      "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+      "consoleEntries": [],
+      "errors": [],
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": false,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+        {
+          "content": "const a = 2;",
+          "id": "uuid-1",
+          "isDirty": true,
+          "isEntryPoint": false,
+          "language": "javascript",
+          "name": "renamed.js",
+          "path": "src/renamed.js",
+        },
+        {
+          "content": "",
+          "id": "uuid-3",
+          "isEntryPoint": true,
+          "language": "python",
+          "name": "b.py",
+          "path": "src/lib/b.py",
+        },
+        {
+          "content": "# hi",
+          "id": "uuid-4",
+          "isEntryPoint": false,
+          "language": "markdown",
+          "name": "README.md",
+          "path": "README.md",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [],
+      },
+      "language": "typescript",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "logs": [],
+      "openTabs": [
+        {
+          "fileId": "default-ts",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-2",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-3",
+          "isPinned": false,
+          "isPreview": false,
+        },
+        {
+          "fileId": "uuid-4",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "vs-dark",
+      "wcStatus": "idle",
+    },
+  ],
+  [
+    "closeOtherTabs",
+    {
+      "activeFileId": "uuid-3",
+      "code": "",
+      "consoleEntries": [],
+      "errors": [],
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": false,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+        {
+          "content": "const a = 2;",
+          "id": "uuid-1",
+          "isDirty": true,
+          "isEntryPoint": false,
+          "language": "javascript",
+          "name": "renamed.js",
+          "path": "src/renamed.js",
+        },
+        {
+          "content": "",
+          "id": "uuid-3",
+          "isEntryPoint": true,
+          "language": "python",
+          "name": "b.py",
+          "path": "src/lib/b.py",
+        },
+        {
+          "content": "# hi",
+          "id": "uuid-4",
+          "isEntryPoint": false,
+          "language": "markdown",
+          "name": "README.md",
+          "path": "README.md",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [],
+      },
+      "language": "python",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "logs": [],
+      "openTabs": [
+        {
+          "fileId": "uuid-3",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "vs-dark",
+      "wcStatus": "idle",
+    },
+  ],
+  [
+    "closeAllTabs",
+    {
+      "activeFileId": null,
+      "code": "",
+      "consoleEntries": [],
+      "errors": [],
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": false,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+        {
+          "content": "const a = 2;",
+          "id": "uuid-1",
+          "isDirty": true,
+          "isEntryPoint": false,
+          "language": "javascript",
+          "name": "renamed.js",
+          "path": "src/renamed.js",
+        },
+        {
+          "content": "",
+          "id": "uuid-3",
+          "isEntryPoint": true,
+          "language": "python",
+          "name": "b.py",
+          "path": "src/lib/b.py",
+        },
+        {
+          "content": "# hi",
+          "id": "uuid-4",
+          "isEntryPoint": false,
+          "language": "markdown",
+          "name": "README.md",
+          "path": "README.md",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [],
+      },
+      "language": "typescript",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "logs": [],
+      "openTabs": [],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "vs-dark",
+      "wcStatus": "idle",
+    },
+  ],
+  [
+    "deleteFile",
+    {
+      "activeFileId": null,
+      "code": "",
+      "consoleEntries": [],
+      "errors": [],
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": false,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+        {
+          "content": "const a = 2;",
+          "id": "uuid-1",
+          "isDirty": true,
+          "isEntryPoint": false,
+          "language": "javascript",
+          "name": "renamed.js",
+          "path": "src/renamed.js",
+        },
+        {
+          "content": "# hi",
+          "id": "uuid-4",
+          "isEntryPoint": false,
+          "language": "markdown",
+          "name": "README.md",
+          "path": "README.md",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [],
+      },
+      "language": "typescript",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "logs": [],
+      "openTabs": [],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "vs-dark",
+      "wcStatus": "idle",
+    },
+  ],
+  [
+    "theme/settings/layout",
+    {
+      "activeFileId": null,
+      "code": "",
+      "consoleEntries": [],
+      "errors": [],
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": false,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+        {
+          "content": "const a = 2;",
+          "id": "uuid-1",
+          "isDirty": true,
+          "isEntryPoint": false,
+          "language": "javascript",
+          "name": "renamed.js",
+          "path": "src/renamed.js",
+        },
+        {
+          "content": "# hi",
+          "id": "uuid-4",
+          "isEntryPoint": false,
+          "language": "markdown",
+          "name": "README.md",
+          "path": "README.md",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [],
+      },
+      "language": "typescript",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "vertical",
+        "showConsole": false,
+        "showFileExplorer": false,
+        "showPreview": false,
+      },
+      "logs": [],
+      "openTabs": [],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 20,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": true,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "light",
+      "wcStatus": "idle",
+    },
+  ],
+  [
+    "snapshots",
+    {
+      "activeFileId": null,
+      "code": "",
+      "consoleEntries": [],
+      "errors": [],
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": false,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+        {
+          "content": "const a = 2;",
+          "id": "uuid-1",
+          "isDirty": true,
+          "isEntryPoint": false,
+          "language": "javascript",
+          "name": "renamed.js",
+          "path": "src/renamed.js",
+        },
+        {
+          "content": "# hi",
+          "id": "uuid-4",
+          "isEntryPoint": false,
+          "language": "markdown",
+          "name": "README.md",
+          "path": "README.md",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [
+          {
+            "files": [
+              {
+                "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+                "language": "typescript",
+                "name": "index.ts",
+                "path": "index.ts",
+              },
+              {
+                "content": "const a = 2;",
+                "language": "javascript",
+                "name": "renamed.js",
+                "path": "src/renamed.js",
+              },
+              {
+                "content": "# hi",
+                "language": "markdown",
+                "name": "README.md",
+                "path": "README.md",
+              },
+            ],
+            "id": "uuid-5",
+            "label": "first",
+            "timestamp": 1907749230000,
+          },
+          {
+            "files": [
+              {
+                "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+                "language": "typescript",
+                "name": "index.ts",
+                "path": "index.ts",
+              },
+              {
+                "content": "const a = 2;",
+                "language": "javascript",
+                "name": "renamed.js",
+                "path": "src/renamed.js",
+              },
+              {
+                "content": "# hi",
+                "language": "markdown",
+                "name": "README.md",
+                "path": "README.md",
+              },
+            ],
+            "id": "uuid-6",
+            "timestamp": 1907749230000,
+          },
+        ],
+      },
+      "language": "typescript",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "vertical",
+        "showConsole": false,
+        "showFileExplorer": false,
+        "showPreview": false,
+      },
+      "logs": [],
+      "openTabs": [],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 20,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": true,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "light",
+      "wcStatus": "idle",
+    },
+  ],
+  [
+    "restoreSnapshot",
+    {
+      "activeFileId": "uuid-7",
+      "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+      "consoleEntries": [],
+      "errors": [],
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "uuid-7",
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+        {
+          "content": "const a = 2;",
+          "id": "uuid-8",
+          "language": "javascript",
+          "name": "renamed.js",
+          "path": "src/renamed.js",
+        },
+        {
+          "content": "# hi",
+          "id": "uuid-9",
+          "language": "markdown",
+          "name": "README.md",
+          "path": "README.md",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [
+          {
+            "files": [
+              {
+                "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+                "language": "typescript",
+                "name": "index.ts",
+                "path": "index.ts",
+              },
+              {
+                "content": "const a = 2;",
+                "language": "javascript",
+                "name": "renamed.js",
+                "path": "src/renamed.js",
+              },
+              {
+                "content": "# hi",
+                "language": "markdown",
+                "name": "README.md",
+                "path": "README.md",
+              },
+            ],
+            "id": "uuid-5",
+            "label": "first",
+            "timestamp": 1907749230000,
+          },
+          {
+            "files": [
+              {
+                "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+                "language": "typescript",
+                "name": "index.ts",
+                "path": "index.ts",
+              },
+              {
+                "content": "const a = 2;",
+                "language": "javascript",
+                "name": "renamed.js",
+                "path": "src/renamed.js",
+              },
+              {
+                "content": "# hi",
+                "language": "markdown",
+                "name": "README.md",
+                "path": "README.md",
+              },
+            ],
+            "id": "uuid-6",
+            "timestamp": 1907749230000,
+          },
+        ],
+      },
+      "language": "typescript",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "vertical",
+        "showConsole": false,
+        "showFileExplorer": false,
+        "showPreview": false,
+      },
+      "logs": [],
+      "openTabs": [
+        {
+          "fileId": "uuid-7",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 20,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": true,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "light",
+      "wcStatus": "idle",
+    },
+  ],
+  [
+    "loadTemplate",
+    {
+      "activeFileId": "uuid-11",
+      "code": "m",
+      "consoleEntries": [],
+      "errors": [],
+      "files": [
+        {
+          "content": "u",
+          "id": "uuid-10",
+          "isDirty": false,
+          "language": "typescript",
+          "name": "util.ts",
+          "path": "util.ts",
+        },
+        {
+          "content": "m",
+          "id": "uuid-11",
+          "isDirty": false,
+          "isEntryPoint": true,
+          "language": "typescript",
+          "name": "main.ts",
+          "path": "main.ts",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [
+          {
+            "files": [
+              {
+                "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+                "language": "typescript",
+                "name": "index.ts",
+                "path": "index.ts",
+              },
+              {
+                "content": "const a = 2;",
+                "language": "javascript",
+                "name": "renamed.js",
+                "path": "src/renamed.js",
+              },
+              {
+                "content": "# hi",
+                "language": "markdown",
+                "name": "README.md",
+                "path": "README.md",
+              },
+            ],
+            "id": "uuid-5",
+            "label": "first",
+            "timestamp": 1907749230000,
+          },
+          {
+            "files": [
+              {
+                "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+                "language": "typescript",
+                "name": "index.ts",
+                "path": "index.ts",
+              },
+              {
+                "content": "const a = 2;",
+                "language": "javascript",
+                "name": "renamed.js",
+                "path": "src/renamed.js",
+              },
+              {
+                "content": "# hi",
+                "language": "markdown",
+                "name": "README.md",
+                "path": "README.md",
+              },
+            ],
+            "id": "uuid-6",
+            "timestamp": 1907749230000,
+          },
+        ],
+      },
+      "language": "typescript",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "vertical",
+        "showConsole": false,
+        "showFileExplorer": false,
+        "showPreview": false,
+      },
+      "logs": [],
+      "openTabs": [
+        {
+          "fileId": "uuid-11",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 20,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": true,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "light",
+      "wcStatus": "idle",
+    },
+  ],
+  [
+    "exportAsUrl",
+    "NobwRADmBcYK4BcCWAbAdAgzmANGAxjPLmAKYwBmAhipqQL47hSwC2VSAdhtnoWyXLQEAJzgMAukA",
+  ],
+  [
+    "resetPlayground",
+    {
+      "activeFileId": "uuid-12",
+      "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+      "consoleEntries": [],
+      "errors": [],
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "uuid-12",
+          "isEntryPoint": true,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [
+          {
+            "files": [
+              {
+                "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+                "language": "typescript",
+                "name": "index.ts",
+                "path": "index.ts",
+              },
+              {
+                "content": "const a = 2;",
+                "language": "javascript",
+                "name": "renamed.js",
+                "path": "src/renamed.js",
+              },
+              {
+                "content": "# hi",
+                "language": "markdown",
+                "name": "README.md",
+                "path": "README.md",
+              },
+            ],
+            "id": "uuid-5",
+            "label": "first",
+            "timestamp": 1907749230000,
+          },
+          {
+            "files": [
+              {
+                "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+                "language": "typescript",
+                "name": "index.ts",
+                "path": "index.ts",
+              },
+              {
+                "content": "const a = 2;",
+                "language": "javascript",
+                "name": "renamed.js",
+                "path": "src/renamed.js",
+              },
+              {
+                "content": "# hi",
+                "language": "markdown",
+                "name": "README.md",
+                "path": "README.md",
+              },
+            ],
+            "id": "uuid-6",
+            "timestamp": 1907749230000,
+          },
+        ],
+      },
+      "language": "typescript",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "logs": [],
+      "openTabs": [
+        {
+          "fileId": "uuid-12",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 20,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": true,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "light",
+      "wcStatus": "idle",
+    },
+  ],
+  [
+    "importFromUrl",
+    {
+      "activeFileId": "uuid-13",
+      "code": "u",
+      "consoleEntries": [],
+      "errors": [],
+      "files": [
+        {
+          "content": "u",
+          "id": "uuid-13",
+          "isEntryPoint": false,
+          "language": "typescript",
+          "name": "util.ts",
+          "path": "util.ts",
+        },
+        {
+          "content": "m",
+          "id": "uuid-14",
+          "isEntryPoint": true,
+          "language": "typescript",
+          "name": "main.ts",
+          "path": "main.ts",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [
+          {
+            "files": [
+              {
+                "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+                "language": "typescript",
+                "name": "index.ts",
+                "path": "index.ts",
+              },
+              {
+                "content": "const a = 2;",
+                "language": "javascript",
+                "name": "renamed.js",
+                "path": "src/renamed.js",
+              },
+              {
+                "content": "# hi",
+                "language": "markdown",
+                "name": "README.md",
+                "path": "README.md",
+              },
+            ],
+            "id": "uuid-5",
+            "label": "first",
+            "timestamp": 1907749230000,
+          },
+          {
+            "files": [
+              {
+                "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+                "language": "typescript",
+                "name": "index.ts",
+                "path": "index.ts",
+              },
+              {
+                "content": "const a = 2;",
+                "language": "javascript",
+                "name": "renamed.js",
+                "path": "src/renamed.js",
+              },
+              {
+                "content": "# hi",
+                "language": "markdown",
+                "name": "README.md",
+                "path": "README.md",
+              },
+            ],
+            "id": "uuid-6",
+            "timestamp": 1907749230000,
+          },
+        ],
+      },
+      "language": "typescript",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "logs": [],
+      "openTabs": [
+        {
+          "fileId": "uuid-13",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 20,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": true,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "light",
+      "wcStatus": "idle",
+    },
+  ],
+  [
+    "importFromUrl invalid",
+    {
+      "activeFileId": "uuid-13",
+      "code": "u",
+      "consoleEntries": [],
+      "errors": [],
+      "files": [
+        {
+          "content": "u",
+          "id": "uuid-13",
+          "isEntryPoint": false,
+          "language": "typescript",
+          "name": "util.ts",
+          "path": "util.ts",
+        },
+        {
+          "content": "m",
+          "id": "uuid-14",
+          "isEntryPoint": true,
+          "language": "typescript",
+          "name": "main.ts",
+          "path": "main.ts",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [
+          {
+            "files": [
+              {
+                "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+                "language": "typescript",
+                "name": "index.ts",
+                "path": "index.ts",
+              },
+              {
+                "content": "const a = 2;",
+                "language": "javascript",
+                "name": "renamed.js",
+                "path": "src/renamed.js",
+              },
+              {
+                "content": "# hi",
+                "language": "markdown",
+                "name": "README.md",
+                "path": "README.md",
+              },
+            ],
+            "id": "uuid-5",
+            "label": "first",
+            "timestamp": 1907749230000,
+          },
+          {
+            "files": [
+              {
+                "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+                "language": "typescript",
+                "name": "index.ts",
+                "path": "index.ts",
+              },
+              {
+                "content": "const a = 2;",
+                "language": "javascript",
+                "name": "renamed.js",
+                "path": "src/renamed.js",
+              },
+              {
+                "content": "# hi",
+                "language": "markdown",
+                "name": "README.md",
+                "path": "README.md",
+              },
+            ],
+            "id": "uuid-6",
+            "timestamp": 1907749230000,
+          },
+        ],
+      },
+      "language": "typescript",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "logs": [],
+      "openTabs": [
+        {
+          "fileId": "uuid-13",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 20,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": true,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "light",
+      "wcStatus": "idle",
+    },
+  ],
+  [
+    "compat methods",
+    {
+      "activeFileId": "uuid-13",
+      "code": "compat code",
+      "consoleEntries": [
+        {
+          "content": "log line",
+          "id": "uuid-15",
+          "timestamp": 1907749230000,
+          "type": "log",
+        },
+        {
+          "content": "error line",
+          "id": "uuid-16",
+          "timestamp": 1907749230000,
+          "type": "error",
+        },
+      ],
+      "errors": [
+        "error line",
+      ],
+      "files": [
+        {
+          "content": "compat code",
+          "id": "uuid-13",
+          "isDirty": true,
+          "isEntryPoint": false,
+          "language": "typescript",
+          "name": "util.ts",
+          "path": "util.ts",
+        },
+        {
+          "content": "m",
+          "id": "uuid-14",
+          "isEntryPoint": true,
+          "language": "typescript",
+          "name": "main.ts",
+          "path": "main.ts",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [
+          {
+            "files": [
+              {
+                "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+                "language": "typescript",
+                "name": "index.ts",
+                "path": "index.ts",
+              },
+              {
+                "content": "const a = 2;",
+                "language": "javascript",
+                "name": "renamed.js",
+                "path": "src/renamed.js",
+              },
+              {
+                "content": "# hi",
+                "language": "markdown",
+                "name": "README.md",
+                "path": "README.md",
+              },
+            ],
+            "id": "uuid-5",
+            "label": "first",
+            "timestamp": 1907749230000,
+          },
+          {
+            "files": [
+              {
+                "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+                "language": "typescript",
+                "name": "index.ts",
+                "path": "index.ts",
+              },
+              {
+                "content": "const a = 2;",
+                "language": "javascript",
+                "name": "renamed.js",
+                "path": "src/renamed.js",
+              },
+              {
+                "content": "# hi",
+                "language": "markdown",
+                "name": "README.md",
+                "path": "README.md",
+              },
+            ],
+            "id": "uuid-6",
+            "timestamp": 1907749230000,
+          },
+        ],
+      },
+      "language": "typescript",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "logs": [
+        "log line",
+      ],
+      "openTabs": [
+        {
+          "fileId": "uuid-13",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 20,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": true,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "light",
+      "wcStatus": "idle",
+    },
+  ],
+  [
+    "compat reset",
+    {
+      "activeFileId": "uuid-17",
+      "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+      "consoleEntries": [],
+      "errors": [],
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "uuid-17",
+          "isEntryPoint": true,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [
+          {
+            "files": [
+              {
+                "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+                "language": "typescript",
+                "name": "index.ts",
+                "path": "index.ts",
+              },
+              {
+                "content": "const a = 2;",
+                "language": "javascript",
+                "name": "renamed.js",
+                "path": "src/renamed.js",
+              },
+              {
+                "content": "# hi",
+                "language": "markdown",
+                "name": "README.md",
+                "path": "README.md",
+              },
+            ],
+            "id": "uuid-5",
+            "label": "first",
+            "timestamp": 1907749230000,
+          },
+          {
+            "files": [
+              {
+                "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+                "language": "typescript",
+                "name": "index.ts",
+                "path": "index.ts",
+              },
+              {
+                "content": "const a = 2;",
+                "language": "javascript",
+                "name": "renamed.js",
+                "path": "src/renamed.js",
+              },
+              {
+                "content": "# hi",
+                "language": "markdown",
+                "name": "README.md",
+                "path": "README.md",
+              },
+            ],
+            "id": "uuid-6",
+            "timestamp": 1907749230000,
+          },
+        ],
+      },
+      "language": "typescript",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "logs": [],
+      "openTabs": [
+        {
+          "fileId": "uuid-17",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 20,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": true,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "light",
+      "wcStatus": "idle",
+    },
+  ],
+]
+`;
+
+exports[`playground store (pinned) > file, tab, editor, layout, history, template and sharing actions 2`] = `
+{
+  "state": {
+    "activeFileId": "uuid-17",
+    "files": [
+      {
+        "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        "id": "uuid-17",
+        "isEntryPoint": true,
+        "language": "typescript",
+        "name": "index.ts",
+        "path": "index.ts",
+      },
+    ],
+    "history": {
+      "maxSnapshots": 50,
+      "snapshots": [
+        {
+          "files": [
+            {
+              "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+              "language": "typescript",
+              "name": "index.ts",
+              "path": "index.ts",
+            },
+            {
+              "content": "const a = 2;",
+              "language": "javascript",
+              "name": "renamed.js",
+              "path": "src/renamed.js",
+            },
+            {
+              "content": "# hi",
+              "language": "markdown",
+              "name": "README.md",
+              "path": "README.md",
+            },
+          ],
+          "id": "uuid-5",
+          "label": "first",
+          "timestamp": 1907749230000,
+        },
+        {
+          "files": [
+            {
+              "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+              "language": "typescript",
+              "name": "index.ts",
+              "path": "index.ts",
+            },
+            {
+              "content": "const a = 2;",
+              "language": "javascript",
+              "name": "renamed.js",
+              "path": "src/renamed.js",
+            },
+            {
+              "content": "# hi",
+              "language": "markdown",
+              "name": "README.md",
+              "path": "README.md",
+            },
+          ],
+          "id": "uuid-6",
+          "timestamp": 1907749230000,
+        },
+      ],
+    },
+    "layout": {
+      "activeOutputTab": "console",
+      "layout": "default",
+      "showConsole": true,
+      "showFileExplorer": true,
+      "showPreview": true,
+    },
+    "openTabs": [
+      {
+        "fileId": "uuid-17",
+        "isPinned": false,
+        "isPreview": false,
+      },
+    ],
+    "projectId": "default",
+    "settings": {
+      "autoComplete": true,
+      "bracketPairColorization": true,
+      "cursorBlinking": "smooth",
+      "cursorStyle": "line",
+      "fontSize": 20,
+      "formatOnPaste": false,
+      "formatOnSave": false,
+      "lineNumbers": "on",
+      "minimap": true,
+      "renderWhitespace": "selection",
+      "smoothScrolling": true,
+      "stickyScroll": true,
+      "tabSize": 2,
+      "wordWrap": "on",
+    },
+    "theme": "light",
+  },
+  "version": 0,
+}
+`;
+
+exports[`playground store (pinned) > initial state, API surface and persisted key 1`] = `
+{
+  "activeFileId": "default-ts",
+  "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+  "consoleEntries": [],
+  "errors": [],
+  "files": [
+    {
+      "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+      "id": "default-ts",
+      "isEntryPoint": true,
+      "language": "typescript",
+      "name": "index.ts",
+      "path": "index.ts",
+    },
+  ],
+  "history": {
+    "maxSnapshots": 50,
+    "snapshots": [],
+  },
+  "language": "typescript",
+  "layout": {
+    "activeOutputTab": "console",
+    "layout": "default",
+    "showConsole": true,
+    "showFileExplorer": true,
+    "showPreview": true,
+  },
+  "logs": [],
+  "openTabs": [
+    {
+      "fileId": "default-ts",
+      "isPinned": false,
+      "isPreview": false,
+    },
+  ],
+  "output": "",
+  "previewHtml": null,
+  "serverUrl": null,
+  "settings": {
+    "autoComplete": true,
+    "bracketPairColorization": true,
+    "cursorBlinking": "smooth",
+    "cursorStyle": "line",
+    "fontSize": 14,
+    "formatOnPaste": false,
+    "formatOnSave": false,
+    "lineNumbers": "on",
+    "minimap": false,
+    "renderWhitespace": "selection",
+    "smoothScrolling": true,
+    "stickyScroll": true,
+    "tabSize": 2,
+    "wordWrap": "on",
+  },
+  "status": "idle",
+  "theme": "vs-dark",
+  "wcStatus": "idle",
+}
+`;
+
+exports[`playground store (pinned) > initial state, API surface and persisted key 2`] = `
+[
+  "activeFileId",
+  "addConsoleEntry",
+  "addError",
+  "addLog",
+  "aiAsk",
+  "aiPanelOpen",
+  "askAi",
+  "bootWebContainer",
+  "clearAiAsk",
+  "clearConsole",
+  "clearOutput",
+  "closeAllTabs",
+  "closeOtherTabs",
+  "closeTab",
+  "code",
+  "consoleEntries",
+  "createFile",
+  "createSnapshot",
+  "deleteFile",
+  "dismissSharedNotice",
+  "errors",
+  "executeCode",
+  "exportAsUrl",
+  "files",
+  "formatCode",
+  "getActiveFile",
+  "getCurrentLanguage",
+  "getEntryPointFile",
+  "getFileById",
+  "getFileByPath",
+  "getFileTree",
+  "history",
+  "importFromUrl",
+  "installPackages",
+  "language",
+  "layout",
+  "loadTemplate",
+  "logs",
+  "openTab",
+  "openTabs",
+  "output",
+  "pinTab",
+  "previewHtml",
+  "projectId",
+  "renameFile",
+  "reorderTabs",
+  "resetCode",
+  "resetPlayground",
+  "restoreSnapshot",
+  "serverUrl",
+  "setActiveFile",
+  "setAiPanelOpen",
+  "setCode",
+  "setEntryPoint",
+  "setLanguage",
+  "setLayout",
+  "setServerUrl",
+  "setTheme",
+  "setWcStatus",
+  "settings",
+  "sharedNotice",
+  "status",
+  "stopExecution",
+  "theme",
+  "toggleConsole",
+  "toggleFileExplorer",
+  "togglePreview",
+  "updateFileContent",
+  "updateSettings",
+  "wcStatus",
+]
+`;
+
+exports[`playground store (pinned) > initial state, API surface and persisted key 3`] = `
+[
+  "addConsoleEntry",
+  "addError",
+  "addLog",
+  "askAi",
+  "bootWebContainer",
+  "clearAiAsk",
+  "clearConsole",
+  "clearOutput",
+  "closeAllTabs",
+  "closeOtherTabs",
+  "closeTab",
+  "createFile",
+  "createSnapshot",
+  "deleteFile",
+  "dismissSharedNotice",
+  "executeCode",
+  "exportAsUrl",
+  "formatCode",
+  "getActiveFile",
+  "getCurrentLanguage",
+  "getEntryPointFile",
+  "getFileById",
+  "getFileByPath",
+  "getFileTree",
+  "importFromUrl",
+  "installPackages",
+  "loadTemplate",
+  "openTab",
+  "pinTab",
+  "renameFile",
+  "reorderTabs",
+  "resetCode",
+  "resetPlayground",
+  "restoreSnapshot",
+  "setActiveFile",
+  "setAiPanelOpen",
+  "setCode",
+  "setEntryPoint",
+  "setLanguage",
+  "setLayout",
+  "setServerUrl",
+  "setTheme",
+  "setWcStatus",
+  "stopExecution",
+  "toggleConsole",
+  "toggleFileExplorer",
+  "togglePreview",
+  "updateFileContent",
+  "updateSettings",
+]
+`;
+
+exports[`playground store (pinned) > initial state, API surface and persisted key 4`] = `
+[
+  "activeFileId",
+  "files",
+  "history",
+  "layout",
+  "openTabs",
+  "projectId",
+  "settings",
+  "theme",
+]
+`;
+
+exports[`playground store (pinned) > rehydrates a previously saved state (stored shape must keep loading) 1`] = `
+{
+  "activeFileId": "f1",
+  "code": "saved",
+  "consoleEntries": [],
+  "errors": [],
+  "files": [
+    {
+      "content": "saved",
+      "id": "f1",
+      "isEntryPoint": true,
+      "language": "typescript",
+      "name": "x.ts",
+      "path": "x.ts",
+    },
+  ],
+  "history": {
+    "maxSnapshots": 10,
+    "snapshots": [],
+  },
+  "language": "typescript",
+  "layout": {
+    "activeOutputTab": "preview",
+    "layout": "default",
+    "showConsole": true,
+    "showFileExplorer": false,
+    "showPreview": false,
+  },
+  "logs": [],
+  "openTabs": [
+    {
+      "fileId": "f1",
+      "isPinned": true,
+      "isPreview": false,
+    },
+  ],
+  "output": "",
+  "previewHtml": null,
+  "serverUrl": null,
+  "settings": {
+    "fontSize": 18,
+    "minimap": true,
+    "tabSize": 4,
+    "wordWrap": "off",
+  },
+  "status": "idle",
+  "theme": "light",
+  "wcStatus": "idle",
+}
+`;
+
+exports[`playground store (pinned) > rehydrates a previously saved state (stored shape must keep loading) 2`] = `
+[
+  "activeFileId",
+  "files",
+  "history",
+  "layout",
+  "openTabs",
+  "projectId",
+  "settings",
+  "theme",
+]
+`;
+
+exports[`playground store (pinned) > webcontainer actions > boot unsupported / ok / fail 1`] = `
+{
+  "fail": {
+    "calls": [
+      [
+        "getWebContainer",
+      ],
+    ],
+    "state": {
+      "activeFileId": "default-ts",
+      "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+      "consoleEntries": [
+        {
+          "content": "Booting WebContainer (real Node.js runtime)...",
+          "id": "uuid-3",
+          "timestamp": 1907749230000,
+          "type": "info",
+        },
+        {
+          "content": "WebContainer boot failed: boot boom",
+          "id": "uuid-4",
+          "timestamp": 1907749230000,
+          "type": "error",
+        },
+      ],
+      "errors": [
+        "WebContainer boot failed: boot boom",
+      ],
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": true,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [],
+      },
+      "language": "typescript",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "logs": [
+        "Booting WebContainer (real Node.js runtime)...",
+      ],
+      "openTabs": [
+        {
+          "fileId": "default-ts",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "vs-dark",
+      "wcStatus": "error",
+    },
+  },
+  "ok": {
+    "calls": [
+      [
+        "getWebContainer",
+      ],
+    ],
+    "state": {
+      "activeFileId": "default-ts",
+      "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+      "consoleEntries": [
+        {
+          "content": "Booting WebContainer (real Node.js runtime)...",
+          "id": "uuid-1",
+          "timestamp": 1907749230000,
+          "type": "info",
+        },
+        {
+          "content": "✅ WebContainer ready — real Node.js environment active",
+          "id": "uuid-2",
+          "timestamp": 1907749230000,
+          "type": "info",
+        },
+      ],
+      "errors": [],
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": true,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [],
+      },
+      "language": "typescript",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "logs": [
+        "Booting WebContainer (real Node.js runtime)...",
+        "✅ WebContainer ready — real Node.js environment active",
+      ],
+      "openTabs": [
+        {
+          "fileId": "default-ts",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "vs-dark",
+      "wcStatus": "ready",
+    },
+  },
+  "unsupported": {
+    "calls": [],
+    "state": {
+      "activeFileId": "default-ts",
+      "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+      "consoleEntries": [],
+      "errors": [],
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": true,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [],
+      },
+      "language": "typescript",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "logs": [],
+      "openTabs": [
+        {
+          "fileId": "default-ts",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "vs-dark",
+      "wcStatus": "idle",
+    },
+  },
+}
+`;
+
+exports[`playground store (pinned) > webcontainer actions > install unsupported / ok / failed result / throws 1`] = `
+{
+  "failedResult": {
+    "calls": [
+      [
+        "mountFiles",
+        {
+          "index.ts": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        },
+      ],
+      [
+        "onWebContainerEvent",
+      ],
+      [
+        "installDependencies",
+      ],
+      [
+        "unsubscribe",
+      ],
+    ],
+    "state": {
+      "activeFileId": "default-ts",
+      "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+      "consoleEntries": [
+        {
+          "content": "Installing dependencies with npm...",
+          "id": "uuid-4",
+          "timestamp": 1907749230000,
+          "type": "info",
+        },
+      ],
+      "errors": [],
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": true,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [],
+      },
+      "language": "typescript",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "logs": [
+        "Installing dependencies with npm...",
+      ],
+      "openTabs": [
+        {
+          "fileId": "default-ts",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "vs-dark",
+      "wcStatus": "error",
+    },
+  },
+  "ok": {
+    "calls": [
+      [
+        "mountFiles",
+        {
+          "index.ts": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+        },
+      ],
+      [
+        "onWebContainerEvent",
+      ],
+      [
+        "installDependencies",
+      ],
+      [
+        "unsubscribe",
+      ],
+    ],
+    "state": {
+      "activeFileId": "default-ts",
+      "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+      "consoleEntries": [
+        {
+          "content": "Installing dependencies with npm...",
+          "id": "uuid-2",
+          "timestamp": 1907749230000,
+          "type": "info",
+        },
+        {
+          "content": "✅ Dependencies installed successfully",
+          "id": "uuid-3",
+          "timestamp": 1907749230000,
+          "type": "info",
+        },
+      ],
+      "errors": [],
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": true,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [],
+      },
+      "language": "typescript",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "logs": [
+        "Installing dependencies with npm...",
+        "✅ Dependencies installed successfully",
+      ],
+      "openTabs": [
+        {
+          "fileId": "default-ts",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "vs-dark",
+      "wcStatus": "ready",
+    },
+  },
+  "unsupported": {
+    "calls": [],
+    "state": {
+      "activeFileId": "default-ts",
+      "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+      "consoleEntries": [
+        {
+          "content": "WebContainer not available — cannot install packages",
+          "id": "uuid-1",
+          "timestamp": 1907749230000,
+          "type": "error",
+        },
+      ],
+      "errors": [
+        "WebContainer not available — cannot install packages",
+      ],
+      "files": [
+        {
+          "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+          "id": "default-ts",
+          "isEntryPoint": true,
+          "language": "typescript",
+          "name": "index.ts",
+          "path": "index.ts",
+        },
+      ],
+      "history": {
+        "maxSnapshots": 50,
+        "snapshots": [],
+      },
+      "language": "typescript",
+      "layout": {
+        "activeOutputTab": "console",
+        "layout": "default",
+        "showConsole": true,
+        "showFileExplorer": true,
+        "showPreview": true,
+      },
+      "logs": [],
+      "openTabs": [
+        {
+          "fileId": "default-ts",
+          "isPinned": false,
+          "isPreview": false,
+        },
+      ],
+      "output": "",
+      "previewHtml": null,
+      "serverUrl": null,
+      "settings": {
+        "autoComplete": true,
+        "bracketPairColorization": true,
+        "cursorBlinking": "smooth",
+        "cursorStyle": "line",
+        "fontSize": 14,
+        "formatOnPaste": false,
+        "formatOnSave": false,
+        "lineNumbers": "on",
+        "minimap": false,
+        "renderWhitespace": "selection",
+        "smoothScrolling": true,
+        "stickyScroll": true,
+        "tabSize": 2,
+        "wordWrap": "on",
+      },
+      "status": "idle",
+      "theme": "vs-dark",
+      "wcStatus": "idle",
+    },
+  },
+}
+`;
+
+exports[`playground store (pinned) > webcontainer actions > setServerUrl / setWcStatus / install event stream 1`] = `
+{
+  "activeFileId": "default-ts",
+  "code": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+  "consoleEntries": [
+    {
+      "content": "Installing dependencies with npm...",
+      "id": "uuid-1",
+      "timestamp": 1907749230000,
+      "type": "info",
+    },
+    {
+      "content": "✅ Dependencies installed successfully",
+      "id": "uuid-2",
+      "timestamp": 1907749230000,
+      "type": "info",
+    },
+  ],
+  "errors": [],
+  "files": [
+    {
+      "content": "// Welcome to FYGS Playground!
+// Start coding in TypeScript here.
+
+interface User {
+  name: string;
+  age: number;
+}
+
+function greet(user: User): string {
+  return \`Hello, \${user.name}! You are \${user.age} years old.\`;
+}
+
+const user: User = { name: "Developer", age: 25 };
+console.log(greet(user));
+
+// Try pressing Ctrl/Cmd + Enter to run your code!
+",
+      "id": "default-ts",
+      "isEntryPoint": true,
+      "language": "typescript",
+      "name": "index.ts",
+      "path": "index.ts",
+    },
+  ],
+  "history": {
+    "maxSnapshots": 50,
+    "snapshots": [],
+  },
+  "language": "typescript",
+  "layout": {
+    "activeOutputTab": "console",
+    "layout": "default",
+    "showConsole": true,
+    "showFileExplorer": true,
+    "showPreview": true,
+  },
+  "logs": [
+    "Installing dependencies with npm...",
+    "✅ Dependencies installed successfully",
+  ],
+  "openTabs": [
+    {
+      "fileId": "default-ts",
+      "isPinned": false,
+      "isPreview": false,
+    },
+  ],
+  "output": "",
+  "previewHtml": null,
+  "serverUrl": "http://s",
+  "settings": {
+    "autoComplete": true,
+    "bracketPairColorization": true,
+    "cursorBlinking": "smooth",
+    "cursorStyle": "line",
+    "fontSize": 14,
+    "formatOnPaste": false,
+    "formatOnSave": false,
+    "lineNumbers": "on",
+    "minimap": false,
+    "renderWhitespace": "selection",
+    "smoothScrolling": true,
+    "stickyScroll": true,
+    "tabSize": 2,
+    "wordWrap": "on",
+  },
+  "status": "idle",
+  "theme": "vs-dark",
+  "wcStatus": "ready",
+}
+`;

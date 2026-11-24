@@ -119,6 +119,8 @@ export function TagCreateForm() {
                           : "border-gray-200 hover:border-gray-400"
                       }`}
                       style={{ backgroundColor: presetColor }}
+                      aria-label={`Couleur ${presetColor}`}
+                      aria-pressed={color === presetColor && !customColor}
                     />
                   ))}
                 </div>
@@ -132,6 +134,7 @@ export function TagCreateForm() {
                 <div className="flex items-center gap-3">
                   <Input
                     type="color"
+                    aria-label="Couleur personnalisée"
                     value={customColor || color}
                     onChange={(e) => setCustomColor(e.target.value)}
                     className="w-16 h-10 p-1 border rounded"
@@ -155,7 +158,7 @@ export function TagCreateForm() {
                 <Badge
                   style={{
                     backgroundColor: (customColor || color) + "20",
-                    color: customColor || color,
+                    color: `color-mix(in srgb, ${customColor || color} 35%, hsl(var(--foreground)))`,
                     borderColor: (customColor || color) + "40",
                   }}
                   className="border"

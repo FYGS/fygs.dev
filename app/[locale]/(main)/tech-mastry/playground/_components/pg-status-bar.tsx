@@ -50,7 +50,7 @@ export function PgStatusBar() {
         return {
           icon: <Zap className="h-3 w-3" />,
           label: "Node.js",
-          color: "text-green-300",
+          color: "text-green-200",
         };
       case "installing":
         return {
@@ -76,7 +76,7 @@ export function PgStatusBar() {
   })();
 
   return (
-    <div className="flex h-6 items-center justify-between border-t border-border/20 bg-[#007acc] px-3 text-[11px] text-white select-none">
+    <div className="flex h-6 items-center justify-between border-t border-border/20 bg-[#005a9e] px-3 text-[11px] text-white select-none">
       {/* Left side */}
       <div className="flex items-center gap-3">
         {/* Execution Status */}
@@ -176,7 +176,7 @@ export function PgStatusBar() {
 
         {/* File path */}
         {activeFile && (
-          <span className="max-w-[200px] truncate opacity-80">
+          <span className="max-w-[200px] truncate">
             {activeFile.path}
           </span>
         )}
@@ -192,10 +192,10 @@ export function PgStatusBar() {
         </span>
 
         {/* Encoding */}
-        <span className="opacity-80">UTF-8</span>
+        <span>UTF-8</span>
 
         {/* File count */}
-        <span className="opacity-80">
+        <span className="">
           {files.length} file{files.length !== 1 ? "s" : ""}
         </span>
       </div>

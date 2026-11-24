@@ -16,7 +16,15 @@ export function classifyBillingCycle(priceId?: string): 'monthly' | 'yearly' | '
   return 'unknown';
 }
 
-export function resolveRequestedPriceId(requested?: string): { priceId: string; cycle: 'monthly' | 'yearly' } {
+/**
+ * Without `strict`, anything unknown falls back to a default (checkout with no choice). With it, a value that is
+ * neither a cycle keyword nor a configured price id is refused: switching plan must never land on another plan
+ * because of a typo.
+ */
+export function resolveRequestedPriceId(
+  requested?: string,
+  options: { strict?: boolean } = {},
+): { priceId: string; cycle: 'monthly' | 'yearly' } {
   const { monthly, yearly } = getSubscriptionPrices();
   if (!monthly && !yearly) throw new Error('SUBSCRIPTION_PRICES_NOT_CONFIGURED');
 
@@ -28,7 +36,20 @@ export function resolveRequestedPriceId(requested?: string): { priceId: string; 
     return { priceId: requested, cycle: requested === yearly ? 'yearly' : 'monthly' };
   }
 
+  if (options.strict) throw new Error('UNKNOWN_PRICE');
+
   // Default preference: monthly then yearly
   if (monthly) return { priceId: monthly, cycle: 'monthly' };
   return { priceId: yearly as string, cycle: 'yearly' };
+}
+
+/**
+ * Whether a Stripe price id is one of the two Premium plans. A subscription on any other price of the Stripe account
+ * (a test product, a private offer, a price created by mistake) never grants Premium. Without configured prices no
+ * plan can be sold, so nothing is known.
+ */
+export function isPlanPriceId(priceId: string | null | undefined): boolean {
+  if (!priceId) return false;
+  const { monthly, yearly } = getSubscriptionPrices();
+  return priceId === monthly || priceId === yearly;
 }

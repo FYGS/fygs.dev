@@ -29,9 +29,9 @@ const sections = [
       },
       {
         label: "R — Result",
-        desc: "Quantifiez les résultats obtenus. Utilisez des métriques.",
+        desc: "Quantifiez les résultats obtenus avec des métriques réelles, que vous pouvez sourcer.",
         example:
-          "Résultat : temps de réponse réduit de 70%, disponibilité passée de 99.5% à 99.99%, et déploiements de 1/mois à 10/jour.",
+          "Résultat (chiffres fictifs, à remplacer par les vôtres et à pouvoir justifier) : temps de réponse réduit de 70%, disponibilité passée de 99.5% à 99.99%, et déploiements de 1/mois à 10/jour.",
       },
     ],
   },

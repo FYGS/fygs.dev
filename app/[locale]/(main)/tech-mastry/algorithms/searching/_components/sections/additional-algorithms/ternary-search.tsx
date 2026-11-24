@@ -32,11 +32,22 @@ type ArrayElement = {
   state: ElementState;
 };
 
+function createSortedArray(size: number): ArrayElement[] {
+  const newArray: ArrayElement[] = [];
+  for (let i = 0; i < size; i++) {
+    newArray.push({
+      value: i * 2 + 1, // Valeurs impaires pour un tableau trié
+      state: "default",
+    });
+  }
+  return newArray;
+}
+
 export function TernarySearch() {
   // État pour le tableau et la cible
-  const [array, setArray] = useState<ArrayElement[]>([]);
-  const [target, setTarget] = useState<number>(15);
   const arraySize = 15; // Taille fixe pour simplifier
+  const [array, setArray] = useState<ArrayElement[]>(() => createSortedArray(arraySize));
+  const [target, setTarget] = useState<number>(15);
 
   // État pour l'animation
   const [isRunning, setIsRunning] = useState<boolean>(false);
@@ -72,21 +83,10 @@ export function TernarySearch() {
 
   // Générer un tableau trié
   const generateArray = useCallback(() => {
-    const newArray: ArrayElement[] = [];
-    for (let i = 0; i < arraySize; i++) {
-      newArray.push({
-        value: i * 2 + 1, // Valeurs impaires pour un tableau trié
-        state: "default",
-      });
-    }
+    const newArray = createSortedArray(arraySize);
     setArray(newArray);
     resetVisualization();
   }, [arraySize, resetVisualization]);
-
-  // Initialiser le tableau
-  useEffect(() => {
-    generateArray();
-  }, [generateArray]);
 
   // Type pour les étapes de l'algorithme
   type SearchStep = {
@@ -460,15 +460,18 @@ export function TernarySearch() {
           <div className="mt-2 text-sm">
             <span className="font-medium">Complexité temporelle:</span>{" "}
             <span className="text-muted-foreground">
-              O(log₃ n), légèrement meilleure que la recherche binaire en
-              théorie.
+              O(log₃ n) = O(log n), la même classe que la recherche binaire.
+              Avec 2 comparaisons par itération, elle fait en pratique plus de
+              comparaisons (environ 1,26 fois plus) que la recherche binaire.
             </span>
           </div>
           <div className="text-sm">
             <span className="font-medium">Avantages:</span>{" "}
             <span className="text-muted-foreground">
-              Moins de comparaisons que la recherche binaire dans le pire des
-              cas, mais plus de comparaisons par itération.
+              Moins d&apos;itérations que la recherche binaire, mais plus de
+              comparaisons par itération : elle n&apos;est pas plus efficace
+              pour chercher dans un tableau trié (son vrai usage est la
+              recherche de l&apos;extremum d&apos;une fonction unimodale).
             </span>
           </div>
         </div>

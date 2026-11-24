@@ -91,7 +91,7 @@ export function MDXPre({
             <span className="h-3 w-3 rounded-full bg-green-500/80" />
           </div>
           {langLabel && (
-            <span className="text-xs font-medium text-muted-foreground/70 select-none">
+            <span className="text-xs font-medium text-slate-400 select-none">
               {langLabel}
             </span>
           )}
@@ -104,7 +104,7 @@ export function MDXPre({
             "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-all duration-200",
             copied
               ? "text-emerald-400 bg-emerald-500/10"
-              : "text-muted-foreground/60 hover:text-foreground hover:bg-white/5",
+              : "text-slate-400 hover:text-white hover:bg-white/5",
           )}
           aria-label="Copy code"
         >
@@ -125,6 +125,7 @@ export function MDXPre({
       {/* Code content */}
       <pre
         ref={preRef}
+        tabIndex={0}
         className={cn(
           "overflow-x-auto overflow-y-auto max-h-[80vh] p-4 text-sm leading-relaxed",
           "[&>code]:bg-transparent [&>code]:p-0 [&>code]:border-0",

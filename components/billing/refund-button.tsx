@@ -1,62 +1,72 @@
-'use client'
+"use client";
 
-import { useState, useTransition } from 'react'
-import { Button } from '@/components/ui/button'
-import { RefreshCw } from 'lucide-react'
-import { toast } from 'sonner'
-import { requestRefund } from '@/app/[locale]/(main)/dashboard/actions/requestRefund'
+import { useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { RotateCcw } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { requestRefund } from "@/app/[locale]/(main)/dashboard/actions/requestRefund";
+import { requestCourseRefund } from "@/app/[locale]/(main)/dashboard/actions/requestCourseRefund";
 
-interface RefundButtonProps {
-  subscriptionId: string
-  className?: string
-}
+type RefundTarget =
+  | { kind: "subscription"; subscriptionId: string }
+  | { kind: "course"; paymentId: string; courseTitle: string };
 
-export function RefundButton({ subscriptionId, className }: RefundButtonProps) {
-  const [isPending, startTransition] = useTransition()
-  const [isProcessing, setIsProcessing] = useState(false)
+/** "Demander un remboursement", with a confirmation that says what stops. */
+export function RefundButton({ target, className }: { target: RefundTarget; className?: string }) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
 
-  const handleRefund = async () => {
-    const confirmed = confirm(
-      'Êtes-vous sûr de vouloir demander un remboursement ? Cette action annulera votre abonnement immédiatement.'
-    )
-    
-    if (!confirmed) return
-
-    setIsProcessing(true)
-    
+  const confirmRefund = () =>
     startTransition(async () => {
-      try {
-        const result = await requestRefund({
-          subscriptionId,
-          reason: 'User requested refund via billing page'
-        })
-
-        if (result.success) {
-          toast.success(result.message)
-          // Reload the page to show updated status
-          window.location.reload()
-        } else {
-          toast.error(result.message || 'Échec de la demande de remboursement')
-        }
-      } catch (error) {
-        console.error('Refund request failed:', error)
-        toast.error('Une erreur est survenue lors de la demande de remboursement')
-      } finally {
-        setIsProcessing(false)
+      const result =
+        target.kind === "subscription"
+          ? await requestRefund({ subscriptionId: target.subscriptionId, reason: "Demande depuis la page Facturation" })
+          : await requestCourseRefund({ paymentId: target.paymentId });
+      if (result.success) {
+        toast.success(result.message);
+        router.refresh();
+      } else {
+        toast.error("Remboursement impossible", { description: result.message });
       }
-    })
-  }
+    });
+
+  const consequence =
+    target.kind === "subscription"
+      ? "Votre abonnement s’arrête tout de suite et les formations Premium se ferment. Votre progression est conservée."
+      : `L’accès à « ${target.courseTitle} » se ferme tout de suite. Votre progression est conservée si vous la rachetez.`;
 
   return (
-    <Button 
-      onClick={handleRefund}
-      disabled={isPending || isProcessing}
-      variant="outline" 
-      size="sm"
-      className={className}
-    >
-      <RefreshCw className={`h-4 w-4 mr-2 ${isPending || isProcessing ? 'animate-spin' : ''}`} />
-      {isPending || isProcessing ? 'Traitement...' : 'Demander un remboursement'}
-    </Button>
-  )
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button variant="outline" size="sm" disabled={pending} className={className}>
+          <RotateCcw className={`mr-2 h-4 w-4 ${pending ? "animate-spin" : ""}`} aria-hidden />
+          {pending ? "Remboursement en cours…" : "Demander un remboursement"}
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Demander le remboursement ?</AlertDialogTitle>
+          <AlertDialogDescription>
+            {consequence} Le montant revient sur votre moyen de paiement sous 5 à 10 jours.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Annuler</AlertDialogCancel>
+          <AlertDialogAction onClick={confirmRefund}>Confirmer le remboursement</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
 }

@@ -1,11 +1,8 @@
-import { Metadata } from "next";
 import { Card } from "@/components/ui/card";
 import { Container } from "lucide-react";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Docker & Kubernetes | TechMastry",
-  description: "Conteneurisation avec Docker et orchestration avec Kubernetes",
-};
+export const metadata = topicMetadata("/tech-mastry/security-devops/docker-kubernetes");
 
 const concepts = [
   {
@@ -15,12 +12,12 @@ const concepts = [
   },
   {
     title: "Dockerfile Best Practices",
-    desc: "Multi-stage builds, .dockerignore, non-root user, layer caching. Chaque instruction crée un layer — minimisez-les.",
+    desc: "Multi-stage builds, .dockerignore, non-root user, layer caching. Les instructions RUN, COPY et ADD créent chacune un layer — regroupez-les et ordonnez-les pour tirer parti du cache.",
     color: "border-blue-500/30",
   },
   {
     title: "Kubernetes Architecture",
-    desc: "Control Plane (API Server, Scheduler, Controller Manager, etcd) + Worker Nodes (Kubelet, Kube-Proxy, Container Runtime).",
+    desc: "Control Plane (API Server, Scheduler, Controller Manager, etcd) + Worker Nodes (Kubelet, Kube-Proxy, Container Runtime). Kubernetes sort environ trois versions mineures par an (1.37 à la date de rédaction) : vérifiez celle supportée par votre fournisseur.",
     color: "border-purple-500/30",
   },
 ];
@@ -40,11 +37,11 @@ const k8sResources = [
   },
   {
     name: "Ingress",
-    desc: "Routage HTTP/HTTPS externe vers les Services internes. TLS termination.",
+    desc: "Routage HTTP/HTTPS externe vers les Services internes. TLS termination. Le projet Ingress NGINX est retiré (maintenance arrêtée en mars 2026) : pour de nouveaux déploiements, privilégiez la Gateway API (HTTPRoute) ou un autre contrôleur maintenu.",
   },
   {
     name: "ConfigMap/Secret",
-    desc: "Configuration externalisée et gestion des secrets (chiffrés au repos).",
+    desc: "Configuration externalisée et gestion des secrets. Un Secret n'est qu'encodé en base64 : le chiffrement au repos (etcd) se configure sur le cluster.",
   },
   {
     name: "HPA",
@@ -54,7 +51,7 @@ const k8sResources = [
 
 export default function DockerKubernetesPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <section className="text-center space-y-6">
         <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-cyan-500/10 text-cyan-500">
           <Container className="w-8 h-8" />
@@ -96,9 +93,9 @@ export default function DockerKubernetesPage() {
 
       <section className="space-y-4">
         <h2 className="text-3xl font-bold">Dockerfile Multi-Stage</h2>
-        <pre className="bg-muted/50 rounded-lg p-4 overflow-x-auto text-sm">
+        <pre className="bg-muted/50 rounded-lg p-4 overflow-x-auto text-sm" tabIndex={0}>
           <code>{`# Stage 1: Build
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 RUN corepack enable && pnpm install --frozen-lockfile
@@ -106,16 +103,18 @@ COPY . .
 RUN pnpm build
 
 # Stage 2: Production
-FROM node:20-alpine AS runner
+FROM node:24-alpine AS runner
 WORKDIR /app
 RUN addgroup --system app && adduser --system --ingroup app app
+# Nécessite output: "standalone" dans next.config
 COPY --from=builder --chown=app:app /app/.next/standalone ./
+COPY --from=builder --chown=app:app /app/.next/static ./.next/static
 COPY --from=builder --chown=app:app /app/public ./public
 USER app
 EXPOSE 3000
 CMD ["node", "server.js"]`}</code>
         </pre>
       </section>
-    </main>
+    </div>
   );
 }

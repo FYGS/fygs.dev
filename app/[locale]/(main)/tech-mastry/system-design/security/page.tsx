@@ -1,12 +1,9 @@
-import { Metadata } from "next";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Shield } from "lucide-react";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Sécurité | System Design",
-  description: "Authentification, chiffrement, OWASP et sécurité dans le system design",
-};
+export const metadata = topicMetadata("/tech-mastry/system-design/security");
 
 const securityLayers = [
   {
@@ -38,7 +35,7 @@ const securityLayers = [
 
 export default function SystemDesignSecurityPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <section className="text-center space-y-6">
         <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-red-500/10 text-red-500">
           <Shield className="w-8 h-8" />
@@ -82,7 +79,7 @@ export default function SystemDesignSecurityPage() {
             <ul className="space-y-1 text-sm text-muted-foreground">
               <li>✅ Scalable (pas de stockage serveur)</li>
               <li>✅ Microservices-friendly</li>
-              <li>⚠️ Impossible à révoquer avant expiration</li>
+              <li>⚠️ Difficile à révoquer avant expiration (liste de révocation requise)</li>
               <li>⚠️ Payload visible (signer, ne pas chiffrer les secrets)</li>
             </ul>
           </Card>
@@ -97,6 +94,6 @@ export default function SystemDesignSecurityPage() {
           </Card>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

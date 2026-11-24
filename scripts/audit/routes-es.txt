@@ -1,0 +1,8 @@
+# The Spanish locale: only the pages that have translations (the application area is French only)
+/es
+/es/contact
+/es/auth/login
+/es/auth/register
+/es/blog
+/es/me
+/es/projects

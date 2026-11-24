@@ -1,0 +1,352 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`emailService (pinned behaviour) > every sender builds and sends the expected mail 1`] = `
+{
+  "badge": {
+    "mails": [
+      {
+        "from": "FYGS <noreply@fygs.test>",
+        "html": "d98111924c22789394feae2336bb9557cde84fadf67e3724f62b179940071a56",
+        "subject": "🏆 Badge débloqué : B (+5 points)",
+        "text": "faf0b1c26a16487016a979ce5ffc2b96f315294cb74f19f9c2caa7dd488be038",
+        "to": "u@x.test",
+      },
+    ],
+    "res": true,
+  },
+  "canceled": {
+    "mails": [
+      {
+        "from": "FYGS <noreply@fygs.test>",
+        "html": "c7d7c825a918b1ebcbecef251d597f885d4a5ee825db663003614c916b7eff8f",
+        "subject": "📋 Confirmation d'annulation - FYGS Premium",
+        "text": "9ddec3193c754786e9660e288702ed96af36b11f50ef367fd4004567fbbcb1cb",
+        "to": "al@x.test",
+      },
+    ],
+    "res": true,
+  },
+  "canceledNow": {
+    "mails": [
+      {
+        "from": "FYGS <noreply@fygs.test>",
+        "html": "5c2d76e4f97c72fafaad225e7fe5ad42617dcb3e5fc82b96d8d090d7fff5f614",
+        "subject": "❌ Résiliation immédiate de votre abonnement",
+        "text": "84e1895c28d1df2241337983c8178a89da0223208224e523208f5e919378436d",
+        "to": "al@x.test",
+      },
+    ],
+    "res": true,
+  },
+  "contact": {
+    "mails": [
+      {
+        "from": "FYGS <noreply@fygs.test>",
+        "html": "073006b9f57c3cad8df00733e14469060017896a512b6f8be4f8577ef484db79",
+        "subject": "📧 [FYGS.dev] Contact Général - Hello",
+        "text": "463a6654bf662147474df9ace48d81f5f79b490993c16a3e0916baf9773960ce",
+        "to": "contact@fygs.test",
+      },
+      {
+        "from": "FYGS <noreply@fygs.test>",
+        "html": "a064af278f55c6f15a86e0cb8d1918669d1c571953024624da587ec5f1a8252e",
+        "subject": "✅ 📧 Message Reçu avec Succès - Confirmation de réception",
+        "text": "9baa6560bb0bceeb83453ccc30a63d994d5213663dcd95b00ffb4656678979af",
+        "to": "jane@example.test",
+      },
+    ],
+    "res": {
+      "adminSent": true,
+      "userSent": true,
+    },
+  },
+  "digest": {
+    "mails": [
+      {
+        "from": "FYGS <noreply@fygs.test>",
+        "html": "4fe461f11732b9110d9616a17897003d0c076c4656f65a4609259dcdb0000f00",
+        "subject": "📊 Votre semaine communautaire : 3 points gagnés",
+        "text": "5c8b826ae0d961d7ec846ea74a187a6d491a090d7590ee68edc352a33a1ed120",
+        "to": "u@x.test",
+      },
+    ],
+    "res": true,
+  },
+  "digest-skipped": {
+    "mails": [],
+    "res": true,
+  },
+  "discussion": {
+    "mails": [
+      {
+        "from": "FYGS <noreply@fygs.test>",
+        "html": "93a2d7a2c12c15802e9e0369e12e374be4f7dd886c10b47779cd58eab06bc7d2",
+        "subject": "💬 B a répondu à votre discussion",
+        "text": "e96ee02389a9184d2026a4deb2816fd14cb8e0e1cce5b6bbbc23ad8e36467e35",
+        "to": "a@x.test",
+      },
+    ],
+    "res": true,
+  },
+  "failed": {
+    "mails": [
+      {
+        "from": "FYGS <noreply@fygs.test>",
+        "html": "74d1ca8c9a9483b96ba145f19a22efc3cfc56d2f28a5f23aa93c2ecbbad070bc",
+        "subject": "⚠️ Action requise - Problème de paiement FYGS",
+        "text": "3218eb2cb8b8539523a175e74d822542f85b7018618df3f69ca9d8fadaef1113",
+        "to": "al@x.test",
+      },
+    ],
+    "res": true,
+  },
+  "follower": {
+    "mails": [
+      {
+        "from": "FYGS <noreply@fygs.test>",
+        "html": "677a5ef2b6df91c61c2cece8fe3cb5909bc18ca4bc4b18f52014f812a9128a73",
+        "subject": "👥 B vous suit maintenant",
+        "text": "a495d2e8fc1bba32a1f9c6479da4aaccb7b5c77cd564273463e7261b2c3f8cc7",
+        "to": "a@x.test",
+      },
+    ],
+    "res": true,
+  },
+  "helpful3-skipped": {
+    "mails": [],
+    "res": true,
+  },
+  "helpful5": {
+    "mails": [
+      {
+        "from": "FYGS <noreply@fygs.test>",
+        "html": "65f29cd47456b1eb50635db61c9dad8d52794c331e1c3d72c00dccf71d9fc30c",
+        "subject": "👍 Votre avis sur "C" a été trouvé utile !",
+        "text": "ef62ee6ec768203f5e5e8c94b98649a7c0aecc6d5f5183a7a0b1cb8ec1766200",
+        "to": "r@x.test",
+      },
+    ],
+    "res": true,
+  },
+  "mentorReq": {
+    "mails": [
+      {
+        "from": "FYGS <noreply@fygs.test>",
+        "html": "9da3b1a8f5363fa61a21aaf9b7c85e3e948bdaf33b8e9cd6953e887c83713458",
+        "subject": "🎓 S demande votre mentorat",
+        "text": "333ce23e7be2bfbc7d82901116a78fceb960b8d87a68356a11e0d785491c07ab",
+        "to": "m@x.test",
+      },
+    ],
+    "res": true,
+  },
+  "mentorResp": {
+    "mails": [
+      {
+        "from": "FYGS <noreply@fygs.test>",
+        "html": "2a7203de392a2adcc19c394f39025ff812b1a0288dcf4f2b760622837c9b40c4",
+        "subject": "✅ M a accepté votre demande de mentorat",
+        "text": "577311583e1f6c751efb26985aed0ebccc98b3d6453d317b8c82184e6543bbd7",
+        "to": "s@x.test",
+      },
+    ],
+    "res": true,
+  },
+  "newReview": {
+    "mails": [
+      {
+        "from": "FYGS <noreply@fygs.test>",
+        "html": "67a060f8f7f1562a6e15632d0295a3a8f4b2b08d0a5f4c5fd373ee02d873a57b",
+        "subject": "⭐ Nouvel avis 4/5 sur "C"",
+        "text": "054bde5a96040b247735cb63dd242c6d69a48ce80311650d7858f0e1d6473a4b",
+        "to": "i@x.test",
+      },
+    ],
+    "res": true,
+  },
+  "premium": {
+    "mails": [
+      {
+        "from": "FYGS <noreply@fygs.test>",
+        "html": "61166b60ce6bb93119c0f5907649c776c0125555773807a3b8ae1287fffa322d",
+        "subject": "🌟 Abonnement Premium activé - Accès illimité !",
+        "text": "5669f96922ad83cc33eb8cd1487b0eae5432e89df57bc94ae73e7eccf6c6aa65",
+        "to": "al@x.test",
+      },
+    ],
+    "res": true,
+  },
+  "purchase": {
+    "mails": [
+      {
+        "from": "FYGS <noreply@fygs.test>",
+        "html": "5e677c150007726cf6c62866656dadcd27b24147f29e9c1131202784c9794aca",
+        "subject": "✅ Formation "C" - Accès confirmé !",
+        "text": "d65d95a8e5671d18425b21bb6aeed1a2c880d5451a37cdaedd0fdc32631fab69",
+        "to": "al@x.test",
+      },
+    ],
+    "res": true,
+  },
+  "pwd": {
+    "mails": [
+      {
+        "from": "FYGS <noreply@fygs.test>",
+        "html": "88cc82f53bc34ef1788dc9c00678d613ef03807a6d411ff52b3d872fd3997aea",
+        "subject": "🔐 Confirmation de changement de mot de passe - FYGS",
+        "text": "3995aa19102b80c7e68a01db3411aaac86d46f38781b28bd49df3c9dd8ffc95a",
+        "to": "al@x.test",
+      },
+    ],
+    "res": true,
+  },
+  "refund": {
+    "mails": [
+      {
+        "from": "FYGS <noreply@fygs.test>",
+        "html": "62635b73236f3e23caad687bfff9eb95d0a08b046a91b6b83fbd5b03c8a13a6d",
+        "subject": "💸 Confirmation de remboursement",
+        "text": "5b7abdb4bd67a63bdcb1a962ee92aa01d4cfa51dd93c0a2c19c9be9fc0d3189d",
+        "to": "al@x.test",
+      },
+    ],
+    "res": true,
+  },
+  "reply": {
+    "mails": [
+      {
+        "from": "FYGS <noreply@fygs.test>",
+        "html": "d75bce1a5fc4c35df9e56b57f63c4533e1a16a129cf34f4903e8e11c9afe52d1",
+        "subject": "💬 I a répondu à votre avis sur "C"",
+        "text": "222f2115aefcfeb49b99aecc14f620e36faba10307f51fff3d9cd1aad1951242",
+        "to": "s@x.test",
+      },
+    ],
+    "res": true,
+  },
+  "reported": {
+    "mails": [
+      {
+        "from": "FYGS <noreply@fygs.test>",
+        "html": "3ef89591ad305f8520eaea572dcba47c03d6093959a4574ce78ea465110eb620",
+        "subject": "🚨 [MODÉRATION] Avis signalé sur "C"",
+        "text": "9c0281451a0c89e5f304e2680db3eae6cab9697b82dc29b95c78c1e795370f6d",
+        "to": "m@x.test",
+      },
+    ],
+    "res": true,
+  },
+  "switched": {
+    "mails": [
+      {
+        "from": "FYGS <noreply@fygs.test>",
+        "html": "73eaf6488835b1bea4f8760fda6c8ea8e78743ee63f411280dded70509b8c6f4",
+        "subject": "🔄 Votre abonnement a été modifié",
+        "text": "a1ce2ce118c856fb7add6235f22ce4071fe32d6fb3568b8184550df498c9769a",
+        "to": "al@x.test",
+      },
+    ],
+    "res": true,
+  },
+  "updated": {
+    "mails": [
+      {
+        "from": "FYGS <noreply@fygs.test>",
+        "html": "713966af69b2f6312c06dc6f99621a384aa42b0b8ab87908dcb94f725b719931",
+        "subject": "📋 Votre abonnement FYGS a été mis à jour",
+        "text": "abc12506faf0e7bfdb6cc24888a8c755baa27a095b934a67293cfb7230d2023c",
+        "to": "al@x.test",
+      },
+    ],
+    "res": true,
+  },
+  "weekly": {
+    "mails": [
+      {
+        "from": "FYGS <noreply@fygs.test>",
+        "html": "66eb3c0dc7e9938495d36ba99cf11ba26e5d82fb8027ba8045e256dbd01ee5c5",
+        "subject": "📊 Résumé hebdomadaire : 2 nouveaux avis (4.0/5)",
+        "text": "7c9162ccc429bc92748d5fc811ecf2c25587c45cf07c98d161b8953de9407bb1",
+        "to": "i@x.test",
+      },
+    ],
+    "res": true,
+  },
+  "weekly-skipped": {
+    "mails": [],
+    "res": true,
+  },
+  "welcome": {
+    "mails": [
+      {
+        "from": "FYGS <noreply@fygs.test>",
+        "html": "45aacba4cf2a9db414d23e99ebc044ff1d26c9f89faaf1db264db00994a472c8",
+        "subject": "🎉 Bienvenue sur FYGS - Votre parcours commence maintenant !",
+        "text": "5e21b975bf707f4e040eb291d3ea72baca7b2d54652055b44e1dc69a7efd4b50",
+        "to": "al@x.test",
+      },
+    ],
+    "res": true,
+  },
+}
+`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > admin-collaboration hash 1`] = `"365b60708caced4eb70fccd9582745f6f89f0ae55590a26482b1a2896b321dc6"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > admin-collaboration subject 1`] = `"🤝 [FYGS.dev] Proposition de Collaboration - Hello"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > admin-general hash 1`] = `"cdd496d172aa39490fdf392e2e484b5663e446debbd9666f5e0e5f4fea34cd2f"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > admin-general subject 1`] = `"📧 [FYGS.dev] Contact Général - Hello"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > admin-recruitment hash 1`] = `"32d2e950ecfc192d15ff2fe2ed0f74d186dcb4c5d4548d3ca777a5ed512b249b"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > admin-recruitment subject 1`] = `"💼 [FYGS.dev] Opportunité de Recrutement - Hello"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > admin-training hash 1`] = `"b4998d959bb11164870fd9c97458daf3021449f90e981e06030391554a4ee851"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > admin-training subject 1`] = `"📚 [FYGS.dev] Demande de Formation - Hello"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > adminAll hash 1`] = `"cdd496d172aa39490fdf392e2e484b5663e446debbd9666f5e0e5f4fea34cd2f"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > adminAll subject 1`] = `"📧 [FYGS.dev] Contact Général - Hello"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > cert hash 1`] = `"8090dfd71db430a67e3c27b48d944ae168fec4ee60fa99593a55c73fdcff30a5"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > cert subject 1`] = `"Certificat obtenu : Formation"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > enroll hash 1`] = `"d98178eddbe23a91cdaba62f44a271c021981c4433c8f07e4cf8e83f900a7407"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > enroll subject 1`] = `"Inscription confirmée : Formation"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > reset hash 1`] = `"0b5543046caa481b857b4aab5a3ad3dfb84f240f5cd73d214503ace5aa7f7de8"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > reset subject 1`] = `"Réinitialisation de votre mot de passe - FYGS Learning Platform"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > user-collaboration hash 1`] = `"c6c4168f82a162024c947ecd4dc51d5a7b4ea430632ec7af3f0b08e7253a344a"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > user-collaboration subject 1`] = `"✅ 🤝 Proposition de Collaboration Reçue - Confirmation de réception"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > user-general hash 1`] = `"76e472dcd4d1dd321c9a916a9cbb7afb62f661edc3deecc8b47698a782a9db77"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > user-general subject 1`] = `"✅ 📧 Message Reçu avec Succès - Confirmation de réception"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > user-recruitment hash 1`] = `"65b2f7a1f3937f4ac50bacf8809cfa2122e14462455f788782b06ea046d11753"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > user-recruitment subject 1`] = `"✅ 💼 Opportunité de Recrutement Reçue - Confirmation de réception"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > user-training hash 1`] = `"39016200ce3551b4265a003c9554a53adcb55eb8c9eafaf9ed5668afce9e8582"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > user-training subject 1`] = `"✅ 📚 Demande de Formation Reçue - Confirmation de réception"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > userAll hash 1`] = `"76e472dcd4d1dd321c9a916a9cbb7afb62f661edc3deecc8b47698a782a9db77"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > userAll subject 1`] = `"✅ 📧 Message Reçu avec Succès - Confirmation de réception"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > verify hash 1`] = `"b5f125c87c12a93f9a076b6cd6c02154a9cae992a763de20876901f9e856e9e4"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > verify subject 1`] = `"Vérifiez votre email - FYGS Learning Platform"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > welcome hash 1`] = `"b21d9bdd72b70cb95f5d23d61c7946c5d1fa0a973a777088e4806efde12d8d3b"`;
+
+exports[`emailService (pinned behaviour) > pure templates are stable > welcome subject 1`] = `"🎉 Bienvenue sur FYGS Learning Platform !"`;

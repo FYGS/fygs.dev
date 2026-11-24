@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   GitBranch,
   GitMerge,
@@ -25,7 +25,6 @@ const concepts = [
 
 export function GitMasteryHero() {
   const [active, setActive] = useState(0);
-  const [commitLog, setCommitLog] = useState<string[]>([]);
 
   useEffect(() => {
     const t = setInterval(
@@ -35,7 +34,7 @@ export function GitMasteryHero() {
     return () => clearInterval(t);
   }, []);
 
-  useEffect(() => {
+  const commitLog = useMemo(() => {
     const hashes = [
       "a3f7c2d", "e91b4f8", "2c5d9a1", "f8e3b7c",
       "7d1a4e6", "b9c2f5d", "4e8a1c3", "d6f2b9e",
@@ -55,7 +54,7 @@ export function GitMasteryHero() {
       const idx = (active + i) % hashes.length;
       log.push(`${hashes[idx]} ${messages[idx]}`);
     }
-    setCommitLog(log);
+    return log;
   }, [active]);
 
   return (

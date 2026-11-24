@@ -1,0 +1,155 @@
+import { useEffect, useRef, useState } from "react";
+import type { Request, Scenario } from "../types";
+import { getRequestInterval } from "../request-interval";
+import { INITIAL_SERVICES, INITIAL_STATS } from "./data";
+import { advanceRequest, createMicroserviceRequest } from "./request-simulation";
+import type { ArchitectureStats, ServicesState } from "./types";
+
+// Drives the request animation loop and the scenario-dependent service status
+export function useMicroservicesSimulation(scenario: Scenario) {
+  const [services, setServices] = useState<ServicesState>(INITIAL_SERVICES);
+
+  const [requests, setRequests] = useState<Request[]>([]);
+  const [stats, setStats] = useState<ArchitectureStats>(INITIAL_STATS);
+
+  const requestIdRef = useRef(1);
+  const animationFrameRef = useRef<number | null>(null);
+  const lastRequestTimeRef = useRef(0);
+  const responseTimes = useRef<number[]>([]);
+  // The loop reads and writes the list through a ref so the state updater stays
+  // pure (updaters run twice in StrictMode; the stats must be counted once).
+  const requestsRef = useRef<Request[]>([]);
+  const commitRequests = (next: Request[]) => {
+    requestsRef.current = next;
+    setRequests(next);
+  };
+
+  // Set up the animation loop
+  useEffect(() => {
+    // Generate a new request
+    const generateRequest = () => {
+      // Randomly select a request type
+      const newRequest = createMicroserviceRequest(requestIdRef.current++, scenario);
+
+      // Add the request to the list
+      commitRequests([...requestsRef.current, newRequest]);
+
+      // Update stats
+      setStats((prev) => ({
+        ...prev,
+        totalRequests: prev.totalRequests + 1,
+      }));
+    };
+
+    // Process existing requests
+    const processRequests = (timestamp: number) => {
+      const nextRequests = ((prev: Request[]) => {
+        // Process each request
+        const updatedRequests = prev.map((request) =>
+          advanceRequest(request, timestamp)
+        );
+
+        // Calculate stats
+        const newCompletedRequests = updatedRequests.filter(
+          (r) =>
+            r.status === "completed" &&
+            !prev.find((p) => p.id === r.id && p.status === "completed")
+        );
+        const newFailedRequests = updatedRequests.filter(
+          (r) =>
+            r.status === "failed" &&
+            !prev.find((p) => p.id === r.id && p.status === "failed")
+        );
+
+        // Update response times
+        newCompletedRequests.forEach((request) => {
+          if (request.completionTime && request.startTime) {
+            responseTimes.current.push(
+              request.completionTime - request.startTime
+            );
+          }
+        });
+
+        // Calculate average response time
+        if (responseTimes.current.length > 0) {
+          const avgTime =
+            responseTimes.current.reduce((sum, time) => sum + time, 0) /
+            responseTimes.current.length;
+          setStats((prev) => ({
+            ...prev,
+            completedRequests:
+              prev.completedRequests + newCompletedRequests.length,
+            failedRequests: prev.failedRequests + newFailedRequests.length,
+            averageResponseTime: Math.round(avgTime),
+          }));
+        }
+
+        // Remove completed or failed requests after they've been displayed for a while
+        return updatedRequests.filter((r) => {
+          if (r.status === "completed" || r.status === "failed") {
+            return timestamp - (r.completionTime || 0) < 2000; // Keep for 2 seconds
+          }
+          return true;
+        });
+      })(requestsRef.current);
+      commitRequests(nextRequests);
+    };
+
+    const animate = (timestamp: number) => {
+      // Generate new requests based on scenario
+      if (
+        timestamp - lastRequestTimeRef.current >
+        getRequestInterval(scenario)
+      ) {
+        generateRequest();
+        lastRequestTimeRef.current = timestamp;
+      }
+
+      // Process existing requests
+      processRequests(timestamp);
+
+      // Continue the animation loop
+      animationFrameRef.current = requestAnimationFrame(animate);
+    };
+
+    // Start the animation loop
+    animationFrameRef.current = requestAnimationFrame(animate);
+
+    // Clean up on unmount
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [scenario]);
+
+  // Update service status based on scenario
+  useEffect(() => {
+    if (scenario === "high-load") {
+      const timer = setTimeout(() => {
+        setServices((prev) => ({
+          ...prev,
+          orders: { ...prev.orders, status: "overloaded" },
+        }));
+      }, 3000);
+      return () => clearTimeout(timer);
+    } else if (scenario === "failure") {
+      const timer = setTimeout(() => {
+        setServices((prev) => ({
+          ...prev,
+          payments: { ...prev.payments, status: "offline" },
+        }));
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [scenario]);
+
+  // Back to the normal scenario, every service is online again (state adjusted during render)
+  const [seenScenario, setSeenScenario] = useState(scenario);
+  if (seenScenario !== scenario) {
+    setSeenScenario(scenario);
+    if (scenario === "normal") setServices(INITIAL_SERVICES);
+  }
+
+  return { services, requests, stats };
+}

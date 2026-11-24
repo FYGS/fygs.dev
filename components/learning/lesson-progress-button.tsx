@@ -1,67 +1,43 @@
 "use client";
 
-import { useState, useTransition, useOptimistic } from "react";
 import { CheckCircle2, Circle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useLessonSession } from "./lesson-session";
 
-interface LessonProgressButtonProps {
-  lessonId: string;
-  initialCompleted: boolean;
-  onMarkComplete: (lessonId: string) => Promise<{ success: boolean }>;
-}
+/** Marks the lesson as done. The lesson counts at once; the server confirms (or the button comes back). */
+export function LessonProgressButton({ className }: { className?: string }) {
+  const { completed, completing, complete, recording } = useLessonSession();
 
-export function LessonProgressButton({
-  lessonId,
-  initialCompleted,
-  onMarkComplete,
-}: LessonProgressButtonProps) {
-  const [isPending, startTransition] = useTransition();
-  const [completed, setCompleted] = useState(initialCompleted);
-  const [optimisticCompleted, setOptimisticCompleted] = useOptimistic(
-    completed,
-    (_current, next: boolean) => next,
-  );
-  const [error, setError] = useState(false);
-
-  const handleClick = () => {
-    if (optimisticCompleted) return;
-    setError(false);
-
-    startTransition(async () => {
-      setOptimisticCompleted(true);
-      const result = await onMarkComplete(lessonId);
-      if (result.success) {
-        setCompleted(true);
-      } else {
-        setOptimisticCompleted(false);
-        setError(true);
-      }
-    });
-  };
+  if (!recording) {
+    return (
+      <p className={cn("text-sm text-muted-foreground", className)}>
+        Aperçu : la progression n’est pas enregistrée.
+      </p>
+    );
+  }
 
   return (
     <Button
-      variant={optimisticCompleted ? "secondary" : "default"}
-      size="sm"
-      onClick={handleClick}
-      disabled={optimisticCompleted || isPending}
+      type="button"
+      variant={completed ? "secondary" : "default"}
+      onClick={() => void complete()}
+      disabled={completed || completing}
+      aria-pressed={completed}
       className={cn(
-        "gap-2 transition-all",
-        optimisticCompleted &&
-          "bg-green-500/10 text-green-600 border-green-500/30",
-        error && "bg-destructive/10 text-destructive",
+        "gap-2",
+        completed && "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 disabled:opacity-100",
+        className,
       )}
     >
-      {isPending ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : optimisticCompleted ? (
-        <CheckCircle2 className="h-4 w-4" />
+      {completing ? (
+        <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+      ) : completed ? (
+        <CheckCircle2 className="h-4 w-4" aria-hidden />
       ) : (
-        <Circle className="h-4 w-4" />
+        <Circle className="h-4 w-4" aria-hidden />
       )}
-      {optimisticCompleted ? "Terminée" : "Marquer comme terminée"}
-      {error && <span className="text-xs">(erreur)</span>}
+      {completed ? "Terminée" : "Marquer comme terminée"}
     </Button>
   );
 }

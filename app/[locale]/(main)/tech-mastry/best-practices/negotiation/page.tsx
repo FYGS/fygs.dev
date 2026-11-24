@@ -1,12 +1,8 @@
-import { Metadata } from "next";
 import { PracticeHeader } from "../_components/practice-header";
 import { NegotiationGuide } from "./_components/negotiation-guide";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Négociation | Best Practices",
-  description:
-    "Apprenez à négocier efficacement votre salaire et vos avantages lors d'un entretien",
-};
+export const metadata = topicMetadata("/tech-mastry/best-practices/negotiation");
 
 const practiceData = {
   title: "Négociation",
@@ -18,9 +14,9 @@ const practiceData = {
 
 export default function NegotiationPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <PracticeHeader {...practiceData} />
       <NegotiationGuide />
-    </main>
+    </div>
   );
 }

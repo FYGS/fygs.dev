@@ -83,7 +83,7 @@
 
   .mdx-content .hljs-comment,
   .mdx-content .hljs-quote {
-    @apply text-slate-500 italic;
+    @apply text-slate-400 italic; /* slate 500 was 3.6:1 on the code background */
   }
 
   .mdx-content .hljs-number,

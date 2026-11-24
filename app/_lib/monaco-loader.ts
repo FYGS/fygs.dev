@@ -54,24 +54,32 @@ export async function loadMonaco() {
     const monaco = await import("monaco-editor");
 
     // Configure TypeScript/JavaScript intellisense
-    if (monaco.languages && monaco.languages.typescript) {
-      monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
-        target: monaco.languages.typescript.ScriptTarget.Latest,
+    if (monaco.typescript) {
+      monaco.typescript.javascriptDefaults.setCompilerOptions({
+        target: monaco.typescript.ScriptTarget.Latest,
         allowNonTsExtensions: true,
         moduleResolution:
-          monaco.languages.typescript.ModuleResolutionKind.NodeJs,
-        module: monaco.languages.typescript.ModuleKind.CommonJS,
+          monaco.typescript.ModuleResolutionKind.NodeJs,
+        module: monaco.typescript.ModuleKind.CommonJS,
         noEmit: true,
         typeRoots: ["node_modules/@types"],
-        jsx: monaco.languages.typescript.JsxEmit.React,
+        jsx: monaco.typescript.JsxEmit.React,
         jsxFactory: "React.createElement",
         jsxFragmentFactory: "React.Fragment",
       });
 
       // Enable eager model sync for better intellisense across files
-      monaco.languages.typescript.javascriptDefaults.setEagerModelSync(true);
-      monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
+      monaco.typescript.javascriptDefaults.setEagerModelSync(true);
+      monaco.typescript.typescriptDefaults.setEagerModelSync(true);
     }
+
+    // The stock dark theme writes comments in #6A9955, 4.2:1 on its #1e1e1e background (WCAG 1.4.3 asks 4.5:1)
+    monaco.editor.defineTheme("vs-dark", {
+      base: "vs-dark",
+      inherit: true,
+      rules: [{ token: "comment", foreground: "7CA668" }],
+      colors: {},
+    });
 
     return monaco;
   } catch (error) {

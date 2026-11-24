@@ -129,11 +129,17 @@ export interface LayoutState {
 
 // ─── Store Interface ─────────────────────────────────────────────────────────
 
+export type SharedNotice =
+  | { kind: "review"; files: number }
+  | { kind: "invalid"; message: string };
+
 export interface PlaygroundStore {
   // ── File System ──
   files: EditorFile[];
   activeFileId: string | null;
   openTabs: EditorTab[];
+  /** Identifies the current project (template id, "default", "shared"); keys the AI conversation. */
+  projectId: string;
 
   // ── Editor State ──
   settings: EditorSettings;
@@ -148,6 +154,14 @@ export interface PlaygroundStore {
 
   // ── Layout State ──
   layout: LayoutState;
+
+  // ── AI assistant (not persisted) ──
+  aiPanelOpen: boolean;
+  /** A question queued for the assistant panel (e.g. "Explain this error"). */
+  aiAsk: { id: number; mode: string; prompt: string } | null;
+  setAiPanelOpen: (open: boolean) => void;
+  askAi: (mode: string, prompt: string) => void;
+  clearAiAsk: () => void;
 
   // ── History ──
   history: EditorHistory;
@@ -182,7 +196,11 @@ export interface PlaygroundStore {
   formatCode: () => void;
 
   // ── Execution Actions ──
-  executeCode: (options?: { runScript?: string }) => Promise<void>;
+  executeCode: (options?: {
+    runScript?: string;
+    /** Run this code in place of the active file, without changing the file. */
+    snippet?: string;
+  }) => Promise<void>;
   stopExecution: () => void;
   clearConsole: () => void;
   addConsoleEntry: (entry: Omit<ConsoleEntry, "id" | "timestamp">) => void;
@@ -209,7 +227,14 @@ export interface PlaygroundStore {
 
   // ── Sharing Actions ──
   exportAsUrl: () => string;
+  /** Opens a project received through a `?code=` link: validated, never run, announced by `sharedNotice`. */
   importFromUrl: (encoded: string) => void;
+  /**
+   * What the learner has to acknowledge about a link they opened (not persisted): "review" after a project was
+   * imported ("read it before you run it"), "invalid" when the link was refused. Cleared only by a click.
+   */
+  sharedNotice: SharedNotice | null;
+  dismissSharedNotice: () => void;
 
   // ── Backward Compatibility ──
   code: string;

@@ -93,7 +93,7 @@ export function ChallengesHero() {
           <span className="block">Catégories</span>
         </div>
         <div>
-          <span className="text-2xl font-bold text-primary">30+</span>{" "}
+          <span className="text-2xl font-bold text-primary">29</span>{" "}
           <span className="block">Problèmes</span>
         </div>
         <div>

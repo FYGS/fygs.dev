@@ -1,7 +1,9 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest'
 import { db } from '@/lib/db'
-import { Decimal } from '@prisma/client/runtime/library'
+import { Decimal } from '@prisma/client/runtime/client'
 import { AccessService } from '@/lib/access-service'
+import { getEntitlement, getEntitlements } from '@/lib/access/entitlement'
+import { viewerStatus } from '@/lib/access/offer'
 
 // Mock next/headers
 vi.mock('next/headers', () => ({
@@ -213,48 +215,61 @@ describe('Course Access Control Contract Tests (FR-006)', () => {
       expect(access.accessReason).toBe('not_enrolled')
     })
 
-    test('respects subscription expiration for enrolled users', async () => {
+    test('respects subscription expiration for enrolled users (FR-005)', async () => {
       // Enroll expired user in premium course
       await db.enrollment.create({
         data: { userId: expiredUserId, courseId: premiumCourseId }
       })
 
       const access = await AccessService.checkCourseAccess(expiredUserId, premiumCourseId)
-      expect(access.canAccessCourse).toBe(true) // Still enrolled, so can access
+      expect(access.canAccessCourse).toBe(false) // the subscription ended: premium access is revoked
+      expect(access.canAccessLessons).toBe(false)
       expect(access.isPremiumCourse).toBe(true)
-      expect(access.isEnrolledInCourse).toBe(true)
+      expect(access.isEnrolledInCourse).toBe(true) // the enrollment (and the progress) is kept
       expect(access.hasActiveSubscription).toBe(false)
-      expect(access.accessReason).toBe('ok')
+      expect(access.accessReason).toBe('premium_locked')
     })
   })
 
   describe('Course enrollment verification', () => {
-    test('enrollment grants access regardless of subscription status', async () => {
-      // Enroll free user in premium course (simulating admin enrollment or purchase)
+    test('enrollment alone does not unlock a premium course without subscription or purchase (FR-003)', async () => {
       await db.enrollment.create({
         data: { userId: freeUserId, courseId: premiumCourseId }
       })
 
       const access = await AccessService.checkCourseAccess(freeUserId, premiumCourseId)
-      expect(access.canAccessCourse).toBe(true)
+      expect(access.canAccessCourse).toBe(false)
       expect(access.isEnrolledInCourse).toBe(true)
+      expect(access.hasActiveSubscription).toBe(false)
+      expect(access.accessReason).toBe('premium_locked')
+    })
+
+    test('enrollment backed by a completed lifetime purchase grants access without any subscription', async () => {
+      await db.enrollment.create({
+        data: { userId: freeUserId, courseId: premiumCourseId }
+      })
+      await db.payment.create({
+        data: {
+          userId: freeUserId,
+          courseId: premiumCourseId,
+          amount: new Decimal('29.99'),
+          kind: 'COURSE',
+          status: 'COMPLETED',
+        }
+      })
+
+      const access = await AccessService.checkCourseAccess(freeUserId, premiumCourseId)
+      expect(access.canAccessCourse).toBe(true)
       expect(access.hasActiveSubscription).toBe(false)
       expect(access.accessReason).toBe('ok')
     })
 
-    test('enrollment date is tracked correctly', async () => {
-      const enrollmentTime = new Date()
-      await db.enrollment.create({
-        data: { 
-          userId: freeUserId, 
-          courseId: freeCourseId,
-          enrolledAt: enrollmentTime
-        }
-      })
+    test('the enrolment is what opens a free course', async () => {
+      await db.enrollment.create({ data: { userId: freeUserId, courseId: freeCourseId } })
 
       const access = await AccessService.checkCourseAccess(freeUserId, freeCourseId)
-      expect(access.enrollmentDate).toBeInstanceOf(Date)
-      expect(access.enrollmentDate?.getTime()).toBeCloseTo(enrollmentTime.getTime(), -3) // Within 1 second
+      expect(access).toMatchObject({ isEnrolledInCourse: true, canAccessCourse: true, recordsProgress: true })
+      expect(access.entitlement?.source).toBe('free')
     })
   })
 
@@ -272,6 +287,8 @@ describe('Course Access Control Contract Tests (FR-006)', () => {
           accessTier: 'PREMIUM',
           published: true,
           previewEnabled: true,
+          // a sample needs a published lesson to show
+          lessons: { create: { title: 'L1', slug: 'l-1', order: 1, published: true } },
         }
       })
 
@@ -332,7 +349,7 @@ describe('Course Access Control Contract Tests (FR-006)', () => {
     test('detects inactive subscription status correctly', async () => {
       const access = await AccessService.checkCourseAccess(expiredUserId, premiumCourseId)
       expect(access.hasActiveSubscription).toBe(false)
-      expect(access.subscriptionStatus).toBeUndefined() // No active subscription found
+      expect(access.subscriptionStatus).toBe('CANCELED') // the row says why premium courses are closed
     })
   })
 
@@ -344,41 +361,29 @@ describe('Course Access Control Contract Tests (FR-006)', () => {
         db.enrollment.create({ data: { userId: premiumUserId, courseId: premiumCourseId } })
       ])
 
-      const results = await AccessService.checkMultipleCoursesAccess(
-        premiumUserId, 
-        [freeCourseId, premiumCourseId]
-      )
+      const { courses } = await getEntitlements(premiumUserId, [freeCourseId, premiumCourseId])
 
-      expect(Object.keys(results)).toHaveLength(2)
-      expect(results[freeCourseId].canAccessCourse).toBe(true)
-      expect(results[freeCourseId].isFreeCourse).toBe(true)
-      expect(results[premiumCourseId].canAccessCourse).toBe(true)
-      expect(results[premiumCourseId].isPremiumCourse).toBe(true)
+      expect(courses.size).toBe(2)
+      expect(courses.get(freeCourseId)).toMatchObject({ entitled: true, source: 'free', tier: 'FREE' })
+      expect(courses.get(premiumCourseId)).toMatchObject({ entitled: true, source: 'subscription', tier: 'PREMIUM' })
     })
 
     test('returns empty results for empty course list', async () => {
-      const results = await AccessService.checkMultipleCoursesAccess(freeUserId, [])
-      expect(Object.keys(results)).toHaveLength(0)
+      const { courses } = await getEntitlements(freeUserId, [])
+      expect(courses.size).toBe(0)
     })
   })
 
   describe('Access state resolution for UI', () => {
-    test('resolves correct access states for UI rendering', async () => {
-      // Free course without enrollment
-      const freeAccess = await AccessService.checkCourseAccess(freeUserId, freeCourseId)
-      const freeState = AccessService.resolveAccessState(freeAccess)
-      expect(freeState).toBe('FREE')
+    test('the status a card shows follows the entitlement', async () => {
+      const free = await getEntitlement(freeUserId, freeCourseId)
+      expect(viewerStatus(free)).toBe('none') // free, not enrolled yet: "S'inscrire"
 
-      // Premium course without enrollment
-      const premiumAccess = await AccessService.checkCourseAccess(freeUserId, premiumCourseId)
-      const premiumState = AccessService.resolveAccessState(premiumAccess)
-      expect(premiumState).toBe('LOCKED')
+      const premium = await getEntitlement(freeUserId, premiumCourseId)
+      expect(viewerStatus(premium)).toBe('none')
 
-      // Enrolled course
       await db.enrollment.create({ data: { userId: freeUserId, courseId: freeCourseId } })
-      const enrolledAccess = await AccessService.checkCourseAccess(freeUserId, freeCourseId)
-      const enrolledState = AccessService.resolveAccessState(enrolledAccess)
-      expect(enrolledState).toBe('ENROLLED')
+      expect(viewerStatus(await getEntitlement(freeUserId, freeCourseId))).toBe('enrolled')
     })
   })
 })

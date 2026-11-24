@@ -1,4 +1,4 @@
-"use server";
+import "server-only";
 
 import fs from "fs/promises";
 import matter from "gray-matter";
@@ -10,6 +10,7 @@ import remarkGfm from "remark-gfm";
 import { BLOG_DIR, BlogPost, BlogPostMeta } from "./types";
 import { calculateReadingTime } from "./utils";
 import { components } from "@/components/mdx";
+import { isValidBlogSlug } from "./blog-slug";
 
 async function getFileLastModifiedDate(filePath: string): Promise<string> {
   try {
@@ -21,10 +22,33 @@ async function getFileLastModifiedDate(filePath: string): Promise<string> {
   }
 }
 
-export async function getBlogPost(slug: string): Promise<BlogPost> {
+/**
+ * Whether a post of this slug exists. The slug comes from a URL: anything that is not a plain slug is refused before
+ * it touches the file system (`../` would otherwise read and COMPILE any .mdx file of the server).
+ */
+export async function blogPostExists(slug: string): Promise<boolean> {
+  if (!isValidBlogSlug(slug)) return false;
+  try {
+    await fs.access(join(BLOG_DIR, `${slug}.mdx`));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** The post, or null when the slug is invalid, the post does not exist, or it is a draft in production. */
+export async function getBlogPost(slug: string): Promise<BlogPost | null> {
+  if (!isValidBlogSlug(slug)) return null;
   const filePath = join(BLOG_DIR, `${slug}.mdx`);
-  const fileContent = await fs.readFile(filePath, "utf8");
+  let fileContent: string;
+  try {
+    fileContent = await fs.readFile(filePath, "utf8");
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+    throw error;
+  }
   const { data, content } = matter(fileContent);
+  if (data.draft && process.env.NODE_ENV === "production") return null;
   const lastModified = await getFileLastModifiedDate(filePath);
 
   const { content: mdxContent } = await compileMDX({
@@ -101,16 +125,13 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
         const fileContent = await fs.readFile(filePath, "utf8");
         const { content } = matter(fileContent);
         const blogPost = await getBlogPost(slug);
-        return {
-          ...blogPost,
-          readingTime: calculateReadingTime(content),
-        };
+        return blogPost ? { ...blogPost, readingTime: calculateReadingTime(content) } : null;
       }),
   );
 
-  const sortedPosts = posts.sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-  );
+  const sortedPosts = posts
+    .filter((post): post is BlogPost => post !== null)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   if (process.env.NODE_ENV === "production") {
     return sortedPosts.filter((post) => !post.draft);

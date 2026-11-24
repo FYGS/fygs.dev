@@ -90,6 +90,19 @@ const footerContent = {
           }),
         },
         {
+          href: "/parcours",
+          label: t({
+            en: "Learning paths",
+            fr: "Parcours",
+            es: "Rutas",
+          }),
+          description: t({
+            en: "Courses in sequence, with a certificate",
+            fr: "Des formations enchaînées, avec certificat",
+            es: "Cursos en secuencia, con certificado",
+          }),
+        },
+        {
           href: "/pricing",
           label: t({
             en: "Plans",

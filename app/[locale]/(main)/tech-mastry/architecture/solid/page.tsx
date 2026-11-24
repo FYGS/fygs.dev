@@ -1,16 +1,12 @@
-import { Metadata } from "next";
 import { SolidExplorer } from "./_components/solid-explorer";
 import { Target } from "lucide-react";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Principes SOLID | TechMastry",
-  description:
-    "Les 5 principes SOLID expliqués avec des exemples avant/après en TypeScript",
-};
+export const metadata = topicMetadata("/tech-mastry/architecture/solid");
 
 export default function SolidPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <section className="text-center space-y-6">
         <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-green-500/10 text-green-500">
           <Target className="w-8 h-8" />
@@ -27,6 +23,6 @@ export default function SolidPage() {
       </section>
 
       <SolidExplorer />
-    </main>
+    </div>
   );
 }

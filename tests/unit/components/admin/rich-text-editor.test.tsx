@@ -2,7 +2,8 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { useEditor } from "@tiptap/react";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
 
 // Mock tiptap to avoid JSDOM issues with contentEditable
@@ -110,10 +111,28 @@ describe("RichTextEditor", () => {
     render(<RichTextEditor content="" onChange={mockOnChange} />);
 
     expect(screen.getByTitle("Lien")).toBeTruthy();
-    expect(screen.getByTitle("Image")).toBeTruthy();
+    expect(screen.getByTitle("Insérer une image depuis un fichier")).toBeTruthy();
+    expect(screen.getByTitle("Insérer une image depuis une adresse")).toBeTruthy();
     expect(screen.getByTitle("Séparateur")).toBeTruthy();
     expect(screen.getByTitle("Annuler")).toBeTruthy();
     expect(screen.getByTitle("Rétablir")).toBeTruthy();
+  });
+
+  it("uploads a chosen image and inserts it in the lesson", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ url: "https://cdn.example.com/lessons/schema.png" }) });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<RichTextEditor content="" onChange={mockOnChange} />);
+
+    const input = screen.getByLabelText("Choisir une image à insérer") as HTMLInputElement;
+    const file = new File(["x"], "schema.png", { type: "image/png" });
+    fireEvent.change(input, { target: { files: [file] } });
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith("/api/upload/image", expect.objectContaining({ method: "POST" })));
+    const editor = vi.mocked(useEditor).mock.results[0].value;
+    await waitFor(() =>
+      expect(editor.chain().focus().setImage).toHaveBeenCalledWith(expect.objectContaining({ src: "https://cdn.example.com/lessons/schema.png" })),
+    );
+    vi.unstubAllGlobals();
   });
 
   it("applies custom className", () => {

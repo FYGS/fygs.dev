@@ -1,132 +1,180 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { LearningTopBar } from "./learning-top-bar";
-import { LearningSidebar } from "./learning-sidebar";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { itemHref, neighbours } from "@/lib/learning/outline";
 import { cn } from "@/lib/utils";
+import { LearningProvider, useLearning } from "./learning-context";
+import { LearningSidebar } from "./learning-sidebar";
+import { LearningTopBar } from "./learning-top-bar";
+import { useCurrentItem } from "./use-current-item";
+import type { ComponentProps } from "react";
 
-interface CourseItem {
-  id: string;
-  title: string;
-  slug: string;
-  order: number;
-  type: "lesson" | "quiz";
-  url: string;
+const DESKTOP_QUERY = "(min-width: 768px)";
+
+function subscribeDesktop(onChange: () => void) {
+  const query = window.matchMedia(DESKTOP_QUERY);
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
 }
 
-interface Module {
-  id: string;
-  title: string;
-  items: CourseItem[];
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/** Small screens: previous, progress, next, always at hand under the thumb. */
+function MobileBar() {
+  const { outline, courseSlug, openableIds, progress, mode } = useLearning();
+  const current = useCurrentItem();
+  const { previous, next } = current ? neighbours(outline, current.id) : { previous: null, next: null };
+  const href = (item: NonNullable<typeof previous>) => (openableIds.has(item.id) ? itemHref(courseSlug, item) : `/formations/${courseSlug}`);
+
+  return (
+    <nav
+      aria-label="Étape précédente ou suivante"
+      className="learning-mobile-bar safe-area-pb fixed inset-x-0 bottom-0 z-30 flex items-center gap-2 border-t bg-background px-3 pt-2 md:hidden"
+    >
+      {previous ? (
+        <Button variant="ghost" size="icon" asChild className="h-10 w-10 shrink-0">
+          <Link href={href(previous)} aria-label={`Précédent : ${previous.title}`}>
+            <ChevronLeft className="h-5 w-5" aria-hidden />
+          </Link>
+        </Button>
+      ) : (
+        // Nothing before: keep the space so the bar does not shift, but no control a screen reader would meet unnamed
+        <span aria-hidden className="h-10 w-10 shrink-0" />
+      )}
+      <div className="flex min-w-0 flex-1 items-center gap-2">
+        {mode !== "preview" ? (
+          <>
+            <Progress value={progress.percent} aria-label="Progression dans la formation" className="h-2 flex-1" />
+            <span className="shrink-0 text-xs font-medium text-muted-foreground">{progress.percent} %</span>
+          </>
+        ) : (
+          <span className="flex-1 text-center text-xs text-muted-foreground">Aperçu gratuit</span>
+        )}
+      </div>
+      {next ? (
+        <Button variant="ghost" size="icon" asChild className="h-10 w-10 shrink-0">
+          <Link href={href(next)} aria-label={`Suivant : ${next.title}`}>
+            <ChevronRight className="h-5 w-5" aria-hidden />
+          </Link>
+        </Button>
+      ) : (
+        <span aria-hidden className="h-10 w-10 shrink-0" />
+      )}
+    </nav>
+  );
 }
 
-interface ProgressData {
-  itemId: string;
-  completed: boolean;
-  type: "lesson" | "quiz";
-}
+function Frame({ children }: { children: React.ReactNode }) {
+  // Until hydration the page is laid out by CSS alone (docked on large screens, closed on small ones)
+  const isDesktop = useSyncExternalStore(
+    subscribeDesktop,
+    () => window.matchMedia(DESKTOP_QUERY).matches,
+    () => false,
+  );
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [desktopCollapsed, setDesktopCollapsed] = useState(false);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const mainRef = useRef<HTMLElement>(null);
+  const pathname = usePathname();
+  const firstRender = useRef(true);
 
-interface LearningShellProps {
-  courseTitle: string;
-  courseSlug: string;
-  lessonTitle: string;
-  progressPercentage: number;
-  lessons: CourseItem[];
-  modules: Module[];
-  currentLessonId: string;
-  progressData: ProgressData[];
-  children: React.ReactNode;
-}
+  const sidebarOpen = isDesktop ? !desktopCollapsed : mobileOpen;
+  const toggle = useCallback(() => {
+    if (isDesktop) setDesktopCollapsed((c) => !c);
+    else setMobileOpen((o) => !o);
+  }, [isDesktop]);
+  const closeOnSmallScreen = useCallback(() => setMobileOpen(false), []);
 
-export function LearningShell({
-  courseTitle,
-  courseSlug,
-  lessonTitle,
-  progressPercentage,
-  lessons,
-  modules,
-  currentLessonId,
-  progressData,
-  children,
-}: LearningShellProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Detect mobile and set sidebar default state
+  // After moving to another step, focus goes to its title: a screen reader announces it, Tab starts there
   useEffect(() => {
-    const mq = window.matchMedia("(min-width: 768px)");
-    const handler = (e: MediaQueryListEvent | MediaQueryList) => {
-      setIsMobile(!e.matches);
-      if (e.matches) setSidebarOpen(true);
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    const heading = mainRef.current?.querySelector<HTMLElement>("h1");
+    if (heading) {
+      if (!heading.hasAttribute("tabindex")) heading.setAttribute("tabindex", "-1");
+      heading.focus({ preventScroll: false });
+    } else {
+      mainRef.current?.focus();
+    }
+  }, [pathname]);
+
+  // The plan on a small screen is a dialog: focus moves into it, stays in it, Escape closes it and returns focus
+  useEffect(() => {
+    if (!mobileOpen || isDesktop) return;
+    const panel = document.getElementById("learning-sidebar");
+    const items = () => Array.from(panel?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? []);
+    const current = panel?.querySelector<HTMLElement>('[aria-current="page"]');
+    (current ?? items()[0])?.focus();
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setMobileOpen(false);
+        toggleRef.current?.focus();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const list = items();
+      if (list.length === 0) return;
+      const first = list[0];
+      const last = list[list.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     };
-    handler(mq);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
-
-  const handleToggleSidebar = () => {
-    setSidebarOpen((o) => !o);
-  };
-
-  // Close sidebar on mobile when navigating
-  const handleMobileClose = () => {
-    if (isMobile) setSidebarOpen(false);
-  };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [mobileOpen, isDesktop]);
 
   return (
     <>
-      <LearningTopBar
-        courseTitle={courseTitle}
-        courseSlug={courseSlug}
-        lessonTitle={lessonTitle}
-        progressPercentage={progressPercentage}
-        sidebarOpen={sidebarOpen}
-        onToggleSidebar={handleToggleSidebar}
-      />
+      <LearningTopBar sidebarOpen={sidebarOpen} onToggleSidebar={toggle} toggleRef={toggleRef} />
 
-      {/* Mobile backdrop */}
-      {isMobile && sidebarOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black/50 md:hidden"
-          onClick={handleMobileClose}
-          aria-hidden
-        />
+      {mobileOpen && !isDesktop && (
+        <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={closeOnSmallScreen} aria-hidden />
       )}
 
       <LearningSidebar
-        lessons={lessons}
-        modules={modules}
-        currentLessonId={currentLessonId}
-        progressData={progressData}
-        open={sidebarOpen}
+        hidden={isDesktop ? desktopCollapsed : !mobileOpen}
+        collapsedOnDesktop={desktopCollapsed}
+        modal={mobileOpen && !isDesktop}
+        onNavigate={closeOnSmallScreen}
       />
 
       <main
+        ref={mainRef}
+        id="main-content"
+        tabIndex={-1}
         className={cn(
-          "transition-[margin] duration-300 ease-in-out",
-          "pt-4 pb-20 px-4 md:pt-6 md:pb-12 md:px-8",
-          sidebarOpen && !isMobile ? "md:ml-80" : "ml-0",
+          "px-4 pb-24 pt-4 outline-hidden transition-[margin] duration-300 ease-in-out md:px-8 md:pb-12 md:pt-6",
+          !desktopCollapsed && "md:ml-80",
         )}
       >
-        <div className="max-w-4xl mx-auto">{children}</div>
+        <div className="mx-auto max-w-4xl">{children}</div>
       </main>
 
-      {/* Mobile bottom progress bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-background border-t p-3 safe-area-pb">
-        <div className="flex items-center gap-3">
-          <div className="flex-1">
-            <div className="h-2 rounded-full bg-muted overflow-hidden">
-              <div
-                className="h-full bg-primary rounded-full transition-all duration-500"
-                style={{ width: `${progressPercentage}%` }}
-              />
-            </div>
-          </div>
-          <span className="text-xs font-medium text-muted-foreground shrink-0">
-            {progressPercentage}%
-          </span>
-        </div>
-      </div>
+      <MobileBar />
     </>
+  );
+}
+
+export function LearningShell({
+  children,
+  ...provider
+}: Omit<ComponentProps<typeof LearningProvider>, "children"> & { children: React.ReactNode }) {
+  return (
+    <LearningProvider {...provider}>
+      <Frame>{children}</Frame>
+    </LearningProvider>
   );
 }

@@ -198,6 +198,8 @@ export function CommunitySidebar({
                 size="sm"
                 onClick={() => setIsTopicsExpanded(!isTopicsExpanded)}
                 className="h-6 w-6 p-0"
+                aria-label={isTopicsExpanded ? "Réduire les sujets" : "Développer les sujets"}
+                aria-expanded={isTopicsExpanded}
               >
                 {isTopicsExpanded ? (
                   <ChevronDown className="h-3 w-3" />

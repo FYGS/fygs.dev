@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Suspense } from "react";
 import { ReviewSearchPage } from "@/components/reviews/review-search-page";
 import { Card, CardContent } from "@/components/ui/card";
@@ -140,13 +141,13 @@ export default function ReviewsPage() {
                 Votre avis compte et contribue à l&apos;amélioration continue de nos formations.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <a 
+                <Link 
                   href="/formations"
                   className="inline-flex items-center justify-center px-6 py-3 bg-blue-700 text-white font-medium rounded-lg hover:bg-blue-800 transition-colors border border-blue-500"
                 >
                   <MessageSquare className="h-4 w-4 mr-2" />
                   Parcourir les formations
-                </a>
+                </Link>
               </div>
             </div>
           </CardContent>

@@ -15,10 +15,32 @@ import type {
   DiscussionVote,
   User,
   Course,
-} from "@prisma/client";
+} from "@/lib/generated/prisma/browser";
 
 // Base Community Types
-export type CommunityUser = User & {
+
+/**
+ * What anyone may see of a member. The community pages are public, so a community user is NEVER a whole `User` row
+ * (e-mail, verification and ban state, plan, two-factor state...): queries select `PUBLIC_USER_SELECT`
+ * (lib/services/community/public-user.ts) and the type below only has those fields.
+ */
+export type PublicUser = Pick<
+  User,
+  | "id"
+  | "name"
+  | "image"
+  | "role"
+  | "bio"
+  | "githubUrl"
+  | "linkedinUrl"
+  | "websiteUrl"
+  | "communityPoints"
+  | "communityLevel"
+  | "createdAt"
+  | "lastActiveAt"
+>;
+
+export type CommunityUser = PublicUser & {
   userBadges: (UserBadge & { badge: Badge })[];
   _count: {
     discussions: number;
@@ -203,11 +225,24 @@ export const searchSchema = z.object({
   limit: z.number().min(1).max(50).default(20),
 });
 
+/** A link shown on a public profile: https only (no javascript:, data:, http:), at most 200 characters. */
+const httpsUrl = z
+  .string()
+  .max(200)
+  .url()
+  .refine((value) => {
+    try {
+      return new URL(value).protocol === "https:";
+    } catch {
+      return false;
+    }
+  }, "L'adresse doit commencer par https://");
+
 export const updateProfileSchema = z.object({
   bio: z.string().max(500).optional(),
-  githubUrl: z.string().url().optional().or(z.literal("")),
-  linkedinUrl: z.string().url().optional().or(z.literal("")),
-  websiteUrl: z.string().url().optional().or(z.literal("")),
+  githubUrl: httpsUrl.optional().or(z.literal("")),
+  linkedinUrl: httpsUrl.optional().or(z.literal("")),
+  websiteUrl: httpsUrl.optional().or(z.literal("")),
 });
 
 // Action Result Types

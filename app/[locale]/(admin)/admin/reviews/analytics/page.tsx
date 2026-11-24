@@ -1,13 +1,12 @@
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { Role } from "@prisma/client";
+import { requireAdminPage } from "@/lib/admin-guard";
+import { ReviewStatus } from "@/lib/generated/prisma/browser";
+import { db } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { 
-  BarChart3, 
-  TrendingUp, 
+import {
+  BarChart3,
+  TrendingUp,
   Star,
   MessageSquare,
   Calendar,
@@ -17,32 +16,37 @@ import {
 import { ReviewAnalyticsService } from "@/lib/services/review-analytics";
 import { StarRatingDisplay } from "@/components/reviews/star-rating";
 
+/** How many approved reviews gave each rating: the page's distribution and its positive / neutral / negative split. */
+async function getRatingCounts(): Promise<Record<number, number>> {
+  const rows = await db.review.groupBy({ by: ["rating"], where: { status: ReviewStatus.APPROVED }, _count: { _all: true } });
+  const counts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  for (const row of rows) counts[row.rating] = row._count._all;
+  return counts;
+}
+
+/** Share of reviews rated 4-5 (positive), 3 (neutral) and 1-2 (negative); all zero when there is no review. */
+function ratingSplit(counts: Record<number, number>) {
+  const total = Object.values(counts).reduce((sum, n) => sum + n, 0);
+  if (total === 0) return { positive: 0, neutral: 0, negative: 0 };
+  return {
+    positive: (counts[4] + counts[5]) / total,
+    neutral: counts[3] / total,
+    negative: (counts[1] + counts[2]) / total,
+  };
+}
+
 async function getAnalyticsData() {
-  const [globalStats, sentimentData] = await Promise.all([
-    ReviewAnalyticsService.getGlobalReviewStats(),
-    // Placeholder for sentiment analysis - will be implemented later
-    Promise.resolve({ positive: 0.75, neutral: 0.15, negative: 0.10 })
-  ]);
-  
-  return { globalStats, sentimentData };
+  const [globalStats, ratingCounts] = await Promise.all([ReviewAnalyticsService.getGlobalReviewStats(), getRatingCounts()]);
+  return { globalStats, ratingCounts, sentimentData: ratingSplit(ratingCounts) };
 }
 
 export default async function AdminReviewsAnalyticsPage() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  // Administrators only: an instructor who types the URL goes back to the back-office home
+  await requireAdminPage();
 
-  if (!session?.user) {
-    redirect("/auth/login");
-  }
+  const { globalStats, ratingCounts, sentimentData } = await getAnalyticsData();
 
-  if (session.user.role !== Role.ADMIN) {
-    redirect("/unauthorized");
-  }
-
-  const { globalStats, sentimentData } = await getAnalyticsData();
-
-  // Calculate growth rate (mock calculation)
+  // Growth of the number of reviews, this month against the previous one
   const monthlyData = Object.values(globalStats.reviewsByMonth) as Array<{ count: number; averageRating: number }>;
   const currentMonth = monthlyData[monthlyData.length - 1]?.count || 0;
   const lastMonth = monthlyData[monthlyData.length - 2]?.count || 0;
@@ -60,7 +64,7 @@ export default async function AdminReviewsAnalyticsPage() {
         </div>
         <Badge variant="outline" className="text-lg px-4 py-2">
           <Calendar className="h-4 w-4 mr-2" />
-          Mis à jour maintenant
+          Avis approuvés uniquement
         </Badge>
       </div>
 
@@ -77,7 +81,7 @@ export default async function AdminReviewsAnalyticsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-600">
+            <div className="text-3xl font-bold text-blue-400">
               {((globalStats.totalReviews / globalStats.totalCourses) * 100).toFixed(1)}%
             </div>
             <p className="text-sm text-muted-foreground mt-1">
@@ -113,15 +117,15 @@ export default async function AdminReviewsAnalyticsPage() {
               <div className="p-2 rounded-lg bg-purple-900/30">
                 <Target className="h-4 w-4 text-purple-600" />
               </div>
-              Sentiment positif
+              Avis positifs
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-purple-600">
+            <div className="text-3xl font-bold text-purple-400">
               {(sentimentData.positive * 100).toFixed(0)}%
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              Analyse automatique
+              Notes de 4 et 5 étoiles
             </p>
           </CardContent>
         </Card>
@@ -160,9 +164,9 @@ export default async function AdminReviewsAnalyticsPage() {
           <CardContent>
             <div className="space-y-4">
               {[5, 4, 3, 2, 1].map((rating) => {
-                const count = Math.floor(Math.random() * 100); // Mock data
-                const percentage = (count / globalStats.totalReviews) * 100;
-                
+                const count = ratingCounts[rating] ?? 0;
+                const percentage = globalStats.totalReviews > 0 ? (count / globalStats.totalReviews) * 100 : 0;
+
                 return (
                   <div key={rating} className="flex items-center gap-4">
                     <div className="flex items-center gap-1 w-16">
@@ -171,7 +175,7 @@ export default async function AdminReviewsAnalyticsPage() {
                     </div>
                     <div className="flex-1">
                       <div className="w-full bg-secondary rounded-full h-2">
-                        <div 
+                        <div
                           className="bg-gradient-to-r from-yellow-400 to-orange-500 h-2 rounded-full transition-all duration-300"
                           style={{ width: `${percentage}%` }}
                         />
@@ -187,9 +191,9 @@ export default async function AdminReviewsAnalyticsPage() {
                 );
               })}
             </div>
-            
+
             <Separator className="my-6" />
-            
+
             <div className="grid grid-cols-2 gap-4 text-center">
               <div>
                 <div className="text-2xl font-bold text-green-600">
@@ -198,7 +202,7 @@ export default async function AdminReviewsAnalyticsPage() {
                 <p className="text-sm text-muted-foreground">Note moyenne</p>
               </div>
               <div>
-                <div className="text-2xl font-bold text-blue-600">
+                <div className="text-2xl font-bold text-blue-400">
                   {globalStats.totalReviews}
                 </div>
                 <p className="text-sm text-muted-foreground">Total avis</p>
@@ -222,11 +226,11 @@ export default async function AdminReviewsAnalyticsPage() {
                 const maxCount = Math.max(...array.map(([, d]) => (d as { count: number }).count));
                 const percentage = (monthData.count / maxCount) * 100;
                 const date = new Date(month + '-01');
-                const monthName = date.toLocaleDateString('fr-FR', { 
-                  month: 'short', 
-                  year: 'numeric' 
+                const monthName = date.toLocaleDateString('fr-FR', {
+                  month: 'short',
+                  year: 'numeric'
                 });
-                
+
                 return (
                   <div key={month} className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
@@ -240,7 +244,7 @@ export default async function AdminReviewsAnalyticsPage() {
                       </div>
                     </div>
                     <div className="w-full bg-secondary rounded-full h-2">
-                      <div 
+                      <div
                         className="bg-gradient-to-r from-blue-400 to-cyan-500 h-2 rounded-full transition-all duration-500"
                         style={{ width: `${percentage}%` }}
                       />
@@ -277,8 +281,8 @@ export default async function AdminReviewsAnalyticsPage() {
                       {course.title}
                     </p>
                     <div className="flex items-center gap-2 mt-1">
-                      <StarRatingDisplay 
-                        rating={course.averageRating} 
+                      <StarRatingDisplay
+                        rating={course.averageRating}
                         showNumbers={false}
                         size="sm"
                       />
@@ -288,7 +292,7 @@ export default async function AdminReviewsAnalyticsPage() {
                     </div>
                   </div>
                   {index < 3 && (
-                    <Badge 
+                    <Badge
                       variant={index === 0 ? 'default' : 'secondary'}
                       className="text-xs"
                     >
@@ -306,7 +310,7 @@ export default async function AdminReviewsAnalyticsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MessageSquare className="h-5 w-5 text-purple-500" />
-              Analyse de sentiment
+              Répartition des avis
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -315,14 +319,14 @@ export default async function AdminReviewsAnalyticsPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-green-500" />
-                    <span className="text-sm font-medium">Positif</span>
+                    <span className="text-sm font-medium">Positifs (4-5 étoiles)</span>
                   </div>
                   <span className="text-sm font-bold text-green-600">
                     {(sentimentData.positive * 100).toFixed(1)}%
                   </span>
                 </div>
                 <div className="w-full bg-secondary rounded-full h-2">
-                  <div 
+                  <div
                     className="bg-green-500 h-2 rounded-full transition-all duration-300"
                     style={{ width: `${sentimentData.positive * 100}%` }}
                   />
@@ -333,14 +337,14 @@ export default async function AdminReviewsAnalyticsPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                    <span className="text-sm font-medium">Neutre</span>
+                    <span className="text-sm font-medium">Neutres (3 étoiles)</span>
                   </div>
                   <span className="text-sm font-bold text-yellow-600">
                     {(sentimentData.neutral * 100).toFixed(1)}%
                   </span>
                 </div>
                 <div className="w-full bg-secondary rounded-full h-2">
-                  <div 
+                  <div
                     className="bg-yellow-500 h-2 rounded-full transition-all duration-300"
                     style={{ width: `${sentimentData.neutral * 100}%` }}
                   />
@@ -351,14 +355,14 @@ export default async function AdminReviewsAnalyticsPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-red-500" />
-                    <span className="text-sm font-medium">Négatif</span>
+                    <span className="text-sm font-medium">Négatifs (1-2 étoiles)</span>
                   </div>
                   <span className="text-sm font-bold text-red-600">
                     {(sentimentData.negative * 100).toFixed(1)}%
                   </span>
                 </div>
                 <div className="w-full bg-secondary rounded-full h-2">
-                  <div 
+                  <div
                     className="bg-red-500 h-2 rounded-full transition-all duration-300"
                     style={{ width: `${sentimentData.negative * 100}%` }}
                   />
@@ -375,7 +379,7 @@ export default async function AdminReviewsAnalyticsPage() {
                   {((sentimentData.positive * 100) + (sentimentData.neutral * 50)).toFixed(0)}/100
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Basé sur l&apos;analyse IA
+                  Positifs + la moitié des neutres, d&apos;après les notes
                 </p>
               </div>
             </div>

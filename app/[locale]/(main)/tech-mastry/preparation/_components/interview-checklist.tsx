@@ -8,7 +8,7 @@ const checklistItems = [
   { category: "Technique", items: [
     "Maîtrise des structures de données (arrays, trees, graphs, hash maps, heaps)",
     "Algorithmes de tri et recherche",
-    "Programmation dynamique (top 10 patterns)",
+    "Programmation dynamique (patterns classiques : knapsack, LIS, grille, sous-chaînes)",
     "System Design : au moins 5 designs pratiqués",
     "Connaissances du framework/stack de l'entreprise cible",
     "SQL : JOINs, GROUP BY, window functions",

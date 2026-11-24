@@ -39,8 +39,8 @@ array.splice(2, 1); // O(n)`,
     complexity: {
       access: "O(n)",
       search: "O(n)",
-      insertion: "O(1)",
-      deletion: "O(1)",
+      insertion: "O(1) si le noeud est connu",
+      deletion: "O(1) si le noeud est connu",
     },
     code: `class Node {
   constructor(data) {
@@ -84,16 +84,16 @@ class LinkedList {
       "Taille dynamique",
       "Implémentation de piles/files",
     ],
-    pros: ["Insertions/suppressions efficaces", "Taille dynamique", "Pas de réallocation"],
+    pros: ["Insertion/suppression en O(1) une fois le noeud atteint", "Taille dynamique", "Pas de réallocation"],
     cons: ["Accès séquentiel", "Plus de mémoire utilisée", "Pas d'accès direct"],
   },
   {
     name: "Arbres Binaires de Recherche",
     complexity: {
-      access: "O(log n)",
-      search: "O(log n)",
-      insertion: "O(log n)",
-      deletion: "O(log n)",
+      access: "O(log n)* / O(n) pire cas",
+      search: "O(log n)* / O(n) pire cas",
+      insertion: "O(log n)* / O(n) pire cas",
+      deletion: "O(log n)* / O(n) pire cas",
     },
     code: `class TreeNode {
   constructor(data) {
@@ -149,16 +149,16 @@ class BinarySearchTree {
       "Maintien de données triées",
       "Implémentation de dictionnaires",
     ],
-    pros: ["Recherche efficace", "Maintient l'ordre", "Équilibré: performances garanties"],
+    pros: ["Recherche efficace", "Maintient l'ordre", "O(log n) garanti si équilibré (AVL, rouge-noir)"],
     cons: ["Complexité d'implémentation", "Peut devenir déséquilibré", "Overhead mémoire"],
   },
   {
     name: "Tables de Hachage",
     complexity: {
-      access: "O(1)*",
-      search: "O(1)*",
-      insertion: "O(1)*",
-      deletion: "O(1)*",
+      access: "O(1) moyen / O(n) pire cas",
+      search: "O(1) moyen / O(n) pire cas",
+      insertion: "O(1) amorti / O(n) pire cas",
+      deletion: "O(1) moyen / O(n) pire cas",
     },
     code: `class HashTable {
   constructor(size = 53) {
@@ -170,7 +170,7 @@ class BinarySearchTree {
     const PRIME = 31;
     for (let i = 0; i < Math.min(key.length, 100); i++) {
       const char = key[i];
-      const value = char.charCodeAt(0) - 96;
+      const value = char.charCodeAt(0);
       total = (total * PRIME + value) % this.keyMap.length;
     }
     return total;
@@ -212,7 +212,7 @@ const optimizationTips = [
     title: "Choix de la Structure",
     tips: [
       "Accès fréquent → Tableau/HashTable",
-      "Insertions fréquentes → Liste chaînée",
+      "Insertions fréquentes en tête ou à une position déjà connue → Liste chaînée",
       "Données ordonnées → Arbre binaire",
       "Associations clé-valeur → Table de hachage",
     ],
@@ -235,7 +235,7 @@ const commonQuestions = [
   },
   {
     question: "Quand utiliser un BST ?",
-    answer: "Pour maintenir des données triées avec recherche, insertion et suppression efficaces en O(log n).",
+    answer: "Pour maintenir des données triées avec recherche, insertion et suppression en O(log n) si l'arbre est équilibré (sinon O(n) dans le pire cas).",
   },
   {
     question: "Comment gérer les collisions dans une HashTable ?",
@@ -321,7 +321,7 @@ export function DataStructuresGuide() {
                   <Code2 className="w-4 h-4" />
                   Implémentation
                 </h3>
-                <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+                <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
                   <code>{structure.code}</code>
                 </pre>
               </div>

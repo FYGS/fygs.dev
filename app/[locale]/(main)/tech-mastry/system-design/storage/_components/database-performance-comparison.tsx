@@ -42,7 +42,7 @@ export function DatabasePerformanceComparison() {
                     Comparaison de Performance des Bases de Données
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Temps de réponse moyen pour différentes opérations (ms)
+                    Ordres de grandeur illustratifs (ms), non issus d&apos;un benchmark réel
                   </p>
                 </div>
 
@@ -246,7 +246,7 @@ export function DatabasePerformanceComparison() {
                     Lectures Intensives
                   </h4>
                   <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
-                    <li>Bases de données en colonnes (Vertica, ClickHouse)</li>
+                    <li>Bases analytiques à stockage colonnaire (Vertica, ClickHouse)</li>
                     <li>Bases de données en mémoire (Redis)</li>
                     <li>
                       Bases de données de documents avec indexation (MongoDB)
@@ -263,7 +263,7 @@ export function DatabasePerformanceComparison() {
                     Écritures Intensives
                   </h4>
                   <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
-                    <li>Bases de données clé-valeur (DynamoDB, Cassandra)</li>
+                    <li>Bases clé-valeur et wide-column (DynamoDB, Cassandra)</li>
                     <li>
                       Bases de données de séries temporelles (InfluxDB,
                       TimescaleDB)

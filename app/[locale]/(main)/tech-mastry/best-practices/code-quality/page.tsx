@@ -1,10 +1,7 @@
 import { CodeQualityGuide } from "./_components/code-quality-guide";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata = {
-  title: "Guide de Qualité de Code | Préparation aux Entretiens",
-  description:
-    "Guide complet sur les meilleures pratiques de qualité de code pour les entretiens techniques.",
-};
+export const metadata = topicMetadata("/tech-mastry/best-practices/code-quality");
 
 export default function CodeQualityPage() {
   return (

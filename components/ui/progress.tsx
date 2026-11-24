@@ -13,6 +13,10 @@ const Progress = React.forwardRef<
 >(({ className, value, indicatorClassName, ...props }, ref) => (
   <ProgressPrimitive.Root
     ref={ref}
+    // the value must reach the root: it is what exposes aria-valuenow to assistive technology.
+    // A progress bar needs a name (WCAG 4.1.2): callers should say what it measures, this is the fallback.
+    value={value}
+    {...(props["aria-labelledby"] || props["aria-label"] ? {} : { "aria-label": "Progression" })}
     className={cn(
       "relative h-2 w-full overflow-hidden rounded-full bg-muted",
       className

@@ -74,7 +74,8 @@ const searchAlgorithms = [
   let high = arr.length - 1;
   
   while (low <= high && target >= arr[low] && target <= arr[high]) {
-    if (low === high) {
+    // Évite une division par zéro (valeurs identiques dans [low, high])
+    if (arr[low] === arr[high]) {
       return arr[low] === target ? low : -1;
     }
     
@@ -110,9 +111,11 @@ const searchAlgorithms = [
     },
     code: `function hashSearch(arr, target) {
   const hashMap = new Map();
-  // Construction de la table de hachage
+  // Construction de la table en O(n) : à faire une seule fois,
+  // puis à réutiliser pour les recherches suivantes en O(1)
   for (let i = 0; i < arr.length; i++) {
-    hashMap.set(arr[i], i);
+    // On ne définit que si la clé est absente : on garde la PREMIÈRE occurrence
+    if (!hashMap.has(arr[i])) hashMap.set(arr[i], i);
   }
   return hashMap.has(target) ? hashMap.get(target) : -1;
 }`,
@@ -155,7 +158,7 @@ const commonQuestions = [
   },
   {
     question: "Table de hachage vs Arbre binaire ?",
-    answer: "Table de hachage pour O(1) moyen mais plus de mémoire, arbre binaire pour O(log n) garanti et moins de mémoire.",
+    answer: "Table de hachage pour O(1) moyen mais plus de mémoire, arbre binaire de recherche équilibré pour O(log n) garanti, avec en plus l'ordre des clés et les recherches par plage.",
   },
   {
     question: "Comment gérer les doublons ?",
@@ -223,7 +226,7 @@ export function SearchingGuide() {
                   <Code2 className="w-4 h-4" />
                   Implémentation
                 </h3>
-                <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+                <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
                   <code>{algo.code}</code>
                 </pre>
               </div>

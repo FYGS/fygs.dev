@@ -18,6 +18,7 @@ export function usePageMemory() {
   // Charger les pages mémorisées une seule fois au montage
   useEffect(() => {
     if (isInitialized.current) return;
+    isInitialized.current = true;
 
     const stored = localStorage.getItem(PAGE_MEMORY_KEY);
     if (stored) {
@@ -27,12 +28,11 @@ export function usePageMemory() {
         const validPages = pages.filter(
           (page) => now - page.timestamp < MEMORY_DURATION
         );
-        setLastVisitedPages(validPages);
+        queueMicrotask(() => setLastVisitedPages(validPages));
       } catch (error) {
         console.error("Error loading page memory:", error);
       }
     }
-    isInitialized.current = true;
   }, []);
 
   // Sauvegarder la page actuelle de manière optimisée

@@ -1,0 +1,21 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`LinkedListVisualization rendering > renders the same markup in every state reachable by clicking 1`] = `
+[
+  "fe35ec9d",
+  "9e0d5984",
+  "61ccedb1",
+  "dae30c84",
+  "ad24a989",
+  "e82f4c8a",
+  "4b5d76d6",
+  "91c5684d",
+  "dae30c84",
+  "bbecbc1f",
+  "43b519cd",
+  "458dfc05",
+  "5aaf869c",
+  "f06e2f3d",
+  "28649676",
+]
+`;

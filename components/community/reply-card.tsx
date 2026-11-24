@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { formatDistanceToNow } from "date-fns";
-import { ArrowUp, ArrowDown, MessageCircle, MoreHorizontal, Flag, Edit2, Trash2 } from "lucide-react";
+import { ArrowUp, ArrowDown, MessageCircle, MoreHorizontal, Edit2, Trash2 } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 
@@ -30,6 +30,8 @@ interface ReplyCardProps {
   level?: number;
   maxDepth?: number;
   className?: string;
+  /** The instructor of the course the discussion belongs to: their answers are marked "Formateur". */
+  instructorId?: string | null;
 }
 
 export function ReplyCard({
@@ -39,6 +41,7 @@ export function ReplyCard({
   level = 0,
   maxDepth = 4,
   className,
+  instructorId = null,
 }: ReplyCardProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -173,7 +176,10 @@ export function ReplyCard({
                     {reply.author.name}
                   </Link>
                   
-                  {isModerator && (
+                  {instructorId && reply.authorId === instructorId && (
+                    <Badge className="text-xs">Formateur</Badge>
+                  )}
+                  {isModerator && reply.authorId !== instructorId && (
                     <Badge variant="secondary" className="text-xs">
                       Moderator
                     </Badge>
@@ -181,7 +187,7 @@ export function ReplyCard({
                 </div>
                 
                 <UserBadges 
-                  user={reply.author as any}
+                  user={reply.author}
                   showLevel={true}
                   showBadges={true}
                   maxBadges={2}
@@ -196,11 +202,11 @@ export function ReplyCard({
                 {reply.updatedAt !== reply.createdAt && " (edited)"}
               </span>
               
-              {(isAuthor || currentUserId) && (
+              {isAuthor && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                      <MoreHorizontal className="h-3 w-3" />
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0" aria-label="Actions de la réponse">
+                      <MoreHorizontal className="h-3 w-3" aria-hidden="true" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -218,12 +224,6 @@ export function ReplyCard({
                           Delete
                         </DropdownMenuItem>
                       </>
-                    )}
-                    {!isAuthor && currentUserId && (
-                      <DropdownMenuItem>
-                        <Flag className="h-4 w-4 mr-2" />
-                        Report
-                      </DropdownMenuItem>
                     )}
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -332,6 +332,7 @@ export function ReplyCard({
               currentUserId={currentUserId}
               level={level + 1}
               maxDepth={maxDepth}
+              instructorId={instructorId}
             />
           ))}
         </div>

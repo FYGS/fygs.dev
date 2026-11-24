@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { BookOpen, CheckCircle2 } from "lucide-react";
+import Link from "next/link";
 
 interface LearningPath {
   id: string;
@@ -13,6 +14,8 @@ interface LearningPath {
   totalModules: number;
   completedModules: number;
   icon: React.ReactNode;
+  /** Where "Continue" leads */
+  href: string;
 }
 
 interface LearningPathCardProps {
@@ -41,20 +44,22 @@ export function LearningPathCard({ path }: LearningPathCardProps) {
         
         <div className="space-y-1">
           <div className="flex justify-between text-sm">
-            <span className="font-medium">Progress</span>
+            <span className="font-medium">Avancement</span>
             <span>{path.progress}%</span>
           </div>
-          <Progress value={path.progress} className="h-2" />
+          <Progress value={path.progress} className="h-2" aria-label={`${path.title} : avancement`} />
           <div className="text-xs text-muted-foreground">
-            {path.completedModules} of {path.totalModules} modules completed
+            {path.completedModules} sujet{path.completedModules > 1 ? "s" : ""} terminé{path.completedModules > 1 ? "s" : ""} sur {path.totalModules}
           </div>
         </div>
       </CardContent>
       
       <CardFooter>
-        <Button className="w-full gap-2">
-          <BookOpen className="h-4 w-4" />
-          {isCompleted ? "Review Path" : "Continue Learning"}
+        <Button asChild className="w-full gap-2">
+          <Link href={path.href}>
+            <BookOpen className="h-4 w-4" aria-hidden="true" />
+            {path.completedModules === 0 ? "Commencer" : isCompleted ? "Revoir le domaine" : "Continuer"}
+          </Link>
         </Button>
       </CardFooter>
     </Card>

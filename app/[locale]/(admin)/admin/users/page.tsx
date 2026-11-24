@@ -1,168 +1,96 @@
-import { Metadata } from "next";
-import { Suspense } from "react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 import { db } from "@/lib/db";
-import { UsersHeader } from "./_components/users-header";
-import { UsersTable } from "./_components/users-table";
+import { requireAdminPage } from "@/lib/admin-guard";
+import { USER_PLANS, USER_ROLES, listUsers } from "@/lib/services/admin-listings";
+import { Role } from "@/lib/generated/prisma/browser";
+import { AdminListShell, Td, Th, formatDateTime, formatMoney } from "../_components/list-shell";
+import { firstParam, type SearchParams } from "../_lib/search-params";
 import { UsersStats } from "./_components/users-stats";
-import { PaginationService, extractPaginationParams } from "@/lib/pagination-utils";
-import { safeNumber } from "@/lib/serialization-utils";
-import { PaymentStatus, Role, SubscriptionStatus } from "@prisma/client";
 
 export const metadata: Metadata = {
   title: "Gestion des Utilisateurs | Admin FYGS",
-  description: "Interface d'administration pour gérer les utilisateurs",
+  description: "Les comptes, leurs rôles et leur activité",
 };
 
-async function getUsersData(searchParams: URLSearchParams) {
-  const paginationParams = extractPaginationParams(searchParams);
-  
-  // Extraire les filtres spécifiques
-  const role = searchParams.get('role') || '';
-  
-  // Construire les filtres
-  const filters: any = {};
-  if (role && role !== 'all') {
-    filters.role = role;
-  }
-  
-  const [usersResult, stats] = await Promise.all([
-    // Récupérer les utilisateurs avec pagination
-    PaginationService.paginateWithIncludes(
-      db.user,
-      {
-        ...paginationParams,
-        filters,
-      },
-      {
-        enrollments: {
-          select: { id: true, enrolledAt: true },
-        },
-        subscriptions: {
-          select: { id: true, status: true, cancelAtPeriodEnd: true },
-        },
-        payments: {
-          where: { status: PaymentStatus.COMPLETED },
-          select: { amount: true },
-        },
-        progress: {
-          where: { completed: true },
-          select: { id: true },
-        },
-      },
-      ['name', 'email'], // Champs de recherche
-      {} // Clause WHERE additionnelle
-    ),
+const ROLE_LABEL: Record<string, string> = { STUDENT: "Étudiant", INSTRUCTOR: "Instructeur", ADMIN: "Administrateur" };
+const PLAN_LABEL: Record<string, string> = { premium: "Premium", free: "Sans abonnement" };
+const DAY = 24 * 60 * 60 * 1000;
 
-    // Statistiques globales
-    Promise.all([
-      db.user.count(),
-      db.user.count({ where: { role: Role.STUDENT } }),
-      db.user.count({ where: { role: Role.INSTRUCTOR } }),
-      db.user.count({ where: { role: Role.ADMIN } }),
-      db.user.count({
-        where: {
-          createdAt: {
-            gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-          },
-        },
-      }),
-      db.user.count({
-        where: {
-          createdAt: {
-            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-          },
-        },
-      }),
-    ]).then(([total, students, instructors, admins, weeklyNew, monthlyNew]) => ({
-      total,
-      students,
-      instructors,
-      admins,
-      weeklyNew,
-      monthlyNew,
-    })),
+async function getStats() {
+  const now = Date.now();
+  const [total, students, instructors, admins, weeklyNew, monthlyNew] = await Promise.all([
+    db.user.count(),
+    db.user.count({ where: { role: Role.STUDENT } }),
+    db.user.count({ where: { role: Role.INSTRUCTOR } }),
+    db.user.count({ where: { role: Role.ADMIN } }),
+    db.user.count({ where: { createdAt: { gte: new Date(now - 7 * DAY) } } }),
+    db.user.count({ where: { createdAt: { gte: new Date(now - 30 * DAY) } } }),
   ]);
-
-  // Sérialiser les utilisateurs
-  const serializedUsers = usersResult.data.map((user: any) => ({
-    ...user,
-    createdAt: user.createdAt.toISOString(),
-    updatedAt: user.updatedAt.toISOString(),
-    enrollmentsCount: user.enrollments.length,
-    totalSpent: user.payments.reduce((sum: number, payment: any) => sum + safeNumber(payment.amount), 0),
-    completedLessons: user.progress.length,
-    hasActiveSubscription: user.subscriptions.some((sub: any) => sub.status === SubscriptionStatus.ACTIVE && !sub.cancelAtPeriodEnd),
-    lastEnrollment: user.enrollments.length > 0 
-      ? user.enrollments.sort((a: any, b: any) => new Date(b.enrolledAt).getTime() - new Date(a.enrolledAt).getTime())[0].enrolledAt.toISOString()
-      : null,
-  }));
-
-  return {
-    users: serializedUsers,
-    pagination: {
-      totalItems: usersResult.totalItems,
-      totalPages: usersResult.totalPages,
-      currentPage: usersResult.currentPage,
-      pageSize: usersResult.pageSize,
-      hasNextPage: usersResult.hasNextPage,
-      hasPrevPage: usersResult.hasPrevPage,
-    },
-    stats,
-  };
+  return { total, students, instructors, admins, weeklyNew, monthlyNew };
 }
 
-function UsersLoading() {
-  return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div className="space-y-2">
-          <div className="h-8 w-48 bg-muted rounded animate-pulse" />
-          <div className="h-4 w-96 bg-muted rounded animate-pulse" />
-        </div>
-        <div className="h-10 w-32 bg-muted rounded animate-pulse" />
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-24 bg-muted rounded animate-pulse" />
-        ))}
-      </div>
-      
-      <div className="h-96 bg-muted rounded animate-pulse" />
-    </div>
-  );
-}
-
-interface UsersPageProps {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}
-
-export default async function UsersPage({ searchParams }: UsersPageProps) {
-  const resolvedSearchParams = await searchParams;
-  const urlSearchParams = new URLSearchParams(resolvedSearchParams as Record<string, string>);
+export default async function UsersPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  await requireAdminPage();
+  const raw = await searchParams;
+  const params = { q: firstParam(raw.q), role: firstParam(raw.role), plan: firstParam(raw.plan) };
+  const [result, stats] = await Promise.all([listUsers({ ...params, page: Number(firstParam(raw.page)) || 1 }), getStats()]);
 
   return (
-    <div className="space-y-8">
-      <Suspense fallback={<UsersLoading />}>
-        <UsersContent searchParams={urlSearchParams} />
-      </Suspense>
-    </div>
-  );
-}
-
-async function UsersContent({ searchParams }: { searchParams: URLSearchParams }) {
-  const { users, pagination, stats } = await getUsersData(searchParams);
-
-  return (
-    <>
-      {/* Header avec actions */}
-      <UsersHeader />
-
-      {/* Statistiques */}
-      <UsersStats stats={stats} />
-
-      {/* Table des utilisateurs */}
-      <UsersTable users={users} pagination={pagination} />
-    </>
+    <AdminListShell
+      title="Gestion des Utilisateurs"
+      description="Les comptes, leurs rôles et leur activité. Ouvrez un compte pour changer son rôle ou suspendre l'accès à la communauté."
+      basePath="/admin/users"
+      params={params}
+      searchLabel="Nom ou e-mail"
+      selects={[
+        { name: "role", label: "Rôle", options: USER_ROLES.map((value) => ({ value, label: ROLE_LABEL[value] ?? value })) },
+        { name: "plan", label: "Abonnement", options: USER_PLANS.map((value) => ({ value, label: PLAN_LABEL[value] })) },
+      ]}
+      pager={result}
+      summary={<UsersStats stats={stats} />}
+    >
+      <table className="w-full text-sm">
+        <caption className="sr-only">Liste des utilisateurs</caption>
+        <thead className="border-b bg-muted/40">
+          <tr>
+            <Th>Utilisateur</Th>
+            <Th>Rôle</Th>
+            <Th>Activité</Th>
+            <Th>Dépenses</Th>
+            <Th>Inscription</Th>
+          </tr>
+        </thead>
+        <tbody className="divide-y">
+          {result.rows.length === 0 && (
+            <tr>
+              <Td className="py-8 text-center text-muted-foreground">Aucun utilisateur trouvé</Td>
+            </tr>
+          )}
+          {result.rows.map((user) => (
+            <tr key={user.id}>
+              <Td>
+                <Link href={`/admin/users/${user.id}`} className="font-medium hover:underline">
+                  {user.name}
+                </Link>
+                <div className="text-xs text-muted-foreground break-all">{user.email}</div>
+                <div className="mt-1 flex gap-1">
+                  {user.premium && <Badge variant="outline">Premium</Badge>}
+                  {user.isBanned && <Badge variant="destructive">Suspendu</Badge>}
+                </div>
+              </Td>
+              <Td>{ROLE_LABEL[user.role] ?? user.role}</Td>
+              <Td>
+                {user.enrollments} cours
+                <div className="text-xs text-muted-foreground">{user.completedLessons} leçons terminées</div>
+              </Td>
+              <Td className="whitespace-nowrap">{formatMoney(user.spent, "eur")}</Td>
+              <Td className="whitespace-nowrap">{formatDateTime(user.createdAt)}</Td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </AdminListShell>
   );
 }

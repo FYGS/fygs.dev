@@ -30,10 +30,12 @@ const CardHeader = React.forwardRef<
 CardHeader.displayName = "CardHeader"
 
 const CardTitle = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLHeadingElement>
->(({ className, ...props }, ref) => (
-  <h3
+  HTMLHeadingElement,
+  React.HTMLAttributes<HTMLHeadingElement> & { as?: "h1" | "h2" | "h3" | "h4" }
+>(// h2 by default: a card title sits right under the page title (h1) far more often than under an h2,
+// and a heading level can only be skipped on the way DOWN (WCAG 1.3.1, axe heading-order). Say `as` for another level.
+({ className, as: Heading = "h2", ...props }, ref) => (
+  <Heading
     ref={ref}
     className={cn("font-semibold leading-none tracking-tight", className)}
     {...props}

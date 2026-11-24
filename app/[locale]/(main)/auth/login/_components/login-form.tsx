@@ -1,18 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordToggle } from "@/components/ui/password-toggle";
+import { FieldError, fieldErrorProps } from "@/components/ui/field-error";
 import { Separator } from "@/components/ui/separator";
 import { authService } from "@/lib/auth-service";
 import { toast } from "sonner";
-import { Github, Mail, Eye, EyeOff } from "lucide-react";
+import { Mail } from "lucide-react";
+import { Github } from "@/components/icons/brand-icons";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useIntlayer } from "next-intlayer";
+import { hardNavigate } from "@/lib/browser-effects";
+import { safeInternalPath } from "@/lib/safe-redirect";
+import { honeypotFields } from "@/lib/anti-automation/honeypot";
 
 interface LoginFormProps {
   callbackUrl?: string;
@@ -20,6 +26,8 @@ interface LoginFormProps {
 
 export function LoginForm({ callbackUrl }: LoginFormProps) {
   const content = useIntlayer("login-form");
+  // Whatever the address bar said, only a path of this site is ever navigated to
+  const destination = safeInternalPath(callbackUrl);
 
   const loginSchema = z.object({
     email: z.string().email(content.form.email.error.invalid.value),
@@ -33,7 +41,6 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
   const [pendingVerificationEmail, setPendingVerificationEmail] = useState<
     string | null
   >(null);
-  const router = useRouter();
 
   const {
     register,
@@ -51,6 +58,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
         email: data.email,
         password: data.password,
         rememberMe: true,
+        callbackURL: destination,
       });
 
       if (!result.success) {
@@ -60,17 +68,15 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
         if (result.requiresVerification) {
           setPendingVerificationEmail(data.email);
         }
+      } else if (result.requiresTwoFactor) {
+        // The password was right: no session yet, a second factor is due
+        hardNavigate(`/auth/two-factor?callbackUrl=${encodeURIComponent(destination)}`);
       } else {
         toast.success(content.messages.success.title.value, {
           description: content.messages.success.description.value,
         });
-        // Redirect to callback URL or dashboard
-        const redirectUrl = callbackUrl
-          ? decodeURIComponent(callbackUrl)
-          : "/dashboard";
-
-        // Use window.location.href for better compatibility with external redirects
-        window.location.href = redirectUrl;
+        // A full page load, so that every server-rendered part picks up the new session
+        hardNavigate(destination);
       }
     } catch {
       setError("root", { message: content.messages.error.generic.value });
@@ -82,11 +88,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
   const handleSocialLogin = async (provider: "github" | "google") => {
     setIsLoading(true);
     try {
-      // Store callback URL in sessionStorage for social login redirect
-      if (callbackUrl) {
-        sessionStorage.setItem("authCallbackUrl", callbackUrl);
-      }
-      await authService.signInWithProvider(provider, callbackUrl);
+      await authService.signInWithProvider(provider, destination);
     } catch (error) {
       console.error("Social login error:", error);
       toast.error(`${content.messages.error.socialLogin} ${provider}`, {
@@ -134,6 +136,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
 
       {/* Email/Password Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        {honeypotFields()}
         <div className="space-y-2">
           <Label htmlFor="email">{content.form.email.label}</Label>
           <Input
@@ -141,11 +144,11 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
             type="email"
             placeholder={content.form.email.placeholder.value}
             {...register("email")}
+              {...fieldErrorProps("email", errors.email)}
+              autoComplete="username"
             disabled={isLoading}
           />
-          {errors.email && (
-            <p className="text-sm text-destructive">{errors.email.message}</p>
-          )}
+          <FieldError id="email" message={errors.email?.message} />
         </div>
 
         <div className="space-y-2">
@@ -156,32 +159,21 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
               type={showPassword ? "text" : "password"}
               placeholder={content.form.password.placeholder.value}
               {...register("password")}
+              {...fieldErrorProps("password", errors.password)}
+              autoComplete="current-password"
               disabled={isLoading}
             />
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-              onClick={() => setShowPassword(!showPassword)}
+            <PasswordToggle
+              visible={showPassword}
+              onToggle={() => setShowPassword(!showPassword)}
               disabled={isLoading}
-            >
-              {showPassword ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
-            </Button>
+            />
           </div>
-          {errors.password && (
-            <p className="text-sm text-destructive">
-              {errors.password.message}
-            </p>
-          )}
+          <FieldError id="password" message={errors.password?.message} />
         </div>
 
         {errors.root && (
-          <p className="text-sm text-destructive">{errors.root.message}</p>
+          <p role="alert" className="text-sm text-destructive">{errors.root.message}</p>
         )}
 
         <Button type="submit" className="w-full" disabled={isLoading}>
@@ -190,13 +182,8 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
       </form>
 
       <div className="text-center">
-        <Button
-          variant="link"
-          className="text-sm text-muted-foreground"
-          type="button"
-          onClick={() => router.push("/auth/forgot-password")}
-        >
-          {content.links.forgotPassword}
+        <Button variant="link" className="text-sm text-muted-foreground" asChild>
+          <Link href="/auth/forgot-password">{content.links.forgotPassword}</Link>
         </Button>
         {pendingVerificationEmail && (
           <div className="mt-2">
@@ -207,7 +194,8 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
               onClick={async () => {
                 try {
                   const result = await authService.sendVerificationEmail(
-                    pendingVerificationEmail
+                    pendingVerificationEmail,
+                    destination
                   );
                   if (result.success) {
                     toast.success(

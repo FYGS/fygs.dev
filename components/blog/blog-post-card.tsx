@@ -118,13 +118,13 @@ export function BlogPostCard({ post, initialStats }: BlogPostCardProps) {
             <h2 className="text-lg sm:text-xl font-semibold leading-snug group-hover:text-primary transition-colors duration-300 line-clamp-2">
               {post.title}
             </h2>
-            <p className="text-sm text-muted-foreground/80 line-clamp-2 leading-relaxed">
+            <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
               {post.excerpt}
             </p>
           </div>
 
           {/* Stats row */}
-          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground/70">
+          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
             <div className="flex items-center gap-1">
               <Clock className="h-3 w-3" />
               <span>{post.readingTime}</span>
@@ -134,19 +134,19 @@ export function BlogPostCard({ post, initialStats }: BlogPostCardProps) {
                 <span className="text-border/50">·</span>
                 <div className="flex items-center gap-1">
                   <Eye className="h-3 w-3" />
-                  <span>{initialStats.views.toLocaleString()}</span>
+                  <span>{initialStats.views.toLocaleString(locale)}</span>
                 </div>
                 <span className="text-border/50">·</span>
                 <div className="flex items-center gap-1">
                   <Heart className="h-3 w-3" />
-                  <span>{initialStats.likes.toLocaleString()}</span>
+                  <span>{initialStats.likes.toLocaleString(locale)}</span>
                 </div>
               </>
             )}
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between text-xs text-muted-foreground/60 border-t border-border/30 pt-3 mt-auto">
+          <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border/30 pt-3 mt-auto">
             <div className="flex items-center gap-1.5">
               <Calendar className="h-3 w-3" />
               <time dateTime={post.date}>
@@ -154,6 +154,7 @@ export function BlogPostCard({ post, initialStats }: BlogPostCardProps) {
                   year: "numeric",
                   month: "short",
                   day: "numeric",
+                  timeZone: "UTC",
                 })}
               </time>
             </div>

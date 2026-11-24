@@ -63,7 +63,6 @@ export function CommunityFilters({
   );
 
   const handleDiscussionSuccess = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     (_discussionId: string) => {
       // Refresh the page to show the new discussion
       router.refresh();
@@ -105,7 +104,7 @@ export function CommunityFilters({
               <div className="space-y-2">
                 <label className="text-sm font-medium">Sort by</label>
                 <Select value={sortBy} onValueChange={(value) => updateSearchParams("sort", value)}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full" aria-label="Select sort order">
                     <SelectValue placeholder="Select sort order" />
                   </SelectTrigger>
                   <SelectContent>
@@ -119,7 +118,7 @@ export function CommunityFilters({
               <div className="space-y-2">
                 <label className="text-sm font-medium">Filter</label>
                 <Select value={filterBy} onValueChange={(value) => updateSearchParams("filter", value)}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full" aria-label="Select filter">
                     <SelectValue placeholder="Select filter" />
                   </SelectTrigger>
                   <SelectContent>

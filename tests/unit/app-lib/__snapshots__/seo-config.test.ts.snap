@@ -1,0 +1,224 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`seo-config (pinned) > COMMON_KEYWORDS 1`] = `
+[
+  "FYGS",
+  "Fernand SOUALO",
+  {
+    "en": "web development",
+    "es": "desarrollo web",
+    "fr": "développement web",
+  },
+  "TypeScript",
+  "React",
+  "Next.js",
+]
+`;
+
+exports[`seo-config (pinned) > exports the same names 1`] = `
+[
+  "COMMON_KEYWORDS",
+  "getBlogJsonLd",
+  "getBreadcrumbJsonLd",
+  "getContactJsonLd",
+  "getCourseListJsonLd",
+  "getOrganizationJsonLd",
+  "getPersonJsonLd",
+  "getWebSiteJsonLd",
+  "sectionSEO",
+]
+`;
+
+exports[`seo-config (pinned) > json-ld generators 1`] = `
+{
+  "blog": {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    "author": {
+      "@type": "Person",
+      "name": "Fernand SOUALO",
+    },
+    "description": "Articles techniques approfondis sur le développement web moderne",
+    "name": "FYGS Technical Blog",
+    "publisher": {
+      "@type": "EducationalOrganization",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "http://localhost:3000/images/logo.svg",
+      },
+      "name": "FYGS",
+    },
+    "url": "http://localhost:3000/blog",
+  },
+  "contact": {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "mainEntity": {
+      "@type": "Person",
+      "email": "fygs.dev@gmail.com",
+      "name": "Fernand SOUALO",
+      "url": "http://localhost:3000/me",
+    },
+    "name": "Contacter FYGS",
+    "url": "http://localhost:3000/contact",
+  },
+  "courses": {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "description": "Catalogue de formations en développement web et technologies modernes",
+    "itemListOrder": "https://schema.org/ItemListOrderDescending",
+    "name": "Formations FYGS",
+    "numberOfItems": 10,
+    "provider": {
+      "@type": "EducationalOrganization",
+      "name": "FYGS",
+      "url": "http://localhost:3000",
+    },
+    "url": "http://localhost:3000/formations",
+  },
+  "crumbs": {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "item": "https://x.test/",
+        "name": "Home",
+        "position": 1,
+      },
+      {
+        "@type": "ListItem",
+        "item": "https://x.test/blog",
+        "name": "Blog",
+        "position": 2,
+      },
+    ],
+  },
+  "org": {
+    "@context": "https://schema.org",
+    "@type": "EducationalOrganization",
+    "description": "Plateforme de formations premium en développement web moderne",
+    "founder": {
+      "@type": "Person",
+      "jobTitle": "Software Engineer & Instructor",
+      "name": "Fernand SOUALO",
+      "url": "http://localhost:3000/me",
+    },
+    "foundingDate": "2024",
+    "logo": "http://localhost:3000/images/logo.svg",
+    "name": "FYGS",
+    "sameAs": [
+      "https://github.com/fernand-music",
+      "https://www.linkedin.com/in/fernand-music",
+    ],
+    "url": "http://localhost:3000",
+  },
+  "person": {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "image": "http://localhost:3000/linkedin_profile_photo.jpeg",
+    "jobTitle": "Full-Stack Software Engineer",
+    "knowsAbout": [
+      "JavaScript",
+      "TypeScript",
+      "React",
+      "Next.js",
+      "Node.js",
+      "Cloud Architecture",
+      "PostgreSQL",
+      "Docker",
+    ],
+    "name": "Fernand SOUALO",
+    "sameAs": [
+      "https://github.com/fernand-music",
+      "https://www.linkedin.com/in/fernand-music",
+    ],
+    "url": "http://localhost:3000/me",
+    "worksFor": {
+      "@type": "EducationalOrganization",
+      "name": "FYGS",
+    },
+  },
+  "site": {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "FYGS Learning Platform",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "query-input": "required name=search_term_string",
+      "target": "http://localhost:3000/formations?q={search_term_string}",
+    },
+    "url": "http://localhost:3000",
+  },
+}
+`;
+
+exports[`seo-config (pinned) > sectionSEO keeps its key order 1`] = `
+[
+  "home",
+  "me",
+  "formations",
+  "projects",
+  "blog",
+  "techMastry",
+  "techMastryAiMastery",
+  "techMastryAlgorithms",
+  "techMastryDataStructures",
+  "techMastryDataScience",
+  "techMastrySystemDesign",
+  "techMastryFrontend",
+  "techMastryBackend",
+  "techMastryBestPractices",
+  "techMastryCodingChallenges",
+  "techMastrySecurityDevops",
+  "techMastryCareer",
+  "techMastryGitMastery",
+  "techMastryTypeScriptMastery",
+  "contact",
+  "pricing",
+]
+`;
+
+exports[`seo-config (pinned) > sectionSEO.blog 1`] = `"52d95b29d3e1bca553ad0cb1243864a253fec239485b339675ba9435f1e3be34"`;
+
+exports[`seo-config (pinned) > sectionSEO.contact 1`] = `"c211220c353f33fa5092e3f79ffb1e839d9064e33efc52ecb4d6937ee3f7f642"`;
+
+exports[`seo-config (pinned) > sectionSEO.formations 1`] = `"159fd7749841d2925353d591ee2b252b9d29a90ca88553bd349f44173dab9c29"`;
+
+exports[`seo-config (pinned) > sectionSEO.home 1`] = `"2a45b3ac7b4235a8ce6ccf0f9afd5fd1d6ac5fe0c98aaca58f32e2506e1c76ad"`;
+
+exports[`seo-config (pinned) > sectionSEO.me 1`] = `"4b04721ba0b8c63afc1a7ce2453ca78889c012053a0872379f9c2154cc3f692d"`;
+
+exports[`seo-config (pinned) > sectionSEO.pricing 1`] = `"14a3af4a26d9e4d136fbf0910abae1179dc08609fd57c3a8dea3527ac836647b"`;
+
+exports[`seo-config (pinned) > sectionSEO.projects 1`] = `"3954aeccbed373a9d702c35b727112471a2619bde7ad0c13db111b48f5620f0b"`;
+
+exports[`seo-config (pinned) > sectionSEO.techMastry 1`] = `"0fb3ff2005ff4ed9dafd3b053a1fa11dcf758e1bfb2e6ad1b503049248b004e2"`;
+
+exports[`seo-config (pinned) > sectionSEO.techMastryAiMastery 1`] = `"f3817c56f7a4bc4f807f157b28373a6835237f026d9f36c396b8239098a1e7f2"`;
+
+exports[`seo-config (pinned) > sectionSEO.techMastryAlgorithms 1`] = `"2bcf110117f05ab999fcbe36f9a483a4335b940c078f4c100021449e33122adb"`;
+
+exports[`seo-config (pinned) > sectionSEO.techMastryBackend 1`] = `"6290bc09730d5d190476a4e64d6a5ffd0769e7452f5de9a353e9ea10f4e3a89f"`;
+
+exports[`seo-config (pinned) > sectionSEO.techMastryBestPractices 1`] = `"48dcd2d8f54b65f0a847ade2cbc624e469afef97b00b97948be7b78b00051f9e"`;
+
+exports[`seo-config (pinned) > sectionSEO.techMastryCareer 1`] = `"2174ea980883536a3be913f250762b4a588a76eccef93fe54cf48a3845efd0ed"`;
+
+exports[`seo-config (pinned) > sectionSEO.techMastryCodingChallenges 1`] = `"ed4b2f8398c64d7d5cfeaa7b02f50d0e48ede41d365f4b18d616782f8b2681d0"`;
+
+exports[`seo-config (pinned) > sectionSEO.techMastryDataScience 1`] = `"5a8375760975ff92bebb03b4a61360235290904d9f1ace3f08569f05a1f4e886"`;
+
+exports[`seo-config (pinned) > sectionSEO.techMastryDataStructures 1`] = `"7fc3ecda566333fa2fede5b99239086030189c95a1400973ba9653a35602c295"`;
+
+exports[`seo-config (pinned) > sectionSEO.techMastryFrontend 1`] = `"c8c6cb2feb9f3b4b96f7fc44c59a727d6b412ef8841762d11fbae4c32637057e"`;
+
+exports[`seo-config (pinned) > sectionSEO.techMastryGitMastery 1`] = `"36f1654273c171d1a8be576e0e93883419cd57a359f99f2f68511b360c11cc67"`;
+
+exports[`seo-config (pinned) > sectionSEO.techMastrySecurityDevops 1`] = `"24bbcfb19db9a331cebf5302c6545f8dd51fca0a54eb74945098d0caf79e5d28"`;
+
+exports[`seo-config (pinned) > sectionSEO.techMastrySystemDesign 1`] = `"432ad57ca2f21babc80e087400f37b1beb4ce76145621669e07f3a21270f7e6f"`;
+
+exports[`seo-config (pinned) > sectionSEO.techMastryTypeScriptMastery 1`] = `"3106e711677667985b31d8d028bf0e041054ab1fe9ba6b64c366d967238511ff"`;
+
+exports[`seo-config (pinned) > whole sectionSEO hash 1`] = `"ea1ad33d55f069ed4a151ecb90b6caf2bd38172526241a0ea8b4d3d5a99514bd"`;

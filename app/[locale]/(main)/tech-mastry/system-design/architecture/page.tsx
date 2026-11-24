@@ -1,16 +1,12 @@
-import { Metadata } from "next";
 import { ArchitectureDiagrammingTool } from "../_components";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "System Design Studio | TechMastery",
-  description:
-    "Design and visualize system architectures with our interactive diagramming tools",
-};
+export const metadata = topicMetadata("/tech-mastry/system-design/architecture");
 
 export default function ArchitecturePage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <ArchitectureDiagrammingTool />
-    </main>
+    </div>
   );
 }

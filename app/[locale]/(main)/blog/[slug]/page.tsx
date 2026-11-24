@@ -202,7 +202,7 @@ export default async function BlogPostPage({ params }: Props) {
               </h1>
 
               {/* Meta info bar */}
-              <div className="flex flex-wrap items-center gap-4 sm:gap-5 text-sm text-muted-foreground/70 border-b border-border/30 pb-5">
+              <div className="flex flex-wrap items-center gap-4 sm:gap-5 text-sm text-muted-foreground border-b border-border/30 pb-5">
                 {/* Author */}
                 <div className="flex items-center gap-2">
                   <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-semibold text-primary">

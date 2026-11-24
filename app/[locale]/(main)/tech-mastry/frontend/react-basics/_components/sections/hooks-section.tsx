@@ -71,7 +71,7 @@ function UseEffectDemo() {
     };
   }, [count]);
 
-  // Effect that runs only once (on mount)
+  // Effect that runs on mount (twice in development under StrictMode)
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
@@ -133,6 +133,9 @@ export function HooksSection() {
             <Badge>useMemo</Badge>
             <Badge>useCallback</Badge>
             <Badge>useReducer</Badge>
+            <Badge>use</Badge>
+            <Badge>useActionState</Badge>
+            <Badge>useOptimistic</Badge>
           </div>
         </CardContent>
       </Card>
@@ -196,22 +199,22 @@ function Counter() {
           </div>
         }
         tips={[
-          "Utilisez la déstructuration d&apos;array pour nommer vos variables d&apos;état et fonctions de mise à jour",
-          "Pour mettre à jour un état basé sur l&apos;état précédent, utilisez la forme fonctionnelle: setCount(prevCount => prevCount + 1)",
-          "Pour les objets et les tableaux, n&apos;oubliez pas de préserver les valeurs que vous ne mettez pas à jour",
-          "React peut regrouper les mises à jour d&apos;état pour des raisons de performance, donc ne comptez pas sur les valeurs précédentes sans utiliser la forme fonctionnelle",
+          "Utilisez la déstructuration d'array pour nommer vos variables d'état et fonctions de mise à jour",
+          "Pour mettre à jour un état basé sur l'état précédent, utilisez la forme fonctionnelle: setCount(prevCount => prevCount + 1)",
+          "Pour les objets et les tableaux, n'oubliez pas de préserver les valeurs que vous ne mettez pas à jour",
+          "React peut regrouper les mises à jour d'état pour des raisons de performance, donc ne comptez pas sur les valeurs précédentes sans utiliser la forme fonctionnelle",
         ]}
         interviewQuestions={[
           {
             question:
-              "Pourquoi devriez-vous utiliser la forme fonctionnelle de setState lorsque vous mettez à jour l&apos;état basé sur l&apos;état précédent?",
+              "Pourquoi devriez-vous utiliser la forme fonctionnelle de setState lorsque vous mettez à jour l'état basé sur l'état précédent?",
             answer:
-              "React peut regrouper plusieurs mises à jour d&apos;état pour des raisons de performance. Si vous utilisez l&apos;état actuel pour calculer le nouvel état, vous pourriez utiliser une valeur obsolète. La forme fonctionnelle (prevState => newState) garantit que vous travaillez toujours avec la valeur la plus récente, même si plusieurs mises à jour sont regroupées.",
+              "React peut regrouper plusieurs mises à jour d'état pour des raisons de performance. Si vous utilisez l'état actuel pour calculer le nouvel état, vous pourriez utiliser une valeur obsolète. La forme fonctionnelle (prevState => newState) garantit que vous travaillez toujours avec la valeur la plus récente, même si plusieurs mises à jour sont regroupées.",
           },
           {
             question: "Comment gérer des objets complexes avec useState?",
             answer:
-              "Pour les objets complexes, vous devez créer une nouvelle copie de l&apos;objet et mettre à jour uniquement les propriétés nécessaires. Utilisez la syntaxe de décomposition (...prevState) pour copier toutes les propriétés existantes, puis remplacez celles que vous souhaitez mettre à jour. Par exemple: setUser(prevUser => ({ ...prevUser, name: &apos;Nouveau nom&apos; })).",
+              "Pour les objets complexes, vous devez créer une nouvelle copie de l'objet et mettre à jour uniquement les propriétés nécessaires. Utilisez la syntaxe de décomposition (...prevState) pour copier toutes les propriétés existantes, puis remplacez celles que vous souhaitez mettre à jour. Par exemple: setUser(prevUser => ({ ...prevUser, name: 'Nouveau nom' })).",
           },
         ]}
       />
@@ -241,12 +244,13 @@ function WindowSizeTracker() {
     };
   }, [count]);
 
-  // Effet qui s'exécute une seule fois (au montage)
+  // Effet exécuté au montage (deux fois en développement avec StrictMode :
+  // le nettoyage ci-dessous rend cela inoffensif)
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener('resize', handleResize);
 
-    // Fonction de nettoyage (s'exécute au démontage)
+    // Fonction de nettoyage (au démontage, et avant le re-montage de StrictMode)
     return () => {
       window.removeEventListener('resize', handleResize);
     };
@@ -294,8 +298,11 @@ function WindowSizeTracker() {
             <ul className="list-disc pl-6 mt-1 space-y-1">
               <li>Omis: l&apos;effet s&apos;exécute après chaque rendu</li>
               <li>
-                Tableau vide []: l&apos;effet s&apos;exécute une seule fois
-                après le premier rendu
+                Tableau vide []: l&apos;effet s&apos;exécute au montage du
+                composant (une fois par montage). En développement,{" "}
+                <code>StrictMode</code> monte, démonte puis remonte le
+                composant : l&apos;effet et son nettoyage s&apos;exécutent donc
+                deux fois, pour révéler les nettoyages manquants
               </li>
               <li>
                 Avec valeurs [a, b]: l&apos;effet s&apos;exécute uniquement
@@ -307,7 +314,7 @@ function WindowSizeTracker() {
         tips={[
           "Utilisez la fonction de nettoyage (return) pour éviter les fuites de mémoire",
           "Séparez les préoccupations en utilisant plusieurs effets",
-          "Incluez toutes les valeurs du composant utilisées dans l&apos;effet dans le tableau de dépendances",
+          "Incluez toutes les valeurs du composant utilisées dans l'effet dans le tableau de dépendances",
           "Utilisez des outils comme eslint-plugin-react-hooks pour éviter les bugs liés aux dépendances manquantes",
         ]}
         interviewQuestions={[
@@ -315,12 +322,139 @@ function WindowSizeTracker() {
             question:
               "Quelle est la différence entre useEffect avec un tableau de dépendances vide et useEffect sans tableau de dépendances?",
             answer:
-              "useEffect sans tableau de dépendances s&apos;exécute après chaque rendu du composant. useEffect avec un tableau de dépendances vide ([]) s&apos;exécute une seule fois après le premier rendu (équivalent à componentDidMount dans les composants de classe). Cette différence est cruciale pour les performances, car exécuter des effets inutilement peut ralentir votre application.",
+              "useEffect sans tableau de dépendances s'exécute après chaque rendu du composant. useEffect avec un tableau de dépendances vide ([]) s'exécute au montage du composant (équivalent approximatif de componentDidMount dans les composants de classe). En développement, StrictMode monte, démonte et remonte le composant : l'effet s'exécute donc deux fois, d'où l'importance d'une fonction de nettoyage. Cette différence est cruciale pour les performances, car exécuter des effets inutilement peut ralentir votre application.",
           },
           {
             question: "Comment nettoyer les ressources dans useEffect?",
             answer:
-              "Pour nettoyer des ressources (comme des abonnements ou des timers), retournez une fonction de nettoyage depuis votre effet. Cette fonction sera appelée avant que le composant soit retiré du DOM et avant que l&apos;effet soit ré-exécuté si les dépendances changent. Par exemple: useEffect(() => { const subscription = source.subscribe(); return () => { subscription.unsubscribe(); }; }, [source]);",
+              "Pour nettoyer des ressources (comme des abonnements ou des timers), retournez une fonction de nettoyage depuis votre effet. Cette fonction sera appelée avant que le composant soit retiré du DOM et avant que l'effet soit ré-exécuté si les dépendances changent. Par exemple: useEffect(() => { const subscription = source.subscribe(); return () => { subscription.unsubscribe(); }; }, [source]);",
+          },
+        ]}
+      />
+
+      {/* React 19 */}
+      <CodeExample
+        title="React 19 : use, Actions, useActionState, useOptimistic, useFormStatus"
+        description="Les nouveautés de React 19 pour les données asynchrones et les formulaires"
+        code={`import { use, useActionState, useOptimistic } from 'react';
+import { useFormStatus } from 'react-dom';
+
+// 1. use(promise) : lit une promesse et suspend le composant jusqu'à sa résolution.
+// La promesse doit être créée en dehors du rendu (parent, Server Component, cache).
+function Comments({ commentsPromise }) {
+  const comments = use(commentsPromise);
+  return comments.map((c) => <p key={c.id}>{c.text}</p>);
+}
+// <Suspense fallback={<p>Chargement…</p>}>
+//   <Comments commentsPromise={commentsPromise} />
+// </Suspense>
+
+// 2. Actions + useActionState : une Action est une fonction (souvent async)
+// passée à <form action={...}>. useActionState gère l'état, l'erreur et le pending.
+async function saveName(previousState, formData) {
+  const name = formData.get('name');
+  if (!name) return { error: 'Le nom est obligatoire' };
+  await api.updateName(name);
+  return { error: null, name };
+}
+
+// 3. useFormStatus : lit l'état du <form> parent
+// (doit être appelé dans un composant enfant du form)
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return <button disabled={pending}>{pending ? 'Envoi…' : 'Enregistrer'}</button>;
+}
+
+function NameForm() {
+  const [state, formAction, isPending] = useActionState(saveName, { error: null });
+  return (
+    <form action={formAction}>
+      <input name="name" disabled={isPending} />
+      <SubmitButton />
+      {state.error && <p role="alert">{state.error}</p>}
+    </form>
+  );
+}
+
+// 4. useOptimistic : affiche tout de suite le résultat attendu pendant l'Action,
+// puis revient à la vraie valeur (succès ou échec) à la fin de la transition.
+function Todos({ todos, addTodo }) {
+  const [optimisticTodos, addOptimistic] = useOptimistic(
+    todos,
+    (current, text) => [...current, { id: crypto.randomUUID(), text, sending: true }],
+  );
+
+  async function action(formData) {
+    const text = formData.get('text');
+    addOptimistic(text);   // mise à jour optimiste immédiate
+    await addTodo(text);   // vraie mise à jour
+  }
+
+  return (
+    <form action={action}>
+      <input name="text" />
+      <button>Ajouter</button>
+      <ul>{optimisticTodos.map((t) => <li key={t.id}>{t.text}{t.sending && ' …'}</li>)}</ul>
+    </form>
+  );
+}
+
+// 5. ref est une simple prop : plus besoin de forwardRef (React 19)
+function MyInput({ ref, ...props }) {
+  return <input ref={ref} {...props} />;
+}
+
+// 6. Context : <ThemeContext value={...}> remplace <ThemeContext.Provider>`}
+        explanation={
+          <div>
+            <p>
+              React 19 introduit les <strong>Actions</strong> : des fonctions
+              (souvent asynchrones) utilisées dans des transitions, qui gèrent
+              automatiquement l&apos;état de chargement, les erreurs et les
+              mises à jour optimistes.
+            </p>
+            <ul className="list-disc pl-6 mt-2 space-y-1">
+              <li>
+                <code>use(promise)</code> et <code>use(Context)</code> : lisent
+                une promesse (avec Suspense) ou un contexte, y compris après un{" "}
+                <code>if</code>.
+              </li>
+              <li>
+                <code>useActionState(action, initialState)</code> retourne{" "}
+                <code>[state, formAction, isPending]</code>.
+              </li>
+              <li>
+                <code>useFormStatus()</code> (importé de{" "}
+                <code>react-dom</code>) expose <code>pending</code> pour les
+                composants enfants d&apos;un <code>&lt;form&gt;</code>.
+              </li>
+              <li>
+                <code>useOptimistic(value, reducer)</code> affiche un état
+                provisoire pendant qu&apos;une Action est en cours.
+              </li>
+              <li>
+                <code>ref</code> devient une prop ordinaire pour les composants
+                fonction : <code>forwardRef</code> n&apos;est plus nécessaire.
+              </li>
+            </ul>
+          </div>
+        }
+        tips={[
+          "Ne créez pas la promesse passée à use() pendant le rendu d'un Client Component : créez-la dans un parent, un Server Component ou un cache",
+          "useFormStatus ne fonctionne que dans un composant rendu à l'intérieur du <form> : pas dans le composant qui contient le <form>",
+          "useOptimistic revient automatiquement à la valeur réelle quand l'Action se termine, y compris en cas d'erreur",
+          "Pour les formulaires, préférez <form action={...}> à onSubmit + preventDefault : le formulaire non contrôlé est réinitialisé après une Action réussie",
+        ]}
+        interviewQuestions={[
+          {
+            question: "À quoi sert useActionState et que retourne-t-il ?",
+            answer:
+              "useActionState(action, initialState) enveloppe une Action (fonction qui reçoit l'état précédent et les données du formulaire). Il retourne [state, formAction, isPending] : l'état renvoyé par la dernière exécution, une fonction à passer à <form action>, et un booléen vrai pendant l'exécution. Il remplace l'ancien useFormState de react-dom.",
+          },
+          {
+            question: "Quelle différence entre use() et useContext() ?",
+            answer:
+              "Les deux lisent un contexte, mais use() peut être appelé dans une condition ou une boucle, ce qui n'est pas permis pour les autres Hooks, et accepte aussi une promesse (avec Suspense). Une promesse recréée à chaque rendu d'un Client Component provoque une boucle de suspension : il faut la créer en amont.",
           },
         ]}
       />

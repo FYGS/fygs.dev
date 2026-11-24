@@ -3,6 +3,11 @@ import { generateRouteMetadata } from "../_lib/metadata-helpers";
 import { type LocalesValues } from "intlayer";
 import { Metadata } from "next";
 
+// Every page under /auth is rendered per request. This is what lets it carry the nonce of the Content-Security-Policy:
+// the sign-in, sign-up, verification and second-factor pages are where a password is typed, so they are the pages
+// that most need a policy without 'unsafe-inline'. A prerendered page has no nonce and cannot hydrate under that policy.
+export const dynamic = "force-dynamic";
+
 /**
  * Generate SEO-optimized metadata for auth pages
  */
@@ -33,7 +38,7 @@ const AuthLayout = async ({
   children: React.ReactNode;
   params: Promise<{ locale: LocalesValues }>;
 }) => {
-  return <main>{children}</main>;
+  return <div>{children}</div>;
 };
 
 export default AuthLayout;

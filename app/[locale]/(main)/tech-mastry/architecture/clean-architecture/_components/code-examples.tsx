@@ -17,7 +17,7 @@ app.post("/orders", async (req, res) => {
   }
 
   // Accès DB direct dans le controller
-  const user = await db.query(
+  const { rows: [user] } = await db.query(
     "SELECT * FROM users WHERE id = $1",
     [req.body.userId]
   );
@@ -47,20 +47,24 @@ app.post("/orders", async (req, res) => {
     id: "clean",
     label: "✅ Clean Architecture",
     description: "Chaque couche a une responsabilité claire. Le code est testable et maintenable.",
-    code: `// ✅ Entity — Règle métier pure
+    code: `// ✅ Entity — Règle métier pure (montants en centimes)
 class Order {
-  calculateTotal(items: OrderItem[]): number {
-    return items.reduce(
-      (sum, item) => sum + item.price * item.quantity, 0
-    );
-  }
+  constructor(
+    readonly userId: string,
+    readonly items: OrderItem[],
+    private readonly isPremium: boolean
+  ) {}
 
-  applyDiscount(total: number, isPremium: boolean) {
-    return isPremium ? total * 0.9 : total;
+  get total(): number {
+    const gross = this.items.reduce(
+      (sum, item) => sum + item.priceCents * item.quantity, 0
+    );
+    // -10 % pour les clients premium
+    return this.isPremium ? Math.round(gross * 0.9) : gross;
   }
 }
 
-// ✅ Use Case — Orchestre les entités
+// ✅ Use Case — Orchestre les entités via des ports (interfaces)
 class CreateOrderUseCase {
   constructor(
     private orderRepo: IOrderRepository,
@@ -68,15 +72,12 @@ class CreateOrderUseCase {
     private notifier: INotificationService
   ) {}
 
-  async execute(input: CreateOrderInput) {
+  async execute(input: CreateOrderInput): Promise<SavedOrder> {
     const user = await this.userRepo.findById(input.userId);
-    const order = new Order();
-    const total = order.calculateTotal(input.items);
-    const finalTotal = order.applyDiscount(total, user.isPremium);
+    if (!user) throw new UserNotFoundError(input.userId);
 
-    const saved = await this.orderRepo.save({
-      userId: user.id, total: finalTotal, items: input.items
-    });
+    const order = new Order(user.id, input.items, user.isPremium);
+    const saved = await this.orderRepo.save(order);
 
     await this.notifier.orderConfirmed(user, saved);
     return saved;
@@ -123,7 +124,7 @@ export function CodeExamples() {
 
       <Card className="p-6 space-y-4 border-border/40">
         <p className="text-muted-foreground">{active.description}</p>
-        <pre className="bg-muted/50 rounded-lg p-4 overflow-x-auto text-sm">
+        <pre className="bg-muted/50 rounded-lg p-4 overflow-x-auto text-sm" tabIndex={0}>
           <code>{active.code}</code>
         </pre>
       </Card>

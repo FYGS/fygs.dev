@@ -9,16 +9,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "@/providers/theme-provider";
 import { Monitor, Moon, Sun } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
+
+const subscribeNoop = () => () => {};
 
 export function ThemeToggle() {
   const { theme, resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  // Éviter l'hydration mismatch
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  // Éviter l'hydration mismatch: false on the server and during hydration
+  const mounted = useSyncExternalStore(
+    subscribeNoop,
+    () => true,
+    () => false,
+  );
 
   if (!mounted) {
     return (

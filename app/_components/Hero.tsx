@@ -27,22 +27,22 @@ export const Hero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <motion.h2
+            <motion.h1
               className="font-caption text-5xl lg:text-6xl font-bold text-gradient-primary mb-4"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.6 }}
             >
               {content.title}
-            </motion.h2>
-            <motion.h3
+            </motion.h1>
+            <motion.h2
               className="font-caption font-bold text-3xl lg:text-4xl mb-6 text-gradient-heading"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.6 }}
             >
               {content.subtitle}
-            </motion.h3>
+            </motion.h2>
             <motion.p
               className="text-lg lg:text-xl leading-relaxed text-muted-foreground mb-8 max-w-2xl mx-auto lg:mx-0"
               initial={{ opacity: 0, y: 10 }}

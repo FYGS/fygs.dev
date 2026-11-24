@@ -1,0 +1,261 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`FEATURED_PROJECTS (pinned) > keeps count, ids order and whole-array hash 1`] = `
+[
+  "pdf-ai-chat",
+  "bonsprofs",
+  "abilogs",
+  "evopur",
+  "ncr",
+  "quizzen",
+  "anumerique",
+  "delices-rachetee",
+  "school-management",
+  "plura-saas",
+  "nextauth-v5",
+  "js-universe",
+  "idees-kdo",
+]
+`;
+
+exports[`FEATURED_PROJECTS (pinned) > keeps count, ids order and whole-array hash 2`] = `"377a85b099b01620fb28d11ebbc76a05d7d985f127794faea70e560151cead31"`;
+
+exports[`FEATURED_PROJECTS (pinned) > project abilogs 1`] = `"bf843ceeb8219112f905aef9f0aa3044d81b6c739b3d33d8956b970c924ef9a3"`;
+
+exports[`FEATURED_PROJECTS (pinned) > project abilogs 2`] = `
+[
+  "id",
+  "title",
+  "description",
+  "image",
+  "detailImages",
+  "technologies",
+  "link",
+  "features",
+  "stats",
+  "technicalDetails",
+  "challenges",
+]
+`;
+
+exports[`FEATURED_PROJECTS (pinned) > project anumerique 1`] = `"305933e799178ce4f7ff736dfb1018e3d1dbf7b10248b1ce15297bc406c8e05a"`;
+
+exports[`FEATURED_PROJECTS (pinned) > project anumerique 2`] = `
+[
+  "id",
+  "title",
+  "description",
+  "image",
+  "detailImages",
+  "technologies",
+  "link",
+  "features",
+  "stats",
+  "technicalDetails",
+  "challenges",
+]
+`;
+
+exports[`FEATURED_PROJECTS (pinned) > project bonsprofs 1`] = `"73d43318643f8d6ba16aebb69ba2a3f1d268c94aac2173630609c9be44d717c4"`;
+
+exports[`FEATURED_PROJECTS (pinned) > project bonsprofs 2`] = `
+[
+  "id",
+  "title",
+  "description",
+  "image",
+  "detailImages",
+  "technologies",
+  "link",
+  "features",
+  "stats",
+  "technicalDetails",
+  "challenges",
+]
+`;
+
+exports[`FEATURED_PROJECTS (pinned) > project delices-rachetee 1`] = `"8dc05d8116ae94c548ee71081aa9e5032e596649df01801f5b50da7abce2db55"`;
+
+exports[`FEATURED_PROJECTS (pinned) > project delices-rachetee 2`] = `
+[
+  "id",
+  "title",
+  "description",
+  "image",
+  "detailImages",
+  "technologies",
+  "link",
+  "features",
+  "stats",
+  "technicalDetails",
+  "challenges",
+]
+`;
+
+exports[`FEATURED_PROJECTS (pinned) > project evopur 1`] = `"b92dab8d1a67dd1ecb3fb38ceae3ed521d7416d6cda29ab284c8f1abacd4d54b"`;
+
+exports[`FEATURED_PROJECTS (pinned) > project evopur 2`] = `
+[
+  "id",
+  "title",
+  "description",
+  "image",
+  "detailImages",
+  "technologies",
+  "link",
+  "features",
+  "technicalDetails",
+  "challenges",
+  "stats",
+  "testimonial",
+]
+`;
+
+exports[`FEATURED_PROJECTS (pinned) > project idees-kdo 1`] = `"2e0ccc404439c29d16c3fe1779e5552979c56631c4d8c0e6f9dc86e8170c0615"`;
+
+exports[`FEATURED_PROJECTS (pinned) > project idees-kdo 2`] = `
+[
+  "id",
+  "title",
+  "description",
+  "image",
+  "detailImages",
+  "technologies",
+  "link",
+  "githubUrl",
+  "stats",
+  "features",
+  "technicalDetails",
+  "challenges",
+]
+`;
+
+exports[`FEATURED_PROJECTS (pinned) > project js-universe 1`] = `"4837755514e341db703ccff3328bb30bccdbbe3ce46391076e09c8ad2c707ab5"`;
+
+exports[`FEATURED_PROJECTS (pinned) > project js-universe 2`] = `
+[
+  "id",
+  "title",
+  "description",
+  "image",
+  "detailImages",
+  "technologies",
+  "link",
+  "githubUrl",
+  "testimonial",
+  "stats",
+  "features",
+  "technicalDetails",
+  "challenges",
+]
+`;
+
+exports[`FEATURED_PROJECTS (pinned) > project ncr 1`] = `"b36203fb27a8bbd22384afca153d6def50f1a0b1f064d7732f07f0df073fd93b"`;
+
+exports[`FEATURED_PROJECTS (pinned) > project ncr 2`] = `
+[
+  "id",
+  "title",
+  "description",
+  "image",
+  "detailImages",
+  "technologies",
+  "link",
+  "features",
+  "stats",
+  "testimonial",
+  "technicalDetails",
+  "challenges",
+]
+`;
+
+exports[`FEATURED_PROJECTS (pinned) > project nextauth-v5 1`] = `"4cb08bb208885b61578f8e3a0ed17fa444584986f4721a73c383773c90413399"`;
+
+exports[`FEATURED_PROJECTS (pinned) > project nextauth-v5 2`] = `
+[
+  "id",
+  "title",
+  "description",
+  "image",
+  "detailImages",
+  "technologies",
+  "link",
+  "stats",
+  "features",
+  "technicalDetails",
+  "challenges",
+]
+`;
+
+exports[`FEATURED_PROJECTS (pinned) > project pdf-ai-chat 1`] = `"f3cfaaedafb199665edcbe2219f5f5c0c178d66eec51a5d7e297e85a4e6103be"`;
+
+exports[`FEATURED_PROJECTS (pinned) > project pdf-ai-chat 2`] = `
+[
+  "id",
+  "title",
+  "description",
+  "image",
+  "detailImages",
+  "technologies",
+  "link",
+  "features",
+  "stats",
+  "technicalDetails",
+  "challenges",
+]
+`;
+
+exports[`FEATURED_PROJECTS (pinned) > project plura-saas 1`] = `"7eadc595d7380e3fafd871e40836e73c55e0b7e9780209574a43ca1fa4c61b13"`;
+
+exports[`FEATURED_PROJECTS (pinned) > project plura-saas 2`] = `
+[
+  "id",
+  "title",
+  "description",
+  "image",
+  "detailImages",
+  "technologies",
+  "link",
+  "stats",
+  "features",
+  "technicalDetails",
+  "challenges",
+]
+`;
+
+exports[`FEATURED_PROJECTS (pinned) > project quizzen 1`] = `"ef9671310b4acb547253c2cc0693cf75e5757f425df87a809520cdeca17ecee2"`;
+
+exports[`FEATURED_PROJECTS (pinned) > project quizzen 2`] = `
+[
+  "id",
+  "title",
+  "description",
+  "image",
+  "detailImages",
+  "technologies",
+  "link",
+  "features",
+  "stats",
+  "technicalDetails",
+  "challenges",
+]
+`;
+
+exports[`FEATURED_PROJECTS (pinned) > project school-management 1`] = `"dee318526ab03dd59fc0d1ccf1be623fde57b2848fc0e74e9f34c26ccfabd38d"`;
+
+exports[`FEATURED_PROJECTS (pinned) > project school-management 2`] = `
+[
+  "id",
+  "title",
+  "description",
+  "image",
+  "detailImages",
+  "technologies",
+  "link",
+  "githubUrl",
+  "stats",
+  "features",
+  "technicalDetails",
+  "challenges",
+]
+`;

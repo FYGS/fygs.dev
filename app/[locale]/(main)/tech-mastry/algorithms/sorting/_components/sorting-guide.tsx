@@ -17,11 +17,14 @@ const sortingAlgorithms = [
     code: `function bubbleSort(arr) {
   const n = arr.length;
   for (let i = 0; i < n - 1; i++) {
+    let swapped = false;
     for (let j = 0; j < n - i - 1; j++) {
       if (arr[j] > arr[j + 1]) {
         [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+        swapped = true;
       }
     }
+    if (!swapped) break; // déjà trié : meilleur cas O(n)
   }
   return arr;
 }`,
@@ -141,14 +144,21 @@ function merge(left, right) {
         average: "O(n log n)",
         worst: "O(n²)",
       },
-      space: "O(log n)",
+      space: "O(log n) moyen · O(n) pire cas",
     },
     stable: false,
     code: `function quickSort(arr, low = 0, high = arr.length - 1) {
-  if (low < high) {
+  // On récurse sur la plus PETITE partition et on boucle sur la plus grande :
+  // la profondeur de pile reste en O(log n), même dans le pire cas
+  while (low < high) {
     const pi = partition(arr, low, high);
-    quickSort(arr, low, pi - 1);
-    quickSort(arr, pi + 1, high);
+    if (pi - low < high - pi) {
+      quickSort(arr, low, pi - 1);
+      low = pi + 1;
+    } else {
+      quickSort(arr, pi + 1, high);
+      high = pi - 1;
+    }
   }
   return arr;
 }
@@ -168,7 +178,7 @@ function partition(arr, low, high) {
   return i + 1;
 }`,
     description:
-      "Choisit un pivot, partitionne les éléments autour, puis trie récursivement.",
+      "Choisit un pivot, partitionne les éléments autour, puis trie récursivement. La pile de récursion coûte O(log n) en moyenne et O(n) au pire cas, sauf si l'on récurse d'abord sur la plus petite partition (comme dans le code ci-dessous).",
     pros: [
       "Très rapide en pratique",
       "Peu de mémoire supplémentaire",
@@ -183,7 +193,7 @@ const optimizationTips = [
     title: "Choix de l'Algorithme",
     tips: [
       "Petits tableaux (n < 50) : Tri par insertion",
-      "Mémoire limitée : Tri rapide",
+      "Mémoire limitée : Tri par tas ou tri rapide",
       "Stabilité requise : Tri fusion",
       "Presque trié : Tri par insertion",
     ],
@@ -296,7 +306,7 @@ export function SortingGuide() {
                   <Code2 className="w-4 h-4" />
                   Implémentation
                 </h3>
-                <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+                <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
                   <code>{algo.code}</code>
                 </pre>
               </div>

@@ -4,7 +4,7 @@ This guide covers the complete deployment process for the FYGS Learning Platform
 
 ## 📋 Prerequisites
 
-- Node.js 18+
+- Node.js 22+ and pnpm (see `packageManager` in package.json)
 - PostgreSQL database
 - Stripe account (for payments)
 - Email provider (Gmail, SendGrid, etc.)
@@ -97,17 +97,24 @@ EMAIL_SERVER_PASSWORD="your-sendgrid-api-key"
 STRIPE_PUBLISHABLE_KEY="pk_live_your-publishable-key"
 STRIPE_SECRET_KEY="sk_live_your-secret-key"
 STRIPE_WEBHOOK_SECRET="whsec_your-webhook-secret"
-STRIPE_SUBSCRIPTION_PRICE_ID="price_your-subscription-price-id"
+STRIPE_MONTHLY_PRICE_ID="price_your-monthly-price-id"
+STRIPE_YEARLY_PRICE_ID="price_your-yearly-price-id"
 ```
 
 **Webhook Configuration:**
 - Endpoint URL: `https://yourdomain.com/api/stripe/webhook`
-- Events to send:
+- Events to send (every one of them is handled; an event that is not listed here is acknowledged and ignored):
   - `checkout.session.completed`
+  - `checkout.session.async_payment_succeeded` (bank debits and other delayed payment methods: the money arrives later)
+  - `checkout.session.async_payment_failed` (the delayed payment failed: the pending payment is marked FAILED and the buyer is told)
   - `customer.subscription.created`
   - `customer.subscription.updated`
   - `customer.subscription.deleted`
+  - `invoice.payment_succeeded`
   - `invoice.payment_failed`
+  - `charge.refunded` (a refund made in the Stripe dashboard: a full refund ends the access bought by that payment, a partial one is only recorded)
+
+After adding events, use "Send test webhook" in the dashboard for `charge.refunded` and check the `webhook.processed` log line. The subscription itself is never cancelled by a refund: stopping future billing stays a decision to take in Stripe.
 
 ## 🚀 Deployment Options
 
@@ -132,7 +139,7 @@ vercel --prod
 # Run migrations
 npx prisma migrate deploy
 
-# Generate Prisma client
+# Generate Prisma client (written to lib/generated/prisma, DATABASE_URL is read from the environment)
 npx prisma generate
 ```
 
@@ -141,88 +148,26 @@ npx prisma generate
 - Configure DNS records as instructed
 - SSL certificates are automatically handled
 
-### Option 2: Docker Deployment
+### Production database connection (Prisma 7 + `pg`)
 
-**Dockerfile:**
-```dockerfile
-FROM node:18-alpine AS base
+Prisma 7 reaches PostgreSQL through the `pg` driver adapter. Three differences from the old engine matter in production:
 
-# Install dependencies only when needed
-FROM base AS deps
-RUN apk add --no-cache libc6-compat
-WORKDIR /app
+| Topic | Behaviour | What to do |
+|-------|-----------|------------|
+| TLS | The server certificate is **validated**; `sslmode=require`/`prefer`/`verify-ca` behave like `verify-full`. | Use `?sslmode=require`. If the provider uses a private CA, point `NODE_EXTRA_CA_CERTS` at the CA file, otherwise the first query fails with `self-signed certificate in certificate chain`. Never disable verification globally. |
+| URL parameters | `pgbouncer`, `connection_limit`, `pool_timeout`, `socket_timeout` and `statement_cache_size` are **ignored**. | Remove them; the pool uses the `pg` default (10 connections). With PgBouncer in transaction mode, use its own pool size. |
+| Timeout | A connection attempt fails after 5 s (`lib/db.ts`). | A timeout on the first request almost always means a wrong host, port or TLS setting. |
 
-COPY package.json package-lock.json* ./
-RUN npm ci
+At startup the server logs the problems it can detect from `DATABASE_URL` (`[database] NO_TLS`, `IGNORED_PARAMS`, `TLS_PRIVATE_CA`, ...; see `lib/database-url.ts`). The URL is never logged. Check the deploy logs for `[database]` lines, then confirm with `GET /api/health`.
 
-# Rebuild the source code only when needed
-FROM base AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+### Option 2: Docker / Coolify (the production target)
 
-# Generate Prisma client
-RUN npx prisma generate
+The repository ships a multi-stage `Dockerfile` (Next.js standalone, Node 22, pnpm from `packageManager`, non-root user, `tini`,
+health check on `/api/health`). The full procedure for Coolify (resources, build variables, pre-deployment migration, cron,
+domain, post-deployment checks) is in **[docs/COOLIFY.md](docs/COOLIFY.md)**.
 
-# Build application
-RUN npm run build
-
-# Production image
-FROM base AS runner
-WORKDIR /app
-
-ENV NODE_ENV production
-
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-USER nextjs
-
-EXPOSE 3000
-
-ENV PORT 3000
-
-CMD ["node", "server.js"]
-```
-
-**Docker Compose:**
-```yaml
-version: '3.8'
-services:
-  app:
-    build: .
-    ports:
-      - "3000:3000"
-    environment:
-      - DATABASE_URL=postgresql://postgres:password@db:5432/fygs
-      - BETTER_AUTH_SECRET=your-secret
-      # Add other environment variables
-    depends_on:
-      - db
-      - redis
-
-  db:
-    image: postgres:15
-    environment:
-      POSTGRES_DB: fygs
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-
-volumes:
-  postgres_data:
+```bash
+docker build -t fygs-dev   --build-arg NEXT_PUBLIC_SITE_URL=https://fygs.dev   --build-arg S3_PUBLIC_URL=https://storage.example.com/fygs-videos .
 ```
 
 ### Option 3: VPS/Cloud Server
@@ -329,14 +274,10 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 ```
 
-**Custom Monitoring:**
-```typescript
-// Add to your monitoring service
-const logError = (error: Error, context: string) => {
-  console.error(`[${context}] ${error.message}`, error.stack);
-  // Send to monitoring service (Sentry, LogRocket, etc.)
-};
-```
+**Error monitoring (Sentry), optional:**
+Nothing is sent unless a DSN is set. With one, server errors (`SENTRY_DSN`) and browser errors (`NEXT_PUBLIC_SENTRY_DSN`, inlined at build time) are reported after `lib/monitoring.ts` has stripped what must not leave: e-mail addresses, IPs, names, cookies, headers, request bodies and query strings. Only an opaque user id is kept. Set `SENTRY_ENVIRONMENT` and `SENTRY_RELEASE` (or `GIT_COMMIT_SHA`) to tell deployments apart. The Content-Security-Policy opens `connect-src` to the DSN's host automatically; rebuild after changing `NEXT_PUBLIC_SENTRY_DSN`.
+
+**Code sandbox (`/sandbox/runner.html`):** exercises and coding challenges run learners' code there, under its own Content-Security-Policy (set in `next.config.mjs`). A reverse proxy must pass the `Content-Security-Policy` header of that path through untouched, and must not add a second one: two policies are intersected and would take `eval` away again.
 
 ### Database Monitoring
 

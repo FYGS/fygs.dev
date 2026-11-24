@@ -161,7 +161,7 @@ export function TableWithPagination<T>({
                     value={filter.value}
                     onValueChange={filter.onChange}
                   >
-                    <SelectTrigger className="w-40">
+                    <SelectTrigger className="w-40" aria-label={filter.label}>
                       <SelectValue placeholder={filter.label} />
                     </SelectTrigger>
                     <SelectContent>
@@ -215,7 +215,7 @@ export function TableWithPagination<T>({
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">Éléments par page:</span>
                   <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
-                    <SelectTrigger className="w-20">
+                    <SelectTrigger className="w-20" aria-label="Éléments par page">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

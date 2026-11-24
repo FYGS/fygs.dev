@@ -12,6 +12,7 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import { useLocale } from "next-intlayer";
 import { cn } from "@/lib/utils";
+import { writeCookie } from "@/lib/browser-effects";
 import {
   Dialog,
   DialogContent,
@@ -52,8 +53,8 @@ export function LocaleSelectorModal() {
     const newPath = segments.join("/");
 
     // Set both cookies
-    document.cookie = `NEXT_LOCALE=${locale}; path=/; max-age=31536000; SameSite=Lax`;
-    document.cookie = `${LOCALE_SELECTED_COOKIE}=true; path=/; max-age=31536000; SameSite=Lax`;
+    writeCookie(`NEXT_LOCALE=${locale}; path=/; max-age=31536000; SameSite=Lax`);
+    writeCookie(`${LOCALE_SELECTED_COOKIE}=true; path=/; max-age=31536000; SameSite=Lax`);
 
     // Smooth transition before closing
     setTimeout(() => {

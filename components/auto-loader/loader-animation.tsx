@@ -1,10 +1,10 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, type Transition } from "framer-motion";
 import Image from "next/image";
 
 export function LoaderAnimation() {
-  const spinTransition = {
+  const spinTransition: Transition = {
     repeat: Infinity,
     ease: "linear",
     duration: 1,

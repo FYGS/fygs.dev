@@ -4,27 +4,18 @@ import { cn } from "@/lib/utils";
 import { ChevronRight, Home } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { getArea, getTopic } from "../_catalog";
 
-const routeNameMap: { [key: string]: string } = {
-  "tech-mastry": "Accueil",
-  algorithms: "Algorithmes",
-  complexity: "Complexité",
-  sorting: "Tri",
-  searching: "Recherche",
-  "data-structures": "Structures de Données",
-  arrays: "Tableaux & Chaînes",
-  lists: "Listes & Files",
-  trees: "Arbres & Graphes",
-  "best-practices": "Bonnes Pratiques",
-  communication: "Communication",
-  negotiation: "Négociation",
-  "design-patterns": "Design Patterns",
-  "system-design": "System Design",
-  "coding-challenges": "Défis de Code",
-  qa: "Questions & Réponses",
-  frontend: "Frontend",
-  "component-patterns": "Component Patterns",
-};
+/** "git-mastery" -> "Git Mastery" for a segment the catalog does not know (the locale, a dynamic part). */
+const humanize = (segment: string) => segment.split("-").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
+
+/** The name of a page comes from the catalog; a landing page is named after its area. */
+function labelFor(path: string, segment: string): string {
+  if (path === "/tech-mastry") return "Accueil";
+  const topic = getTopic(path);
+  if (!topic) return humanize(segment);
+  return topic.kind === "hub" ? (getArea(path)?.title ?? topic.title) : topic.title;
+}
 
 export function Breadcrumbs() {
   const pathname = usePathname();
@@ -32,7 +23,7 @@ export function Breadcrumbs() {
 
   const breadcrumbs = segments.map((segment, index) => {
     const path = `/${segments.slice(0, index + 1).join("/")}`;
-    const name = routeNameMap[segment] || segment;
+    const name = labelFor(path, segment);
     const isLast = index === segments.length - 1;
 
     return {
@@ -51,15 +42,16 @@ export function Breadcrumbs() {
     >
       <Link
         href="/tech-mastry"
+        aria-label="Accueil TechMastery"
         className={cn(
           "flex items-center text-muted-foreground transition-colors hover:text-foreground"
         )}
       >
-        <Home className="h-4 w-4" />
+        <Home className="h-4 w-4" aria-hidden="true" />
       </Link>
       {breadcrumbs.map(({ name, path, isLast }) => (
         <div key={path} className="flex items-center">
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <Link
             href={path}
             className={cn(

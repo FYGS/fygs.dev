@@ -1,0 +1,184 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`playground-templates (pinned) > keeps ids in order 1`] = `
+[
+  "typescript",
+  "javascript",
+  "html-css",
+  "react-starter",
+  "vanilla-ts-app",
+  "node-api",
+  "algorithms",
+  "fullstack-spa",
+  "python",
+  "python-data",
+  "react-component",
+  "nodejs",
+]
+`;
+
+exports[`playground-templates (pinned) > keeps the whole array identical 1`] = `"5e445e5f88c8d7b979827d22ee5d9a8dcad5d95f277804df0ef6005232bfbc9f"`;
+
+exports[`playground-templates (pinned) > lookup helpers 1`] = `
+[
+  "typescript",
+  "javascript",
+  "html-css",
+  "algorithms",
+  "python",
+  "python-data",
+]
+`;
+
+exports[`playground-templates (pinned) > lookup helpers 2`] = `
+[
+  "react-starter",
+  "vanilla-ts-app",
+  "react-component",
+]
+`;
+
+exports[`playground-templates (pinned) > lookup helpers 3`] = `
+[
+  "node-api",
+  "nodejs",
+]
+`;
+
+exports[`playground-templates (pinned) > lookup helpers 4`] = `
+[
+  "fullstack-spa",
+]
+`;
+
+exports[`playground-templates (pinned) > template algorithms 1`] = `"1c34d487dd5c69bb69b34f5876e8b8deb3c6420112119135c133ff9c8cabb6fd"`;
+
+exports[`playground-templates (pinned) > template algorithms 2`] = `
+[
+  "algorithms.ts:04ff9c12ce1ec2080acfa4641cdf399a454d9876693698dd5d5c463380e22c0a",
+]
+`;
+
+exports[`playground-templates (pinned) > template algorithms 3`] = `"d3c185de356e8a00db2341b31a5afdf4d7ac97e3c7785534c730cf98f22d3d7d"`;
+
+exports[`playground-templates (pinned) > template fullstack-spa 1`] = `"812b56f2c4ae038bdb69f334a87bbd64060aec0f76438520a8e54395bd3e471c"`;
+
+exports[`playground-templates (pinned) > template fullstack-spa 2`] = `
+[
+  "index.html:031cb45d7ef72d1bd083ae51069ad572f00ef886e559d43e6e80f4c233ab6a92",
+  "router.js:5100127a4cffcd8b59d10c5d6ea2f0705b7b219ed370456d29b6537e16a90ec9",
+  "app.js:d7497aa58a308a3f2a1295350eb4623177d8a9eda7bb3c7c7588bd1fd52f9c64",
+  "styles.css:671cd97c1062cf01c5cc5087e469797e38e8930b15a56600fae545ce9ff1fd7d",
+]
+`;
+
+exports[`playground-templates (pinned) > template fullstack-spa 3`] = `"d3c185de356e8a00db2341b31a5afdf4d7ac97e3c7785534c730cf98f22d3d7d"`;
+
+exports[`playground-templates (pinned) > template html-css 1`] = `"d94d0363c25d84dee98634567e68ec03744d0b1b919e9de0f6996d04cb7e735d"`;
+
+exports[`playground-templates (pinned) > template html-css 2`] = `
+[
+  "index.html:e8640537156c17ca34d2b79db2c00d2b09bf8a0fc67590c5dfb75248dcd19a3b",
+  "styles.css:8b0dcf42e80a409ef53b996f963cc9f4d1f3ab9f59b71253ec6b834ea2305729",
+  "script.js:898faa267fa30f2fcfe074b5d0b79da8a1a3b0a851675eb8b917b8e4b39922c3",
+]
+`;
+
+exports[`playground-templates (pinned) > template html-css 3`] = `"d3c185de356e8a00db2341b31a5afdf4d7ac97e3c7785534c730cf98f22d3d7d"`;
+
+exports[`playground-templates (pinned) > template javascript 1`] = `"86cf3d2aea423200036987361b25d6e04a42d0606c4afc08de5c843f4e8028d8"`;
+
+exports[`playground-templates (pinned) > template javascript 2`] = `
+[
+  "index.js:da875964ea0f8fb63327bfbcbe76d72fe37d82a5fca39ca00cf1a6f7a472eb5f",
+]
+`;
+
+exports[`playground-templates (pinned) > template javascript 3`] = `"d3c185de356e8a00db2341b31a5afdf4d7ac97e3c7785534c730cf98f22d3d7d"`;
+
+exports[`playground-templates (pinned) > template node-api 1`] = `"c4aa0a5d6f21062a9103eb581bf12a5562ec8e3f3980e181b97b6c540b8fce5d"`;
+
+exports[`playground-templates (pinned) > template node-api 2`] = `
+[
+  "package.json:149719a8ccb17d5049caffd70b1af4b71b48302ee4eb6e9066cc275be0d885cf",
+  "index.js:bfaf70cf05d5ffb77a35eff7746b6fc92cc9e351ae661712eb559a1fc19f17a5",
+]
+`;
+
+exports[`playground-templates (pinned) > template node-api 3`] = `"d3c185de356e8a00db2341b31a5afdf4d7ac97e3c7785534c730cf98f22d3d7d"`;
+
+exports[`playground-templates (pinned) > template nodejs 1`] = `"c6f3e75e4c5a4a506b0a0acc85a1cd5a60e94aa6a51a52147f4e504c38ddc5a0"`;
+
+exports[`playground-templates (pinned) > template nodejs 2`] = `
+[
+  "package.json:5bb151b8a9340fb7f617852f438c300f74e2d2a0fff91c122b8f62ad635fb14b",
+  "index.js:4f98d088b6a3b07d9dd7500acb33edac88483f1a97645cbb6ab6ecd0ebe2db6f",
+  "users.js:89f2a18761760a295c13666b32d554fcc2d1540f1a85790eb80c64ce5ff0b356",
+  "utils.js:9f69af2882f847d1e82aab7a5468ab17c9c278c712757f4c00d4026d460963d3",
+]
+`;
+
+exports[`playground-templates (pinned) > template nodejs 3`] = `"d3c185de356e8a00db2341b31a5afdf4d7ac97e3c7785534c730cf98f22d3d7d"`;
+
+exports[`playground-templates (pinned) > template python 1`] = `"8c8cf11030ad43953a492550f7a085af79c57e7b977d7c9bbc7dfe15eeb4c047"`;
+
+exports[`playground-templates (pinned) > template python 2`] = `
+[
+  "main.py:d3855fc678c75e9dae4381825696e6b58aa11d906381b2edf8cdf73589a1323b",
+]
+`;
+
+exports[`playground-templates (pinned) > template python 3`] = `"d3c185de356e8a00db2341b31a5afdf4d7ac97e3c7785534c730cf98f22d3d7d"`;
+
+exports[`playground-templates (pinned) > template python-data 1`] = `"419746fee70de1e62bdb71e7b1281a311ff2c2397b3bebae821f1ed14bad4b51"`;
+
+exports[`playground-templates (pinned) > template python-data 2`] = `
+[
+  "analysis.py:af7480f48e571423019bab2fb35f60290a80ca625a07beddf132d1e996c7bbdc",
+]
+`;
+
+exports[`playground-templates (pinned) > template python-data 3`] = `"d3c185de356e8a00db2341b31a5afdf4d7ac97e3c7785534c730cf98f22d3d7d"`;
+
+exports[`playground-templates (pinned) > template react-component 1`] = `"0885ea0ed51d8035a9bcc4065858e4f9955c2de70620cfc1fa6398ce98d452d9"`;
+
+exports[`playground-templates (pinned) > template react-component 2`] = `
+[
+  "App.jsx:bb86620f121939851d83ae87e0d479e0a6bab22af416fe3074c710bf10904977",
+]
+`;
+
+exports[`playground-templates (pinned) > template react-component 3`] = `"d3c185de356e8a00db2341b31a5afdf4d7ac97e3c7785534c730cf98f22d3d7d"`;
+
+exports[`playground-templates (pinned) > template react-starter 1`] = `"7db9170056b31d02c044762d262a6074ebf9fb492d2b8baeea665e5d98e95aff"`;
+
+exports[`playground-templates (pinned) > template react-starter 2`] = `
+[
+  "index.html:dabaf11fcab0196cad93ac18767b9591d8eaa9e3fec6649cc7fe79c1dec1eb3a",
+  "styles.css:05f6e24cf3dc3eb895e56ec0ac7e4697de4acfad04cd0a35d37b021aa14eae4a",
+]
+`;
+
+exports[`playground-templates (pinned) > template react-starter 3`] = `"d3c185de356e8a00db2341b31a5afdf4d7ac97e3c7785534c730cf98f22d3d7d"`;
+
+exports[`playground-templates (pinned) > template typescript 1`] = `"ead464bd31ff283d53e03e958ab58562a4ed688aaa38ee078b61de63ff9b4c94"`;
+
+exports[`playground-templates (pinned) > template typescript 2`] = `
+[
+  "index.ts:8061245aa9d43f4ebcebdc78ec687d3bc7af53e250b3f3cae4e15aebf11772c4",
+]
+`;
+
+exports[`playground-templates (pinned) > template typescript 3`] = `"d3c185de356e8a00db2341b31a5afdf4d7ac97e3c7785534c730cf98f22d3d7d"`;
+
+exports[`playground-templates (pinned) > template vanilla-ts-app 1`] = `"e871cc1652c2e66250f00a32765d322ad5a370ad6fdcb56f070e06b8c37b351a"`;
+
+exports[`playground-templates (pinned) > template vanilla-ts-app 2`] = `
+[
+  "index.html:93b64548e9c0f8f14249c700d890b5c0007ac0727e0139eca0c8ddc9f55d97c1",
+  "app.ts:300d5a12db172e58c3423c9d2e9ebe380259d4f4608c69ad7803479297b080ea",
+  "styles.css:95868895262c16bf71c97f497d03a345a43cccaa982e638a414b934d667a1390",
+]
+`;
+
+exports[`playground-templates (pinned) > template vanilla-ts-app 3`] = `"d3c185de356e8a00db2341b31a5afdf4d7ac97e3c7785534c730cf98f22d3d7d"`;

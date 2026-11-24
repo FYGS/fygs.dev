@@ -1,11 +1,8 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 export function useNavigationProgress() {
-  const router = useRouter();
-  const pathname = usePathname();
   const [isNavigating, setIsNavigating] = useState(false);
   const [progress, setProgress] = useState(0);
 
@@ -13,7 +10,7 @@ export function useNavigationProgress() {
     let progressInterval: NodeJS.Timeout;
 
     if (isNavigating) {
-      setProgress(0);
+      queueMicrotask(() => setProgress(0));
       progressInterval = setInterval(() => {
         setProgress((prev) => {
           if (prev >= 90) {
@@ -24,7 +21,7 @@ export function useNavigationProgress() {
         });
       }, 100);
     } else {
-      setProgress(100);
+      queueMicrotask(() => setProgress(100));
       setTimeout(() => {
         setProgress(0);
       }, 200);

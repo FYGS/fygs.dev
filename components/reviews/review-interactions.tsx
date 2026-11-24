@@ -30,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ReportReason } from "@prisma/client";
+import { ReportReason } from "@/lib/generated/prisma/browser";
 
 interface ReviewInteractionsProps {
   reviewId: string;
@@ -221,7 +221,7 @@ export function ReviewInteractions({
             disabled={isVoting}
             className={cn(
               "gap-1.5",
-              votes.userVote?.helpful === true && "bg-green-600 hover:bg-green-700"
+              votes.userVote?.helpful === true && "bg-green-700 text-white hover:bg-green-800"
             )}
           >
             <ThumbsUp className="h-3.5 w-3.5" />
@@ -235,7 +235,7 @@ export function ReviewInteractions({
             disabled={isVoting}
             className={cn(
               "gap-1.5",
-              votes.userVote?.helpful === false && "bg-red-600 hover:bg-red-700"
+              votes.userVote?.helpful === false && "bg-red-700 text-white hover:bg-red-800"
             )}
           >
             <ThumbsDown className="h-3.5 w-3.5" />
@@ -264,7 +264,7 @@ export function ReviewInteractions({
             <Button
               variant="outline"
               size="sm"
-              className="gap-1.5 text-red-600 hover:text-red-700"
+              className="gap-1.5 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
             >
               <Flag className="h-3.5 w-3.5" />
               Signaler
@@ -287,7 +287,7 @@ export function ReviewInteractions({
                   Raison du signalement *
                 </label>
                 <Select value={reportReason} onValueChange={(value) => setReportReason(value as ReportReason)}>
-                  <SelectTrigger className="mt-1">
+                  <SelectTrigger className="mt-1" aria-label="Sélectionnez une raison">
                     <SelectValue placeholder="Sélectionnez une raison" />
                   </SelectTrigger>
                   <SelectContent>

@@ -54,9 +54,9 @@ const sortingAlgorithmsMemory: MemoryData[] = [
   {
     name: "Tri Rapide",
     color: "red",
-    space: "O(log n)",
+    space: "O(log n) moyen · O(n) pire cas",
     description:
-      "Utilise un espace supplémentaire pour la pile d'appels récursifs",
+      "Pile d'appels récursifs : O(log n) en moyenne, O(n) au pire cas ; bornée à O(log n) en récursant d'abord sur la plus petite partition",
     memoryUsage: 20,
     inPlace: true,
   },
@@ -227,8 +227,9 @@ export function MemoryChart() {
               <p className="text-sm text-blue-400">
                 La complexité spatiale mesure la quantité de mémoire
                 supplémentaire utilisée par un algorithme. Un algorithme est dit
-                &quot;in-place&quot; s&apos;il utilise O(1) mémoire
-                supplémentaire. Le tri fusion utilise O(n) mémoire
+                &quot;in-place&quot; s&apos;il trie le tableau sur place, avec
+                une mémoire supplémentaire négligeable (O(1), ou O(log n) pour
+                la pile de récursion du tri rapide). Le tri fusion utilise O(n) mémoire
                 supplémentaire, ce qui peut être problématique pour de très
                 grands tableaux.
               </p>

@@ -1,16 +1,12 @@
-import { Metadata } from "next";
 import { InterviewSimulator } from "./_components";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Interview Simulator | TechMastery",
-  description:
-    "Practice technical, behavioral, and system design interviews with realistic simulations and personalized feedback",
-};
+export const metadata = topicMetadata("/tech-mastry/interview-simulation");
 
 export default function InterviewSimulationPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <InterviewSimulator />
-    </main>
+    </div>
   );
 }

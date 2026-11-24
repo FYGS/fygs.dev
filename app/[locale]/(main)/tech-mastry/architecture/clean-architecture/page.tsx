@@ -1,19 +1,15 @@
-import { Metadata } from "next";
 import { LayersDiagram } from "./_components/layers-diagram";
 import { CodeExamples } from "./_components/code-examples";
 import { Card } from "@/components/ui/card";
 import { Layers, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Clean Architecture | TechMastry",
-  description:
-    "Comprendre et appliquer les principes de Clean Architecture pour créer des systèmes maintenables",
-};
+export const metadata = topicMetadata("/tech-mastry/architecture/clean-architecture");
 
 export default function CleanArchitecturePage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <section className="text-center space-y-6">
         <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-amber-500/10 text-amber-500">
           <Layers className="w-8 h-8" />
@@ -25,7 +21,10 @@ export default function CleanArchitecturePage() {
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Proposée par Robert C. Martin (Uncle Bob), la Clean Architecture
             organise le code en couches concentriques avec une règle de
-            dépendance stricte pointant vers l&apos;intérieur.
+            dépendance stricte pointant vers l&apos;intérieur. Elle reprend
+            l&apos;idée de l&apos;architecture hexagonale (ports et adaptateurs,
+            Alistair Cockburn) et de l&apos;architecture en oignon : le domaine
+            ne dépend de rien, l&apos;infrastructure dépend du domaine.
           </p>
         </div>
       </section>
@@ -87,6 +86,6 @@ export default function CleanArchitecturePage() {
           </Link>
         </div>
       </Card>
-    </main>
+    </div>
   );
 }

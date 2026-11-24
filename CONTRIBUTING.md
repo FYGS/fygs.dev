@@ -112,6 +112,27 @@ pnpm format:check
 git push origin feature/amazing-feature
 ```
 
+### ✅ Local checks
+
+```bash
+pnpm lint                 # also generates the intlayer dictionaries
+pnpm tsc --noEmit         # needs those dictionaries: run `pnpm intlayer build` first on a fresh checkout,
+                          # otherwise it reports TS7006 (implicit any) on every translated component
+pnpm test                 # unit tests
+```
+
+After `pnpm up`, run `pnpm install --no-frozen-lockfile` once: the `webpack` override of `pnpm-workspace.yaml` rewrites the specifier
+that the lockfile must record, and `pnpm up` does not, which makes `pnpm install --frozen-lockfile` fail (in CI too).
+
+**Supply chain.** `pnpm-workspace.yaml` sets `minimumReleaseAge: 4320`: pnpm does not install a version published less than 3 days ago
+(Dependabot has the same 3-day cooldown for version updates, not for security updates). To take the fix of a published advisory at once, list the
+package and version under `minimumReleaseAgeExclude` and remove the entry afterwards. Dependency scripts are blocked by pnpm 10 unless the package is in
+`onlyBuiltDependencies`: adding a package there is a security decision, review its install script first. The base image of the `Dockerfile` is pinned by
+digest and updated by Dependabot (`docker` ecosystem). `pnpm` 10.19 has no `audit signatures`: package signatures are not verified in CI.
+
+On Windows, `.gitattributes` keeps `public/sandbox/**` byte for byte (the previews are pinned by hash) and snapshots in LF.
+After changing these rules, re-extract the files (`git rm --cached` is not needed: delete them and `git checkout -- <path>`).
+
 ### 📝 Commit Convention
 
 We use [Conventional Commits](https://www.conventionalcommits.org/):

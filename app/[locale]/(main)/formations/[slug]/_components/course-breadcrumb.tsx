@@ -1,52 +1,31 @@
-"use client";
-
-import { ChevronRight, Home, BookOpen } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { ChevronRight } from "lucide-react";
 
-interface CourseBreadcrumbProps {
-  courseTitle: string;
-  courseSlug: string;
-  currentPage?: string;
-}
-
-export function CourseBreadcrumb({ courseTitle, courseSlug, currentPage }: CourseBreadcrumbProps) {
+/** Accueil > Formations > the course (current page). */
+export function CourseBreadcrumb({ courseTitle }: { courseTitle: string }) {
   return (
-    <nav className="flex items-center space-x-1 text-sm text-muted-foreground mb-6">
-      <Button variant="ghost" size="sm" asChild className="h-auto p-1 hover:text-primary">
-        <Link href="/" className="flex items-center gap-1">
-          <Home className="h-4 w-4" />
-          Accueil
-        </Link>
-      </Button>
-      
-      <ChevronRight className="h-4 w-4" />
-      
-      <Button variant="ghost" size="sm" asChild className="h-auto p-1 hover:text-primary">
-        <Link href="/formations" className="flex items-center gap-1">
-          <BookOpen className="h-4 w-4" />
-          Formations
-        </Link>
-      </Button>
-      
-      <ChevronRight className="h-4 w-4" />
-      
-      <Button variant="ghost" size="sm" asChild className="h-auto p-1 hover:text-primary">
-        <Link href={`/formations/${courseSlug}`} className="flex items-center gap-1">
-          <span className="font-medium text-foreground truncate max-w-[200px] sm:max-w-none">
-            {courseTitle}
-          </span>
-        </Link>
-      </Button>
-      
-      {currentPage && (
-        <>
+    <nav aria-label="Fil d'Ariane" className="mb-6 text-sm text-muted-foreground">
+      <ol className="flex flex-wrap items-center gap-1.5">
+        <li>
+          <Link href="/" className="hover:text-foreground hover:underline">
+            Accueil
+          </Link>
+        </li>
+        <li aria-hidden>
           <ChevronRight className="h-4 w-4" />
-          <span className="font-medium text-foreground truncate max-w-[200px] sm:max-w-none">
-            {currentPage}
-          </span>
-        </>
-      )}
+        </li>
+        <li>
+          <Link href="/formations" className="hover:text-foreground hover:underline">
+            Formations
+          </Link>
+        </li>
+        <li aria-hidden>
+          <ChevronRight className="h-4 w-4" />
+        </li>
+        <li aria-current="page" className="max-w-[60vw] truncate font-medium text-foreground sm:max-w-none">
+          {courseTitle}
+        </li>
+      </ol>
     </nav>
   );
 }

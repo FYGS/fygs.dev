@@ -1,68 +1,62 @@
 "use client";
 
+import type { Ref } from "react";
+import Link from "next/link";
+import { Menu, PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
-import Link from "next/link";
+import { useLearning } from "./learning-context";
+import { useCurrentItem } from "./use-current-item";
 
 interface LearningTopBarProps {
-  courseTitle: string;
-  courseSlug: string;
-  lessonTitle: string;
-  progressPercentage: number;
   sidebarOpen: boolean;
   onToggleSidebar: () => void;
+  /** Focus comes back here when the plan closes on a small screen. */
+  toggleRef?: Ref<HTMLButtonElement>;
 }
 
-export function LearningTopBar({
-  courseTitle,
-  courseSlug,
-  lessonTitle,
-  progressPercentage,
-  sidebarOpen,
-  onToggleSidebar,
-}: LearningTopBarProps) {
+export function LearningTopBar({ sidebarOpen, onToggleSidebar, toggleRef }: LearningTopBarProps) {
+  const { courseTitle, courseSlug, progress, mode } = useLearning();
+  const item = useCurrentItem();
+
   return (
     <header className="sticky top-0 z-50 h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-full items-center gap-3 px-4">
-        {/* Sidebar toggle */}
         <Button
+          ref={toggleRef}
           variant="ghost"
           size="icon"
           onClick={onToggleSidebar}
           className="shrink-0"
-          aria-label={sidebarOpen ? "Fermer le panneau" : "Ouvrir le panneau"}
+          aria-label={sidebarOpen ? "Masquer le plan de la formation" : "Afficher le plan de la formation"}
+          aria-expanded={sidebarOpen}
+          aria-controls="learning-sidebar"
         >
           {sidebarOpen ? (
-            <PanelLeftClose className="h-5 w-5" />
+            <PanelLeftClose className="hidden h-5 w-5 md:block" aria-hidden />
           ) : (
-            <PanelLeftOpen className="h-5 w-5" />
+            <PanelLeftOpen className="hidden h-5 w-5 md:block" aria-hidden />
           )}
+          <Menu className="h-5 w-5 md:hidden" aria-hidden />
         </Button>
 
-        {/* Course info */}
-        <div className="flex flex-col min-w-0 flex-1">
-          <p className="text-xs text-muted-foreground truncate">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <Link href={`/learn/${courseSlug}`} className="truncate text-xs text-muted-foreground hover:underline">
             {courseTitle}
-          </p>
-          <p className="text-sm font-medium truncate">{lessonTitle}</p>
+          </Link>
+          <p className="truncate text-sm font-medium">{item?.title ?? "Vue d’ensemble"}</p>
         </div>
 
-        {/* Progress */}
-        <div className="hidden sm:flex items-center gap-3 shrink-0">
-          <Progress value={progressPercentage} className="w-32 h-2" />
-          <span className="text-xs text-muted-foreground font-medium">
-            {progressPercentage}%
-          </span>
-        </div>
+        {mode !== "preview" && (
+          <div className="hidden shrink-0 items-center gap-3 md:flex">
+            <Progress value={progress.percent} aria-label="Progression dans la formation" className="h-2 w-32" />
+            <span className="text-xs font-medium text-muted-foreground">{progress.percent} %</span>
+          </div>
+        )}
 
-        {/* Exit button */}
         <Button variant="ghost" size="icon" asChild className="shrink-0">
-          <Link
-            href={`/formations/${courseSlug}`}
-            aria-label="Quitter le mode focus"
-          >
-            <X className="h-5 w-5" />
+          <Link href={`/formations/${courseSlug}`} aria-label="Quitter et revenir à la page de la formation">
+            <X className="h-5 w-5" aria-hidden />
           </Link>
         </Button>
       </div>

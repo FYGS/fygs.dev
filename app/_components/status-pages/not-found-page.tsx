@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Home, Search } from "lucide-react";
 import Link from "next/link";
@@ -13,7 +13,7 @@ interface NotFoundPageProps {
 export function NotFoundPage({ homeUrl = "/" }: NotFoundPageProps) {
   const content = useIntlayer("status-not-found");
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
@@ -30,7 +30,7 @@ export function NotFoundPage({ homeUrl = "/" }: NotFoundPageProps) {
     visible: { opacity: 1, y: 0 },
   };
 
-  const numberVariants = {
+  const numberVariants: Variants = {
     hidden: { scale: 0.5, opacity: 0 },
     visible: {
       scale: 1,

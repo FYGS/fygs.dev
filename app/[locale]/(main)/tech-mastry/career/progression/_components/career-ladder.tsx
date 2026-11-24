@@ -7,7 +7,7 @@ import { useState } from "react";
 
 const levels = [
   {
-    title: "Junior (L1-L2)",
+    title: "Junior",
     years: "0-2 ans",
     color: "bg-green-500",
     textColor: "text-green-500",
@@ -28,7 +28,7 @@ const levels = [
     ],
   },
   {
-    title: "Mid-Level (L3-L4)",
+    title: "Mid-Level",
     years: "2-5 ans",
     color: "bg-blue-500",
     textColor: "text-blue-500",
@@ -49,7 +49,7 @@ const levels = [
     ],
   },
   {
-    title: "Senior (L5-L6)",
+    title: "Senior",
     years: "5-8 ans",
     color: "bg-purple-500",
     textColor: "text-purple-500",
@@ -70,7 +70,7 @@ const levels = [
     ],
   },
   {
-    title: "Staff (L7)",
+    title: "Staff",
     years: "8-12 ans",
     color: "bg-orange-500",
     textColor: "text-orange-500",
@@ -91,7 +91,7 @@ const levels = [
     ],
   },
   {
-    title: "Principal (L8+)",
+    title: "Principal",
     years: "12+ ans",
     color: "bg-red-500",
     textColor: "text-red-500",
@@ -134,7 +134,7 @@ export function CareerLadder() {
             style={{ height: `${40 + i * 25}%` }}
           >
             <span className="text-xs font-bold writing-mode-vertical md:writing-mode-horizontal">
-              L{i + 1}
+              N{i + 1}
             </span>
           </button>
         ))}
@@ -147,7 +147,11 @@ export function CareerLadder() {
             <h3 className={cn("text-2xl font-bold", level.textColor)}>
               {level.title}
             </h3>
-            <p className="text-muted-foreground">{level.years} d&apos;expérience</p>
+            <p className="text-muted-foreground">
+              {level.years} d&apos;expérience (repère indicatif : les grilles varient
+              selon les entreprises et le niveau dépend de l&apos;impact, pas de
+              l&apos;ancienneté)
+            </p>
           </div>
           <Badge className={level.bgLight + " " + level.textColor}>
             Scope : {level.scope}

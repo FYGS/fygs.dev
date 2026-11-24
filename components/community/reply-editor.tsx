@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Send, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -36,9 +36,12 @@ export function ReplyEditor({
   const [content, setContent] = useState(initialContent);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
+  // Reset the draft when the initial content changes (derived during render)
+  const [syncedInitialContent, setSyncedInitialContent] = useState(initialContent);
+  if (syncedInitialContent !== initialContent) {
+    setSyncedInitialContent(initialContent);
     setContent(initialContent);
-  }, [initialContent]);
+  }
 
   const handleChange = (value: string) => {
     setContent(value);

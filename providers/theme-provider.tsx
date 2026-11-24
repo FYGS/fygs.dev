@@ -1,5 +1,6 @@
 "use client";
 
+import { DEFAULT_THEME, THEME_STORAGE_KEY } from "@/lib/theme-init-script.mjs";
 import {
   ThemeProvider as NextThemesProvider,
   useTheme as useNextTheme,
@@ -21,8 +22,8 @@ interface ThemeProviderState {
 
 export function ThemeProvider({
   children,
-  defaultTheme = "dark",
-  storageKey = "fygs-theme",
+  defaultTheme = DEFAULT_THEME,
+  storageKey = THEME_STORAGE_KEY,
 }: ThemeProviderProps) {
   return (
     <NextThemesProvider
@@ -31,6 +32,10 @@ export function ThemeProvider({
       storageKey={storageKey}
       enableSystem
       disableTransitionOnChange
+      // The page applies the stored theme with its own constant script (lib/theme-init-script.mjs, see the root layout):
+      // the one next-themes writes has a text that depends on the bundler, so it cannot be allowed by a stable hash.
+      // As a JSON data block it is inert; the library still keeps the theme in step once the page is interactive.
+      scriptProps={{ type: "application/json" }}
     >
       {children}
     </NextThemesProvider>

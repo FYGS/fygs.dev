@@ -1,342 +1,207 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Award, BookOpen, Check, Crown, Loader2, Zap } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  Check,
-  Star,
-  Zap,
-  Crown,
-  BookOpen,
-  Award,
-  Headphones,
-} from "lucide-react";
-import { useSession } from "@/lib/auth-client";
-import { toast } from "sonner";
-
 import { enqueueAnalytics } from "@/lib/analytics-batch";
+import type { PlanPrice } from "@/lib/payments/plan-prices";
+import { formatPrice } from "@/lib/price-format";
+
+/** Where the visitor stands with the subscription, decided on the server. */
+export type PlanViewerState = "anonymous" | "free" | "premium" | "ending" | "past_due";
 
 interface SubscriptionPlansProps {
-  currentPlan?: "free" | "premium";
-  hasMonthly?: boolean;
-  hasYearly?: boolean;
-  defaultCycle?: "monthly" | "yearly";
-  currentCycle?: "monthly" | "yearly" | "unknown";
-  previousCycleDerived?: boolean; // true when defaultCycle came from prior subscription (for badge)
+  state: PlanViewerState;
+  monthly: PlanPrice | null;
+  yearly: PlanPrice | null;
+  defaultCycle: "monthly" | "yearly";
+  /** Published premium courses the subscription opens. */
+  premiumCourses: number;
+  refundDays: number;
 }
 
-export function SubscriptionPlans({
-  currentPlan = "free",
-  hasYearly = false,
-  defaultCycle = "monthly",
-  previousCycleDerived = false,
-}: SubscriptionPlansProps) {
-  const { data: session } = useSession();
-  const [loading, setLoading] = useState<string | null>(null);
-  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">(
-    defaultCycle
-  );
-  const yearlyConfigured = hasYearly;
-  const effectiveBillingCycle = yearlyConfigured ? billingCycle : "monthly";
+export function SubscriptionPlans({ state, monthly, yearly, defaultCycle, premiumCourses, refundDays }: SubscriptionPlansProps) {
+  const [cycle, setCycle] = useState<"monthly" | "yearly">(defaultCycle === "yearly" && yearly ? "yearly" : monthly ? "monthly" : "yearly");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
+  const price = cycle === "yearly" ? yearly : monthly;
+  const saving =
+    monthly && yearly && monthly.currency === yearly.currency ? Math.round((1 - yearly.amount / (monthly.amount * 12)) * 100) : 0;
 
-  const handleSubscribe = async (planType: "premium") => {
-    if (!session) {
-      // Redirect to login with callback to return to pricing page
-      const callbackUrl = encodeURIComponent(window.location.pathname);
-      window.location.href = `/auth/login?callbackUrl=${callbackUrl}`;
+  const subscribe = async () => {
+    if (state === "anonymous") {
+      router.push(`/auth/login?callbackUrl=${encodeURIComponent(pathname)}`);
       return;
     }
-
-    setLoading(planType);
+    setLoading(true);
+    enqueueAnalytics({ type: "SUBSCRIPTION_CYCLE_TOGGLED", context: { to: cycle, location: "pricing-subscribe" } });
     try {
       const response = await fetch("/api/stripe/checkout", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          type: "subscription",
-          courseId: "premium-subscription",
-          // send the semantic cycle; server maps to actual price id
-          priceId: effectiveBillingCycle,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "subscription", priceId: cycle }),
       });
-
-      const data = await response.json();
-
+      const data = (await response.json().catch(() => ({}))) as { url?: string; error?: string };
       if (response.ok && data.url) {
         window.location.href = data.url;
-      } else {
-        toast.error("Erreur lors de la création de l'abonnement", {
-          description:
-            data.error || "Erreur lors de la création de l'abonnement",
-        });
+        return;
       }
-    } catch (subscriptionError) {
-      console.error("Subscription creation error:", subscriptionError);
-      toast.error("Erreur lors de la création de l'abonnement", {
-        description:
-          "Une erreur est survenue lors de la création de l'abonnement",
-      });
-    } finally {
-      setLoading(null);
+      toast.error("L’abonnement n’a pas pu démarrer", { description: data.error ?? "Réessayez dans un instant." });
+    } catch {
+      toast.error("L’abonnement n’a pas pu démarrer", { description: "Vérifiez votre connexion et réessayez." });
     }
+    setLoading(false);
   };
 
-  const plans = [
-    {
-      id: "free",
-      name: "Gratuit",
-      price: 0,
-      period: "",
-      description: "Parfait pour commencer",
-      features: [
-        "Accès aux formations gratuites",
-        "Suivi de progression basique",
-        "Support communautaire",
-        "Ressources de base",
-      ],
-      limitations: [
-        "Formations premium verrouillées",
-        "Pas de certificats",
-        "Support limité",
-      ],
-      buttonText: "Plan actuel",
-      buttonVariant: "outline" as const,
-      popular: false,
-    },
-    {
-      id: "premium",
-      name: "Premium",
-      price: billingCycle === "monthly" ? 29 : 290,
-      period: billingCycle === "monthly" ? "/mois" : "/an",
-      description: "Accès illimité à tout le contenu",
-      features: [
-        "Accès illimité à toutes les formations",
-        "Nouveaux cours chaque mois",
-        "Certificats de completion",
-        "Support prioritaire 24/7",
-        "Ressources téléchargeables",
-        "Accès aux projets pratiques",
-        "Communauté Discord privée",
-        "Sessions Q&A en direct",
-        "Code source complet",
-        "Mises à jour à vie",
-      ],
-      buttonText: "Commencer maintenant",
-      buttonVariant: "default" as const,
-      popular: true,
-    },
+  const premiumFeatures = [
+    premiumCourses > 0
+      ? `Les ${premiumCourses} formation${premiumCourses > 1 ? "s" : ""} Premium du catalogue, et celles qui s’y ajoutent`
+      : "Toutes les formations Premium du catalogue",
+    "Les formations gratuites, bien sûr",
+    "Quiz, examens finaux et certificats vérifiables",
+    "Les parcours complets, certificat de parcours compris",
+    "Ressources téléchargeables des leçons",
+  ];
+  const freeFeatures = [
+    "Toutes les formations gratuites",
+    "Quiz, examens et certificats des formations gratuites",
+    "Leçons d’aperçu des formations Premium",
+    "Formations Premium à l’unité, à vie",
   ];
 
+  const premiumAction = (() => {
+    if (state === "premium") return <Button className="h-12 w-full text-base" variant="outline" disabled>Votre formule actuelle</Button>;
+    if (state === "ending" || state === "past_due") {
+      return (
+        <Button asChild className="h-12 w-full text-base">
+          <Link href="/dashboard/billing">{state === "ending" ? "Réactiver mon abonnement" : "Mettre à jour mon paiement"}</Link>
+        </Button>
+      );
+    }
+    return (
+      <Button className="h-12 w-full text-base font-semibold" onClick={subscribe} disabled={loading || (!price && state !== "anonymous")}>
+        {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" aria-hidden /> : null}
+        Commencer maintenant
+      </Button>
+    );
+  })();
+
   return (
-    <div className="space-y-8">
-      <div className="text-center space-y-4">
-        <h2 className="text-3xl font-bold">Choisissez votre plan</h2>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
-          Accédez à notre catalogue complet de formations premium et accélérez
-          votre carrière en développement.
+    <div className="space-y-10">
+      <div className="space-y-4 text-center">
+        <h1 className="text-3xl font-bold">Choisissez votre plan</h1>
+        <p className="mx-auto max-w-2xl text-muted-foreground">
+          Les formations gratuites restent ouvertes à tous. Premium ouvre l’ensemble du catalogue, sans achat formation par formation.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-        {plans.map((plan) => (
-          <Card
-            key={plan.id}
-            className={`relative ${
-              plan.popular
-                ? "border-primary shadow-lg scale-105"
-                : "border-border"
-            }`}
-          >
-            {plan.popular && (
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <Badge className="bg-primary text-primary-foreground px-3 py-1">
-                  <Star className="h-3 w-3 mr-1" />
-                  Plus populaire
-                </Badge>
+      <div className="mx-auto grid max-w-4xl grid-cols-1 gap-8 md:grid-cols-2">
+        <Card className="border">
+          <CardHeader className="space-y-3 text-center">
+            <div className="flex items-center justify-center gap-2">
+              <Zap className="h-6 w-6 text-muted-foreground" aria-hidden />
+              <CardTitle as="h2" className="text-2xl">
+                Gratuit
+              </CardTitle>
+            </div>
+            <p className="text-4xl font-bold">0 €</p>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <ul className="space-y-3">
+              {freeFeatures.map((feature) => (
+                <li key={feature} className="flex items-start gap-3 text-sm">
+                  <Check className="mt-0.5 h-5 w-5 shrink-0 text-emerald-700 dark:text-emerald-400" aria-hidden />
+                  {feature}
+                </li>
+              ))}
+            </ul>
+            {state === "anonymous" ? (
+              <Button asChild variant="outline" className="h-12 w-full text-base">
+                <Link href="/auth/register">Créer un compte</Link>
+              </Button>
+            ) : (
+              <Button asChild variant="outline" className="h-12 w-full text-base">
+                <Link href="/formations?access=free">Voir les formations gratuites</Link>
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="relative border-2 border-primary shadow-lg">
+          <CardHeader className="space-y-3 text-center">
+            <div className="flex items-center justify-center gap-2">
+              <Crown className="h-6 w-6 text-primary" aria-hidden />
+              <CardTitle as="h2" className="text-2xl">
+                Premium
+              </CardTitle>
+              {state === "premium" && <Badge>Votre formule</Badge>}
+            </div>
+
+            {monthly && yearly && (
+              <div role="radiogroup" aria-label="Fréquence de paiement" className="flex items-center justify-center gap-2">
+                {(["monthly", "yearly"] as const).map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    role="radio"
+                    aria-checked={cycle === value}
+                    onClick={() => setCycle(value)}
+                    className={`rounded-full border px-3 py-1 text-sm ${cycle === value ? "border-primary bg-primary text-primary-foreground" : "bg-muted"}`}
+                  >
+                    {value === "monthly" ? "Mensuel" : `Annuel${saving > 0 ? ` (−${saving} %)` : ""}`}
+                  </button>
+                ))}
               </div>
             )}
 
-            <CardHeader className="text-center space-y-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-center gap-2">
-                  {plan.id === "premium" ? (
-                    <Crown className="h-6 w-6 text-primary" />
-                  ) : (
-                    <Zap className="h-6 w-6 text-muted-foreground" />
-                  )}
-                  <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                </div>
-                <p className="text-muted-foreground">{plan.description}</p>
-              </div>
-
-              <div className="space-y-2">
-                {plan.id === "premium" && (
-                  <div className="flex items-center justify-center gap-2">
-                    <button
-                      onClick={() => {
-                        setBillingCycle("monthly");
-                        enqueueAnalytics({
-                          type: "SUBSCRIPTION_CYCLE_TOGGLED",
-                          context: {
-                            to: "monthly",
-                            from: billingCycle,
-                            location: "pricing",
-                          },
-                        });
-                      }}
-                      className={`px-3 py-1 text-xs rounded-full border ${
-                        effectiveBillingCycle === "monthly"
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-muted"
-                      }`}
-                    >
-                      Mensuel
-                    </button>
-                    <button
-                      onClick={() =>
-                        yearlyConfigured &&
-                        (setBillingCycle("yearly"),
-                        enqueueAnalytics({
-                          type: "SUBSCRIPTION_CYCLE_TOGGLED",
-                          context: {
-                            to: "yearly",
-                            from: billingCycle,
-                            location: "pricing",
-                          },
-                        }))
-                      }
-                      disabled={!yearlyConfigured}
-                      className={`px-3 py-1 text-xs rounded-full border ${
-                        effectiveBillingCycle === "yearly"
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-muted"
-                      } ${
-                        !yearlyConfigured ? "opacity-40 cursor-not-allowed" : ""
-                      }`}
-                    >
-                      Annuel -2 mois
-                    </button>
-                  </div>
-                )}
-                <div className="text-4xl font-bold">
-                  {plan.price === 0 ? "Gratuit" : `${plan.price}€`}
-                  <span className="text-lg font-normal text-muted-foreground">
-                    {plan.period}
-                  </span>
-                </div>
-                {plan.id === "premium" &&
-                  effectiveBillingCycle === "yearly" && (
-                    <p className="text-xs text-green-600">Économisez 2 mois</p>
-                  )}
-                {plan.id === "premium" &&
-                  previousCycleDerived &&
-                  defaultCycle === "yearly" && (
-                    <p className="text-[10px] text-primary font-medium uppercase tracking-wide">
-                      Basé sur votre précédent abonnement
-                    </p>
-                  )}
-                {plan.id === "premium" && !yearlyConfigured && (
-                  <p className="text-xs text-muted-foreground">
-                    (Annuel bientôt disponible)
-                  </p>
-                )}
-              </div>
-            </CardHeader>
-
-            <CardContent className="space-y-6">
-              <div className="space-y-3">
-                {plan.features.map((feature, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
-                    <span className="text-sm">{feature}</span>
-                  </div>
-                ))}
-
-                {plan.limitations &&
-                  plan.limitations.map((limitation, index) => (
-                    <div
-                      key={index}
-                      className="flex items-start gap-3 opacity-60"
-                    >
-                      <div className="h-5 w-5 shrink-0 mt-0.5 flex items-center justify-center">
-                        <div className="h-2 w-2 bg-muted-foreground rounded-full" />
-                      </div>
-                      <span className="text-sm text-muted-foreground line-through">
-                        {limitation}
-                      </span>
-                    </div>
-                  ))}
-              </div>
-
-              <Button
-                className="w-full h-12 text-lg font-semibold"
-                variant={plan.buttonVariant}
-                size="lg"
-                onClick={() =>
-                  plan.id === "premium" && handleSubscribe("premium")
-                }
-                disabled={
-                  loading === plan.id ||
-                  (plan.id === "free" && currentPlan === "free") ||
-                  (plan.id === "premium" && currentPlan === "premium")
-                }
-              >
-                {loading === plan.id ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    <span>Traitement...</span>
-                  </div>
-                ) : currentPlan === plan.id ? (
-                  "Plan actuel"
-                ) : (
-                  plan.buttonText
-                )}
-              </Button>
-
-              {plan.id === "premium" && (
-                <div className="text-center space-y-2">
-                  <p className="text-sm text-muted-foreground">
-                    ✨ Garantie satisfait ou remboursé 30 jours
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Annulez à tout moment
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
+            {price ? (
+              <p className="text-4xl font-bold">
+                {formatPrice(price.amount, { currency: price.currency, freeLabel: false })}
+                <span className="text-lg font-normal text-muted-foreground">{price.cycle === "monthly" ? " / mois" : " / an"}</span>
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground">L’abonnement n’est pas disponible pour le moment.</p>
+            )}
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <ul className="space-y-3">
+              {premiumFeatures.map((feature) => (
+                <li key={feature} className="flex items-start gap-3 text-sm">
+                  <Check className="mt-0.5 h-5 w-5 shrink-0 text-emerald-700 dark:text-emerald-400" aria-hidden />
+                  {feature}
+                </li>
+              ))}
+            </ul>
+            {premiumAction}
+            <p className="text-center text-xs text-muted-foreground">
+              Sans engagement : arrêtez quand vous voulez depuis la page Facturation. Remboursement sur demande sous {refundDays} jours.
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Features Comparison */}
-      <div className="bg-muted/30 rounded-lg p-6 max-w-4xl mx-auto">
-        <h3 className="text-xl font-semibold text-center mb-6">
-          Pourquoi choisir Premium ?
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="text-center space-y-2">
-            <BookOpen className="h-8 w-8 text-primary mx-auto" />
-            <h4 className="font-semibold">50+ Formations</h4>
+      <div className="mx-auto grid max-w-4xl grid-cols-1 gap-6 rounded-lg bg-muted/30 p-6 md:grid-cols-2">
+        <div className="flex items-start gap-3">
+          <BookOpen className="mt-1 h-6 w-6 shrink-0 text-primary" aria-hidden />
+          <div>
+            <h3 className="font-semibold">Une formation seulement ?</h3>
             <p className="text-sm text-muted-foreground">
-              Accès illimité à toutes nos formations premium
+              Chaque formation Premium s’achète aussi à l’unité, avec un accès à vie, depuis sa page.
             </p>
           </div>
-          <div className="text-center space-y-2">
-            <Award className="h-8 w-8 text-primary mx-auto" />
-            <h4 className="font-semibold">Certificats</h4>
+        </div>
+        <div className="flex items-start gap-3">
+          <Award className="mt-1 h-6 w-6 shrink-0 text-primary" aria-hidden />
+          <div>
+            <h3 className="font-semibold">Des certificats vérifiables</h3>
             <p className="text-sm text-muted-foreground">
-              Certificats reconnus pour votre CV
-            </p>
-          </div>
-          <div className="text-center space-y-2">
-            <Headphones className="h-8 w-8 text-primary mx-auto" />
-            <h4 className="font-semibold">Support 24/7</h4>
-            <p className="text-sm text-muted-foreground">
-              Support prioritaire et communauté exclusive
+              Chaque certificat porte un code que n’importe qui peut vérifier en ligne, sur toutes les formations.
             </p>
           </div>
         </div>

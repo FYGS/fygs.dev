@@ -1,19 +1,26 @@
 "use client";
 
 import { useState } from "react";
+import { MIN_PASSWORD_LENGTH } from "@/lib/password-policy";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordToggle } from "@/components/ui/password-toggle";
+import { FieldError, fieldErrorProps } from "@/components/ui/field-error";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { authService } from "@/lib/auth-service";
 import { toast } from "sonner";
-import { Github, Mail, Eye, EyeOff } from "lucide-react";
-import { useForm, Controller } from "react-hook-form";
+import { Mail } from "lucide-react";
+import { Github } from "@/components/icons/brand-icons";
+import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useIntlayer } from "next-intlayer";
+import { safeInternalPath } from "@/lib/safe-redirect";
+import { honeypotFields } from "@/lib/anti-automation/honeypot";
 
 interface RegisterFormProps {
   callbackUrl?: string | null;
@@ -21,12 +28,13 @@ interface RegisterFormProps {
 
 export function RegisterForm({ callbackUrl }: RegisterFormProps) {
   const content = useIntlayer("register-form");
+  const destination = safeInternalPath(callbackUrl);
 
   const registerSchema = z
     .object({
       name: z.string().min(2, content.form.name.error.minLength.value),
       email: z.string().email(content.form.email.error.invalid.value),
-      password: z.string().min(8, content.form.password.error.minLength.value),
+      password: z.string().min(MIN_PASSWORD_LENGTH, content.form.password.error.minLength.value),
       confirmPassword: z.string(),
       acceptTerms: z
         .union([z.boolean(), z.string()])
@@ -52,16 +60,15 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
     handleSubmit,
     formState: { errors },
     setError,
-    watch,
     control,
-  } = useForm<RegisterFormData>({
+  } = useForm<z.input<typeof registerSchema>, unknown, RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       acceptTerms: false,
     },
   });
 
-  const acceptTerms = watch("acceptTerms");
+  const acceptTerms = useWatch({ control, name: "acceptTerms" });
 
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
@@ -70,6 +77,7 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
         email: data.email,
         password: data.password,
         name: data.name,
+        callbackURL: destination,
       });
 
       if (!result.success) {
@@ -83,7 +91,7 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
         const verifyUrl = `/auth/verify?email=${encodeURIComponent(
           data.email
         )}${
-          callbackUrl ? `&callbackUrl=${encodeURIComponent(callbackUrl)}` : ""
+          callbackUrl ? `&callbackUrl=${encodeURIComponent(destination)}` : ""
         }`;
         router.push(verifyUrl);
       }
@@ -97,11 +105,7 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
   const handleSocialLogin = async (provider: "github" | "google") => {
     setIsLoading(true);
     try {
-      // Store callbackUrl in sessionStorage for post-auth redirect
-      if (callbackUrl) {
-        sessionStorage.setItem("authCallbackUrl", callbackUrl);
-      }
-      await authService.signInWithProvider(provider);
+      await authService.signInWithProvider(provider, destination);
     } catch (error) {
       console.error("Social login error:", error);
       toast.error(`${content.messages.error.socialLogin} ${provider}`, {
@@ -149,6 +153,7 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
 
       {/* Registration Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        {honeypotFields()}
         <div className="space-y-2">
           <Label htmlFor="name">{content.form.name.label}</Label>
           <Input
@@ -156,11 +161,11 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
             type="text"
             placeholder={content.form.name.placeholder.value}
             {...register("name")}
+              {...fieldErrorProps("name", errors.name)}
+              autoComplete="name"
             disabled={isLoading}
           />
-          {errors.name && (
-            <p className="text-sm text-destructive">{errors.name.message}</p>
-          )}
+          <FieldError id="name" message={errors.name?.message} />
         </div>
 
         <div className="space-y-2">
@@ -170,11 +175,11 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
             type="email"
             placeholder={content.form.email.placeholder.value}
             {...register("email")}
+              {...fieldErrorProps("email", errors.email)}
+              autoComplete="email"
             disabled={isLoading}
           />
-          {errors.email && (
-            <p className="text-sm text-destructive">{errors.email.message}</p>
-          )}
+          <FieldError id="email" message={errors.email?.message} />
         </div>
 
         <div className="space-y-2">
@@ -185,28 +190,17 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
               type={showPassword ? "text" : "password"}
               placeholder={content.form.password.placeholder.value}
               {...register("password")}
+              {...fieldErrorProps("password", errors.password)}
+              autoComplete="new-password"
               disabled={isLoading}
             />
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-              onClick={() => setShowPassword(!showPassword)}
+            <PasswordToggle
+              visible={showPassword}
+              onToggle={() => setShowPassword(!showPassword)}
               disabled={isLoading}
-            >
-              {showPassword ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
-            </Button>
+            />
           </div>
-          {errors.password && (
-            <p className="text-sm text-destructive">
-              {errors.password.message}
-            </p>
-          )}
+          <FieldError id="password" message={errors.password?.message} />
         </div>
 
         <div className="space-y-2">
@@ -219,28 +213,17 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
               type={showConfirmPassword ? "text" : "password"}
               placeholder={content.form.confirmPassword.placeholder.value}
               {...register("confirmPassword")}
+              {...fieldErrorProps("confirmPassword", errors.confirmPassword)}
+              autoComplete="new-password"
               disabled={isLoading}
             />
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            <PasswordToggle
+              visible={showConfirmPassword}
+              onToggle={() => setShowConfirmPassword(!showConfirmPassword)}
               disabled={isLoading}
-            >
-              {showConfirmPassword ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
-            </Button>
+            />
           </div>
-          {errors.confirmPassword && (
-            <p className="text-sm text-destructive">
-              {errors.confirmPassword.message}
-            </p>
-          )}
+          <FieldError id="confirmPassword" message={errors.confirmPassword?.message} />
         </div>
 
         <div className="flex items-center space-x-2">
@@ -250,9 +233,10 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
             render={({ field }) => (
               <Checkbox
                 id="acceptTerms"
-                checked={field.value}
+                checked={field.value === true}
                 onCheckedChange={field.onChange}
                 disabled={isLoading}
+                {...fieldErrorProps("acceptTerms", errors.acceptTerms)}
               />
             )}
           />
@@ -261,23 +245,19 @@ export function RegisterForm({ callbackUrl }: RegisterFormProps) {
             className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
           >
             {content.form.acceptTerms.text}{" "}
-            <a href="/terms" className="text-primary hover:underline">
+            <Link href="/terms" className="text-primary hover:underline">
               {content.form.acceptTerms.terms}
-            </a>{" "}
+            </Link>{" "}
             {content.form.acceptTerms.and}{" "}
-            <a href="/privacy" className="text-primary hover:underline">
+            <Link href="/privacy" className="text-primary hover:underline">
               {content.form.acceptTerms.privacy}
-            </a>
+            </Link>
           </Label>
         </div>
-        {errors.acceptTerms && (
-          <p className="text-sm text-destructive">
-            {errors.acceptTerms.message}
-          </p>
-        )}
+        <FieldError id="acceptTerms" message={errors.acceptTerms?.message} />
 
         {errors.root && (
-          <p className="text-sm text-destructive">{errors.root.message}</p>
+          <p role="alert" className="text-sm text-destructive">{errors.root.message}</p>
         )}
 
         <Button

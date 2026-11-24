@@ -13,7 +13,7 @@ export function ShortcutsToolbar() {
   const { openGuide } = useShortcutsGuide();
 
   return (
-    <div className="fixed bottom-4 right-4 z-[70] rounded-full border bg-background/90 p-1 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-background/80 flex items-center gap-1">
+    <div className="shortcuts-toolbar fixed bottom-4 right-4 z-[70] rounded-full border bg-background/90 p-1 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-background/80 flex items-center gap-1">
       <ThemeToggle />
       <Tooltip>
         <TooltipTrigger asChild>

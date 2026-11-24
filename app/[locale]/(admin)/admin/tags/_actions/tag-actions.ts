@@ -5,7 +5,8 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { headers } from "next/headers";
 import { z } from "zod";
-import { Role } from "@prisma/client";
+import { Role } from "@/lib/generated/prisma/browser";
+import { writeAudit } from "@/lib/audit";
 
 const createTagSchema = z.object({
   name: z
@@ -123,7 +124,7 @@ export async function createTag(data: CreateTagData): Promise<TagActionResult> {
       return {
         success: false,
         error:
-          "Données invalides: " + error.errors.map((e) => e.message).join(", "),
+          "Données invalides: " + error.issues.map((e) => e.message).join(", "),
       };
     }
 
@@ -152,13 +153,11 @@ export async function updateTag(
     }
 
     // Vérifier les permissions
-    if (
-      session.user.role !== Role.ADMIN &&
-      session.user.role !== Role.INSTRUCTOR
-    ) {
+    // A tag is shared by every course: renaming it changes other authors' courses, so it is an administrator's call
+    if (session.user.role !== Role.ADMIN) {
       return {
         success: false,
-        error: "Vous n'avez pas les permissions pour modifier un tag",
+        error: "Seul un administrateur peut modifier un tag : il est partagé par toutes les formations.",
       };
     }
 
@@ -196,6 +195,13 @@ export async function updateTag(
       where: { id: tagId },
       data: validatedData,
     });
+    await writeAudit({
+      actorId: session.user.id,
+      action: "tag.changed",
+      targetType: "tag",
+      targetId: tag.id,
+      metadata: { operation: "update", before: { name: existingTag.name, color: existingTag.color }, after: { name: tag.name, color: tag.color } },
+    });
 
     // Créer un événement analytics pour le suivi
     await db.analyticsEvent.create({
@@ -232,7 +238,7 @@ export async function updateTag(
       return {
         success: false,
         error:
-          "Données invalides: " + error.errors.map((e) => e.message).join(", "),
+          "Données invalides: " + error.issues.map((e) => e.message).join(", "),
       };
     }
 
@@ -260,13 +266,10 @@ export async function deleteTag(
     }
 
     // Vérifier les permissions
-    if (
-      session.user.role !== Role.ADMIN &&
-      session.user.role !== Role.INSTRUCTOR
-    ) {
+    if (session.user.role !== Role.ADMIN) {
       return {
         success: false,
-        error: "Vous n'avez pas les permissions pour supprimer un tag",
+        error: "Seul un administrateur peut supprimer un tag : il est partagé par toutes les formations.",
       };
     }
 
@@ -296,6 +299,13 @@ export async function deleteTag(
     // Supprimer le tag
     await db.tag.delete({
       where: { id: tagId },
+    });
+    await writeAudit({
+      actorId: session.user.id,
+      action: "tag.changed",
+      targetType: "tag",
+      targetId: existingTag.id,
+      metadata: { operation: "delete", name: existingTag.name },
     });
 
     // Créer un événement analytics pour le suivi

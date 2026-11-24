@@ -8,7 +8,7 @@
 
 import { generateI18nMetadata } from "@/app/_lib/i18n-metadata";
 import type { SectionSEOConfig } from "@/app/_lib/seo-config";
-import type { LocalesValues } from "intlayer";
+import { Locales, type LocalesValues } from "intlayer";
 
 export type { SectionSEOConfig };
 
@@ -17,10 +17,11 @@ export type { SectionSEOConfig };
  * Accepts either a raw config or a pre-built SectionSEOConfig from seo-config.ts
  */
 export async function generateRouteMetadata(
-  params: Promise<{ locale: string }>,
+  params: Promise<{ locale?: string }>,
   config: SectionSEOConfig,
 ) {
-  const { locale } = await params;
+  // The default locale (intlayer.config.ts) when the segment is absent.
+  const { locale = Locales.FRENCH } = await params;
   return generateI18nMetadata({
     ...config,
     locale: locale as LocalesValues,

@@ -26,39 +26,39 @@ const topics = [
     href: "/tech-mastry/data-structures/arrays",
     icon: Code2,
     description:
-      "Manipulation avancée des tableaux, recherche, tri, techniques Two Pointers, Sliding Window, Kadane, et optimisations mémoire.",
+      "Manipulation des tableaux et des chaînes, recherche, tri, techniques Two Pointers, Sliding Window, Prefix Sum et Kadane.",
     badge: "Fondamental",
     color: "from-blue-500/20 to-cyan-500/20",
     borderColor: "hover:border-blue-500/50",
     iconColor: "text-blue-500",
     complexity: "O(1) accès · O(n) recherche",
-    interviewFreq: 95,
+    interviewFreq: "Très fréquent",
   },
   {
     title: "Listes Chaînées",
     href: "/tech-mastry/data-structures/lists",
     icon: GitMerge,
     description:
-      "Listes simplement/doublement chaînées, détection de cycles (Floyd), fusion, inversions, et skip lists.",
+      "Listes simplement/doublement chaînées, détection de cycles (Floyd), fusion, inversion et noeud sentinelle.",
     badge: "Fondamental",
     color: "from-green-500/20 to-emerald-500/20",
     borderColor: "hover:border-green-500/50",
     iconColor: "text-green-500",
     complexity: "O(1) insertion · O(n) accès",
-    interviewFreq: 85,
+    interviewFreq: "Fréquent",
   },
   {
     title: "Arbres & BST",
     href: "/tech-mastry/data-structures/trees",
     icon: ListTree,
     description:
-      "Arbres binaires, BST, AVL, Red-Black Trees, parcours DFS/BFS, sérialisation et arbres de segments.",
+      "Arbres binaires, BST, arbres équilibrés (AVL, Rouge-Noir), parcours DFS/BFS en profondeur et en largeur, et graphes.",
     badge: "Intermédiaire",
     color: "from-purple-500/20 to-violet-500/20",
     borderColor: "hover:border-purple-500/50",
     iconColor: "text-purple-500",
     complexity: "O(log n) recherche équilibrée",
-    interviewFreq: 90,
+    interviewFreq: "Très fréquent",
   },
   {
     title: "Hash Maps & Sets",
@@ -71,7 +71,7 @@ const topics = [
     borderColor: "hover:border-amber-500/50",
     iconColor: "text-amber-500",
     complexity: "O(1) moyen · O(n) pire cas",
-    interviewFreq: 95,
+    interviewFreq: "Très fréquent",
   },
   {
     title: "Graphes",
@@ -84,7 +84,7 @@ const topics = [
     borderColor: "hover:border-cyan-500/50",
     iconColor: "text-cyan-500",
     complexity: "O(V+E) parcours standard",
-    interviewFreq: 80,
+    interviewFreq: "Fréquent",
   },
   {
     title: "Heaps & Priority Queues",
@@ -97,7 +97,7 @@ const topics = [
     borderColor: "hover:border-violet-500/50",
     iconColor: "text-violet-500",
     complexity: "O(log n) insert/extract",
-    interviewFreq: 75,
+    interviewFreq: "Occasionnel",
   },
   {
     title: "Piles & Files",
@@ -109,8 +109,8 @@ const topics = [
     color: "from-teal-500/20 to-green-500/20",
     borderColor: "hover:border-teal-500/50",
     iconColor: "text-teal-500",
-    complexity: "O(1) toutes opérations",
-    interviewFreq: 85,
+    complexity: "push/pop/enqueue/dequeue en O(1)",
+    interviewFreq: "Fréquent",
   },
 ];
 
@@ -180,7 +180,7 @@ export function DataStructuresTopics() {
                   <div className="flex items-center gap-1 text-xs">
                     <TrendingUp className="w-3 h-3 text-primary" />
                     <span className="text-primary font-medium">
-                      {topic.interviewFreq}%
+                      {topic.interviewFreq}
                     </span>
                   </div>
                 </div>

@@ -1,0 +1,1971 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`POST /api/stripe/webhook (pinned behaviour) > checkoutBadCreated 1`] = `
+{
+  "body": {
+    "error": "Webhook handler failed",
+  },
+  "log": [
+    [
+      "pay.verifyWebhookSignature",
+      "{"raw":1}",
+      "sig_x",
+    ],
+    [
+      "log.info",
+      [
+        "Processing Stripe webhook event",
+        {
+          "eventType": "webhook.event_received",
+          "metadata": {
+            "type": "checkout.session.completed",
+          },
+          "resourceId": "evt_1",
+          "resourceType": "stripe_event",
+        },
+      ],
+    ],
+    [
+      "log.error",
+      [
+        "Error processing checkout.session.completed",
+        {
+          "eventType": "webhook.checkout_session_error",
+          "resourceType": "checkout_session",
+        },
+        "Invalid time value",
+      ],
+    ],
+    [
+      "log.error",
+      [
+        "Webhook handler failed",
+        {
+          "eventType": "webhook.handler_error",
+          "metadata": {
+            "error": "Invalid time value",
+            "errorStack": "<stack>",
+          },
+          "resourceType": "webhook",
+        },
+      ],
+    ],
+  ],
+  "status": 500,
+}
+`;
+
+exports[`POST /api/stripe/webhook (pinned behaviour) > checkoutCourse 1`] = `
+{
+  "body": {
+    "received": true,
+  },
+  "log": [
+    [
+      "pay.verifyWebhookSignature",
+      "{"raw":1}",
+      "sig_x",
+    ],
+    [
+      "log.info",
+      [
+        "Processing Stripe webhook event",
+        {
+          "eventType": "webhook.event_received",
+          "metadata": {
+            "type": "checkout.session.completed",
+          },
+          "resourceId": "evt_1",
+          "resourceType": "stripe_event",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Processing checkout.session.completed",
+        {
+          "metadata": {
+            "createdAt": "2030-03-17T17:46:40.000Z",
+            "customer": "cus_1",
+            "hasMetadata": true,
+            "hasPaymentIntent": true,
+            "hasSubscription": false,
+            "invoice": null,
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "sessionMetadata": {
+              "productId": "c1",
+              "type": "course_purchase",
+              "userId": "u1",
+            },
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "pay.handlePaymentSuccess",
+      {
+        "amount_total": 4990,
+        "created": 1900000000,
+        "customer": "cus_1",
+        "id": "cs_1",
+        "invoice": null,
+        "metadata": {
+          "productId": "c1",
+          "type": "course_purchase",
+          "userId": "u1",
+        },
+        "mode": "payment",
+        "payment_intent": "pi_1",
+        "payment_status": "paid",
+        "subscription": null,
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Successfully processed payment",
+        {
+          "metadata": {
+            "customer": "cus_1",
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "subscription": null,
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "user.findUnique",
+      {
+        "select": {
+          "email": true,
+          "name": true,
+        },
+        "where": {
+          "id": "u1",
+        },
+      },
+    ],
+    [
+      "course.findUnique",
+      {
+        "select": {
+          "description": true,
+          "slug": true,
+          "title": true,
+        },
+        "where": {
+          "id": "c1",
+        },
+      },
+    ],
+    [
+      "email.sendCoursePurchaseEmail",
+      [
+        "Alice",
+        "a@x.test",
+        "TS",
+        "ts",
+        49.9,
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Course purchase email sent",
+        {
+          "eventType": "email.course_purchase_sent",
+          "metadata": {
+            "courseTitle": "TS",
+          },
+          "resourceId": "c1",
+          "resourceType": "course",
+          "userId": "u1",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Webhook processed successfully",
+        {
+          "eventType": "webhook.processed",
+          "resourceType": "webhook",
+        },
+      ],
+    ],
+  ],
+  "status": 200,
+}
+`;
+
+exports[`POST /api/stripe/webhook (pinned behaviour) > checkoutCourseMissing 1`] = `
+{
+  "body": {
+    "received": true,
+  },
+  "log": [
+    [
+      "pay.verifyWebhookSignature",
+      "{"raw":1}",
+      "sig_x",
+    ],
+    [
+      "log.info",
+      [
+        "Processing Stripe webhook event",
+        {
+          "eventType": "webhook.event_received",
+          "metadata": {
+            "type": "checkout.session.completed",
+          },
+          "resourceId": "evt_1",
+          "resourceType": "stripe_event",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Processing checkout.session.completed",
+        {
+          "metadata": {
+            "createdAt": "2030-03-17T17:46:40.000Z",
+            "customer": "cus_1",
+            "hasMetadata": true,
+            "hasPaymentIntent": true,
+            "hasSubscription": false,
+            "invoice": null,
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "sessionMetadata": {
+              "productId": "c1",
+              "type": "course_purchase",
+              "userId": "u1",
+            },
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "pay.handlePaymentSuccess",
+      {
+        "amount_total": 4990,
+        "created": 1900000000,
+        "customer": "cus_1",
+        "id": "cs_1",
+        "invoice": null,
+        "metadata": {
+          "productId": "c1",
+          "type": "course_purchase",
+          "userId": "u1",
+        },
+        "mode": "payment",
+        "payment_intent": "pi_1",
+        "payment_status": "paid",
+        "subscription": null,
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Successfully processed payment",
+        {
+          "metadata": {
+            "customer": "cus_1",
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "subscription": null,
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "user.findUnique",
+      {
+        "select": {
+          "email": true,
+          "name": true,
+        },
+        "where": {
+          "id": "u1",
+        },
+      },
+    ],
+    [
+      "course.findUnique",
+      {
+        "select": {
+          "description": true,
+          "slug": true,
+          "title": true,
+        },
+        "where": {
+          "id": "c1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Webhook processed successfully",
+        {
+          "eventType": "webhook.processed",
+          "resourceType": "webhook",
+        },
+      ],
+    ],
+  ],
+  "status": 200,
+}
+`;
+
+exports[`POST /api/stripe/webhook (pinned behaviour) > checkoutCourseNoAmount 1`] = `
+{
+  "body": {
+    "received": true,
+  },
+  "log": [
+    [
+      "pay.verifyWebhookSignature",
+      "{"raw":1}",
+      "sig_x",
+    ],
+    [
+      "log.info",
+      [
+        "Processing Stripe webhook event",
+        {
+          "eventType": "webhook.event_received",
+          "metadata": {
+            "type": "checkout.session.completed",
+          },
+          "resourceId": "evt_1",
+          "resourceType": "stripe_event",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Processing checkout.session.completed",
+        {
+          "metadata": {
+            "createdAt": "2030-03-17T17:46:40.000Z",
+            "customer": "cus_1",
+            "hasMetadata": true,
+            "hasPaymentIntent": true,
+            "hasSubscription": false,
+            "invoice": null,
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "sessionMetadata": {
+              "productId": "c1",
+              "type": "course_purchase",
+              "userId": "u1",
+            },
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "pay.handlePaymentSuccess",
+      {
+        "amount_total": 0,
+        "created": 1900000000,
+        "customer": "cus_1",
+        "id": "cs_1",
+        "invoice": null,
+        "metadata": {
+          "productId": "c1",
+          "type": "course_purchase",
+          "userId": "u1",
+        },
+        "mode": "payment",
+        "payment_intent": "pi_1",
+        "payment_status": "paid",
+        "subscription": null,
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Successfully processed payment",
+        {
+          "metadata": {
+            "customer": "cus_1",
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "subscription": null,
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "user.findUnique",
+      {
+        "select": {
+          "email": true,
+          "name": true,
+        },
+        "where": {
+          "id": "u1",
+        },
+      },
+    ],
+    [
+      "course.findUnique",
+      {
+        "select": {
+          "description": true,
+          "slug": true,
+          "title": true,
+        },
+        "where": {
+          "id": "c1",
+        },
+      },
+    ],
+    [
+      "email.sendCoursePurchaseEmail",
+      [
+        "Étudiant",
+        "n@x.test",
+        "TS",
+        "ts",
+        null,
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Course purchase email sent",
+        {
+          "eventType": "email.course_purchase_sent",
+          "metadata": {
+            "courseTitle": "TS",
+          },
+          "resourceId": "c1",
+          "resourceType": "course",
+          "userId": "u1",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Webhook processed successfully",
+        {
+          "eventType": "webhook.processed",
+          "resourceType": "webhook",
+        },
+      ],
+    ],
+  ],
+  "status": 200,
+}
+`;
+
+exports[`POST /api/stripe/webhook (pinned behaviour) > checkoutCourseNoProduct 1`] = `
+{
+  "body": {
+    "received": true,
+  },
+  "log": [
+    [
+      "pay.verifyWebhookSignature",
+      "{"raw":1}",
+      "sig_x",
+    ],
+    [
+      "log.info",
+      [
+        "Processing Stripe webhook event",
+        {
+          "eventType": "webhook.event_received",
+          "metadata": {
+            "type": "checkout.session.completed",
+          },
+          "resourceId": "evt_1",
+          "resourceType": "stripe_event",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Processing checkout.session.completed",
+        {
+          "metadata": {
+            "createdAt": "2030-03-17T17:46:40.000Z",
+            "customer": "cus_1",
+            "hasMetadata": true,
+            "hasPaymentIntent": true,
+            "hasSubscription": false,
+            "invoice": null,
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "sessionMetadata": {
+              "type": "course_purchase",
+              "userId": "u1",
+            },
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "pay.handlePaymentSuccess",
+      {
+        "amount_total": 4990,
+        "created": 1900000000,
+        "customer": "cus_1",
+        "id": "cs_1",
+        "invoice": null,
+        "metadata": {
+          "type": "course_purchase",
+          "userId": "u1",
+        },
+        "mode": "payment",
+        "payment_intent": "pi_1",
+        "payment_status": "paid",
+        "subscription": null,
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Successfully processed payment",
+        {
+          "metadata": {
+            "customer": "cus_1",
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "subscription": null,
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Webhook processed successfully",
+        {
+          "eventType": "webhook.processed",
+          "resourceType": "webhook",
+        },
+      ],
+    ],
+  ],
+  "status": 200,
+}
+`;
+
+exports[`POST /api/stripe/webhook (pinned behaviour) > checkoutCustomerNull 1`] = `
+{
+  "body": {
+    "received": true,
+  },
+  "log": [
+    [
+      "pay.verifyWebhookSignature",
+      "{"raw":1}",
+      "sig_x",
+    ],
+    [
+      "log.info",
+      [
+        "Processing Stripe webhook event",
+        {
+          "eventType": "webhook.event_received",
+          "metadata": {
+            "type": "checkout.session.completed",
+          },
+          "resourceId": "evt_1",
+          "resourceType": "stripe_event",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Processing checkout.session.completed",
+        {
+          "metadata": {
+            "createdAt": "2030-03-17T17:46:40.000Z",
+            "hasMetadata": true,
+            "hasPaymentIntent": true,
+            "hasSubscription": false,
+            "invoice": null,
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "sessionMetadata": {},
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "pay.handlePaymentSuccess",
+      {
+        "amount_total": 4990,
+        "created": 1900000000,
+        "customer": null,
+        "id": "cs_1",
+        "invoice": null,
+        "metadata": {},
+        "mode": "payment",
+        "payment_intent": "pi_1",
+        "payment_status": "paid",
+        "subscription": null,
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Successfully processed payment",
+        {
+          "metadata": {
+            "customer": null,
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "subscription": null,
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Webhook processed successfully",
+        {
+          "eventType": "webhook.processed",
+          "resourceType": "webhook",
+        },
+      ],
+    ],
+  ],
+  "status": 200,
+}
+`;
+
+exports[`POST /api/stripe/webhook (pinned behaviour) > checkoutCustomerObject 1`] = `
+{
+  "body": {
+    "received": true,
+  },
+  "log": [
+    [
+      "pay.verifyWebhookSignature",
+      "{"raw":1}",
+      "sig_x",
+    ],
+    [
+      "log.info",
+      [
+        "Processing Stripe webhook event",
+        {
+          "eventType": "webhook.event_received",
+          "metadata": {
+            "type": "checkout.session.completed",
+          },
+          "resourceId": "evt_1",
+          "resourceType": "stripe_event",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Processing checkout.session.completed",
+        {
+          "metadata": {
+            "createdAt": "2030-03-17T17:46:40.000Z",
+            "customer": "cus_o",
+            "hasMetadata": false,
+            "hasPaymentIntent": true,
+            "hasSubscription": false,
+            "invoice": null,
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "sessionMetadata": {},
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "pay.handlePaymentSuccess",
+      {
+        "amount_total": 4990,
+        "created": 1900000000,
+        "customer": {
+          "id": "cus_o",
+        },
+        "id": "cs_1",
+        "invoice": null,
+        "metadata": null,
+        "mode": "payment",
+        "payment_intent": "pi_1",
+        "payment_status": "paid",
+        "subscription": null,
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Successfully processed payment",
+        {
+          "metadata": {
+            "customer": {
+              "id": "cus_o",
+            },
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "subscription": null,
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Webhook processed successfully",
+        {
+          "eventType": "webhook.processed",
+          "resourceType": "webhook",
+        },
+      ],
+    ],
+  ],
+  "status": 200,
+}
+`;
+
+exports[`POST /api/stripe/webhook (pinned behaviour) > checkoutDbUserFails 1`] = `
+{
+  "body": {
+    "received": true,
+  },
+  "log": [
+    [
+      "pay.verifyWebhookSignature",
+      "{"raw":1}",
+      "sig_x",
+    ],
+    [
+      "log.info",
+      [
+        "Processing Stripe webhook event",
+        {
+          "eventType": "webhook.event_received",
+          "metadata": {
+            "type": "checkout.session.completed",
+          },
+          "resourceId": "evt_1",
+          "resourceType": "stripe_event",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Processing checkout.session.completed",
+        {
+          "metadata": {
+            "createdAt": "2030-03-17T17:46:40.000Z",
+            "customer": "cus_1",
+            "hasMetadata": true,
+            "hasPaymentIntent": true,
+            "hasSubscription": false,
+            "invoice": null,
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "sessionMetadata": {
+              "productId": "c1",
+              "type": "course_purchase",
+              "userId": "u1",
+            },
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "pay.handlePaymentSuccess",
+      {
+        "amount_total": 4990,
+        "created": 1900000000,
+        "customer": "cus_1",
+        "id": "cs_1",
+        "invoice": null,
+        "metadata": {
+          "productId": "c1",
+          "type": "course_purchase",
+          "userId": "u1",
+        },
+        "mode": "payment",
+        "payment_intent": "pi_1",
+        "payment_status": "paid",
+        "subscription": null,
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Successfully processed payment",
+        {
+          "metadata": {
+            "customer": "cus_1",
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "subscription": null,
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "user.findUnique",
+      {
+        "select": {
+          "email": true,
+          "name": true,
+        },
+        "where": {
+          "id": "u1",
+        },
+      },
+    ],
+    [
+      "log.error",
+      [
+        "Error sending purchase email",
+        {
+          "eventType": "email.send_error",
+          "resourceType": "email",
+          "userId": "u1",
+        },
+        "db",
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Webhook processed successfully",
+        {
+          "eventType": "webhook.processed",
+          "resourceType": "webhook",
+        },
+      ],
+    ],
+  ],
+  "status": 200,
+}
+`;
+
+exports[`POST /api/stripe/webhook (pinned behaviour) > checkoutEmailFails 1`] = `
+{
+  "body": {
+    "received": true,
+  },
+  "log": [
+    [
+      "pay.verifyWebhookSignature",
+      "{"raw":1}",
+      "sig_x",
+    ],
+    [
+      "log.info",
+      [
+        "Processing Stripe webhook event",
+        {
+          "eventType": "webhook.event_received",
+          "metadata": {
+            "type": "checkout.session.completed",
+          },
+          "resourceId": "evt_1",
+          "resourceType": "stripe_event",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Processing checkout.session.completed",
+        {
+          "metadata": {
+            "createdAt": "2030-03-17T17:46:40.000Z",
+            "customer": "cus_1",
+            "hasMetadata": true,
+            "hasPaymentIntent": true,
+            "hasSubscription": false,
+            "invoice": null,
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "sessionMetadata": {
+              "productId": "c1",
+              "type": "course_purchase",
+              "userId": "u1",
+            },
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "pay.handlePaymentSuccess",
+      {
+        "amount_total": 4990,
+        "created": 1900000000,
+        "customer": "cus_1",
+        "id": "cs_1",
+        "invoice": null,
+        "metadata": {
+          "productId": "c1",
+          "type": "course_purchase",
+          "userId": "u1",
+        },
+        "mode": "payment",
+        "payment_intent": "pi_1",
+        "payment_status": "paid",
+        "subscription": null,
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Successfully processed payment",
+        {
+          "metadata": {
+            "customer": "cus_1",
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "subscription": null,
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "user.findUnique",
+      {
+        "select": {
+          "email": true,
+          "name": true,
+        },
+        "where": {
+          "id": "u1",
+        },
+      },
+    ],
+    [
+      "course.findUnique",
+      {
+        "select": {
+          "description": true,
+          "slug": true,
+          "title": true,
+        },
+        "where": {
+          "id": "c1",
+        },
+      },
+    ],
+    [
+      "email.sendCoursePurchaseEmail",
+      [
+        "Alice",
+        "a@x.test",
+        "TS",
+        "ts",
+        49.9,
+      ],
+    ],
+    [
+      "log.error",
+      [
+        "Error sending purchase email",
+        {
+          "eventType": "email.send_error",
+          "resourceType": "email",
+          "userId": "u1",
+        },
+        "email sendCoursePurchaseEmail failed",
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Webhook processed successfully",
+        {
+          "eventType": "webhook.processed",
+          "resourceType": "webhook",
+        },
+      ],
+    ],
+  ],
+  "status": 200,
+}
+`;
+
+exports[`POST /api/stripe/webhook (pinned behaviour) > checkoutPaymentSuccessFails 1`] = `
+{
+  "body": {
+    "error": "Webhook handler failed",
+  },
+  "log": [
+    [
+      "pay.verifyWebhookSignature",
+      "{"raw":1}",
+      "sig_x",
+    ],
+    [
+      "log.info",
+      [
+        "Processing Stripe webhook event",
+        {
+          "eventType": "webhook.event_received",
+          "metadata": {
+            "type": "checkout.session.completed",
+          },
+          "resourceId": "evt_1",
+          "resourceType": "stripe_event",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Processing checkout.session.completed",
+        {
+          "metadata": {
+            "createdAt": "2030-03-17T17:46:40.000Z",
+            "customer": "cus_1",
+            "hasMetadata": true,
+            "hasPaymentIntent": true,
+            "hasSubscription": false,
+            "invoice": null,
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "sessionMetadata": {
+              "productId": "c1",
+              "type": "course_purchase",
+              "userId": "u1",
+            },
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "pay.handlePaymentSuccess",
+      {
+        "amount_total": 4990,
+        "created": 1900000000,
+        "customer": "cus_1",
+        "id": "cs_1",
+        "invoice": null,
+        "metadata": {
+          "productId": "c1",
+          "type": "course_purchase",
+          "userId": "u1",
+        },
+        "mode": "payment",
+        "payment_intent": "pi_1",
+        "payment_status": "paid",
+        "subscription": null,
+      },
+    ],
+    [
+      "log.error",
+      [
+        "Failed in handlePaymentSuccess",
+        {
+          "metadata": {
+            "error": "ledger",
+            "errorStack": "<stack>",
+            "sessionData": {
+              "hasPaymentIntent": true,
+              "hasSubscription": false,
+              "id": "cs_1",
+              "mode": "payment",
+              "paymentStatus": "paid",
+            },
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "log.error",
+      [
+        "Error processing checkout.session.completed",
+        {
+          "eventType": "webhook.checkout_session_error",
+          "resourceType": "checkout_session",
+        },
+        "ledger",
+      ],
+    ],
+    [
+      "log.error",
+      [
+        "Webhook handler failed",
+        {
+          "eventType": "webhook.handler_error",
+          "metadata": {
+            "error": "ledger",
+            "errorStack": "<stack>",
+          },
+          "resourceType": "webhook",
+        },
+      ],
+    ],
+  ],
+  "status": 500,
+}
+`;
+
+exports[`POST /api/stripe/webhook (pinned behaviour) > checkoutPaymentSuccessFailsNonError 1`] = `
+{
+  "body": {
+    "error": "Webhook handler failed",
+  },
+  "log": [
+    [
+      "pay.verifyWebhookSignature",
+      "{"raw":1}",
+      "sig_x",
+    ],
+    [
+      "log.info",
+      [
+        "Processing Stripe webhook event",
+        {
+          "eventType": "webhook.event_received",
+          "metadata": {
+            "type": "checkout.session.completed",
+          },
+          "resourceId": "evt_1",
+          "resourceType": "stripe_event",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Processing checkout.session.completed",
+        {
+          "metadata": {
+            "createdAt": "2030-03-17T17:46:40.000Z",
+            "customer": "cus_1",
+            "hasMetadata": true,
+            "hasPaymentIntent": true,
+            "hasSubscription": false,
+            "invoice": null,
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "sessionMetadata": {
+              "productId": "c1",
+              "type": "course_purchase",
+              "userId": "u1",
+            },
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "pay.handlePaymentSuccess",
+      {
+        "amount_total": 4990,
+        "created": 1900000000,
+        "customer": "cus_1",
+        "id": "cs_1",
+        "invoice": null,
+        "metadata": {
+          "productId": "c1",
+          "type": "course_purchase",
+          "userId": "u1",
+        },
+        "mode": "payment",
+        "payment_intent": "pi_1",
+        "payment_status": "paid",
+        "subscription": null,
+      },
+    ],
+    [
+      "log.error",
+      [
+        "Failed in handlePaymentSuccess",
+        {
+          "metadata": {
+            "error": "str",
+            "errorStack": "<stack>",
+            "sessionData": {
+              "hasPaymentIntent": true,
+              "hasSubscription": false,
+              "id": "cs_1",
+              "mode": "payment",
+              "paymentStatus": "paid",
+            },
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "log.error",
+      [
+        "Error processing checkout.session.completed",
+        {
+          "eventType": "webhook.checkout_session_error",
+          "resourceType": "checkout_session",
+        },
+        "str",
+      ],
+    ],
+    [
+      "log.error",
+      [
+        "Webhook handler failed",
+        {
+          "eventType": "webhook.handler_error",
+          "metadata": {
+            "error": "str",
+            "errorStack": "<stack>",
+          },
+          "resourceType": "webhook",
+        },
+      ],
+    ],
+  ],
+  "status": 500,
+}
+`;
+
+exports[`POST /api/stripe/webhook (pinned behaviour) > checkoutPremium 1`] = `
+{
+  "body": {
+    "received": true,
+  },
+  "log": [
+    [
+      "pay.verifyWebhookSignature",
+      "{"raw":1}",
+      "sig_x",
+    ],
+    [
+      "log.info",
+      [
+        "Processing Stripe webhook event",
+        {
+          "eventType": "webhook.event_received",
+          "metadata": {
+            "type": "checkout.session.completed",
+          },
+          "resourceId": "evt_1",
+          "resourceType": "stripe_event",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Processing checkout.session.completed",
+        {
+          "metadata": {
+            "createdAt": "2030-03-17T17:46:40.000Z",
+            "customer": "cus_1",
+            "hasMetadata": true,
+            "hasPaymentIntent": true,
+            "hasSubscription": true,
+            "invoice": null,
+            "mode": "subscription",
+            "paymentStatus": "paid",
+            "sessionMetadata": {
+              "type": "premium_subscription",
+              "userId": "u1",
+            },
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "pay.handlePaymentSuccess",
+      {
+        "amount_total": 4990,
+        "created": 1900000000,
+        "customer": "cus_1",
+        "id": "cs_1",
+        "invoice": null,
+        "metadata": {
+          "type": "premium_subscription",
+          "userId": "u1",
+        },
+        "mode": "subscription",
+        "payment_intent": "pi_1",
+        "payment_status": "paid",
+        "subscription": "sub_1",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Successfully processed payment",
+        {
+          "metadata": {
+            "customer": "cus_1",
+            "mode": "subscription",
+            "paymentStatus": "paid",
+            "subscription": "sub_1",
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Webhook processed successfully",
+        {
+          "eventType": "webhook.processed",
+          "resourceType": "webhook",
+        },
+      ],
+    ],
+  ],
+  "status": 200,
+}
+`;
+
+exports[`POST /api/stripe/webhook (pinned behaviour) > checkoutSubscriptionType 1`] = `
+{
+  "body": {
+    "received": true,
+  },
+  "log": [
+    [
+      "pay.verifyWebhookSignature",
+      "{"raw":1}",
+      "sig_x",
+    ],
+    [
+      "log.info",
+      [
+        "Processing Stripe webhook event",
+        {
+          "eventType": "webhook.event_received",
+          "metadata": {
+            "type": "checkout.session.completed",
+          },
+          "resourceId": "evt_1",
+          "resourceType": "stripe_event",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Processing checkout.session.completed",
+        {
+          "metadata": {
+            "createdAt": "2030-03-17T17:46:40.000Z",
+            "customer": "cus_1",
+            "hasMetadata": true,
+            "hasPaymentIntent": true,
+            "hasSubscription": true,
+            "invoice": null,
+            "mode": "subscription",
+            "paymentStatus": "paid",
+            "sessionMetadata": {
+              "type": "subscription",
+              "userId": "u1",
+            },
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "pay.handlePaymentSuccess",
+      {
+        "amount_total": 4990,
+        "created": 1900000000,
+        "customer": "cus_1",
+        "id": "cs_1",
+        "invoice": null,
+        "metadata": {
+          "type": "subscription",
+          "userId": "u1",
+        },
+        "mode": "subscription",
+        "payment_intent": "pi_1",
+        "payment_status": "paid",
+        "subscription": "sub_1",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Successfully processed payment",
+        {
+          "metadata": {
+            "customer": "cus_1",
+            "mode": "subscription",
+            "paymentStatus": "paid",
+            "subscription": "sub_1",
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "subscription.updateMany",
+      {
+        "data": {
+          "status": "ACTIVE",
+        },
+        "where": {
+          "status": "INCOMPLETE",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Subscription status explicitly updated to ACTIVE",
+        {
+          "resourceId": "sub_1",
+          "resourceType": "subscription",
+          "userId": "u1",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Webhook processed successfully",
+        {
+          "eventType": "webhook.processed",
+          "resourceType": "webhook",
+        },
+      ],
+    ],
+  ],
+  "status": 200,
+}
+`;
+
+exports[`POST /api/stripe/webhook (pinned behaviour) > checkoutSubscriptionUpdateFails 1`] = `
+{
+  "body": {
+    "received": true,
+  },
+  "log": [
+    [
+      "pay.verifyWebhookSignature",
+      "{"raw":1}",
+      "sig_x",
+    ],
+    [
+      "log.info",
+      [
+        "Processing Stripe webhook event",
+        {
+          "eventType": "webhook.event_received",
+          "metadata": {
+            "type": "checkout.session.completed",
+          },
+          "resourceId": "evt_1",
+          "resourceType": "stripe_event",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Processing checkout.session.completed",
+        {
+          "metadata": {
+            "createdAt": "2030-03-17T17:46:40.000Z",
+            "customer": "cus_1",
+            "hasMetadata": true,
+            "hasPaymentIntent": true,
+            "hasSubscription": true,
+            "invoice": null,
+            "mode": "subscription",
+            "paymentStatus": "paid",
+            "sessionMetadata": {
+              "type": "subscription",
+              "userId": "u1",
+            },
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "pay.handlePaymentSuccess",
+      {
+        "amount_total": 4990,
+        "created": 1900000000,
+        "customer": "cus_1",
+        "id": "cs_1",
+        "invoice": null,
+        "metadata": {
+          "type": "subscription",
+          "userId": "u1",
+        },
+        "mode": "subscription",
+        "payment_intent": "pi_1",
+        "payment_status": "paid",
+        "subscription": "sub_1",
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Successfully processed payment",
+        {
+          "metadata": {
+            "customer": "cus_1",
+            "mode": "subscription",
+            "paymentStatus": "paid",
+            "subscription": "sub_1",
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "subscription.updateMany",
+      {
+        "data": {
+          "status": "ACTIVE",
+        },
+        "where": {
+          "status": "INCOMPLETE",
+          "userId": "u1",
+        },
+      },
+    ],
+    [
+      "log.error",
+      [
+        "Failed to update subscription status",
+        {
+          "eventType": "webhook.subscription_update_error",
+          "resourceType": "subscription",
+          "userId": "u1",
+        },
+        "db down",
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Webhook processed successfully",
+        {
+          "eventType": "webhook.processed",
+          "resourceType": "webhook",
+        },
+      ],
+    ],
+  ],
+  "status": 200,
+}
+`;
+
+exports[`POST /api/stripe/webhook (pinned behaviour) > checkoutUnpaid 1`] = `
+{
+  "body": {
+    "received": true,
+  },
+  "log": [
+    [
+      "pay.verifyWebhookSignature",
+      "{"raw":1}",
+      "sig_x",
+    ],
+    [
+      "log.info",
+      [
+        "Processing Stripe webhook event",
+        {
+          "eventType": "webhook.event_received",
+          "metadata": {
+            "type": "checkout.session.completed",
+          },
+          "resourceId": "evt_1",
+          "resourceType": "stripe_event",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Processing checkout.session.completed",
+        {
+          "metadata": {
+            "createdAt": "2030-03-17T17:46:40.000Z",
+            "customer": "cus_1",
+            "hasMetadata": true,
+            "hasPaymentIntent": true,
+            "hasSubscription": false,
+            "invoice": null,
+            "mode": "payment",
+            "paymentStatus": "unpaid",
+            "sessionMetadata": {
+              "productId": "c1",
+              "type": "course_purchase",
+              "userId": "u1",
+            },
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Webhook processed successfully",
+        {
+          "eventType": "webhook.processed",
+          "resourceType": "webhook",
+        },
+      ],
+    ],
+  ],
+  "status": 200,
+}
+`;
+
+exports[`POST /api/stripe/webhook (pinned behaviour) > checkoutUserMissing 1`] = `
+{
+  "body": {
+    "received": true,
+  },
+  "log": [
+    [
+      "pay.verifyWebhookSignature",
+      "{"raw":1}",
+      "sig_x",
+    ],
+    [
+      "log.info",
+      [
+        "Processing Stripe webhook event",
+        {
+          "eventType": "webhook.event_received",
+          "metadata": {
+            "type": "checkout.session.completed",
+          },
+          "resourceId": "evt_1",
+          "resourceType": "stripe_event",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Processing checkout.session.completed",
+        {
+          "metadata": {
+            "createdAt": "2030-03-17T17:46:40.000Z",
+            "customer": "cus_1",
+            "hasMetadata": true,
+            "hasPaymentIntent": true,
+            "hasSubscription": false,
+            "invoice": null,
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "sessionMetadata": {
+              "productId": "c1",
+              "type": "course_purchase",
+              "userId": "u1",
+            },
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "pay.handlePaymentSuccess",
+      {
+        "amount_total": 4990,
+        "created": 1900000000,
+        "customer": "cus_1",
+        "id": "cs_1",
+        "invoice": null,
+        "metadata": {
+          "productId": "c1",
+          "type": "course_purchase",
+          "userId": "u1",
+        },
+        "mode": "payment",
+        "payment_intent": "pi_1",
+        "payment_status": "paid",
+        "subscription": null,
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Successfully processed payment",
+        {
+          "metadata": {
+            "customer": "cus_1",
+            "mode": "payment",
+            "paymentStatus": "paid",
+            "subscription": null,
+          },
+          "resourceId": "cs_1",
+          "resourceType": "checkout_session",
+        },
+      ],
+    ],
+    [
+      "user.findUnique",
+      {
+        "select": {
+          "email": true,
+          "name": true,
+        },
+        "where": {
+          "id": "u1",
+        },
+      },
+    ],
+    [
+      "log.info",
+      [
+        "Webhook processed successfully",
+        {
+          "eventType": "webhook.processed",
+          "resourceType": "webhook",
+        },
+      ],
+    ],
+  ],
+  "status": 200,
+}
+`;
+
+exports[`POST /api/stripe/webhook (pinned behaviour) > headersThrow 1`] = `
+{
+  "body": {
+    "error": "Invalid request",
+  },
+  "log": [
+    [
+      "log.error",
+      [
+        "Error reading webhook request",
+        {
+          "eventType": "webhook.request_read_error",
+        },
+        "headers boom",
+      ],
+    ],
+  ],
+  "status": 400,
+}
+`;
+
+exports[`POST /api/stripe/webhook (pinned behaviour) > invalidSignature 1`] = `
+{
+  "body": {
+    "error": "Invalid signature",
+  },
+  "log": [
+    [
+      "pay.verifyWebhookSignature",
+      "{"raw":1}",
+      "sig_x",
+    ],
+    [
+      "log.error",
+      [
+        "Invalid Stripe webhook signature",
+        {
+          "eventType": "webhook.signature_invalid",
+        },
+      ],
+    ],
+  ],
+  "status": 400,
+}
+`;
+
+exports[`POST /api/stripe/webhook (pinned behaviour) > missingSignature 1`] = `
+{
+  "body": {
+    "error": "Missing signature",
+  },
+  "log": [
+    [
+      "log.error",
+      [
+        "Missing Stripe signature in webhook request",
+        {
+          "eventType": "webhook.signature_missing",
+        },
+      ],
+    ],
+  ],
+  "status": 400,
+}
+`;
+
+exports[`POST /api/stripe/webhook (pinned behaviour) > unhandled 1`] = `
+{
+  "body": {
+    "received": true,
+  },
+  "log": [
+    [
+      "pay.verifyWebhookSignature",
+      "{"raw":1}",
+      "sig_x",
+    ],
+    [
+      "log.info",
+      [
+        "Processing Stripe webhook event",
+        {
+          "eventType": "webhook.event_received",
+          "metadata": {
+            "type": "customer.created",
+          },
+          "resourceId": "evt_1",
+          "resourceType": "stripe_event",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Unhandled Stripe webhook event type",
+        {
+          "eventType": "webhook.unhandled_event",
+          "metadata": {
+            "type": "customer.created",
+          },
+          "resourceId": "evt_1",
+          "resourceType": "stripe_event",
+        },
+      ],
+    ],
+    [
+      "log.info",
+      [
+        "Webhook processed successfully",
+        {
+          "eventType": "webhook.processed",
+          "resourceType": "webhook",
+        },
+      ],
+    ],
+  ],
+  "status": 200,
+}
+`;
+
+exports[`POST /api/stripe/webhook (pinned behaviour) > verificationNonError 1`] = `
+{
+  "body": {
+    "error": "Webhook handler failed",
+  },
+  "log": [
+    [
+      "pay.verifyWebhookSignature",
+      "{"raw":1}",
+      "sig_x",
+    ],
+    [
+      "log.error",
+      [
+        "Webhook signature verification failed",
+        {
+          "eventType": "webhook.verification_error",
+          "metadata": {
+            "error": "weird",
+          },
+        },
+      ],
+    ],
+  ],
+  "status": 500,
+}
+`;
+
+exports[`POST /api/stripe/webhook (pinned behaviour) > verificationOtherError 1`] = `
+{
+  "body": {
+    "error": "Webhook handler failed",
+  },
+  "log": [
+    [
+      "pay.verifyWebhookSignature",
+      "{"raw":1}",
+      "sig_x",
+    ],
+    [
+      "log.error",
+      [
+        "Webhook signature verification failed",
+        {
+          "eventType": "webhook.verification_error",
+          "metadata": {
+            "error": "no secret",
+          },
+        },
+      ],
+    ],
+  ],
+  "status": 500,
+}
+`;

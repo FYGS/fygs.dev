@@ -39,7 +39,7 @@ const challenges = [
     ],
     hints: [
       "Utilisez un compteur distribué pour générer des IDs uniques",
-      "Partitionnez la base de données par hash de l'URL",
+      "Partitionnez la base de données par hash de la clé courte (les lectures se font par clé courte)",
       "Implémentez un TTL pour nettoyer les URLs expirées",
     ],
   },
@@ -75,7 +75,7 @@ const challenges = [
     title: "Design Rate Limiter",
     description: "Implémenter un rate limiter pour limiter les requêtes API.",
     difficulty: "Intermédiaire",
-    topics: ["Load Balancing", "Distributed Systems", "Algorithms"],
+    topics: ["Rate Limiting", "Distributed Systems", "Algorithms"],
     estimatedTime: "30 min",
     requirements: [
       "Limiter à N requêtes par minute/heure",
@@ -91,8 +91,8 @@ const challenges = [
       "Leaky bucket pour lissage du trafic",
     ],
     hints: [
-      "Token bucket = meilleur compromis performance/précision",
-      "Utilisez Redis INCR avec EXPIRE pour atomicité",
+      "Token bucket : bon compromis mémoire/précision, et il autorise les rafales",
+      "Avec Redis, rendez INCR + EXPIRE atomiques (script Lua ou transaction) pour éviter une clé sans expiration",
       "Implémentez un fallback local en cas de panne Redis",
     ],
   },
@@ -112,7 +112,7 @@ const challenges = [
     ],
     keyPoints: [
       "Adaptive Bitrate Streaming (HLS, DASH)",
-      "Multi-CDN strategy (Akamai, Cloudflare)",
+      "CDN multi-fournisseurs ou CDN propriétaire (ex : Netflix Open Connect)",
       "Video encoding pipeline (FFmpeg, AWS Elemental)",
       "Distributed storage (S3, GCS)",
       "Edge caching pour contenu populaire",
@@ -120,7 +120,7 @@ const challenges = [
     hints: [
       "Pré-encodez en plusieurs résolutions (240p à 4K)",
       "Utilisez le prefetching intelligent basé sur l'historique",
-      "Implémentez P2P pour réduire les coûts CDN",
+      "Placez les serveurs de cache au plus près des utilisateurs (jusque chez les FAI) pour réduire les coûts de transit",
     ],
   },
   {
@@ -139,7 +139,7 @@ const challenges = [
     keyPoints: [
       "Geospatial indexing (QuadTree, S2)",
       "WebSockets pour les mises à jour position",
-      "Routing algorithms (Dijkstra, A*)",
+      "Algorithmes de routage (Dijkstra, A*, contraction hierarchies)",
       "Kafka pour event streaming",
       "PostgreSQL + PostGIS pour les données spatiales",
     ],

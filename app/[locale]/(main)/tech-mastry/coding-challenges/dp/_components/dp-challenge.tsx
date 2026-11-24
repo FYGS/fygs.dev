@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Code, CheckCircle } from "lucide-react";
+import { evaluateChallengeAnswer } from "@/app/[locale]/(main)/tech-mastry/_utils/challenge-answer";
 import {
   Dialog,
   DialogContent,
@@ -32,7 +33,7 @@ const challenges = [
   if (n <= 1) return n;
   
   // Si déjà calculé, retourner la valeur mémorisée
-  if (memo[n]) return memo[n];
+  if (memo[n] !== undefined) return memo[n];
   
   // Calculer et mémoriser
   memo[n] = fibonacci(n - 1, memo) + fibonacci(n - 2, memo);
@@ -40,11 +41,12 @@ const challenges = [
 }`,
     verify: (input: string) => {
       const n = parseInt(input);
-      const fib = (x: number): number => {
-        if (x <= 1) return x;
-        return fib(x - 1) + fib(x - 2);
-      };
-      return fib(n).toString();
+      if (!Number.isInteger(n) || n < 0) return "Entrez un entier n >= 0";
+      // Itératif : la version récursive naïve est en O(2^n) et gèlerait la page
+      let a = 0,
+        b = 1;
+      for (let i = 0; i < n; i++) [a, b] = [b, a + b];
+      return a.toString();
     },
   },
   {
@@ -223,7 +225,7 @@ const challenges = [
     description: "Maximiser la valeur dans un sac à dos avec capacité limitée.",
     technique: "2D DP Table",
     examples: [
-      { input: "1,3,4,5 | 4,5,8,10 | 7", output: "15" },
+      { input: "1,3,4,5 | 4,5,8,10 | 7", output: "14" },
       { input: "2,3,4 | 3,4,5 | 5", output: "7" },
     ],
     hint: "dp[i][w] = valeur max avec les i premiers items et capacité w.",
@@ -282,8 +284,10 @@ export function DPChallenge() {
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
 
   const runTest = () => {
-    const expected = selectedChallenge.verify(userInput);
-    const correct = expected === userInput.split("|").pop()?.trim();
+    const { expected, correct } = evaluateChallengeAnswer(
+      selectedChallenge.verify,
+      userInput,
+    );
     setResult(expected);
     setIsCorrect(correct);
   };
@@ -349,11 +353,11 @@ export function DPChallenge() {
                 className="p-3 bg-muted/50 rounded-lg font-mono text-sm"
               >
                 <div>
-                  <span className="text-muted-foreground">Input:</span>{" "}
+                  <span className="text-muted-foreground">Entrée :</span>{" "}
                   {example.input}
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Output:</span>{" "}
+                  <span className="text-muted-foreground">Sortie :</span>{" "}
                   {example.output}
                 </div>
               </div>
@@ -366,7 +370,7 @@ export function DPChallenge() {
           <Label htmlFor="user-input">Votre réponse:</Label>
           <Input
             id="user-input"
-            placeholder="Entrez votre input (format des exemples)"
+            placeholder="Input puis votre réponse, ex. : 1,2,5 | 11 => 3"
             value={userInput}
             onChange={(e) => setUserInput(e.target.value)}
           />
@@ -403,7 +407,7 @@ export function DPChallenge() {
               <DialogHeader>
                 <DialogTitle>Solution</DialogTitle>
               </DialogHeader>
-              <pre className="p-4 bg-muted rounded-lg overflow-x-auto text-sm">
+              <pre className="p-4 bg-muted rounded-lg overflow-x-auto text-sm" tabIndex={0}>
                 <code>{selectedChallenge.solution}</code>
               </pre>
             </DialogContent>

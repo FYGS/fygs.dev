@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { User, Shield, Settings } from "lucide-react";
+import Link from "next/link";
 
 export default async function ProfilePage() {
   const session = await auth.api.getSession({
@@ -69,6 +70,13 @@ export default async function ProfilePage() {
               </CardHeader>
               <CardContent>
                 <PasswordChangeForm />
+                <p className="mt-6 border-t pt-4 text-sm text-muted-foreground">
+                  Double authentification, adresse e-mail, suppression du compte :{" "}
+                  <Link href="/profile/security" className="font-medium text-primary underline">
+                    sécurité du compte
+                  </Link>
+                  .
+                </p>
               </CardContent>
             </Card>
           </div>

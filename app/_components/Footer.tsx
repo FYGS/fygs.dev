@@ -1,14 +1,6 @@
 "use client";
-import {
-  BrainCircuitIcon,
-  Code2Icon,
-  GithubIcon,
-  LinkedinIcon,
-  MailIcon,
-  PhoneIcon,
-  RocketIcon,
-  Leaf,
-} from "lucide-react";
+import { BrainCircuitIcon, Code2Icon, MailIcon, PhoneIcon, RocketIcon, Leaf } from "lucide-react";
+import { Github as GithubIcon, Linkedin as LinkedinIcon } from "@/components/icons/brand-icons";
 import { LocaleAwareLink } from "@/components/ui/locale-aware-nav";
 import { Section } from "./Section";
 import { useIntlayer } from "next-intlayer";
@@ -84,10 +76,10 @@ export function Footer() {
 
           {/* Colonne 2: Information */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold flex items-center gap-2 pb-2 border-b">
+            <h2 className="text-sm font-semibold flex items-center gap-2 pb-2 border-b">
               <span className="w-2 h-2 rounded-full bg-linear-to-r from-primary to-primary/60" />
               {content.information.label.value}
-            </h3>
+            </h2>
             <div className="space-y-2">
               {content.information.links.map((link) => (
                 <LocaleAwareLink
@@ -110,10 +102,10 @@ export function Footer() {
 
           {/* Colonne 3: Learning */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold flex items-center gap-2 pb-2 border-b">
+            <h2 className="text-sm font-semibold flex items-center gap-2 pb-2 border-b">
               <span className="w-2 h-2 rounded-full bg-linear-to-r from-primary to-primary/60" />
               {content.learning.label.value}
-            </h3>
+            </h2>
             <div className="space-y-2">
               {content.learning.links.map((link) => (
                 <LocaleAwareLink
@@ -136,10 +128,10 @@ export function Footer() {
 
           {/* Colonne 4: Featured Projects */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold flex items-center gap-2 pb-2 border-b">
+            <h2 className="text-sm font-semibold flex items-center gap-2 pb-2 border-b">
               <span className="w-2 h-2 rounded-full bg-linear-to-r from-primary to-primary/60" />
               {content.projects.label.value}
-            </h3>
+            </h2>
             <div className="space-y-3">
               {content.projects.items.map((project) => {
                 const Icon =
@@ -159,9 +151,9 @@ export function Footer() {
                         <Icon className="h-4 w-4 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">
+                        <h3 className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">
                           {project.label.value}
-                        </h4>
+                        </h3>
                         <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
                           {project.description.value}
                         </p>
@@ -178,7 +170,7 @@ export function Footer() {
         <div className="mt-12 pt-6 border-t">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
             <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground" suppressHydrationWarning>
                 © {new Date().getFullYear()} Fernand Soualo.{" "}
                 {content.copyright.text.value}
               </p>

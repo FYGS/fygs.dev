@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Euro, TrendingUp, Calendar } from "lucide-react";
+import { formatPrice } from "@/lib/price-format";
 
 // Client-safe validation function for revenue data
 function validateRevenueData(data: unknown[]): Array<{
@@ -52,7 +53,7 @@ export function RevenueAnalytics({ data }: RevenueAnalyticsProps) {
     ((Number(currentMonth?.revenue) - Number(previousMonth.revenue)) / Number(previousMonth.revenue)) * 100 : 0;
 
   // Trouver le maximum pour la normalisation
-  const maxRevenue = Math.max(...validatedData.map(item => Number(item.revenue)));
+  const maxRevenue = Math.max(0, ...validatedData.map(item => Number(item.revenue)));
 
   return (
     <Card>
@@ -74,7 +75,7 @@ export function RevenueAnalytics({ data }: RevenueAnalyticsProps) {
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Total</p>
-              <p className="text-xl font-bold">{totalRevenue.toLocaleString()}€</p>
+              <p className="text-xl font-bold">{formatPrice(totalRevenue, { freeLabel: false })}</p>
             </div>
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Transactions</p>
@@ -82,7 +83,7 @@ export function RevenueAnalytics({ data }: RevenueAnalyticsProps) {
             </div>
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Panier moyen</p>
-              <p className="text-xl font-bold">{avgOrderValue.toFixed(0)}€</p>
+              <p className="text-xl font-bold">{formatPrice(avgOrderValue, { freeLabel: false })}</p>
             </div>
           </div>
 
@@ -90,7 +91,7 @@ export function RevenueAnalytics({ data }: RevenueAnalyticsProps) {
           <div className="space-y-3">
             <div className="flex justify-between text-sm text-muted-foreground">
               <span>Évolution mensuelle</span>
-              <span>Max: {maxRevenue.toLocaleString()}€</span>
+              <span>Max : {formatPrice(maxRevenue, { freeLabel: false })}</span>
             </div>
             
             <div className="space-y-2">
@@ -114,7 +115,7 @@ export function RevenueAnalytics({ data }: RevenueAnalyticsProps) {
                         />
                         <div className="absolute inset-0 flex items-center px-3">
                           <span className="text-xs font-medium text-white mix-blend-difference">
-                            {Number(item.revenue).toLocaleString()}€
+                            {formatPrice(Number(item.revenue), { freeLabel: false })}
                           </span>
                         </div>
                       </div>
@@ -126,7 +127,7 @@ export function RevenueAnalytics({ data }: RevenueAnalyticsProps) {
                     {/* Détails au hover */}
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 ml-15 mb-2">
                       <div className="text-xs text-muted-foreground bg-muted/50 rounded px-2 py-1 w-fit">
-                        Panier moyen: {(Number(item.revenue) / Number(item.transactions)).toFixed(0)}€
+                        Panier moyen : {formatPrice(Number(item.revenue) / Math.max(1, Number(item.transactions)), { freeLabel: false })}
                       </div>
                     </div>
                   </div>
@@ -138,13 +139,13 @@ export function RevenueAnalytics({ data }: RevenueAnalyticsProps) {
           {/* Insights */}
           <div className="border-t pt-4">
             <div className="space-y-2">
-              <h4 className="text-sm font-medium flex items-center gap-2">
+              <h3 className="text-sm font-medium flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
                 Insights
-              </h4>
+              </h3>
               <div className="space-y-1 text-xs text-muted-foreground">
                 <p>• Meilleur mois: {data.reduce((max, item) => item.revenue > max.revenue ? item : max, data[0])?.month.toLocaleDateString('fr-FR', { month: 'long' })}</p>
-                <p>• Croissance moyenne: +{(growthRate / data.length).toFixed(1)}% par mois</p>
+                <p>• Revenu moyen : {formatPrice(data.reduce((sum, item) => sum + item.revenue, 0) / Math.max(1, data.length), { freeLabel: false })} par mois actif</p>
                 <p>• Tendance: {growthRate > 0 ? 'Croissance' : growthRate < 0 ? 'Décroissance' : 'Stable'}</p>
               </div>
             </div>

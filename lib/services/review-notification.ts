@@ -1,44 +1,46 @@
 import { db } from "@/lib/db";
 import { emailService } from "@/lib/email-service";
 import { logger } from "@/lib/structured-logger";
-import {
-  Review,
-  User,
-  Course,
-  ReviewReply,
-  ReviewReport,
-  ReportReason,
-} from "@prisma/client";
+import { ReportReason } from "@/lib/generated/prisma/browser";
 
-type ReviewWithRelations = Review & {
-  user: User;
-  course: Course & {
-    instructor?: User | null;
-  };
-};
+/**
+ * Review e-mails. Each method takes the id of the row and loads exactly the relations it
+ * needs: callers used to hand over partially loaded objects cast to `any`, and the
+ * notifications silently failed (no `course` on a new review, `author`/`reporter` where the
+ * relation is called `user`).
+ */
+const MAX_BULK_EMAILS_PER_INSTRUCTOR = 5;
 
-type ReplyWithRelations = ReviewReply & {
-  author: User;
-  review: Review & {
-    user: User;
-    course: Course;
-  };
-};
+const loadReview = (reviewId: string) =>
+  db.review.findUnique({
+    where: { id: reviewId },
+    include: { user: true, course: { include: { instructor: true } } },
+  });
 
-type ReportWithRelations = ReviewReport & {
-  reporter: User;
-  review: Review & {
-    user: User;
-    course: Course;
-  };
-};
+const loadReply = (replyId: string) =>
+  db.reviewReply.findUnique({
+    where: { id: replyId },
+    include: { user: true, review: { include: { user: true, course: true } } },
+  });
+
+const loadReport = (reportId: string) =>
+  db.reviewReport.findUnique({
+    where: { id: reportId },
+    include: { user: true, review: { include: { user: true, course: true } } },
+  });
 
 export class ReviewNotificationService {
   /**
    * Send notification when a new review is posted
    */
-  static async notifyNewReview(review: ReviewWithRelations): Promise<void> {
+  static async notifyNewReview(reviewId: string): Promise<void> {
+    let review: Awaited<ReturnType<typeof loadReview>> = null;
     try {
+      review = await loadReview(reviewId);
+      if (!review) {
+        logger.warn("Review not found for the new review notification", { metadata: { reviewId } });
+        return;
+      }
       const instructor = review.course.instructor;
 
       if (!instructor?.email) {
@@ -70,7 +72,6 @@ export class ReviewNotificationService {
           metadata: {
             reviewId: review.id,
             instructorId: instructor.id,
-            instructorEmail: instructor.email,
             courseId: review.courseId,
             rating: review.rating,
           },
@@ -80,14 +81,13 @@ export class ReviewNotificationService {
           metadata: {
             reviewId: review.id,
             instructorId: instructor.id,
-            instructorEmail: instructor.email,
           },
         });
       }
     } catch (error) {
       logger.error("Error sending review notification", {
         metadata: {
-          reviewId: review.id,
+          reviewId,
           error: error instanceof Error ? error.message : String(error),
         },
       });
@@ -97,8 +97,13 @@ export class ReviewNotificationService {
   /**
    * Send notification when instructor replies to a review
    */
-  static async notifyInstructorReply(reply: ReplyWithRelations): Promise<void> {
+  static async notifyInstructorReply(replyId: string): Promise<void> {
     try {
+      const reply = await loadReply(replyId);
+      if (!reply) {
+        logger.warn("Reply not found for the reply notification", { metadata: { replyId } });
+        return;
+      }
       const student = reply.review.user;
 
       if (!student.email) {
@@ -116,7 +121,7 @@ export class ReviewNotificationService {
         student.email,
         {
           studentName: student.name || "Étudiant",
-          instructorName: reply.author.name || "Instructeur",
+          instructorName: reply.user.name || "Instructeur",
           courseTitle: reply.review.course.title,
           replyContent: reply.content,
           originalRating: reply.review.rating,
@@ -132,8 +137,7 @@ export class ReviewNotificationService {
             replyId: reply.id,
             reviewId: reply.reviewId,
             studentId: student.id,
-            studentEmail: student.email,
-            instructorId: reply.author.id,
+            instructorId: reply.user.id,
           },
         });
       } else {
@@ -141,14 +145,13 @@ export class ReviewNotificationService {
           metadata: {
             replyId: reply.id,
             studentId: student.id,
-            studentEmail: student.email,
           },
         });
       }
     } catch (error) {
       logger.error("Error sending reply notification", {
         metadata: {
-          replyId: reply.id,
+          replyId,
           error: error instanceof Error ? error.message : String(error),
         },
       });
@@ -158,10 +161,13 @@ export class ReviewNotificationService {
   /**
    * Send notification when a review is reported
    */
-  static async notifyReviewReported(
-    report: ReportWithRelations
-  ): Promise<void> {
+  static async notifyReviewReported(reportId: string): Promise<void> {
     try {
+      const report = await loadReport(reportId);
+      if (!report) {
+        logger.warn("Report not found for the report notification", { metadata: { reportId } });
+        return;
+      }
       // Get all admin and moderator emails
       const moderators = await db.user.findMany({
         where: {
@@ -205,7 +211,7 @@ export class ReviewNotificationService {
 
         return emailService.sendReviewReportedNotification(moderator.email, {
           moderatorName: moderator.name || "Modérateur",
-          reporterName: report.reporter.name || "Utilisateur anonyme",
+          reporterName: report.user.name || "Utilisateur anonyme",
           reviewerName: report.review.user.name || "Utilisateur anonyme",
           courseTitle: report.review.course.title,
           rating: report.review.rating,
@@ -233,7 +239,7 @@ export class ReviewNotificationService {
     } catch (error) {
       logger.error("Error sending report notifications", {
         metadata: {
-          reportId: report.id,
+          reportId,
           error: error instanceof Error ? error.message : String(error),
         },
       });
@@ -441,34 +447,23 @@ export class ReviewNotificationService {
         },
       });
 
-      // Group by instructor to avoid spam
-      const reviewsByInstructor = new Map<string, ReviewWithRelations[]>();
-
-      reviews.forEach((review) => {
+      // Group by instructor, and cap the e-mails one import can trigger for one of them;
+      // the weekly summary covers the rest
+      const reviewIdsByInstructor = new Map<string, string[]>();
+      for (const review of reviews) {
         const instructorId = review.course.instructor?.id;
-        if (instructorId) {
-          if (!reviewsByInstructor.has(instructorId)) {
-            reviewsByInstructor.set(instructorId, []);
-          }
-          reviewsByInstructor
-            .get(instructorId)!
-            .push(review as ReviewWithRelations);
-        }
-      });
+        if (!instructorId) continue;
+        reviewIdsByInstructor.set(instructorId, [...(reviewIdsByInstructor.get(instructorId) ?? []), review.id]);
+      }
 
-      // Send grouped notifications
-      for (const [instructorId, instructorReviews] of reviewsByInstructor) {
-        // For bulk notifications, send a summary instead of individual emails
-        if (instructorReviews.length > 1) {
-          logger.info("Bulk review notifications grouped for instructor", {
-            metadata: {
-              instructorId,
-              reviewCount: instructorReviews.length,
-            },
+      for (const [instructorId, ids] of reviewIdsByInstructor) {
+        for (const reviewId of ids.slice(0, MAX_BULK_EMAILS_PER_INSTRUCTOR)) {
+          await this.notifyNewReview(reviewId);
+        }
+        if (ids.length > MAX_BULK_EMAILS_PER_INSTRUCTOR) {
+          logger.info("Bulk review notifications capped for instructor, the weekly summary covers the rest", {
+            metadata: { instructorId, reviewCount: ids.length, notified: MAX_BULK_EMAILS_PER_INSTRUCTOR },
           });
-          // Implementation could send a digest email here
-        } else {
-          await this.notifyNewReview(instructorReviews[0]);
         }
       }
     } catch (error) {

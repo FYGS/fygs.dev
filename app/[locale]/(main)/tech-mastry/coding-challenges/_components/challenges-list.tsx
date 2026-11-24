@@ -34,7 +34,7 @@ const challenges: Challenge[] = [
     title: "String Manipulation",
     description: "Série de défis sur la manipulation de chaînes de caractères.",
     difficulty: "Facile",
-    topics: ["Palindrome", "Anagrammes", "Substring", "Regex"],
+    topics: ["Palindrome", "Anagrammes", "Regex"],
     estimatedTime: "30 min",
     href: "/tech-mastry/coding-challenges/strings",
     icon: Type,
@@ -44,9 +44,9 @@ const challenges: Challenge[] = [
   {
     title: "Array Operations",
     description:
-      "Défis sur les opérations de tableaux et les algorithmes de tri.",
+      "Défis sur les tableaux : sommes ciblées, sous-tableaux et séquences.",
     difficulty: "Intermédiaire",
-    topics: ["Two Pointers", "Sliding Window", "Sorting", "Binary Search"],
+    topics: ["Hash Map", "Kadane", "Set"],
     estimatedTime: "45 min",
     href: "/tech-mastry/coding-challenges/arrays",
     icon: ListOrdered,
