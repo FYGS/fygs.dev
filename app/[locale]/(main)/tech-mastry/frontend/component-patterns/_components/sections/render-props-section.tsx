@@ -190,7 +190,8 @@ function App2() {
   );
 }
 
-// 6. Avec TypeScript
+// 6. Avec TypeScript (version typée à utiliser À LA PLACE du MouseTracker
+// de l'étape 1 : un composant ne peut pas être déclaré deux fois)
 interface MousePosition {
   x: number;
   y: number;
@@ -274,7 +275,7 @@ function MouseTracker({ render }: MouseTrackerProps) {
           },
           {
             question: "Comment éviter les problèmes de performance avec le pattern Render Props?",
-            answer: "Pour optimiser les performances avec le pattern Render Props: 1) Évitez de définir la fonction de rendu inline dans le JSX, car cela crée une nouvelle fonction à chaque rendu. Définissez-la en dehors du rendu ou mémorisez-la avec useCallback. 2) Utilisez React.memo pour éviter les rendus inutiles du composant qui reçoit la render prop. 3) Décomposez les composants complexes en plus petits composants pour limiter l'étendue des re-rendus. 4) Si la fonction de rendu accède à des props ou à un état qui change fréquemment, envisagez d'utiliser useMemo pour mémoriser le résultat. 5) Utilisez des outils comme React DevTools Profiler pour identifier les goulots d'étranglement. 6) Pour les listes, assurez-vous d'utiliser correctement les clés (keys). 7) Considérez l'utilisation de useRef pour les valeurs qui ne devraient pas déclencher de re-rendus lorsqu'elles changent.",
+            answer: "Pour optimiser les performances avec le pattern Render Props: 1) Évitez de définir la fonction de rendu inline dans le JSX, car cela crée une nouvelle fonction à chaque rendu (ce qui ne pose problème que si le composant qui la reçoit est mémorisé avec React.memo, puisque la prop change alors à chaque fois). Définissez-la en dehors du rendu ou mémorisez-la avec useCallback. 2) Utilisez React.memo pour éviter les rendus inutiles du composant qui reçoit la render prop. 3) Décomposez les composants complexes en plus petits composants pour limiter l'étendue des re-rendus. 4) Si la fonction de rendu accède à des props ou à un état qui change fréquemment, envisagez d'utiliser useMemo pour mémoriser le résultat. 5) Utilisez des outils comme React DevTools Profiler pour identifier les goulots d'étranglement. 6) Pour les listes, assurez-vous d'utiliser correctement les clés (keys). 7) Considérez l'utilisation de useRef pour les valeurs qui ne devraient pas déclencher de re-rendus lorsqu'elles changent.",
             difficulty: "hard",
             tags: ["React", "Performance", "Optimization"]
           }

@@ -84,7 +84,7 @@ function calculateAge(birthday: Date): number {
       "== au lieu de ===",
       "Pas de typage TypeScript",
       "Calcul d'âge incorrect (ne considère pas le mois/jour)",
-      "Pas d'encodage de l'ID dans l'URL (injection possible)",
+      "Pas d'encodage de l'ID dans l'URL (caractères spéciaux : /, ?, # peuvent altérer l'URL)",
       "localStorage dans une fonction de service (couplage)",
       "console.log au lieu de gestion d'erreur propre",
       "Concaténation de strings au lieu de template literals",
@@ -164,6 +164,7 @@ class OrderService {
     private calculator: PriceCalculator,
     private notifier: OrderNotifier,
     private repository: OrderRepository,
+    private userRepo: UserRepository,
   ) {}
   
   async create(items: OrderItem[], userId: string): Promise<Order> {
@@ -243,7 +244,7 @@ export function BestPracticesExercises() {
             <XCircle className="w-4 h-4 text-red-500" />
             Code à améliorer
           </h3>
-          <pre className="bg-red-500/5 border border-red-500/20 p-4 rounded-lg text-sm overflow-x-auto">
+          <pre className="bg-red-500/5 border border-red-500/20 p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
             <code>{exercises[activeExercise].badCode}</code>
           </pre>
         </div>
@@ -280,7 +281,7 @@ export function BestPracticesExercises() {
               <CheckCircle2 className="w-4 h-4 text-green-500" />
               Solution
             </h3>
-            <pre className="bg-green-500/5 border border-green-500/20 p-4 rounded-lg text-sm overflow-x-auto">
+            <pre className="bg-green-500/5 border border-green-500/20 p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
               <code>{exercises[activeExercise].goodCode}</code>
             </pre>
           </div>

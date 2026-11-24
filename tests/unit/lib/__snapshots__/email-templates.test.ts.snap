@@ -1,0 +1,334 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ModernEmailTemplates (pinned output) > exposes the same set of templates 1`] = `
+[
+  "badgeEarned",
+  "communityWeeklyDigest",
+  "coursePurchase",
+  "discussionReply",
+  "instructorReplyToReview",
+  "mentorRequest",
+  "mentorResponse",
+  "newFollower",
+  "newReviewForInstructor",
+  "passwordChanged",
+  "paymentFailed",
+  "premiumSubscription",
+  "refundIssued",
+  "reviewHelpfulVote",
+  "reviewReported",
+  "subscriptionCanceled",
+  "subscriptionCanceledImmediate",
+  "subscriptionPlanSwitched",
+  "subscriptionUpdated",
+  "weeklyReviewSummary",
+  "welcomeRegistration",
+]
+`;
+
+exports[`ModernEmailTemplates (pinned output) > full html of one template is stable 1`] = `
+"
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium activé</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #1f2937;
+            background-color: #f9fafb;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 30px;
+            text-align: center;
+            color: white;
+        }
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .content h2 {
+            color: #1f2937;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .content p {
+            margin-bottom: 16px;
+            color: #4b5563;
+            font-size: 16px;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+            text-decoration: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 20px 0;
+            transition: transform 0.2s ease;
+        }
+        .cta-button:hover {
+            transform: translateY(-2px);
+        }
+        .features-list {
+            background-color: #f8fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .features-list ul {
+            list-style: none;
+        }
+        .features-list li {
+            padding: 8px 0;
+            position: relative;
+            padding-left: 24px;
+        }
+        .features-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+        }
+        .highlight {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            border-left: 4px solid #667eea;
+            padding: 16px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+        .footer {
+            background-color: #f8fafc;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+        }
+        .footer p {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        .social-links {
+            margin-top: 20px;
+        }
+        .social-links a {
+            display: inline-block;
+            margin: 0 10px;
+            color: #6b7280;
+            text-decoration: none;
+        }
+        @media only screen and (max-width: 600px) {
+            .container { margin: 0 10px; }
+            .header, .content, .footer { padding: 20px; }
+            .header h1 { font-size: 24px; }
+            .content h2 { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div style="padding: 20px 0;">
+        <div class="container">
+            
+      <div class="header">
+        <h1>🌟 Bienvenue Premium !</h1>
+        <p>Accès illimité à toutes nos formations</p>
+      </div>
+      <div class="content">
+        <h2>Félicitations Alice !</h2>
+        <p>Votre abonnement <strong>Premium</strong> est maintenant actif. Vous avez désormais accès à l'intégralité du catalogue FYGS !</p>
+        
+        <div class="highlight">
+          <p><strong>🎯 Accès Premium Activé</strong></p>
+          <p>Toutes nos formations sont maintenant à votre disposition, sans limitation.</p>
+        </div>
+
+        <a href="https://example.test/formations" class="cta-button">Explorer toutes les formations</a>
+
+        <div class="features-list">
+          <h3>Vos avantages Premium :</h3>
+          <ul>
+            <li>Accès illimité à toutes les formations existantes et futures</li>
+            <li>Nouveau contenu ajouté chaque mois</li>
+            <li>Sessions live exclusives avec l'instructeur</li>
+            <li>Accès prioritaire aux nouvelles formations</li>
+            <li>Support technique prioritaire</li>
+            <li>Certificats illimités</li>
+          </ul>
+        </div>
+
+        <p><strong>Votre abonnement :</strong> 19.9€/mois</p>
+        
+        <p>Gérez votre abonnement depuis votre <a href="https://example.test/dashboard/billing">espace facturation</a></p>
+      </div>
+      <div class="footer">
+        <p>FYGS Learning Platform - Abonnement Premium</p>
+        <p><a href="https://example.test/dashboard">Tableau de bord</a> | <a href="https://example.test/dashboard/billing">Facturation</a></p>
+      </div>
+    
+        </div>
+    </div>
+</body>
+</html>
+"
+`;
+
+exports[`ModernEmailTemplates (pinned output) > renders badge 1`] = `"🏆 Badge débloqué : Star (+50 points)"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders badge 2`] = `"02f97d5f1d73f2cf875f588632ac039d3470b342aa61eda86e4b2db96aeee40a"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders canceled 1`] = `"📋 Confirmation d'annulation - FYGS Premium"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders canceled 2`] = `"c7a2c98a1a3aa0c8c65d94f4ffbe41c34f726dd30675e4ac3654395770a6f525"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders canceledImmediate 1`] = `"❌ Résiliation immédiate de votre abonnement"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders canceledImmediate 2`] = `"470788256142d5dcc383801205c2621aeb998a13dc2d45f682925be2340c8aeb"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders coursePurchase 1`] = `"✅ Formation "React" - Accès confirmé !"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders coursePurchase 2`] = `"b7662434d68f432e495bf93fbcbb14d0d909243aeffd0af425cd513bb38d60fd"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders coursePurchaseNoPrice 1`] = `"✅ Formation "React" - Accès confirmé !"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders coursePurchaseNoPrice 2`] = `"f61b172fa1b7befb0c08a279c4e18b6ad0c570b35521277da03f686ca3fac119"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders digest 1`] = `"📊 Votre semaine communautaire : 30 points gagnés"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders digest 2`] = `"532770ac25e9342903261ccf5f8234818b32f4513a75df66c19bd179917db8c1"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders digestEmpty 1`] = `"📊 Votre semaine communautaire : 0 points gagnés"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders digestEmpty 2`] = `"cb8ae5ad008b78a221e4257c6ebc7a40ff7edd1a338c3bcad5d7156d3a80f4ef"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders discussionReply 1`] = `"💬 B a répondu à votre discussion"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders discussionReply 2`] = `"3c7cec267e62a594d7f1c8a1ea976e6d7ad5bf9598302d42f114cdc50a484444"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders follower 1`] = `"👥 B vous suit maintenant"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders follower 2`] = `"8f23f3a325b4a539fb5063ed00ed9babc0570389bbc2774c1ed35c230b398923"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders followerNoAvatar 1`] = `"👥 B vous suit maintenant"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders followerNoAvatar 2`] = `"8d06876946e7e0a04784e9d60949fc5543c273c52cbcf4b57ae20a701c3e1361"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders helpful 1`] = `"👍 Votre avis sur "C" a été trouvé utile !"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders helpful 2`] = `"ce8df89f21399ba4a91fb694b638281f8441c6497f6433d0bfedc6f12235010c"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders mentorAccept 1`] = `"✅ M a accepté votre demande de mentorat"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders mentorAccept 2`] = `"a3c05834f23600fe1ed96a1ac36902ebd2038aea17c1078d7c896510b1d1779b"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders mentorDecline 1`] = `"📌 M a répondu à votre demande"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders mentorDecline 2`] = `"c1fac51d6d25b671964b7b19450f6fab06b66bbf4c8dc9a78b78e5c8a1236cbf"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders mentorRequest 1`] = `"🎓 S demande votre mentorat"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders mentorRequest 2`] = `"24feceef260b6ecb930f9aa9567e7d2eb5f08002bb29a720b0e038d8965f67b9"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders mentorRequestNoMsg 1`] = `"🎓 S demande votre mentorat"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders mentorRequestNoMsg 2`] = `"8ccb7280af5d32d5e575096a2859c90f4ff893da095c3194709239d8342ef7fb"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders newReview 1`] = `"⭐ Nouvel avis 4/5 sur "C""`;
+
+exports[`ModernEmailTemplates (pinned output) > renders newReview 2`] = `"b3eb3d6ea0ddf5c24ed998b82af3547b60a24c8357b182db3ee4994ffa2d9609"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders newReviewNoComment 1`] = `"⭐ Nouvel avis 1/5 sur "C""`;
+
+exports[`ModernEmailTemplates (pinned output) > renders newReviewNoComment 2`] = `"52ad56785b879e148d1ca088a94d7cf1a763779114f72d1f0670fc9824e20678"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders password 1`] = `"🔐 Confirmation de changement de mot de passe - FYGS"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders password 2`] = `"1ed20d92c166f38cd6ddb0ecf18da1b8c037f14095482214edd68e9434a7d90e"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders passwordNoIp 1`] = `"🔐 Confirmation de changement de mot de passe - FYGS"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders passwordNoIp 2`] = `"862cdafd9fa9f494ab83f5f35f8f5f71854cca2a62edf8395bd03e7232ea8f65"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders paymentFailed 1`] = `"⚠️ Action requise - Problème de paiement FYGS"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders paymentFailed 2`] = `"2fe5e04ee754a157af73b985c64ce37a413f49d65970f01ccfb24e111c387a61"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders premium 1`] = `"🌟 Abonnement Premium activé - Accès illimité !"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders premium 2`] = `"8c47359f16e4533c81e7c7fab7214b5d43129eef3c39d9ec20924fe3c8d20b2a"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders premiumYearly 1`] = `"🌟 Abonnement Premium activé - Accès illimité !"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders premiumYearly 2`] = `"98f8d833cc3edbf7fdf7dd83a257ec1c137550c0aaffb32152350fba2782152e"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders refund 1`] = `"💸 Confirmation de remboursement"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders refund 2`] = `"12c7798148373ede3b9bc3197ec723124a2e6ab55bdf67db598cd35f3204504e"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders reply 1`] = `"💬 I a répondu à votre avis sur "C""`;
+
+exports[`ModernEmailTemplates (pinned output) > renders reply 2`] = `"b45017ecdff6b4dc3742ed0be491a70042dad723e8515bcc3db123447cb7965d"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders reported 1`] = `"🚨 [MODÉRATION] Avis signalé sur "C""`;
+
+exports[`ModernEmailTemplates (pinned output) > renders reported 2`] = `"bb55e53334cdadf8ab0350baee472afb63f51f02c23c27bdc5970f5141ebc643"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders reportedNoDetails 1`] = `"🚨 [MODÉRATION] Avis signalé sur "C""`;
+
+exports[`ModernEmailTemplates (pinned output) > renders reportedNoDetails 2`] = `"301a8bf2ce0b4a184ecc94acdffa4ca1a12df8624e168ce7f462785ecf1c6d27"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders switched 1`] = `"🔄 Votre abonnement a été modifié"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders switched 2`] = `"5d37fb8a1ea0b53514c6ef77ba33b4593349612fe66569a3faf7955a1c5d06cb"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders updated 1`] = `"📋 Votre abonnement FYGS a été mis à jour"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders updated 2`] = `"a36a9e083ed8c2fa8422e1bc3db019f9cd6c5ff1c7c936845dad903f535ecd90"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders updatedNoDate 1`] = `"📋 Votre abonnement FYGS a été mis à jour"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders updatedNoDate 2`] = `"7748b996c175220c33d9e16faadf063d652fe4b44e17e626d280b37971f59957"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders weekly 1`] = `"📊 Résumé hebdomadaire : 12 nouveaux avis (4.5/5)"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders weekly 2`] = `"3504ba4588f3569187a8155bdc5bc2ed6904bfdc4b6f8d1af375642bf1743509"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders weeklyEmpty 1`] = `"📊 Résumé hebdomadaire : 12 nouveaux avis (4.5/5)"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders weeklyEmpty 2`] = `"d34fdf688df586dc351f1adf26d9a37c9a9162b4dc0fff1ec50228f7c44d0da4"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders welcome 1`] = `"🎉 Bienvenue sur FYGS - Votre parcours commence maintenant !"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders welcome 2`] = `"cbf41e2ba3d5ecae2bbd4d2eea569dadf9f813720e5ec2aa1234333154b6bdee"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders welcomeDefaultUrl 1`] = `"🎉 Bienvenue sur FYGS - Votre parcours commence maintenant !"`;
+
+exports[`ModernEmailTemplates (pinned output) > renders welcomeDefaultUrl 2`] = `"790b4cd3a6f21daace67964191d7efbae2590339b206d643bf119837d7afb4cc"`;

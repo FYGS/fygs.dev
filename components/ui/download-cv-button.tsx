@@ -1,6 +1,5 @@
 "use client";
 
-import { generatePDF } from "@/app/_lib/pdf-generator";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { useState } from "react";
@@ -11,6 +10,8 @@ export function DownloadCVButton() {
   const downloadCV = async () => {
     try {
       setIsGenerating(true);
+      // jsPDF + the CV data are only needed once the user asks for the download.
+      const { generatePDF } = await import("@/app/_lib/pdf-generator");
       const doc = generatePDF();
       doc.save("Fernand_SOUALO_CV.pdf");
     } catch (error) {

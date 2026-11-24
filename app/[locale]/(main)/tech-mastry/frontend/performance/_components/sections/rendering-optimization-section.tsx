@@ -176,7 +176,7 @@ const MemoizedChildComponent = memo(function ChildComponent({ name, onClick }) {
       <CodeExample
         title="Optimizing Component Structure"
         description="Organize components to minimize the impact of state changes"
-        code={`import React, { useState } from 'react';
+        code={`import React, { useState, memo } from 'react';
 
 // Problem: Poor component structure causes unnecessary re-renders
 function PoorlyStructuredApp() {
@@ -242,10 +242,11 @@ function UserHeader({ name }) {
   return <h1>Welcome, {name}</h1>;
 }
 
-function CounterSection({ count, setCount }) {
+// memo: CounterSection is skipped when only user changes (setCount is stable)
+const CounterSection = memo(function CounterSection({ count, setCount }) {
   // Expensive calculation only runs when count changes
   const expensiveResult = calculateExpensiveValue(count);
-  
+
   return (
     <div>
       <button onClick={() => setCount(count + 1)}>
@@ -254,7 +255,7 @@ function CounterSection({ count, setCount }) {
       <p>Expensive calculation result: {expensiveResult}</p>
     </div>
   );
-}
+});
 
 function UserForm({ user, setUser }) {
   return (
@@ -327,7 +328,7 @@ function calculateExpensiveValue(count) {
                 <strong>Separation of concerns</strong>: Each component handles a specific part of the UI and its related state.
               </li>
               <li>
-                <strong>Localized re-renders</strong>: When <code>user</code> changes, only the components that depend on <code>user</code> re-render. The <code>CounterSection</code> doesn&apos;t re-render.
+                <strong>Localized re-renders</strong>: When <code>user</code> changes, only the components that depend on <code>user</code> re-render. The <code>CounterSection</code>, wrapped in <code>memo</code>, doesn&apos;t re-render (without <code>memo</code>, every child of the component that owns the state would re-render).
               </li>
               <li>
                 <strong>Optimized calculations</strong>: The expensive calculation only runs when <code>count</code> changes, not when <code>user</code> changes.
@@ -360,7 +361,7 @@ function calculateExpensiveValue(count) {
         interviewQuestions={[
           {
             question: "What are the most common causes of unnecessary re-renders in React and how would you fix them?",
-            answer: "Common causes of unnecessary re-renders and solutions: 1) Parent component re-renders: When a parent re-renders, all children re-render by default. Solution: Use React.memo to memoize components that don't need to re-render when their props don't change. 2) New object/function references on every render: Creating new objects or functions in render creates new references. Solution: Use useMemo for objects and useCallback for functions to maintain referential equality between renders. 3) Context changes: All consumers re-render when any value in a context changes. Solution: Split contexts by concern or use memoization techniques to prevent unnecessary updates. 4) State updates that don't change values: Calling setState with the same value still triggers re-renders. Solution: Add checks before updating state or use functional updates. 5) Inefficient list rendering: Not using keys or using index as keys. Solution: Use stable, unique keys for list items. 6) Prop drilling through many components: Passing props through many levels. Solution: Consider using context or state management libraries for deeply nested state. 7) Large, monolithic components: Components that do too much. Solution: Break into smaller, more focused components to create natural re-render boundaries. 8) Expensive calculations in render: Recalculating values on every render. Solution: Use useMemo to cache expensive calculations.",
+            answer: "Common causes of unnecessary re-renders and solutions: 1) Parent component re-renders: When a parent re-renders, all children re-render by default. Solution: Use React.memo to memoize components that don't need to re-render when their props don't change. 2) New object/function references on every render: Creating new objects or functions in render creates new references. Solution: Use useMemo for objects and useCallback for functions to maintain referential equality between renders. 3) Context changes: All consumers re-render when any value in a context changes. Solution: Split contexts by concern or use memoization techniques to prevent unnecessary updates. 4) State updates that don't change values: React bails out when the new state is identical (Object.is), but setting a new object or array with the same content triggers a re-render. Solution: Avoid creating new references when nothing changed, or skip the update. 5) Inefficient list rendering: Not using keys or using index as keys. Solution: Use stable, unique keys for list items. 6) Prop drilling through many components: Passing props through many levels. Solution: Consider using context or state management libraries for deeply nested state. 7) Large, monolithic components: Components that do too much. Solution: Break into smaller, more focused components to create natural re-render boundaries. 8) Expensive calculations in render: Recalculating values on every render. Solution: Use useMemo to cache expensive calculations.",
             difficulty: "medium",
             tags: ["React", "Performance", "Optimization"]
           },

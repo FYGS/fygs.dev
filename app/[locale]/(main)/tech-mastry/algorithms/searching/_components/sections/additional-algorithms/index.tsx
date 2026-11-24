@@ -65,7 +65,7 @@ export function AdditionalAlgorithms() {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li className="flex items-start gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5" />
-                <span><strong>Complexité:</strong> O(log₃ n), légèrement meilleure que la recherche binaire en théorie</span>
+                <span><strong>Complexité:</strong> O(log₃ n) = O(log n), la même classe que la recherche binaire (seule la constante change)</span>
               </li>
               <li className="flex items-start gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5" />
@@ -73,7 +73,7 @@ export function AdditionalAlgorithms() {
               </li>
               <li className="flex items-start gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5" />
-                <span><strong>Inconvénients:</strong> Plus de comparaisons par itération, ce qui peut annuler l&apos;avantage théorique</span>
+                <span><strong>Inconvénients:</strong> Plus de comparaisons par itération (2 contre 1) : au total, plus de comparaisons que la recherche binaire</span>
               </li>
               <li className="flex items-start gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5" />
@@ -90,7 +90,7 @@ export function AdditionalAlgorithms() {
               <strong>Recherche Exponentielle:</strong> Particulièrement utile pour les tableaux non bornés ou de taille inconnue, où l&apos;on ne connaît pas la taille maximale à l&apos;avance. Elle est également efficace lorsque l&apos;élément recherché est susceptible d&apos;être proche du début du tableau.
             </p>
             <p>
-              <strong>Recherche Ternaire:</strong> Bien que théoriquement plus efficace que la recherche binaire, elle est rarement utilisée en pratique car les deux comparaisons supplémentaires par itération annulent souvent l&apos;avantage du nombre réduit d&apos;itérations. Elle peut être utile dans des cas spécifiques où le coût des itérations est beaucoup plus élevé que celui des comparaisons.
+              <strong>Recherche Ternaire:</strong> Elle fait moins d&apos;itérations que la recherche binaire, mais deux comparaisons par itération : au total elle effectue plus de comparaisons (environ 2·log₃ n contre log₂ n), donc elle est rarement utilisée pour chercher dans un tableau trié. Sa vraie utilité est la recherche de l&apos;extremum d&apos;une fonction unimodale.
             </p>
             <p>
               En pratique, la recherche binaire reste l&apos;algorithme de recherche le plus utilisé pour les tableaux triés en raison de sa simplicité et de son efficacité. Les algorithmes avancés comme la recherche exponentielle et ternaire sont utilisés dans des cas spécifiques où leurs caractéristiques particulières offrent un avantage.

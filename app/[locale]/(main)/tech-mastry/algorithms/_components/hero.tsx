@@ -12,6 +12,7 @@ import {
   Undo2,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { topics } from "./topics-list";
 
 const concepts = [
   { name: "Big O", icon: TrendingUp, color: "text-green-400" },
@@ -72,11 +73,11 @@ export function AlgorithmsHero() {
 
       <div className="flex justify-center gap-6 text-center">
         <div className="p-3 rounded-lg bg-muted/30 border border-border/20">
-          <p className="text-2xl font-bold text-primary">8</p>
+          <p className="text-2xl font-bold text-primary">{topics.length}</p>
           <p className="text-[10px] text-muted-foreground">Catégories</p>
         </div>
         <div className="p-3 rounded-lg bg-muted/30 border border-border/20">
-          <p className="text-2xl font-bold text-green-500">30+</p>
+          <p className="text-2xl font-bold text-green-500">Nombreux</p>
           <p className="text-[10px] text-muted-foreground">Algorithmes</p>
         </div>
         <div className="p-3 rounded-lg bg-muted/30 border border-border/20">

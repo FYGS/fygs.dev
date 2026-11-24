@@ -6,7 +6,8 @@ import { Card } from "@/components/ui/card";
 import { useHoverAnimation } from "@/hooks/use-hover-animation";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { ArrowRight, ExternalLink, Github } from "lucide-react";
+import { ArrowRight, ExternalLink } from "lucide-react";
+import { Github } from "@/components/icons/brand-icons";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -52,14 +53,14 @@ export function ProjectListItem({
           <div className="flex-1 p-6">
             <div className="flex flex-col h-full">
               <div className="flex justify-between items-start gap-4 mb-3">
-                <motion.h3
+                <motion.h2
                   className="text-2xl font-semibold"
                   variants={{
                     hover: { color: "var(--primary)" },
                   }}
                 >
                   {project.title}
-                </motion.h3>
+                </motion.h2>
                 <div className="flex gap-2 shrink-0">
                   {project.githubUrl && (
                     <Link

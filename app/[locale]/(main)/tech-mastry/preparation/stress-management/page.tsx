@@ -1,12 +1,9 @@
-import { Metadata } from "next";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Heart } from "lucide-react";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Gestion du Stress | TechMastry",
-  description: "Techniques de gestion du stress, exercices de respiration et préparation mentale",
-};
+export const metadata = topicMetadata("/tech-mastry/preparation/stress-management");
 
 const techniques = [
   {
@@ -39,7 +36,7 @@ const techniques = [
   },
   {
     name: "Power Posing",
-    description: "Adoptez une posture ouverte et confiante pendant 2 minutes. Augmente la testostérone et réduit le cortisol.",
+    description: "Adoptez une posture ouverte et redressée pendant 2 minutes. Les effets hormonaux (testostérone, cortisol) annoncés par les premières études n'ont pas été confirmés ; l'intérêt est surtout de relâcher les épaules et de vous sentir plus à l'aise.",
     when: "5 minutes avant l'entretien (en privé)",
     color: "text-red-500",
     bgColor: "bg-red-500/10",
@@ -63,7 +60,7 @@ const mindsetShifts = [
 
 export default function StressManagementPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <section className="text-center space-y-6">
         <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-pink-500/10 text-pink-500">
           <Heart className="w-8 h-8" />
@@ -71,7 +68,7 @@ export default function StressManagementPage() {
         <div className="space-y-4">
           <h1 className="text-4xl font-bold tracking-tight">Gestion du Stress</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Techniques éprouvées pour gérer le stress avant et pendant vos entretiens.
+            Techniques courantes pour gérer le stress avant et pendant vos entretiens.
             Le stress est naturel — apprenez à le transformer en allié.
           </p>
         </div>
@@ -110,6 +107,6 @@ export default function StressManagementPage() {
           ))}
         </div>
       </section>
-    </main>
+    </div>
   );
 }

@@ -1,18 +1,14 @@
-import { Metadata } from "next";
 import { AccessibilityContent } from "./_components/content";
 import { AccessibilityHero } from "./_components/hero";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Accessibility & UX | TechMastry",
-  description:
-    "Best practices for creating accessible and user-friendly interfaces in React applications",
-};
+export const metadata = topicMetadata("/tech-mastry/frontend/accessibility");
 
 export default function AccessibilityPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <AccessibilityHero />
       <AccessibilityContent />
-    </main>
+    </div>
   );
 }

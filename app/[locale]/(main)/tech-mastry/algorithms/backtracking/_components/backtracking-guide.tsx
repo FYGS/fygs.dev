@@ -106,7 +106,7 @@ function permuteOptimized(nums) {
 }`,
     pattern: "Génération exhaustive",
     tips: [
-      "n! permutations → O(n!) en temps",
+      "n! permutations de taille n → O(n × n!) en temps (copie de chaque résultat)",
       "Variante : permutations avec doublons → trier + skip",
     ],
   },
@@ -155,7 +155,7 @@ function permuteOptimized(nums) {
     return true; // Tout rempli
   }
   
-  solve();
+  solve(); // modifie la grille board en place
   return board;
 }`,
     pattern: "Satisfaction de contraintes (CSP)",
@@ -214,8 +214,40 @@ function combine(n, k) {
 }`,
     pattern: "Génération de sous-ensembles",
     tips: [
-      "2^n sous-ensembles → O(2^n)",
+      "2^n sous-ensembles → O(n × 2^n) en temps (copie de chaque résultat)",
       "Le pruning réduit drastiquement l'espace de recherche",
+    ],
+  },
+  {
+    name: "Subset Sum",
+    difficulty: "medium",
+    description:
+      "Trouver un sous-ensemble d'entiers positifs dont la somme vaut exactement une cible.",
+    code: `// Retourne UN sous-ensemble de somme target, ou null s'il n'y en a pas
+function subsetSum(nums, target) {
+  const sorted = [...nums].sort((a, b) => a - b);
+  const current = [];
+
+  function backtrack(start, remaining) {
+    if (remaining === 0) return true; // Cible atteinte
+    for (let i = start; i < sorted.length; i++) {
+      // Pruning : tableau trié, tous les suivants sont aussi trop grands
+      if (sorted[i] > remaining) break;
+      current.push(sorted[i]);
+      if (backtrack(i + 1, remaining - sorted[i])) return true;
+      current.pop(); // Backtrack
+    }
+    return false;
+  }
+
+  return backtrack(0, target) ? [...current] : null;
+}
+
+subsetSum([3, 34, 4, 12, 5, 2], 9); // [2, 3, 4]`,
+    pattern: "Recherche avec élagage (pruning)",
+    tips: [
+      "Pire cas O(2^n) : le problème est NP-complet",
+      "Si la cible est petite, la programmation dynamique (O(n × cible), pseudo-polynomial) est bien plus rapide",
     ],
   },
 ];
@@ -264,7 +296,7 @@ export function BacktrackingGuide() {
           <Lightbulb className="w-5 h-5 text-primary" />
           Template Universel du Backtracking
         </h2>
-        <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+        <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
           <code>{templateCode}</code>
         </pre>
         <p className="text-sm text-muted-foreground mt-3">
@@ -318,7 +350,7 @@ export function BacktrackingGuide() {
             <Code2 className="w-4 h-4 text-primary" />
             Implémentation
           </h3>
-          <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+          <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
             <code>{problems[activeProblem].code}</code>
           </pre>
         </div>
@@ -350,20 +382,22 @@ export function BacktrackingGuide() {
               <tr className="border-b bg-muted/50">
                 <th className="p-3 text-left font-semibold">Problème</th>
                 <th className="p-3 text-left font-semibold">Temps</th>
-                <th className="p-3 text-left font-semibold">Espace</th>
+                <th className="p-3 text-left font-semibold">
+                  Espace (pile + état, hors résultats)
+                </th>
                 <th className="p-3 text-left font-semibold">Pattern</th>
               </tr>
             </thead>
             <tbody>
               <tr className="border-b">
                 <td className="p-3">Permutations</td>
-                <td className="p-3 font-mono text-xs">O(n!)</td>
+                <td className="p-3 font-mono text-xs">O(n × n!)</td>
                 <td className="p-3 font-mono text-xs">O(n)</td>
                 <td className="p-3">Génération</td>
               </tr>
               <tr className="border-b">
                 <td className="p-3">Sous-ensembles</td>
-                <td className="p-3 font-mono text-xs">O(2ⁿ)</td>
+                <td className="p-3 font-mono text-xs">O(n × 2ⁿ)</td>
                 <td className="p-3 font-mono text-xs">O(n)</td>
                 <td className="p-3">Génération</td>
               </tr>
@@ -374,16 +408,22 @@ export function BacktrackingGuide() {
                 <td className="p-3">Contraintes</td>
               </tr>
               <tr className="border-b">
-                <td className="p-3">Sudoku</td>
+                <td className="p-3">Sudoku (n = cases vides)</td>
                 <td className="p-3 font-mono text-xs">O(9ⁿ)</td>
                 <td className="p-3 font-mono text-xs">O(1)</td>
                 <td className="p-3">CSP</td>
               </tr>
-              <tr>
+              <tr className="border-b">
                 <td className="p-3">Combinaisons</td>
-                <td className="p-3 font-mono text-xs">O(C(n,k))</td>
+                <td className="p-3 font-mono text-xs">O(k × C(n,k))</td>
                 <td className="p-3 font-mono text-xs">O(k)</td>
                 <td className="p-3">Sous-ensembles</td>
+              </tr>
+              <tr>
+                <td className="p-3">Subset Sum</td>
+                <td className="p-3 font-mono text-xs">O(2ⁿ) pire cas</td>
+                <td className="p-3 font-mono text-xs">O(n)</td>
+                <td className="p-3">Élagage</td>
               </tr>
             </tbody>
           </table>

@@ -17,7 +17,7 @@ import { useEffect, useState } from "react";
 
 interface SocialInteractionsClientProps {
   slug: string;
-  onLike: (userId: string) => Promise<boolean>;
+  onLike: () => Promise<boolean>;
   onShare: () => Promise<number>;
   variant?: "default" | "large";
 }
@@ -52,7 +52,7 @@ export function SocialInteractionsClient({
 
   useEffect(() => {
     const liked = localStorage.getItem(`blog-like-${slug}`);
-    setHasLiked(liked === "true");
+    queueMicrotask(() => setHasLiked(liked === "true"));
   }, [slug]);
 
   const handleLike = async () => {
@@ -62,8 +62,7 @@ export function SocialInteractionsClient({
         transition: { duration: 0.3 },
       });
 
-      const userId = "anonymous";
-      const isLiked = await onLike(userId);
+      const isLiked = await onLike();
 
       // Optimistic update
       if (isLiked) {

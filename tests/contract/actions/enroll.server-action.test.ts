@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { db } from "@/lib/db";
-import { enrollCourse } from "@/app/(main)/dashboard/actions/enrollCourse";
+import { enrollCourse } from "@/app/[locale]/(main)/dashboard/actions/enrollCourse";
 import { auth } from "@/lib/auth";
 
 // Mock auth for testing
@@ -25,12 +25,16 @@ describe("Enroll Course Server Action Contract Tests", () => {
   let testUserId: string;
   let testCourseId: string;
   let premiumCourseId: string;
+  let testEmail: string;
 
   beforeEach(async () => {
+    // unique per test: no collision with leftovers of another test or file
+    const suffix = Math.random().toString(36).slice(2, 10);
+    testEmail = `enroll-test-${suffix}@example.com`;
     // Create test user
     const user = await db.user.create({
       data: {
-        email: "enroll-test@example.com",
+        email: testEmail,
         name: "Enroll Test User",
         emailVerified: true,
       },
@@ -41,7 +45,7 @@ describe("Enroll Course Server Action Contract Tests", () => {
     const freeCourse = await db.course.create({
       data: {
         title: "Free Test Course",
-        slug: "free-test-course",
+        slug: `free-test-course-${suffix}`,
         description: "Course for testing enrollment",
         category: "JAVASCRIPT",
         level: "BEGINNER",
@@ -55,7 +59,7 @@ describe("Enroll Course Server Action Contract Tests", () => {
     const premiumCourse = await db.course.create({
       data: {
         title: "Premium Test Course",
-        slug: "premium-test-course",
+        slug: `premium-test-course-${suffix}`,
         description: "Premium course for testing enrollment",
         category: "TYPESCRIPT",
         level: "INTERMEDIATE",
@@ -67,8 +71,8 @@ describe("Enroll Course Server Action Contract Tests", () => {
 
     // Mock the auth user ID to match our test user
     vi.mocked(auth.api.getSession).mockResolvedValue({
-      user: { id: testUserId, email: "enroll-test@example.com" },
-    });
+      user: { id: testUserId, email: testEmail },
+    } as never);
   });
 
   afterEach(async () => {
@@ -83,13 +87,14 @@ describe("Enroll Course Server Action Contract Tests", () => {
 
   describe("Input validation", () => {
     test("rejects invalid course ID format", async () => {
-      try {
-        await enrollCourse({ courseId: "invalid-id" });
-        expect.fail("Should have thrown validation error");
-      } catch (error) {
-        // Zod validation should throw for invalid CUID
-        expect(error).toBeDefined();
-      }
+      // The action reports schema errors in its result instead of throwing
+      const result = await enrollCourse({ courseId: "invalid id" });
+
+      expect(result).toMatchObject({
+        success: false,
+        error: "VALIDATION_ERROR",
+      });
+      expect(await db.enrollment.count({ where: { userId: testUserId } })).toBe(0);
     });
 
     test("accepts valid course ID", async () => {
@@ -108,7 +113,7 @@ describe("Enroll Course Server Action Contract Tests", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      expect(result.error).toBe("COURSE_NOT_FOUND");
     });
   });
 
@@ -126,7 +131,8 @@ describe("Enroll Course Server Action Contract Tests", () => {
       const result = await enrollCourse({ courseId: premiumCourseId });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      expect(result.error).toBe("PREMIUM_ACCESS_REQUIRED");
+      expect(await db.enrollment.count({ where: { userId: testUserId } })).toBe(0);
     });
 
     test("allows premium course with active subscription", async () => {
@@ -191,6 +197,9 @@ describe("Enroll Course Server Action Contract Tests", () => {
       const uniqueIds = new Set(enrollmentIds);
       expect(uniqueIds.size).toBe(1);
 
+      // Exactly one request created it, the others report it as existing
+      expect(results.filter((r) => !r.alreadyEnrolled)).toHaveLength(1);
+
       // Verify only one enrollment in database
       const enrollmentCount = await db.enrollment.count({
         where: {
@@ -236,6 +245,27 @@ describe("Enroll Course Server Action Contract Tests", () => {
         message: expect.any(String),
         error: expect.any(String),
       });
+    });
+  });
+  describe("Entitlement rule (lib/access/entitlement.ts)", () => {
+    test("a lapsed premium learner is told why, and nothing is created", async () => {
+      await db.enrollment.create({ data: { userId: testUserId, courseId: premiumCourseId } });
+      await db.subscription.create({ data: { userId: testUserId, status: "CANCELED" } });
+
+      const result = await enrollCourse({ courseId: premiumCourseId });
+      expect(result).toMatchObject({ success: false, error: "ACCESS_EXPIRED", message: expect.stringContaining("abonnement") });
+      expect(await db.enrollment.count({ where: { userId: testUserId } })).toBe(1);
+      await db.subscription.deleteMany({ where: { userId: testUserId } });
+    });
+
+    test("an access granted by an administrator lets the learner in", async () => {
+      await db.enrollment.create({ data: { userId: testUserId, courseId: premiumCourseId, grantedAt: new Date() } });
+      expect(await enrollCourse({ courseId: premiumCourseId })).toMatchObject({ success: true, alreadyEnrolled: true });
+    });
+
+    test("an unpublished course cannot be joined", async () => {
+      await db.course.update({ where: { id: testCourseId }, data: { published: false } });
+      expect(await enrollCourse({ courseId: testCourseId })).toMatchObject({ success: false, error: "COURSE_NOT_PUBLISHED" });
     });
   });
 });

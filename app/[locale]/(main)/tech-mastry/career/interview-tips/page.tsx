@@ -1,15 +1,12 @@
-import { Metadata } from "next";
 import { InterviewGuide } from "./_components/interview-guide";
 import { UserCheck } from "lucide-react";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Conseils d'Entretien | TechMastry",
-  description: "Méthode STAR, présentation technique et checklist pour réussir vos entretiens",
-};
+export const metadata = topicMetadata("/tech-mastry/career/interview-tips");
 
 export default function InterviewTipsPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <section className="text-center space-y-6">
         <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-purple-500/10 text-purple-500">
           <UserCheck className="w-8 h-8" />
@@ -23,6 +20,6 @@ export default function InterviewTipsPage() {
         </div>
       </section>
       <InterviewGuide />
-    </main>
+    </div>
   );
 }

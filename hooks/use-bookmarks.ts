@@ -11,7 +11,8 @@ export function useBookmarks() {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
-        setBookmarks(JSON.parse(stored));
+        const parsed: string[] = JSON.parse(stored);
+        queueMicrotask(() => setBookmarks(parsed));
       }
     } catch {
       // Ignore parse errors

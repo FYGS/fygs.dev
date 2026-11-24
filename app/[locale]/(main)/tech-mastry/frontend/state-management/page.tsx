@@ -1,18 +1,14 @@
-import { Metadata } from "next";
 import { StateManagementContent } from "./_components/content";
 import { StateManagementHero } from "./_components/hero";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "State Management | TechMastry",
-  description:
-    "Maîtrisez les différentes approches de gestion d&apos;état dans React: Context API, Redux, Zustand, et React Query",
-};
+export const metadata = topicMetadata("/tech-mastry/frontend/state-management");
 
 export default function StateManagementPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <StateManagementHero />
       <StateManagementContent />
-    </main>
+    </div>
   );
 }

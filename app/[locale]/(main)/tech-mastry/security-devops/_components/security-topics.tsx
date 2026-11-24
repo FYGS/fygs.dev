@@ -18,13 +18,13 @@ const topics = [
   {
     title: "OWASP Top 10",
     description:
-      "Les 10 vulnérabilités web les plus critiques avec code vulnérable vs sécurisé.",
+      "Les principales catégories de l'OWASP Top 10 (édition 2025) avec code vulnérable vs sécurisé.",
     icon: ShieldAlert,
     color: "text-red-500",
     gradient: "from-red-500/10 to-red-500/5",
     href: "/tech-mastry/security-devops/owasp-top-10",
     category: "Sécurité" as Category,
-    tags: ["XSS", "SQL Injection", "CSRF", "Auth", "SSRF"],
+    tags: ["XSS", "SQL Injection", "CSRF", "Access Control", "SSRF"],
   },
   {
     title: "CI/CD Pipelines",

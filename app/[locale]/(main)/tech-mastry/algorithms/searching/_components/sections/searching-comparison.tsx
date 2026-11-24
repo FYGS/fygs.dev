@@ -142,11 +142,15 @@ export function SearchingComparison() {
               <div className="mt-6 space-y-4">
                 <h3 className="text-lg font-medium">Analyse de la Mémoire</h3>
                 <p className="text-muted-foreground">
-                  La plupart des algorithmes de recherche ont une complexité
-                  spatiale de O(1), car ils n&apos;utilisent qu&apos;une
-                  quantité constante de mémoire supplémentaire. La recherche par
-                  hachage est une exception, avec une complexité spatiale de
-                  O(n) due à la construction de la table de hachage.
+                  Convention : on compte la mémoire <strong>auxiliaire</strong>,
+                  c&apos;est-à-dire celle allouée en plus des données déjà
+                  présentes (pile de récursion incluse). La plupart des
+                  algorithmes de recherche sont en O(1). La recherche par
+                  hachage est une exception : la table construite à partir du
+                  tableau occupe O(n). Une recherche récursive dans un arbre
+                  binaire de recherche coûte O(h) de pile (h = hauteur), alors
+                  que l&apos;arbre lui-même, déjà présent en mémoire, n&apos;est
+                  pas compté.
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
@@ -165,7 +169,7 @@ export function SearchingComparison() {
                       O(n)
                     </div>
                     <div className="text-sm text-muted-foreground mt-2">
-                      Recherche par hachage, arbres binaires
+                      Recherche par hachage (table construite à partir des données)
                     </div>
                   </Card>
                 </div>

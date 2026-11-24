@@ -3,21 +3,17 @@
 
 # FYGS.dev
 
-**Plateforme d'apprentissage moderne & Portfolio technique**
+**Plateforme d'apprentissage en ligne et portfolio technique**
 
-[![Next.js](https://img.shields.io/badge/Next.js-15.5.9-black?style=flat-square&logo=next.js)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React-19.1.1-61DAFB?style=flat-square&logo=react)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.8.2-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.1-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com)
-[![Prisma](https://img.shields.io/badge/Prisma-6.18-2D3748?style=flat-square&logo=prisma)](https://prisma.io)
-[![Better Auth](https://img.shields.io/badge/Better_Auth-1.3.11-22C55E?style=flat-square)](https://better-auth.com)
-[![Stripe](https://img.shields.io/badge/Stripe-18.5-635BFF?style=flat-square&logo=stripe)](https://stripe.com)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com)
+[![Prisma](https://img.shields.io/badge/Prisma-7-2D3748?style=flat-square&logo=prisma)](https://prisma.io)
 [![CI](https://img.shields.io/github/actions/workflow/status/fygs/fygs.dev/ci-cd.yml?style=flat-square&label=CI)](../../actions)
-[![Tests](https://img.shields.io/badge/tests-107_passing-22C55E?style=flat-square)](vitest.config.ts)
-[![Version](https://img.shields.io/badge/v1.0.2-stable-blue?style=flat-square)](package.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
 
-[Site](https://fygs.dev) · [Formations](https://fygs.dev/formations) · [Blog](https://fygs.dev/blog) · [Contact](https://fygs.dev/me)
+[Site](https://fygs.dev) · [Formations](https://fygs.dev/formations) · [Parcours](https://fygs.dev/parcours) · [Blog](https://fygs.dev/blog) · [Contact](https://fygs.dev/contact)
 
 </div>
 
@@ -25,102 +21,57 @@
 
 ## Vue d'ensemble
 
-Plateforme fullstack combinant portfolio professionnel, cours interactifs et système de paiement. Architecture Next.js 15 App Router avec RSC, authentification Better Auth, base PostgreSQL et paiement Stripe.
+Plateforme full-stack : formations en ligne (LMS complet, gratuites et payantes, parcours, certificats), TechMastery
+(préparation technique interactive), blog, portfolio. Next.js App Router (React Server Components, Server Actions),
+authentification Better Auth, PostgreSQL via Prisma, paiements Stripe. L'espace applicatif est en français.
 
 ## Stack technique
 
 | Couche | Technologies |
 |--------|-------------|
-| **Framework** | Next.js 15.5.9 (App Router, Turbopack, RSC) |
-| **UI** | React 19.1.1, Tailwind CSS 4.1, shadcn/ui, Framer Motion 11.18 |
-| **Auth** | Better Auth 1.3.11 (Google, GitHub, Apple, credentials) |
-| **Base de données** | PostgreSQL + Prisma 6.18 |
-| **Cache** | Redis (ioredis 5.8.1) |
-| **Paiement** | Stripe 18.5 (abonnements, remboursements, portail) |
-| **State** | Zustand 5.0.3 (client), nuqs 2.4.1 (URL), RSC (serveur) |
-| **Forms** | React Hook Form 7.55 + Zod 3.24 |
-| **i18n** | Intlayer 7.0 + next-intlayer |
-| **Tests** | Vitest 2.1.9 + Testing Library |
-| **CI/CD** | GitHub Actions (lint → test → build → deploy) |
-| **Hosting** | Vercel (Edge Runtime) |
+| **Framework** | Next.js 16 (App Router, RSC, Server Actions, build webpack) |
+| **UI** | React 19, Tailwind CSS 4, shadcn/ui, Framer Motion, thèmes clair et sombre |
+| **Édition de contenu** | Tiptap 3 (texte riche), @dnd-kit (glisser-déposer) |
+| **Auth** | Better Auth (e-mail et mot de passe, Google, GitHub) |
+| **Base de données** | PostgreSQL + Prisma 7 (adapter pg), migrations versionnées |
+| **Paiement** | Stripe (achat à l'unité, abonnement mensuel ou annuel, remboursements, factures, portail) |
+| **Fichiers** | Stockage compatible S3 (vidéos, ressources, sous-titres, images) |
+| **Cache / limites** | Redis (ioredis), repli en mémoire |
+| **i18n** | Intlayer (pages publiques fr/en/es ; espace applicatif en français) |
+| **Tests** | Vitest (unitaires, intégration sur PostgreSQL jetable), Playwright (e2e), axe-core (accessibilité) |
+| **CI/CD** | GitHub Actions (lint, types, tests, intégration, migrations, build, CodeQL) |
 
-## Fonctionnalités principales
+## Formations (LMS)
 
-### Formations (LMS)
+### Pour les apprenants
+- **Catalogue** : recherche, catégorie, niveau, accès (gratuites / Premium), tri, pagination, prix exacts.
+- **Offres** : formation gratuite (inscription), formation Premium (achat à vie, ou incluse dans l'abonnement), accès offert par un administrateur. Une seule règle d'accès pour tous les écrans (`lib/access/entitlement.ts`).
+- **Aperçu gratuit** : leçons d'aperçu visibles sans compte.
+- **Espace d'apprentissage** (`/learn/[slug]`) : vidéo (fichier, YouTube ou Vimeo), sous-titres et transcription, texte de leçon, ressources téléchargeables, notes horodatées, questions au formateur, reprise à la seconde près, navigation libre avec étape suivante recommandée.
+- **Évaluations** : quiz par module (corrigés sur le serveur, meilleur score conservé), examen final avec limite de temps.
+- **Certificats** : délivrés à la fin de la formation ou du parcours, code de vérification public, PDF, partage LinkedIn.
+- **Parcours** (`/parcours`) : suites ordonnées de formations, formations facultatives, progression et certificat propres.
+- **Mon apprentissage** : formations en cours, terminées, parcours et certificats au même endroit.
+- **Avis** : notes et commentaires des inscrits, modérés.
 
-- **Catalogue** avec filtres catégorie/niveau et accès tiered (Free/Premium)
-- **Course Builder admin** : page unifiée à 6 onglets (Infos, Curriculum, Quiz, Supports, Preview, Paramètres)
-- **Drag & drop** pour réordonner modules et leçons (@dnd-kit)
-- **Auto-save** avec debounce et indicateur visuel
-- **Preview mode** : prévisualisation instructeur avant publication
-- **Inline CRUD** : création de modules/leçons sans quitter la page
-- **Progression séquentielle** avec tracking du temps de visionnage (Redis)
-- **Certificats auto-générés** (jsPDF) à 100% de complétion
-- **Quiz avancé** : 3 colonnes, preview, réorganisation
-
-### Paiement & Abonnement
-
-- Abonnements mensuels/annuels avec changement de plan
-- Période de remboursement 15 jours (calcul automatique)
-- Accès à vie aux cours achetés même après résiliation
-- Portail Stripe pour gestion autonome
-- Idempotency keys + rate limiting (10 actions/5min)
-
-### Design System
-
-- **Palette indigo** avec variantes light/dark (next-themes)
-- **Tokens CSS** : spacing scale, typography scale, motion tokens
-- **Composants marketing** : SectionHero, FeatureGrid, TestimonialCarousel, PricingTable, FAQ
-- **Tailwind CSS v4** avec `@theme`, `@utility`, `@layer`
-
-### Analytics & Monitoring
-
-- Event tracking PII-safe avec correlation IDs
-- Structured logging contextualisé
-- Métriques business : enrollment, completion, revenue
-- Vercel Analytics + Speed Insights
-
-## Architecture
-
-```
-src/
-├── app/
-│   ├── [locale]/(main)/       # Routes publiques (formations, blog, portfolio)
-│   ├── [locale]/(admin)/      # Back-office admin/instructeur
-│   ├── [locale]/(auth)/       # Authentification
-│   └── api/                   # Route handlers (webhooks Stripe, etc.)
-├── components/
-│   ├── ui/                    # shadcn/ui + custom atoms
-│   ├── marketing/             # SectionHero, FeatureGrid, FAQ, etc.
-│   └── providers/             # ThemeProvider, AuthProvider
-├── lib/
-│   ├── auth/                  # Config Better Auth
-│   ├── db/                    # Prisma client
-│   ├── validators/            # Schémas Zod
-│   └── utils/                 # Utilitaires partagés
-├── hooks/                     # Custom hooks (useAutoSave, etc.)
-├── stores/                    # Zustand stores
-└── tests/
-    └── unit/                  # 107 tests (10 fichiers)
-```
+### Pour les formateurs et administrateurs
+- **Builder unique** (`/admin/courses/[id]`) : infos, programme (modules et leçons, édition dans un panneau, sauvegarde automatique), évaluations, supports visuels, page de vente, aperçu et publication, statistiques, apprenants, paramètres.
+- **Publication contrôlée** : liste de contrôle appliquée par le serveur, protections sur une formation en ligne.
+- **Statistiques par formation** : inscrits, apprenants actifs, taux de complétion, scores moyens, abandon par étape.
+- **Apprenants** : progression de chacun, source de l'accès, accès offert ou retiré.
+- **Questions** (`/admin/questions`) : questions des apprenants sur les leçons, réponse en ligne.
+- **Parcours** (`/admin/paths`) : composition, ordre, publication.
 
 ## Démarrage rapide
 
 ```bash
-# Prérequis : Node.js 20+, pnpm, PostgreSQL, Redis
-
+# Prérequis : Node.js 22+, pnpm, PostgreSQL (Redis facultatif)
 git clone https://github.com/fygs/fygs.dev.git
 cd fygs.dev
-
 pnpm install
-
-# Configurer les variables d'environnement
-cp .env.example .env.local
-
-# Générer le client Prisma
-pnpm db:push
-
-# Lancer le serveur dev (Turbopack)
+cp .env.example .env.local      # variables : voir SETUP.md
+pnpm prisma migrate deploy      # crée les tables
+pnpm db:seed                    # données de démonstration (facultatif)
 pnpm dev
 ```
 
@@ -128,61 +79,53 @@ pnpm dev
 
 | Commande | Description |
 |----------|-------------|
-| `pnpm dev` | Dev server avec Turbopack |
-| `pnpm build` | Build production |
-| `pnpm test` | Tests unitaires (Vitest) |
-| `pnpm test:watch` | Tests en mode watch |
+| `pnpm dev` | Serveur de développement |
+| `pnpm build` / `pnpm start` | Build et serveur de production |
 | `pnpm lint` | ESLint |
-| `pnpm db:push` | Sync schema Prisma → DB |
-| `pnpm db:studio` | Prisma Studio (GUI) |
-| `pnpm db:seed` | Seed data |
+| `pnpm test` | Tests unitaires (Vitest) |
+| `pnpm test:integration` | Tests d'intégration sur un PostgreSQL jetable (embarqué, rien à installer) |
+| `pnpm db:check-migrations` | Vérifie que les migrations correspondent au schéma |
+| `pnpm test:e2e` / `pnpm test:e2e:build` | Tests de bout en bout (Playwright) sur un build de production et une base jetable seedée |
+| `pnpm db:seed` | Données de démonstration |
 
-## Tests
+Audits (sur un serveur lancé par `node scripts/e2e.mjs --serve`) : `scripts/audit/a11y-audit.mjs` (axe, WCAG 2.2 AA),
+`scripts/audit/smoke-crawl.mjs` (erreurs, exceptions, textes suspects), `scripts/audit/seed-routes.mjs` (routes des
+données seedées). Voir [docs/accessibility-audit-2026-10.md](docs/accessibility-audit-2026-10.md).
+
+## Architecture
 
 ```
-107 tests passing (10 fichiers) — Vitest 2.1.9
-
-├── analytics-events       (18 tests)
-├── structured-logger      (23 tests)
-├── design-tokens          (10 tests)
-├── curriculum-tab         (12 tests)
-├── theme-provider          (7 tests)
-├── use-auto-save           (7 tests)
-├── faq-section             (9 tests)
-├── pricing-table           (8 tests)
-├── feature-grid            (6 tests)
-└── section-hero            (7 tests)
+app/
+├── [locale]/(main)/          # Pages publiques et espace apprenant : formations, parcours, tableau de bord, certificats…
+├── [locale]/(learning)/learn # Espace d'apprentissage (leçons, quiz, examen, supports, bilan)
+├── [locale]/(admin)/admin    # Back-office (formations, parcours, questions, utilisateurs, paiements…)
+├── actions/                  # Server Actions de l'apprentissage
+└── api/                      # Route handlers (Stripe, uploads, certificats, progression, OG)
+components/                   # learning/, courses/, paths/, admin/, ui/ (shadcn)…
+lib/
+├── access/                   # Règle d'accès unique, offres, cartes du catalogue
+├── learning/                 # Plan de cours, progression, complétion, certificats, rendu sûr du contenu
+├── curriculum/               # Écritures du builder (garde de propriété, ordre, publication, statistiques)
+├── paths/                    # Parcours
+├── payments/                 # Stripe
+└── courses/                  # Libellés, anciennes adresses
+prisma/                       # Schéma, migrations, seed
+tests/                        # unit/, integration/, contract/, e2e/
 ```
-
-## CI/CD
-
-Pipeline GitHub Actions (`ci-cd.yml`) :
-
-1. **Lint & Typecheck** — ESLint + `tsc --noEmit`
-2. **Test** — Vitest avec Prisma generate
-3. **Build** — Production build + artifact cache
-4. **Security** — `pnpm audit` + CodeQL (PRs)
-
-## Performance
-
-| Métrique | Score |
-|----------|-------|
-| Lighthouse Performance | 100/100 |
-| Lighthouse Accessibility | 100/100 |
-| Lighthouse Best Practices | 100/100 |
-| Lighthouse SEO | 100/100 |
-| LCP | < 1.5s |
-| CLS | < 0.1 |
 
 ## Documentation
 
 | Fichier | Contenu |
 |---------|---------|
-| [AUDIT_FORMATIONS_ADMIN.md](AUDIT_FORMATIONS_ADMIN.md) | Audit complet + plan de modernisation (5 phases) |
-| [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) | Tokens, palette, typographie, composants |
-| [DEPLOYMENT.md](DEPLOYMENT.md) | Guide de déploiement |
+| [docs/FORMATIONS-TRACKER.md](docs/FORMATIONS-TRACKER.md) | Formations : analyse, décisions, suivi |
+| [docs/PLATFORM-COMPLETION-TRACKER.md](docs/PLATFORM-COMPLETION-TRACKER.md) | Plateforme : suivi de complétion |
+| [docs/TECH-MASTERY-TRACKER.md](docs/TECH-MASTERY-TRACKER.md) | TechMastery : suivi |
+| [docs/accessibility-audit-2026-10.md](docs/accessibility-audit-2026-10.md) | Audit d'accessibilité et méthode |
+| [docs/security-ops-2026-10.md](docs/security-ops-2026-10.md) | Sécurité et exploitation |
+| [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) | Tokens, palette, typographie |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | Déploiement |
 | [SETUP.md](SETUP.md) | Configuration détaillée |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Guide de contribution |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution |
 | [SECURITY.md](SECURITY.md) | Politique de sécurité |
 | [CHANGELOG.md](CHANGELOG.md) | Journal des modifications |
 

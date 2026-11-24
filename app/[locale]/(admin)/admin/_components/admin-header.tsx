@@ -1,8 +1,6 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
@@ -14,18 +12,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  Search,
   Bell,
-  Settings,
   User,
   LogOut,
-  Command,
   Zap,
   Shield,
 } from "lucide-react";
 import Link from "next/link";
 import { AdminQuickActions } from "./admin-quick-actions";
-import { Role } from "@prisma/client";
+import { Role } from "@/lib/generated/prisma/browser";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -38,11 +33,13 @@ interface AdminHeaderProps {
     image: string | null;
     role: string;
   };
+  /** What needs the administrator's attention, counted by the layout */
+  alerts?: Array<{ label: string; count: number; href: string }>;
 }
 
-export function AdminHeader({ user }: AdminHeaderProps) {
-  const [searchQuery, setSearchQuery] = useState("");
+export function AdminHeader({ user, alerts = [] }: AdminHeaderProps) {
   const router = useRouter();
+  const waiting = alerts.reduce((sum, alert) => sum + alert.count, 0);
 
   const handleLogout = async () => {
     try {
@@ -88,63 +85,37 @@ export function AdminHeader({ user }: AdminHeaderProps) {
 
   return (
     <header className="bg-slate-900 border-b border-slate-700 px-6 py-4">
-      <div className="flex items-center justify-between">
-        {/* Search */}
-        <div className="flex-1 max-w-md">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Rechercher dans l'admin..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-slate-800 border-0 focus:ring-2 focus:ring-primary/20"
-            />
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
-                <Command className="h-3 w-3" />K
-              </kbd>
-            </div>
-          </div>
-        </div>
-
+      <div className="flex items-center justify-end">
         {/* Actions */}
         <div className="flex items-center gap-4">
           {/* Quick Actions */}
           <AdminQuickActions userRole={user.role} />
 
-          {/* Notifications */}
+          {/* What is waiting for the administrator */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="relative">
-                <Bell className="h-4 w-4" />
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs">
-                  3
-                </Badge>
+              <Button variant="ghost" size="sm" className="relative" aria-label={waiting > 0 ? `${waiting} élément(s) à traiter` : "Rien à traiter"}>
+                <Bell className="h-4 w-4" aria-hidden="true" />
+                {waiting > 0 && <Badge className="absolute -top-1 -right-1 h-5 min-w-5 px-1 text-xs">{waiting}</Badge>}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-80">
-              <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+              <DropdownMenuLabel>À traiter</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <div className="space-y-2 p-2">
-                <div className="p-2 rounded-lg bg-blue-950/50 border border-blue-800">
-                  <p className="text-sm font-medium">Nouveau cours publié</p>
-                  <p className="text-xs text-muted-foreground">
-                    Next.js 15 Mastery est maintenant disponible
-                  </p>
-                </div>
-                <div className="p-2 rounded-lg bg-green-950/50 border border-green-800">
-                  <p className="text-sm font-medium">Paiement reçu</p>
-                  <p className="text-xs text-muted-foreground">
-                    129€ - IA & Applications Modernes
-                  </p>
-                </div>
-                <div className="p-2 rounded-lg bg-orange-950/50 border border-orange-800">
-                  <p className="text-sm font-medium">Message de support</p>
-                  <p className="text-xs text-muted-foreground">
-                    Question sur le cours TypeScript
-                  </p>
-                </div>
-              </div>
+              {waiting === 0 ? (
+                <p className="p-3 text-sm text-muted-foreground">Rien à traiter pour le moment.</p>
+              ) : (
+                alerts
+                  .filter((alert) => alert.count > 0)
+                  .map((alert) => (
+                    <DropdownMenuItem key={alert.label} asChild>
+                      <Link href={alert.href} className="flex items-center justify-between">
+                        <span>{alert.label}</span>
+                        <Badge variant="secondary">{alert.count}</Badge>
+                      </Link>
+                    </DropdownMenuItem>
+                  ))
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -187,13 +158,6 @@ export function AdminHeader({ user }: AdminHeaderProps) {
                   Profil
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/admin/settings">
-                  <Settings className="mr-2 h-4 w-4" />
-                  Paramètres
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link href="/dashboard">
                   <User className="mr-2 h-4 w-4" />

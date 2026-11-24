@@ -69,9 +69,9 @@ function Tabs({
   onChange: (tab: string) => void;
 }) {
   return (
-    <TabsContext.Provider value={{ activeTab, setActiveTab: onChange }}>
+    <TabsContext value={{ activeTab, setActiveTab: onChange }}>
       <div className="space-y-2">{children}</div>
-    </TabsContext.Provider>
+    </TabsContext>
   );
 }
 
@@ -164,9 +164,9 @@ function Tabs({ children, defaultTab }) {
   };
   
   return (
-    <TabsContext.Provider value={value}>
+    <TabsContext value={value}>
       <div className="tabs">{children}</div>
-    </TabsContext.Provider>
+    </TabsContext>
   );
 }
 
@@ -234,6 +234,8 @@ function App() {
 }
 
 // 8. Avec TypeScript, vous pouvez typer le contexte et les props
+// (version typée à utiliser À LA PLACE de la déclaration de l'étape 1 :
+// TabsContext ne doit être déclaré qu'une seule fois)
 interface TabsContextType {
   activeTab: string;
   setActiveTab: (tab: string) => void;
@@ -357,9 +359,9 @@ function Accordion({ children, type = 'single', defaultValue, onChange }) {
   };
 
   return (
-    <AccordionContext.Provider value={{ expandedItems, toggleItem, type }}>
+    <AccordionContext value={{ expandedItems, toggleItem, type }}>
       <div className="accordion">{children}</div>
-    </AccordionContext.Provider>
+    </AccordionContext>
   );
 }
 
@@ -369,9 +371,9 @@ function AccordionItem({ children, value }) {
   const isExpanded = expandedItems.includes(value);
 
   return (
-    <AccordionItemContext.Provider value={{ value, isExpanded }}>
+    <AccordionItemContext value={{ value, isExpanded }}>
       <div className="accordion-item">{children}</div>
-    </AccordionItemContext.Provider>
+    </AccordionItemContext>
   );
 }
 
@@ -477,7 +479,7 @@ function App() {
                 <strong>Accessibilité</strong>: L&apos;implémentation inclut des attributs ARIA comme <code>aria-expanded</code> pour l&apos;accessibilité.
               </li>
               <li>
-                <strong>API contrôlée</strong>: L&apos;Accordion peut être contrôlé via <code>defaultValue</code> et <code>onChange</code>, permettant à l&apos;utilisateur de gérer l&apos;état s&apos;il le souhaite.
+                <strong>API non contrôlée avec notification</strong>: l&apos;Accordion gère son état en interne à partir de <code>defaultValue</code> et notifie l&apos;utilisateur des changements via <code>onChange</code> (pour un mode réellement contrôlé, il faudrait ajouter une prop <code>value</code>).
               </li>
             </ol>
             <p className="mt-3">
@@ -537,9 +539,9 @@ function App() {
           },
           {
             question: "Comment tester un composant qui utilise le pattern Compound Components?",
-            answer: "Pour tester efficacement un composant utilisant le pattern Compound Components: 1) Tests d'intégration: Testez le composant complet avec tous ses sous-composants pour vérifier leur interaction. Utilisez React Testing Library pour tester le comportement plutôt que l'implémentation. 2) Tests de sous-composants: Testez chaque sous-composant individuellement en mockant le contexte: `const mockContext = { value: 'test', onChange: jest.fn() }; <MyContext.Provider value={mockContext}><Component /></MyContext.Provider>`. 3) Tests d'accessibilité: Vérifiez que les attributs ARIA sont correctement appliqués et que le composant est utilisable au clavier. 4) Tests de snapshot: Capturez l'état du composant dans différentes configurations. 5) Tests de comportement: Vérifiez que le composant réagit correctement aux interactions utilisateur (clics, saisies, etc.). 6) Tests de cas limites: Testez des scénarios comme des données manquantes ou des utilisations incorrectes. 7) Tests de performance: Pour les composants complexes, vérifiez qu'ils ne causent pas de rendus inutiles. 8) Helpers de test: Créez des fonctions utilitaires pour simplifier la configuration des tests.",
+            answer: "Pour tester efficacement un composant utilisant le pattern Compound Components: 1) Tests d'intégration: Testez le composant complet avec tous ses sous-composants pour vérifier leur interaction. Utilisez React Testing Library pour tester le comportement plutôt que l'implémentation. 2) Tests de sous-composants: Testez chaque sous-composant individuellement en mockant le contexte: `const mockContext = { value: 'test', onChange: vi.fn() }; <MyContext value={mockContext}><Component /></MyContext>`. 3) Tests d'accessibilité: Vérifiez que les attributs ARIA sont correctement appliqués et que le composant est utilisable au clavier. 4) Tests de snapshot: Capturez l'état du composant dans différentes configurations. 5) Tests de comportement: Vérifiez que le composant réagit correctement aux interactions utilisateur (clics, saisies, etc.). 6) Tests de cas limites: Testez des scénarios comme des données manquantes ou des utilisations incorrectes. 7) Tests de performance: Pour les composants complexes, vérifiez qu'ils ne causent pas de rendus inutiles. 8) Helpers de test: Créez des fonctions utilitaires pour simplifier la configuration des tests.",
             difficulty: "medium",
-            tags: ["Testing", "React Testing Library", "Jest"]
+            tags: ["Testing", "React Testing Library", "Vitest"]
           }
         ]}
       />

@@ -80,6 +80,8 @@ export const TimelineItem = ({
               <TooltipTrigger asChild>
                 <button
                   onClick={() => setShowContext(!showContext)}
+                  aria-label={showContext ? "Hide context" : "Show context"}
+                  aria-expanded={showContext}
                   className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110"
                 >
                   <Info className="h-4 w-4" />

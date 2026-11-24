@@ -37,7 +37,7 @@ export default function ContactPage() {
                 <Card key={info.title.value} className="p-6 space-y-2">
                   <div className="flex items-center gap-2">
                     <Icon className="h-5 w-5 text-primary" />
-                    <h3 className="font-semibold">{info.title.value}</h3>
+                    <h2 className="font-semibold">{info.title.value}</h2>
                   </div>
                   <p className="text-muted-foreground">
                     {info.description.value}

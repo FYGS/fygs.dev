@@ -6,6 +6,33 @@
 
 import { vi } from "vitest";
 
+/**
+ * The session served by the mocked `@/lib/auth` (null = signed out).
+ *
+ * `vi.doMock` only affects modules imported AFTER the call, so it cannot change
+ * a server action that the test file imported statically. Tests that import the
+ * code under test at the top declare the mock once, at module level:
+ *
+ *   vi.mock("@/lib/auth", async () => (await import("../../utils/auth-mock")).authModuleMock());
+ *
+ * and then switch users with `mockAuthenticatedUser(id, email)` / `mockUnauthenticatedUser()`
+ * (or `AuthMock.clearMocks()`), which update this holder.
+ */
+type MockSession = {
+  user: { id: string; email: string; name: string; emailVerified: boolean };
+  session: { id: string; userId: string; expiresAt: Date; token: string };
+};
+const state: { session: MockSession | null } = { session: null };
+
+/** Factory for `vi.mock("@/lib/auth", ...)`: serves the current mocked session. */
+export function authModuleMock() {
+  return {
+    auth: { api: { getSession: vi.fn(async () => state.session) } },
+    signIn: vi.fn(),
+    signOut: vi.fn(),
+  };
+}
+
 export class AuthMock {
   /**
    * Mock a user session for tests
@@ -25,6 +52,8 @@ export class AuthMock {
         token: `token-${userId}`,
       },
     };
+
+    state.session = mockSession;
 
     // Mock the auth module with the proper Better Auth API structure
     vi.doMock("@/lib/auth", () => ({
@@ -68,6 +97,7 @@ export class AuthMock {
    * Mock no authentication (unauthenticated user)
    */
   static mockNoAuth() {
+    state.session = null;
     vi.doMock("@/lib/auth", () => ({
       auth: {
         api: {
@@ -99,6 +129,7 @@ export class AuthMock {
    * Clear all auth mocks
    */
   static clearMocks() {
+    state.session = null;
     vi.doUnmock("@/lib/auth");
     vi.doUnmock("@/lib/auth-service");
     vi.doUnmock("next/headers");

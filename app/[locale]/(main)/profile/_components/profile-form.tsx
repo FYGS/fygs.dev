@@ -8,10 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import Link from "next/link";
 
 const profileSchema = z.object({
-  name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  email: z.string().email("Email invalide"),
+  name: z
+    .string()
+    .trim()
+    .min(2, "Le nom doit contenir au moins 2 caractères")
+    .max(100, "Le nom doit contenir au plus 100 caractères"),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
@@ -37,7 +41,6 @@ export function ProfileForm({ user }: ProfileFormProps) {
     resolver: zodResolver(profileSchema),
     defaultValues: {
       name: user.name || "",
-      email: user.email,
     },
   });
 
@@ -47,7 +50,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
       const response = await fetch("/api/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        // Only the name: the address changes through the confirmed flow of the security page
+        body: JSON.stringify({ name: data.name }),
       });
 
       if (!response.ok) {
@@ -55,9 +59,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
         throw new Error(errorData.error || "Failed to update profile");
       }
 
-      toast.success("Profil mis à jour avec succès !", {
-        description: "Vous pouvez maintenant vous connecter.",
-      });
+      toast.success("Profil mis à jour avec succès !");
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Une erreur s'est produite";
       toast.error("Une erreur s'est produite", {
@@ -90,17 +92,18 @@ export function ProfileForm({ user }: ProfileFormProps) {
         <Input
           id="email"
           type="email"
-          placeholder="votre@email.com"
-          {...register("email")}
-          disabled={true} // Email changes require verification
+          value={user.email}
+          readOnly
+          aria-describedby="email-help"
           className="bg-muted"
         />
-        <p className="text-xs text-muted-foreground">
-          Pour changer votre email, contactez le support.
+        <p id="email-help" className="text-xs text-muted-foreground">
+          Le changement d&apos;adresse est confirmé par e-mail :{" "}
+          <Link href="/profile/security#email" className="font-medium underline">
+            modifier mon adresse
+          </Link>
+          .
         </p>
-        {errors.email && (
-          <p className="text-sm text-destructive">{errors.email.message}</p>
-        )}
       </div>
 
       {errors.root && (

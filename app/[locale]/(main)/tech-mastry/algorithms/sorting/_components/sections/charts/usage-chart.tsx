@@ -178,7 +178,7 @@ const sortingAlgorithmsUsage: UsageData[] = [
         name: "Tableaux presque triés",
         description: "Tableaux où peu d'éléments sont mal placés",
         suitability: "poor",
-        reason: "Peut dégénérer en O(n²) pour des tableaux presque triés",
+        reason: "Peut dégénérer en O(n²) pour des tableaux presque triés si le pivot est le premier ou le dernier élément (un pivot aléatoire ou la médiane de trois évite ce cas)",
       },
       {
         name: "Grands tableaux",
@@ -190,7 +190,7 @@ const sortingAlgorithmsUsage: UsageData[] = [
         name: "Environnements contraints",
         description: "Systèmes avec peu de mémoire disponible",
         suitability: "good",
-        reason: "Utilise O(log n) mémoire pour la pile d'appels",
+        reason: "Pile d'appels en O(log n) en moyenne (bornée à O(log n) en récursant sur la plus petite partition)",
       },
       {
         name: "Tri multi-critères",

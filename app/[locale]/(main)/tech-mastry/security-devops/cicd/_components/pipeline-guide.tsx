@@ -60,12 +60,20 @@ on:
   pull_request:
     branches: [main]
 
+# Moindre privilège : GITHUB_TOKEN en lecture seule par défaut
+permissions:
+  contents: read
+
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v2
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint`,
   },
@@ -77,11 +85,12 @@ jobs:
     needs: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:unit
       - run: pnpm test:e2e
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: test-results
@@ -95,12 +104,14 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        # Épinglez une version (ou un SHA de commit), jamais @master
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: 'fs'
-          severity: 'HIGH,CRITICAL'`,
+          severity: 'HIGH,CRITICAL'
+          exit-code: '1' # sans cela, le job n'échoue pas sur une vulnérabilité`,
   },
   build: {
     description:
@@ -109,10 +120,18 @@ jobs:
     code: `  build:
     needs: security
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/build-push-action@v5
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: $\{{ github.actor }}
+          password: $\{{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v7
         with:
           push: true
           tags: ghcr.io/org/app:$\{{ github.sha }}
@@ -130,7 +149,7 @@ jobs:
     steps:
       - name: Deploy to staging
         run: |
-          kubectl set image deployment/app \
+          kubectl set image deployment/app \\
             app=ghcr.io/org/app:$\{{ github.sha }}
       - name: Run smoke tests
         run: pnpm test:smoke --url $STAGING_URL
@@ -185,7 +204,7 @@ export function PipelineGuide() {
             </Badge>
           ))}
         </div>
-        <pre className="bg-muted/50 rounded-lg p-4 overflow-x-auto text-sm">
+        <pre className="bg-muted/50 rounded-lg p-4 overflow-x-auto text-sm" tabIndex={0}>
           <code>{detail.code}</code>
         </pre>
       </Card>

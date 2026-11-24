@@ -1,0 +1,55 @@
+# Dependabot: weekly version updates, grouped so that a week gives a few reviewable pull requests instead of dozens, and
+# security updates (opened immediately, whatever the schedule) once "Dependabot security updates" is enabled in the
+# repository settings. GitHub Actions are updated too: the third-party ones are referenced by tag (see the pin-exception
+# comments in .github/workflows), and this is what keeps those tags current.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Paris
+    open-pull-requests-limit: 10
+    labels: [dependencies]
+    # A release younger than 3 days is not proposed (security updates ignore the cooldown)
+    cooldown:
+      default-days: 3
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+      react:
+        patterns: ["react", "react-dom", "@types/react", "@types/react-dom"]
+        update-types: [major]
+      next:
+        patterns: ["next", "eslint-config-next", "@next/*"]
+    commit-message:
+      prefix: "chore(deps)"
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Paris
+    open-pull-requests-limit: 5
+    labels: [dependencies, ci]
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "ci"
+
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Paris
+    open-pull-requests-limit: 3
+    labels: [dependencies]
+    commit-message:
+      prefix: "chore(docker)"

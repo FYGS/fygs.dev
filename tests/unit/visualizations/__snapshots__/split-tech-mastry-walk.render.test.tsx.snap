@@ -1,0 +1,293 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`tech-mastry components split into smaller files > aria-section renders the same markup in every state reachable by clicking 1`] = `
+[
+  "215bab74",
+  "215bab74",
+  "215bab74",
+  "215bab74",
+  "4a147a7a",
+  "c93d8fe6",
+  "7cfacd18",
+  "22d19079",
+  "22d19079",
+  "22d19079",
+  "22d19079",
+  "a814f66d",
+  "e1b42ed1",
+  "97f67e50",
+  "215bab74",
+  "3270b20a",
+  "fc5be9e8",
+  "b0bdc026",
+  "aecbebf4",
+  "eb6827e9",
+  "d15970be",
+  "27da3e5e",
+  "46855829",
+]
+`;
+
+exports[`tech-mastry components split into smaller files > arrays-page renders the same markup in every state reachable by clicking 1`] = `
+[
+  "b2628115",
+  "e8f350e3",
+  "0fa78e6d",
+  "d349127f",
+  "799a6326",
+  "655f128a",
+  "e4182a6d",
+  "2848e8eb",
+  "2848e8eb",
+  "6f12bd2a",
+  "67bcb2ee",
+  "3179fee9",
+  "3179fee9",
+  "3179fee9",
+  "3179fee9",
+  "3179fee9",
+  "3179fee9",
+  "3179fee9",
+  "304318ed",
+  "3179fee9",
+  "3179fee9",
+]
+`;
+
+exports[`tech-mastry components split into smaller files > binary-search-3d renders the same markup in every state reachable by clicking 1`] = `
+[
+  "55b084ec",
+  "55b084ec",
+  "495a2d83",
+  "40bf286b",
+  "495a2d83",
+  "a1826e8f",
+  "a1826e8f",
+  "ff946a05",
+  "0f40ee51",
+  "e0c2c98c",
+  "7859cd18",
+]
+`;
+
+exports[`tech-mastry components split into smaller files > dp-real-world renders the same markup in every state reachable by clicking 1`] = `
+[
+  "3a74d25e",
+  "5f4f6a98",
+  "2917d57a",
+  "14f11e13",
+  "60cda750",
+  "28063c60",
+  "1afe67a7",
+  "a3452b33",
+  "1dcb4c37",
+  "b93fd3fd",
+  "1ee23eea",
+  "30b66b9b",
+  "3a74d25e",
+  "ed97b2e1",
+  "238b8b86",
+  "987acdc6",
+]
+`;
+
+exports[`tech-mastry components split into smaller files > dynamic-programming-guide renders the same markup in every state reachable by clicking 1`] = `
+[
+  "d31a4ae5",
+  "6f36160e",
+  "e4d4d74d",
+  "26120d80",
+  "ced68e63",
+  "5e88b551",
+  "c8dfc5dc",
+]
+`;
+
+exports[`tech-mastry components split into smaller files > filesystem-case renders the same markup in every state reachable by clicking 1`] = `
+[
+  "3fe134b4",
+  "3fe134b4",
+  "3fe134b4",
+  "161fb8e6",
+  "388ae648",
+  "9a11905c",
+]
+`;
+
+exports[`tech-mastry components split into smaller files > graph-database-aggregation renders the same markup in every state reachable by clicking 1`] = `
+[
+  "ff9aaa01",
+]
+`;
+
+exports[`tech-mastry components split into smaller files > graph-database-complex renders the same markup in every state reachable by clicking 1`] = `
+[
+  "2d9a5ce6",
+]
+`;
+
+exports[`tech-mastry components split into smaller files > graph-database-simple renders the same markup in every state reachable by clicking 1`] = `
+[
+  "e79ab5b0",
+]
+`;
+
+exports[`tech-mastry components split into smaller files > graph-database-update renders the same markup in every state reachable by clicking 1`] = `
+[
+  "58f9fc8b",
+]
+`;
+
+exports[`tech-mastry components split into smaller files > machine-learning-page renders the same markup in every state reachable by clicking 1`] = `
+[
+  "9b4c109b",
+  "9b4c109b",
+  "1c1864d1",
+  "f7f280d9",
+  "9b4c109b",
+  "1c1864d1",
+  "f7f280d9",
+]
+`;
+
+exports[`tech-mastry components split into smaller files > memoization-section renders the same markup in every state reachable by clicking 1`] = `
+[
+  "f988a71b",
+  "f988a71b",
+  "f988a71b",
+  "f988a71b",
+  "961ff768",
+  "3d33f646",
+  "e6e8a4a6",
+  "6a41fef7",
+  "6a41fef7",
+  "6a41fef7",
+  "6a41fef7",
+  "709bb374",
+  "faafbf5c",
+  "7fbd0a54",
+  "f988a71b",
+  "73a4c6e5",
+  "76a1582e",
+  "bb87a96e",
+  "026b7b6f",
+  "a19932dc",
+  "0ba67c5b",
+  "9a6b6981",
+  "2fb3c8c0",
+  "a4762bae",
+  "097c3ffa",
+  "568e66f0",
+  "012f61da",
+]
+`;
+
+exports[`tech-mastry components split into smaller files > practice-exercises renders the same markup in every state reachable by clicking 1`] = `
+[
+  "094441dc",
+  "06f91506",
+  "39ad81b3",
+  "b18fb1cd",
+  "30a9ab12",
+  "0aa71d95",
+  "95b8c748",
+  "c994230e",
+  "12e0038e",
+  "1f2f70bd",
+  "0aa71d95",
+  "76865a10",
+  "672ca527",
+]
+`;
+
+exports[`tech-mastry components split into smaller files > searching-algorithms-overview renders the same markup in every state reachable by clicking 1`] = `
+[
+  "d7bfe920",
+  "d7bfe920",
+  "6b8be066",
+  "d7bfe920",
+  "d7bfe920",
+  "6b8be066",
+  "d7bfe920",
+  "6887e84a",
+  "cd7f76a4",
+  "f0603c2b",
+  "4e3c56a4",
+  "07ed89c0",
+  "5382c697",
+]
+`;
+
+exports[`tech-mastry components split into smaller files > server-case renders the same markup in every state reachable by clicking 1`] = `
+[
+  "a24700d5",
+  "a24700d5",
+  "a24700d5",
+  "cf442b76",
+  "4f21cc42",
+  "d23cc7a0",
+]
+`;
+
+exports[`tech-mastry components split into smaller files > service-mesh-explanation-app-mesh renders the same markup in every state reachable by clicking 1`] = `
+[
+  "bd4c0ae2",
+]
+`;
+
+exports[`tech-mastry components split into smaller files > service-mesh-explanation-consul renders the same markup in every state reachable by clicking 1`] = `
+[
+  "18be97d0",
+]
+`;
+
+exports[`tech-mastry components split into smaller files > service-mesh-explanation-istio renders the same markup in every state reachable by clicking 1`] = `
+[
+  "5702e1c5",
+]
+`;
+
+exports[`tech-mastry components split into smaller files > service-mesh-explanation-linkerd renders the same markup in every state reachable by clicking 1`] = `
+[
+  "27df6924",
+]
+`;
+
+exports[`tech-mastry components split into smaller files > sorting-algorithms-overview renders the same markup in every state reachable by clicking 1`] = `
+[
+  "a67bca07",
+  "a67bca07",
+  "6fa9be35",
+  "5f0058c5",
+  "14dfe3dd",
+  "afb36e14",
+  "6ee74088",
+  "16dd1159",
+  "1036a418",
+  "6fa9be35",
+  "5f0058c5",
+  "14dfe3dd",
+  "afb36e14",
+  "6ee74088",
+  "16dd1159",
+]
+`;
+
+exports[`tech-mastry components split into smaller files > sorting-quizzes renders the same markup in every state reachable by clicking 1`] = `
+[
+  "3dd50569",
+  "0cecab2d",
+  "75aa53cd",
+  "af015e1e",
+  "8ee85475",
+  "3b127b2c",
+  "3b127b2c",
+  "3b127b2c",
+  "3b127b2c",
+  "3b127b2c",
+  "320ef97b",
+  "634cf149",
+  "0a80a5bf",
+  "f75f57a8",
+]
+`;

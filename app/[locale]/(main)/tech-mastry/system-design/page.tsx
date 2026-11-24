@@ -1,11 +1,14 @@
 import { DesignTopics } from "./_components/design-topics";
 import { SystemDesignHero } from "./_components/hero";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
+
+export const metadata = topicMetadata("/tech-mastry/system-design");
 
 export default function SystemDesignPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <SystemDesignHero />
       <DesignTopics />
-    </main>
+    </div>
   );
 }

@@ -44,7 +44,7 @@ export async function GET() {
                 margin: "0 0 32px 0",
               }}
             >
-              Modern Web Development Courses
+              Formations au développement web moderne
             </div>
 
             <div
@@ -55,7 +55,7 @@ export async function GET() {
                 justifyContent: "center",
               }}
             >
-              {["JavaScript", "TypeScript", "React", "Next.js", "Node.js", "Cloud", "AI"].map((tech) => (
+              {["JavaScript", "TypeScript", "React", "Next.js", "Node.js", "Cloud", "IA"].map((tech) => (
                 <div
                   key={tech}
                   style={{
@@ -94,7 +94,7 @@ export async function GET() {
                 borderRadius: "50%",
               }}
             />
-            Learn with a recognized expert
+            Apprenez avec un expert reconnu
           </div>
         </div>
       ),
@@ -105,7 +105,7 @@ export async function GET() {
     );
   } catch (error: unknown) {
     const errorMessage =
-      error instanceof Error ? error.message : "An unknown error occurred";
+      error instanceof Error ? error.message : "Erreur inconnue";
     console.error(`Error generating image: ${errorMessage}`);
     return new Response(`Failed to generate image: ${errorMessage}`, {
       status: 500,

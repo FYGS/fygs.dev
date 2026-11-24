@@ -146,7 +146,7 @@ const challenges: Challenge[] = [
   return maxSum;
 }`,
       complexity: "O(n²) temps, O(1) espace",
-      explanation: "Vérifier toutes les sous-tableaux possibles. On peut faire mieux avec l'algorithme de Kadane.",
+      explanation: "Vérifier tous les sous-tableaux possibles. On peut faire mieux avec l'algorithme de Kadane.",
     },
     optimal: {
       code: `function maxSubArray(nums) {
@@ -189,21 +189,21 @@ const challenges: Challenge[] = [
       code: `function merge(intervals) {
   if (intervals.length <= 1) return intervals;
   
-  // Trier par début
-  intervals.sort((a, b) => a[0] - b[0]);
+  // Trier une copie par début (sans modifier l'entrée)
+  const sorted = [...intervals].sort((a, b) => a[0] - b[0]);
   
-  const result = [intervals[0]];
+  const result = [[...sorted[0]]];
   
-  for (let i = 1; i < intervals.length; i++) {
+  for (let i = 1; i < sorted.length; i++) {
     const last = result[result.length - 1];
-    const current = intervals[i];
+    const current = sorted[i];
     
     if (current[0] <= last[1]) {
       // Chevauchement → fusionner
       last[1] = Math.max(last[1], current[1]);
     } else {
       // Pas de chevauchement → ajouter
-      result.push(current);
+      result.push([...current]);
     }
   }
   
@@ -258,8 +258,8 @@ export function ChallengeSolutions() {
           <div className="space-y-3">
             {ch.examples.map((ex, i) => (
               <div key={i} className="p-3 bg-muted rounded-lg text-sm space-y-1">
-                <div><strong>Input:</strong> <code>{ex.input}</code></div>
-                <div><strong>Output:</strong> <code>{ex.output}</code></div>
+                <div><strong>Entrée :</strong> <code>{ex.input}</code></div>
+                <div><strong>Sortie :</strong> <code>{ex.output}</code></div>
                 {ex.explanation && <div className="text-muted-foreground">{ex.explanation}</div>}
               </div>
             ))}
@@ -304,7 +304,7 @@ export function ChallengeSolutions() {
           {showBrute && (
             <div className="mt-4 space-y-3">
               <p className="text-sm text-muted-foreground">{ch.bruteForce.explanation}</p>
-              <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+              <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
                 <code>{ch.bruteForce.code}</code>
               </pre>
             </div>
@@ -322,7 +322,7 @@ export function ChallengeSolutions() {
           {showOptimal && (
             <div className="mt-4 space-y-3">
               <p className="text-sm text-muted-foreground">{ch.optimal.explanation}</p>
-              <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+              <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
                 <code>{ch.optimal.code}</code>
               </pre>
               <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">

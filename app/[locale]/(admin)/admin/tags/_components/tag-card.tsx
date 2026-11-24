@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { readableTextColor } from "@/lib/color-contrast";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -48,9 +49,11 @@ interface TagCardProps {
       published: boolean;
     }>;
   };
+  /** Renaming and deleting a tag change every course that uses it: administrators only. */
+  canManage: boolean;
 }
 
-export function TagCard({ tag }: TagCardProps) {
+export function TagCard({ tag, canManage }: TagCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -126,10 +129,11 @@ export function TagCard({ tag }: TagCardProps) {
             />
             <CardTitle className="text-lg">{tag.name}</CardTitle>
           </div>
-          
+
+          {canManage && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" aria-label={`Actions pour ${tag.name}`}>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -163,6 +167,8 @@ export function TagCard({ tag }: TagCardProps) {
               />
             </DropdownMenuContent>
           </DropdownMenu>
+          )}
+          
         </div>
       </CardHeader>
 
@@ -221,7 +227,7 @@ export function TagCard({ tag }: TagCardProps) {
             variant={tag.courseCount > 0 ? "default" : "secondary"}
             style={{ 
               backgroundColor: tag.courseCount > 0 ? tag.color : undefined,
-              color: tag.courseCount > 0 ? "white" : undefined 
+              color: tag.courseCount > 0 ? readableTextColor(tag.color) : undefined 
             }}
           >
             {tag.courseCount > 0 ? "En usage" : "Inutilisé"}
@@ -276,6 +282,7 @@ export function TagCard({ tag }: TagCardProps) {
       </Dialog>
       
       {/* Hidden color input for quick color change */}
+      {canManage && (
       <input
         id={`color-${tag.id}`}
         type="color"
@@ -294,6 +301,7 @@ export function TagCard({ tag }: TagCardProps) {
         }}
         className="hidden"
       />
+      )}
     </Card>
   );
 }

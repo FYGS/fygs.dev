@@ -1,12 +1,8 @@
-import { Metadata } from "next";
 import { Card } from "@/components/ui/card";
 import { Cloud } from "lucide-react";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Cloud Native | TechMastry",
-  description:
-    "Architecture 12-Factor, Serverless et bonnes pratiques Cloud Native",
-};
+export const metadata = topicMetadata("/tech-mastry/security-devops/cloud-native");
 
 const twelveFactor = [
   {
@@ -32,7 +28,7 @@ const twelveFactor = [
   {
     num: "V",
     name: "Build, Release, Run",
-    desc: "Séparez strictement les étapes de build et d'exécution.",
+    desc: "Séparez strictement les étapes de build, de release et d'exécution (run).",
   },
   {
     num: "VI",
@@ -73,7 +69,7 @@ const twelveFactor = [
 
 export default function CloudNativePage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <section className="text-center space-y-6">
         <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-purple-500/10 text-purple-500">
           <Cloud className="w-8 h-8" />
@@ -132,6 +128,6 @@ export default function CloudNativePage() {
           </Card>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

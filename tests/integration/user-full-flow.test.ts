@@ -1,10 +1,11 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { db } from "@/lib/db";
-import { enrollCourse } from "@/app/(main)/dashboard/actions/enrollCourse";
-import { updateLessonProgress } from "@/app/(main)/dashboard/actions/updateLessonProgress";
-import { cancelSubscription } from "@/app/(main)/dashboard/actions/cancelSubscription";
-import { issueCertificate } from "@/app/(main)/dashboard/actions/issueCertificate";
+import { enrollCourse } from "@/app/[locale]/(main)/dashboard/actions/enrollCourse";
+import { updateLessonProgress } from "../support/progress-helpers";
+import { cancelSubscription } from "@/app/[locale]/(main)/dashboard/actions/cancelSubscription";
+import { issueCertificate } from "../support/certificate-helpers";
 import { AccessService } from "@/lib/access-service";
+import { getEntitlement } from "@/lib/access/entitlement";
 import { auth } from "@/lib/auth";
 
 // Mock auth for testing
@@ -25,18 +26,30 @@ vi.mock("next/headers", () => ({
   headers: vi.fn(() => Promise.resolve(new Headers())),
 }));
 
+// Stripe is the only thing replaced: subscription, audit and analytics rows are real
+vi.mock("@/lib/payment-service", () => ({
+  paymentService: {
+    cancelImmediately: vi.fn(async () => true),
+    cancelSubscription: vi.fn(async () => true),
+  },
+}));
+
 describe("User Full Flow Integration Tests", () => {
   let testUserId: string;
   let freeCourseId: string;
   let premiumCourseId: string;
   let lifetimeCourseId: string;
   let subscriptionId: string;
+  let testEmail: string;
 
   beforeEach(async () => {
+    // unique per test: no collision with leftovers of another test or file
+    const suffix = Math.random().toString(36).slice(2, 10);
+    testEmail = `fullflow-test-${suffix}@example.com`;
     // Create test user
     const user = await db.user.create({
       data: {
-        email: "fullflow-test@example.com",
+        email: testEmail,
         name: "Full Flow Test User",
         emailVerified: true,
       },
@@ -48,7 +61,7 @@ describe("User Full Flow Integration Tests", () => {
       db.course.create({
         data: {
           title: "Free Test Course",
-          slug: "free-test-course",
+          slug: `free-test-course-${suffix}`,
           description: "Free course for testing",
           category: "JAVASCRIPT",
           level: "BEGINNER",
@@ -59,7 +72,7 @@ describe("User Full Flow Integration Tests", () => {
       db.course.create({
         data: {
           title: "Premium Test Course",
-          slug: "premium-test-course",
+          slug: `premium-test-course-${suffix}`,
           description: "Premium course for testing",
           category: "TYPESCRIPT",
           level: "INTERMEDIATE",
@@ -70,7 +83,7 @@ describe("User Full Flow Integration Tests", () => {
       db.course.create({
         data: {
           title: "Lifetime Purchase Course",
-          slug: "lifetime-test-course",
+          slug: `lifetime-test-course-${suffix}`,
           description: "Course purchased for lifetime",
           category: "FULLSTACK",
           level: "ADVANCED",
@@ -147,8 +160,8 @@ describe("User Full Flow Integration Tests", () => {
 
     // Mock the auth user ID to match our test user
     vi.mocked(auth.api.getSession).mockResolvedValue({
-      user: { id: testUserId, email: "fullflow-test@example.com" },
-    });
+      user: { id: testUserId, email: testEmail },
+    } as never);
   });
 
   afterEach(async () => {
@@ -224,17 +237,18 @@ describe("User Full Flow Integration Tests", () => {
     expect(premiumAccessResult.canAccessCourse).toBe(true);
 
     // Step 4: Purchase lifetime course
-    const lifetimePayment = await db.payment.create({
+    await db.payment.create({
       data: {
         userId: testUserId,
-        amount: 29900, // $299
-        currency: "EUR",
+        courseId: lifetimeCourseId,
+        kind: "COURSE",
+        amount: 299, // EUR
+        currency: "eur",
         status: "COMPLETED",
-        description: `Course:${lifetimeCourseId} - Lifetime Access`,
+        description: "Lifetime Access",
         stripePaymentIntentId: "pi_test_lifetime",
       },
     });
-    paymentId = lifetimePayment.id;
 
     // Enroll in lifetime course
     const lifetimeEnrollResult = await enrollCourse({
@@ -271,9 +285,9 @@ describe("User Full Flow Integration Tests", () => {
     expect(certificateResult.success).toBe(true);
     expect(certificateResult.certificate).toBeDefined();
 
-    // Step 6: Cancel subscription (within refund window)
+    // Step 6: Cancel subscription immediately (within the refund window)
     const cancelResult = await cancelSubscription({
-      immediate: false,
+      immediate: true,
       reason: "Testing refund eligibility",
     });
     expect(cancelResult.success).toBe(true);
@@ -283,7 +297,7 @@ describe("User Full Flow Integration Tests", () => {
     const updatedSubscription = await db.subscription.findUnique({
       where: { id: subscriptionId },
     });
-    expect(updatedSubscription?.cancelAtPeriodEnd).toBe(true);
+    expect(updatedSubscription?.status).toBe("CANCELED");
 
     // Step 7: Verify access states after cancellation
     // Free course: should still have access (enrolled)
@@ -293,23 +307,24 @@ describe("User Full Flow Integration Tests", () => {
     );
     expect(freeAccessAfterCancelResult.canAccessCourse).toBe(true);
 
-    // Premium course: should lose access after period end (simulate)
-    await db.subscription.update({
-      where: { id: subscriptionId },
-      data: {
-        status: "CANCELED",
-        currentPeriodEnd: new Date(Date.now() - 1000), // Past date
-      },
+    // Premium course: the entitlement is gone (FR-005), the enrolment stays and says why
+    expect(await getEntitlement(testUserId, premiumCourseId)).toMatchObject({
+      entitled: false,
+      lapsed: "subscription_ended",
     });
-
     const premiumAccessAfterCancelResult =
       await AccessService.checkCourseAccess(testUserId, premiumCourseId);
-    expect(premiumAccessAfterCancelResult.canAccessCourse).toBe(false);
+    expect(premiumAccessAfterCancelResult.isEnrolledInCourse).toBe(true);
+    expect(premiumAccessAfterCancelResult.hasActiveSubscription).toBe(false);
 
     // Lifetime course: should retain access (lifetime purchase)
     const lifetimeAccessAfterCancelResult =
       await AccessService.checkCourseAccess(testUserId, lifetimeCourseId);
     expect(lifetimeAccessAfterCancelResult.canAccessCourse).toBe(true);
+    expect(await getEntitlement(testUserId, lifetimeCourseId)).toMatchObject({ entitled: true, source: "purchase" });
+
+    // Free course: still open
+    expect(await getEntitlement(testUserId, freeCourseId)).toMatchObject({ entitled: true, source: "free" });
 
     // Step 8: Verify enrollments persist
     const enrollments = await db.enrollment.findMany({
@@ -385,10 +400,12 @@ describe("User Full Flow Integration Tests", () => {
     await db.payment.create({
       data: {
         userId: testUserId,
-        amount: 29900,
-        currency: "EUR",
+        courseId: lifetimeCourseId,
+        kind: "COURSE",
+        amount: 299,
+        currency: "eur",
         status: "COMPLETED",
-        description: `Course:${lifetimeCourseId} - Lifetime Access`,
+        description: "Lifetime Access",
         stripePaymentIntentId: "pi_test_lifetime_persistence",
       },
     });
@@ -414,6 +431,7 @@ describe("User Full Flow Integration Tests", () => {
       lifetimeCourseId
     );
     expect(lifetimeAccessResult.canAccessCourse).toBe(true);
+    expect(await getEntitlement(testUserId, lifetimeCourseId)).toMatchObject({ entitled: true, source: "purchase" });
 
     // Complete lessons and ensure progress persists
     const lessons = await db.lesson.findMany({

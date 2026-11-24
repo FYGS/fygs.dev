@@ -1,5 +1,8 @@
 import { AIMasteryHero } from "./_components/hero";
 import { AIMasteryTopics } from "./_components/topics-list";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
+
+export const metadata = topicMetadata("/tech-mastry/ai-mastery");
 
 export default function AIMasteryPage() {
   return (

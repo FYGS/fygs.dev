@@ -4,7 +4,8 @@
  */
 
 import { beforeEach, afterEach, vi, expect } from "vitest";
-import { PrismaClient } from "@prisma/client";
+import type { PrismaClient } from "@/lib/generated/prisma/client";
+import { createTestClient, resetDatabase } from "../../support/test-db";
 import type { User } from "../../../lib/auth";
 import { seedData, mockUsers } from "./review-fixtures";
 
@@ -103,13 +104,7 @@ export class DatabaseTestUtils {
   private static prisma: PrismaClient;
 
   static async setup() {
-    this.prisma = new PrismaClient({
-      datasources: {
-        db: {
-          url: process.env.TEST_DATABASE_URL || process.env.DATABASE_URL,
-        },
-      },
-    });
+    this.prisma = createTestClient();
 
     // Clean database
     await this.cleanup();
@@ -118,13 +113,9 @@ export class DatabaseTestUtils {
   static async cleanup() {
     if (!this.prisma) return;
 
-    // Clean up in correct order due to foreign key constraints
-    await this.prisma.reviewReport.deleteMany();
-    await this.prisma.reviewReply.deleteMany();
-    await this.prisma.reviewVote.deleteMany();
-    await this.prisma.review.deleteMany();
-    await this.prisma.course.deleteMany();
-    await this.prisma.user.deleteMany();
+    // Truncate everything: the code under test writes other tables too
+    // (analytics events, enrollments...) through its own client
+    await resetDatabase(this.prisma);
   }
 
   static async seedTestData() {

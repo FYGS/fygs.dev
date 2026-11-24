@@ -5,6 +5,8 @@ import { ReviewNotificationService } from "@/lib/services/review-notification";
 import { createVoteSchema } from "@/lib/validators/review-validators";
 import { db } from "@/lib/db";
 import { logger } from "@/lib/structured-logger";
+import { enforceRateLimit } from "@/lib/rate-limit";
+import { parseJsonBody } from "@/lib/utils/parse-json-body";
 
 export const runtime = "nodejs";
 
@@ -19,6 +21,12 @@ interface RouteParams {
  * POST /api/reviews/[reviewId]/vote
  */
 export async function POST(request: NextRequest, { params }: RouteParams) {
+  const limited = await enforceRateLimit(request, "review-write", {
+    limit: 20,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   try {
     const { reviewId } = await params;
 
@@ -35,8 +43,12 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     // Parse and validate request body
-    const body = await request.json();
-    const validation = createVoteSchema.safeParse({ ...body, reviewId });
+    const parsed = await parseJsonBody(request);
+    if (!parsed.ok) return parsed.response;
+    const validation = createVoteSchema.safeParse({
+      ...(parsed.body as object),
+      reviewId,
+    });
 
     if (!validation.success) {
       return NextResponse.json(

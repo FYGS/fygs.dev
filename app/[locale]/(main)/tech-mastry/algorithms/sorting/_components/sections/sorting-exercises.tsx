@@ -21,8 +21,9 @@ import {
   RefreshCw,
   XCircle,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { functionNameOf, runInSandbox } from "@/app/_lib/code-sandbox";
+import { useRef, useState } from "react";
+import { PrismAsyncLight as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 // Types pour les exercices
@@ -41,7 +42,7 @@ interface Exercise {
 }
 
 // Données des exercices
-const exercises: Exercise[] = [
+export const exercises: Exercise[] = [
   {
     id: "bubble-sort",
     title: "Implémentation du Tri à Bulles",
@@ -222,7 +223,7 @@ export function SortingExercises() {
   const [selectedExercise, setSelectedExercise] = useState<string>(
     exercises[0].id
   );
-  const [code, setCode] = useState<string>("");
+  const [code, setCode] = useState<string>(exercises[0].starterCode);
   const [results, setResults] = useState<
     { passed: boolean; message: string }[]
   >([]);
@@ -237,68 +238,58 @@ export function SortingExercises() {
     exercises.find((ex) => ex.id === selectedExercise) || exercises[0];
 
   // Initialiser le code lorsque l'exercice change
-  useEffect(() => {
-    setCode(exercise.starterCode);
+  const selectExercise = (id: string) => {
+    if (id === selectedExercise) return;
+    const next = exercises.find((ex) => ex.id === id) || exercises[0];
+    setSelectedExercise(id);
+    setCode(next.starterCode);
     setResults([]);
     setShowSolution(false);
     setShowHints(false);
     setCurrentHint(0);
-  }, [selectedExercise, exercise.starterCode]);
+  };
 
-  // Exécuter le code
-  const runCode = () => {
+  // Exécuter le code (dans le bac à sable: la CSP du site interdit eval dans la page)
+  const runCode = async () => {
+    const entry = functionNameOf(exercise.starterCode);
+    if (!entry) {
+      setResults([{ passed: false, message: "Cet exercice n'a pas de fonction à compléter." }]);
+      return;
+    }
     try {
-      // Créer une fonction à partir du code
-      const userFunction = new Function(`
-        ${code}
-        return {
-          ${exercise.id.replace(/-/g, "")}: ${exercise.id.replace(/-/g, "")}
-        };
-      `)();
+      const outcome = await runInSandbox({
+        code,
+        entry,
+        tests: exercise.testCases.map((testCase, index) => ({
+          id: String(index),
+          input: JSON.stringify(testCase.input),
+          expected: JSON.stringify(testCase.expected),
+        })),
+      });
 
-      // Vérifier si la fonction existe
-      const sortFunction = userFunction[exercise.id.replace(/-/g, "")];
-      if (typeof sortFunction !== "function") {
-        setResults([
-          {
-            passed: false,
-            message: `La fonction ${exercise.id.replace(
-              /-/g,
-              ""
-            )} n'a pas été définie correctement.`,
-          },
-        ]);
+      if (outcome.compileError) {
+        setResults([{ passed: false, message: `Erreur : ${outcome.compileError}` }]);
         return;
       }
 
-      // Exécuter les tests
-      const testResults = exercise.testCases.map((testCase, index) => {
-        const input = [...testCase.input]; // Copie pour éviter les modifications
-        const result = sortFunction([...input]); // Copie pour éviter les modifications
-        const expected = testCase.expected;
-
-        // Vérifier si le résultat est correct
-        const passed = JSON.stringify(result) === JSON.stringify(expected);
-
-        return {
-          passed,
-          message: passed
-            ? `Test ${index + 1} réussi : [${input}] => [${result}]`
-            : `Test ${
-                index + 1
-              } échoué : [${input}] => [${result}] (attendu : [${expected}])`,
-        };
-      });
-
-      setResults(testResults);
+      setResults(
+        exercise.testCases.map((testCase, index) => {
+          const result = outcome.results.find((r) => r.id === String(index));
+          const input = `[${testCase.input}]`;
+          if (!result || result.error) {
+            return { passed: false, message: `Test ${index + 1} échoué : ${input} => ${result?.error ?? "non exécuté"}` };
+          }
+          return {
+            passed: result.passed,
+            message: result.passed
+              ? `Test ${index + 1} réussi : ${input} => ${result.actual}`
+              : `Test ${index + 1} échoué : ${input} => ${result.actual} (attendu : ${result.expected})`,
+          };
+        }),
+      );
     } catch (error) {
       setResults([
-        {
-          passed: false,
-          message: `Erreur : ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-        },
+        { passed: false, message: `Erreur : ${error instanceof Error ? error.message : String(error)}` },
       ]);
     }
   };
@@ -369,7 +360,7 @@ export function SortingExercises() {
           {/* Sélection de l'exercice */}
           <Tabs
             value={selectedExercise}
-            onValueChange={setSelectedExercise}
+            onValueChange={selectExercise}
             className="w-full"
           >
             <TabsList className="grid grid-cols-1 md:grid-cols-3 w-full">

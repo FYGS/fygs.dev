@@ -1,48 +1,42 @@
-import { SubscriptionPlans } from './subscription-plans';
-import { getSubscriptionPrices, classifyBillingCycle } from '../../../lib/subscription-pricing';
-import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
-import { db } from '@/lib/db';
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { isSubscriptionActive } from "@/lib/access/entitlement";
+import { getPlanPrices } from "@/lib/payments/plan-prices";
+import { classifyBillingCycle } from "@/lib/subscription-pricing";
+import { REFUND_WINDOW_DAYS } from "@/lib/refund-policy";
+import { SubscriptionPlans, type PlanViewerState } from "./subscription-plans";
 
-interface WrapperProps { 
-  currentPlan?: 'free' | 'premium' 
-}
+/** The plans with the real Stripe prices and where the visitor stands (subscribed, ending, past due...). */
+export async function SubscriptionPlansWrapper() {
+  const [session, prices, premiumCourses] = await Promise.all([
+    auth.api.getSession({ headers: await headers() }),
+    getPlanPrices(),
+    db.course.count({ where: { published: true, accessTier: "PREMIUM" } }),
+  ]);
 
-export async function SubscriptionPlansWrapper({ currentPlan = 'free' }: WrapperProps) {
-  const { monthly, yearly } = getSubscriptionPrices();
-  let defaultCycle: 'monthly' | 'yearly' = 'monthly';
-  let previousCycleDerived = false;
-  let currentCycle: 'monthly' | 'yearly' | 'unknown' = 'unknown';
-  
-  try {
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (session?.user?.id) {
-      const sub = await db.subscription.findUnique({ 
-        where: { userId: session.user.id }, 
-        select: { priceId: true } 
-      });
-      if (sub?.priceId) {
-        const c = classifyBillingCycle(sub.priceId);
-        currentCycle = c;
-        if (c === 'yearly') { 
-          defaultCycle = 'yearly'; 
-          previousCycleDerived = true; 
-        }
-      }
+  let state: PlanViewerState = session ? "free" : "anonymous";
+  let currentCycle: "monthly" | "yearly" | "unknown" = "unknown";
+  if (session) {
+    const subscription = await db.subscription.findUnique({
+      where: { userId: session.user.id },
+      select: { status: true, cancelAtPeriodEnd: true, priceId: true },
+    });
+    if (subscription) {
+      currentCycle = classifyBillingCycle(subscription.priceId ?? undefined);
+      if (isSubscriptionActive(subscription)) state = subscription.cancelAtPeriodEnd ? "ending" : "premium";
+      else if (subscription.status === "PAST_DUE") state = "past_due";
     }
-  } catch (error) {
-    // Silently handle errors - user will see default state
-    console.error('Error fetching subscription details:', error);
   }
-  
+
   return (
-    <SubscriptionPlans 
-      currentPlan={currentPlan} 
-      hasMonthly={!!monthly} 
-      hasYearly={!!yearly} 
-      defaultCycle={defaultCycle} 
-      currentCycle={currentCycle} 
-      previousCycleDerived={previousCycleDerived} 
+    <SubscriptionPlans
+      state={state}
+      monthly={prices.monthly}
+      yearly={prices.yearly}
+      defaultCycle={currentCycle === "yearly" ? "yearly" : "monthly"}
+      premiumCourses={premiumCourses}
+      refundDays={REFUND_WINDOW_DAYS}
     />
   );
 }

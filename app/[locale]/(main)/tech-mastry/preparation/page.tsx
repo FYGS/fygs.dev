@@ -1,20 +1,16 @@
-import type { Metadata } from "next";
 import { PreparationGuide } from "./_components/preparation-guide";
 import { PreparationTimeline } from "./_components/preparation-timeline";
 import { InterviewChecklist } from "./_components/interview-checklist";
 import { Badge } from "@/components/ui/badge";
 import { Target, Clock, CheckSquare, BookOpen } from "lucide-react";
 import Link from "next/link";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Guide de Préparation | Tech-Mastry",
-  description:
-    "Guide complet pour se préparer efficacement aux entretiens techniques : timeline, checklist, mock interviews et gestion du stress.",
-};
+export const metadata = topicMetadata("/tech-mastry/preparation");
 
 export default function PreparationPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       {/* Hero Section */}
       <div className="text-center space-y-4">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-linear-to-br from-green-500/20 to-emerald-500/20 mb-2">
@@ -93,6 +89,6 @@ export default function PreparationPage() {
         </div>
         <InterviewChecklist />
       </section>
-    </main>
+    </div>
   );
 }

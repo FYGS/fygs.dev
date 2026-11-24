@@ -84,7 +84,7 @@ const concepts: Concept[] = [
 
 class Money {
   constructor(
-    readonly amount: number,
+    readonly amount: number, // en centimes (entier) pour éviter les erreurs flottantes
     readonly currency: string
   ) {}
 
@@ -157,15 +157,29 @@ class OrderConfirmed implements DomainEvent {
   readonly eventType = "OrderConfirmed";
 
   constructor(
-    readonly orderId: string,
-    readonly total: number,
-    readonly customerId: string
+    readonly orderId: OrderId,
+    readonly total: Money, // Value Object, pas un number
+    readonly customerId: CustomerId
   ) {}
 }
 
 // L'agrégat émet des events
 class Order {
   private events: DomainEvent[] = [];
+  private status: OrderStatus = "draft";
+
+  constructor(
+    readonly id: OrderId,
+    private readonly customerId: CustomerId,
+    private items: OrderItem[] = []
+  ) {}
+
+  get total(): Money {
+    return this.items.reduce(
+      (sum, item) => sum.add(item.subtotal),
+      new Money(0, "EUR")
+    );
+  }
 
   confirm() {
     this.status = "confirmed";
@@ -196,7 +210,7 @@ class Order {
 interface OrderRepository {
   findById(id: OrderId): Promise<Order | null>;
   save(order: Order): Promise<void>;
-  findByCustomer(customerId: string): Promise<Order[]>;
+  findByCustomer(customerId: CustomerId): Promise<Order[]>;
 }
 
 // Implémenté dans l'infrastructure
@@ -278,7 +292,7 @@ export function DDDConcepts() {
         </div>
 
         {concept.code && (
-          <pre className="bg-muted/50 rounded-lg p-4 overflow-x-auto text-sm">
+          <pre className="bg-muted/50 rounded-lg p-4 overflow-x-auto text-sm" tabIndex={0}>
             <code>{concept.code}</code>
           </pre>
         )}

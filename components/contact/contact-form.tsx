@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FieldError, fieldErrorProps } from "@/components/ui/field-error";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -22,7 +23,7 @@ import {
   GraduationCap,
   MessageCircle,
 } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { useIntlayer } from "next-intlayer";
 
@@ -48,7 +49,7 @@ export function ContactForm() {
     handleSubmit,
     reset,
     setValue,
-    watch,
+    control,
     formState: { errors },
   } = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema),
@@ -57,7 +58,7 @@ export function ContactForm() {
     },
   });
 
-  const watchedType = watch("type");
+  const watchedType = useWatch({ control, name: "type" });
 
   // Sync watchedType with form value management
   useEffect(() => {
@@ -166,7 +167,7 @@ export function ContactForm() {
               setValue("type", value as any);
             }}
           >
-            <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-primary/20">
+            <SelectTrigger id="type" className="transition-all duration-200 focus:ring-2 focus:ring-primary/20">
               <SelectValue
                 placeholder={content.contactType.placeholder.value}
               />
@@ -216,15 +217,13 @@ export function ContactForm() {
             <Label htmlFor="name">{content.formFields.name.label.value}</Label>
             <Input
               id="name"
+              autoComplete="name"
               placeholder={content.formFields.name.placeholder.value}
               {...register("name")}
+            {...fieldErrorProps("name", errors.name)}
               className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
             />
-            {errors.name && (
-              <span className="text-sm text-destructive">
-                {content.formFields.name.error.value}
-              </span>
-            )}
+            <FieldError id="name" message={errors.name ? content.formFields.name.error.value : undefined} />
           </div>
 
           <div className="space-y-2">
@@ -234,15 +233,13 @@ export function ContactForm() {
             <Input
               id="email"
               type="email"
+              autoComplete="email"
               placeholder={content.formFields.email.placeholder.value}
               {...register("email")}
+            {...fieldErrorProps("email", errors.email)}
               className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
             />
-            {errors.email && (
-              <span className="text-sm text-destructive">
-                {content.formFields.email.error.value}
-              </span>
-            )}
+            <FieldError id="email" message={errors.email ? content.formFields.email.error.value : undefined} />
           </div>
         </div>
 
@@ -255,6 +252,7 @@ export function ContactForm() {
               </Label>
               <Input
                 id="company"
+                autoComplete="organization"
                 placeholder={content.formFields.company.placeholder.value}
                 {...register("company")}
                 className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
@@ -266,6 +264,7 @@ export function ContactForm() {
               </Label>
               <Input
                 id="position"
+                autoComplete="organization-title"
                 placeholder={content.formFields.position.placeholder.value}
                 {...register("position")}
                 className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
@@ -290,13 +289,10 @@ export function ContactForm() {
                     : content.formFields.subject.placeholder.general.value
             }
             {...register("subject")}
+            {...fieldErrorProps("subject", errors.subject)}
             className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
           />
-          {errors.subject && (
-            <span className="text-sm text-destructive">
-              {content.formFields.subject.error.value}
-            </span>
-          )}
+          <FieldError id="subject" message={errors.subject ? content.formFields.subject.error.value : undefined} />
         </div>
 
         <div className="space-y-2">
@@ -308,12 +304,9 @@ export function ContactForm() {
             placeholder={typeInfo.placeholder}
             className="min-h-[150px] transition-all duration-200 focus:ring-2 focus:ring-primary/20"
             {...register("message")}
+            {...fieldErrorProps("message", errors.message)}
           />
-          {errors.message && (
-            <span className="text-sm text-destructive">
-              {content.formFields.message.error.value}
-            </span>
-          )}
+          <FieldError id="message" message={errors.message ? content.formFields.message.error.value : undefined} />
         </div>
 
         <Button

@@ -1,20 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import { MIN_PASSWORD_LENGTH } from "@/lib/password-policy";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff } from "lucide-react";
+import { PasswordToggle } from "@/components/ui/password-toggle";
 import { authService } from "@/lib/auth-service";
 import { toast } from "sonner";
 
 const passwordSchema = z
   .object({
     currentPassword: z.string().min(1, "Le mot de passe actuel est requis"),
-    newPassword: z.string().min(8, "Le nouveau mot de passe doit contenir au moins 8 caractères"),
+    newPassword: z.string().min(MIN_PASSWORD_LENGTH, `Le nouveau mot de passe doit contenir au moins ${MIN_PASSWORD_LENGTH} caractères`),
     confirmPassword: z.string(),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
@@ -76,20 +77,7 @@ export function PasswordChangeForm() {
             {...register("currentPassword")}
             disabled={isLoading}
           />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-            onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-            disabled={isLoading}
-          >
-            {showCurrentPassword ? (
-              <EyeOff className="h-4 w-4" />
-            ) : (
-              <Eye className="h-4 w-4" />
-            )}
-          </Button>
+          <PasswordToggle visible={showCurrentPassword} onToggle={() => setShowCurrentPassword(!showCurrentPassword)} disabled={isLoading} />
         </div>
         {errors.currentPassword && (
           <p className="text-sm text-destructive">{errors.currentPassword.message}</p>
@@ -106,20 +94,7 @@ export function PasswordChangeForm() {
             {...register("newPassword")}
             disabled={isLoading}
           />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-            onClick={() => setShowNewPassword(!showNewPassword)}
-            disabled={isLoading}
-          >
-            {showNewPassword ? (
-              <EyeOff className="h-4 w-4" />
-            ) : (
-              <Eye className="h-4 w-4" />
-            )}
-          </Button>
+          <PasswordToggle visible={showNewPassword} onToggle={() => setShowNewPassword(!showNewPassword)} disabled={isLoading} />
         </div>
         {errors.newPassword && (
           <p className="text-sm text-destructive">{errors.newPassword.message}</p>
@@ -136,20 +111,7 @@ export function PasswordChangeForm() {
             {...register("confirmPassword")}
             disabled={isLoading}
           />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            disabled={isLoading}
-          >
-            {showConfirmPassword ? (
-              <EyeOff className="h-4 w-4" />
-            ) : (
-              <Eye className="h-4 w-4" />
-            )}
-          </Button>
+          <PasswordToggle visible={showConfirmPassword} onToggle={() => setShowConfirmPassword(!showConfirmPassword)} disabled={isLoading} />
         </div>
         {errors.confirmPassword && (
           <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>

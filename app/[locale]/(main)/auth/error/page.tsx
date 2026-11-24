@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useMemo, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -150,26 +150,24 @@ const DEFAULT_ERROR: AuthError = {
 function AuthErrorContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [error, setError] = useState<AuthError>(DEFAULT_ERROR);
   const [isRetrying, setIsRetrying] = useState(false);
 
-  useEffect(() => {
+  const error = useMemo<AuthError>(() => {
     const errorCode = searchParams.get("error");
     const errorDescription = searchParams.get("error_description");
-    
-    if (errorCode) {
-      const foundError = AUTH_ERRORS[errorCode] || DEFAULT_ERROR;
-      
-      // Si on a une description personnalisée, on l'utilise
-      if (errorDescription) {
-        setError({
-          ...foundError,
-          description: decodeURIComponent(errorDescription)
-        });
-      } else {
-        setError(foundError);
-      }
+
+    if (!errorCode) return DEFAULT_ERROR;
+
+    const foundError = AUTH_ERRORS[errorCode] || DEFAULT_ERROR;
+
+    // Si on a une description personnalisée, on l'utilise
+    if (errorDescription) {
+      return {
+        ...foundError,
+        description: decodeURIComponent(errorDescription),
+      };
     }
+    return foundError;
   }, [searchParams]);
 
   const handleRetry = async () => {

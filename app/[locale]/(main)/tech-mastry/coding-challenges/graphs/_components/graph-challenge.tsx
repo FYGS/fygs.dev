@@ -27,36 +27,74 @@ const challenges = [
       { input: "0-1:10,0-2:3,1-3:2,2-1:4 | 0,3", output: "9" },
     ],
     hint: "Utilisez une file de priorité (min-heap) pour toujours explorer le nœud avec la distance minimale.",
-    solution: `function dijkstra(graph, start, end) {
-  const distances = {};
+    solution: `// Min-heap binaire : push et pop en O(log n)
+class MinHeap {
+  constructor() { this.items = []; }
+  get size() { return this.items.length; }
+
+  push(item) { // item = [priorité, valeur]
+    const a = this.items;
+    a.push(item);
+    let i = a.length - 1;
+    while (i > 0) {
+      const parent = (i - 1) >> 1;
+      if (a[parent][0] <= a[i][0]) break;
+      [a[parent], a[i]] = [a[i], a[parent]];
+      i = parent;
+    }
+  }
+
+  pop() {
+    const a = this.items;
+    const top = a[0];
+    const last = a.pop();
+    if (a.length > 0) {
+      a[0] = last;
+      let i = 0;
+      while (true) {
+        const left = 2 * i + 1;
+        const right = left + 1;
+        let smallest = i;
+        if (left < a.length && a[left][0] < a[smallest][0]) smallest = left;
+        if (right < a.length && a[right][0] < a[smallest][0]) smallest = right;
+        if (smallest === i) break;
+        [a[smallest], a[i]] = [a[i], a[smallest]];
+        i = smallest;
+      }
+    }
+    return top;
+  }
+}
+
+// Poids positifs ou nuls uniquement (sinon : Bellman-Ford)
+function dijkstra(graph, start, end) {
+  const distances = { [start]: 0 };
   const visited = new Set();
-  const pq = [[0, start]]; // [distance, node]
-  
-  distances[start] = 0;
-  
-  while (pq.length > 0) {
-    pq.sort((a, b) => a[0] - b[0]);
-    const [dist, node] = pq.shift();
-    
+  const pq = new MinHeap();
+  pq.push([0, start]); // [distance, node]
+
+  while (pq.size > 0) {
+    const [dist, node] = pq.pop();
+
     if (visited.has(node)) continue;
     visited.add(node);
-    
+
     if (node === end) return dist;
-    
-    for (const [neighbor, weight] of graph[node]) {
+
+    for (const [neighbor, weight] of graph[node] || []) {
       const newDist = dist + weight;
-      if (!distances[neighbor] || newDist < distances[neighbor]) {
+      // undefined (et non !distances[...]) : une distance de 0 est valide
+      if (distances[neighbor] === undefined || newDist < distances[neighbor]) {
         distances[neighbor] = newDist;
         pq.push([newDist, neighbor]);
       }
     }
   }
-  
-  return -1; // No path found
-}`,
-    verify: () => {
-      return "Simulation: Correct path found";
-    },
+
+  return -1; // Aucun chemin
+}
+// Complexité : O((V + E) log V) avec le tas binaire`,
+    verify: (input: string): string => runDijkstra(input),
   },
   {
     id: 2,
@@ -88,7 +126,9 @@ const challenges = [
     return false;
   }
   
-  for (const node in graph) {
+  // Object.keys donne des chaînes : on les reconvertit en nombres pour
+  // rester cohérent avec les voisins (sinon visited.has(0) !== visited.has("0"))
+  for (const node of Object.keys(graph).map(Number)) {
     if (!visited.has(node)) {
       if (dfs(node)) return true;
     }
@@ -96,9 +136,7 @@ const challenges = [
   
   return false;
 }`,
-    verify: (input: string) => {
-      return input.includes("2-0") ? "true" : "false";
-    },
+    verify: (input: string): string => runCycleDetection(input),
   },
   {
     id: 3,
@@ -146,9 +184,7 @@ const challenges = [
   
   return result.length === numNodes ? result : null;
 }`,
-    verify: () => {
-      return "Valid topological order";
-    },
+    verify: (input: string): string => runTopologicalSort(input),
   },
   {
     id: 4,
@@ -190,11 +226,10 @@ const challenges = [
     }
   }
   
-  return mstWeight;
+  // Moins de n-1 arêtes retenues : graphe non connexe, pas d'arbre couvrant
+  return edgesUsed === numNodes - 1 ? mstWeight : -1;
 }`,
-    verify: () => {
-      return "MST weight calculated";
-    },
+    verify: (input: string): string => runKruskal(input),
   },
   {
     id: 5,
@@ -236,16 +271,7 @@ const challenges = [
   
   return components;
 }`,
-    verify: (input: string) => {
-      const edges = input.split(",");
-      const nodes = new Set<number>();
-      edges.forEach((edge) => {
-        const [u, v] = edge.split("-").map(Number);
-        nodes.add(u);
-        nodes.add(v);
-      });
-      return Math.ceil(nodes.size / 2).toString(); // Simplified
-    },
+    verify: (input: string): string => runConnectedComponents(input),
   },
   {
     id: 6,
@@ -258,7 +284,9 @@ const challenges = [
       { input: "0-1,0-2,1-2 | 2", output: "false" },
     ],
     hint: "Essayez chaque couleur pour chaque nœud. Backtrack si aucune couleur n'est valide.",
-    solution: `function canColorGraph(graph, numColors) {
+    solution: `// graph : liste d'adjacence non orientée (chaque arête est présente dans les
+// deux sens et chaque nœud 0..n-1 est une clé)
+function canColorGraph(graph, numColors) {
   const colors = {};
   
   function isSafe(node, color) {
@@ -286,14 +314,203 @@ const challenges = [
   
   return backtrack(0);
 }`,
-    verify: (input: string) => {
-      const [graphStr, kStr] = input.split("|").map((s) => s.trim());
-      const k = parseInt(kStr);
-      // Simple heuristic: triangle requires 3 colors
-      return graphStr.includes("0-1,0-2,1-2") && k < 3 ? "false" : "true";
-    },
+    verify: (input: string): string => runGraphColoring(input),
   },
 ];
+
+type WeightedEdge = [number, number, number];
+
+const FORMAT_ERROR = "Format invalide : ex. 0-1:4,1-2:3 | 0,2";
+
+// Lit "u-v" ou "u-v:poids" séparés par des virgules ; null si le format est invalide.
+function parseEdges(text: string): WeightedEdge[] | null {
+  const edges: WeightedEdge[] = [];
+  for (const part of text.split(",")) {
+    const match = part.trim().match(/^(\d+)-(\d+)(?::(-?\d+(?:\.\d+)?))?$/);
+    if (!match) return null;
+    edges.push([
+      Number(match[1]),
+      Number(match[2]),
+      match[3] === undefined ? 1 : Number(match[3]),
+    ]);
+  }
+  return edges;
+}
+
+function nodeCount(edges: WeightedEdge[]): number {
+  return edges.reduce((max, [u, v]) => Math.max(max, u, v), -1) + 1;
+}
+
+function buildAdjacency(edges: WeightedEdge[], n: number, directed: boolean) {
+  const adjacency: number[][] = Array.from({ length: n }, () => []);
+  for (const [u, v] of edges) {
+    adjacency[u].push(v);
+    if (!directed) adjacency[v].push(u);
+  }
+  return adjacency;
+}
+
+// Plus court chemin (arêtes orientées, poids >= 0) : "arêtes | départ,arrivée"
+function runDijkstra(input: string): string {
+  const [edgesText = "", paramsText = ""] = input.split("|").map((s) => s.trim());
+  const edges = parseEdges(edgesText);
+  const [start, end] = paramsText.split(",").map(Number);
+  if (
+    !edges ||
+    !Number.isInteger(start) ||
+    !Number.isInteger(end) ||
+    start < 0 ||
+    end < 0
+  ) {
+    return FORMAT_ERROR;
+  }
+  if (edges.some(([, , weight]) => weight < 0)) {
+    return "Dijkstra n'accepte pas les poids négatifs";
+  }
+  const n = Math.max(nodeCount(edges), start + 1, end + 1);
+  const dist: number[] = Array(n).fill(Infinity);
+  const done: boolean[] = Array(n).fill(false);
+  dist[start] = 0;
+  for (let step = 0; step < n; step++) {
+    let u = -1;
+    for (let i = 0; i < n; i++) {
+      if (!done[i] && dist[i] < Infinity && (u === -1 || dist[i] < dist[u])) {
+        u = i;
+      }
+    }
+    if (u === -1) break;
+    done[u] = true;
+    for (const [from, to, weight] of edges) {
+      if (from === u && dist[u] + weight < dist[to]) dist[to] = dist[u] + weight;
+    }
+  }
+  return dist[end] === Infinity ? "-1" : String(dist[end]);
+}
+
+// Cycle dans un graphe orienté : "u-v,v-w,..."
+function runCycleDetection(input: string): string {
+  const edges = parseEdges(input.trim());
+  if (!edges) return FORMAT_ERROR;
+  const n = nodeCount(edges);
+  const adjacency = buildAdjacency(edges, n, true);
+  const state: number[] = Array(n).fill(0); // 0 = nouveau, 1 = dans la pile, 2 = terminé
+  const dfs = (node: number): boolean => {
+    state[node] = 1;
+    for (const next of adjacency[node]) {
+      if (state[next] === 1) return true;
+      if (state[next] === 0 && dfs(next)) return true;
+    }
+    state[node] = 2;
+    return false;
+  };
+  for (let i = 0; i < n; i++) {
+    if (state[i] === 0 && dfs(i)) return "true";
+  }
+  return "false";
+}
+
+// Tri topologique (Kahn, plus petit nœud disponible d'abord)
+function runTopologicalSort(input: string): string {
+  const edges = parseEdges(input.trim());
+  if (!edges) return FORMAT_ERROR;
+  const n = nodeCount(edges);
+  const adjacency = buildAdjacency(edges, n, true);
+  const inDegree: number[] = Array(n).fill(0);
+  for (const [, v] of edges) inDegree[v]++;
+  const ready: number[] = [];
+  for (let i = 0; i < n; i++) {
+    if (inDegree[i] === 0) ready.push(i);
+  }
+  const order: number[] = [];
+  while (ready.length > 0) {
+    ready.sort((a, b) => a - b);
+    const node = ready.shift() as number;
+    order.push(node);
+    for (const next of adjacency[node]) {
+      inDegree[next]--;
+      if (inDegree[next] === 0) ready.push(next);
+    }
+  }
+  return order.length === n
+    ? order.join(",")
+    : "Cycle détecté : pas d'ordre topologique";
+}
+
+function makeUnionFind(n: number) {
+  const parent = Array.from({ length: n }, (_, i) => i);
+  const find = (x: number): number => {
+    while (parent[x] !== x) {
+      parent[x] = parent[parent[x]];
+      x = parent[x];
+    }
+    return x;
+  };
+  return { parent, find };
+}
+
+// Poids de l'arbre couvrant minimum (Kruskal) : "u-v:poids,..."
+function runKruskal(input: string): string {
+  const edges = parseEdges(input.trim());
+  if (!edges) return FORMAT_ERROR;
+  const n = nodeCount(edges);
+  const { parent, find } = makeUnionFind(n);
+  let total = 0;
+  let used = 0;
+  for (const [u, v, weight] of [...edges].sort((a, b) => a[2] - b[2])) {
+    const rootU = find(u);
+    const rootV = find(v);
+    if (rootU !== rootV) {
+      parent[rootU] = rootV;
+      total += weight;
+      used++;
+    }
+  }
+  return used === n - 1
+    ? String(total)
+    : "Graphe non connexe : pas d'arbre couvrant";
+}
+
+// Nombre de composantes connexes d'un graphe non orienté : "u-v,..."
+function runConnectedComponents(input: string): string {
+  const edges = parseEdges(input.trim());
+  if (!edges) return FORMAT_ERROR;
+  const n = nodeCount(edges);
+  const { parent, find } = makeUnionFind(n);
+  let components = n;
+  for (const [u, v] of edges) {
+    const rootU = find(u);
+    const rootV = find(v);
+    if (rootU !== rootV) {
+      parent[rootU] = rootV;
+      components--;
+    }
+  }
+  return String(components);
+}
+
+// Coloriage avec k couleurs par backtracking : "arêtes | k"
+function runGraphColoring(input: string): string {
+  const [edgesText = "", kText = ""] = input.split("|").map((s) => s.trim());
+  const edges = parseEdges(edgesText);
+  const k = Number(kText);
+  if (!edges || !Number.isInteger(k) || k < 0) return FORMAT_ERROR;
+  const n = nodeCount(edges);
+  const adjacency = buildAdjacency(edges, n, false);
+  if (edges.some(([u, v]) => u === v)) return "false"; // boucle : impossible
+  const colors: number[] = Array(n).fill(0);
+  const backtrack = (node: number): boolean => {
+    if (node === n) return true;
+    for (let color = 1; color <= k; color++) {
+      if (adjacency[node].every((next) => colors[next] !== color)) {
+        colors[node] = color;
+        if (backtrack(node + 1)) return true;
+        colors[node] = 0;
+      }
+    }
+    return false;
+  };
+  return backtrack(0) ? "true" : "false";
+}
 
 export function GraphChallenge() {
   const [selectedChallenge, setSelectedChallenge] = useState(challenges[0]);
@@ -365,11 +582,11 @@ export function GraphChallenge() {
                 className="p-3 bg-muted/50 rounded-lg font-mono text-sm"
               >
                 <div>
-                  <span className="text-muted-foreground">Input:</span>{" "}
+                  <span className="text-muted-foreground">Entrée :</span>{" "}
                   {example.input}
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Output:</span>{" "}
+                  <span className="text-muted-foreground">Sortie :</span>{" "}
                   {example.output}
                 </div>
               </div>
@@ -419,7 +636,7 @@ export function GraphChallenge() {
               <DialogHeader>
                 <DialogTitle>Solution</DialogTitle>
               </DialogHeader>
-              <pre className="p-4 bg-muted rounded-lg overflow-x-auto text-sm">
+              <pre className="p-4 bg-muted rounded-lg overflow-x-auto text-sm" tabIndex={0}>
                 <code>{selectedChallenge.solution}</code>
               </pre>
             </DialogContent>

@@ -1,5 +1,6 @@
 "use client";
 
+import { cleanMermaidSvg } from "@/lib/mermaid-svg";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
@@ -28,10 +29,17 @@ export function MermaidDiagram({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const uniqueId = useId().replace(/:/g, "mermaid");
 
+  // Clear the previous result whenever a new render is requested (derived during render)
+  const renderKey = `${chart}|${retryCount}`;
+  const [lastRenderKey, setLastRenderKey] = useState(renderKey);
+  if (lastRenderKey !== renderKey) {
+    setLastRenderKey(renderKey);
+    setSvg("");
+    setError(null);
+  }
+
   const renderChart = useCallback(async () => {
     try {
-      setSvg("");
-      setError(null);
       const mermaid = (await import("mermaid")).default;
       mermaid.initialize({
         startOnLoad: false,
@@ -52,20 +60,26 @@ export function MermaidDiagram({
         },
         fontFamily: "inherit",
         fontSize: 14,
-        securityLevel: "loose",
+        // "strict": labels are encoded and click handlers are off. ("loose" lets a diagram source run scripts.)
+        securityLevel: "strict",
       });
 
       const sanitized = sanitizeChart(chart);
       const renderId = `${uniqueId}-${retryCount}`;
       const { svg: renderedSvg } = await mermaid.render(renderId, sanitized);
-      setSvg(renderedSvg);
+      // Second line of defence: whatever is still active in the markup is removed before it is inserted
+      const safeSvg = cleanMermaidSvg(renderedSvg);
+      if (!safeSvg) throw new Error("Le diagramme n'a pas pu être affiché en toute sécurité");
+      setSvg(safeSvg);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Diagram render failed");
     }
   }, [chart, uniqueId, retryCount]);
 
   useEffect(() => {
-    renderChart();
+    queueMicrotask(() => {
+      void renderChart();
+    });
   }, [renderChart]);
 
   const handleZoomIn = () => setScale((s) => Math.min(s + 0.25, 2.5));
@@ -78,15 +92,15 @@ export function MermaidDiagram({
         <div className="flex items-start gap-3">
           <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-amber-300">
+            <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
               Erreur de rendu du diagramme
             </p>
-            <pre className="mt-2 text-xs text-amber-400/70 whitespace-pre-wrap break-words overflow-hidden">
+            <pre className="mt-2 text-xs text-amber-800 dark:text-amber-300 whitespace-pre-wrap break-words overflow-hidden" tabIndex={0}>
               {error}
             </pre>
             <button
               onClick={() => setRetryCount((c) => c + 1)}
-              className="mt-3 text-xs font-medium text-amber-300 hover:text-amber-200 underline underline-offset-2 transition-colors"
+              className="mt-3 text-xs font-medium text-amber-700 hover:text-amber-900 dark:text-amber-300 dark:hover:text-amber-200 underline underline-offset-2 transition-colors"
             >
               Réessayer le rendu
             </button>

@@ -57,28 +57,31 @@ const _listeners: Set<WebContainerListener> = new Set();
  * npm/node produce colored output, progress bars, and cursor movements
  * that appear as garbled characters in a plain text console.
  */
-function stripAnsi(text: string): string {
+export function stripAnsi(text: string): string {
   // Remove ANSI CSI sequences (colors, cursor commands, etc.)
-  // eslint-disable-next-line no-control-regex
   let clean = text.replace(
     /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><~]/g,
     "",
   );
   // Remove OSC sequences (title setting, etc.)
   clean = clean.replace(/\x1b\][^\x07]*\x07/g, "");
-  // Handle carriage return overwrites (npm progress bars)
+  // Windows-style line endings are plain newlines, not overwrites. Programs in
+  // the container write "\r\n"; treating the trailing "\r" as an overwrite kept
+  // the (empty) text after it and erased every line of program output.
+  clean = clean.replace(/\r\n/g, "\n");
+  // A bare "\r" moves the cursor to the start of the line (npm progress bars):
+  // the visible text is the last non-empty segment.
   clean = clean
     .split("\n")
     .map((line) => {
       if (line.includes("\r")) {
-        const parts = line.split("\r");
-        return parts[parts.length - 1];
+        const parts = line.split("\r").filter((part) => part.length > 0);
+        return parts.length > 0 ? parts[parts.length - 1] : "";
       }
       return line;
     })
     .join("\n");
   // Remove remaining control characters (keep \n, \t)
-  // eslint-disable-next-line no-control-regex
   clean = clean.replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g, "");
   // Remove spinner characters that remain after stripping ANSI (npx progress)
   clean = clean.replace(/^[\\|/\-]\s*$/gm, "");
@@ -87,6 +90,40 @@ function stripAnsi(text: string): string {
   // Collapse multiple blank lines
   clean = clean.replace(/\n{3,}/g, "\n\n");
   return clean.trim();
+}
+
+/** How long a killed process may take to exit before it is considered stuck. */
+const KILL_GRACE_MS = 2000;
+
+const NODE_INTERNAL_FRAME = /^\s+at\s.*(?:node:|internal\/)/;
+const NODE_VERSION_FOOTER = /^Node\.js v\d+\.\d+\.\d+\s*$/;
+
+/**
+ * Make process output readable for a learner: drop Node's internal stack frames
+ * and version footer, hide the container's home directory, and show the file the
+ * user wrote (index.ts) instead of the file that was run (index.js).
+ */
+export function cleanProcessOutput(
+  text: string,
+  displayNames: Record<string, string> = {},
+): string {
+  let out = text.replace(/\/home\/[A-Za-z0-9_-]+\//g, "");
+  for (const [from, to] of Object.entries(displayNames)) {
+    const escaped = from.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    out = out.replace(new RegExp(`(?<![\\w./-])${escaped}(?![\\w-])`, "g"), to);
+  }
+  return out
+    .split("\n")
+    .filter((line) => !NODE_INTERNAL_FRAME.test(line) && !NODE_VERSION_FOOTER.test(line))
+    .join("\n");
+}
+
+// Files that were transpiled before running (index.js) mapped back to the
+// name in the editor (index.ts), for error messages.
+let _displayNames: Record<string, string> = {};
+
+function normalizeChunk(value: string): string {
+  return cleanProcessOutput(stripAnsi(value), _displayNames).trim();
 }
 
 function emit(event: WebContainerEvent) {
@@ -277,7 +314,7 @@ export async function installDependencies(options?: {
       while (true) {
         const { done, value } = await stdoutReader.read();
         if (done) break;
-        const cleaned = stripAnsi(value).trim();
+        const cleaned = normalizeChunk(value);
         if (cleaned) {
           logs.push(cleaned);
           emit({ type: "log", message: cleaned });
@@ -328,55 +365,113 @@ export async function installDependencies(options?: {
 
 /**
  * Run a shell command inside the WebContainer.
+ *
+ * - A command that exits is awaited until it exits, or killed after `timeout`
+ *   (a script stuck in an infinite loop must not hang the page).
+ * - A dev server never exits: as soon as it reports a port, the run is complete
+ *   and the process is left running (Stop kills it). It is NOT killed by the
+ *   timeout, which used to switch every preview off after a minute.
  */
 export async function runCommand(
   command: string,
   args: string[] = [],
-  options?: { timeout?: number },
+  options?: { timeout?: number; detachOnServer?: boolean },
 ): Promise<WebContainerExecutionResult> {
   const wc = await getWebContainer();
   const logs: string[] = [];
   const errors: string[] = [];
   const timeout = options?.timeout ?? 30000;
+  const detachOnServer = options?.detachOnServer ?? true;
 
   emit({
     type: "status",
     status: "running",
     message: `Running: ${command} ${args.join(" ")}`,
   });
-  emit({ type: "log", message: `$ ${command} ${args.join(" ")}` });
+  emit({ type: "log", message: `$ ${command} ${args.join(" ")}`.trim() });
 
   try {
+    // Listen before spawning so a fast server cannot be missed
+    let stopWatching: () => void = () => {};
+    const serverReady = new Promise<"server">((resolve) => {
+      if (!detachOnServer) return;
+      stopWatching = onWebContainerEvent((event) => {
+        if (event.type === "server-ready") resolve("server");
+      });
+    });
+
     const process = await wc.spawn(command, args);
     _currentProcess = process;
 
     let timedOut = false;
+    let abandon: () => void = () => {};
+    const abandoned = new Promise<"stuck">((resolve) => {
+      abandon = () => resolve("stuck");
+    });
     const timeoutId = setTimeout(() => {
       timedOut = true;
       process.kill();
+      // A busy loop never handles the signal: do not wait for it forever
+      setTimeout(abandon, KILL_GRACE_MS);
     }, timeout);
 
-    // Read stdout with ANSI stripping
-    const stdoutReader = process.output.getReader();
-    const readOutput = async () => {
+    const reader = process.output.getReader();
+    const drain = (async () => {
       while (true) {
-        const { done, value } = await stdoutReader.read();
+        const { done, value } = await reader.read();
         if (done) break;
-        const cleaned = stripAnsi(value).trim();
+        const cleaned = normalizeChunk(value);
         if (cleaned) {
           logs.push(cleaned);
           emit({ type: "log", message: cleaned });
         }
       }
-    };
+    })();
 
-    await readOutput();
+    const first = await Promise.race([
+      drain.then(() => "ended" as const),
+      serverReady,
+      abandoned,
+    ]);
+    stopWatching();
+
+    if (first === "stuck") {
+      clearTimeout(timeoutId);
+      if (_currentProcess === process) _currentProcess = null;
+      const errMsg = `Execution stopped after ${timeout / 1000}s: the program did not finish (infinite loop, or waiting for input?)`;
+      errors.push(errMsg);
+      emit({ type: "error", message: errMsg });
+      emit({ type: "status", status: "error" });
+      // The process survived kill(): rebuild the container so the next run is clean
+      void teardown().catch(() => {});
+      return { success: false, output: logs.join("\n"), logs, errors };
+    }
+
+    if (first === "server") {
+      clearTimeout(timeoutId);
+      void process.exit.then((code) => {
+        if (_currentProcess === process) {
+          _currentProcess = null;
+          _serverUrl = null;
+          emit({ type: "log", message: `Server stopped (exit code ${code})` });
+          emit({ type: "status", status: "ready" });
+        }
+      });
+      return {
+        success: true,
+        output: logs.join("\n"),
+        logs,
+        errors,
+        serverUrl: _serverUrl ?? undefined,
+      };
+    }
+
     const exitCode = await process.exit;
     clearTimeout(timeoutId);
-    _currentProcess = null;
+    if (_currentProcess === process) _currentProcess = null;
 
     if (timedOut) {
-      const errMsg = `Command timed out after ${timeout / 1000}s`;
+      const errMsg = `Execution stopped after ${timeout / 1000}s: the program did not finish (infinite loop, or waiting for input?)`;
       errors.push(errMsg);
       emit({ type: "error", message: errMsg });
     } else if (exitCode !== 0) {
@@ -433,7 +528,7 @@ export async function startDevServer(
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
-      const cleaned = stripAnsi(value).trim();
+      const cleaned = normalizeChunk(value);
       if (cleaned) {
         logs.push(cleaned);
         emit({ type: "log", message: cleaned });
@@ -462,10 +557,21 @@ export async function startDevServer(
  */
 export function killCurrentProcess(): void {
   if (_currentProcess) {
-    _currentProcess.kill();
+    const process = _currentProcess;
+    process.kill();
     _currentProcess = null;
     _serverUrl = null;
     emit({ type: "status", status: "ready", message: "Process killed" });
+
+    // kill() cannot interrupt a busy loop. If the process is still alive a moment
+    // later, rebuild the container so it stops burning CPU and the next run is clean.
+    let exited = false;
+    void process.exit.then(() => {
+      exited = true;
+    });
+    setTimeout(() => {
+      if (!exited) void teardown().catch(() => {});
+    }, KILL_GRACE_MS);
   }
 }
 
@@ -494,12 +600,21 @@ export async function executeInWebContainer(
   entryPoint: string,
   options?: {
     installDeps?: boolean;
+    /** Limit for running a file with node (default 30s). */
     timeout?: number;
+    /** Limit for an npm script before a server is up (default 60s). */
+    scriptTimeout?: number;
     runScript?: string;
+    /** Executed file name -> name shown to the user (index.js -> index.ts). */
+    displayNames?: Record<string, string>;
   },
 ): Promise<WebContainerExecutionResult> {
   const logs: string[] = [];
   const errors: string[] = [];
+
+  // A previous run's server must not be reported as this run's preview
+  _serverUrl = null;
+  _displayNames = options?.displayNames ?? {};
 
   try {
     // 1. Mount files
@@ -530,7 +645,7 @@ export async function executeInWebContainer(
     if (options?.runScript && hasPackageJson) {
       // Run an npm script (e.g., "dev", "start", "build")
       const scriptResult = await runCommand("npm", ["run", options.runScript], {
-        timeout: options?.timeout,
+        timeout: options?.scriptTimeout ?? 60000,
       });
       logs.push(...scriptResult.logs);
       errors.push(...scriptResult.errors);
@@ -573,8 +688,10 @@ export async function executeInWebContainer(
 export async function executeQuickRun(
   code: string,
   fileName: string = "index.js",
-  options?: { timeout?: number },
+  options?: { timeout?: number; displayNames?: Record<string, string> },
 ): Promise<WebContainerExecutionResult> {
+  _serverUrl = null;
+  _displayNames = options?.displayNames ?? {};
   try {
     await mountFiles({ [fileName]: code });
     return await runCommand("node", [fileName], {

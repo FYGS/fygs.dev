@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { type NextRequest } from "next/server";
+import { OG_CACHE_HEADERS, ogChoice, ogRateLimit, ogText } from "@/lib/og-guard";
 
 /**
  * Dynamic OG image for tech-mastry sections
@@ -26,11 +27,13 @@ const sectionThemes: Record<string, { gradient: string; accent: string; icon: st
 
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = req.nextUrl;
-    const section = searchParams.get("section") || "default";
-    const title = searchParams.get("title") || "TechMastery";
-    const desc = searchParams.get("desc") || "Plateforme de maîtrise technique";
-    const sub = searchParams.get("sub") || "";
+    const limited = await ogRateLimit(req);
+    if (limited) return limited;
+    // Text is bounded and cleaned, the section comes from the list: the card cannot be made to say anything long or odd
+    const section = ogChoice(req, "section", Object.keys(sectionThemes), "default");
+    const title = ogText(req, "title", "TechMastery", 70);
+    const desc = ogText(req, "desc", "Plateforme de maîtrise technique", 140);
+    const sub = ogText(req, "sub", "", 60);
 
     const theme = sectionThemes[section] || sectionThemes.default;
     const gradientColors = theme.gradient
@@ -238,7 +241,7 @@ export async function GET(req: NextRequest) {
           </div>
         </div>
       ),
-      { width: 1200, height: 630 },
+      { width: 1200, height: 630, headers: OG_CACHE_HEADERS },
     );
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";

@@ -16,7 +16,7 @@ import {
   Swords,
   Users,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { globalEditorRef } from "./pg-code-editor";
 import { usePlaygroundStore } from "../_stores/playground-store";
@@ -32,6 +32,23 @@ interface PaletteAction {
 
 export function PgCommandPalette() {
   const [open, setOpen] = useState(false);
+  const lastFocused = useRef<HTMLElement | null>(null);
+
+  // Modal behaviour: remember the last element focused outside the palette (the input takes
+  // focus through autoFocus before any effect could read it) and give it back on close.
+  useEffect(() => {
+    const onFocusIn = (e: FocusEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && !target.closest?.('[role="dialog"][aria-label="Command palette"]')) {
+        lastFocused.current = target;
+      }
+    };
+    document.addEventListener("focusin", onFocusIn);
+    return () => document.removeEventListener("focusin", onFocusIn);
+  }, []);
+  useEffect(() => {
+    if (!open) lastFocused.current?.focus?.();
+  }, [open]);
   const executeCode = usePlaygroundStore((s) => s.executeCode);
   const clearConsole = usePlaygroundStore((s) => s.clearConsole);
   const formatCode = usePlaygroundStore((s) => s.formatCode);
@@ -52,6 +69,8 @@ export function PgCommandPalette() {
       if ((e.ctrlKey || e.metaKey) && e.key === "k") {
         e.preventDefault();
         setOpen((o) => !o);
+      } else if (e.key === "Escape") {
+        setOpen(false);
       }
     };
     window.addEventListener("keydown", handler);
@@ -217,6 +236,7 @@ export function PgCommandPalette() {
       label: "AI Learning Assistant",
       icon: <Bot className="h-4 w-4" />,
       group: "Features",
+      shortcut: "Ctrl+I",
       execute: () => {
         close();
         setTimeout(
@@ -232,7 +252,12 @@ export function PgCommandPalette() {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Command palette"
+      className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]"
+    >
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
@@ -246,6 +271,7 @@ export function PgCommandPalette() {
           "bg-[#1e1e1e] shadow-2xl overflow-hidden",
         )}
         loop
+        label="Command palette"
       >
         <Command.Input
           placeholder="Type a command..."

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { PrismAsyncLight as SyntaxHighlighter } from "react-syntax-highlighter";
 import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -55,7 +55,7 @@ export function MDXContent({ content, className = "" }: MDXContentProps) {
 
   return (
     <div
-      className={`mdx-content prose prose-sm prose-invert max-w-none ${className}`}
+      className={`mdx-content prose prose-sm dark:prose-invert max-w-none ${className}`}
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}

@@ -6,7 +6,7 @@ export function useReadingProgress() {
   const [progress, setProgress] = useState(0);
   const [timeSpent, setTimeSpent] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
-  const [startTime] = useState(Date.now());
+  const [startTime] = useState(() => Date.now());
 
   const updateProgress = useCallback(() => {
     const element = document.documentElement;

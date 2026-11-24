@@ -1,13 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ReviewSearchService } from "@/lib/services/review-search";
-import { ReviewStatus } from "@prisma/client";
+import {
+  ReviewSearchService,
+  ReviewSearchUnavailableError,
+} from "@/lib/services/review-search";
+import { reviewSearchUnavailableResponse } from "@/lib/services/review-search-response";
+import { ReviewStatus } from "@/lib/generated/prisma/browser";
 import { logger } from "@/lib/structured-logger";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 /**
  * Advanced review search with full-text search and complex filtering
  * GET /api/reviews/search?q=excellent&courseId=xxx&rating=5&verified=true
  */
 export async function GET(request: NextRequest) {
+  const limited = await enforceRateLimit(request, "review-read", {
+    limit: 120,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   try {
     const { searchParams } = new URL(request.url);
 
@@ -30,8 +41,8 @@ export async function GET(request: NextRequest) {
             .map((r) => parseInt(r))
         : undefined,
       verified: searchParams.get("verified") === "true" ? true : undefined,
-      status:
-        (searchParams.get("status") as ReviewStatus) || ReviewStatus.APPROVED,
+      // Searching is public: only approved reviews are searched, whatever `status` the request carries
+      status: ReviewStatus.APPROVED,
       hasComment: searchParams.get("hasComment") === "true" ? true : undefined,
       hasReplies: searchParams.get("hasReplies") === "true" ? true : undefined,
       minHelpfulVotes: searchParams.get("minHelpfulVotes")
@@ -75,6 +86,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error) {
+    const unavailable = reviewSearchUnavailableResponse(error, "reviews.search");
+    if (unavailable) return unavailable;
+
     logger.error("Failed to search reviews", {
       metadata: {
         error: error instanceof Error ? error.message : String(error),
@@ -94,9 +108,16 @@ export async function GET(request: NextRequest) {
  * GET /api/reviews/search/suggestions?q=exc&courseId=xxx
  */
 export async function POST(request: NextRequest) {
+  const limited = await enforceRateLimit(request, "review-read", {
+    limit: 120,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   try {
     const body = await request.json();
-    const { query, courseId, limit = 10 } = body;
+    const { query, courseId } = body;
+    const limit = Math.min(20, Math.max(1, Math.floor(Number(body.limit)) || 10));
 
     if (!query || query.length < 2) {
       return NextResponse.json({ suggestions: [] });
@@ -111,6 +132,12 @@ export async function POST(request: NextRequest) {
       suggestions,
     });
   } catch (error) {
+    const unavailable = reviewSearchUnavailableResponse(
+      error,
+      "reviews.suggestions"
+    );
+    if (unavailable) return unavailable;
+
     logger.error("Failed to get search suggestions", {
       metadata: {
         error: error instanceof Error ? error.message : String(error),
@@ -195,6 +222,9 @@ async function getSuggestions(
         frequency: count as number,
       }));
   } catch (error) {
+    // An outage is not "no suggestions": let the handler answer 503
+    if (error instanceof ReviewSearchUnavailableError) throw error;
+
     logger.error("Failed to generate suggestions", {
       metadata: {
         error: error instanceof Error ? error.message : String(error),

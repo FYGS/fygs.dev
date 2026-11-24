@@ -1,134 +1,81 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { db } from "@/lib/db";
-import { Play } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { Play } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { courseStatusLabel } from "@/components/dashboard/my-course-card";
+import { getUserCoursesProgressOnce } from "@/lib/progress-summary";
 
-interface EnrolledCoursesProps {
-  userId: string;
-}
+/**
+ * The first block of the dashboard: the courses to resume, most recently worked on first (the first one is where
+ * the learner left off), with their next step.
+ */
+export async function EnrolledCourses({ userId }: { userId: string }) {
+  const all = await getUserCoursesProgressOnce(userId);
+  // In progress and open first; finished or closed ones are in « Mon apprentissage »
+  const resume = all.filter((c) => c.hasAccess && !c.isComplete && !c.hasCertificate);
+  const shown = (resume.length > 0 ? resume : all).slice(0, 4);
 
-export async function EnrolledCourses({ userId }: EnrolledCoursesProps) {
-  const enrollments = await db.enrollment.findMany({
-    where: { userId },
-    include: {
-      course: {
-        include: {
-          lessons: {
-            where: { published: true },
-            orderBy: { order: "asc" },
-            select: { id: true, duration: true, slug: true },
-          },
-        },
-      },
-    },
-    orderBy: { enrolledAt: "desc" },
-    take: 6,
-  });
-
-  const coursesWithProgress = await Promise.all(
-    enrollments.map(async (enrollment: any) => {
-      const progress = await db.progress.findMany({
-        where: {
-          userId,
-          lesson: {
-            courseId: enrollment.course.id,
-          },
-        },
-      });
-
-      const totalLessons = enrollment.course.lessons.length;
-      const completedLessons = progress.filter((p: any) => p.completed).length;
-      const progressPercentage = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
-
-      // Determine next lesson to continue
-      const completedSet = new Set(progress.filter((p: any) => p.completed).map((p: any) => p.lessonId));
-      const nextLesson = enrollment.course.lessons.find((l: any) => !completedSet.has(l.id)) || enrollment.course.lessons[0];
-
-      return {
-        ...enrollment,
-        progressPercentage: Math.round(progressPercentage),
-        completedLessons,
-        totalLessons,
-        nextLessonSlug: nextLesson?.slug || null,
-      };
-    })
-  );
-
-  if (coursesWithProgress.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Mes formations</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8">
-            <p className="text-muted-foreground mb-4">
-              Vous n&apos;êtes inscrit à aucune formation pour le moment.
-            </p>
+  return (
+    <Card>
+      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
+        <CardTitle as="h2" className="text-lg">
+          {resume.length > 0 ? "Reprendre" : "Mes formations"}
+        </CardTitle>
+        {all.length > 0 && (
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/dashboard/my-courses">Mon apprentissage</Link>
+          </Button>
+        )}
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {shown.length === 0 ? (
+          <div className="py-8 text-center">
+            <p className="mb-4 text-muted-foreground">Vous ne suivez aucune formation pour le moment.</p>
             <Button asChild>
               <Link href="/formations">Découvrir les formations</Link>
             </Button>
           </div>
-        </CardContent>
-      </Card>
-    );
-  }
+        ) : (
+          shown.map((course, index) => {
+            const status = courseStatusLabel(course);
+            return (
+              <div key={course.courseId} className="flex flex-wrap items-center gap-4 rounded-lg border p-4 sm:flex-nowrap">
+                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-muted">
+                  {course.thumbnail ? (
+                    <Image src={course.thumbnail} alt="" fill sizes="64px" className="object-cover" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <Play className="h-6 w-6 text-muted-foreground" aria-hidden />
+                    </div>
+                  )}
+                </div>
 
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Mes formations</CardTitle>
-        <Button variant="outline" size="sm" asChild>
-          <Link href="/formations">Voir tout</Link>
-        </Button>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {coursesWithProgress.map((enrollment: any) => (
-          <div
-            key={enrollment.id}
-            className="flex items-center gap-4 p-4 rounded-lg border hover:bg-muted/50 transition-colors"
-          >
-            <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0">
-              {enrollment.course.thumbnail ? (
-                <Image
-                  src={enrollment.course.thumbnail}
-                  alt={enrollment.course.title}
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-linear-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                  <Play className="h-6 w-6 text-primary/50" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <h3 className="text-sm font-medium leading-tight">
+                    <Link href={`/formations/${course.slug}`} className="hover:underline">
+                      {course.title}
+                    </Link>
+                    {status && <span className="ml-2 text-xs font-normal text-muted-foreground">· {status}</span>}
+                  </h3>
+                  <Progress value={course.percent} aria-label={`Progression dans ${course.title}`} className="h-2" />
+                  <p className="truncate text-xs text-muted-foreground">
+                    {course.nextStepTitle ? `Prochaine étape : ${course.nextStepTitle}` : `${course.done} / ${course.total} étapes`}
+                    {course.total > 0 && ` · ${course.percent} %`}
+                  </p>
                 </div>
-              )}
-            </div>
-            
-            <div className="flex-1 space-y-2">
-              <h4 className="font-medium text-sm leading-tight">
-                {enrollment.course.title}
-              </h4>
-              
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>
-                    {enrollment.completedLessons}/{enrollment.totalLessons} leçons
-                  </span>
-                  <span>{enrollment.progressPercentage}%</span>
-                </div>
-                <Progress value={enrollment.progressPercentage} className="h-2" />
+
+                <Button size="sm" variant={index === 0 && resume.length > 0 ? "default" : "outline"} asChild className="shrink-0">
+                  <Link href={course.continueHref}>
+                    {!course.hasAccess ? "Reprendre l’accès" : course.isComplete || course.hasCertificate ? "Revoir" : course.done === 0 ? "Commencer" : "Continuer"}
+                    <span className="sr-only"> : {course.title}</span>
+                  </Link>
+                </Button>
               </div>
-            </div>
-            
-            <Button size="sm" asChild>
-              <Link href={enrollment.nextLessonSlug ? `/formations/${enrollment.course.slug}/lessons/${enrollment.nextLessonSlug}` : `/formations/${enrollment.course.slug}`}>
-                {enrollment.progressPercentage > 0 ? "Continuer" : "Commencer"}
-              </Link>
-            </Button>
-          </div>
-        ))}
+            );
+          })
+        )}
       </CardContent>
     </Card>
   );

@@ -5014,11 +5014,11 @@ const url3 = \`\${BASE_URL}/comments\`;
 \`\`\`vim
 m{a-z}     " Set local mark (fichier courant)
 m{A-Z}     " Set global mark (persiste entre fichiers)
-`{mark}    " Jump to mark (ligne + colonne)
+\`{mark}    " Jump to mark (ligne + colonne)
 '{mark}    " Jump to mark (début de ligne)
 
 " Special marks
-``         " Jump to last jump
+\`\`         " Jump to last jump
 '"         " Jump to last edit position
 '[         " Jump to start of last change
 ']         " Jump to end of last change
@@ -5029,7 +5029,7 @@ m{A-Z}     " Set global mark (persiste entre fichiers)
 " Exemple pratique :
 " 1. mA sur une fonction importante
 " 2. Naviguer ailleurs
-" 3. `A pour y retourner instantanément
+" 3. \`A pour y retourner instantanément
 \`\`\`
 
 ### Répétition avec . (Dot Command)
@@ -5145,7 +5145,7 @@ Maîtriser Vim/Neovim est un **investissement long terme**. Après 2-3 mois de p
 - [ ] Macros qa...q, @a
 
 **Niveau Avancé 🏆**
-- [ ] Marks m{a-Z}, `{mark}
+- [ ] Marks m{a-Z}, \`{mark}
 - [ ] Global commands :g/pattern/command
 - [ ] Configuration Lua complète
 - [ ] LSP avec go-to-definition, refactoring

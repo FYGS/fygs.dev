@@ -30,16 +30,17 @@ export const ContactCard = ({
         <div className="relative size-10">
           <Image
             src={image}
-            alt={name}
-            width={32}
-            height={32}
+            alt=""
+            width={40}
+            height={40}
             className="size-10 rounded-full object-contain"
           />
           <Image
             src={mediumImage}
-            alt={name}
-            width={32}
-            height={32}
+            alt=""
+            aria-hidden="true"
+            width={16}
+            height={16}
             className="size-4 absolute -bottom-1 -right-1 rounded-full object-contain"
           />
         </div>

@@ -38,15 +38,14 @@ export function VirtualizationSection() {
       <CodeExample
         title="List Virtualization with react-window"
         description="Efficiently render large lists by only rendering visible items"
-        code={`import React from 'react';
-import { FixedSizeList } from 'react-window';
+        code={`import { List, useDynamicRowHeight } from 'react-window'; // react-window 2.x
 
 // Without virtualization - renders all items at once
 function LargeList({ items }) {
   return (
     <div style={{ height: '400px', overflow: 'auto' }}>
       {items.map((item, index) => (
-        <div key={index} style={{ height: '50px', padding: '10px' }}>
+        <div key={item} style={{ height: '50px', padding: '10px' }}>
           Item {index}: {item}
         </div>
       ))}
@@ -54,68 +53,74 @@ function LargeList({ items }) {
   );
 }
 
-// With virtualization - only renders visible items
-function VirtualizedList({ items }) {
-  // Row renderer function - will be called only for visible items
-  const Row = ({ index, style }) => (
-    <div style={{ ...style, padding: '10px' }}>
+// Row component defined OUTSIDE the parent component.
+// If it were declared inside VirtualizedList, it would be a new component
+// type on every render: React would unmount and remount every visible row
+// each time the parent re-renders (lost state, lost focus, wasted work).
+// It receives index, style and ariaAttributes from List, plus rowProps.
+function Row({ index, style, ariaAttributes, items }) {
+  return (
+    <div {...ariaAttributes} style={{ ...style, padding: '10px' }}>
       Item {index}: {items[index]}
     </div>
   );
+}
 
+// With virtualization - only renders visible rows (plus a small overscan)
+function VirtualizedList({ items }) {
   return (
-    <FixedSizeList
-      height={400}
-      width="100%"
-      itemCount={items.length}
-      itemSize={50}
-    >
-      {Row}
-    </FixedSizeList>
+    <List
+      rowComponent={Row}
+      rowCount={items.length}
+      rowHeight={50}
+      rowProps={{ items }} // extra props for Row (not index, style or ariaAttributes)
+      style={{ height: 400 }}
+    />
   );
 }
 
 // Usage
 function App() {
   // Create an array with 10,000 items
-  const items = Array.from({ length: 10000 }, (_, i) => \`Item \${i}\`);
-  
+  const items = Array.from({ length: 10000 }, (_, i) => 'Item ' + i);
+
   return (
     <div>
       <h2>Without Virtualization (Slow)</h2>
       <LargeList items={items} />
-      
+
       <h2>With Virtualization (Fast)</h2>
       <VirtualizedList items={items} />
     </div>
   );
 }
 
-// Variable size list example
-import { VariableSizeList } from 'react-window';
-
+// Variable size rows: rowHeight can be a function (index, rowProps) => number
 function VariableSizeListExample({ items }) {
-  // Function to determine the size of each item
-  const getItemSize = index => {
-    // Example: even items are taller
-    return index % 2 === 0 ? 80 : 50;
-  };
-  
-  const Row = ({ index, style }) => (
-    <div style={{ ...style, padding: '10px' }}>
-      Item {index}: {items[index]}
-    </div>
-  );
-  
   return (
-    <VariableSizeList
-      height={400}
-      width="100%"
-      itemCount={items.length}
-      itemSize={getItemSize}
-    >
-      {Row}
-    </VariableSizeList>
+    <List
+      rowComponent={Row}
+      rowCount={items.length}
+      rowHeight={(index) => (index % 2 === 0 ? 80 : 50)} // even rows are taller
+      rowProps={{ items }}
+      style={{ height: 400 }}
+    />
+  );
+}
+
+// Unknown heights: useDynamicRowHeight measures rows with a ResizeObserver
+// (less efficient than known sizes: prefer fixed or computed heights when possible)
+function DynamicListExample({ items }) {
+  const rowHeight = useDynamicRowHeight({ defaultRowHeight: 50 });
+
+  return (
+    <List
+      rowComponent={Row}
+      rowCount={items.length}
+      rowHeight={rowHeight}
+      rowProps={{ items }}
+      style={{ height: 400 }}
+    />
   );
 }`}
         explanation={
@@ -159,11 +164,11 @@ function VariableSizeListExample({ items }) {
             </p>
             
             <p className="mt-3">
-              The <code>VariableSizeList</code> example demonstrates how to handle items of different heights, which is common in real-world applications. The <code>getItemSize</code> function determines the height of each item based on its index.
+              The <code>VariableSizeListExample</code> shows rows of different heights: in react-window 2.x, <code>rowHeight</code> can be a number, a percentage string, a function of the row index, or the result of <code>useDynamicRowHeight</code> when heights are unknown until rendered. Note that <code>Row</code> is declared outside the components that use it: a row component created inside a parent is a new component type at every render, so React would remount all visible rows each time.
             </p>
             
             <p className="mt-3">
-              Libraries like <code>react-window</code> and <code>react-virtualized</code> provide optimized implementations of virtualization for React applications, with features like:
+              Libraries like <code>react-window</code> (a <code>List</code> and a <code>Grid</code> component since version 2) and <code>react-virtualized</code> provide optimized implementations of virtualization for React applications, with features like:
             </p>
             
             <ul className="list-disc pl-6 mt-2 space-y-1">
@@ -179,115 +184,97 @@ function VariableSizeListExample({ items }) {
           "Use virtualization for lists with more than a few hundred items",
           "Consider the trade-off between smooth scrolling and initial load time",
           "Measure performance before and after implementing virtualization",
-          "For complex use cases, react-virtualized offers more features than react-window but has a larger bundle size"
+          "Declare the row (or cell) component outside the parent component, and pass data through rowProps, so rows are not remounted at each render",
+          "react-window 2.x replaced FixedSizeList and VariableSizeList with List (rowComponent, rowCount, rowHeight, rowProps): check which major version your examples target",
+          "For complex use cases, react-virtualized or headless libraries such as TanStack Virtual offer more features than react-window; compare current bundle sizes on bundlephobia.com"
         ]}
       />
       
       <CodeExample
         title="Grid Virtualization and Advanced Techniques"
         description="Virtualize two-dimensional grids and implement advanced features"
-        code={`import React from 'react';
-import { FixedSizeGrid } from 'react-window';
-import InfiniteLoader from 'react-window-infinite-loader';
-import AutoSizer from 'react-virtualized-auto-sizer';
+        code={`import { Grid, List } from 'react-window'; // react-window 2.x
+
+// Cell component defined OUTSIDE the parent component (no remount on re-render)
+function Cell({ columnIndex, rowIndex, style, items, columnCount }) {
+  const index = rowIndex * columnCount + columnIndex;
+
+  if (index >= items.length) {
+    return <div style={style} />;
+  }
+
+  return (
+    <div style={{ ...style, padding: '10px', border: '1px solid #ddd' }}>
+      Item {index}: {items[index]}
+    </div>
+  );
+}
 
 // Grid virtualization example
 function VirtualizedGrid({ items, columnCount }) {
   const rowCount = Math.ceil(items.length / columnCount);
-  
-  const Cell = ({ columnIndex, rowIndex, style }) => {
-    const index = rowIndex * columnCount + columnIndex;
-    
-    if (index >= items.length) {
-      return <div style={style} />;
-    }
-    
-    return (
-      <div style={{ ...style, padding: '10px', border: '1px solid #ddd' }}>
-        Item {index}: {items[index]}
-      </div>
-    );
-  };
-  
+
   return (
-    <FixedSizeGrid
+    <Grid
+      cellComponent={Cell}
+      cellProps={{ items, columnCount }}
       columnCount={columnCount}
       columnWidth={200}
-      height={400}
       rowCount={rowCount}
       rowHeight={100}
-      width={600}
-    >
-      {Cell}
-    </FixedSizeGrid>
+      style={{ height: 400, width: 600 }}
+    />
   );
 }
 
-// Infinite loading example
-function InfiniteList({ items, loadMoreItems, hasMoreItems }) {
-  // Total item count is current items plus one more for loading
-  const itemCount = hasMoreItems ? items.length + 1 : items.length;
-  
-  // Are items loaded? If not, we'll show a loading indicator
-  const isItemLoaded = index => !hasMoreItems || index < items.length;
-  
-  // Render an item or a loading indicator
-  const Item = ({ index, style }) => {
-    if (!isItemLoaded(index)) {
-      return <div style={style}>Loading...</div>;
-    }
-    
-    return (
-      <div style={style}>
-        Item {index}: {items[index]}
-      </div>
-    );
-  };
-  
+// Infinite loading example (with onRowsRendered)
+function InfiniteRow({ index, style, items }) {
+  // The extra last row is the loading indicator
+  if (index >= items.length) {
+    return <div style={style}>Loading...</div>;
+  }
+
   return (
-    <InfiniteLoader
-      isItemLoaded={isItemLoaded}
-      itemCount={itemCount}
-      loadMoreItems={loadMoreItems}
-    >
-      {({ onItemsRendered, ref }) => (
-        <FixedSizeList
-          height={400}
-          width="100%"
-          itemCount={itemCount}
-          itemSize={50}
-          onItemsRendered={onItemsRendered}
-          ref={ref}
-        >
-          {Item}
-        </FixedSizeList>
-      )}
-    </InfiniteLoader>
-  );
-}
-
-// Auto-sizing example
-function AutoSizedList({ items }) {
-  const Row = ({ index, style }) => (
     <div style={style}>
       Item {index}: {items[index]}
     </div>
   );
-  
+}
+
+function InfiniteList({ items, loadMoreItems, hasMoreItems, isLoading }) {
+  // One more row than the loaded items while more data is available
+  const rowCount = hasMoreItems ? items.length + 1 : items.length;
+
+  return (
+    <List
+      rowComponent={InfiniteRow}
+      rowCount={rowCount}
+      rowHeight={50}
+      rowProps={{ items }}
+      onRowsRendered={({ stopIndex }) => {
+        // Load the next page when the last loaded row becomes visible
+        if (hasMoreItems && !isLoading && stopIndex >= items.length - 1) {
+          loadMoreItems();
+        }
+      }}
+      style={{ height: 400 }}
+    />
+  );
+}
+
+// Auto-sizing: react-window 2.x measures its container (ResizeObserver),
+// so the AutoSizer package of v1 is no longer needed.
+// Give the list a size through CSS, e.g. a parent with a height.
+function AutoSizedList({ items }) {
   return (
     <div style={{ height: '400px', width: '100%' }}>
-      <AutoSizer>
-        {({ height, width }) => (
-          <FixedSizeList
-            height={height}
-            width={width}
-            itemCount={items.length}
-            itemSize={50}
-          >
-            {Row}
-          </FixedSizeList>
-        )}
-      </AutoSizer>
+      <List
+        rowComponent={Row} // the Row defined above, outside any component
+        rowCount={items.length}
+        rowHeight={50}
+        rowProps={{ items }}
+        style={{ height: '100%' }}
+      />
     </div>
   );
 }`}
@@ -332,7 +319,7 @@ function AutoSizedList({ items }) {
             </ul>
             
             <p className="mt-3">
-              The <code>InfiniteLoader</code> component from <code>react-window-infinite-loader</code> helps manage the loading state and trigger loading more items when the user scrolls near the end of the list.
+              In react-window 2.x, the <code>onRowsRendered</code> callback reports which rows are visible, which is enough to trigger the next page when the user nears the end of the list (guard against concurrent requests with a loading flag). The react-window documentation also has a dedicated infinite loading page.
             </p>
             
             <p className="mt-3">
@@ -340,7 +327,7 @@ function AutoSizedList({ items }) {
             </p>
             
             <p>
-              The <code>AutoSizedList</code> example demonstrates how to make a virtualized list automatically adjust to its container&apos;s size. This is useful for:
+              The <code>AutoSizedList</code> example demonstrates how to make a virtualized list fill its container. This is useful for:
             </p>
             
             <ul className="list-disc pl-6 mt-2 space-y-1">
@@ -351,7 +338,7 @@ function AutoSizedList({ items }) {
             </ul>
             
             <p className="mt-3">
-              The <code>AutoSizer</code> component from <code>react-virtualized-auto-sizer</code> measures its container and passes the dimensions to the virtualized list, allowing it to fill the available space.
+              With react-window 1.x you needed the <code>AutoSizer</code> component from <code>react-virtualized-auto-sizer</code> to measure the container. react-window 2.x measures its own container (with a <code>ResizeObserver</code>), so a CSS height on the list or its parent is enough.
             </p>
             
             <p className="mt-3">
@@ -361,7 +348,7 @@ function AutoSizedList({ items }) {
         }
         tips={[
           "Use the React DevTools Profiler to measure the performance impact of virtualization",
-          "Consider using a debounce function for window resize events when using AutoSizer",
+          "react-window 2.x needs a ResizeObserver (available in all current browsers) unless you give explicit pixel dimensions",
           "For infinite loading, implement proper loading states and error handling",
           "Test your virtualized components with different screen sizes and device capabilities"
         ]}
@@ -386,13 +373,13 @@ function AutoSizedList({ items }) {
         questions={[
           {
             question: "Compare and contrast react-window and react-virtualized. When would you choose one over the other?",
-            answer: "Comparing react-window and react-virtualized: 1) Size: react-window is much smaller (~5KB vs ~30KB minified). 2) API: react-window has a simpler, more focused API, while react-virtualized offers more features and flexibility. 3) Components: react-window provides basic List and Grid components, while react-virtualized includes additional components like Table, Masonry, and Collection. 4) Features: react-virtualized includes built-in support for variable sizing, scrolling indicators, cell measuring, and more. react-window requires additional packages for some of these features. 5) Performance: react-window may have slightly better performance due to its simplified implementation. 6) Maintenance: react-window is newer and designed as a more modern replacement. Choose react-window when: You need a lightweight solution, have simpler use cases, or are concerned about bundle size. Choose react-virtualized when: You need advanced features like multi-directional scrolling, auto-sizing, sophisticated tables, or masonry layouts. The decision often comes down to balancing bundle size against feature requirements. For new projects, react-window is generally recommended unless you specifically need features only available in react-virtualized.",
+            answer: "Comparing react-window and react-virtualized: 1) Size: react-window is a much smaller library with a narrower API (check current gzip sizes on bundlephobia.com rather than relying on figures from older articles). 2) API: react-window has a simpler, more focused API, while react-virtualized offers more features and flexibility. 3) Components: react-window 2.x provides List and Grid components (v1 named them FixedSizeList, VariableSizeList, FixedSizeGrid and VariableSizeGrid) with a rowComponent/cellComponent API, while react-virtualized includes additional components like Table, Masonry, and Collection. 4) Features: react-virtualized includes built-in support for cell measuring, scrolling indicators, and more. react-window 2.x covers variable and dynamic row heights (useDynamicRowHeight), auto-sizing and scroll-to methods itself. 5) Performance: react-window is designed to do less work than react-virtualized. 6) Origin: react-window was written by the same author as a smaller, more focused alternative to react-virtualized. Also consider headless options such as TanStack Virtual or react-virtuoso. Choose react-window when: You need a lightweight solution, have simpler use cases, or are concerned about bundle size. Choose react-virtualized when: You need advanced features like multi-directional scrolling, auto-sizing, sophisticated tables, or masonry layouts. The decision often comes down to balancing bundle size against feature requirements. For new projects, react-window is generally recommended unless you specifically need features only available in react-virtualized.",
             difficulty: "medium",
             tags: ["React", "Libraries", "Comparison"]
           },
           {
             question: "How would you implement virtualization for a list with items of variable and unknown heights?",
-            answer: "Implementing virtualization for variable and unknown heights: 1) Use dynamic measurement: The CellMeasurer component from react-virtualized or the similar approach with react-window-dynamic. 2) Two-pass rendering approach: First render to measure, then render again with the measured sizes. 3) Height estimation with correction: Start with estimated heights, then adjust as actual measurements become available. 4) Cache measurements: Store height measurements to avoid re-measuring items. 5) Implementation steps: a) Create a cache to store measured heights: `const cache = new CellMeasurerCache({ defaultHeight: 50, fixedWidth: true });` b) Wrap list items with a measurement component: `<CellMeasurer cache={cache} index={index}>{(measure) => { return <div onLoad={measure}>Content</div>; }}</CellMeasurer>` c) Use the cache for item sizing: `<List itemSize={index => cache.getHeight(index)} />` 6) Handle resize events: Re-measure when container size changes. 7) Progressive enhancement: Show estimated content initially, then refine as measurements complete. 8) Prefetch and premeasure: Measure items just outside the visible area to reduce visible adjustments. 9) Debounce scroll events: Prevent excessive re-rendering during rapid scrolling. This approach balances performance with accuracy, providing smooth scrolling even with unpredictable content heights.",
+            answer: "Implementing virtualization for variable and unknown heights: 1) Use dynamic measurement: The CellMeasurer component from react-virtualized, or useDynamicRowHeight (react-window 2.x, based on ResizeObserver), or a library that measures dynamically such as TanStack Virtual or react-virtuoso. 2) Two-pass rendering approach: First render to measure, then render again with the measured sizes. 3) Height estimation with correction: Start with estimated heights, then adjust as actual measurements become available. 4) Cache measurements: Store height measurements to avoid re-measuring items. 5) Implementation steps: a) Create a cache to store measured heights: `const cache = new CellMeasurerCache({ defaultHeight: 50, fixedWidth: true });` b) Wrap list items with a measurement component: `<CellMeasurer cache={cache} parent={parent} columnIndex={0} rowIndex={index}>{({ registerChild }) => <div ref={registerChild}>Content</div>}</CellMeasurer>` c) Use the cache for row sizing: `<List deferredMeasurementCache={cache} rowHeight={cache.rowHeight} ... />` 6) Handle resize events: Re-measure when container size changes. 7) Progressive enhancement: Show estimated content initially, then refine as measurements complete. 8) Prefetch and premeasure: Measure items just outside the visible area to reduce visible adjustments. 9) Debounce scroll events: Prevent excessive re-rendering during rapid scrolling. This approach balances performance with accuracy, providing smooth scrolling even with unpredictable content heights.",
             difficulty: "hard",
             tags: ["React", "Implementation", "Advanced"]
           },

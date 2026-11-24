@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowRight, CheckCircle, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { CodeEditor } from "./code-editor/code-editor";
@@ -19,7 +19,7 @@ import { CodeRunner } from "./code-editor/code-runner";
 type ExerciseType = "linear" | "binary" | "jump" | "interpolation" | "hash";
 
 // Données des exercices
-const exercises = [
+export const exercises = [
   {
     id: "linear",
     title: "Recherche Linéaire",
@@ -173,7 +173,7 @@ console.log(jumpSearch([1, 3, 5, 7, 9, 11, 13, 15, 17, 19], 13)); // Devrait ret
 console.log(jumpSearch([1, 3, 5, 7, 9, 11, 13, 15, 17, 19], 4));  // Devrait retourner -1`,
     solution: `function jumpSearch(arr, target) {
   const n = arr.length;
-  const step = Math.floor(Math.sqrt(n));
+  let step = Math.floor(Math.sqrt(n));
 
   // Trouver le bloc
   let prev = 0;
@@ -248,7 +248,8 @@ console.log(interpolationSearch([1, 3, 5, 7, 9, 11, 13, 15, 17, 19], 4));  // De
   let high = arr.length - 1;
 
   while (low <= high && target >= arr[low] && target <= arr[high]) {
-    if (low === high) {
+    // Évite une division par zéro (valeurs identiques dans [low, high])
+    if (arr[low] === arr[high]) {
       return arr[low] === target ? low : -1;
     }
 
@@ -333,7 +334,8 @@ console.log(hashSearch([10, 20, 15, 5, 25], 8));  // Devrait retourner -1`,
 
   // Construction de la table de hachage
   for (let i = 0; i < arr.length; i++) {
-    hashMap.set(arr[i], i);
+    // On ne définit que si la clé est absente : on garde la PREMIÈRE occurrence
+    if (!hashMap.has(arr[i])) hashMap.set(arr[i], i);
   }
 
   // Recherche dans la table de hachage
@@ -378,11 +380,11 @@ console.log(hashSearch([10, 20, 15, 5, 25], 8));  // Retourne -1`,
       {
         name: "Tableau avec doublons",
         test: (fn: (...args: unknown[]) => unknown) => {
-          // La fonction devrait retourner l'index de la première occurrence
+          // La fonction doit retourner l'index de la première occurrence
           const result = fn([10, 20, 10, 5, 25], 10);
-          return result === 0 || result === 2;
+          return result === 0;
         },
-        expectedOutput: "0 ou 2",
+        expectedOutput: "0",
       },
     ],
   },
@@ -429,8 +431,8 @@ export function SearchingExercisesImproved() {
             </TabsTrigger>
           ))}
         </TabsList>
-      </Tabs>
 
+        <TabsContent value={activeExercise} className="mt-6 space-y-8">
       {/* Exercice actif */}
       <Card>
         <CardHeader>
@@ -444,6 +446,7 @@ export function SearchingExercisesImproved() {
           </div>
 
           <CodeRunner
+            key={currentExercise.id}
             initialCode={currentExercise.template}
             language="javascript"
             title={`Exercice: ${currentExercise.title}`}
@@ -528,6 +531,8 @@ export function SearchingExercisesImproved() {
           </CardContent>
         </Card>
       )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

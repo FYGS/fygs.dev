@@ -1,16 +1,12 @@
-import { Metadata } from "next";
 import { ComplexityGuide } from "./_components/complexity-guide";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Complexité Algorithmique | Algorithmes",
-  description:
-    "Comprendre et analyser la complexité temporelle et spatiale des algorithmes pour les entretiens techniques",
-};
+export const metadata = topicMetadata("/tech-mastry/algorithms/complexity");
 
 export default function ComplexityPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <ComplexityGuide />
-    </main>
+    </div>
   );
 }

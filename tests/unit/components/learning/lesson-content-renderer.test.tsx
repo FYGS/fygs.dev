@@ -73,6 +73,42 @@ describe("LessonContentRenderer", () => {
     expect(viewer.textContent).toContain("const a = { value: 1 };");
   });
 
+  it("keeps a code block of the editor whole, blank lines included", () => {
+    // Read as Markdown, an HTML block ends at the first blank line: the end of the code would be lost
+    render(
+      <LessonContentRenderer
+        content={["<p>Avant</p><pre><code class=\"language-js\">const a = 1;", "", "const b = 2;</code></pre><p>Après</p>"].join("\n")}
+      />,
+    );
+    const viewer = screen.getByTestId("enhanced-code-viewer");
+    expect(viewer.getAttribute("data-language")).toBe("js");
+    expect(viewer.textContent).toContain("const a = 1;");
+    expect(viewer.textContent).toContain("const b = 2;");
+    expect(screen.getByText("Après")).toBeInTheDocument();
+  });
+
+  it("shows images from any host as plain images, lazily (no next/image host check)", () => {
+    const { container } = render(<LessonContentRenderer content={'<p><img src="https://images.example.org/schema.png" alt="Schéma"></p>'} />);
+    const img = container.querySelector("img")!;
+    expect(img.getAttribute("src")).toBe("https://images.example.org/schema.png");
+    expect(img.getAttribute("alt")).toBe("Schéma");
+    expect(img.getAttribute("loading")).toBe("lazy");
+  });
+
+  it("underlines links so they are not told apart by colour only", () => {
+    render(<LessonContentRenderer content={'<p><a href="https://react.dev">la documentation</a></p>'} />);
+    expect(screen.getByRole("link", { name: "la documentation" }).className).toContain("underline");
+  });
+
+  it("renders slide HTML through the same sanitiser: handlers and scripts never survive", () => {
+    const { container } = render(
+      <LessonContentRenderer content={'<div class="grid"><h3>Section</h3><img src="x" onerror="alert(1)"><script>alert(2)</script></div>'} />,
+    );
+    expect(screen.getByRole("heading", { name: "Section" })).toBeInTheDocument();
+    expect(container.innerHTML).not.toContain("onerror");
+    expect(container.querySelector("script")).toBeNull();
+  });
+
   it("sanitizes javascript links to safe fallback", () => {
     render(<LessonContentRenderer content="[cliquer](javascript:alert(1))" />);
 

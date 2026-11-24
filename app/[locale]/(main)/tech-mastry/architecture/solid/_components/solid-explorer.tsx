@@ -135,7 +135,8 @@ class Eagle implements FlyingBird {
 
 class Penguin implements Bird {
   move() { return "Swimming!"; }
-  // Pas de méthode fly() — correct !`,
+  // Pas de méthode fly() — correct !
+}`,
     },
     color: "text-yellow-500",
   },
@@ -204,7 +205,7 @@ class Robot implements Workable, Reportable {
     violation: {
       label: "❌ Violation",
       code: `class MySQLDatabase {
-  save(data: any) { /* MySQL specific */ }
+  save(data: unknown) { /* MySQL specific */ }
 }
 
 class UserRepository {
@@ -221,16 +222,16 @@ class UserRepository {
       label: "✅ Correct",
       code: `// Abstraction
 interface Database {
-  save(data: any): Promise<void>;
+  save(data: unknown): Promise<void>;
 }
 
 // Implémentation concrète
 class MySQLDatabase implements Database {
-  async save(data: any) { /* MySQL */ }
+  async save(data: unknown) { /* MySQL */ }
 }
 
 class MongoDatabase implements Database {
-  async save(data: any) { /* MongoDB */ }
+  async save(data: unknown) { /* MongoDB */ }
 }
 
 // Dépend de l'abstraction
@@ -296,7 +297,7 @@ export function SolidExplorer() {
             <Badge variant="destructive" className="text-xs">
               {principle.violation.label}
             </Badge>
-            <pre className="bg-red-500/5 border border-red-500/20 rounded-lg p-4 overflow-x-auto text-sm">
+            <pre className="bg-red-500/5 border border-red-500/20 rounded-lg p-4 overflow-x-auto text-sm" tabIndex={0}>
               <code>{principle.violation.code}</code>
             </pre>
           </div>
@@ -304,7 +305,7 @@ export function SolidExplorer() {
             <Badge className="bg-green-500/10 text-green-500 text-xs">
               {principle.correct.label}
             </Badge>
-            <pre className="bg-green-500/5 border border-green-500/20 rounded-lg p-4 overflow-x-auto text-sm">
+            <pre className="bg-green-500/5 border border-green-500/20 rounded-lg p-4 overflow-x-auto text-sm" tabIndex={0}>
               <code>{principle.correct.code}</code>
             </pre>
           </div>

@@ -469,7 +469,7 @@ export function DPPractice() {
                                 <h4 className="text-sm font-medium mb-1">
                                   Solution
                                 </h4>
-                                <pre className="text-xs bg-muted p-3 rounded-md overflow-auto">
+                                <pre className="text-xs bg-muted p-3 rounded-md overflow-auto" tabIndex={0}>
                                   {question.solution}
                                 </pre>
                               </div>

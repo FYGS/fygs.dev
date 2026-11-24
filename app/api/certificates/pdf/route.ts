@@ -1,69 +1,93 @@
-import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
-import { db } from '@/lib/db';
-import jsPDF from 'jspdf';
+import { NextResponse } from "next/server";
+import { headers } from "next/headers";
+import jsPDF from "jspdf";
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { enforceRateLimit } from "@/lib/rate-limit";
+import { certificateVerifyUrl, findCertificateByCode, type CertificateRecord } from "@/lib/learning/certificates";
+import { MAX_COURSES_CHARS, MAX_LINES, MAX_NAME_CHARS, MAX_TITLE_CHARS, clip } from "@/lib/learning/certificate-text";
 
 // Needs Node runtime because auth/email service transitively pulls in nodemailer (depends on 'stream').
-export const runtime = 'nodejs';
+export const runtime = "nodejs";
 
+const longDate = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeZone: "Europe/Paris" });
+
+/**
+ * The PDF of a course or path certificate: `?code=<verification code>`. Only its holder may download it
+ * (anyone can check it on the verification page). `?courseId=` is still answered for links made before codes.
+ */
 export async function GET(request: Request) {
-  const url = new URL(request.url);
-  let courseId = url.searchParams.get('courseId');
-  if (!courseId) {
-    // Fallback: allow /api/certificates/pdf/<courseId>
-    const parts = url.pathname.split('/');
-    const maybeId = parts[parts.length - 1];
-    if (maybeId && maybeId !== 'pdf') courseId = maybeId;
-  }
-  if (!courseId) return NextResponse.json({ ok: false, error: 'MISSING_COURSE_ID' }, { status: 400 });
+  const limited = await enforceRateLimit(request, "pdf", { limit: 20, windowSeconds: 60 });
+  if (limited) return limited;
+
   const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user?.id) return NextResponse.json({ ok: false, error: 'UNAUTHENTICATED' }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ ok: false, error: "UNAUTHENTICATED" }, { status: 401 });
   const userId = session.user.id;
 
-  const cert = await db.certificate.findUnique({ where: { userId_courseId: { userId, courseId } }, select: { issuedAt: true } });
-  if (!cert) return NextResponse.json({ ok: false, error: 'NOT_FOUND' }, { status: 404 });
-  const course = await db.course.findUnique({ where: { id: courseId }, select: { title: true } });
-  if (!course) return NextResponse.json({ ok: false, error: 'COURSE_NOT_FOUND' }, { status: 404 });
+  const url = new URL(request.url);
+  let code = url.searchParams.get("code");
+  const courseId = url.searchParams.get("courseId");
+  if (!code && courseId) {
+    const cert = await db.certificate.findUnique({ where: { userId_courseId: { userId, courseId } }, select: { code: true } });
+    code = cert?.code ?? null;
+  }
+  if (!code) return NextResponse.json({ ok: false, error: "MISSING_CODE" }, { status: 400 });
 
-  const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
-  const w = doc.internal.pageSize.getWidth();
-  const h = doc.internal.pageSize.getHeight();
-  const center = (text: string, y: number, size: number, style: string = 'normal') => {
-    doc.setFont('helvetica', style as any);
-    doc.setFontSize(size);
-    const textWidth = doc.getTextWidth(text);
-    doc.text(text, (w - textWidth) / 2, y);
-  };
-  // Border frame
-  doc.setDrawColor('#444');
-  doc.setLineWidth(3);
-  doc.rect(28, 28, w - 56, h - 56, 'S');
-  doc.setDrawColor('#999');
-  doc.setLineWidth(1);
-  doc.rect(46, 46, w - 92, h - 92, 'S');
-  center('FYGS DEV', 120, 28, 'bold');
-  center('CERTIFICAT DE COMPLÉTION', 170, 36, 'bold');
-  center('Décerné à', 220, 16);
-  center(session.user.name || session.user.email, 260, 30, 'bold');
-  center('Pour avoir complété la formation', 300, 14);
-  center(course.title, 338, 24, 'bold');
-  center(`Délivré le ${new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(cert.issuedAt)}`, 378, 14);
-  // Signature lines
-  doc.setFontSize(12);
-  doc.text('__________________________', 140, h - 170);
-  doc.text('Responsable Pédagogique', 150, h - 150);
-  doc.text('__________________________', w - 340, h - 170);
-  doc.text('Fernand SOUALO', w - 300, h - 150);
-  doc.setFontSize(9);
-  center('Ce certificat confirme la complétion réussie conformément aux standards de qualité FYGS DEV.', h - 80, 10);
-  const pdfBytes = doc.output('arraybuffer');
+  const certificate = await findCertificateByCode(code);
+  if (!certificate || certificate.holderId !== userId) {
+    return NextResponse.json({ ok: false, error: "NOT_FOUND" }, { status: 404 });
+  }
 
-  return new NextResponse(pdfBytes, {
+  return new NextResponse(renderCertificatePdf(certificate), {
     status: 200,
     headers: {
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename=certificate-${courseId}.pdf`
-    }
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename=certificat-fygs-${certificate.code.slice(0, 8)}.pdf`,
+      "Cache-Control": "private, no-store",
+    },
   });
+}
+
+function renderCertificatePdf(certificate: CertificateRecord): ArrayBuffer {
+  const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+  const w = doc.internal.pageSize.getWidth();
+  const h = doc.internal.pageSize.getHeight();
+  const center = (text: string, y: number, size: number, style: "normal" | "bold" = "normal") => {
+    doc.setFont("helvetica", style);
+    doc.setFontSize(size);
+    // long titles are wrapped rather than running off the page
+    const lines = (doc.splitTextToSize(text, w - 160) as string[]).slice(0, MAX_LINES);
+    lines.forEach((line, i) => doc.text(line, (w - doc.getTextWidth(line)) / 2, y + i * size * 1.15));
+    return lines.length;
+  };
+
+  doc.setDrawColor("#444");
+  doc.setLineWidth(3);
+  doc.rect(28, 28, w - 56, h - 56, "S");
+  doc.setDrawColor("#999");
+  doc.setLineWidth(1);
+  doc.rect(46, 46, w - 92, h - 92, "S");
+
+  const isPath = certificate.kind === "path";
+  center("FYGS", 110, 26, "bold");
+  center(isPath ? "CERTIFICAT DE PARCOURS" : "CERTIFICAT DE RÉUSSITE", 155, 32, "bold");
+  center("Décerné à", 200, 15);
+  center(clip(certificate.holderName, MAX_NAME_CHARS), 238, 28, "bold");
+  center(isPath ? "pour avoir mené à terme le parcours" : "pour avoir terminé la formation", 274, 14);
+  const titleLines = center(clip(certificate.title, MAX_TITLE_CHARS), 308, 22, "bold");
+  let y = 308 + titleLines * 26 + 8;
+  if (isPath && certificate.courseTitles.length > 0) {
+    center(clip(certificate.courseTitles.join(" · "), MAX_COURSES_CHARS), y, 11);
+    y += 22;
+  }
+  center(`Délivré le ${longDate.format(certificate.issuedAt)}`, y + 10, 13);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(12);
+  doc.text("__________________________", w - 340, h - 170);
+  doc.text("Fernand SOUALO, formateur", w - 330, h - 150);
+
+  center(`Code de vérification : ${certificate.code}`, h - 110, 10);
+  center(certificateVerifyUrl(certificate.code), h - 94, 9);
+  return doc.output("arraybuffer");
 }

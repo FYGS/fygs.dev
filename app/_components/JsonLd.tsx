@@ -1,3 +1,5 @@
+import { serializeJsonLd } from "@/lib/jsonld";
+
 const SITE_URL = "https://fygs.dev";
 
 interface BreadcrumbListSchema {
@@ -162,7 +164,7 @@ export function JsonLd() {
           key={`jsonld-${index}`}
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(schemaItem),
+            __html: serializeJsonLd(schemaItem),
           }}
         />
       ))}

@@ -57,6 +57,13 @@ export function usePlaygroundShortcuts() {
         return;
       }
 
+      // Ctrl/Cmd+I → AI assistant (open it, or focus its input when open)
+      if (ctrl && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "i") {
+        e.preventDefault();
+        window.dispatchEvent(new Event("pg-open-ai-assistant"));
+        return;
+      }
+
       // Ctrl+K → Command palette (handled in pg-command-palette)
       // Escape → handled by dialogs
     };

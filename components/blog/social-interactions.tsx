@@ -16,7 +16,7 @@ export function SocialInteractions({ slug, variant }: SocialInteractionsProps) {
     <SocialInteractionsClient
       slug={slug}
       variant={variant}
-      onLike={(userId) => handleLike(slug, userId)}
+      onLike={() => handleLike(slug)}
       onShare={() => handleShare(slug)}
     />
   );

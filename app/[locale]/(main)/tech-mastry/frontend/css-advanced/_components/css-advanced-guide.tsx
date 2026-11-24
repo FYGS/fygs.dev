@@ -51,7 +51,7 @@ const topics = [
   gap: 1.5rem;
 }
 
-/* Masonry-like avec subgrid */
+/* Pseudo-masonry : chaque item occupe N lignes de 10px (pas de subgrid ici) */
 .masonry {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -91,7 +91,8 @@ const topics = [
   background: linear-gradient(135deg, #667eea, #764ba2);
 }
 
-/* Scroll-driven animations (Chrome 115+) */
+/* Scroll-driven animations : Chrome/Edge 115+, Safari 26+. Pas encore Baseline
+   (Firefox n'a pas de support par défaut) : prévoyez un repli sans animation */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
@@ -102,7 +103,38 @@ const topics = [
   animation-timeline: view();
   animation-range: entry 0% entry 100%;
 }`,
-        description: "Morphing, animations au scroll, et transitions GPU-accélérées.",
+        description: "Morphing, animations au scroll (compatibilité à vérifier), et animations de transform/opacity qui restent sur le compositeur.",
+      },
+      {
+        title: "Réduire les animations & View Transitions",
+        css: `/* Respecter la préférence « réduire les animations » (accessibilité) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* View Transitions (même document) : Baseline "newly available" depuis octobre 2025 */
+/* JS : document.startViewTransition(() => updateDOM()); */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.3s;
+}
+
+/* Nommer un élément pour l'animer d'un état à l'autre */
+.product-image {
+  view-transition-name: product-hero;
+}
+
+/* Transitions entre pages (cross-document) : opt-in en CSS,
+   support plus récent et inégal : vérifiez la compatibilité */
+@view-transition {
+  navigation: auto;
+}`,
+        description: "Désactivez ou réduisez les animations pour les utilisateurs qui le demandent. Les View Transitions animent les changements d'état du DOM (même document : Baseline newly available).",
       },
     ],
   },
@@ -137,7 +169,7 @@ const topics = [
 .responsive-text {
   font-size: clamp(1rem, 3cqi, 2rem);
 }`,
-        description: "Responsive au niveau du composant, pas de la fenêtre. Le futur du responsive design.",
+        description: "Responsive au niveau du composant, pas de la fenêtre. Les container queries de taille sont Baseline widely available depuis 2025.",
       },
     ],
   },
@@ -158,8 +190,11 @@ const topics = [
 }
 
 @layer utilities {
-  .text-xl { font-size: 1.25rem !important; }
+  .text-xl { font-size: 1.25rem; }
 }
+/* Attention : avec !important, l'ordre des layers s'inverse
+   (base l'emporte sur utilities). Et le CSS hors layer
+   l'emporte toujours sur le CSS en layer. */
 
 /* :has() — Parent selector enfin ! */
 .card:has(img) {
@@ -175,7 +210,72 @@ const topics = [
 :is(h1, h2, h3):hover {
   color: var(--primary);
 }`,
-        description: "Layers pour organiser la cascade, :has() comme sélecteur parent, et pseudo-classes logiques.",
+        description: "Layers pour organiser la cascade, :has() comme sélecteur parent, et pseudo-classes logiques (:has() et les layers sont Baseline widely available).",
+      },
+      {
+        title: "@scope, ancrage et if() : état du support",
+        css: `/* @scope : limiter la portée des styles sans nommer chaque classe
+   Baseline "newly available" (depuis mars 2026) */
+@scope (.card) to (.card-footer) {
+  :scope { border: 1px solid var(--border); }
+  img { border-radius: 0.5rem; }  /* uniquement entre .card et .card-footer */
+}
+
+/* Anchor positioning : positionner un popover par rapport à un ancre, sans JS
+   Statut Baseline : "limited" (octobre 2026) : vérifiez caniuse / MDN avant
+   de l'utiliser sans repli */
+.tooltip-trigger { anchor-name: --tip; }
+.tooltip {
+  position: absolute;
+  position-anchor: --tip;
+  position-area: top;            /* ou : bottom: anchor(top); */
+  position-try-fallbacks: flip-block;
+}
+
+/* if() : conditions dans les valeurs de propriétés
+   Chrome/Edge 137+ ; Baseline "limited" : à utiliser en amélioration progressive */
+.button {
+  padding: if(media(any-pointer: coarse): 1rem; else: 0.5rem);
+}
+
+/* Détecter le support avec @supports plutôt que par le user agent */
+@supports (position-area: top) {
+  .tooltip { /* styles d'ancrage */ }
+}`,
+        description: "Ces fonctionnalités récentes n'ont pas toutes le même statut : @scope est Baseline newly available, anchor positioning et if() restent limités. Vérifiez le statut sur MDN ou webstatus.dev avant de les utiliser en production.",
+      },
+    ],
+  },
+  {
+    name: "Tailwind CSS v4",
+    examples: [
+      {
+        title: "Configuration CSS-first",
+        css: `/* app/globals.css — Tailwind v4 */
+@import "tailwindcss";   /* remplace @tailwind base/components/utilities */
+
+/* Les design tokens se déclarent en CSS avec @theme (plus de tailwind.config.js obligatoire) */
+@theme {
+  --color-brand: oklch(0.62 0.19 259);
+  --font-display: "Inter", sans-serif;
+  --breakpoint-3xl: 120rem;
+}
+/* Génère les utilitaires bg-brand, text-brand, font-display, 3xl:... */
+
+/* Utilitaires et variantes personnalisés */
+@utility scrollbar-hidden {
+  scrollbar-width: none;
+}
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Dans le HTML :
+   bg-(--my-var)        → variables CSS (anciennement bg-[--my-var])
+   bg-linear-to-r       → renomme bg-gradient-to-r
+   shadow-xs / rounded-xs → anciennes shadow-sm / rounded-sm
+   outline-hidden       → ancien outline-none
+   flex!                → modificateur important en suffixe (ancien !flex)
+   @container + @lg:... → container queries intégrées */`,
+        description: "Tailwind v4 : configuration en CSS (@theme), détection automatique des fichiers, plugin PostCSS ou Vite dédié, et utilitaires renommés. Nécessite des navigateurs modernes (Safari 16.4+, Chrome 111+, Firefox 128+).",
       },
     ],
   },
@@ -209,7 +309,7 @@ export function CSSAdvancedGuide() {
               <Badge variant="outline">CSS</Badge>
             </div>
             <p className="text-muted-foreground">{ex.description}</p>
-            <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+            <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
               <code>{ex.css}</code>
             </pre>
           </Card>
@@ -222,7 +322,7 @@ export function CSSAdvancedGuide() {
           {[
             "Expliquez la différence entre Grid et Flexbox — quand utiliser l'un ou l'autre ?",
             "Comment fonctionne la cascade CSS ? Qu'est-ce que la spécificité ?",
-            "Comment optimiser les animations CSS pour 60fps ? (will-change, transform, opacity)",
+            "Comment optimiser les animations CSS pour un rendu fluide ? (transform, opacity, will-change avec parcimonie) Et prefers-reduced-motion ?",
             "Qu'est-ce que le BFC (Block Formatting Context) et comment l'utiliser ?",
             "Comment créer un layout responsive sans media queries ? (auto-fit, clamp, container queries)",
           ].map((q, i) => (

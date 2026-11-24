@@ -11,190 +11,59 @@ import {
   LayoutDashboard,
   BookOpen,
   Users,
-  FileText,
-  FolderOpen,
-  Settings,
   BarChart3,
   CreditCard,
   Shield,
   Zap,
   ChevronLeft,
   ChevronRight,
-  GraduationCap,
   MessageSquare,
   Tag,
   Calendar,
-  Database,
   Palette,
   Globe,
   Activity,
   MessageCircle,
+  MessageCircleQuestion,
+  Route,
 } from "lucide-react";
+import { navigationFor, type AdminNavEntry } from "@/lib/admin-navigation";
 
 interface AdminSidebarProps {
   userRole: string;
+  /** Things waiting for the user, shown next to their entry. */
+  counters?: Partial<Record<NonNullable<AdminNavEntry["counter"]>, number>>;
 }
 
-interface NavItem {
-  title: string;
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-  badge?: string;
-  description?: string;
-  adminOnly?: boolean;
-}
+const ICONS: Record<AdminNavEntry["icon"], React.ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" }>> = {
+  dashboard: LayoutDashboard,
+  courses: BookOpen,
+  questions: MessageCircleQuestion,
+  paths: Route,
+  tags: Tag,
+  certificates: Shield,
+  users: Users,
+  enrollments: Activity,
+  analytics: BarChart3,
+  payments: CreditCard,
+  subscriptions: Zap,
+  reviews: MessageSquare,
+  community: MessageCircle,
+};
 
-const navigation: NavItem[] = [
-  // Dashboard - Always visible
-  {
-    title: "Vue d'ensemble",
-    href: "/admin",
-    icon: LayoutDashboard,
-    description: "Tableau de bord et métriques",
-  },
-
-  // Content Management Section
-  {
-    title: "Formations",
-    href: "/admin/courses",
-    icon: BookOpen,
-    description: "Cours, leçons et contenus pédagogiques",
-  },
-  {
-    title: "Leçons",
-    href: "/admin/lessons",
-    icon: GraduationCap,
-    description: "Gestion détaillée des leçons",
-  },
-  {
-    title: "Tags & Catégories",
-    href: "/admin/tags",
-    icon: Tag,
-    description: "Organisation du contenu",
-  },
-  {
-    title: "Certificats",
-    href: "/admin/certificates",
-    icon: Shield,
-    description: "Génération et gestion des certificats",
-  },
-
-  // User Management Section (Role-based visibility)
-  {
-    title: "Utilisateurs",
-    href: "/admin/users",
-    icon: Users,
-    description: "Gestion des comptes utilisateurs",
-    adminOnly: true,
-  },
-  {
-    title: "Inscriptions",
-    href: "/admin/enrollments",
-    icon: Activity,
-    description: "Suivi des inscriptions aux cours",
-  },
-  {
-    title: "Progrès & Performance",
-    href: "/admin/progress",
-    icon: BarChart3,
-    description: "Progression et analytics des étudiants",
-  },
-
-  // Business & Analytics Section (Admin-focused)
-  {
-    title: "Analytics",
-    href: "/admin/analytics",
-    icon: BarChart3,
-    description: "Rapports détaillés et métriques",
-  },
-  {
-    title: "Paiements",
-    href: "/admin/payments",
-    icon: CreditCard,
-    description: "Transactions et gestion financière",
-    adminOnly: true,
-  },
-  {
-    title: "Abonnements",
-    href: "/admin/subscriptions",
-    icon: Zap,
-    description: "Gestion des plans premium",
-    adminOnly: true,
-  },
-  {
-    title: "Revenus",
-    href: "/admin/revenue",
-    icon: Database,
-    description: "Suivi des revenus et facturations",
-    adminOnly: true,
-  },
-
-  // Communication & Content
-  {
-    title: "Avis & Commentaires",
-    href: "/admin/reviews",
-    icon: MessageSquare,
-    description: "Modération des avis utilisateurs",
-  },
-  {
-    title: "Communauté",
-    href: "/admin/community",
-    icon: MessageCircle,
-    description: "Gestion du forum et discussions",
-  },
-  {
-    title: "Blog",
-    href: "/admin/blog",
-    icon: FileText,
-    description: "Articles et actualités",
-  },
-  {
-    title: "Projets",
-    href: "/admin/projects",
-    icon: FolderOpen,
-    description: "Portfolio et projets réalisés",
-  },
-  {
-    title: "Pages",
-    href: "/admin/pages",
-    icon: Globe,
-    description: "Pages statiques et contenu",
-  },
-
-  // System Administration (Admin only)
-  {
-    title: "Paramètres",
-    href: "/admin/settings",
-    icon: Settings,
-    description: "Configuration de la plateforme",
-    adminOnly: true,
-  },
-  {
-    title: "Base de données",
-    href: "/admin/database",
-    icon: Database,
-    description: "Maintenance et backups",
-    adminOnly: true,
-  },
-  {
-    title: "Sécurité",
-    href: "/admin/security",
-    icon: Shield,
-    description: "Logs et sécurité",
-    adminOnly: true,
-  },
-];
-
-export function AdminSidebar({ userRole }: AdminSidebarProps) {
+export function AdminSidebar({ userRole, counters = {} }: AdminSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
 
-  const filteredNavigation = navigation.filter(
-    (item) => !item.adminOnly || userRole === "ADMIN",
-  );
+  const filteredNavigation = navigationFor(userRole).map((entry) => ({
+    ...entry,
+    icon: ICONS[entry.icon],
+    badge: entry.counter && counters[entry.counter] ? String(counters[entry.counter]) : undefined,
+  }));
 
   return (
-    <div
+    <aside
+      aria-label="Menu d'administration"
       className={cn(
         "bg-slate-900 border-r border-slate-700 transition-all duration-300 flex flex-col",
         collapsed ? "w-16" : "w-72",
@@ -209,9 +78,7 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
                 <Palette className="h-4 w-4 text-white" />
               </div>
               <div>
-                <h2 className="font-bold text-lg text-gradient-heading">
-                  Admin
-                </h2>
+                <p className="font-bold text-lg text-gradient-heading">Admin</p>
                 <p className="text-xs text-muted-foreground">FYGS Platform</p>
               </div>
             </div>
@@ -221,11 +88,13 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
             size="sm"
             onClick={() => setCollapsed(!collapsed)}
             className="h-8 w-8 p-0"
+            aria-label={collapsed ? "Développer le menu" : "Réduire le menu"}
+            aria-expanded={!collapsed}
           >
             {collapsed ? (
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-4 w-4" aria-hidden="true" />
             ) : (
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-4 w-4" aria-hidden="true" />
             )}
           </Button>
         </div>
@@ -237,29 +106,25 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
         type="auto"
         scrollHideDelay={300}
       >
+        <nav aria-label="Navigation d'administration">
         {filteredNavigation.map((item) => {
           const isActive =
             pathname === item.href ||
             (item.href !== "/admin" && pathname.startsWith(item.href));
 
           return (
-            <Link key={item.href} href={item.href}>
-              <div
-                className={cn(
-                  "group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-slate-800 focus:outline-hidden focus:ring-2 focus:ring-primary/50",
-                  isActive &&
-                    "bg-primary/10 text-primary border border-primary/20",
-                  collapsed && "justify-center px-2",
-                )}
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    window.location.href = item.href;
-                  }
-                }}
-                aria-current={isActive ? "page" : undefined}
-              >
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-slate-800 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50",
+                isActive && "bg-primary/10 text-primary border border-primary/20",
+                collapsed && "justify-center px-2",
+              )}
+              aria-current={isActive ? "page" : undefined}
+              aria-label={collapsed ? item.title : undefined}
+            >
+              <>
                 <item.icon
                   className={cn(
                     "h-5 w-5 shrink-0 transition-colors",
@@ -286,7 +151,7 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
                           <Badge
                             variant="secondary"
                             className="ml-2 h-5 text-xs"
-                            aria-label={`Badge: ${item.badge}`}
+                            aria-label={`${item.badge} en attente`}
                           >
                             {item.badge}
                           </Badge>
@@ -303,10 +168,11 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
                     </div>
                   </>
                 )}
-              </div>
+              </>
             </Link>
           );
         })}
+        </nav>
       </ScrollArea>
 
       {/* Footer */}
@@ -324,6 +190,6 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
           </div>
         )}
       </div>
-    </div>
+    </aside>
   );
 }

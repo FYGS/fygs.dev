@@ -29,9 +29,9 @@ function ThemeProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext value={{ theme, toggleTheme }}>
       {children}
-    </ThemeContext.Provider>
+    </ThemeContext>
   );
 }
 
@@ -118,9 +118,9 @@ function ThemeProvider({ children }) {
   };
   
   return (
-    <ThemeContext.Provider value={value}>
+    <ThemeContext value={value}>
       {children}
-    </ThemeContext.Provider>
+    </ThemeContext>
   );
 }
 
@@ -187,7 +187,7 @@ function Content() {
                 <strong>Context Object</strong>: Créé avec <code>createContext(defaultValue)</code>, il contient un Provider et un Consumer.
               </li>
               <li>
-                <strong>Provider</strong>: Composant qui permet aux composants enfants de s&apos;abonner aux changements de contexte.
+                <strong>Provider</strong>: Composant qui permet aux composants enfants de s&apos;abonner aux changements de contexte. Depuis React 19, on rend directement le Context (<code>{"<ThemeContext value={value}>"}</code>) ; <code>Context.Provider</code> reste supporté mais sera déprécié.
               </li>
               <li>
                 <strong>Consumer</strong>: Permet de consommer la valeur actuelle du contexte. Dans les composants fonctionnels, on utilise généralement le hook <code>useContext</code>.
@@ -213,7 +213,7 @@ function Content() {
           },
           {
             question: "Comment optimiser les performances lors de l'utilisation de Context API?",
-            answer: "Pour optimiser les performances avec Context API: 1) Divisez votre état global en plusieurs contextes plus petits et spécifiques pour éviter des re-rendus inutiles. 2) Utilisez la technique de mémoisation avec React.memo pour les composants qui consomment le contexte. 3) Implémentez une structure de contexte à deux niveaux: un pour l'état et un pour les fonctions de mise à jour. 4) Utilisez useReducer avec useMemo pour stabiliser les références des fonctions. 5) Considérez des bibliothèques comme use-context-selector qui permettent de ne s'abonner qu'à une partie spécifique du contexte. 6) Pour les applications plus grandes avec des mises à jour fréquentes, envisagez d'utiliser une solution de gestion d'état plus optimisée comme Redux ou Zustand.",
+            answer: "Pour optimiser les performances avec Context API: 1) Divisez votre état global en plusieurs contextes plus petits et spécifiques pour éviter des re-rendus inutiles. 2) Utilisez React.memo sur les composants enfants qui ne consomment pas le contexte (React.memo n'empêche pas le re-rendu d'un composant dont le contexte consommé change). 3) Implémentez une structure de contexte à deux niveaux: un pour l'état et un pour les fonctions de mise à jour. 4) Utilisez useReducer avec useMemo pour stabiliser les références des fonctions. 5) Considérez des bibliothèques comme use-context-selector qui permettent de ne s'abonner qu'à une partie spécifique du contexte. 6) Pour les applications plus grandes avec des mises à jour fréquentes, envisagez d'utiliser une solution de gestion d'état plus optimisée comme Redux ou Zustand.",
             difficulty: "hard",
             tags: ["Performance", "Optimisation"]
           }
@@ -284,9 +284,9 @@ function TodoProvider({ children }) {
   };
   
   return (
-    <TodoContext.Provider value={value}>
+    <TodoContext value={value}>
       {children}
-    </TodoContext.Provider>
+    </TodoContext>
   );
 }
 
@@ -384,7 +384,7 @@ function TodoApp() {
         interviewQuestions={[
           {
             question: "Expliquez le pattern de Context avec useReducer et ses avantages par rapport à useState avec Context.",
-            answer: "Le pattern Context + useReducer combine le Context API pour le partage d'état global avec useReducer pour une gestion d'état plus structurée. Avantages par rapport à useState + Context: 1) Logique de mise à jour centralisée dans un reducer, facilitant la maintenance. 2) Actions explicites qui documentent toutes les façons dont l'état peut changer. 3) Meilleure performance pour les mises à jour complexes car useReducer ne déclenche qu'un seul re-rendu même pour plusieurs changements d'état. 4) Facilite le débogage car toutes les transitions d'état sont explicites. 5) Pattern similaire à Redux, facilitant la transition si nécessaire. 6) Meilleure séparation des préoccupations entre la logique d'état et les composants UI.",
+            answer: "Le pattern Context + useReducer combine le Context API pour le partage d'état global avec useReducer pour une gestion d'état plus structurée. Avantages par rapport à useState + Context: 1) Logique de mise à jour centralisée dans un reducer, facilitant la maintenance. 2) Actions explicites qui documentent toutes les façons dont l'état peut changer. 3) Une seule fonction dispatch stable (identité constante) que l'on peut exposer dans un contexte séparé pour limiter les re-rendus. 4) Facilite le débogage car toutes les transitions d'état sont explicites. 5) Pattern similaire à Redux, facilitant la transition si nécessaire. 6) Meilleure séparation des préoccupations entre la logique d'état et les composants UI.",
             difficulty: "medium",
             tags: ["Context API", "useReducer", "Patterns"]
           },
@@ -414,13 +414,13 @@ function TodoApp() {
           },
           {
             question: "Comment éviter les re-rendus inutiles lors de l'utilisation de Context?",
-            answer: "Pour éviter les re-rendus inutiles avec Context: 1) Divisez votre état global en plusieurs contextes plus petits et spécifiques. 2) Séparez l'état et les fonctions de mise à jour dans des contextes différents. 3) Utilisez la mémoisation avec React.memo pour les composants qui consomment le contexte. 4) Utilisez useMemo pour mémoriser les valeurs du contexte: `const value = useMemo(() => ({ state, actions }), [state]);` 5) Utilisez useCallback pour stabiliser les références des fonctions. 6) Considérez des bibliothèques comme use-context-selector qui permettent de ne s'abonner qu'à une partie spécifique du contexte. 7) Pour les structures de données complexes, utilisez l'immutabilité structurelle pour permettre des comparaisons de référence rapides.",
+            answer: "Pour éviter les re-rendus inutiles avec Context: 1) Divisez votre état global en plusieurs contextes plus petits et spécifiques. 2) Séparez l'état et les fonctions de mise à jour dans des contextes différents. 3) Utilisez React.memo sur les composants enfants qui ne consomment pas le contexte (il n'empêche pas le re-rendu d'un composant dont le contexte consommé change). 4) Utilisez useMemo pour mémoriser les valeurs du contexte: `const value = useMemo(() => ({ state, actions }), [state]);` 5) Utilisez useCallback pour stabiliser les références des fonctions. 6) Considérez des bibliothèques comme use-context-selector qui permettent de ne s'abonner qu'à une partie spécifique du contexte. 7) Pour les structures de données complexes, utilisez l'immutabilité structurelle pour permettre des comparaisons de référence rapides.",
             difficulty: "hard",
             tags: ["Performance", "Optimisation"]
           },
           {
             question: "Comment tester des composants qui utilisent Context API?",
-            answer: "Pour tester des composants qui utilisent Context API: 1) Créez un wrapper de test qui fournit le contexte nécessaire: `const wrapper = ({ children }) => <MyContext.Provider value={mockValue}>{children}</MyContext.Provider>;` 2) Utilisez ce wrapper lors du rendu du composant dans vos tests: `render(<MyComponent />, { wrapper });` 3) Pour les hooks personnalisés qui utilisent useContext, vous pouvez soit les tester dans un composant de test, soit mocker le hook useContext lui-même. 4) Utilisez jest.mock pour mocker les hooks personnalisés qui accèdent au contexte: `jest.mock('../hooks/useMyContext', () => ({ useMyContext: () => mockContextValue }));` 5) Pour les tests d'intégration, fournissez un état réaliste au Provider. 6) Testez les interactions en simulant les événements et en vérifiant que le contexte est mis à jour correctement. 7) Utilisez des outils comme React Testing Library qui encouragent à tester le comportement plutôt que l'implémentation.",
+            answer: "Pour tester des composants qui utilisent Context API: 1) Créez un wrapper de test qui fournit le contexte nécessaire: `const wrapper = ({ children }) => <MyContext value={mockValue}>{children}</MyContext>;` 2) Utilisez ce wrapper lors du rendu du composant dans vos tests: `render(<MyComponent />, { wrapper });` 3) Pour les hooks personnalisés qui utilisent useContext, vous pouvez soit les tester dans un composant de test, soit mocker le hook useContext lui-même. 4) Utilisez jest.mock pour mocker les hooks personnalisés qui accèdent au contexte: `jest.mock('../hooks/useMyContext', () => ({ useMyContext: () => mockContextValue }));` 5) Pour les tests d'intégration, fournissez un état réaliste au Provider. 6) Testez les interactions en simulant les événements et en vérifiant que le contexte est mis à jour correctement. 7) Utilisez des outils comme React Testing Library qui encouragent à tester le comportement plutôt que l'implémentation.",
             difficulty: "medium",
             tags: ["Testing", "Best Practices"]
           }

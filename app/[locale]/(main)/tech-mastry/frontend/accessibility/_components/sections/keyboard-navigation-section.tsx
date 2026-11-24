@@ -209,8 +209,9 @@ export function KeyboardNavigationSection() {
 // Links should have meaningful text and be focusable
 <a href="/contact">Contact Us</a>
 
-// Non-interactive elements should not be focusable
-<div tabindex="-1">This div is not focusable</div>
+// Non-interactive elements should not be in the tab order
+// (tabindex="-1" only allows programmatic focus via element.focus())
+<div tabindex="-1">Focusable by script only, not by Tab</div>
 
 // Custom interactive elements need tabindex="0" to be focusable
 <div role="button" tabindex="0" onclick="handleClick()" onkeydown="handleKeyDown(event)">
@@ -226,7 +227,9 @@ function handleKeyDown(event) {
   }
 }
 
-// Managing focus order with tabindex
+// Positive tabindex values override the natural order: avoid them (hard to maintain,
+// they confuse users). Prefer a logical DOM order, and use tabindex="0" / "-1" only.
+// Shown here only to explain how the focus order would be altered:
 <div>
   <button tabindex="1">First focus</button>
   <button tabindex="3">Third focus</button>
@@ -383,7 +386,7 @@ function trapFocus(element) {
             question:
               "What are the best practices for implementing keyboard shortcuts in web applications?",
             answer:
-              "Best practices for keyboard shortcuts in web applications: 1) Use standard shortcuts when possible (Ctrl+S for save, Ctrl+Z for undo). 2) Avoid overriding browser or screen reader shortcuts. 3) Make shortcuts discoverable through documentation, tooltips, or a help modal. 4) Allow users to customize or disable shortcuts to prevent conflicts. 5) Group related shortcuts logically. 6) Use modifier keys (Ctrl, Alt, Shift) to avoid accidental activation. 7) Consider international keyboard layouts when choosing shortcuts. 8) Provide visual feedback when shortcuts are activated. 9) Make all shortcut functionality also available through standard UI controls. 10) Test shortcuts with different browsers and assistive technologies. 11) Consider using the WAI-ARIA key attribute to communicate available shortcuts. 12) Implement a shortcut help dialog accessible via '?' key. 13) For complex applications, consider implementing different shortcut modes (like Vim's normal/insert modes). 14) Ensure shortcuts work consistently across the entire application. These practices create a more efficient experience for power users while maintaining accessibility for all users.",
+              "Best practices for keyboard shortcuts in web applications: 1) Use standard shortcuts when possible (Ctrl+S for save, Ctrl+Z for undo). 2) Avoid overriding browser or screen reader shortcuts. 3) Make shortcuts discoverable through documentation, tooltips, or a help modal. 4) Allow users to customize or disable shortcuts to prevent conflicts. 5) Group related shortcuts logically. 6) Use modifier keys (Ctrl, Alt, Shift) to avoid accidental activation. 7) Consider international keyboard layouts when choosing shortcuts. 8) Provide visual feedback when shortcuts are activated. 9) Make all shortcut functionality also available through standard UI controls. 10) Test shortcuts with different browsers and assistive technologies. 11) Consider using the aria-keyshortcuts attribute to communicate available shortcuts. 12) Implement a shortcut help dialog accessible via '?' key. 13) For complex applications, consider implementing different shortcut modes (like Vim's normal/insert modes). 14) Ensure shortcuts work consistently across the entire application. These practices create a more efficient experience for power users while maintaining accessibility for all users.",
             difficulty: "medium",
             tags: ["Accessibility", "UX", "Keyboard Shortcuts"],
           },

@@ -319,7 +319,7 @@ function App() {
         date="15 Nov 2023"
       >
         <p>React est une bibliothèque JavaScript pour construire des interfaces utilisateur.</p>
-        <p>Elle est maintenue par Facebook et une communauté de développeurs.</p>
+        <p>Elle est maintenue par Meta et une communauté de développeurs.</p>
       </Card>
     </div>
   );
@@ -389,7 +389,7 @@ function App() {
             question:
               "Expliquez le concept de composants d'ordre supérieur (HOC) en React.",
             answer:
-              "Un HOC est une fonction qui prend un composant et retourne un nouveau composant avec des fonctionnalités supplémentaires. C'est un modèle avancé de réutilisation de code en React, basé sur le principe de composition plutôt que d'héritage. Les HOCs sont utilisés pour des fonctionnalités transversales comme l'authentification, la journalisation, ou la gestion d'état. Exemple: withRouter de React Router ou connect de Redux.",
+              "Un HOC est une fonction qui prend un composant et retourne un nouveau composant avec des fonctionnalités supplémentaires. C'est un modèle avancé de réutilisation de code en React, basé sur le principe de composition plutôt que d'héritage. Les HOCs sont utilisés pour des fonctionnalités transversales comme l'authentification, la journalisation, ou la gestion d'état. Exemple: connect de React Redux.",
             difficulty: "hard",
             tags: ["Avancé", "Patterns"],
           },

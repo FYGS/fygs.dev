@@ -1,28 +1,33 @@
-import { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { auth } from "@/lib/auth";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound, permanentRedirect } from "next/navigation";
 import { headers } from "next/headers";
-import { AccessService, UserAccess } from "@/lib/access-service";
-import { CourseRepository } from "@/lib/repositories/course-repository";
-import { serializeCourseDetail } from "@/lib/serializers/course-serializer";
-import { logger, createLogger } from "@/lib/structured-logger";
-import { Analytics } from "@/lib/analytics";
+import { Award, CheckCircle2 } from "lucide-react";
+import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { CourseHeader } from "./_components/course-header";
-import { CourseCurriculum } from "./_components/course-curriculum";
-import { CourseEnrollment } from "./_components/course-enrollment";
-import { CourseReviews } from "./_components/course-reviews";
-import { CourseBreadcrumb } from "./_components/course-breadcrumb";
-import { PaymentStatus } from "./_components/payment-status";
-import { CourseResumeBanner } from "./_components/course-resume-banner";
-import { TrainingOverview } from "./_components/training-overview";
-import { CoursePublicContent } from "./_components/course-public-content";
-import { CourseTrailer } from "@/components/marketing/course-trailer";
+import { logger, createLogger } from "@/lib/structured-logger";
+import { Analytics } from "@/lib/analytics-helper";
 import { CourseFaq } from "@/components/marketing/course-faq";
-import { TrustBadges } from "@/components/marketing/trust-badges";
-import { SocialProof } from "@/components/marketing/social-proof";
-import { CertificateReveal } from "@/components/learning/certificate-reveal";
-import { SerializedCourse } from "./types";
+import { CourseTrailer } from "@/components/marketing/course-trailer";
+import { Button } from "@/components/ui/button";
+import { CoursePathBadges } from "@/components/paths/course-path-badges";
+import { CourseOfferPanel, type OfferViewerState } from "@/app/_components/payment/course-offer-panel";
+import { courseOffer } from "@/lib/access/offer";
+import { findRedirectedCourseSlug } from "@/lib/courses/slug-redirect";
+import { canOpenItem, resolveLearnerAccess } from "@/lib/learning/access";
+import { loadCourseOutline, loadLearnerCourseState } from "@/lib/learning/course-state";
+import { buildCurriculumView, curriculumStats } from "@/lib/learning/curriculum-view";
+import { displayedCourseMinutes } from "@/lib/format-duration";
+import { computeProgress, itemHref, type OutlineItem } from "@/lib/learning/outline";
+import { getOwnReview, getReviewPage, getReviewSummary } from "@/lib/reviews/course-reviews";
+import { CourseBreadcrumb } from "./_components/course-breadcrumb";
+import { CourseCurriculum } from "./_components/course-curriculum";
+import { CourseHeader } from "./_components/course-header";
+import { CoursePublicContent } from "./_components/course-public-content";
+import { CourseResumeBanner } from "./_components/course-resume-banner";
+import { CourseReviews } from "./_components/course-reviews";
+import { LockedNotice } from "./_components/locked-notice";
+import { PaymentStatus } from "./_components/payment-status";
 
 interface CoursePageProps {
   params: Promise<{ slug: string }>;
@@ -30,45 +35,36 @@ interface CoursePageProps {
     success?: string;
     canceled?: string;
     preview?: string;
+    locked?: string;
+    /** The step of the learning area that sent the visitor here (sign-in comes back to it). */
+    from?: string;
   }>;
 }
 
-export async function generateMetadata({
-  params,
-}: CoursePageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: CoursePageProps): Promise<Metadata> {
   const { slug } = await params;
-  // Lightweight fetch via repository (TODO: add specialized lightweight method if needed)
-  const course = await CourseRepository.findBySlug(slug);
+  const course = await db.course.findFirst({
+    where: { slug, published: true },
+    select: { title: true, description: true, thumbnail: true },
+  });
+  if (!course) return { title: "Formation introuvable", robots: { index: false } };
 
-  if (!course) {
-    return {
-      title: "Formation non trouvée",
-    };
-  }
-
+  const title = `${course.title} | Formations FYGS`;
   return {
-    title: `${course.title} | Formations FYGS`,
+    title,
     description: course.description,
+    alternates: { canonical: `/formations/${slug}` },
     openGraph: {
-      title: `${course.title} | Formations FYGS`,
+      title,
       description: course.description,
       type: "website",
       url: `/formations/${slug}`,
       siteName: "FYGS Learning Platform",
-      images: course.thumbnail
-        ? [
-            {
-              url: course.thumbnail,
-              width: 1200,
-              height: 630,
-              alt: course.title,
-            },
-          ]
-        : [],
+      images: course.thumbnail ? [{ url: course.thumbnail, width: 1200, height: 630, alt: course.title }] : [],
     },
     twitter: {
       card: "summary_large_image",
-      title: `${course.title} | Formations FYGS`,
+      title,
       description: course.description,
       images: course.thumbnail ? [course.thumbnail] : [],
       creator: "@fernand_soualo",
@@ -76,360 +72,275 @@ export async function generateMetadata({
   };
 }
 
-export default async function CoursePage({
-  params,
-  searchParams,
-}: CoursePageProps) {
+export default async function CoursePage({ params, searchParams }: CoursePageProps) {
   const { slug } = await params;
-  const { success, canceled, preview } = await searchParams;
+  const query = await searchParams;
 
   const correlationId = logger.generateCorrelationId();
-  const courseLogger = createLogger({
-    operation: "course-page-view",
-    correlationId,
-    resourceType: "course",
-    resourceId: slug,
+  const courseLogger = createLogger({ operation: "course-page-view", correlationId, resourceType: "course", resourceId: slug });
+
+  const session = await auth.api.getSession({ headers: await headers() });
+  const user = session?.user ?? null;
+  courseLogger.info("Course page accessed", { userId: user?.id, resourceId: slug, metadata: { authenticated: !!user } });
+
+  const course = await db.course.findUnique({
+    where: { slug },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      description: true,
+      thumbnail: true,
+      price: true,
+      category: true,
+      level: true,
+      published: true,
+      accessTier: true,
+      duration: true,
+      instructorId: true,
+      instructor: { select: { name: true } },
+      updatedAt: true,
+      trailerUrl: true,
+      faq: true,
+      objectives: true,
+      publicStructure: true,
+      publicResources: true,
+      publicEvaluation: true,
+      publicPrerequisites: true,
+      tags: { select: { tag: { select: { name: true, color: true } } } },
+      _count: { select: { enrollments: true } },
+    },
   });
 
-  // Check authentication
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  if (!course) {
+    // A former address of a course leads to its current one
+    const current = await findRedirectedCourseSlug(slug);
+    if (current) permanentRedirect(`/formations/${current}`);
+    notFound();
+  }
 
-  const isAuthenticated = !!session?.user;
-  const userId = session?.user?.id;
+  // A draft is shown to its author (or an admin) who asks for the preview
+  const isStaff = !!user && (user.role === "ADMIN" || (user.role === "INSTRUCTOR" && course.instructorId === user.id));
+  if (!course.published && !(query.preview === "true" && isStaff)) notFound();
 
-  courseLogger.info("Course page accessed", {
-    userId,
-    resourceId: slug,
-    metadata: { authenticated: isAuthenticated },
-  });
+  const outline = await loadCourseOutline(course.id);
+  const [state, access, resourceCount, certificate, summary, firstReviews, ownReview] = await Promise.all([
+    user ? loadLearnerCourseState(user.id, course.id, outline) : Promise.resolve(null),
+    resolveLearnerAccess({ userId: user?.id ?? null, role: user?.role, course, outline }),
+    db.lessonResource.count({ where: { lesson: { courseId: course.id, published: true } } }),
+    // A certificate stays the learner's, whatever happens to their access
+    user
+      ? db.certificate.findUnique({ where: { userId_courseId: { userId: user.id, courseId: course.id } }, select: { id: true } })
+      : Promise.resolve(null),
+    getReviewSummary(course.id),
+    getReviewPage({ courseId: course.id, viewerId: user?.id ?? null }),
+    user ? getOwnReview(user.id, course.id) : Promise.resolve(null),
+  ]);
 
-  const course = await CourseRepository.findBySlug(slug);
-
-  // Check user access using AccessService
-  let userAccess: UserAccess = {
-    hasActiveSubscription: false,
-    isEnrolledInCourse: false,
-    canAccessCourse: false,
-    canAccessLessons: false,
-    canPreviewFirstLesson: false,
-    isFreeCourse: false,
-    isPremiumCourse: false,
-  };
-  let userProgress: {
-    lessonId: string;
-    completed: boolean;
-    completedAt?: Date | null;
-  }[] = [];
-  // Resume information (lastPosition & next uncompleted) - computed after access check
-  let lastPosition: {
-    lessonId: string;
-    slug: string;
-    seconds?: number;
-  } | null = null;
-  let nextUncompletedLesson: {
-    lessonId: string;
-    title: string;
-    slug: string;
-  } | null = null;
-  let earnedCertificate: { id: string; issuedAt: Date } | null = null;
-
-  if (userId && course?.id) {
-    userAccess = await AccessService.checkCourseAccess(userId, course.id);
-
-    // Track analytics for course view
-    await Analytics.courseCardViewed(userId, {
+  if (user) {
+    await Analytics.courseCardViewed(user.id, {
       courseId: course.id,
       courseSlug: slug,
-      courseTier: course.accessTier || "FREE",
-      hasActiveSubscription: userAccess.hasActiveSubscription,
-      isEnrolled: userAccess.isEnrolledInCourse,
+      courseTier: course.accessTier,
+      hasActiveSubscription: access.hasActiveSubscription,
+      isEnrolled: access.isEnrolled,
       correlationId,
     });
-
-    // Get user progress if they have access
-    if (userAccess.canAccessLessons) {
-      userProgress = await AccessService.getCourseProgress(userId, course.id);
-      // Compute last position & next lesson
-      const completedLessonIds = new Set(
-        userProgress.filter((p) => p.completed).map((p) => p.lessonId),
-      );
-      const orderedLessons = (course.lessons || []).sort(
-        (a: { order: number }, b: { order: number }) => a.order - b.order,
-      );
-      // Last completed
-      const lastCompleted = [...userProgress]
-        .filter((p) => p.completed)
-        .sort(
-          (a, b) =>
-            (b.completedAt?.getTime() || 0) - (a.completedAt?.getTime() || 0),
-        )[0];
-      if (lastCompleted) {
-        const l = orderedLessons.find(
-          (l: { id: string; slug: string }) => l.id === lastCompleted.lessonId,
-        );
-        if (l) lastPosition = { lessonId: l.id, slug: l.slug };
-      }
-      // Next uncompleted
-      const next = orderedLessons.find(
-        (l: { id: string; slug: string; title: string }) =>
-          !completedLessonIds.has(l.id),
-      );
-      if (next)
-        nextUncompletedLesson = {
-          lessonId: next.id,
-          slug: next.slug,
-          title: next.title,
-        };
-    }
-
-    earnedCertificate = await db.certificate.findUnique({
-      where: {
-        userId_courseId: {
-          userId,
-          courseId: course.id,
-        },
-      },
-      select: {
-        id: true,
-        issuedAt: true,
-      },
-    });
   }
 
-  const isUnlocked = userAccess.canAccessCourse;
-  const canPreview = userAccess.canPreviewFirstLesson;
-  const isEnrolled = userAccess.isEnrolledInCourse;
-  const hasActiveSubscription = userAccess.hasActiveSubscription;
+  const progress = state?.progress ?? computeProgress(outline, { completedLessonIds: new Set(), passedQuizIds: new Set(), examPassed: false });
+  const isDone = (item: OutlineItem) =>
+    !state ? false : item.kind === "lesson" ? state.completedLessonIds.has(item.id) : item.kind === "quiz" ? state.passedQuizIds.has(item.id) : state.examPassed;
 
-  if (!course || !course.published) {
-    // Allow preview mode for ADMIN/INSTRUCTOR
-    const isPreviewMode = preview === "true";
-    const canPreviewUnpublished =
-      isPreviewMode &&
-      session?.user &&
-      (session.user.role === "ADMIN" ||
-        (session.user.role === "INSTRUCTOR" &&
-          course?.instructorId === session.user.id));
+  const entitled = access.mode === "full";
+  const previewIds = new Set(access.previewLessonIds);
+  const canOpen = (item: OutlineItem) => canOpenItem(access.mode, item, outline, previewIds);
 
-    if (!course || !canPreviewUnpublished) {
-      notFound();
-    }
-  }
+  // "Aperçu gratuit" marks the lessons the sample rule opens (flagged ones, and the first one when the course offers it)
+  const sections = buildCurriculumView(outline, course.slug, { isDone, nextId: entitled ? (progress.next?.id ?? null) : null, canOpen }).map(
+    (section) => ({ ...section, items: section.items.map((item) => ({ ...item, isPreview: !entitled && previewIds.has(item.id) })) }),
+  );
+  const stats = curriculumStats(outline);
+  const minutes = displayedCourseMinutes(stats.minutes, course.duration);
+  const nextSection = progress.next ? sections.findIndex((s) => s.items.some((i) => i.id === progress.next?.id)) : -1;
 
-  const detail = serializeCourseDetail(course);
+  const offer = courseOffer(course.accessTier, course.price);
+  const viewerState: OfferViewerState = !user
+    ? "anonymous"
+    : access.mode === "staff"
+      ? "staff"
+      : entitled
+        ? "entitled"
+        : access.lapsed
+          ? "lapsed"
+          : access.eligible
+            ? "eligible"
+            : "none";
+  const paymentPending = query.success === "true" && !entitled;
+  const returnTo =
+    query.from && query.from.startsWith(`/learn/${course.slug}`) ? query.from : `/formations/${course.slug}`;
 
-  // Adapt to legacy SerializedCourse shape (components still expect nested tag.tag)
-  const serializedCourse: SerializedCourse = {
-    id: detail.id,
-    title: detail.title,
-    slug: detail.slug,
-    description: detail.description,
-    thumbnail: detail.thumbnail,
-    price: detail.price,
-    category: course.category,
-    level: detail.level,
-    published: course.published,
-    featured: detail.featured,
-    duration: detail.duration,
-    createdAt: detail.createdAt,
-    updatedAt: detail.updatedAt,
-    lessons: detail.lessons.map((l) => ({
-      id: l.id,
-      title: l.title,
-      slug: l.slug,
-      description: l.description ?? null,
-      duration: l.duration,
-      order: l.order,
-      moduleId: l.moduleId || null,
-    })),
-    modules: detail.modules.map((m) => ({
-      id: m.id,
-      title: m.title,
-      slug: m.slug,
-      order: m.order,
-      courseId: m.courseId,
-      lessons: m.lessons.map((l) => ({
-        id: l.id,
-        title: l.title,
-        slug: l.slug,
-        description: l.description ?? null,
-        duration: l.duration,
-        order: l.order,
-        moduleId: l.moduleId || null,
-      })),
-    })),
-    quizzes:
-      detail.quizzes?.map((q) => ({
-        id: q.id,
-        moduleId: q.moduleId,
-        title: q.title,
-        questions: q.questions.map((question) => ({
-          id: question.id,
-          question: question.question,
-          options: question.options,
-          correct: question.correct,
-          explanation: question.explanation || "",
-          order: question.order,
-        })),
-      })) || [],
-    visualSupports:
-      detail.visualSupports?.map((vs) => ({
-        id: vs.id,
-        title: vs.title,
-        moduleId: vs.moduleId,
-        order: vs.order,
-        content: vs.content as {
-          slides: Array<{ title: string; content: any }>;
-        },
-      })) || [],
-    reviews: detail.reviews.map((r) => ({
-      id: r.id,
-      userId: r.userId,
-      courseId: r.courseId,
-      rating: r.rating,
-      comment: r.comment,
-      createdAt: r.createdAt,
-      updatedAt: r.updatedAt,
-      user: r.user,
-    })),
-    tags: detail.tags.map((t) => ({
-      tag: { id: t.id, name: t.name, color: t.color },
-    })),
-    enrollments: (course.enrollments || []).map((e: { id: string }) => ({
-      id: e.id,
-    })),
-    // Enriched flags (for client components expecting them later)
-    isUnlocked,
-    isInSubscription: hasActiveSubscription,
-    isEnrolled,
-    hasEntitlement: hasActiveSubscription || isEnrolled || detail.price === 0,
-  };
+  const offerPanel = (
+      <CourseOfferPanel
+        course={{ id: course.id, slug: course.slug, title: course.title }}
+        offer={offer}
+        state={viewerState}
+        source={access.source}
+        lapsed={access.lapsed}
+        continueHref={progress.next ? itemHref(course.slug, progress.next) : `/learn/${course.slug}`}
+        continueLabel={progress.done > 0 ? (progress.next ? "Reprendre la formation" : "Revoir la formation") : "Commencer la formation"}
+        hasPreview={previewIds.size > 0}
+        paymentPending={paymentPending}
+        includes={{
+          lessons: stats.lessons,
+          minutes,
+          resources: resourceCount,
+          quizzes: stats.quizzes,
+          hasExam: stats.hasExam,
+        }}
+      />
+    );
 
   return (
     <div className="min-h-screen bg-linear-to-br from-background via-background to-muted/20">
-      <div className="container py-8 max-w-7xl mx-auto">
-        <CourseBreadcrumb courseTitle={course.title} courseSlug={course.slug} />
+      <div className="container mx-auto max-w-7xl py-8">
+        <CourseBreadcrumb courseTitle={course.title} />
 
-        {/* Payment Status Messages */}
-        {success && (
-          <PaymentStatus
-            type="success"
-            courseTitle={course.title}
-            courseSlug={course.slug}
-          />
+        {query.success === "true" && (
+          <PaymentStatus type="success" courseTitle={course.title} courseSlug={course.slug} unlocked={entitled} />
         )}
-        {canceled && (
-          <PaymentStatus
-            type="canceled"
-            courseTitle={course.title}
-            courseSlug={course.slug}
-          />
+        {query.canceled === "true" && (
+          <PaymentStatus type="canceled" courseTitle={course.title} courseSlug={course.slug} unlocked={entitled} />
         )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
-            <CourseResumeBanner
-              courseSlug={course.slug}
-              lastPosition={lastPosition}
-              nextLesson={nextUncompletedLesson}
-              isEnrolled={isUnlocked}
+        {access.mode === "staff" && (
+          <p role="note" className="mb-6 flex flex-wrap items-center gap-3 rounded-md border border-dashed bg-muted/40 p-3 text-sm">
+            <span className="flex-1">
+              Aperçu auteur{course.published ? "" : " (formation non publiée)"} : vous voyez la page comme un visiteur.
+            </span>
+            <Button asChild size="sm" variant="outline">
+              <Link href={`/learn/${course.slug}`}>Parcourir comme un apprenant</Link>
+            </Button>
+          </p>
+        )}
+        {query.locked === "1" && !entitled && access.mode !== "staff" && (
+          <div className="mb-6">
+            <LockedNotice
+              signedIn={!!user}
+              free={offer.kind === "free"}
+              eligible={access.eligible && !access.isEnrolled}
+              lapsed={access.lapsed}
+              unpublished={!course.published}
+              returnTo={returnTo}
             />
+          </div>
+        )}
 
-            {/* Hero trailer */}
-            {course.trailerUrl && (
-              <CourseTrailer
-                trailerUrl={course.trailerUrl}
-                thumbnail={course.thumbnail}
-                title={course.title}
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+          <div className="space-y-8 lg:col-span-2">
+            {entitled && (
+              <CourseResumeBanner
+                percent={progress.percent}
+                done={progress.done}
+                total={progress.total}
+                next={progress.next ? { title: progress.next.title, href: itemHref(course.slug, progress.next) } : null}
+                completedHref={`/learn/${course.slug}/completed`}
+                hasCertificate={!!certificate}
               />
             )}
 
-            <CourseHeader course={serializedCourse} />
+            {course.trailerUrl && <CourseTrailer trailerUrl={course.trailerUrl} thumbnail={course.thumbnail} title={course.title} />}
 
-            {/* Social proof - enrollment count & ratings */}
-            <SocialProof
-              enrollmentCount={serializedCourse.enrollments?.length || 0}
-              averageRating={
-                serializedCourse.reviews.length > 0
-                  ? serializedCourse.reviews.reduce(
-                      (sum, r) => sum + r.rating,
-                      0,
-                    ) / serializedCourse.reviews.length
-                  : 0
-              }
-              reviewCount={serializedCourse.reviews.length}
+            <CourseHeader
+              title={course.title}
+              description={course.description}
+              thumbnail={course.thumbnail}
+              category={course.category}
+              level={course.level}
+              tags={course.tags.map((t) => t.tag)}
+              enrollmentCount={course._count.enrollments}
+              averageRating={summary.average}
+              reviewCount={summary.count}
+              updatedAt={course.updatedAt.toISOString()}
+              minutes={minutes}
+              instructorName={course.instructor?.name ?? null}
+              showThumbnail={!course.trailerUrl}
             />
 
-            {/* Public Marketing Content - Always visible */}
+            {/* The panel comes right after the header on small screens, beside the content on large ones */}
+            <div className="lg:hidden">
+              {offerPanel}
+            </div>
+
+            <CoursePathBadges courseId={course.id} />
+
+            {course.objectives.length > 0 && (
+              <section aria-labelledby="objectives-heading" className="rounded-xl border bg-card p-6">
+                <h2 id="objectives-heading" className="mb-4 text-xl font-semibold">
+                  Ce que vous saurez faire
+                </h2>
+                <ul className="grid gap-3 sm:grid-cols-2">
+                  {course.objectives.map((objective, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-400" aria-hidden />
+                      <span>{objective}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
             <CoursePublicContent
               course={{
                 id: course.id,
                 title: course.title,
                 slug: course.slug,
-                publicStructure: detail.publicStructure,
-                publicResources: detail.publicResources,
-                publicEvaluation: detail.publicEvaluation,
-                publicPrerequisites: detail.publicPrerequisites,
+                publicStructure: course.publicStructure,
+                publicResources: course.publicResources,
+                publicEvaluation: course.publicEvaluation,
+                publicPrerequisites: course.publicPrerequisites,
               }}
             />
 
-            {/* Training Overview Section - Key points to be covered in the training */}
-            {isUnlocked &&
-              serializedCourse.visualSupports &&
-              serializedCourse.visualSupports.length > 0 && (
-                <TrainingOverview
-                  course={{
-                    id: serializedCourse.id,
-                    title: serializedCourse.title,
-                    slug: serializedCourse.slug,
-                  }}
-                  visualSupports={serializedCourse.visualSupports}
-                />
-              )}
+            <CourseCurriculum sections={sections} stats={stats} resourceCount={resourceCount} initiallyOpen={Math.max(0, nextSection)} />
 
-            <CourseCurriculum
-              modules={serializedCourse.modules}
-              courseSlug={course.slug}
-              isEnrolled={isUnlocked}
-              userProgress={userProgress}
-              isAuthenticated={isAuthenticated}
-              canPreview={canPreview && !!serializedCourse.modules.length}
-              quizzes={serializedCourse.quizzes}
-            />
+            {entitled && (
+              <div className="flex flex-wrap items-center gap-3 rounded-lg border p-4 text-sm">
+                <span className="flex-1 text-muted-foreground">Schémas et diapositives de la formation, module par module.</span>
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/learn/${course.slug}/supports`}>Supports visuels</Link>
+                </Button>
+              </div>
+            )}
 
-            <CourseReviews
-              reviews={serializedCourse.reviews}
-              courseId={serializedCourse.id}
-              canReview={isUnlocked}
-            />
+            {certificate && (
+              <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-amber-50 p-4 text-amber-950 dark:bg-amber-950/30 dark:text-amber-50">
+                <Award className="h-6 w-6 shrink-0" aria-hidden />
+                <span className="flex-1 font-medium">Vous avez obtenu le certificat de cette formation.</span>
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/certificates/${course.id}`}>Voir mon certificat</Link>
+                </Button>
+              </div>
+            )}
 
-            {earnedCertificate && session?.user && (
-              <CertificateReveal
-                certificateId={earnedCertificate.id}
-                courseTitle={course.title}
-                userName={session.user.name || "Étudiant"}
-                issuedAt={earnedCertificate.issuedAt.toISOString()}
+            <div id="reviews">
+              <CourseReviews
+                courseId={course.id}
+                summary={summary}
+                initialReviews={firstReviews.reviews}
+                initialHasMore={firstReviews.hasMore}
+                canReview={entitled}
+                canAnswer={access.mode === "staff" || isStaff}
+                signedIn={!!user}
+                ownReview={ownReview}
               />
-            )}
+            </div>
 
-            {/* FAQ section */}
-            {course.faq && Array.isArray(course.faq) && (
-              <CourseFaq items={course.faq as { q: string; a: string }[]} />
-            )}
-
-            {/* Trust badges */}
-            <TrustBadges />
+            {Array.isArray(course.faq) && course.faq.length > 0 && <CourseFaq items={course.faq as { q: string; a: string }[]} />}
           </div>
-          <div className="lg:col-span-1">
+
+          <div className="hidden lg:col-span-1 lg:block">
             <div className="sticky top-8">
-              <CourseEnrollment
-                course={serializedCourse}
-                isEnrolled={isUnlocked}
-                canPreview={canPreview}
-                hasPurchased={serializedCourse.hasEntitlement}
-              />
+              {offerPanel}
             </div>
           </div>
         </div>

@@ -139,11 +139,6 @@ async function ModerationContent() {
 
   const data = await getModerationData();
 
-  const handleContentAction = (contentId: string, type: "discussion" | "reply", action: string) => {
-    console.log("Content action:", contentId, type, action);
-    // Actions are handled by the ContentModeration component directly
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -167,7 +162,6 @@ async function ModerationContent() {
       <ContentModeration
         discussions={data.discussions}
         replies={data.replies}
-        onContentAction={handleContentAction}
       />
     </div>
   );

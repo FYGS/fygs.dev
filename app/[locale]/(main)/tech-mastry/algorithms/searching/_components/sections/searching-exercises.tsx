@@ -102,13 +102,14 @@ console.log(jumpSearch([1, 3, 5, 7, 9, 11, 13, 15, 17, 19], 13)); // Devrait ret
 console.log(jumpSearch([1, 3, 5, 7, 9, 11, 13, 15, 17, 19], 4));  // Devrait retourner -1`,
     solution: `function jumpSearch(arr, target) {
   const n = arr.length;
-  const step = Math.floor(Math.sqrt(n));
+  const block = Math.floor(Math.sqrt(n));
+  let step = block;
 
   // Trouver le bloc
   let prev = 0;
   while (arr[Math.min(step, n) - 1] < target) {
     prev = step;
-    step += Math.floor(Math.sqrt(n));
+    step += block;
     if (prev >= n) return -1;
   }
 
@@ -146,7 +147,8 @@ console.log(interpolationSearch([1, 3, 5, 7, 9, 11, 13, 15, 17, 19], 4));  // De
   let high = arr.length - 1;
 
   while (low <= high && target >= arr[low] && target <= arr[high]) {
-    if (low === high) {
+    // Évite une division par zéro (valeurs identiques dans [low, high])
+    if (arr[low] === arr[high]) {
       return arr[low] === target ? low : -1;
     }
 
@@ -192,7 +194,8 @@ console.log(hashSearch([10, 20, 15, 5, 25], 8));  // Devrait retourner -1`,
 
   // Construction de la table de hachage
   for (let i = 0; i < arr.length; i++) {
-    hashMap.set(arr[i], i);
+    // On ne définit que si la clé est absente : on garde la PREMIÈRE occurrence
+    if (!hashMap.has(arr[i])) hashMap.set(arr[i], i);
   }
 
   // Recherche dans la table de hachage
@@ -352,7 +355,7 @@ export function SearchingExercises() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+            <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto" tabIndex={0}>
               <code>{currentExercise.solution}</code>
             </pre>
           </CardContent>

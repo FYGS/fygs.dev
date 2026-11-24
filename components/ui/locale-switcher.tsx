@@ -13,6 +13,8 @@ import {
   AVAILABLE_LOCALES,
   getLocaleDisplayName,
   getLocaleFlag,
+  isTranslatedPath,
+  removeLocaleFromPath,
   type Locale,
 } from "@/lib/locale-utils";
 import { usePathname, useRouter } from "next/navigation";
@@ -29,6 +31,9 @@ export function LocaleSwitcher() {
   const { locale: currentLocale } = useLocale();
   const [isPending, startTransition] = useTransition();
   const [selectedLocale, setSelectedLocale] = useState<Locale | null>(null);
+
+  // The application area exists in French only: there is nothing to switch to there
+  const hasTranslations = isTranslatedPath(removeLocaleFromPath(pathname));
 
   const handleLocaleChange = (newLocale: Locale) => {
     if (newLocale === currentLocale) return;
@@ -67,6 +72,8 @@ export function LocaleSwitcher() {
       }, 500);
     });
   };
+
+  if (!hasTranslations) return null;
 
   return (
     <DropdownMenu>

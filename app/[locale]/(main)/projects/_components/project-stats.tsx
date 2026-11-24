@@ -38,7 +38,7 @@ const StatItem = ({
             animate={{ opacity: 1, y: 0 }}
             className="font-mono"
           >
-            {value.toLocaleString()}
+            {value.toLocaleString("en-US")}
           </motion.span>
         </div>
       </TooltipTrigger>

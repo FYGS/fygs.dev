@@ -7,7 +7,7 @@ export const fadeIn = {
 
 export const scaleIn = {
   initial: { scale: 0.95 },
-  hover: { scale: 1.05 },
-  tap: { scale: 0.98 },
-  transition: { type: "spring", stiffness: 400, damping: 17 },
+  whileHover: { scale: 1.05 },
+  whileTap: { scale: 0.98 },
+  transition: { type: "spring" as const, stiffness: 400, damping: 17 },
 };

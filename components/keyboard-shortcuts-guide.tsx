@@ -38,6 +38,10 @@ export function KeyboardShortcutsGuide({
       { keys: ["G", "R"], description: "Go to Resume" },
       { keys: ["G", "B"], description: "Go to Blog" },
     ],
+    Other: [
+      { keys: ["?"], description: "Show this help dialog" },
+      { keys: ["Esc"], description: "Close any dialog" },
+    ],
   };
 
   return (

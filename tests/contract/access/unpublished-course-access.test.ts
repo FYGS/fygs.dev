@@ -169,10 +169,10 @@ describe("Unpublished Course Access Contract Tests (FR-041)", () => {
         },
       });
 
-      const progress = await AccessService.getCourseProgress(
-        enrolledUserId,
-        testCourseId
-      );
+      const progress = await db.progress.findMany({
+        where: { userId: enrolledUserId, lesson: { courseId: testCourseId } },
+        select: { completed: true },
+      });
       expect(progress).toHaveLength(1);
       expect(progress[0].completed).toBe(true);
     });
@@ -265,15 +265,12 @@ describe("Unpublished Course Access Contract Tests (FR-041)", () => {
         });
       }
 
-      // Check certificate eligibility (should still work for unpublished course)
-      const { CertificateService } = await import("@/lib/certificate-service");
-      const eligibility = await CertificateService.checkCertificateEligibility(
-        enrolledUserId,
-        testCourseId
-      );
+      // The course is complete for this learner, unpublished or not (the one progress rule)
+      const { loadLearnerCourseState } = await import("@/lib/learning/course-state");
+      const { progress } = await loadLearnerCourseState(enrolledUserId, testCourseId);
 
-      expect(eligibility.eligible).toBe(true);
-      expect(eligibility.completionPercentage).toBe(100);
+      expect(progress.isComplete).toBe(true);
+      expect(progress.percent).toBe(100);
     });
   });
 
@@ -315,10 +312,10 @@ describe("Unpublished Course Access Contract Tests (FR-041)", () => {
       expect(access.isEnrolledInCourse).toBe(true);
       expect(access.canAccessCourse).toBe(true);
 
-      const progress = await AccessService.getCourseProgress(
-        enrolledUserId,
-        testCourseId
-      );
+      const progress = await db.progress.findMany({
+        where: { userId: enrolledUserId, lesson: { courseId: testCourseId } },
+        select: { completed: true },
+      });
       expect(progress).toHaveLength(1);
       expect(progress[0].completed).toBe(true);
     });

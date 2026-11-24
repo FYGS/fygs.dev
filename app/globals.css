@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* Import specialized CSS files */
 @import "../styles/editor.css";
@@ -16,7 +17,7 @@
 
 /* Theme system: supports dark (default) and light mode via .dark/.light classes */
 
-@theme {
+@theme inline {
   --font-sans: var(--font-geist-sans), sans-serif;
   --font-mono: var(--font-geist-mono), monospace;
   --font-caption: var(--font-caption), sans-serif;
@@ -61,6 +62,7 @@
 
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-destructive-solid: hsl(var(--destructive-solid));
 
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
@@ -451,6 +453,23 @@
   }
 }
 
+/*
+ * Design-system spacing scale (DESIGN_SYSTEM.md).
+ * Deliberately NOT inside @theme: Tailwind v4 maps the --spacing-* namespace to
+ * w-*, h-*, max-w-*, ..., so declaring --spacing-md there turns max-w-md into
+ * 1rem. As plain custom properties they cannot collide with utilities.
+ */
+:root {
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  --spacing-3xl: 4rem;
+  --spacing-4xl: 6rem;
+}
+
 @layer base {
   /* ─── DARK THEME (default) ─── */
   :root,
@@ -458,20 +477,22 @@
     --background: 222 47% 11%; /* #0F172A - Slate 900 */
     --foreground: 210 40% 98%; /* #F8FAFC - Slate 50 */
     --muted: 217 33% 17%; /* #1E293B - Slate 800 */
-    --muted-foreground: 215 20% 65%; /* #94A3B8 - Slate 400 */
+    --muted-foreground: 215 20% 72%; /* Slate 400+, >= 4.5:1 on every dark surface (slate 400 itself was 3.96:1 on secondary) */
     --popover: 222 47% 11%; /* #0F172A */
     --popover-foreground: 210 40% 98%; /* #F8FAFC */
     --card: 217 33% 17%; /* #1E293B */
     --card-foreground: 214 32% 91%; /* #E2E8F0 - Slate 200 */
     --border: 217 19% 27%; /* #334155 - Slate 700 */
     --input: 217 19% 27%; /* #334155 */
-    --primary: 239 84% 67%; /* #818CF8 - Indigo 400 */
+    --primary: 239 84% 65%; /* Indigo, white text 5.0:1 */
+    --primary-text: 239 84% 79%; /* Indigo as TEXT on dark surfaces, >= 4.5:1 */
     --primary-foreground: 0 0% 100%; /* White */
     --secondary: 217 19% 27%; /* #334155 - Slate 700 */
     --secondary-foreground: 210 40% 98%; /* #F8FAFC */
     --accent: 217 33% 22%; /* Slate 750 */
     --accent-foreground: 210 40% 98%; /* #F8FAFC */
-    --destructive: 0 84% 60%; /* #EF4444 - Red 500 */
+    --destructive: 0 84% 68%; /* Red 400+, as TEXT on dark surfaces (>= 4.5:1 on slate 800 too) */
+    --destructive-solid: 0 72% 45%; /* the same red as a BACKGROUND under white text (>= 4.5:1) */
     --destructive-foreground: 0 0% 100%;
     --ring: 239 84% 67%; /* Indigo 400 */
     --radius: 0.625rem;
@@ -497,20 +518,22 @@
     --background: 0 0% 100%; /* White */
     --foreground: 222 47% 11%; /* #0F172A - Slate 900 */
     --muted: 210 40% 96%; /* #F1F5F9 - Slate 100 */
-    --muted-foreground: 215 16% 47%; /* #64748B - Slate 500 */
+    --muted-foreground: 215 19% 35%; /* #475569 - Slate 600: slate 500 was 4.3:1 on muted/secondary/accent */
     --popover: 0 0% 100%; /* White */
     --popover-foreground: 222 47% 11%; /* Slate 900 */
     --card: 210 40% 98%; /* #F8FAFC - Slate 50 */
     --card-foreground: 222 47% 11%; /* Slate 900 */
     --border: 214 32% 91%; /* #E2E8F0 - Slate 200 */
     --input: 214 32% 91%; /* Slate 200 */
-    --primary: 239 84% 67%; /* #818CF8 - Indigo 400 (same hue) */
+    --primary: 239 84% 65%; /* Indigo (same hue) */
+    --primary-text: 243 75% 52%; /* Indigo as TEXT on light surfaces, >= 4.5:1 */
     --primary-foreground: 0 0% 100%; /* White */
     --secondary: 210 40% 96%; /* #F1F5F9 - Slate 100 */
     --secondary-foreground: 222 47% 11%; /* Slate 900 */
     --accent: 210 40% 96%; /* Slate 100 */
     --accent-foreground: 222 47% 11%; /* Slate 900 */
-    --destructive: 0 84% 60%; /* Red 500 */
+    --destructive: 0 72% 45%; /* Red 600, as text on light surfaces (>= 4.5:1) and as a background under white text */
+    --destructive-solid: 0 72% 45%;
     --destructive-foreground: 0 0% 100%;
     --ring: 239 84% 67%; /* Indigo 400 */
     --radius: 0.625rem;
@@ -579,5 +602,221 @@
   }
   100% {
     transform: translateX(100%);
+  }
+}
+
+/*
+ * Reduced motion (WCAG 2.3.3 / user preference): collapse decorative CSS animations and
+ * transitions. framer-motion is covered by <MotionProvider reducedMotion="user">.
+ * Spinners keep turning: they convey "loading" and are not vestibular triggers.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-spin {
+    animation-duration: 1s !important;
+    animation-iteration-count: infinite !important;
+  }
+}
+
+/*
+ * Contrast (WCAG 1.4.3): the brand indigo cannot be both a fill behind white text and text on a
+ * dark surface at 4.5:1, so text uses --primary-text and fills keep --primary.
+ */
+@layer utilities {
+  .text-primary {
+    color: hsl(var(--primary-text));
+  }
+  .text-primary\/80,
+  .text-primary\/90,
+  .hover\:text-primary\/80:hover,
+  .hover\:text-primary:hover,
+  .group:hover .group-hover\:text-primary {
+    color: hsl(var(--primary-text));
+  }
+}
+
+/*
+ * Contrast (WCAG 1.4.3): "muted" text with an opacity suffix (/60, /70, /80) falls under 4.5:1 on both themes,
+ * so the suffix is ignored and the token itself, which is tested, is used.
+ */
+@layer utilities {
+  .text-muted-foreground\/40,
+  .text-muted-foreground\/50,
+  .text-muted-foreground\/60,
+  .text-muted-foreground\/70,
+  .text-muted-foreground\/80 {
+    color: hsl(var(--muted-foreground));
+  }
+}
+
+/*
+ * Contrast (WCAG 1.4.3) on the dark theme: the 500 shade of Tailwind's palette is 3.5:1 to 4.3:1 as text on the dark
+ * surfaces (coloured badges, icon buttons). The 400 shade is above 4.5:1 on all of them.
+ */
+@layer utilities {
+  .dark .text-red-500 {
+    color: var(--color-red-400);
+  }
+  .dark .text-orange-500 {
+    color: var(--color-orange-400);
+  }
+  .dark .text-amber-500 {
+    color: var(--color-amber-400);
+  }
+  .dark .text-yellow-500 {
+    color: var(--color-yellow-400);
+  }
+  .dark .text-lime-500 {
+    color: var(--color-lime-400);
+  }
+  .dark .text-green-500 {
+    color: var(--color-green-400);
+  }
+  .dark .text-emerald-500 {
+    color: var(--color-emerald-400);
+  }
+  .dark .text-teal-500 {
+    color: var(--color-teal-400);
+  }
+  .dark .text-cyan-500 {
+    color: var(--color-cyan-400);
+  }
+  .dark .text-sky-500 {
+    color: var(--color-sky-400);
+  }
+  .dark .text-blue-500 {
+    color: var(--color-blue-400);
+  }
+  .dark .text-indigo-500 {
+    color: var(--color-indigo-400);
+  }
+  .dark .text-violet-500 {
+    color: var(--color-violet-400);
+  }
+  .dark .text-purple-500 {
+    color: var(--color-purple-400);
+  }
+  .dark .text-fuchsia-500 {
+    color: var(--color-fuchsia-400);
+  }
+  .dark .text-pink-500 {
+    color: var(--color-pink-400);
+  }
+  .dark .text-rose-500 {
+    color: var(--color-rose-400);
+  }
+}
+
+/*
+ * Contrast (WCAG 1.4.3) on the light theme: the community screens were written with the pale slate shades meant
+ * for a dark surface. Inside the community area, on the light theme, they use the dark ones.
+ */
+@layer utilities {
+  .light .community-area .text-slate-500,
+  .light .community-area .text-slate-400 {
+    color: var(--color-slate-600);
+  }
+  .light .community-area .text-slate-300,
+  .light .community-area .text-slate-200 {
+    color: var(--color-slate-700);
+  }
+}
+
+/*
+ * Contrast (WCAG 1.4.3) on the light theme: a badge drawn for the dark theme (a tinted background of one hue and the
+ * 400 or 500 shade of the same hue as text) becomes pale text on a pale tint. Its text uses the 700 shade there,
+ * unless it sits on a surface that is dark in both themes.
+ */
+@layer utilities {
+  .light .text-red-400:where([class*="bg-red-900"], [class*="bg-red-500/"], [class*="bg-red-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-red-500:where([class*="bg-red-900"], [class*="bg-red-500/"], [class*="bg-red-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
+    color: var(--color-red-700);
+  }
+  .light .text-orange-400:where([class*="bg-orange-900"], [class*="bg-orange-500/"], [class*="bg-orange-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-orange-500:where([class*="bg-orange-900"], [class*="bg-orange-500/"], [class*="bg-orange-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
+    color: var(--color-orange-700);
+  }
+  .light .text-amber-400:where([class*="bg-amber-900"], [class*="bg-amber-500/"], [class*="bg-amber-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-amber-500:where([class*="bg-amber-900"], [class*="bg-amber-500/"], [class*="bg-amber-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
+    color: var(--color-amber-700);
+  }
+  .light .text-yellow-400:where([class*="bg-yellow-900"], [class*="bg-yellow-500/"], [class*="bg-yellow-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-yellow-500:where([class*="bg-yellow-900"], [class*="bg-yellow-500/"], [class*="bg-yellow-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
+    color: var(--color-yellow-700);
+  }
+  .light .text-lime-400:where([class*="bg-lime-900"], [class*="bg-lime-500/"], [class*="bg-lime-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-lime-500:where([class*="bg-lime-900"], [class*="bg-lime-500/"], [class*="bg-lime-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
+    color: var(--color-lime-700);
+  }
+  .light .text-green-400:where([class*="bg-green-900"], [class*="bg-green-500/"], [class*="bg-green-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-green-500:where([class*="bg-green-900"], [class*="bg-green-500/"], [class*="bg-green-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
+    color: var(--color-green-700);
+  }
+  .light .text-emerald-400:where([class*="bg-emerald-900"], [class*="bg-emerald-500/"], [class*="bg-emerald-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-emerald-500:where([class*="bg-emerald-900"], [class*="bg-emerald-500/"], [class*="bg-emerald-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
+    color: var(--color-emerald-700);
+  }
+  .light .text-teal-400:where([class*="bg-teal-900"], [class*="bg-teal-500/"], [class*="bg-teal-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-teal-500:where([class*="bg-teal-900"], [class*="bg-teal-500/"], [class*="bg-teal-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
+    color: var(--color-teal-700);
+  }
+  .light .text-cyan-400:where([class*="bg-cyan-900"], [class*="bg-cyan-500/"], [class*="bg-cyan-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-cyan-500:where([class*="bg-cyan-900"], [class*="bg-cyan-500/"], [class*="bg-cyan-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
+    color: var(--color-cyan-700);
+  }
+  .light .text-sky-400:where([class*="bg-sky-900"], [class*="bg-sky-500/"], [class*="bg-sky-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-sky-500:where([class*="bg-sky-900"], [class*="bg-sky-500/"], [class*="bg-sky-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
+    color: var(--color-sky-700);
+  }
+  .light .text-blue-400:where([class*="bg-blue-900"], [class*="bg-blue-500/"], [class*="bg-blue-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-blue-500:where([class*="bg-blue-900"], [class*="bg-blue-500/"], [class*="bg-blue-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
+    color: var(--color-blue-700);
+  }
+  .light .text-indigo-400:where([class*="bg-indigo-900"], [class*="bg-indigo-500/"], [class*="bg-indigo-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-indigo-500:where([class*="bg-indigo-900"], [class*="bg-indigo-500/"], [class*="bg-indigo-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
+    color: var(--color-indigo-700);
+  }
+  .light .text-violet-400:where([class*="bg-violet-900"], [class*="bg-violet-500/"], [class*="bg-violet-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-violet-500:where([class*="bg-violet-900"], [class*="bg-violet-500/"], [class*="bg-violet-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
+    color: var(--color-violet-700);
+  }
+  .light .text-purple-400:where([class*="bg-purple-900"], [class*="bg-purple-500/"], [class*="bg-purple-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-purple-500:where([class*="bg-purple-900"], [class*="bg-purple-500/"], [class*="bg-purple-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
+    color: var(--color-purple-700);
+  }
+  .light .text-fuchsia-400:where([class*="bg-fuchsia-900"], [class*="bg-fuchsia-500/"], [class*="bg-fuchsia-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-fuchsia-500:where([class*="bg-fuchsia-900"], [class*="bg-fuchsia-500/"], [class*="bg-fuchsia-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
+    color: var(--color-fuchsia-700);
+  }
+  .light .text-pink-400:where([class*="bg-pink-900"], [class*="bg-pink-500/"], [class*="bg-pink-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-pink-500:where([class*="bg-pink-900"], [class*="bg-pink-500/"], [class*="bg-pink-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
+    color: var(--color-pink-700);
+  }
+  .light .text-rose-400:where([class*="bg-rose-900"], [class*="bg-rose-500/"], [class*="bg-rose-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)),
+  .light .text-rose-500:where([class*="bg-rose-900"], [class*="bg-rose-500/"], [class*="bg-rose-400/"]):not(:is(.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *, .bg-black *)) {
+    color: var(--color-rose-700);
+  }
+}
+
+/* A bar fixed to the bottom edge of a phone keeps clear of the home-indicator area (needs viewport-fit=cover). */
+@utility safe-area-pb {
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* The floating theme and shortcuts buttons sit above the learning area's bottom bar on small screens instead of over its
+   "next" button. Unlayered on purpose: it must win over the utility classes of the toolbar. */
+@media (max-width: 767px) {
+  body:has(.learning-mobile-bar) .shortcuts-toolbar {
+    bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
   }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { Quiz, type QuizQuestion } from "../../_components/quiz";
+import { useProgress } from "../../_hooks/use-progress";
 
 const quizQuestions: QuizQuestion[] = [
   // Algorithmes & Structures de Données
@@ -32,7 +33,7 @@ const quizQuestions: QuizQuestion[] = [
     options: ["BFS", "DFS", "Dijkstra", "Bellman-Ford"],
     correctIndex: 2,
     explanation:
-      "L'algorithme de Dijkstra est optimal pour les graphes avec des poids positifs (complexité O((V+E) log V) avec un min-heap). Bellman-Ford gère les poids négatifs mais est plus lent O(VE). BFS est pour les graphes non pondérés.",
+      "L'algorithme de Dijkstra est optimal pour les graphes avec des poids positifs ou nuls (complexité O((V+E) log V) avec un min-heap). Bellman-Ford gère les poids négatifs mais est plus lent O(VE). BFS est pour les graphes non pondérés.",
     difficulty: "medium",
     category: "Algorithmes",
   },
@@ -59,7 +60,7 @@ const quizQuestions: QuizQuestion[] = [
     ],
     correctIndex: 2,
     explanation:
-      "Le problème du sac à dos 0/1 se résout par programmation dynamique avec tabulation bottom-up, construisant une table dp[i][w] où i est l'item considéré et w la capacité restante. La complexité est O(nW) où n est le nombre d'items et W la capacité.",
+      "Le problème du sac à dos 0/1 se résout par programmation dynamique avec tabulation bottom-up, construisant une table dp[i][w] où i est l'item considéré et w la capacité restante. La complexité est O(nW) où n est le nombre d'items et W la capacité (pseudo-polynomiale : le problème reste NP-difficile).",
     difficulty: "hard",
     category: "Algorithmes",
   },
@@ -90,7 +91,7 @@ const quizQuestions: QuizQuestion[] = [
   {
     id: "sys-3",
     question:
-      "Quelle stratégie de cache est la plus adaptée quand les lectures sont beaucoup plus fréquentes que les écritures ?",
+      "Pour une charge dominée par la lecture, quelle stratégie laisse l'application remplir le cache elle-même, uniquement à la demande lors d'un cache miss ?",
     options: [
       "Write-Through",
       "Write-Behind",
@@ -99,7 +100,7 @@ const quizQuestions: QuizQuestion[] = [
     ],
     correctIndex: 2,
     explanation:
-      "Cache-Aside est idéal pour les workloads read-heavy : on charge les données dans le cache uniquement à la demande (cache miss). Write-Through écrit simultanément dans le cache et la DB, ce qui est meilleur quand les données lues sont souvent les mêmes que celles récemment écrites.",
+      "Dans Cache-Aside (Lazy Loading), l'application lit d'abord le cache, puis la base en cas de miss, et remplit le cache à ce moment-là : c'est le schéma classique des workloads read-heavy. Write-Through, Write-Behind et Write-Around décrivent la gestion des écritures, pas le chargement à la demande. Write-Through écrit simultanément dans le cache et la DB, ce qui est meilleur quand les données lues sont souvent les mêmes que celles récemment écrites.",
     difficulty: "hard",
     category: "System Design",
   },
@@ -172,7 +173,7 @@ const quizQuestions: QuizQuestion[] = [
     options: ["CSP", "CORS", "HSTS", "X-Frame-Options"],
     correctIndex: 1,
     explanation:
-      "CORS (Cross-Origin Resource Sharing) permet au serveur de spécifier quelles origines peuvent accéder à ses ressources via les headers Access-Control-Allow-Origin. Les requêtes preflight (OPTIONS) vérifient les permissions avant la requête réelle.",
+      "Par défaut, la Same-Origin Policy empêche un script d'une origine de lire les réponses d'une autre origine. CORS (Cross-Origin Resource Sharing) permet au serveur d'assouplir cette règle pour certaines origines via les headers Access-Control-Allow-Origin. Les requêtes preflight (OPTIONS) vérifient les permissions avant certaines requêtes. Attention : CORS contrôle la lecture de la réponse par le navigateur, il ne remplace pas l'authentification côté serveur ni la protection CSRF.",
     difficulty: "easy",
     category: "Sécurité",
   },
@@ -264,9 +265,14 @@ const quizQuestions: QuizQuestion[] = [
 ];
 
 export function QAQuiz() {
+  const { trackQuizScore } = useProgress();
   return (
     <div className="max-w-3xl mx-auto">
-      <Quiz questions={quizQuestions} showCategories={true} />
+      <Quiz
+        questions={quizQuestions}
+        showCategories={true}
+        onComplete={(score, total) => trackQuizScore("qa-interview", score, total)}
+      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { db } from "@/lib/db";
-import { Decimal } from "@prisma/client/runtime/library";
+import { Decimal } from "@prisma/client/runtime/client";
+import { getUserCoursesProgress } from "@/lib/progress-summary";
 
 // Mock next/headers
 vi.mock("next/headers", () => ({
@@ -68,14 +69,13 @@ describe("Dashboard Composite Display Contract Tests (FR-014)", () => {
     });
 
     // Create certificate
-    const certificate = await db.certificate.create({
+    await db.certificate.create({
       data: {
         userId: testUserId,
         courseId: testCourseId,
         issuedAt: new Date(),
       },
     });
-    testCertificateId = certificate.id;
   });
 
   afterEach(async () => {
@@ -215,6 +215,19 @@ describe("Dashboard Composite Display Contract Tests (FR-014)", () => {
       expect(totalLessons).toBe(3);
       expect(completedLessons).toBe(1);
       expect(progressPercentage).toBe(33); // 1/3 = 33%
+
+      // The dashboard's own summary agrees. The fixture's certificate belongs to other tests: the
+      // summary reports the certificate record, so it is removed to look at a learner who has none.
+      await db.certificate.deleteMany({ where: { userId: testUserId } });
+      const [summary] = await getUserCoursesProgress(testUserId);
+      expect(summary).toMatchObject({
+        courseId: testCourseId,
+        percent: 33,
+        completedLessons: 1,
+        totalLessons: 3,
+        consumedDurationSec: 600,
+        hasCertificate: false,
+      });
     });
 
     test("excludes unpublished lessons from progress calculation", async () => {
@@ -291,6 +304,14 @@ describe("Dashboard Composite Display Contract Tests (FR-014)", () => {
           (completedPublishedLessons.length / publishedLessons.length) * 100
         )
       ).toBe(100);
+
+      // The dashboard's own summary agrees: the unpublished lesson is ignored
+      const [summary] = await getUserCoursesProgress(testUserId);
+      expect(summary).toMatchObject({
+        percent: 100,
+        completedLessons: 1,
+        totalLessons: 1,
+      });
     });
   });
 

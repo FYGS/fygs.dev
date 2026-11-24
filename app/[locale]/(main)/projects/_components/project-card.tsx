@@ -4,7 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { ArrowUpRight, ExternalLink, Github } from "lucide-react";
+import { ArrowUpRight, ExternalLink } from "lucide-react";
+import { Github } from "@/components/icons/brand-icons";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -59,9 +60,9 @@ export function ProjectCard({ project, isPriority = false }: ProjectCardProps) {
       </div>
 
       <div className="p-5 sm:p-6 flex-1 flex flex-col gap-3">
-        <h3 className="text-xl font-semibold tracking-tight group-hover:text-primary transition-colors duration-300">
+        <h2 className="text-xl font-semibold tracking-tight group-hover:text-primary transition-colors duration-300">
           {project.title}
-        </h3>
+        </h2>
 
         <p
           className={cn(
@@ -74,6 +75,8 @@ export function ProjectCard({ project, isPriority = false }: ProjectCardProps) {
 
         {!isExpanded && project.description.length > 150 && (
           <button
+            type="button"
+            aria-expanded={false}
             className="self-start text-xs text-primary hover:text-primary/80 font-medium transition-colors"
             onClick={() => setIsExpanded(true)}
           >
@@ -100,29 +103,40 @@ export function ProjectCard({ project, isPriority = false }: ProjectCardProps) {
 
         {/* Actions */}
         <div className="flex gap-2 mt-auto pt-3 border-t border-border/30">
-          <Link href={`/projects/${project.id}`} className="flex-1">
-            <Button size="sm" className="w-full gap-1.5 text-xs">
+          <Button size="sm" className="flex-1 gap-1.5 text-xs" asChild>
+            <Link href={`/projects/${project.id}`}>
               View Details
-              <ArrowUpRight className="h-3.5 w-3.5" />
-            </Button>
-          </Link>
+              <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+            </Link>
+          </Button>
           <div className="flex gap-1.5">
             {project.githubUrl && (
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                asChild
+              >
+                <Link
+                  href={project.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${project.title} - source code (opens in a new tab)`}
+                >
+                  <Github className="h-3.5 w-3.5" aria-hidden="true" />
+                </Link>
+              </Button>
+            )}
+            <Button variant="outline" size="icon" className="h-8 w-8" asChild>
               <Link
-                href={project.githubUrl}
+                href={project.link}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label={`${project.title} - live site (opens in a new tab)`}
               >
-                <Button variant="outline" size="icon" className="h-8 w-8">
-                  <Github className="h-3.5 w-3.5" />
-                </Button>
+                <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
               </Link>
-            )}
-            <Link href={project.link} target="_blank" rel="noopener noreferrer">
-              <Button variant="outline" size="icon" className="h-8 w-8">
-                <ExternalLink className="h-3.5 w-3.5" />
-              </Button>
-            </Link>
+            </Button>
           </div>
         </div>
       </div>

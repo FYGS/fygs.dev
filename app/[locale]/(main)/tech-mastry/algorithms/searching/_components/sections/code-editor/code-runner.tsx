@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle, CheckCircle, XCircle } from "lucide-react";
 import { useState } from "react";
+import { runInSandbox } from "@/app/_lib/code-sandbox";
 import { CodeEditor } from "./code-editor";
 
 interface TestCase {
@@ -43,37 +44,38 @@ export function CodeRunner({
     setTestResults([]);
 
     try {
-      // Extraire la fonction du code
-      // eslint-disable-next-line no-new-func
-      const fn = new Function(`
-        ${code}
-        return ${functionName};
-      `)();
+      // The tests are small arrow functions, `(fn) => fn([1, 3], 3) === 1`: their source is
+      // handed to the sandbox, which calls them with the learner's function.
+      const outcome = await runInSandbox({
+        code,
+        entry: functionName,
+        tests: testCases.map((testCase, index) => ({
+          id: String(index),
+          check: testCase.test.toString(),
+          expected: testCase.expectedOutput,
+        })),
+      });
 
-      // Exécuter les tests
-      const results = [];
-      for (const testCase of testCases) {
-        try {
-          const passed = testCase.test(fn);
-          results.push({
-            name: testCase.name,
-            passed,
-            expectedOutput: testCase.expectedOutput,
-          });
-        } catch (error) {
-          results.push({
-            name: testCase.name,
-            passed: false,
-            error: error instanceof Error ? error.message : String(error),
-          });
-        }
+      if (outcome.compileError) {
+        setTestResults([{ name: "Erreur de compilation", passed: false, error: outcome.compileError }]);
+        return;
       }
 
-      setTestResults(results);
+      setTestResults(
+        testCases.map((testCase, index) => {
+          const result = outcome.results.find((r) => r.id === String(index));
+          return {
+            name: testCase.name,
+            passed: result?.passed ?? false,
+            expectedOutput: testCase.expectedOutput,
+            error: result?.error,
+          };
+        }),
+      );
     } catch (error) {
       setTestResults([
         {
-          name: "Erreur de compilation",
+          name: "Moteur d'exécution",
           passed: false,
           error: error instanceof Error ? error.message : String(error),
         },

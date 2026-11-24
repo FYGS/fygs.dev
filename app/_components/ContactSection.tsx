@@ -142,14 +142,14 @@ export const ContactSection = () => {
                   name={content.linkedIn.name.value}
                   description={content.linkedIn.description.value}
                   image="/linkedin_profile_photo.jpeg"
-                  mediumImage="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRokEYt0yyh6uNDKL8uksVLlhZ35laKNQgZ9g&s"
+                  mediumImage="/images/contact/linkedin-badge.webp"
                 />
                 <ContactCard
                   url="https://github.com/fygs"
                   name={content.github.name.value}
                   description={content.github.description.value}
-                  image="https://avatars.githubusercontent.com/u/24303747?v=4"
-                  mediumImage="https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png"
+                  image="/images/contact/github-avatar.webp"
+                  mediumImage="/images/contact/github-mark.webp"
                 />
               </div>
             </motion.div>

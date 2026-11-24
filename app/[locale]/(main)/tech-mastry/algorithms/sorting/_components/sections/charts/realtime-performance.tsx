@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -188,27 +188,29 @@ const algorithms: Algorithm[] = [
   { name: "Tri par Tas", color: "orange", fn: heapSort },
 ];
 
+// Générer un tableau aléatoire
+function randomArray(size: number): number[] {
+  return Array.from({ length: size }, () => Math.floor(Math.random() * 1000) + 1);
+}
+
 export function RealtimePerformance() {
   const [arraySize, setArraySize] = useState<number>(1000);
-  const [array, setArray] = useState<number[]>([]);
+  const [array, setArray] = useState<number[]>(() => randomArray(1000));
   const [results, setResults] = useState<Algorithm[]>([]);
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [showInfo, setShowInfo] = useState<boolean>(false);
 
-  // Générer un tableau aléatoire
-  const generateArray = useCallback(() => {
-    const newArray = Array.from(
-      { length: arraySize },
-      () => Math.floor(Math.random() * 1000) + 1
-    );
-    setArray(newArray);
+  // Générer un tableau aléatoire (de la taille donnée)
+  const generateArray = (size: number = arraySize) => {
+    setArray(randomArray(size));
     setResults([]);
-  }, [arraySize]);
+  };
 
-  // Initialiser le tableau
-  useEffect(() => {
-    generateArray();
-  }, [generateArray]);
+  // Changer la taille génère un nouveau tableau
+  const handleArraySizeChange = (size: number) => {
+    setArraySize(size);
+    generateArray(size);
+  };
 
   // Exécuter les algorithmes de tri
   const runBenchmark = useCallback(() => {
@@ -317,7 +319,7 @@ export function RealtimePerformance() {
           <div className="space-y-4">
             <div className="space-y-2">
               <label htmlFor="array-size" className="text-sm font-medium">
-                Taille du tableau: {arraySize.toLocaleString()}
+                Taille du tableau: {arraySize.toLocaleString("fr-FR")}
               </label>
               <Slider
                 id="array-size"
@@ -325,14 +327,14 @@ export function RealtimePerformance() {
                 min={100}
                 max={10000}
                 step={100}
-                onValueChange={(value) => setArraySize(value[0])}
+                onValueChange={(value) => handleArraySizeChange(value[0])}
               />
             </div>
 
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
-                onClick={generateArray}
+                onClick={() => generateArray()}
                 className="gap-2"
                 disabled={isRunning}
               >
@@ -355,7 +357,7 @@ export function RealtimePerformance() {
             <h3 className="text-sm font-medium mb-2">Configuration</h3>
             <ul className="space-y-1 text-sm text-muted-foreground">
               <li>
-                • Taille du tableau: {arraySize.toLocaleString()} éléments
+                • Taille du tableau: {arraySize.toLocaleString("fr-FR")} éléments
               </li>
               <li>• Valeurs: nombres aléatoires entre 1 et 1000</li>
               <li>• Mesure: temps d&apos;exécution en millisecondes</li>

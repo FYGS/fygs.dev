@@ -28,69 +28,75 @@ async function BookmarksContent({ searchParams }: BookmarksPageProps) {
   const page = parseInt(resolvedSearchParams.page || "1");
   const pageSize = 20;
 
-  try {
-    // Get bookmarked discussions
-    const bookmarks = await CommunityService.getUserBookmarks(session.user.id, page, pageSize);
+  const loaded = await (async () => {
+    try {
+      // Get bookmarked discussions
+      const bookmarks = await CommunityService.getUserBookmarks(session.user.id, page, pageSize);
 
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-6 max-w-4xl">
-          {/* Back Navigation */}
-          <div className="mb-6">
-            <Button variant="ghost" asChild>
-              <Link href="/community" className="gap-2">
-                <ArrowLeft className="h-4 w-4" />
-                Back to Community
-              </Link>
-            </Button>
-          </div>
+      return { bookmarks };
+    } catch (error) {
+      console.error("Error loading bookmarks:", error);
+      notFound();
+    }
+  })();
 
-          <div className="space-y-6">
-            {/* Header */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Bookmark className="h-6 w-6" />
-                <h1 className="text-2xl font-bold">My Bookmarks</h1>
-              </div>
-              <p className="text-muted-foreground">
-                Discussions you&apos;ve saved for later
-              </p>
+  const { bookmarks } = loaded;
+
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
+        {/* Back Navigation */}
+        <div className="mb-6">
+          <Button variant="ghost" asChild>
+            <Link href="/community" className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Community
+            </Link>
+          </Button>
+        </div>
+
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Bookmark className="h-6 w-6" />
+              <h1 className="text-2xl font-bold">My Bookmarks</h1>
             </div>
-
-            {/* Bookmarked Discussions */}
-            {bookmarks.length === 0 ? (
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <Bookmark className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold mb-2">No bookmarks yet</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Start bookmarking discussions to save them for later reading.
-                  </p>
-                  <Button asChild>
-                    <Link href="/community">
-                      Explore Discussions
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-4">
-                {bookmarks.map((bookmark: any) => (
-                  <DiscussionCard
-                    key={bookmark.discussion.id}
-                    discussion={bookmark.discussion}
-                  />
-                ))}
-              </div>
-            )}
+            <p className="text-muted-foreground">
+              Discussions you&apos;ve saved for later
+            </p>
           </div>
+
+          {/* Bookmarked Discussions */}
+          {bookmarks.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <Bookmark className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-semibold mb-2">No bookmarks yet</h3>
+                <p className="text-muted-foreground mb-4">
+                  Start bookmarking discussions to save them for later reading.
+                </p>
+                <Button asChild>
+                  <Link href="/community">
+                    Explore Discussions
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {bookmarks.map((bookmark: any) => (
+                <DiscussionCard
+                  key={bookmark.discussion.id}
+                  discussion={bookmark.discussion}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
-    );
-  } catch (error) {
-    console.error("Error loading bookmarks:", error);
-    notFound();
-  }
+    </div>
+  );
 }
 
 export default function BookmarksPage({ searchParams }: BookmarksPageProps) {

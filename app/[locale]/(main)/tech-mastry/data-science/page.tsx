@@ -1,5 +1,8 @@
 import { DataScienceHero } from "./_components/hero";
 import { DataScienceTopics } from "./_components/topics-list";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
+
+export const metadata = topicMetadata("/tech-mastry/data-science");
 
 export default function DataSciencePage() {
   return (

@@ -1,12 +1,8 @@
-import { Metadata } from "next";
 import { ChallengeHeader } from "../_components/challenge-header";
 import { SystemDesignChallenge } from "./_components/system-design-challenge";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "System Design | Coding Challenges",
-  description:
-    "Pratiquez la conception de systèmes distribués avec des mini-challenges réels",
-};
+export const metadata = topicMetadata("/tech-mastry/coding-challenges/system-design");
 
 const challengeData = {
   title: "System Design",
@@ -19,9 +15,9 @@ const challengeData = {
 
 export default function SystemDesignChallengePage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <ChallengeHeader {...challengeData} />
       <SystemDesignChallenge />
-    </main>
+    </div>
   );
 }

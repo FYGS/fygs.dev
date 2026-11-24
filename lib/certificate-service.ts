@@ -1,19 +1,22 @@
 /**
  * Certificate Issuance Service
  *
- * Implements transactional certificate issuance with single-issue guarantee
- * as defined in FR-013 and FR-040.
- *
- * Updated to use comprehensive completion tracking (lessons + quizzes + exams).
+ * Transactional certificate issuance with a single-issue guarantee (FR-013, FR-040).
+ * Completion is the one rule of lib/learning/outline.ts: every published lesson done,
+ * every quiz passed and the final exam passed when the course has one.
  */
 
 import { db } from "./db";
-import { CourseCompletionService } from "./course-completion.service";
+import { AccessService } from "./access-service";
+import { cleanDisplayName } from "./html-escape";
+import { loadLearnerCourseState } from "./learning/course-state";
+import { withPurchaseLock } from "./payments/locks";
 
 export interface CertificateIssuanceResult {
   success: boolean;
   certificate?: {
     id: string;
+    code: string;
     issuedAt: Date;
   };
   error?: string;
@@ -27,6 +30,8 @@ export interface CourseCompletionData {
   totalLessons: number;
   completionPercentage: number;
 }
+
+const certificateSelect = { id: true, code: true, issuedAt: true } as const;
 
 export class CertificateService {
   /**
@@ -50,20 +55,13 @@ export class CertificateService {
     }
 
     try {
-      // Use transaction to ensure atomicity and prevent race conditions
-      const result = await db.$transaction(async (tx) => {
+      // Under the buyer's purchase lock (lib/payments/locks.ts): a refund of this learner and this issuance exclude each
+      // other, whichever takes the lock first. The learner must still be entitled once the lock is held.
+      const result = await withPurchaseLock(userId, courseId, async (tx) => {
         // Check if certificate already exists (idempotent guard)
         const existingCertificate = await tx.certificate.findUnique({
-          where: {
-            userId_courseId: {
-              userId,
-              courseId,
-            },
-          },
-          select: {
-            id: true,
-            issuedAt: true,
-          },
+          where: { userId_courseId: { userId, courseId } },
+          select: certificateSelect,
         });
 
         if (existingCertificate) {
@@ -76,12 +74,7 @@ export class CertificateService {
 
         // Verify enrollment exists
         const enrollment = await tx.enrollment.findUnique({
-          where: {
-            userId_courseId: {
-              userId,
-              courseId,
-            },
-          },
+          where: { userId_courseId: { userId, courseId } },
           select: { id: true },
         });
 
@@ -89,46 +82,25 @@ export class CertificateService {
           throw new Error("User not enrolled in course");
         }
 
-        // Re-verify completion percentage within transaction
-        const lessons = await tx.lesson.findMany({
-          where: {
-            courseId,
-            published: true,
-          },
-          select: { id: true },
-        });
+        // Entitlement, read after the lock was taken: a refund committed before this point has closed the access
+        const access = await AccessService.checkCourseAccess(userId, courseId);
+        if (!access.canAccessCourse) {
+          throw new Error("User is no longer entitled to the course");
+        }
 
-        const completedProgress = await tx.progress.count({
-          where: {
-            userId,
-            lessonId: { in: lessons.map((l) => l.id) },
-            completed: true,
-          },
-        });
-
-        const actualCompletionPercentage =
-          lessons.length > 0
-            ? Math.floor((completedProgress / lessons.length) * 100)
-            : 0;
-
-        if (actualCompletionPercentage < 100) {
+        // Re-verify completion from the records, whatever the caller claims
+        const { progress } = await loadLearnerCourseState(userId, courseId);
+        if (!progress.isComplete) {
           throw new Error(
-            `Actual completion is ${actualCompletionPercentage}%, certificate requires 100%`
+            `Actual completion is ${progress.percent}%, certificate requires 100%`
           );
         }
 
-        // Issue certificate with immutable timestamp
-        const issuedAt = new Date();
+        // The name printed is the one at issue time, cleaned: renaming the account later does not rewrite a certificate
+        const holder = await tx.user.findUnique({ where: { id: userId }, select: { name: true } });
         const certificate = await tx.certificate.create({
-          data: {
-            userId,
-            courseId,
-            issuedAt,
-          },
-          select: {
-            id: true,
-            issuedAt: true,
-          },
+          data: { userId, courseId, issuedAt: new Date(), holderName: cleanDisplayName(holder?.name) || null },
+          select: certificateSelect,
         });
 
         return {
@@ -140,6 +112,20 @@ export class CertificateService {
 
       return result;
     } catch (error) {
+      // Concurrent issuance: another request created the certificate between our
+      // existence check and our insert (unique userId+courseId). The transaction is
+      // aborted at that point, so read the winner's row outside of it and answer
+      // as for any later attempt.
+      if ((error as { code?: string } | null)?.code === "P2002") {
+        const existing = await db.certificate.findUnique({
+          where: { userId_courseId: { userId, courseId } },
+          select: certificateSelect,
+        });
+        if (existing) {
+          return { success: true, certificate: existing, alreadyIssued: true };
+        }
+      }
+
       console.error("Certificate issuance failed:", error);
       return {
         success: false,
@@ -150,136 +136,4 @@ export class CertificateService {
       };
     }
   }
-
-  /**
-   * Check if user is eligible for certificate issuance
-   * Uses comprehensive completion tracking (lessons + quizzes + exam)
-   *
-   * @param userId - User ID
-   * @param courseId - Course ID
-   * @returns Eligibility status with completion details
-   */
-  static async checkCertificateEligibility(userId: string, courseId: string) {
-    try {
-      // Check enrollment
-      const enrollment = await db.enrollment.findUnique({
-        where: {
-          userId_courseId: {
-            userId,
-            courseId,
-          },
-        },
-        select: {
-          id: true,
-          enrolledAt: true,
-        },
-      });
-
-      if (!enrollment) {
-        return {
-          eligible: false,
-          reason: "Not enrolled in course",
-          completionPercentage: 0,
-        };
-      }
-
-      // Check existing certificate
-      const existingCertificate = await db.certificate.findUnique({
-        where: {
-          userId_courseId: {
-            userId,
-            courseId,
-          },
-        },
-        select: {
-          id: true,
-          issuedAt: true,
-        },
-      });
-
-      if (existingCertificate) {
-        return {
-          eligible: false,
-          reason: "Certificate already issued",
-          completionPercentage: 100,
-          certificateId: existingCertificate.id,
-          issuedAt: existingCertificate.issuedAt,
-        };
-      }
-
-      // Use comprehensive completion service
-      const eligibility = await CourseCompletionService.checkEligibility(
-        userId,
-        courseId
-      );
-
-      return {
-        eligible: eligibility.eligible,
-        reason: eligibility.eligible
-          ? "Course completed"
-          : "Course not completed",
-        completionPercentage: eligibility.completion,
-        enrollmentId: enrollment.id,
-        requirements: eligibility.requirements,
-        breakdown: eligibility.breakdown,
-      };
-    } catch (error) {
-      console.error("Certificate eligibility check failed:", error);
-      return {
-        eligible: false,
-        reason: "Error checking eligibility",
-        completionPercentage: 0,
-      };
-    }
-  }
-
-  /**
-   * Get user's certificates
-   *
-   * @param userId - User ID
-   * @returns List of user certificates with course details
-   */
-  static async getUserCertificates(userId: string) {
-    try {
-      const certificates = await db.certificate.findMany({
-        where: { userId },
-        select: {
-          id: true,
-          userId: true,
-          courseId: true,
-          issuedAt: true,
-        },
-        orderBy: {
-          issuedAt: "desc",
-        },
-      });
-
-      // Manually fetch course details for each certificate
-      const certificatesWithCourses = await Promise.all(
-        certificates.map(async (cert) => {
-          const course = await db.course.findUnique({
-            where: { id: cert.courseId },
-            select: {
-              id: true,
-              title: true,
-              slug: true,
-              description: true,
-            },
-          });
-
-          return {
-            ...cert,
-            course,
-          };
-        })
-      );
-
-      return certificatesWithCourses;
-    } catch (error) {
-      console.error("Failed to get user certificates:", error);
-      return [];
-    }
-  }
 }
-
-export const certificateService = CertificateService;

@@ -36,7 +36,7 @@ function useWindowSize() {
     
     // Remove event listener on cleanup
     return () => window.removeEventListener("resize", handleResize);
-  }, []); // Empty array ensures that effect is only run on mount and unmount
+  }, []); // Empty array: subscribe on mount, clean up on unmount (twice in dev under StrictMode)
   
   return windowSize;
 }
@@ -95,6 +95,8 @@ export function CustomHooksSection() {
 // 1. Création d'un custom hook
 function useWindowSize() {
   // 2. Définition de l'état local
+  // (window n'existe pas côté serveur : avec SSR/Next.js, initialisez à 0
+  // puis mettez à jour dans l'effet, comme dans la démo ci-dessus)
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -117,7 +119,7 @@ function useWindowSize() {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, []); // 7. Tableau de dépendances vide = exécution uniquement au montage
+  }, []); // 7. Tableau vide = abonnement au montage, nettoyage au démontage (monté deux fois en dev avec StrictMode)
   
   // 8. Retour des données du hook
   return windowSize;
@@ -144,10 +146,10 @@ function useForm(initialValues) {
   
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setValues({
-      ...values,
+    setValues(prev => ({
+      ...prev,
       [name]: value,
-    });
+    }));
   };
   
   const reset = () => {
@@ -255,15 +257,15 @@ function LoginForm() {
         interviewQuestions={[
           {
             question: "Quels sont les avantages des Custom Hooks par rapport aux autres patterns de réutilisation de code?",
-            answer: "Avantages des Custom Hooks par rapport aux autres patterns: 1) Simplicité: Les hooks sont des fonctions JavaScript simples, sans abstraction complexe. 2) Composition: Faciles à composer et à combiner pour créer des abstractions plus complexes. 3) Lisibilité: Le code utilisant des hooks est généralement plus lisible que celui utilisant des HOCs ou des Render Props. 4) Pas de nesting: Évitent le 'wrapper hell' des HOCs ou le 'callback hell' des Render Props. 5) Isolation: Chaque appel à un hook a son propre état isolé. 6) Typage: Plus faciles à typer avec TypeScript que les HOCs. 7) Testabilité: Étant des fonctions pures, ils sont plus faciles à tester. 8) Optimisation: Permettent d'utiliser facilement des optimisations comme useMemo et useCallback. 9) Découvrabilité: La convention de nommage 'use' rend les hooks facilement identifiables. Ces avantages font des Custom Hooks le pattern privilégié pour la réutilisation de logique d'état dans les applications React modernes.",
+            answer: "Avantages des Custom Hooks par rapport aux autres patterns: 1) Simplicité: Les hooks sont des fonctions JavaScript simples, sans abstraction complexe. 2) Composition: Faciles à composer et à combiner pour créer des abstractions plus complexes. 3) Lisibilité: Le code utilisant des hooks est généralement plus lisible que celui utilisant des HOCs ou des Render Props. 4) Pas de nesting: Évitent le 'wrapper hell' des HOCs ou le 'callback hell' des Render Props. 5) Isolation: Chaque appel à un hook a son propre état isolé. 6) Typage: Plus faciles à typer avec TypeScript que les HOCs. 7) Testabilité: Étant de simples fonctions isolées du rendu, ils sont plus faciles à tester (avec renderHook). 8) Optimisation: Permettent d'utiliser facilement des optimisations comme useMemo et useCallback. 9) Découvrabilité: La convention de nommage 'use' rend les hooks facilement identifiables. Ces avantages font des Custom Hooks le pattern privilégié pour la réutilisation de logique d'état dans les applications React modernes.",
             difficulty: "medium",
             tags: ["React", "Hooks", "Comparison"]
           },
           {
             question: "Comment testeriez-vous un custom hook?",
-            answer: "Pour tester un custom hook: 1) Utiliser @testing-library/react-hooks: Cette bibliothèque fournit renderHook() pour tester les hooks isolément. Exemple: `const { result } = renderHook(() => useCounter())` puis `expect(result.current.count).toBe(0)`. 2) Tester les mises à jour: Utiliser act() pour simuler les changements d'état. Exemple: `act(() => { result.current.increment() })` puis vérifier le nouvel état. 3) Tester les effets de nettoyage: Utiliser unmount() pour vérifier que les effets sont bien nettoyés. 4) Mocker les dépendances: Pour les hooks qui dépendent d'APIs externes, utiliser jest.mock(). 5) Tester les erreurs: Vérifier que les hooks lancent les erreurs appropriées dans les cas limites. 6) Tester avec différents arguments: Vérifier le comportement avec différentes valeurs initiales. 7) Tester la réexécution: Utiliser rerender() pour simuler des changements de props. 8) Intégration dans des composants: Tester également le hook dans le contexte d'un composant réel. Cette approche permet de tester efficacement la logique isolée des hooks tout en vérifiant leur comportement dans différents scénarios.",
+            answer: "Pour tester un custom hook: 1) Utiliser renderHook() de @testing-library/react (depuis la v13.1; l'ancien paquet @testing-library/react-hooks est déprécié et ne supporte pas React 18+) pour tester les hooks isolément. Exemple: `const { result } = renderHook(() => useCounter())` puis `expect(result.current.count).toBe(0)`. 2) Tester les mises à jour: Utiliser act() pour simuler les changements d'état. Exemple: `act(() => { result.current.increment() })` puis vérifier le nouvel état. 3) Tester les effets de nettoyage: Utiliser unmount() pour vérifier que les effets sont bien nettoyés. 4) Mocker les dépendances: Pour les hooks qui dépendent d'APIs externes, utiliser vi.mock() (Vitest) ou jest.mock(). 5) Tester les erreurs: Vérifier que les hooks lancent les erreurs appropriées dans les cas limites. 6) Tester avec différents arguments: Vérifier le comportement avec différentes valeurs initiales. 7) Tester la réexécution: Utiliser rerender() pour simuler des changements de props. 8) Intégration dans des composants: Tester également le hook dans le contexte d'un composant réel. Cette approche permet de tester efficacement la logique isolée des hooks tout en vérifiant leur comportement dans différents scénarios.",
             difficulty: "hard",
-            tags: ["Testing", "React", "Jest"]
+            tags: ["Testing", "React", "Vitest"]
           }
         ]}
       />
@@ -279,7 +281,7 @@ function LoginForm() {
           },
           {
             question: "Comment créeriez-vous un hook personnalisé pour gérer les appels API avec gestion d'état de chargement et d'erreur?",
-            answer: "Pour créer un hook useFetch gérant les appels API: 1) Définir les états: `const [data, setData] = useState(null); const [loading, setLoading] = useState(false); const [error, setError] = useState(null);` 2) Implémenter la fonction fetch: `const fetchData = async (url, options = {}) => { setLoading(true); setError(null); try { const response = await fetch(url, options); if (!response.ok) throw new Error(response.statusText); const result = await response.json(); setData(result); return result; } catch (err) { setError(err.message); throw err; } finally { setLoading(false); } };` 3) Ajouter un effet pour les appels automatiques: `useEffect(() => { if (autoFetch && url) { fetchData(url, options).catch(e => console.error(e)); } }, [url, autoFetch, ...dependencies]);` 4) Retourner les états et fonctions: `return { data, loading, error, fetchData, setData };` 5) Avec TypeScript: `function useFetch<T>(url?: string, options?: RequestInit, autoFetch = true, dependencies: any[] = []): { data: T | null; loading: boolean; error: string | null; fetchData: (url: string, options?: RequestInit) => Promise<T>; setData: (data: T) => void; }`. Ce hook peut être utilisé comme: `const { data, loading, error, fetchData } = useFetch('/api/users');`",
+            answer: "Pour créer un hook useFetch gérant les appels API: 1) Définir un état unique: `const [state, setState] = useState({ data: null, loading: true, error: null });` 2) Dans un useEffect dépendant de l'URL, créer un AbortController, passer son signal à fetch, vérifier response.ok (fetch ne rejette pas la promesse sur un statut 404 ou 500), ignorer l'AbortError et annuler la requête dans la fonction de nettoyage: `useEffect(() => { const controller = new AbortController(); setState(s => ({ ...s, loading: true, error: null })); fetch(url, { signal: controller.signal }).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).then(data => setState({ data, loading: false, error: null })).catch(err => { if (err.name === 'AbortError') return; setState({ data: null, loading: false, error: err }); }); return () => controller.abort(); }, [url]);` 3) Retourner l'état: `return state;`. 4) Avec TypeScript: `function useFetch<T>(url: string): { data: T | null; loading: boolean; error: Error | null }`. 5) L'annulation évite les conditions de course (la réponse d'une ancienne URL qui écrase une plus récente) et rend inoffensif le double appel des effets de StrictMode en développement. 6) En production, préférez une bibliothèque dédiée (TanStack Query, SWR) pour le cache, la déduplication et les relances. Utilisation: `const { data, loading, error } = useFetch('/api/users');`",
             difficulty: "medium",
             tags: ["React", "API", "Implementation"]
           },

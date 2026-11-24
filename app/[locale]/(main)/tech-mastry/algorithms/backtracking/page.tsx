@@ -1,14 +1,11 @@
-import type { Metadata } from "next";
 import { BacktrackingGuide } from "./_components/backtracking-guide";
+import { topicMetadata } from "@/app/[locale]/(main)/tech-mastry/_catalog/metadata";
 
-export const metadata: Metadata = {
-  title: "Backtracking | Tech-Mastry",
-  description: "Guide complet du backtracking : N-Queens, Sudoku solver, permutations, et patterns de résolution systématique.",
-};
+export const metadata = topicMetadata("/tech-mastry/algorithms/backtracking");
 
 export default function BacktrackingPage() {
   return (
-    <main className="container py-8 space-y-12 animate-fadeIn">
+    <div className="container py-8 space-y-12 animate-fadeIn">
       <div className="text-center space-y-4">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-linear-to-br from-purple-500/20 to-violet-500/20 mb-2">
           <span className="text-3xl">🔙</span>
@@ -20,6 +17,6 @@ export default function BacktrackingPage() {
         </p>
       </div>
       <BacktrackingGuide />
-    </main>
+    </div>
   );
 }

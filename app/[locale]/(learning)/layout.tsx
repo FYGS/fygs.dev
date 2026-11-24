@@ -1,6 +1,6 @@
 /**
  * Immersive Learning Layout — Focus/Cinema mode
- * No header, no footer. Just a top bar + collapsible sidebar + content.
+ * No site header or footer: the shell (top bar, course plan, content) is in learn/[slug]/layout.tsx.
  */
 export default function LearningLayout({
   children,

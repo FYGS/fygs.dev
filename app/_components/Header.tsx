@@ -138,6 +138,7 @@ export const Header = () => {
                     <DropdownMenuTrigger asChild>
                       <TooltipTrigger asChild>
                         <button
+                          aria-label={content.social.dropdownLabel.value}
                           className={cn(
                             buttonVariants({ variant: "ghost", size: "icon" }),
                             "size-8"

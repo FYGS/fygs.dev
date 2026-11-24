@@ -1,0 +1,27 @@
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "inpay_fixture1",
+      "object": "invoice_payment",
+      "amount_paid": 900,
+      "amount_requested": 900,
+      "created": 1792187192,
+      "currency": "eur",
+      "invoice": "in_fixture1",
+      "is_default": true,
+      "livemode": false,
+      "payment": {
+        "payment_intent": "pi_fixture1",
+        "type": "payment_intent"
+      },
+      "status": "paid",
+      "status_transitions": {
+        "canceled_at": null,
+        "paid_at": 1792187190
+      }
+    }
+  ],
+  "has_more": false,
+  "url": "/v1/invoice_payments"
+}

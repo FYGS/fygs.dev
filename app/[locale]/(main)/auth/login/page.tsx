@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { useIntlayer } from "next-intlayer";
 import { useSearchParams } from "next/navigation";
+import { safeInternalPath } from "@/lib/safe-redirect";
 
 // export const metadata: Metadata = {
 //   title: "Connexion | FYGS Learning Platform",
@@ -15,13 +16,15 @@ import { useSearchParams } from "next/navigation";
 function LoginPageContent() {
   const content = useIntlayer("login-page");
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl");
+  // Only a path of this site is carried further: the value comes from the address bar
+  const requested = searchParams.get("callbackUrl");
+  const callbackUrl = requested ? safeInternalPath(requested, "") || null : null;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-background via-background to-muted/20 p-3 sm:p-4">
       <Card className="w-full max-w-md mx-auto">
         <CardHeader className="text-center space-y-2 px-4 sm:px-6 pt-6 pb-4">
-          <CardTitle className="text-xl sm:text-2xl font-bold">
+          <CardTitle as="h1" className="text-xl sm:text-2xl font-bold">
             {content.title}
           </CardTitle>
           <p className="text-muted-foreground text-sm sm:text-base">

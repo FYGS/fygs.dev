@@ -124,7 +124,7 @@ export function AdvancedPagination({
             <Info className="h-4 w-4" />
             <span>
               {totalItems > 0 
-                ? `${startIndex}-${endIndex} sur ${totalItems.toLocaleString()}`
+                ? `${startIndex}-${endIndex} sur ${totalItems.toLocaleString("fr-FR")}`
                 : "Aucun élément"
               }
             </span>

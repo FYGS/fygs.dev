@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { minioService, MinIOService } from "@/lib/minio-service";
+import { IMAGE_FOLDERS, isImageStorageConfigured, imageStorage } from "@/lib/image-storage";
+import { STORAGE_UNAVAILABLE_MESSAGE } from "@/lib/s3-presign";
 import { logger } from "@/lib/structured-logger";
+import { enforceRateLimit } from "@/lib/rate-limit";
+import { detectImageType, extensionFor } from "@/lib/media/image-signature";
+import { authorizeImageDeletion, recordImageDeleted } from "@/lib/media/image-ownership";
+import { QuotaExceededError, quotaMessage, releaseMedia, reserveMedia } from "@/lib/media/quota";
 
 export const runtime = "nodejs";
 
@@ -10,241 +15,136 @@ interface UploadResponse {
   success: boolean;
   url?: string;
   error?: string;
+  code?: "STORAGE_UNAVAILABLE" | "QUOTA_EXCEEDED";
 }
 
-export async function POST(
-  request: NextRequest
-): Promise<NextResponse<UploadResponse>> {
-  const correlationId = logger.generateCorrelationId();
+const MAX_BYTES = 5 * 1024 * 1024;
+/** The form around the file (boundaries, field names) is small: anything bigger than the file plus this is refused unread. */
+const FORM_OVERHEAD_BYTES = 64 * 1024;
+const FOLDERS = new Set<string>(IMAGE_FOLDERS);
+
+/** Network failures that mean "the storage is not there", as opposed to a refused file. */
+const UNREACHABLE = new Set(["ECONNREFUSED", "ENOTFOUND", "EAI_AGAIN", "ETIMEDOUT", "ECONNRESET", "InvalidAccessKeyId", "SignatureDoesNotMatch"]);
+
+function unavailable() {
+  return NextResponse.json<UploadResponse>(
+    { success: false, error: STORAGE_UNAVAILABLE_MESSAGE, code: "STORAGE_UNAVAILABLE" },
+    { status: 503 },
+  );
+}
+
+async function requireAuthor(): Promise<{ id: string; role: string } | NextResponse<UploadResponse>> {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session?.user) {
+    return NextResponse.json({ success: false, error: "Connectez-vous pour envoyer une image." }, { status: 401 });
+  }
+  if (!session.user.role || !["ADMIN", "INSTRUCTOR"].includes(session.user.role)) {
+    return NextResponse.json({ success: false, error: "Vous n'avez pas les permissions pour envoyer des images." }, { status: 403 });
+  }
+  return { id: session.user.id, role: session.user.role };
+}
+
+export async function POST(request: NextRequest): Promise<NextResponse<UploadResponse>> {
+  const limited = await enforceRateLimit(request, "upload", { limit: 20, windowSeconds: 600 });
+  if (limited) return limited as NextResponse<UploadResponse>;
+
   const uploadLogger = logger.withContext({
     operation: "image-upload",
-    correlationId,
+    correlationId: logger.generateCorrelationId(),
     resourceType: "file",
   });
 
+  const author = await requireAuthor();
+  if (author instanceof NextResponse) return author;
+  const limitedUser = await enforceRateLimit(request, "upload-image", { limit: 20, windowSeconds: 600, subject: `user:${author.id}` });
+  if (limitedUser) return limitedUser as NextResponse<UploadResponse>;
+  if (!isImageStorageConfigured()) return unavailable();
+
+  // Refuse an oversized body before it is read into memory: the announced length is checked first
+  const announced = Number(request.headers.get("content-length"));
+  if (!Number.isFinite(announced) || announced <= 0) {
+    return NextResponse.json({ success: false, error: "Envoi incomplet : réessayez." }, { status: 411 });
+  }
+  if (announced > MAX_BYTES + FORM_OVERHEAD_BYTES) {
+    return NextResponse.json({ success: false, error: "L'image dépasse 5 Mo." }, { status: 413 });
+  }
+
+  const formData = await request.formData().catch(() => null);
+  const file = formData?.get("file");
+  if (!(file instanceof File)) {
+    return NextResponse.json({ success: false, error: "Aucune image reçue." }, { status: 400 });
+  }
+  if (file.size > MAX_BYTES) return NextResponse.json({ success: false, error: "L'image dépasse 5 Mo." }, { status: 413 });
+
+  // What the file is comes from its bytes: the type announced by the browser and the file name are only claims
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const type = detectImageType(buffer);
+  if (!type) {
+    return NextResponse.json({ success: false, error: "Format non pris en charge : utilisez une image JPEG, PNG, GIF ou WebP." }, { status: 400 });
+  }
+
+  const requestedFolder = String(formData?.get("folder") ?? "images");
+  const folder = FOLDERS.has(requestedFolder) ? requestedFolder : "images";
+  const prefix = String(formData?.get("prefix") ?? "course").replace(/[^a-z0-9-]/gi, "").slice(0, 20) || "image";
+  // The stored name is built here: nothing of the client's file name or extension is kept
+  const objectName = `${folder}/${prefix}_${Date.now()}_${crypto.randomUUID().replace(/-/g, "").slice(0, 12)}.${extensionFor(type)}`;
+
   try {
-    // Check authentication
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      uploadLogger.warn("Unauthorized upload attempt");
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
-    // Only allow admins and instructors to upload images
-    if (
-      !session.user.role ||
-      !["ADMIN", "INSTRUCTOR"].includes(session.user.role)
-    ) {
-      uploadLogger.warn("Forbidden upload attempt", {
-        metadata: { userId: session.user.id, userRole: session.user.role },
-      });
-      return NextResponse.json(
-        { success: false, error: "Forbidden: Insufficient permissions" },
-        { status: 403 }
-      );
-    }
-
-    // Parse form data
-    const formData = await request.formData();
-    const file = formData.get("file") as File;
-    const folder = (formData.get("folder") as string) || "images";
-    const prefix = (formData.get("prefix") as string) || "course";
-
-    if (!file) {
-      uploadLogger.warn("No file provided in upload request");
-      return NextResponse.json(
-        { success: false, error: "No file provided" },
-        { status: 400 }
-      );
-    }
-
-    // Validate file
-    const validationResult = validateImageFile(file);
-    if (!validationResult.valid) {
-      uploadLogger.warn("Invalid file upload attempt", {
-        metadata: {
-          fileName: file.name,
-          fileSize: file.size,
-          fileType: file.type,
-          error: validationResult.error,
-        },
-      });
-      return NextResponse.json(
-        { success: false, error: validationResult.error },
-        { status: 400 }
-      );
-    }
-
-    // Generate safe file name
-    const safeFileName = MinIOService.generateSafeFileName(file.name, prefix);
-
-    uploadLogger.info("Starting file upload", {
-      metadata: {
-        originalFileName: file.name,
-        safeFileName,
-        fileSize: file.size,
-        fileType: file.type,
-        folder,
-        userId: session.user.id,
-      },
-    });
-
-    // Ensure MinIO service is initialized
-    try {
-      await minioService.initialize();
-    } catch (initError) {
-      uploadLogger.warn("MinIO service initialization during upload", {
-        metadata: {
-          error:
-            initError instanceof Error ? initError.message : String(initError),
-        },
-      });
-    }
-
-    // Upload file to MinIO
-    const fileUrl = await minioService.uploadImage(file, safeFileName, folder);
-
-    uploadLogger.info("File uploaded successfully", {
-      metadata: {
-        fileUrl,
-        safeFileName,
-        userId: session.user.id,
-      },
-    });
-
-    return NextResponse.json({
-      success: true,
-      url: fileUrl,
-    });
+    await reserveMedia({ key: objectName, userId: author.id, role: author.role, kind: "IMAGE", contentType: type, sizeBytes: buffer.length });
   } catch (error) {
-    uploadLogger.error("Upload failed", {
-      metadata: {
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-      },
+    if (error instanceof QuotaExceededError) {
+      return NextResponse.json({ success: false, error: quotaMessage(error.kind, error.limit), code: "QUOTA_EXCEEDED" }, { status: 413 });
+    }
+    throw error;
+  }
+
+  try {
+    await imageStorage.initialize();
+    const url = await imageStorage.putImage(objectName, buffer, type);
+    uploadLogger.info("Image uploaded", { metadata: { objectName, folder, userId: author.id } });
+    return NextResponse.json({ success: true, url });
+  } catch (error) {
+    await releaseMedia(objectName);
+    const code = (error as { code?: string }).code;
+    uploadLogger.error("Image upload failed", {
+      metadata: { code, error: error instanceof Error ? error.message : String(error) },
     });
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Upload failed",
-      },
-      { status: 500 }
-    );
+    if (code && UNREACHABLE.has(code)) return unavailable();
+    return NextResponse.json({ success: false, error: "L'envoi de l'image a échoué. Réessayez dans un instant." }, { status: 500 });
   }
-}
-
-/**
- * Validate image file
- */
-function validateImageFile(file: File): { valid: boolean; error?: string } {
-  // Check file size (max 5MB)
-  const maxSize = 5 * 1024 * 1024; // 5MB
-  if (file.size > maxSize) {
-    return { valid: false, error: "File size must be less than 5MB" };
-  }
-
-  // Check file type
-  const allowedTypes = [
-    "image/jpeg",
-    "image/jpg",
-    "image/png",
-    "image/gif",
-    "image/webp",
-  ];
-
-  if (!allowedTypes.includes(file.type)) {
-    return {
-      valid: false,
-      error:
-        "Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed",
-    };
-  }
-
-  // Check file name extension
-  if (!MinIOService.isValidImageFile(file.name)) {
-    return {
-      valid: false,
-      error:
-        "Invalid file extension. Only .jpg, .jpeg, .png, .gif, and .webp files are allowed",
-    };
-  }
-
-  return { valid: true };
 }
 
 export async function DELETE(request: NextRequest): Promise<NextResponse> {
-  const correlationId = logger.generateCorrelationId();
-  const deleteLogger = logger.withContext({
-    operation: "image-delete",
-    correlationId,
-    resourceType: "file",
-  });
+  const limited = await enforceRateLimit(request, "upload", { limit: 20, windowSeconds: 600 });
+  if (limited) return limited as NextResponse<UploadResponse>;
+
+  const author = await requireAuthor();
+  if (author instanceof NextResponse) return author;
+  if (!isImageStorageConfigured()) return unavailable();
+
+  const objectName = new URL(request.url).searchParams.get("objectName");
+  if (!objectName) {
+    return NextResponse.json({ success: false, error: "Indiquez l'image à supprimer." }, { status: 400 });
+  }
+
+  // Only the owner of an image (or an administrator) deletes it, and only an object this route could have written
+  const decision = await authorizeImageDeletion(author, objectName);
+  if (!decision.allowed) {
+    const status = decision.reason === "INVALID_KEY" ? 400 : 403;
+    return NextResponse.json(
+      { success: false, error: decision.reason === "INVALID_KEY" ? "Image inconnue." : "Vous ne pouvez supprimer que vos propres images." },
+      { status },
+    );
+  }
 
   try {
-    // Check authentication
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
-    // Only allow admins and instructors to delete images
-    if (
-      !session.user.role ||
-      !["ADMIN", "INSTRUCTOR"].includes(session.user.role)
-    ) {
-      return NextResponse.json(
-        { success: false, error: "Forbidden: Insufficient permissions" },
-        { status: 403 }
-      );
-    }
-
-    const { searchParams } = new URL(request.url);
-    const objectName = searchParams.get("objectName");
-
-    if (!objectName) {
-      return NextResponse.json(
-        { success: false, error: "Object name is required" },
-        { status: 400 }
-      );
-    }
-
-    deleteLogger.info("Starting file deletion", {
-      metadata: { objectName, userId: session.user.id },
-    });
-
-    await minioService.deleteFile(objectName);
-
-    deleteLogger.info("File deleted successfully", {
-      metadata: { objectName, userId: session.user.id },
-    });
-
+    await imageStorage.deleteFile(decision.key);
+    await recordImageDeleted(author, decision.key);
     return NextResponse.json({ success: true });
   } catch (error) {
-    deleteLogger.error("File deletion failed", {
-      metadata: {
-        error: error instanceof Error ? error.message : String(error),
-      },
+    logger.error("Image deletion failed", {
+      metadata: { error: error instanceof Error ? error.message : String(error), userId: author.id },
     });
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Deletion failed",
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: "La suppression de l'image a échoué." }, { status: 500 });
   }
 }

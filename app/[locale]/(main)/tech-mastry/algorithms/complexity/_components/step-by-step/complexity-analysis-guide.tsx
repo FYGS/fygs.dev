@@ -127,7 +127,7 @@ const examples: AnalysisExample[] = [
         description:
           "Calculez combien de fois les opérations principales sont exécutées",
         explanation:
-          "La boucle externe s'exécute n fois. Pour chaque itération i, la boucle interne s'exécute (n-i-1) fois. Cela donne un total de n + (n-1) + (n-2) + ... + 1 = n(n+1)/2 ≈ n² comparaisons.",
+          "La boucle externe s'exécute n fois. Pour chaque itération i, la boucle interne s'exécute (n-i-1) fois. Cela donne un total de (n-1) + (n-2) + ... + 1 + 0 = n(n-1)/2 ≈ n²/2 comparaisons, soit O(n²).",
         complexity: "O(n²)",
       },
       {

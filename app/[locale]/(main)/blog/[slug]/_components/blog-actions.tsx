@@ -36,6 +36,7 @@ export function BlogActions({ slug, title, url }: BlogActionsProps) {
             size="icon"
             className={bookmarked ? "border-primary/50 text-primary" : ""}
             onClick={handleBookmark}
+            aria-label={bookmarked ? "Remove bookmark" : "Bookmark this article"}
           >
             {bookmarked ? (
               <BookmarkCheck className="h-4 w-4" />

@@ -220,12 +220,14 @@ export function PerformanceChart() {
                 Comprendre la complexité temporelle
               </h3>
               <p className="text-sm text-blue-400">
-                Ce graphique montre le nombre d&apos;opérations (comparaisons et
-                échanges) effectuées par chaque algorithme en fonction de la
-                taille de l&apos;entrée (n). Les algorithmes en O(n²) comme le
-                tri à bulles deviennent rapidement inefficaces pour de grandes
-                entrées, tandis que les algorithmes en O(n log n) comme le tri
-                fusion restent performants.
+                <strong>Courbes purement illustratives</strong> : elles
+                représentent la forme théorique de croissance (n, n log n, n²)
+                à une échelle relative arbitraire, et non des mesures ni un
+                décompte exact de comparaisons ou d&apos;échanges. Les
+                algorithmes en O(n²) comme le tri à bulles deviennent
+                rapidement inefficaces pour de grandes entrées, tandis que les
+                algorithmes en O(n log n) comme le tri fusion restent
+                performants.
               </p>
             </div>
           </div>

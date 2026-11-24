@@ -1,14 +1,16 @@
 'use server'
 
 import { z } from 'zod'
+import { isSubscriptionActive } from "@/lib/access/entitlement";
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { paymentService } from '@/lib/payment-service'
 import { AnalyticsHelper } from '@/lib/analytics-helper'
-import { resolveRequestedPriceId } from '@/lib/subscription-pricing'
-import { Prisma, SubscriptionStatus } from '@prisma/client'
+import { getSubscriptionPeriod } from '@/lib/stripe-shapes'
+import { classifyBillingCycle, resolveRequestedPriceId } from '@/lib/subscription-pricing'
+import { withPurchaseLock } from '@/lib/payments/locks'
 
 const switchPlanSchema = z.object({
   newPriceId: z.string().min(1, 'Price ID is required'),
@@ -23,12 +25,9 @@ export type SwitchSubscriptionPlanResult = {
     status: string
     currentPeriodEnd: Date | null
   }
-  proration?: {
-    amount: number
-    description: string
-    creditAmount?: number
-  }
   auditId?: string
+  /** Set when the change waits for the end of the paid period (yearly -> monthly) */
+  scheduledFor?: Date
   error?: string
 }
 
@@ -68,7 +67,8 @@ export async function switchSubscriptionPlan(
       }
     }
 
-    if (subscription.status !== SubscriptionStatus.ACTIVE) {
+    // ACTIVE or TRIALING: a trial is a running subscription (lib/access/entitlement.ts)
+    if (!isSubscriptionActive(subscription)) {
       return {
         success: false,
         message: "Subscription is not active",
@@ -76,8 +76,33 @@ export async function switchSubscriptionPlan(
       };
     }
 
+    // The caller may name a plan by its cycle keyword ("yearly"), as the billing screen does, or by price id: resolve it
+    // first, so that "the plan I am on" is recognised whichever way it is written
+    let resolvedPriceInfo: { priceId: string; cycle: 'monthly' | 'yearly' } | null = null
+    try {
+      resolvedPriceInfo = resolveRequestedPriceId(newPriceId, { strict: true })
+    } catch {
+      resolvedPriceInfo = null
+    }
+    const samePlan =
+      subscription.priceId === newPriceId ||
+      (resolvedPriceInfo !== null && subscription.priceId === resolvedPriceInfo.priceId)
+
+    // Choosing the plan the subscription is on drops a change that was waiting for the end of the period
+    if (samePlan && subscription.stripeSubscriptionId) {
+      const pending = await paymentService.getScheduledPriceChange(subscription.stripeSubscriptionId)
+      if (pending) {
+        await paymentService.cancelScheduledPriceChange(subscription.stripeSubscriptionId)
+        revalidatePath('/dashboard')
+        return {
+          success: true,
+          message: 'The scheduled plan change was cancelled: your subscription goes on as it is',
+        }
+      }
+    }
+
     // Check if switching to same plan
-    if (subscription.priceId === newPriceId) {
+    if (samePlan) {
       return {
         success: false,
         message: 'You are already on this plan',
@@ -86,16 +111,14 @@ export async function switchSubscriptionPlan(
     }
 
     // Validate price ID
-    let resolvedPriceInfo: { priceId: string; cycle: 'monthly' | 'yearly' }
-    try {
-      resolvedPriceInfo = resolveRequestedPriceId(newPriceId)
-    } catch {
+    if (!resolvedPriceInfo) {
       return {
         success: false,
         message: 'Invalid price ID',
         error: 'INVALID_PRICE_ID'
       }
     }
+    const targetPrice = resolvedPriceInfo
 
     if (!subscription.stripeSubscriptionId) {
       return {
@@ -105,72 +128,102 @@ export async function switchSubscriptionPlan(
       }
     }
 
-    // Switch subscription plan via Stripe
-    await paymentService.switchSubscriptionPrice(
-      subscription.stripeSubscriptionId,
-      resolvedPriceInfo.priceId
-    )
-
-    // Get updated subscription from Stripe
-    const stripeSubscription = await paymentService.getSubscription(
-      subscription.stripeSubscriptionId
-    )
-
-    // Update local subscription record
-    const updatedSubscription = await db.subscription.update({
-      where: { id: subscription.id },
-      data: {
-        priceId: resolvedPriceInfo.priceId,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        currentPeriodStart: new Date((stripeSubscription as any).current_period_start * 1000),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        currentPeriodEnd: new Date((stripeSubscription as any).current_period_end * 1000),
-        cancelAtPeriodEnd: false
+    // Yearly -> monthly waits for the end of the paid year: nothing is credited, charged or refunded now, and the
+    // learner keeps the plan they paid for until then. Monthly -> yearly (below) is invoiced at once.
+    if (classifyBillingCycle(subscription.priceId ?? undefined) === 'yearly' && targetPrice.cycle === 'monthly') {
+      const scheduled = await withPurchaseLock(userId, null, async (tx) => {
+        const fresh = await tx.subscription.findUnique({ where: { id: subscription.id } })
+        if (!fresh || !isSubscriptionActive(fresh)) return null
+        return paymentService.schedulePriceChangeAtPeriodEnd(fresh.stripeSubscriptionId!, targetPrice.priceId)
+      })
+      if (!scheduled) {
+        return { success: false, message: 'Subscription is not active', error: 'NO_ACTIVE_SUBSCRIPTION' }
       }
+      const scheduledAudit = await db.invoiceAudit.create({
+        data: {
+          userId,
+          subscriptionId: subscription.id,
+          type: 'PLAN_CHANGE',
+          currency: 'EUR',
+          metadata: {
+            oldPriceId: subscription.priceId,
+            newPriceId: targetPrice.priceId,
+            effectiveDate: scheduled.effectiveAt.toISOString(),
+            scheduled: true,
+            oldCycle: 'yearly',
+            newCycle: 'monthly',
+          },
+        },
+      })
+      await AnalyticsHelper.emit({
+        userId,
+        type: 'SUBSCRIPTION_PLAN_SWITCHED',
+        source: 'server',
+        properties: { oldPriceId: subscription.priceId, newPriceId: targetPrice.priceId, oldCycle: 'yearly', newCycle: 'monthly', scheduled: true },
+      })
+      revalidatePath('/dashboard')
+      revalidatePath('/pricing')
+      return {
+        success: true,
+        message: 'The monthly plan will start when your paid year ends',
+        scheduledFor: scheduled.effectiveAt,
+        auditId: scheduledAudit.id,
+      }
+    }
+
+    // Under the buyer's purchase lock (shared with refunds and checkout): a refund that ends the subscription and a
+    // plan change cannot interleave. The state stored is the one Stripe reports after the change.
+    const updatedSubscription = await withPurchaseLock(userId, null, async (tx) => {
+      const fresh = await tx.subscription.findUnique({ where: { id: subscription.id } })
+      if (!fresh || !isSubscriptionActive(fresh)) return null
+
+      await paymentService.switchSubscriptionPrice(
+        fresh.stripeSubscriptionId!,
+        targetPrice.priceId
+      )
+
+      const stripeSubscription = await paymentService.getSubscription(
+        fresh.stripeSubscriptionId!
+      )
+
+      // The period lives on the subscription item (since API 2025-03-31 there is no root current_period_*): reading
+      // the root gave NaN dates and failed the update after Stripe had already switched.
+      const period = getSubscriptionPeriod(stripeSubscription)
+      return tx.subscription.update({
+        where: { id: subscription.id },
+        data: {
+          priceId: targetPrice.priceId,
+          ...(period.start ? { currentPeriodStart: new Date(period.start * 1000) } : {}),
+          ...(period.end ? { currentPeriodEnd: new Date(period.end * 1000) } : {}),
+          cancelAtPeriodEnd: false,
+          lastEventAt: new Date(),
+        },
+      })
     })
 
-    // Calculate proration information
-    const oldCycle = subscription.priceId?.includes('yearly') ? 'yearly' : 'monthly'
-    const newCycle = resolvedPriceInfo.cycle
-    
-    let prorationInfo: {
-      amount: number
-      description: string
-      creditAmount?: number
-    }
-
-    if (oldCycle === 'monthly' && newCycle === 'yearly') {
-      // Upgrade: monthly to yearly
-      prorationInfo = {
-        amount: 5000, // Mock proration amount (in cents)
-        description: 'Plan upgrade from monthly to yearly with proration credit'
-      }
-    } else if (oldCycle === 'yearly' && newCycle === 'monthly') {
-      // Downgrade: yearly to monthly
-      prorationInfo = {
-        amount: -3000, // Negative indicates credit
-        creditAmount: 3000,
-        description: 'Plan downgrade from yearly to monthly with remaining credit'
-      }
-    } else {
-      prorationInfo = {
-        amount: 0,
-        description: 'Plan change without proration'
+    if (!updatedSubscription) {
+      return {
+        success: false,
+        message: "Subscription is not active",
+        error: "NO_ACTIVE_SUBSCRIPTION",
       }
     }
 
-    // Create audit record
+    // Only two cycles exist and the plan is different from the current one
+    const newCycle = targetPrice.cycle
+    const oldCycle = newCycle === 'yearly' ? 'monthly' : 'yearly'
+
+    // The change itself. The amounts Stripe computed for it are audited by paymentService
+    // (type PRORATION, from the invoice preview): nothing is estimated here.
     const auditRecord = await db.invoiceAudit.create({
       data: {
         userId,
         subscriptionId: subscription.id,
         type: 'PLAN_CHANGE',
-        amount: new Prisma.Decimal(Math.abs(prorationInfo.amount) / 100), // Convert to decimal
         currency: 'EUR',
         metadata: {
           oldPriceId: subscription.priceId,
-          newPriceId: resolvedPriceInfo.priceId,
-          prorationAmount: prorationInfo.amount,
+          newPriceId: targetPrice.priceId,
           effectiveDate: new Date().toISOString(),
           oldCycle,
           newCycle
@@ -185,10 +238,9 @@ export async function switchSubscriptionPlan(
       source: 'server',
       properties: {
         oldPriceId: subscription.priceId,
-        newPriceId: resolvedPriceInfo.priceId,
+        newPriceId: targetPrice.priceId,
         oldCycle,
-        newCycle,
-        prorationAmount: prorationInfo.amount
+        newCycle
       }
     })
 
@@ -205,7 +257,6 @@ export async function switchSubscriptionPlan(
         status: updatedSubscription.status,
         currentPeriodEnd: updatedSubscription.currentPeriodEnd
       },
-      proration: prorationInfo,
       auditId: auditRecord.id
     }
 

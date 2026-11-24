@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -26,17 +26,24 @@ import {
   Edit,
   Eye,
   Trash2,
-  Copy,
   Star,
   Users,
   BookOpen,
   Clock,
-  Euro
+  Copy,
+  EyeOff,
+  Plus,
+  Rocket,
 } from "lucide-react";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
-import { deleteCourse } from "../[id]/_actions/edit-course";
+import { deleteCourse, duplicateCourse, publishCourse, unpublishCourse } from "../_actions/course-actions";
+import { formatMinutes } from "@/lib/format-duration";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { formatPrice } from "@/lib/price-format";
+import { MIN_PREMIUM_PRICE } from "@/lib/curriculum/publish";
+import { LEVEL_BADGE_CLASSES, levelLabel } from "@/lib/courses/labels";
+import type { CourseLevel } from "@/lib/generated/prisma/browser";
 
 interface Course {
   id: string;
@@ -44,7 +51,8 @@ interface Course {
   slug: string;
   description: string;
   thumbnail: string | null;
-  price: number;
+  price: number | null;
+  accessTier: string;
   category: string;
   level: string;
   published: boolean;
@@ -54,6 +62,8 @@ interface Course {
   updatedAt: string;
   lessonsCount: number;
   publishedLessonsCount: number;
+  /** Minutes shown to learners (lessons' total, else the estimate). */
+  displayMinutes: number | null;
   enrollmentsCount: number;
   averageRating: number;
   tags: Array<{
@@ -75,24 +85,16 @@ interface CoursesTableProps {
 }
 
 export function CoursesTable({ courses, pagination }: CoursesTableProps) {
-  const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const router = useRouter();
-
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedCourses(courses.map(course => course.id));
-    } else {
-      setSelectedCourses([]);
-    }
-  };
-
-  const handleSelectCourse = (courseId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedCourses(prev => [...prev, courseId]);
-    } else {
-      setSelectedCourses(prev => prev.filter(id => id !== courseId));
-    }
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const pageHref = (page: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (page > 1) params.set("page", String(page));
+    else params.delete("page");
+    const query = params.toString();
+    return query ? `${pathname}?${query}` : pathname;
   };
 
   const handleDeleteCourse = async (courseId: string) => {
@@ -114,73 +116,40 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
     }
   };
 
-  const formatLevel = (level: string) => {
-    const levelMap: Record<string, string> = {
-      'BEGINNER': 'Débutant',
-      'INTERMEDIATE': 'Intermédiaire',
-      'ADVANCED': 'Avancé',
-      'EXPERT': 'Expert',
-    };
-    return levelMap[level] || level;
+
+
+  const formatDuration = (minutes: number | null): string => formatMinutes(minutes) || "—";
+
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const duplicate = async (course: Course) => {
+    setBusyId(course.id);
+    const result = await duplicateCourse(course.id);
+    setBusyId(null);
+    if (!result.success) return toast.error(result.error);
+    toast.success("Copie créée en brouillon.");
+    router.push(`/admin/courses/${result.courseId}`);
   };
 
-  const getLevelColor = (level: string) => {
-    switch (level) {
-      case 'BEGINNER':
-        return 'bg-green-900 text-green-300';
-      case 'INTERMEDIATE':
-        return 'bg-blue-900 text-blue-300';
-      case 'ADVANCED':
-        return 'bg-orange-900 text-orange-300';
-      case 'EXPERT':
-        return 'bg-red-900 text-red-300';
-      default:
-        return 'bg-gray-900 text-gray-300';
+  const togglePublished = async (course: Course) => {
+    setBusyId(course.id);
+    const result = course.published ? await unpublishCourse(course.id) : await publishCourse(course.id);
+    setBusyId(null);
+    if (result.success) {
+      toast.success(course.published ? "Formation retirée du catalogue." : "Formation publiée.");
+      router.refresh();
+    } else {
+      toast.error(result.error, { action: { label: "Ouvrir l'éditeur", onClick: () => router.push(`/admin/courses/${course.id}?section=apercu`) } });
     }
-  };
-
-  const formatDuration = (minutes: number | null): string => {
-    if (!minutes) return "—";
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    if (hours === 0) return `${remainingMinutes}min`;
-    if (remainingMinutes === 0) return `${hours}h`;
-    return `${hours}h ${remainingMinutes}min`;
   };
 
   return (
     <div className="space-y-4">
-      {/* Selection info */}
-      {selectedCourses.length > 0 && (
-        <div className="flex items-center justify-between p-4 bg-primary/10 rounded-lg border border-primary/20">
-          <span className="text-sm font-medium">
-            {selectedCourses.length} cours sélectionné(s)
-          </span>
-          <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline">
-              Publier
-            </Button>
-            <Button size="sm" variant="outline">
-              Archiver
-            </Button>
-            <Button size="sm" variant="destructive">
-              Supprimer
-            </Button>
-          </div>
-        </div>
-      )}
-
       {/* Table */}
       <div className="rounded-lg border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-12">
-                <Checkbox
-                  checked={selectedCourses.length === courses.length}
-                  onCheckedChange={handleSelectAll}
-                />
-              </TableHead>
               <TableHead>Cours</TableHead>
               <TableHead>Statut</TableHead>
               <TableHead>Niveau</TableHead>
@@ -189,16 +158,24 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
               <TableHead>Prix</TableHead>
               <TableHead>Durée</TableHead>
               <TableHead>Créé le</TableHead>
-              <TableHead className="w-12"></TableHead>
+              <TableHead className="w-12">
+                <span className="sr-only">Actions</span>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {courses.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} className="text-center py-8">
-                  <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                    <BookOpen className="h-8 w-8 opacity-50" />
-                    <p>Aucun cours trouvé</p>
+                <TableCell colSpan={9} className="text-center py-8">
+                  <div className="flex flex-col items-center gap-3 text-muted-foreground">
+                    <BookOpen className="h-8 w-8 opacity-50" aria-hidden />
+                    <p>Aucune formation à afficher. Ajustez les filtres ou créez-en une.</p>
+                    <Button asChild size="sm">
+                      <Link href="/admin/courses/new">
+                        <Plus className="mr-1.5 h-4 w-4" aria-hidden />
+                        Créer une formation
+                      </Link>
+                    </Button>
                   </div>
                 </TableCell>
               </TableRow>
@@ -206,20 +183,15 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
               courses.map((course) => (
                 <TableRow key={course.id} className="group hover:bg-muted/50">
                   <TableCell>
-                    <Checkbox
-                      checked={selectedCourses.includes(course.id)}
-                      onCheckedChange={(checked) => 
-                        handleSelectCourse(course.id, checked as boolean)
-                      }
-                    />
-                  </TableCell>
-                  
-                  <TableCell>
                     <div className="space-y-2">
                       <div className="flex items-start gap-3">
                         {/* Thumbnail */}
-                        <div className="w-12 h-8 rounded bg-muted flex items-center justify-center shrink-0">
-                          <BookOpen className="h-4 w-4 text-muted-foreground" />
+                        <div className="relative w-12 h-8 overflow-hidden rounded bg-muted flex items-center justify-center shrink-0">
+                          {course.thumbnail ? (
+                            <Image src={course.thumbnail} alt="" fill sizes="48px" className="object-cover" unoptimized />
+                          ) : (
+                            <BookOpen className="h-4 w-4 text-muted-foreground" aria-hidden />
+                          )}
                         </div>
                         
                         {/* Course info */}
@@ -249,7 +221,7 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
                                   className="text-xs h-5"
                                   style={{ 
                                     borderColor: tag.color + '40', 
-                                    color: tag.color 
+                                    color: `color-mix(in srgb, ${tag.color} 35%, hsl(var(--foreground)))` 
                                   }}
                                 >
                                   {tag.name}
@@ -273,7 +245,7 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
                         variant={course.published ? "default" : "secondary"}
                         className="w-fit"
                       >
-                        {course.published ? "Publié" : "Brouillon"}
+                        {course.published ? "Publiée" : "Brouillon"}
                       </Badge>
                       {course.featured && (
                         <Badge variant="outline" className="w-fit text-xs">
@@ -284,8 +256,8 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
                   </TableCell>
                   
                   <TableCell>
-                    <Badge className={getLevelColor(course.level)}>
-                      {formatLevel(course.level)}
+                    <Badge className={LEVEL_BADGE_CLASSES[course.level as CourseLevel] ?? ""}>
+                      {levelLabel(course.level)}
                     </Badge>
                   </TableCell>
                   
@@ -308,29 +280,32 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
                   </TableCell>
                   
                   <TableCell>
-                    <div className="flex items-center gap-1 text-sm font-medium">
-                      <Euro className="h-3 w-3 text-muted-foreground" />
-                      <span>{course.price}</span>
-                    </div>
+                    {course.accessTier === "FREE" ? (
+                      <span className="text-sm font-medium">Gratuit</span>
+                    ) : course.price !== null && course.price >= MIN_PREMIUM_PRICE ? (
+                      <span className="text-sm font-medium">{formatPrice(course.price, { freeLabel: false })}</span>
+                    ) : (
+                      <span className="text-sm text-amber-800 dark:text-amber-300">Prix à fixer</span>
+                    )}
                   </TableCell>
                   
                   <TableCell>
                     <div className="flex items-center gap-1 text-sm">
                       <Clock className="h-3 w-3 text-muted-foreground" />
-                      <span>{formatDuration(course.duration)}</span>
+                      <span>{formatDuration(course.displayMinutes)}</span>
                     </div>
                   </TableCell>
                   
                   <TableCell>
                     <div className="text-sm text-muted-foreground">
-                      {new Date(course.createdAt).toLocaleDateString('fr-FR')}
+                      {new Date(course.createdAt).toLocaleDateString('fr-FR', { timeZone: 'Europe/Paris' })}
                     </div>
                   </TableCell>
                   
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" aria-label={`Actions pour ${course.title}`}>
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -338,39 +313,47 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
-                          <Link href={`/formations/${course.slug}`}>
-                            <Eye className="h-4 w-4 mr-2" />
-                            Voir le cours
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
                           <Link href={`/admin/courses/${course.id}`}>
                             <Edit className="h-4 w-4 mr-2" />
                             Modifier
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href={course.published ? `/formations/${course.slug}` : `/formations/${course.slug}?preview=true`} target="_blank">
+                            <Eye className="h-4 w-4 mr-2" />
+                            {course.published ? "Voir la page publique" : "Prévisualiser"}
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem disabled={busyId === course.id} onSelect={() => void togglePublished(course)}>
+                          {course.published ? <EyeOff className="h-4 w-4 mr-2" /> : <Rocket className="h-4 w-4 mr-2" />}
+                          {course.published ? "Dépublier" : "Publier"}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem disabled={busyId === course.id} onSelect={() => void duplicate(course)}>
                           <Copy className="h-4 w-4 mr-2" />
                           Dupliquer
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <ConfirmationModal
                           trigger={
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               className="text-red-600"
-                              disabled={isDeleting === course.id}
+                              disabled={isDeleting === course.id || course.enrollmentsCount > 0}
                               onSelect={(e) => e.preventDefault()}
                             >
                               <Trash2 className="h-4 w-4 mr-2" />
-                              {isDeleting === course.id ? "Suppression..." : "Supprimer"}
+                              {isDeleting === course.id
+                                ? "Suppression..."
+                                : course.enrollmentsCount > 0
+                                  ? `Supprimer (impossible : ${course.enrollmentsCount} inscrit${course.enrollmentsCount > 1 ? "s" : ""})`
+                                  : "Supprimer"}
                             </DropdownMenuItem>
                           }
                           title="Confirmer la suppression"
-                          description={`Êtes-vous sûr de vouloir supprimer la formation "${course.title}" ? Cette action est irréversible et supprimera toutes les données associées (leçons, inscriptions, progrès).`}
+                          description={`Êtes-vous sûr de vouloir supprimer la formation "${course.title}" ? Cette action est irréversible et supprimera son programme, ses quiz et ses supports. Une formation avec des inscrits ne peut pas être supprimée.`}
                           confirmText="Supprimer définitivement"
                           onConfirm={() => handleDeleteCourse(course.id)}
                           isDestructive={true}
-                          disabled={isDeleting === course.id}
+                          disabled={isDeleting === course.id || course.enrollmentsCount > 0}
                         />
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -388,20 +371,11 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
           <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
               Affichage de {Math.min((pagination.currentPage - 1) * pagination.pageSize + 1, pagination.totalItems)} à{" "}
-              {Math.min(pagination.currentPage * pagination.pageSize, pagination.totalItems)} sur {pagination.totalItems} cours
+              {Math.min(pagination.currentPage * pagination.pageSize, pagination.totalItems)} sur {pagination.totalItems} formations
             </div>
             
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={!pagination.hasPrevPage}
-                onClick={() => {
-                  const url = new URL(window.location.href);
-                  url.searchParams.set('page', (pagination.currentPage - 1).toString());
-                  window.location.href = url.toString();
-                }}
-              >
+              <Button variant="outline" size="sm" disabled={!pagination.hasPrevPage} onClick={() => router.push(pageHref(pagination.currentPage - 1))}>
                 Précédent
               </Button>
               
@@ -409,16 +383,7 @@ export function CoursesTable({ courses, pagination }: CoursesTableProps) {
                 Page {pagination.currentPage} sur {pagination.totalPages}
               </span>
               
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={!pagination.hasNextPage}
-                onClick={() => {
-                  const url = new URL(window.location.href);
-                  url.searchParams.set('page', (pagination.currentPage + 1).toString());
-                  window.location.href = url.toString();
-                }}
-              >
+              <Button variant="outline" size="sm" disabled={!pagination.hasNextPage} onClick={() => router.push(pageHref(pagination.currentPage + 1))}>
                 Suivant
               </Button>
             </div>

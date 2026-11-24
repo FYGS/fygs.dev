@@ -164,11 +164,11 @@ export class TestDatabase {
     }
 
     const cleanup = async () => {
-      await Promise.all([
-        this.cleanupLessons(resources.lessonIds),
-        this.cleanupCourses(resources.courseIds),
-        ...resources.userIds.map(id => this.cleanupUser(id))
-      ])
+      // In order: a course delete cascades to its lessons, so removing the lessons
+      // concurrently with their course made the lesson cleanup fail noisily
+      await this.cleanupLessons(resources.lessonIds)
+      await this.cleanupCourses(resources.courseIds)
+      await Promise.all(resources.userIds.map(id => this.cleanupUser(id)))
     }
 
     return {

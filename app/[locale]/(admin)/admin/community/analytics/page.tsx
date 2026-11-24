@@ -293,7 +293,7 @@ async function AnalyticsContent() {
                           {discussion.topic?.name}
                         </Badge>
                       </div>
-                      <h4 className="font-medium text-sm truncate">{discussion.title}</h4>
+                      <h3 className="font-medium text-sm truncate">{discussion.title}</h3>
                       <div className="flex items-center gap-2 mt-1 text-xs text-slate-400">
                         <span>by {discussion.author?.name}</span>
                         <span>•</span>
@@ -427,7 +427,7 @@ async function AnalyticsContent() {
                       key={i}
                       className="flex-1 bg-blue-800 rounded-sm min-h-[4px]"
                       style={{ height: `${Math.max(height, 4)}%` }}
-                      title={`${date.toLocaleDateString()}: ${dayActivity} discussions`}
+                      title={`${date.toLocaleDateString("fr-FR")}: ${dayActivity} discussions`}
                     />
                   );
                 })}
@@ -483,9 +483,9 @@ function MetricCard({ title, value, thisWeek, growth, icon: Icon, color }: Metri
           </div>
         </div>
         <div>
-          <div className="text-2xl font-bold">{value.toLocaleString()}</div>
+          <div className="text-2xl font-bold">{value.toLocaleString("fr-FR")}</div>
           <div className="text-sm text-slate-400">{title}</div>
-          <div className="text-xs text-slate-500 mt-1">
+          <div className="text-xs text-slate-400 mt-1">
             {thisWeek} this week
           </div>
         </div>

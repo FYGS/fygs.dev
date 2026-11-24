@@ -1,0 +1,15 @@
+{
+  "$comment": "Advisories the dependency audit (scripts/ci/audit-lockfile.mjs) tolerates. Each entry is a decision: why the vulnerable code cannot be reached, and a date after which the job fails again so the decision is taken again. Reasoning: docs/security-ops-2026-10.md.",
+  "entries": [
+    {
+      "package": "braces",
+      "reason": "Pulled in by build-time globbing only (no fixed release); never reaches user input in the running application.",
+      "expires": "2027-02-01"
+    },
+    {
+      "package": "sprintf-js",
+      "reason": "Pulled in by build-time tooling and the trusted MDX front matter parser (gray-matter on repository files); no fixed release; never parses user-supplied content.",
+      "expires": "2027-02-01"
+    }
+  ]
+}

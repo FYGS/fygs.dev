@@ -12,6 +12,7 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import { useLocale } from "next-intlayer";
 import { cn } from "@/lib/utils";
+import { writeCookie } from "@/lib/browser-effects";
 import { toast } from "sonner";
 
 interface FloatingLanguageButtonProps {
@@ -38,7 +39,7 @@ export function FloatingLanguageButton({
     segments[1] = newLocale;
     const newPath = segments.join("/");
 
-    document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000; SameSite=Lax`;
+    writeCookie(`NEXT_LOCALE=${newLocale}; path=/; max-age=31536000; SameSite=Lax`);
 
     toast.success(
       `${getLocaleFlag(newLocale)} Language changed to ${getLocaleDisplayName(

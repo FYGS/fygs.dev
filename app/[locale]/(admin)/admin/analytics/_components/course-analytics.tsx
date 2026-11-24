@@ -13,6 +13,9 @@ import {
   Award
 } from "lucide-react";
 import Link from "next/link";
+import { LEVEL_BADGE_CLASSES, levelLabel } from "@/lib/courses/labels";
+import type { CourseLevel } from "@/lib/generated/prisma/browser";
+import { formatPrice } from "@/lib/price-format";
 
 interface Course {
   id: string;
@@ -31,30 +34,7 @@ interface CourseAnalyticsProps {
 }
 
 export function CourseAnalytics({ courses }: CourseAnalyticsProps) {
-  const formatLevel = (level: string) => {
-    const levelMap: Record<string, string> = {
-      'BEGINNER': 'Débutant',
-      'INTERMEDIATE': 'Intermédiaire',
-      'ADVANCED': 'Avancé',
-      'EXPERT': 'Expert',
-    };
-    return levelMap[level] || level;
-  };
 
-  const getLevelColor = (level: string) => {
-    switch (level) {
-      case 'BEGINNER':
-        return 'bg-green-900 text-green-300';
-      case 'INTERMEDIATE':
-        return 'bg-blue-900 text-blue-300';
-      case 'ADVANCED':
-        return 'bg-orange-900 text-orange-300';
-      case 'EXPERT':
-        return 'bg-red-900 text-red-300';
-      default:
-        return 'bg-gray-900 text-gray-300';
-    }
-  };
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
@@ -98,7 +78,7 @@ export function CourseAnalytics({ courses }: CourseAnalyticsProps) {
           <div className="grid grid-cols-3 gap-4 pb-4 border-b">
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">
-                {totalRevenue.toLocaleString()}€
+                {formatPrice(totalRevenue, { freeLabel: false })}
               </div>
               <div className="text-xs text-muted-foreground">Revenus totaux</div>
             </div>
@@ -119,10 +99,10 @@ export function CourseAnalytics({ courses }: CourseAnalyticsProps) {
 
           {/* Top courses */}
           <div className="space-y-3">
-            <h4 className="text-sm font-medium flex items-center gap-2">
+            <h3 className="text-sm font-medium flex items-center gap-2">
               <Award className="h-4 w-4" />
               Top 5 des cours
-            </h4>
+            </h3>
             
             <div className="space-y-3">
               {courses.slice(0, 5).map((course, index) => (
@@ -138,12 +118,12 @@ export function CourseAnalytics({ courses }: CourseAnalyticsProps) {
                   {/* Course info */}
                   <div className="flex-1 min-w-0 space-y-2">
                     <div className="flex items-start justify-between gap-2">
-                      <h5 className="font-medium text-sm leading-tight line-clamp-1">
+                      <h3 className="font-medium text-sm leading-tight line-clamp-1">
                         {course.title}
-                      </h5>
+                      </h3>
                       <div className="flex gap-1">
-                        <Badge className={getLevelColor(course.level)}>
-                          {formatLevel(course.level)}
+                        <Badge className={LEVEL_BADGE_CLASSES[course.level as CourseLevel] ?? ""}>
+                          {levelLabel(course.level)}
                         </Badge>
                         <Badge className={getCategoryColor(course.category)}>
                           {course.category}
@@ -160,7 +140,7 @@ export function CourseAnalytics({ courses }: CourseAnalyticsProps) {
                       
                       <div className="flex items-center gap-1">
                         <Euro className="h-3 w-3 text-muted-foreground" />
-                        <span>{course.totalRevenue.toLocaleString()}€</span>
+                        <span>{formatPrice(course.totalRevenue, { freeLabel: false })}</span>
                       </div>
                       
                       {course.averageRating > 0 && (
@@ -172,7 +152,7 @@ export function CourseAnalytics({ courses }: CourseAnalyticsProps) {
                       
                       <div className="flex items-center gap-1">
                         <TrendingUp className="h-3 w-3 text-muted-foreground" />
-                        <span>{((course.totalRevenue / totalRevenue) * 100).toFixed(1)}%</span>
+                        <span>{(totalRevenue > 0 ? (course.totalRevenue / totalRevenue) * 100 : 0).toFixed(1)}%</span>
                       </div>
                     </div>
                   </div>
@@ -180,7 +160,7 @@ export function CourseAnalytics({ courses }: CourseAnalyticsProps) {
                   {/* Actions */}
                   <div className="shrink-0">
                     <Button variant="ghost" size="sm" asChild>
-                      <Link href={`/admin/courses/${course.id}`}>
+                      <Link href={`/admin/courses/${course.id}`} aria-label={`Gérer la formation ${course.title}`}>
                         <ExternalLink className="h-4 w-4" />
                       </Link>
                     </Button>
@@ -193,10 +173,10 @@ export function CourseAnalytics({ courses }: CourseAnalyticsProps) {
           {/* Insights */}
           <div className="border-t pt-4">
             <div className="space-y-2">
-              <h4 className="text-sm font-medium flex items-center gap-2">
+              <h3 className="text-sm font-medium flex items-center gap-2">
                 <TrendingUp className="h-4 w-4" />
                 Insights
-              </h4>
+              </h3>
               <div className="space-y-1 text-xs text-muted-foreground">
                 <p>• Cours le plus rentable: {courses[0]?.title}</p>
                 <p>• Catégorie populaire: {Object.entries(courses.reduce((acc, course) => {

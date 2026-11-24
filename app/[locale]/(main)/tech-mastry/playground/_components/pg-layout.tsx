@@ -6,6 +6,7 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import dynamic from "next/dynamic";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import {
   usePanelRef,
@@ -18,11 +19,17 @@ import { PgCommandPalette } from "./pg-command-palette";
 import { PgConsole } from "./pg-console";
 import { PgFileTree } from "./pg-file-tree";
 import { PgPreview } from "./pg-preview";
+import { PgSharedNotice } from "./pg-shared-notice";
 import { PgSettingsDialog } from "./pg-settings-dialog";
 import { PgStatusBar } from "./pg-status-bar";
 import { PgTabBar } from "./pg-tab-bar";
 import { PgTemplateDialog } from "./pg-template-dialog";
 import { PgToolbar } from "./pg-toolbar";
+
+// Markdown + syntax highlighting are only needed once the assistant is opened
+const PgAiPanel = dynamic(() => import("./pg-ai-panel").then((m) => m.PgAiPanel), {
+  ssr: false,
+});
 
 // ── Mobile Breakpoint Guard ──────────────────────────────────────────────────
 
@@ -38,7 +45,7 @@ function MobileGuard({ children }: { children: React.ReactNode }) {
 
   if (isMobile) {
     return (
-      <div className="flex h-[calc(100vh-64px)] flex-col items-center justify-center gap-6 bg-[#1e1e1e] px-6 text-center text-white">
+      <div className="dark flex h-[calc(100vh-64px)] flex-col items-center justify-center gap-6 bg-[#1e1e1e] px-6 text-center text-white">
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-600/20">
           <svg
             className="h-8 w-8 text-blue-400"
@@ -55,9 +62,9 @@ function MobileGuard({ children }: { children: React.ReactNode }) {
           </svg>
         </div>
         <div>
-          <h2 className="text-xl font-bold tracking-tight">
+          <h1 className="text-xl font-bold tracking-tight">
             Desktop Experience Required
-          </h2>
+          </h1>
           <p className="mt-2 max-w-sm text-sm text-muted-foreground">
             The Playground is optimized for desktop and large screens. Please
             switch to a device with a screen width of at least 1024px for the
@@ -81,6 +88,7 @@ export function PgLayout() {
   const setLayout = usePlaygroundStore((s) => s.setLayout);
   const importFromUrl = usePlaygroundStore((s) => s.importFromUrl);
   const bootWebContainer = usePlaygroundStore((s) => s.bootWebContainer);
+  const aiPanelOpen = usePlaygroundStore((s) => s.aiPanelOpen);
 
   // Panel refs for programmatic collapse / expand
   const fileExplorerRef = usePanelRef();
@@ -113,14 +121,34 @@ export function PgLayout() {
     syncPanel(previewRef, layout.showPreview);
   }, [layout.showPreview, syncPanel, previewRef]);
 
-  // On mount, check for ?code= query param
+  // Command palette, toolbar and Ctrl+I: open the AI assistant, or focus it when already open
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const encoded = params.get("code");
-    if (encoded) {
-      importFromUrl(encoded);
-      window.history.replaceState({}, "", window.location.pathname);
-    }
+    const onOpen = () => {
+      const state = usePlaygroundStore.getState();
+      if (state.aiPanelOpen) window.dispatchEvent(new Event("pg-focus-ai-assistant"));
+      else state.setAiPanelOpen(true);
+    };
+    window.addEventListener("pg-open-ai-assistant", onOpen);
+    return () => window.removeEventListener("pg-open-ai-assistant", onOpen);
+  }, []);
+
+  // On mount: restore the saved playground, then apply a ?code= link on top of it.
+  // The store skips hydration at import so that the first client render matches the
+  // server's; restoring after mount keeps the user's files, tabs and settings.
+  useEffect(() => {
+    let cancelled = false;
+    void Promise.resolve(usePlaygroundStore.persist.rehydrate()).then(() => {
+      if (cancelled) return;
+      const params = new URLSearchParams(window.location.search);
+      const encoded = params.get("code");
+      if (encoded) {
+        importFromUrl(encoded);
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [importFromUrl]);
 
   // Auto-boot WebContainer on mount (lazy, non-blocking)
@@ -167,12 +195,16 @@ export function PgLayout() {
   return (
     <MobileGuard>
       <TooltipProvider delayDuration={200}>
-        <div className="flex h-[calc(100vh-64px)] flex-col overflow-hidden bg-[#1e1e1e] text-white">
+        <div className="dark flex h-[calc(100vh-64px)] flex-col overflow-hidden bg-[#1e1e1e] text-white">
+          <h1 className="sr-only">Playground</h1>
           {/* Top Toolbar */}
           <PgToolbar />
+          {/* A project opened from a link: read it before running it */}
+          <PgSharedNotice />
 
           {/* Main Area */}
-          <div className="flex-1 overflow-hidden">
+          <div className="flex min-h-0 flex-1 overflow-hidden">
+            <div className="h-full min-w-0 flex-1">
             <ResizablePanelGroup direction="horizontal" className="h-full">
               {/* ─── File Explorer Sidebar ─── */}
               <ResizablePanel
@@ -255,6 +287,10 @@ export function PgLayout() {
                 <PgPreview />
               </ResizablePanel>
             </ResizablePanelGroup>
+            </div>
+
+            {/* AI assistant: docked on the right (bottom sheet on narrow screens) */}
+            {aiPanelOpen && <PgAiPanel />}
           </div>
 
           {/* Status Bar */}

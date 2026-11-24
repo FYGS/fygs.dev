@@ -1,4 +1,5 @@
 import { SITE_BASE_URL } from "./constants";
+import { serializeJsonLd } from "@/lib/jsonld";
 
 type BlogPosting = {
   '@context': 'https://schema.org';
@@ -125,5 +126,5 @@ export function generateWebsiteJsonLd({
 }
 
 export function generateJsonLdScript(data: BlogPosting | WebSite): string {
-  return `<script type="application/ld+json">${JSON.stringify(data)}</script>`;
+  return `<script type="application/ld+json">${serializeJsonLd(data)}</script>`;
 }

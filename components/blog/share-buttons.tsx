@@ -7,16 +7,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import {
-  Check,
-  Copy,
-  Facebook,
-  Linkedin,
-  Mail,
-  MessageCircle,
-  Send,
-  Twitter,
-} from "lucide-react";
+import { Check, Copy, Mail, MessageCircle, Send } from "lucide-react";
+import { Facebook, Linkedin, Twitter } from "@/components/icons/brand-icons";
 import { useState } from "react";
 
 interface ShareButtonsProps {
@@ -91,6 +83,7 @@ export function ShareButtons({
                 "transition-all hover:scale-105 shrink-0",
                 compact && "h-8 w-8",
               )}
+              aria-label={link.name}
               onClick={() =>
                 window.open(link.href, "_blank", "noopener,noreferrer")
               }
@@ -112,6 +105,7 @@ export function ShareButtons({
               copied && "border-emerald-500/50 text-emerald-500",
               compact && "h-8 w-8",
             )}
+            aria-label={copied ? "Copied!" : "Copy link"}
             onClick={copyToClipboard}
           >
             {copied ? (

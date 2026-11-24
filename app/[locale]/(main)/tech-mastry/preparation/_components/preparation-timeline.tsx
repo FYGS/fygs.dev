@@ -81,7 +81,7 @@ const timelines = [
         focus: "Polish & Interviews",
         tasks: [
           "Focus sur les patterns récurrents (sliding window, two pointers, etc.)",
-          "Mock interviews hebdomadaires avec Pramp ou un ami",
+          "Mock interviews hebdomadaires (plateforme de pair-à-pair comme Pramp, ou un ami)",
           "Affiner CV et profil LinkedIn",
           "Commencer les candidatures et les entretiens",
         ],

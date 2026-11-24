@@ -130,9 +130,9 @@ const topics: Topic[] = [
   },
   {
     title: "Next.js Patterns",
-    description: "Server Components, Actions, caching et patterns Next.js 15+.",
+    description: "Server Components, Actions, Cache Components et patterns Next.js 16.",
     category: "Expert",
-    topics: ["RSC", "Server Actions", "ISR", "Middleware", "Parallel Routes"],
+    topics: ["RSC", "Server Actions", "ISR", "proxy", "Parallel Routes"],
     href: "/tech-mastry/frontend/nextjs-patterns",
     icon: Globe,
     color: "text-white",
@@ -162,6 +162,8 @@ export function FrontendTopics() {
           ).map((d) => (
             <button
               key={d}
+              type="button"
+              aria-pressed={filter === d}
               onClick={() => setFilter(d)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${filter === d ? "bg-primary/10 text-primary border-primary/30" : "border-border/40 text-muted-foreground"}`}
             >
@@ -186,9 +188,9 @@ export function FrontendTopics() {
                     >
                       <Icon className="w-5 h-5" />
                     </div>
-                    <h2 className="text-lg font-semibold group-hover:text-primary transition-colors">
+                    <h3 className="text-lg font-semibold group-hover:text-primary transition-colors">
                       {topic.title}
-                    </h2>
+                    </h3>
                   </div>
                   <Badge
                     variant="secondary"

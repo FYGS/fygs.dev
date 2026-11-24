@@ -82,3 +82,16 @@ export function getLocaleFlag(locale: Locale): string {
 
   return flags[locale];
 }
+
+/**
+ * The pages that exist in every language: the home page, sign-in, contact, blog, portfolio and projects. They read
+ * their text from dictionaries. Everything else (courses, dashboard, billing, profile, community, TechMastery,
+ * admin) is written in French only; see docs/i18n-inventory.md.
+ */
+const TRANSLATED_PREFIXES = ["/auth", "/contact", "/blog", "/me", "/projects"] as const;
+
+/** `pathWithoutLocale` is a path such as "/dashboard" or "/" (no "/fr" in front). */
+export function isTranslatedPath(pathWithoutLocale: string): boolean {
+  if (pathWithoutLocale === "/" || pathWithoutLocale === "") return true;
+  return TRANSLATED_PREFIXES.some((prefix) => pathWithoutLocale === prefix || pathWithoutLocale.startsWith(`${prefix}/`));
+}

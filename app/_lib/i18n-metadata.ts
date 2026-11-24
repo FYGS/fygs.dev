@@ -4,11 +4,11 @@
  * Consolidated SEO system for FYGS Learning Platform
  */
 
+import { localizedUrls } from "./localized-urls";
 import { Metadata } from "next";
 import {
   getTranslation,
   type LocalesValues,
-  getMultilingualUrls,
 } from "intlayer";
 import { SITE_URL, SITE_BASE_URL } from "./constants";
 
@@ -62,7 +62,7 @@ export async function generateI18nMetadata({
   const t = <T>(content: IConfigLocales<T>) => getTranslation(content, locale);
 
   // Generate multilingual URLs
-  const multilingualUrls = getMultilingualUrls(path || "/");
+  const multilingualUrls = localizedUrls(path || "/");
   const currentUrl =
     multilingualUrls[locale as keyof typeof multilingualUrls] || path;
   const fullUrl = `${SITE_URL}${currentUrl}`;

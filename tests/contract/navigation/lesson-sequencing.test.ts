@@ -9,7 +9,9 @@ import { describe, it, expect, afterEach } from 'vitest'
 import { db } from '@/lib/db'
 import { createTestEnvironment, TestDatabase } from '../../utils/test-database'
 
-// Lesson navigation service for handling sequential lesson access
+// Lesson navigation helper for sequential lesson access. The app resolves the
+// next/previous lesson inside its pages (no shared service), so this suite pins the
+// ordering rules (published only, by order) against the real schema with a local helper.
 class LessonNavigationService {
   /**
    * Get the next lesson in sequence (published only)
@@ -76,7 +78,7 @@ class LessonNavigationService {
     const user = await db.user.findUnique({
       where: { id: userId },
       include: {
-        subscriptions: true,
+        subscriptions: true, // one-to-one relation (named in the plural): object or null
         enrollments: { where: { courseId } }
       }
     })
@@ -95,8 +97,8 @@ class LessonNavigationService {
     // Premium courses require enrollment or active subscription
     if (user.enrollments.length > 0) return true
 
-    const hasActiveSubscription = user.subscriptions.some(sub => sub.status === 'ACTIVE' && !sub.cancelAtPeriodEnd)
-    return hasActiveSubscription
+    const subscription = user.subscriptions
+    return subscription?.status === 'ACTIVE' && !subscription.cancelAtPeriodEnd
   }
 
   /**

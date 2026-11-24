@@ -213,7 +213,7 @@ async function CommunityDashboardContent() {
                           {discussion.topic?.name}
                         </Badge>
                       </div>
-                      <h4 className="font-medium text-sm truncate">{discussion.title}</h4>
+                      <h3 className="font-medium text-sm truncate">{discussion.title}</h3>
                       <div className="flex items-center gap-2 mt-1 text-xs text-slate-400">
                         <span>by {discussion.author?.name}</span>
                         <span>•</span>
@@ -327,7 +327,7 @@ function StatsCard({ title, value, icon: Icon, color }: StatsCardProps) {
             <Icon className="h-6 w-6" />
           </div>
           <div>
-            <div className="text-2xl font-bold">{value.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{value.toLocaleString("fr-FR")}</div>
             <div className="text-sm text-slate-400">{title}</div>
           </div>
         </div>

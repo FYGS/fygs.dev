@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, renderHook, screen } from "@testing-library/react";
 import { ThemeProvider, useTheme } from "../../../providers/theme-provider";
 
 // Mock next-themes
@@ -103,24 +103,18 @@ describe("ThemeProvider", () => {
   });
 
   it("useTheme returns the expected interface shape", () => {
-    let hookResult: ReturnType<typeof useTheme> | null = null;
-
-    function Capture() {
-      hookResult = useTheme();
-      return null;
-    }
-
-    render(
-      <ThemeProvider defaultTheme="dark">
-        <Capture />
-      </ThemeProvider>,
-    );
+    const { result } = renderHook(() => useTheme(), {
+      wrapper: ({ children }: { children: React.ReactNode }) => (
+        <ThemeProvider defaultTheme="dark">{children}</ThemeProvider>
+      ),
+    });
+    const hookResult = result.current;
 
     expect(hookResult).not.toBeNull();
-    expect(hookResult!).toHaveProperty("theme");
-    expect(hookResult!).toHaveProperty("resolvedTheme");
-    expect(hookResult!).toHaveProperty("setTheme");
-    expect(typeof hookResult!.setTheme).toBe("function");
+    expect(hookResult).toHaveProperty("theme");
+    expect(hookResult).toHaveProperty("resolvedTheme");
+    expect(hookResult).toHaveProperty("setTheme");
+    expect(typeof hookResult.setTheme).toBe("function");
   });
 
   it("accepts custom storageKey prop", () => {

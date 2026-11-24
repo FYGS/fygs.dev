@@ -29,10 +29,12 @@ import {
   Search,
   Settings,
   Share2,
+  Sparkles,
   StopCircle,
   Terminal,
   Wand2,
 } from "lucide-react";
+import { useIntlayer } from "next-intlayer";
 import { toast } from "sonner";
 import { usePlaygroundStore } from "../_stores/playground-store";
 
@@ -68,6 +70,9 @@ export function PgToolbar() {
   const toggleConsole = usePlaygroundStore((s) => s.toggleConsole);
   const togglePreview = usePlaygroundStore((s) => s.togglePreview);
   const layout = usePlaygroundStore((s) => s.layout);
+  const aiPanelOpen = usePlaygroundStore((s) => s.aiPanelOpen);
+  const setAiPanelOpen = usePlaygroundStore((s) => s.setAiPanelOpen);
+  const aiText = useIntlayer("ai-assistant");
   const getPackageJson = usePlaygroundStore((s) => {
     const file = s.files.find((f) => f.name === "package.json");
     return file?.content ?? null;
@@ -171,7 +176,7 @@ export function PgToolbar() {
                 "h-7 gap-1.5 px-3 text-xs font-semibold transition-colors",
                 status === "running"
                   ? "bg-red-600 hover:bg-red-700"
-                  : "bg-green-600 hover:bg-green-700",
+                  : "bg-green-700 hover:bg-green-800",
               )}
               onClick={status === "running" ? stopExecution : handleRun}
             >
@@ -266,6 +271,8 @@ export function PgToolbar() {
                   : "text-muted-foreground opacity-60",
               )}
               onClick={toggleFileExplorer}
+              aria-label="File explorer"
+              aria-pressed={layout.showFileExplorer}
             >
               <FolderTree className="h-3.5 w-3.5" />
             </Button>
@@ -287,6 +294,8 @@ export function PgToolbar() {
                   : "text-muted-foreground opacity-60",
               )}
               onClick={toggleConsole}
+              aria-label="Console"
+              aria-pressed={layout.showConsole}
             >
               <Terminal className="h-3.5 w-3.5" />
             </Button>
@@ -308,6 +317,8 @@ export function PgToolbar() {
                   : "text-muted-foreground opacity-60",
               )}
               onClick={togglePreview}
+              aria-label="Preview"
+              aria-pressed={layout.showPreview}
             >
               <Monitor className="h-3.5 w-3.5" />
             </Button>
@@ -331,6 +342,28 @@ export function PgToolbar() {
           <span className="capitalize">{language}</span>
         </div>
 
+        {/* AI assistant */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-pressed={aiPanelOpen}
+              aria-label={aiText.openTooltip.value}
+              data-testid="pg-ai-toggle"
+              className={cn(
+                "h-7 gap-1.5 px-2 text-xs",
+                aiPanelOpen ? "bg-primary/15 text-primary" : "text-muted-foreground",
+              )}
+              onClick={() => setAiPanelOpen(!aiPanelOpen)}
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              <span className="hidden md:inline">{aiText.shortLabel.value}</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{aiText.openTooltip.value}</TooltipContent>
+        </Tooltip>
+
         {/* Command Palette */}
         <ToolbarButton
           icon={Search}
@@ -345,7 +378,7 @@ export function PgToolbar() {
           <Tooltip>
             <TooltipTrigger asChild>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7">
+                <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="History">
                   <History className="h-3.5 w-3.5" />
                 </Button>
               </DropdownMenuTrigger>
@@ -392,7 +425,12 @@ export function PgToolbar() {
           <Tooltip>
             <TooltipTrigger asChild>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  aria-label="More options"
+                >
                   <MoreHorizontal className="h-3.5 w-3.5" />
                 </Button>
               </DropdownMenuTrigger>
@@ -446,6 +484,7 @@ function ToolbarButton({
           size="icon"
           className="h-7 w-7"
           onClick={onClick}
+          aria-label={tooltip}
         >
           <Icon className="h-3.5 w-3.5" />
         </Button>

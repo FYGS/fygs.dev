@@ -1,237 +1,115 @@
 "use client";
 
-import { useEffect } from "react";
-import { CheckCircle, XCircle, ArrowRight, RefreshCw, Crown, Play } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FadeIn } from "@/components/ui/fade-in";
-import { notify } from "@/lib/notification-store";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { CheckCircle2, Clock, Loader2, XCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface PaymentStatusProps {
   type: "success" | "canceled";
   courseTitle: string;
   courseSlug: string;
+  /** The access is already open (the payment webhook arrived). */
+  unlocked: boolean;
 }
 
-export function PaymentStatus({ type, courseTitle, courseSlug }: PaymentStatusProps) {
-  const [redirecting, setRedirecting] = useState(false);
+const POLL_MS = 2000;
+const GIVE_UP_MS = 60_000;
+
+/**
+ * Back from Stripe. The access is opened by the payment webhook, which can take a few seconds: until it has, the page
+ * says the payment is being confirmed (and the buy button is disabled), then refreshes itself.
+ */
+export function PaymentStatus({ type, courseTitle, courseSlug, unlocked }: PaymentStatusProps) {
+  const router = useRouter();
+  const [timedOut, setTimedOut] = useState(false);
+  const waiting = type === "success" && !unlocked;
+
   useEffect(() => {
-    if (type === "success") {
-      notify.success(
-        "Paiement réussi !",
-        `Vous avez maintenant accès au cours "${courseTitle}". Commencez votre apprentissage dès maintenant !`,
-        8000
-      );
-      
-      
-      // Poll unlock state and redirect to first lesson when ready
-      const start = Date.now();
-      const interval = setInterval(async () => {
-        if (Date.now() - start > 15000 || redirecting) {
-          clearInterval(interval);
-          return;
+    if (!waiting) return;
+    const start = Date.now();
+    let stopped = false;
+    const timer = setInterval(async () => {
+      if (stopped) return;
+      if (Date.now() - start > GIVE_UP_MS) {
+        clearInterval(timer);
+        setTimedOut(true);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/courses/status?slug=${encodeURIComponent(courseSlug)}`, { cache: "no-store" });
+        if (!res.ok) return;
+        const data = (await res.json()) as { unlocked?: boolean };
+        if (data.unlocked) {
+          stopped = true;
+          clearInterval(timer);
+          router.refresh();
         }
-        try {
-          const res = await fetch(`/api/courses/status?slug=${encodeURIComponent(courseSlug)}`, { cache: 'no-store' });
-          if (!res.ok) return;
-          const data = await res.json();
-          if (data.unlocked) {
-            clearInterval(interval);
-            setRedirecting(true);
-            const next = data.firstLessonSlug
-              ? `/formations/${courseSlug}/lessons/${data.firstLessonSlug}`
-              : `/formations/${courseSlug}`;
-            window.location.href = next;
-          }
-        } catch {}
-      }, 1500);
-      return () => clearInterval(interval);
-    } else if (type === "canceled") {
-      notify.warning(
-        "Paiement annulé",
-        "Votre paiement a été annulé. Vous pouvez réessayer à tout moment.",
-        6000
-      );
-    }
-  }, [type, courseTitle, courseSlug, redirecting]);
-
-  // Stripe webhooks handle access provisioning; no client-side capture needed.
-
-  if (type === "success") {
-    return (
-      <FadeIn className="mb-8">
-        <Card className="border-green-200 bg-linear-to-br from-green-950/20 via-green-900/20 to-emerald-900/20 relative overflow-hidden">
-          {/* Background decoration */}
-          <div className="absolute inset-0 bg-linear-to-r from-green-500/5 via-emerald-500/5 to-teal-500/5" />
-          <div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-bl from-green-400/10 to-transparent rounded-full -translate-y-16 translate-x-16" />
-          
-          <CardHeader className="text-center pb-4 relative">
-            <div className="mx-auto mb-4 p-4 rounded-full bg-linear-to-br from-green-900/30 to-emerald-900/30 w-fit relative">
-              <CheckCircle className="h-16 w-16 text-green-400" />
-              <div className="absolute -top-1 -right-1 animate-bounce">
-                🎉
-              </div>
-            </div>
-            <CardTitle className="text-3xl font-bold bg-linear-to-r from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent">
-              Félicitations !
-            </CardTitle>
-            <p className="text-lg text-green-300 mt-2">
-              Votre accès au cours est maintenant actif
-            </p>
-          </CardHeader>
-          
-          <CardContent className="space-y-6 relative">
-            <div className="text-center">
-              <h3 className="text-xl font-bold text-green-200 mb-2">
-                {courseTitle}
-              </h3>
-              <p className="text-green-400">
-                Prêt à commencer votre apprentissage ?
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-black/20 rounded-xl p-4 border border-green-700/30">
-                <h4 className="font-bold text-green-200 mb-3 flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5" />
-                  Accès débloqué
-                </h4>
-                <ul className="text-sm text-green-300 space-y-2">
-                  <li>✨ Accès à vie au contenu</li>
-                  <li>✨ Mises à jour gratuites</li>
-                  <li>✨ Support communautaire</li>
-                  <li>✨ Certificat de réussite</li>
-                </ul>
-              </div>
-              
-              <div className="bg-black/20 rounded-xl p-4 border border-green-700/30">
-                <h4 className="font-bold text-green-200 mb-3 flex items-center gap-2">
-                  <Play className="h-5 w-5" />
-                  Pour commencer
-                </h4>
-                <ul className="text-sm text-green-300 space-y-2">
-                  <li>🚀 Explorez le programme</li>
-                  <li>🚀 Suivez votre progression</li>
-                  <li>🚀 Pratiquez avec les exercices</li>
-                  <li>🚀 Interagissez avec la communauté</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="text-center bg-linear-to-r from-green-500 via-emerald-500 to-teal-500 rounded-xl p-6 text-white">
-              <h4 className="text-xl font-bold mb-2">
-                Commencez votre apprentissage ! 🚀
-              </h4>
-              <p className="text-green-100 mb-4">
-                Tout est prêt pour votre première leçon. Prenez votre temps et progressez à votre rythme.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button asChild size="lg" variant="secondary" className="bg-white text-green-600 hover:bg-green-50">
-                  <Link href={`/formations/${courseSlug}`}>
-                    <ArrowRight className="h-5 w-5 mr-2" />
-                    Commencer le cours
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" className="border-white text-white hover:bg-white/10">
-                  <Link href="/dashboard">
-                    Voir mon tableau de bord
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </FadeIn>
-    );
-  }
+      } catch {
+        // offline for a moment: the next tick tries again
+      }
+    }, POLL_MS);
+    return () => {
+      stopped = true;
+      clearInterval(timer);
+    };
+  }, [waiting, courseSlug, router]);
 
   if (type === "canceled") {
     return (
-      <FadeIn className="mb-8">
-        <Card className="border-orange-200 bg-linear-to-br from-orange-950/20 via-yellow-900/20 to-amber-900/20 relative overflow-hidden">
-          {/* Background decoration */}
-          <div className="absolute inset-0 bg-linear-to-r from-orange-500/5 via-yellow-500/5 to-amber-500/5" />
-          <div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-bl from-orange-400/10 to-transparent rounded-full -translate-y-16 translate-x-16" />
-          
-          <CardHeader className="text-center pb-4 relative">
-            <div className="mx-auto mb-4 p-4 rounded-full bg-linear-to-br from-orange-900/30 to-amber-900/30 w-fit">
-              <XCircle className="h-12 w-12 text-orange-400" />
-            </div>
-            <CardTitle className="text-3xl font-bold bg-linear-to-r from-orange-600 via-amber-600 to-yellow-600 bg-clip-text text-transparent">
-              Paiement annulé
-            </CardTitle>
-            <p className="text-lg text-orange-300 mt-2">
-              Pas de soucis ! Vous pouvez réessayer à tout moment
-            </p>
-          </CardHeader>
-          
-          <CardContent className="space-y-6 relative">
-            <div className="text-center">
-              <h3 className="text-xl font-bold text-orange-200 mb-2">
-                {courseTitle}
-              </h3>
-              <p className="text-orange-400">
-                Ce cours est toujours disponible pour vous
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-black/20 rounded-xl p-4 border border-orange-700/30">
-                <h4 className="font-bold text-orange-200 mb-3 flex items-center gap-2">
-                  <RefreshCw className="h-5 w-5" />
-                  Options disponibles
-                </h4>
-                <ul className="text-sm text-orange-300 space-y-2">
-                  <li>🔄 Réessayer le paiement</li>
-                  <li>🔄 Explorer d&apos;autres cours</li>
-                  <li>🔄 Voir nos offres groupées</li>
-                  <li>🔄 Contacter le support</li>
-                </ul>
-              </div>
-              
-              <div className="bg-black/20 rounded-xl p-4 border border-orange-700/30">
-                <h4 className="font-bold text-orange-200 mb-3 flex items-center gap-2">
-                  <Crown className="h-5 w-5" />
-                  Abonnement Premium
-                </h4>
-                <ul className="text-sm text-orange-300 space-y-2">
-                  <li>⭐️ Accès à tous les cours</li>
-                  <li>⭐️ Prix avantageux</li>
-                  <li>⭐️ Contenu exclusif</li>
-                  <li>⭐️ Support prioritaire</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="text-center bg-linear-to-r from-orange-500 via-amber-500 to-yellow-500 rounded-xl p-6 text-white">
-              <h4 className="text-xl font-bold mb-2">
-                Vous avez des options ! 🌟
-              </h4>
-              <p className="text-orange-100 mb-4">
-                Choisissez la solution qui vous convient le mieux pour accéder à nos formations de qualité.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button asChild size="lg" variant="secondary" className="bg-white text-orange-600 hover:bg-orange-50">
-                  <Link href={`/formations/${courseSlug}`}>
-                    <RefreshCw className="h-5 w-5 mr-2" />
-                    Réessayer
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" className="border-white text-white hover:bg-white/10">
-                  <Link href="/pricing">
-                    <Crown className="h-5 w-5 mr-2" />
-                    Voir Premium
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </FadeIn>
+      <div role="status" className="mb-6 flex flex-wrap items-start gap-3 rounded-lg border bg-muted/40 p-4">
+        <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" aria-hidden />
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold">Paiement annulé</p>
+          <p className="text-sm text-muted-foreground">Aucun montant n’a été débité. Vous pouvez reprendre l’achat quand vous voulez.</p>
+        </div>
+      </div>
     );
   }
 
-  return null;
+  if (unlocked) {
+    return (
+      <div
+        role="status"
+        className="mb-6 flex flex-wrap items-center gap-3 rounded-lg border border-emerald-600/40 bg-emerald-50 p-4 text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-50"
+      >
+        <CheckCircle2 className="h-5 w-5 shrink-0" aria-hidden />
+        <p className="min-w-0 flex-1">
+          <span className="font-semibold">Paiement confirmé.</span> Vous avez accès à « {courseTitle} ».
+        </p>
+        <Button asChild size="sm">
+          <Link href={`/learn/${courseSlug}`}>Commencer la formation</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="mb-6 flex flex-wrap items-start gap-3 rounded-lg border border-amber-600/40 bg-amber-50 p-4 text-amber-950 dark:bg-amber-950/40 dark:text-amber-50"
+    >
+      {timedOut ? <Clock className="mt-0.5 h-5 w-5 shrink-0" aria-hidden /> : <Loader2 className="mt-0.5 h-5 w-5 shrink-0 animate-spin" aria-hidden />}
+      <div className="min-w-0 flex-1 space-y-1">
+        <p className="font-semibold">{timedOut ? "La confirmation prend plus de temps que prévu" : "Paiement en cours de confirmation…"}</p>
+        <p className="text-sm">
+          {timedOut
+            ? "Votre paiement est enregistré par Stripe ; l’accès s’ouvrira dès sa confirmation et vous recevrez un e-mail. Actualisez la page dans quelques minutes."
+            : "Votre accès s’ouvre dès que Stripe nous confirme le paiement, en général en quelques secondes."}
+        </p>
+      </div>
+      {timedOut && (
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="outline" onClick={() => router.refresh()}>
+            Actualiser
+          </Button>
+          <Button asChild size="sm" variant="ghost">
+            <Link href="/dashboard/billing">Voir mes paiements</Link>
+          </Button>
+        </div>
+      )}
+    </div>
+  );
 }

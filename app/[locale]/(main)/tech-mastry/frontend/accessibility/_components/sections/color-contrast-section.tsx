@@ -225,7 +225,7 @@ export function ColorContrastSection() {
         title="WCAG Contrast Requirements"
         description="Understanding and implementing proper contrast ratios"
         demo={<ColorContrastDemo />}
-        code={`/* WCAG 2.1 Level AA Requirements */
+        code={`/* WCAG 2.2 Level AA Requirements (same contrast thresholds as 2.0 and 2.1) */
 
 /* Normal text (less than 18pt or 14pt bold) needs a contrast ratio of at least 4.5:1 */
 .normal-text-good {
@@ -262,7 +262,7 @@ export function ColorContrastSection() {
   border: 2px solid #cccccc;
 }
 
-/* WCAG 2.1 Level AAA Requirements (stricter) */
+/* WCAG 2.2 Level AAA Requirements (stricter) */
 
 /* Normal text needs a contrast ratio of at least 7:1 */
 .normal-text-aaa {
@@ -296,7 +296,7 @@ export function ColorContrastSection() {
 
             <ol className="list-decimal pl-6 mt-2 space-y-2">
               <li>
-                <strong>WCAG 2.1 Level AA (minimum requirement):</strong>
+                <strong>WCAG 2.2 Level AA (minimum requirement):</strong>
                 <ul className="list-disc pl-6 mt-1 space-y-1">
                   <li>
                     Normal text (less than 18pt or 14pt bold): at least 4.5:1
@@ -306,7 +306,7 @@ export function ColorContrastSection() {
                 </ul>
               </li>
               <li>
-                <strong>WCAG 2.1 Level AAA (enhanced requirement):</strong>
+                <strong>WCAG 2.2 Level AAA (enhanced requirement):</strong>
                 <ul className="list-disc pl-6 mt-1 space-y-1">
                   <li>Normal text: at least 7:1</li>
                   <li>Large text: at least 4.5:1</li>
@@ -415,14 +415,16 @@ export function ColorContrastSection() {
   --cb-green: #009E73;     /* Green */
   --cb-red: #D55E00;       /* Red/orange */
   --cb-purple: #CC79A7;    /* Purple/pink */
-  --cb-grey: #56B4E9;      /* Sky blue */
+  --cb-sky: #56B4E9;       /* Sky blue */
   --cb-black: #000000;     /* Black */
 }`}
         explanation={
           <div>
             <p>
-              Color blindness (color vision deficiency) affects approximately 1
-              in 12 men and 1 in 200 women worldwide. When designing interfaces,
+              Color blindness (color vision deficiency) is much more common in men
+              than in women (commonly cited estimates are around 8% of men and
+              0.5% of women of Northern European descent; prevalence varies by
+              population). When designing interfaces,
               it&apos;s important to ensure that information is accessible to
               users with different types of color vision deficiencies.
             </p>

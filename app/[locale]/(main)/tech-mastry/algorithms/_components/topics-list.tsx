@@ -29,7 +29,7 @@ type Topic = {
   gradient: string;
 };
 
-const topics: Topic[] = [
+export const topics: Topic[] = [
   {
     title: "Complexité Algorithmique",
     description:
@@ -53,7 +53,6 @@ const topics: Topic[] = [
       "Tree",
       "Graph",
       "Heap",
-      "Trie",
     ],
     href: "/tech-mastry/algorithms/data-structures",
     icon: Boxes,
@@ -65,7 +64,7 @@ const topics: Topic[] = [
     description:
       "Implémentation, analyse et visualisation des algorithmes de tri classiques.",
     difficulty: "Intermédiaire",
-    topics: ["QuickSort", "MergeSort", "HeapSort", "RadixSort", "TimSort"],
+    topics: ["QuickSort", "MergeSort", "HeapSort", "InsertionSort", "Timsort"],
     href: "/tech-mastry/algorithms/sorting",
     icon: ArrowUpDown,
     color: "text-purple-400",
@@ -74,9 +73,16 @@ const topics: Topic[] = [
   {
     title: "Recherche & Parcours",
     description:
-      "Techniques de recherche et parcours dans différentes structures de données.",
+      "Techniques de recherche dans des données triées ou non : linéaire, binaire, interpolation, exponentielle, ternaire et hachage.",
     difficulty: "Intermédiaire",
-    topics: ["BFS", "DFS", "Binary Search", "Dijkstra", "A*"],
+    topics: [
+      "Linear Search",
+      "Binary Search",
+      "Interpolation",
+      "Exponential",
+      "Ternary",
+      "Hash Search",
+    ],
     href: "/tech-mastry/algorithms/searching",
     icon: Search,
     color: "text-cyan-400",

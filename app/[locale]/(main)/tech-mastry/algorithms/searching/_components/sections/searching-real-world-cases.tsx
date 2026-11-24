@@ -93,9 +93,11 @@ export function SearchingRealWorldCases() {
                     <p className="text-xs text-muted-foreground">
                       MySQL utilise des arbres B pour indexer les données,
                       permettant des recherches en O(log n). Une requête comme{" "}
-                      <code>SELECT * FROM users WHERE id = 42</code> utilise la
-                      recherche binaire dans l&apos;arbre d&apos;index pour
-                      localiser rapidement l&apos;enregistrement.
+                      <code>SELECT * FROM users WHERE id = 42</code> descend
+                      dans l&apos;arbre d&apos;index : à chaque nœud, on compare
+                      la clé aux clés du nœud (souvent par recherche binaire
+                      dans le nœud) pour choisir le bon fils, ce qui localise
+                      l&apos;enregistrement en peu de lectures de pages.
                     </p>
                   </div>
                 </div>
@@ -108,11 +110,12 @@ export function SearchingRealWorldCases() {
                         1
                       </div>
                       <div>
-                        <span className="font-medium">Recherche Binaire</span>
+                        <span className="font-medium">Recherche dans un arbre équilibré</span>
                         <p className="text-sm text-muted-foreground mt-1">
-                          Utilisée dans les index d&apos;arbres équilibrés
-                          (B-Tree, B+Tree) pour les requêtes de correspondance
-                          exacte.
+                          Les index B-Tree et B+Tree descendent de la racine
+                          vers une feuille ; la recherche binaire n&apos;est
+                          utilisée qu&apos;à l&apos;intérieur d&apos;un nœud pour
+                          les requêtes de correspondance exacte.
                         </p>
                       </div>
                     </li>
@@ -157,8 +160,10 @@ export function SearchingRealWorldCases() {
                 </p>
                 <ul className="mt-2 space-y-1 text-sm text-blue-400">
                   <li>
-                    • <strong>B-Tree</strong> : Implémente la recherche binaire
-                    pour les opérations =, &lt;, &gt;, BETWEEN
+                    • <strong>B-Tree</strong> : Descente dans un arbre équilibré
+                    (comparaisons de clés à chaque nœud, souvent par recherche
+                    binaire à l&apos;intérieur du nœud) pour les opérations =,
+                    &lt;, &gt;, BETWEEN
                   </li>
                   <li>
                     • <strong>Hash</strong> : Utilise la recherche par hachage
@@ -369,11 +374,14 @@ export function SearchingRealWorldCases() {
                       </div>
                       <div>
                         <span className="font-medium">
-                          Recherche par Renforcement
+                          Recherche par Simulation et Apprentissage
                         </span>
                         <p className="text-sm text-muted-foreground mt-1">
-                          Explore l&apos;espace des états en apprenant de ses
-                          expériences précédentes (Q-learning, MCTS).
+                          Explore l&apos;espace des états en s&apos;appuyant sur
+                          des simulations (MCTS, une méthode de recherche et de
+                          planification) ou sur l&apos;expérience accumulée.
+                          L&apos;apprentissage par renforcement (Q-learning) est
+                          une approche voisine mais distincte.
                         </p>
                       </div>
                     </li>
@@ -484,7 +492,8 @@ export function SearchingRealWorldCases() {
                         </span>
                         <p className="text-sm text-muted-foreground mt-1">
                           Utilisée dans les systèmes de fichiers comme NTFS,
-                          ext4 et HFS+ pour indexer les fichiers.
+                          HFS+ ou Btrfs pour indexer les fichiers (ext4 utilise
+                          un HTree pour ses répertoires).
                         </p>
                       </div>
                     </li>
@@ -535,22 +544,26 @@ export function SearchingRealWorldCases() {
                     données de tous les fichiers du système
                   </li>
                   <li>
-                    • <strong>Recherche par préfixe</strong> : Utilise des
-                    arbres de préfixes pour accélérer les recherches par nom
+                    • <strong>Chemins triés</strong> : Stocke les chemins dans
+                    un index trié, relu séquentiellement et bien plus compact
+                    que l&apos;arborescence
                   </li>
                   <li>
-                    • <strong>Compression</strong> : Utilise des techniques de
-                    compression pour réduire la taille de l&apos;index
+                    • <strong>Compression</strong> : Compresse les préfixes
+                    communs des chemins consécutifs pour réduire la taille de
+                    l&apos;index
                   </li>
                   <li>
-                    • <strong>Recherche parallèle</strong> : Exploite les
-                    processeurs multi-cœurs pour accélérer les recherches
+                    • <strong>Filtrage par droits</strong> : mlocate vérifie
+                    les permissions des répertoires pour ne montrer que les
+                    fichiers accessibles à l&apos;utilisateur
                   </li>
                 </ul>
                 <p className="text-sm text-amber-400 mt-2">
-                  Ces outils permettent de trouver des fichiers en quelques
-                  millisecondes, contre plusieurs minutes avec une recherche
-                  linéaire traditionnelle comme <code>find</code>, démontrant
+                  Ces outils trouvent des fichiers généralement bien plus
+                  vite qu&apos;un parcours complet de l&apos;arborescence
+                  comme <code>find</code> (au prix d&apos;un index parfois
+                  périmé), démontrant
                   l&apos;importance des algorithmes de recherche optimisés dans
                   les systèmes d&apos;exploitation.
                 </p>

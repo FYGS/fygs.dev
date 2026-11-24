@@ -128,7 +128,7 @@ export function DiscussionComposer({
                   <FormLabel>Topic</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger aria-label="Select a topic for your discussion">
                         <SelectValue placeholder="Select a topic for your discussion" />
                       </SelectTrigger>
                     </FormControl>

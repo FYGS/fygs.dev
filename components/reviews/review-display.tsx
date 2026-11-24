@@ -27,8 +27,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from '@/lib/utils';
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+
+// Same zone on the server and in the browser, or the dates of the server HTML do not hydrate
+const longDate = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeZone: "Europe/Paris" });
 
 export interface ReviewData {
   id: string;
@@ -113,7 +114,7 @@ export function ReviewCard({
   const [isVisible, setIsVisible] = useState(!review.isFlagged);
   
   const formatDate = (dateString: string) => {
-    return format(new Date(dateString), "d MMMM yyyy", { locale: fr });
+    return longDate.format(new Date(dateString));
   };
 
   const shouldTruncateComment = (comment: string, maxLength: number = 300) => {
