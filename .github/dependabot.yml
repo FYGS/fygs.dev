@@ -17,6 +17,10 @@ updates:
     # A release younger than 3 days is not proposed (security updates ignore the cooldown)
     cooldown:
       default-days: 3
+    ignore:
+      # The types follow the runtime (Node 22, see docs/modernization-2026-10.md): a new major of @types/node is taken with the runtime itself
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
     groups:
       minor-and-patch:
         update-types: [minor, patch]
