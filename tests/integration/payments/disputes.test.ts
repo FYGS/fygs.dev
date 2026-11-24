@@ -6,8 +6,13 @@ import { paymentService } from "@/lib/payment-service";
 import { createCourse, createSubscription, createUser, enroll } from "../../support/factories";
 import { resetDatabase } from "../../support/test-db";
 
+const liveDispute = vi.hoisted(() => ({ status: "needs_response" }));
 vi.mock("@/lib/stripe", () => ({
-  stripe: { invoicePayments: { list: async () => ({ data: [] }) } },
+  stripe: {
+    invoicePayments: { list: async () => ({ data: [] }) },
+    // the dispute as Stripe holds it now, which a late delivery of the opening event is checked against
+    disputes: { retrieve: async (id: string) => ({ id, status: liveDispute.status }) },
+  },
   stripeKeyMode: () => "unknown",
   assertStripeKeyMode: () => {},
 }));
@@ -30,6 +35,7 @@ const refundEvent = (status: string) =>
 
 beforeEach(async () => {
   await resetDatabase(db);
+  liveDispute.status = "needs_response";
   cancelImmediately.mockReset().mockResolvedValue(true);
 });
 afterAll(async () => {
@@ -97,8 +103,31 @@ describe("chargebacks", () => {
     expect((await db.subscription.findUniqueOrThrow({ where: { userId: user.id } })).status).toBe(SubscriptionStatus.CANCELED);
   });
 
-  it("a dispute matching no payment is acknowledged", async () => {
-    await expect(handleChargeDisputeCreated(dispute("needs_response", "pi_unknown"))).resolves.toBeUndefined();
+  it("a dispute matching no payment yet is NOT acknowledged: the webhook fails so that Stripe delivers it again", async () => {
+    await expect(handleChargeDisputeCreated(dispute("needs_response", "pi_unknown"))).rejects.toThrow("DISPUTE_PAYMENT_NOT_FOUND");
+    await expect(handleChargeDisputeClosed(dispute("lost", "pi_unknown"))).rejects.toThrow("DISPUTE_PAYMENT_NOT_FOUND");
+  });
+
+  it("an opening delivered late, after the dispute was decided, does not reopen the payment", async () => {
+    const { payment } = await courseBuyer();
+    liveDispute.status = "won";
+    await handleChargeDisputeCreated(dispute("needs_response"));
+    expect((await db.payment.findUniqueOrThrow({ where: { id: payment.id } })).status).toBe(PaymentStatus.COMPLETED);
+    expect(await db.invoiceAudit.count({ where: { type: "DISPUTE_OPENED" } })).toBe(0);
+  });
+
+  it("a lost dispute refunds a payment whose opening was never recorded (events arrive in any order)", async () => {
+    const { payment } = await courseBuyer();
+    await handleChargeDisputeClosed(dispute("lost"));
+    expect((await db.payment.findUniqueOrThrow({ where: { id: payment.id } })).status).toBe(PaymentStatus.REFUNDED);
+    expect(await db.invoiceAudit.count({ where: { type: "DISPUTE_LOST" } })).toBe(1);
+  });
+
+  it("a won dispute leaves a payment that was never marked disputed as it is", async () => {
+    const { payment } = await courseBuyer();
+    await handleChargeDisputeClosed(dispute("won"));
+    expect((await db.payment.findUniqueOrThrow({ where: { id: payment.id } })).status).toBe(PaymentStatus.COMPLETED);
+    expect(await db.invoiceAudit.count({ where: { type: "DISPUTE_WON" } })).toBe(0);
   });
 });
 

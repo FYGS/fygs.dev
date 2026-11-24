@@ -1,6 +1,7 @@
 import type Stripe from "stripe";
 import { db } from "@/lib/db";
 import { paymentService } from "@/lib/payment-service";
+import { stripe } from "@/lib/stripe";
 import { writeAudit } from "@/lib/audit";
 import { PaymentKind, PaymentStatus, SubscriptionStatus } from "@/lib/generated/prisma/browser";
 import { applySubscriptionEnded } from "@/lib/payments/subscription-state";
@@ -37,10 +38,26 @@ export async function handleChargeDisputeCreated(event: Stripe.ChargeDisputeCrea
     const dispute = event.data.object;
     const payments = await paymentsOf(dispute);
     if (payments.length === 0) {
-      logger.warn("Dispute matches no payment: nothing to suspend", {
+      // Not "processed": the payment may simply not be recorded yet (a dispute can be opened the instant a charge is
+      // made, before checkout.session.completed or invoice.payment_succeeded has settled it). Failing makes Stripe
+      // deliver the event again later, when the payment exists; swallowing it would lose the dispute for good.
+      logger.warn("Dispute matches no payment yet: Stripe will retry", {
         eventType: "webhook.dispute_unmatched",
         resourceType: "dispute",
         resourceId: dispute.id,
+      });
+      throw new Error("DISPUTE_PAYMENT_NOT_FOUND");
+    }
+
+    // A delivery that comes late (the retry above) may find the dispute already decided: the closing event decides
+    // the payment, an opening event must not reopen it
+    const live = await stripe.disputes.retrieve(dispute.id).catch(() => null);
+    if (live && (WON.has(live.status) || LOST.has(live.status))) {
+      logger.info("Dispute already decided when its opening is processed: left to the closing event", {
+        eventType: "webhook.dispute_opening_stale",
+        resourceType: "dispute",
+        resourceId: dispute.id,
+        metadata: { status: live.status },
       });
       return;
     }
@@ -131,11 +148,23 @@ export async function handleChargeDisputeClosed(event: Stripe.ChargeDisputeClose
     }
 
     const payments = await paymentsOf(dispute);
+    if (payments.length === 0) {
+      logger.warn("Closed dispute matches no payment yet: Stripe will retry", {
+        eventType: "webhook.dispute_unmatched",
+        resourceType: "dispute",
+        resourceId: dispute.id,
+      });
+      throw new Error("DISPUTE_PAYMENT_NOT_FOUND");
+    }
     for (const payment of payments) {
       const target = won ? PaymentStatus.COMPLETED : PaymentStatus.REFUNDED;
-      // Restoring does not touch the settlement date: the refund window does not reopen
+      // Restoring does not touch the settlement date: the refund window does not reopen. A lost dispute also refunds a
+      // payment whose opening was not recorded (events can arrive in any order): the money is gone either way.
       const { count } = await db.payment.updateMany({
-        where: { id: payment.id, status: PaymentStatus.DISPUTED },
+        where: {
+          id: payment.id,
+          status: won ? PaymentStatus.DISPUTED : { in: [PaymentStatus.DISPUTED, PaymentStatus.COMPLETED] },
+        },
         data: { status: target },
       });
       if (count === 0) continue;
