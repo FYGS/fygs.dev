@@ -6,26 +6,26 @@ same on the new server: only the Coolify URL and the DNS change.
 > **Shared server.** Work only in the Coolify project **FYGS DEV**. Never edit, restart or delete a resource of another project
 > (`Bons Profs`, `prisma-uat`, `BRVM Analytics`, `Educonnect`...).
 >
-> **The current site is already served by this Coolify**: application `fygs.dev:main-...` (Railpack, branch `main`, domains
-> `fygs.dev` and `www.fygs.dev`). The refonte is deployed next to it as `fygs-v2` on a temporary domain, validated, then the domains
-> are moved (section 11). The old application is not modified until then.
+> **Cutover done on 2026-11-24**: `fygs.dev` and `www.fygs.dev` are served by the application `fygs` (environment `production`).
+> The old Railpack application and its throwaway database were deleted. The recette lives in the environment `staging`.
+> Resource names below: production `fygs`, `fygs-prod-db`, `fygs-redis`, `fygs-s3`; staging `fygs-staging`, `fygs-staging-db`,
+> `fygs-staging-redis`, `fygs-staging-s3`.
 
 ## 1. What runs where
 
 ```
-Browser --HTTPS--> Traefik (Coolify) --> fygs-v2  (Dockerfile, Next.js standalone, port 3000)
-                                           |--> PostgreSQL  staging: fygs-v2-staging-db (Coolify) / production: fygs-prod-db (Coolify)   DATABASE_URL
-                                           |--> Redis       fygs-v2-redis (Coolify, private)                                REDIS_URL
-                                           |--> S3 storage  fygs-v2-s3 (SeaweedFS, Coolify)                                 S3_*
+Browser --HTTPS--> Cloudflare --> Traefik (Coolify) --> fygs  (Dockerfile, Next.js standalone, port 3000)
+                                           |--> PostgreSQL  production: fygs-prod-db / staging: fygs-staging-db (Coolify)   DATABASE_URL
+                                           |--> Redis       fygs-redis (Coolify, private)                                REDIS_URL
+                                           |--> S3 storage  fygs-s3 (SeaweedFS, Coolify)                                 S3_*
                                            '--> SMTP / Stripe / Sentry (optional)
 ```
 
 | Resource (project FYGS DEV) | Type | Notes |
 |-----------------------------|------|-------|
 | `fygs-v2` | Application, build pack **Dockerfile**, branch `feature/refactor-harmonize-codebase` (then `main`), port 3000 | Temporary domain `https://fygs-v2.51.68.121.128.sslip.io`; final `https://fygs.dev` |
-| `fygs-v2-redis` | Redis 7, **not public**, 128m | internal URL `redis://default:<password>@<uuid>:6379/0` |
-| `fygs-v2-staging-db` | PostgreSQL 16, not public | recette only (disposable); production uses `fygs-prod-db` (Postgres 17) |
-| `fygs-v2-s3` | SeaweedFS service, one S3 API on port 8333 | domains `s3.fygs.dev` (needs a DNS A record) and a `sslip.io` one |
+| `fygs-redis` | Redis 7, **not public**, 128m | internal URL `redis://default:<password>@<uuid>:6379/0` |
+| `fygs-s3` | SeaweedFS service, one S3 API on port 8333 | domains `s3.fygs.dev` (needs a DNS A record) and a `sslip.io` one |
 
 ## 1b. Environments of the FYGS DEV project
 
@@ -35,10 +35,10 @@ production.
 
 | | `production` | `staging` |
 |---|---|---|
-| Application | `fygs-v2` (becomes `fygs.dev` at the cutover); `fygs.dev` is still the old Railpack app until then | `fygs-staging` on `https://staging.fygs.dev` |
+| Application | `fygs` on `https://fygs.dev` and `https://www.fygs.dev` | `fygs-staging` on `https://staging.fygs.dev` |
 | Database | `fygs-prod-db` (Postgres 17): `fygs_v2`, empty, builds itself with `migrate deploy` | `fygs-staging-db` (Postgres 17): fictional seed data |
-| Redis | `fygs-v2-redis` | `fygs-staging-redis` |
-| Storage | `fygs-v2-s3` on `https://s3.fygs.dev` | `fygs-staging-s3` on `https://s3-staging.fygs.dev` (its own keys, its own CORS middleware `fygs-s3-staging-headers`, runs as uid 1000) |
+| Redis | `fygs-redis` | `fygs-staging-redis` |
+| Storage | `fygs-s3` on `https://s3.fygs.dev` (CORS limited to `fygs.dev` and `www.fygs.dev`) | `fygs-staging-s3` on `https://s3-staging.fygs.dev` (its own keys, its own CORS middleware `fygs-s3-staging-headers`, runs as uid 1000) |
 | Stripe | test keys until you go live (`STRIPE_EXPECT_MODE`) | test keys, webhook `https://staging.fygs.dev/api/stripe/webhook` |
 | Content | real training content, created later | seeded courses (fictional, to be thrown away) |
 
@@ -97,7 +97,7 @@ Never set `SEED_ALLOW_PROD`, `NODE_TLS_REJECT_UNAUTHORIZED=0` or `DEBUG`.
 ## 4. File storage (SeaweedFS on Coolify)
 
 MinIO is gone; the code talks to any S3-compatible service through the AWS SDK (`lib/s3-presign.ts`, `lib/image-storage.ts`).
-The service `fygs-v2-s3` runs SeaweedFS (same image as the S3 of the Bons Profs project) with a single S3 port (8333). Its identities are
+The service `fygs-s3` runs SeaweedFS (same image as the S3 of the Bons Profs project) with a single S3 port (8333). Its identities are
 defined in the compose file, each with the least rights it needs, **and none of them is the root key**:
 
 | Identity | Rights | Used by |
@@ -163,23 +163,23 @@ Production runs on `fygs-prod-db` (Postgres 17, Coolify), with one database and 
 | Database / role | Used by |
 |---|---|
 | `fygs_prod` | the current live site (a copy of the old dev data, dropped at cutover) |
-| `fygs_v2` | `fygs-v2` at cutover: starts **empty**, `migrate deploy` creates the 22 migrations |
+| `fygs_v2` | `fygs` (production): starts **empty**, `migrate deploy` creates the 22 migrations |
 
 Both `DATABASE_URL` and `MIGRATE_DATABASE_URL` point to the internal host (`<uuid>:5432`, no pooler needed). `fygs-v2-staging-db`
-(Postgres 16) stays for the recette. Then seed the content once from a trusted machine as described below.
+was deleted: the recette has its own `fygs-staging-db`. Then seed the content once from a trusted machine as described below.
 
 If the database is empty (new project), `migrate deploy` creates everything, then run `pnpm db:seed` once from a trusted machine
 (it refuses a non-local database unless `SEED_ALLOW_PROD=1` and `SEED_CONFIRM_DATABASE` are set; unset them afterwards).
 
 ## 7. Scheduled job
 
-Coolify > `fygs-v2` > Scheduled Tasks, or an external cron, `0 7 * * 1` (Monday, 07:00):
+Coolify > `fygs` > Scheduled Tasks, or an external cron, `0 7 * * 1` (Monday, 07:00):
 
 ```
 curl -fsS -H "Authorization: Bearer $CRON_SECRET" https://fygs.dev/api/cron/weekly-review-summaries
 ```
 
-(Scheduled Tasks of `fygs-v2` run a command inside the container, which has `wget` but not `curl`: use
+(Scheduled Tasks of `fygs` run a command inside the container, which has `wget` but not `curl`: use
 `wget -qO- --header="Authorization: Bearer $CRON_SECRET" http://127.0.0.1:3000/api/cron/weekly-review-summaries`.)
 
 (the route answers `GET`).
@@ -203,17 +203,20 @@ Follow section 4 of [SECURITY-OPERATIONS.md](SECURITY-OPERATIONS.md), plus:
 
 ## 10. Rollback
 
-Coolify > `fygs-v2` > Deployments > redeploy the previous successful deployment. Migrations are forward-only: a rollback of the
+Coolify > `fygs` > Deployments > redeploy the previous successful deployment. Migrations are forward-only: a rollback of the
 application after a destructive migration needs a `pg_dump` of `fygs_v2` taken just before the release, so keep it until the release is validated.
 
-## 11. Cutover from the current site (Railpack app) to `fygs-v2`
+## 11. Cutover (done on 2026-11-24)
 
-Do it only when the recette on the temporary domain is green and the points below are done.
+What was done, in this order, and how to undo it:
 
-1. Database: `DATABASE_URL` and `MIGRATE_DATABASE_URL` of `fygs-v2` = the internal URL of database `fygs_v2` on `fygs-prod-db` (empty; `migrate deploy` builds it), then the seed.
-2. Live Stripe keys, webhook `https://fygs.dev/api/stripe/webhook` and its signing secret (**the current site runs with `sk_test` keys**),
-   `STRIPE_EXPECT_MODE=live`. OAuth redirect URIs and SMTP/SPF/DKIM for `fygs.dev`.
-3. Build variables switched to the final domains (`NEXT_PUBLIC_SITE_URL`, `S3_PUBLIC_URL`, `S3_IMAGES_PUBLIC_URL`), `BETTER_AUTH_URL`,
-   `HUMAN_PROOF_MODE=report` then `enforce`, `REDIS_URL` of `fygs-v2-redis`.
-4. Remove `fygs.dev` and `www.fygs.dev` from the old application (it stays stopped, not deleted, for a week), add them to `fygs-v2`, redeploy.
-5. Check section 9, watch the logs for an hour. Rollback: give the domains back to the old application and start it.
+1. `DATABASE_URL` and `MIGRATE_DATABASE_URL` of `fygs` set to the empty database `fygs_v2` on `fygs-prod-db` (22 migrations applied at start).
+2. `BETTER_AUTH_URL` and `NEXT_PUBLIC_SITE_URL` (build variable) set to `https://fygs.dev`, **`TRUSTED_PROXY_HOPS=2`** (Cloudflare, then
+   Traefik: with 1 every visitor would share Cloudflare's address in the rate limiter), rebuild, check on the temporary domain.
+3. S3 CORS limited to the production origins; the temporary `sslip.io` domains removed from the application and from the storage.
+4. `fygs.dev` and `www.fygs.dev` taken off the old application, given to `fygs`, old application stopped, `fygs` restarted (about one minute
+   of 503).
+5. Old application, `fygs-v2-staging-db` and the database `fygs_prod` deleted (throwaway development data, no rollback needed).
+
+Left for later (tickets): live Stripe (#44, production runs on TEST keys and has no premium content, so do not publish any before),
+Cloudflare origin lock (#42), e-mail authentication (#46), merge of the branch into `main` (#45).
