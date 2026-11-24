@@ -23,7 +23,7 @@ Browser --HTTPS--> Cloudflare --> Traefik (Coolify) --> fygs  (Dockerfile, Next.
 
 | Resource (project FYGS DEV) | Type | Notes |
 |-----------------------------|------|-------|
-| `fygs` | Application, build pack **Dockerfile**, branch `feature/refactor-harmonize-codebase` (then `main`), port 3000 | `https://fygs.dev` and `https://www.fygs.dev` |
+| `fygs` | Application, build pack **Dockerfile**, branch `main` (production) / `staging` (recette), port 3000 | `https://fygs.dev` and `https://www.fygs.dev` |
 | `fygs-redis` | Redis 7, **not public**, 128m | internal URL `redis://default:<password>@<uuid>:6379/0` |
 | `fygs-s3` | SeaweedFS service, one S3 API on port 8333 | domains `s3.fygs.dev` (needs a DNS A record) and a `sslip.io` one |
 

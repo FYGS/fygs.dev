@@ -226,3 +226,30 @@ Contributors get:
 [![Star on GitLab](https://img.shields.io/badge/Star_on-GitLab-orange?style=for-the-badge&logo=gitlab)](https://gitlab.com/fygs/fygs.dev)
 
 </div>
+
+## Branches and environments
+
+Three long-lived branches, one environment each. A change always travels the same way, and nothing reaches a higher branch without
+going through the lower one.
+
+| Branch | Environment | Where | Who deploys |
+|---|---|---|---|
+| `develop` | development | your machine (`pnpm dev`, local database) | nobody: integration branch of the day-to-day work |
+| `staging` | **staging**: https://staging.fygs.dev | Coolify, environment `staging` (`fygs-staging`), fictional seed data, Stripe in test mode | redeploy `fygs-staging` after merging into `staging` |
+| `main` | **production**: https://fygs.dev | Coolify, environment `production` (`fygs`), empty database filled by hand | redeploy `fygs` after merging into `main` |
+
+```
+feature/*  ──PR──>  develop  ──PR──>  staging  ──PR──>  main
+fix/*      ──PR──>  develop                    hotfix/* ──PR──> main, then main -> develop
+```
+
+- Work on a `feature/*` or `fix/*` branch cut from `develop`; open a pull request into `develop`.
+- When `develop` holds what you want to validate, open a pull request `develop` -> `staging`, deploy the recette
+  (`fygs-staging`) and replay the workflows: `RECETTE_SCENARIOS=A,B,C,D,E node scripts/ops/staging-billing-recette.mjs` for billing,
+  `node scripts/ops/staging-admin.mjs login` for an authenticated admin session. See `docs/COOLIFY.md` (section 1b).
+- Only a green recette goes on: pull request `staging` -> `main`, then redeploy `fygs`.
+- An urgent fix on production is cut from `main` as `hotfix/*`, merged into `main`, then `main` is merged back into `develop` and `staging`.
+- Merge with a merge commit (history of the three branches stays readable); never push directly to `staging` or `main`.
+- Dependabot opens its updates against `develop`, so they are validated like any other change.
+- The database schema moves forward only (Prisma migrations): a migration is merged with the code that needs it and is applied at the
+  start of the container (`RUN_MIGRATIONS=1`); see `docs/COOLIFY.md` (section 6) before merging a destructive one.
