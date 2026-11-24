@@ -23,7 +23,7 @@ Browser --HTTPS--> Cloudflare --> Traefik (Coolify) --> fygs  (Dockerfile, Next.
 
 | Resource (project FYGS DEV) | Type | Notes |
 |-----------------------------|------|-------|
-| `fygs-v2` | Application, build pack **Dockerfile**, branch `feature/refactor-harmonize-codebase` (then `main`), port 3000 | Temporary domain `https://fygs-v2.51.68.121.128.sslip.io`; final `https://fygs.dev` |
+| `fygs` | Application, build pack **Dockerfile**, branch `feature/refactor-harmonize-codebase` (then `main`), port 3000 | `https://fygs.dev` and `https://www.fygs.dev` |
 | `fygs-redis` | Redis 7, **not public**, 128m | internal URL `redis://default:<password>@<uuid>:6379/0` |
 | `fygs-s3` | SeaweedFS service, one S3 API on port 8333 | domains `s3.fygs.dev` (needs a DNS A record) and a `sslip.io` one |
 
@@ -166,7 +166,7 @@ Production runs on `fygs-prod-db` (Postgres 17, Coolify), with one database and 
 | `fygs_v2` | `fygs` (production): starts **empty**, `migrate deploy` creates the 22 migrations |
 
 Both `DATABASE_URL` and `MIGRATE_DATABASE_URL` point to the internal host (`<uuid>:5432`, no pooler needed). `fygs-v2-staging-db`
-was deleted: the recette has its own `fygs-staging-db`. Then seed the content once from a trusted machine as described below.
+was deleted: the recette has its own `fygs-staging-db`. Production is never seeded: its content is created by hand; the seed (fictional courses) is for the recette only.
 
 If the database is empty (new project), `migrate deploy` creates everything, then run `pnpm db:seed` once from a trusted machine
 (it refuses a non-local database unless `SEED_ALLOW_PROD=1` and `SEED_CONFIRM_DATABASE` are set; unset them afterwards).
