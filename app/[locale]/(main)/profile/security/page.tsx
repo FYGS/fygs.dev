@@ -54,7 +54,7 @@ export default async function SecurityPage() {
           </div>
         )}
 
-        <TwoFactorCard enabled={enabled} hasPassword={Boolean(credential)} staffRole={staffRole} pendingStaff={pendingStaff} />
+        <TwoFactorCard enabled={enabled} hasPassword={Boolean(credential)} email={user.email} staffRole={staffRole} pendingStaff={pendingStaff} />
         <EmailChangeCard currentEmail={user.email} />
         <DeleteAccountCard hasPassword={Boolean(credential)} twoFactorEnabled={enabled} />
       </div>

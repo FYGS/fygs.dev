@@ -11,11 +11,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { twoFactor } from "@/lib/auth-client";
+import { authService } from "@/lib/auth-service";
 
 interface Props {
   enabled: boolean;
   /** The account signs in with a password (only then can it turn the second factor on or off). */
   hasPassword: boolean;
+  /** The account address: where the link to define a password is sent (an account that signs in with Google or GitHub has none). */
+  email: string;
   /** Administrators and instructors cannot turn it off. */
   staffRole: "ADMIN" | "INSTRUCTOR" | null;
   /** The staff role waits for it: after the set-up, go back to the back office. */
@@ -47,10 +50,11 @@ function describe(error: { code?: string; message?: string }): string {
   return (error.code && ERRORS[error.code]) || error.message || "Une erreur s'est produite. Réessayez.";
 }
 
-export function TwoFactorCard({ enabled, hasPassword, staffRole, pendingStaff }: Props) {
+export function TwoFactorCard({ enabled, hasPassword, email, staffRole, pendingStaff }: Props) {
   const router = useRouter();
   const [step, setStep] = useState<Step>("idle");
   const [password, setPassword] = useState("");
+  const [linkState, setLinkState] = useState<"idle" | "sending" | "sent">("idle");
   const [code, setCode] = useState("");
   const [uri, setUri] = useState("");
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
@@ -148,14 +152,45 @@ export function TwoFactorCard({ enabled, hasPassword, staffRole, pendingStaff }:
       </CardHeader>
       <CardContent className="space-y-4">
         {!hasPassword && !enabled && (
-          <p role="note" className="rounded-md border bg-muted/40 p-3 text-sm">
-            Votre compte se connecte avec Google ou GitHub et n&apos;a pas de mot de passe. La double authentification protège la connexion
-            par mot de passe : définissez-en un avec{" "}
-            <Link href="/auth/forgot-password" className="font-medium underline">
-              « Mot de passe oublié »
-            </Link>
-            , puis revenez ici.
-          </p>
+          <div role="note" className="space-y-3 rounded-md border bg-muted/40 p-4 text-sm">
+            <p>
+              Votre compte se connecte avec Google ou GitHub et n&apos;a pas de mot de passe. La double authentification s&apos;ajoute à la
+              connexion par mot de passe : il faut d&apos;abord en définir un.
+            </p>
+            {linkState === "sent" ? (
+              <p role="status" className="font-medium">
+                E-mail envoyé à {email}. Ouvrez le lien qu&apos;il contient, choisissez un mot de passe, puis revenez sur cette page pour activer la
+                double authentification. Rien reçu ?{" "}
+                <button type="button" className="underline" onClick={() => setLinkState("idle")}>
+                  Renvoyer le lien
+                </button>
+              </p>
+            ) : (
+              <Button
+                type="button"
+                disabled={linkState === "sending"}
+                onClick={async () => {
+                  setLinkState("sending");
+                  const result = await authService.requestPasswordReset(email);
+                  if (result.success) {
+                    setLinkState("sent");
+                  } else {
+                    setLinkState("idle");
+                    toast.error("Le lien n'a pas pu être envoyé", { description: result.error });
+                  }
+                }}
+              >
+                {linkState === "sending" ? "Envoi…" : "Recevoir par e-mail un lien pour définir mon mot de passe"}
+              </Button>
+            )}
+            <p className="text-muted-foreground">
+              Vous pouvez aussi passer par{" "}
+              <Link href="/auth/forgot-password" className="font-medium underline">
+                « Mot de passe oublié »
+              </Link>{" "}
+              sur la page de connexion.
+            </p>
+          </div>
         )}
 
         {error && (
