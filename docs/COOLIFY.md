@@ -27,6 +27,32 @@ Browser --HTTPS--> Traefik (Coolify) --> fygs-v2  (Dockerfile, Next.js standalon
 | `fygs-v2-staging-db` | PostgreSQL 16, not public | recette only (disposable); production uses `fygs-prod-db` (Postgres 17) |
 | `fygs-v2-s3` | SeaweedFS service, one S3 API on port 8333 | domains `s3.fygs.dev` (needs a DNS A record) and a `sslip.io` one |
 
+## 1b. Environments of the FYGS DEV project
+
+Like `Bons Profs` (production + preprod) and `prisma-uat` (production + uat), the project has two Coolify environments. They share
+no database, no Redis, no storage and no secret: the recette cannot touch production data, and a recette secret is worthless in
+production.
+
+| | `production` | `staging` |
+|---|---|---|
+| Application | `fygs-v2` (becomes `fygs.dev` at the cutover); `fygs.dev` is still the old Railpack app until then | `fygs-staging` on `https://staging.fygs.dev` |
+| Database | `fygs-prod-db` (Postgres 17): `fygs_v2`, empty, builds itself with `migrate deploy` | `fygs-staging-db` (Postgres 17): fictional seed data |
+| Redis | `fygs-v2-redis` | `fygs-staging-redis` |
+| Storage | `fygs-v2-s3` on `https://s3.fygs.dev` | `fygs-staging-s3` on `https://s3-staging.fygs.dev` (its own keys, its own CORS middleware `fygs-s3-staging-headers`, runs as uid 1000) |
+| Stripe | test keys until you go live (`STRIPE_EXPECT_MODE`) | test keys, webhook `https://staging.fygs.dev/api/stripe/webhook` |
+| Content | real training content, created later | seeded courses (fictional, to be thrown away) |
+
+Coolify's API cannot move a resource from one environment to another: create the staging ones in `staging`, never move them.
+Traefik middleware names are global to the server: two services must never declare the same one (`fygs-s3-headers` is production's,
+`fygs-s3-staging-headers` the recette's).
+
+### Staging admin
+
+`node scripts/ops/staging-admin.mjs enroll` then `login` give an authenticated session (password + TOTP) on the recette, for manual
+checks and for an agent driving the workflows. Credentials and the TOTP secret stay in `~/.config/fygs-dev/staging-admin.env`
+(outside the repository). The admin can change any user's role and ban users (`/admin/users`); users register themselves (e-mail,
+Google, GitHub) and the admin promotes them, so one admin account is enough to get instructors, learners and other admins.
+
 ## 2. Build variables (tick "Build Variable")
 
 They are frozen into the build. Changing one means a new build, not a restart.
