@@ -3,7 +3,7 @@
 # docker-entrypoint.sh applies the pending migrations when RUN_MIGRATIONS=1, then starts the server (see docs/COOLIFY.md).
 
 # ---------- 1. Dependencies ----------
-FROM node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a AS deps
+FROM node:26-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5 AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 RUN corepack enable
@@ -13,7 +13,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile --ignore-scripts
 
 # ---------- 2. Build ----------
-FROM node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a AS builder
+FROM node:26-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5 AS builder
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 RUN corepack enable
@@ -52,7 +52,7 @@ RUN pnpm prisma generate \
  && node -p "require('prisma/package.json').version" > /prisma-version
 
 # ---------- 3. Migration tools (prisma CLI only, same version as the project) ----------
-FROM node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a AS migrate
+FROM node:26-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5 AS migrate
 RUN apk add --no-cache openssl
 WORKDIR /opt/migrate
 COPY --from=builder /prisma-version /prisma-version
@@ -66,7 +66,7 @@ COPY prisma ./prisma
 COPY prisma.config.ts ./
 
 # ---------- 4. Runtime ----------
-FROM node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a AS runner
+FROM node:26-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5 AS runner
 RUN apk add --no-cache libc6-compat openssl tini
 WORKDIR /app
 
