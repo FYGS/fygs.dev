@@ -39,21 +39,22 @@ const subscriptionFixture = (over: Record<string, unknown> = {}) => ({
 const stripeDefaults: Record<string, unknown> = {
   "checkout.sessions.create": { id: "cs_1", url: "https://stripe.test/pay" },
   "subscriptions.retrieve": subscriptionFixture(),
-  "subscriptions.update": {},
-  "subscriptions.cancel": {},
-  // invoices.retrieveUpcoming no longer exists (removed in API 2025-03-31): the
-  // preview is what Stripe really returns (see tests/fixtures/stripe)
-  "invoices.createPreview": {
-    id: "upcoming_in_1",
-    amount_due: 1234,
-    currency: "eur",
-    lines: {
-      data: [
-        { amount: -500, parent: { subscription_item_details: { proration: true } } },
-        { amount: 1734, parent: { subscription_item_details: { proration: false } } },
-      ],
+  // A plan switch is invoiced at once ("always_invoice"): the update answers with the invoice it created
+  // (credit of the unused monthly time + the yearly price, as observed on Stripe in test mode)
+  "subscriptions.update": {
+    latest_invoice: {
+      id: "in_switch",
+      amount_paid: 26100,
+      currency: "eur",
+      lines: {
+        data: [
+          { amount: -2900, parent: { subscription_item_details: { proration: true } } },
+          { amount: 29000, parent: { subscription_item_details: { proration: false } } },
+        ],
+      },
     },
   },
+  "subscriptions.cancel": {},
   "invoices.list": {
     data: [
       // a plan-change adjustment is skipped: the payment that opened the period is the one to refund
@@ -249,10 +250,9 @@ describe("paymentService (pinned behaviour)", () => {
         { stripe: { "checkout.sessions.create": { id: "cs_x" } } },
         () => p.createSubscriptionSession({ userId: "u1", customerEmail: "a@b.c", priceId: "price_z", successUrl: "s", cancelUrl: "c" }),
       ),
-    switchOkNoAudit: () => scenario({}, () => p.switchSubscriptionPrice("sub_1", "price_y")),
-    switchNoPreview: () => scenario({ stripe: { "invoices.createPreview": null } }, () => p.switchSubscriptionPrice("sub_1", "price_y")),
-    switchPreviewFails: () =>
-      scenario({ stripe: { "invoices.createPreview": new Error("no preview") } }, () => p.switchSubscriptionPrice("sub_1", "price_y")),
+    switchOkAuditsTheInvoice: () => scenario({}, () => p.switchSubscriptionPrice("sub_1", "price_y")),
+    switchAnswerWithoutInvoice: () =>
+      scenario({ stripe: { "subscriptions.update": {} } }, () => p.switchSubscriptionPrice("sub_1", "price_y")),
     switchAuditCreateFails: () =>
       scenario(
         { db: { "invoiceAudit.create": new Error("db") } },

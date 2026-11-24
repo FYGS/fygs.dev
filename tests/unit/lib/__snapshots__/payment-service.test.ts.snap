@@ -1049,6 +1049,42 @@ exports[`paymentService (pinned behaviour) > subSessionYearly 1`] = `
 }
 `;
 
+exports[`paymentService (pinned behaviour) > switchAnswerWithoutInvoice 1`] = `
+{
+  "log": [
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+      ],
+    ],
+    [
+      "stripe.subscriptions.update",
+      [
+        "sub_1",
+        {
+          "cancel_at_period_end": false,
+          "expand": [
+            "latest_invoice",
+          ],
+          "items": [
+            {
+              "id": "si_1",
+              "price": "price_y",
+            },
+          ],
+          "payment_behavior": "error_if_incomplete",
+          "proration_behavior": "always_invoice",
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": true,
+  },
+}
+`;
+
 exports[`paymentService (pinned behaviour) > switchAuditCreateFails 1`] = `
 {
   "log": [
@@ -1064,21 +1100,17 @@ exports[`paymentService (pinned behaviour) > switchAuditCreateFails 1`] = `
         "sub_1",
         {
           "cancel_at_period_end": false,
+          "expand": [
+            "latest_invoice",
+          ],
           "items": [
             {
               "id": "si_1",
               "price": "price_y",
             },
           ],
-          "proration_behavior": "create_prorations",
-        },
-      ],
-    ],
-    [
-      "stripe.invoices.createPreview",
-      [
-        {
-          "subscription": "sub_1",
+          "payment_behavior": "error_if_incomplete",
+          "proration_behavior": "always_invoice",
         },
       ],
     ],
@@ -1086,14 +1118,15 @@ exports[`paymentService (pinned behaviour) > switchAuditCreateFails 1`] = `
       "invoiceAudit.create",
       {
         "data": {
-          "amount": "12.34",
+          "amount": "261",
           "currency": "eur",
           "metadata": {
+            "chargedCents": 26100,
+            "creditedCents": -2900,
             "newPriceId": "price_y",
-            "previewInvoiceId": "upcoming_in_1",
-            "prorationCents": -500,
             "stripeSubscriptionId": "sub_1",
           },
+          "stripeInvoiceId": "in_switch",
           "type": "PRORATION",
           "userId": "u1",
         },
@@ -1106,7 +1139,7 @@ exports[`paymentService (pinned behaviour) > switchAuditCreateFails 1`] = `
 }
 `;
 
-exports[`paymentService (pinned behaviour) > switchNoPreview 1`] = `
+exports[`paymentService (pinned behaviour) > switchOkAuditsTheInvoice 1`] = `
 {
   "log": [
     [
@@ -1121,71 +1154,17 @@ exports[`paymentService (pinned behaviour) > switchNoPreview 1`] = `
         "sub_1",
         {
           "cancel_at_period_end": false,
+          "expand": [
+            "latest_invoice",
+          ],
           "items": [
             {
               "id": "si_1",
               "price": "price_y",
             },
           ],
-          "proration_behavior": "create_prorations",
-        },
-      ],
-    ],
-    [
-      "stripe.invoices.createPreview",
-      [
-        {
-          "subscription": "sub_1",
-        },
-      ],
-    ],
-    [
-      "console.warn",
-      [
-        "Could not log proration invoice",
-        {
-          "__error": "Cannot read properties of null (reading 'lines')",
-          "name": "TypeError",
-        },
-      ],
-    ],
-  ],
-  "outcome": {
-    "value": true,
-  },
-}
-`;
-
-exports[`paymentService (pinned behaviour) > switchOkNoAudit 1`] = `
-{
-  "log": [
-    [
-      "stripe.subscriptions.retrieve",
-      [
-        "sub_1",
-      ],
-    ],
-    [
-      "stripe.subscriptions.update",
-      [
-        "sub_1",
-        {
-          "cancel_at_period_end": false,
-          "items": [
-            {
-              "id": "si_1",
-              "price": "price_y",
-            },
-          ],
-          "proration_behavior": "create_prorations",
-        },
-      ],
-    ],
-    [
-      "stripe.invoices.createPreview",
-      [
-        {
-          "subscription": "sub_1",
+          "payment_behavior": "error_if_incomplete",
+          "proration_behavior": "always_invoice",
         },
       ],
     ],
@@ -1193,68 +1172,19 @@ exports[`paymentService (pinned behaviour) > switchOkNoAudit 1`] = `
       "invoiceAudit.create",
       {
         "data": {
-          "amount": "12.34",
+          "amount": "261",
           "currency": "eur",
           "metadata": {
+            "chargedCents": 26100,
+            "creditedCents": -2900,
             "newPriceId": "price_y",
-            "previewInvoiceId": "upcoming_in_1",
-            "prorationCents": -500,
             "stripeSubscriptionId": "sub_1",
           },
+          "stripeInvoiceId": "in_switch",
           "type": "PRORATION",
           "userId": "u1",
         },
       },
-    ],
-  ],
-  "outcome": {
-    "value": true,
-  },
-}
-`;
-
-exports[`paymentService (pinned behaviour) > switchPreviewFails 1`] = `
-{
-  "log": [
-    [
-      "stripe.subscriptions.retrieve",
-      [
-        "sub_1",
-      ],
-    ],
-    [
-      "stripe.subscriptions.update",
-      [
-        "sub_1",
-        {
-          "cancel_at_period_end": false,
-          "items": [
-            {
-              "id": "si_1",
-              "price": "price_y",
-            },
-          ],
-          "proration_behavior": "create_prorations",
-        },
-      ],
-    ],
-    [
-      "stripe.invoices.createPreview",
-      [
-        {
-          "subscription": "sub_1",
-        },
-      ],
-    ],
-    [
-      "console.warn",
-      [
-        "Could not log proration invoice",
-        {
-          "__error": "no preview",
-          "name": "Error",
-        },
-      ],
     ],
   ],
   "outcome": {
@@ -1278,13 +1208,17 @@ exports[`paymentService (pinned behaviour) > switchUpdateFails 1`] = `
         "sub_1",
         {
           "cancel_at_period_end": false,
+          "expand": [
+            "latest_invoice",
+          ],
           "items": [
             {
               "id": "si_1",
               "price": "price_y",
             },
           ],
-          "proration_behavior": "create_prorations",
+          "payment_behavior": "error_if_incomplete",
+          "proration_behavior": "always_invoice",
         },
       ],
     ],

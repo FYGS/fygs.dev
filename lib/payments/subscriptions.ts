@@ -19,22 +19,28 @@ export class SubscriptionManagement extends StripeBilling {
       const subscription =
         await stripe.subscriptions.retrieve(stripeSubscriptionId);
       const currentItemId = subscription.items.data[0].id;
-      await stripe.subscriptions.update(stripeSubscriptionId, {
+      // A switch between a monthly and a yearly price changes the billing interval, so Stripe restarts the cycle today.
+      // "create_prorations" only queued the credit and the new price and left a period of zero length: a 551 EUR invoice
+      // (261 of proration + a whole year again) fell due minutes later, and the learner had the yearly plan for nothing
+      // meanwhile. "always_invoice" credits the unused time and charges the new price now (261 EUR for a switch three
+      // minutes after a 29 EUR month), "error_if_incomplete" makes the switch fail, with nothing changed, if the card
+      // is refused.
+      const updated = await stripe.subscriptions.update(stripeSubscriptionId, {
         cancel_at_period_end: false,
-        proration_behavior: "create_prorations",
+        proration_behavior: "always_invoice",
+        payment_behavior: "error_if_incomplete",
         items: [{ id: currentItemId, price: newPriceId }],
+        expand: ["latest_invoice"],
       });
-      // Capture the upcoming invoice for audit (proration). `invoices.retrieveUpcoming`
-      // was removed from the API in 2025-03-31 (basil); `createPreview` replaces it.
-      // A preview is not a stored invoice: its id (`upcoming_in_...`) is the same for
-      // every preview of the subscription, so it is kept in metadata, not in
-      // `stripeInvoiceId`, and every plan switch gets its own audit row.
+      // The invoice of the switch is a real one: audit what was actually charged, not a preview of the next invoice
+      // (its amount mixed the proration with the next renewal).
       try {
-        const preview = await stripe.invoices.createPreview({
-          subscription: stripeSubscriptionId,
-        });
-        if (db.invoiceAudit) {
-          const prorationCents = preview.lines.data
+        const invoice =
+          updated.latest_invoice && typeof updated.latest_invoice === "object"
+            ? updated.latest_invoice
+            : null;
+        if (db.invoiceAudit && invoice) {
+          const prorationCents = (invoice.lines?.data ?? [])
             .filter((line) => line.parent?.subscription_item_details?.proration)
             .reduce((sum, line) => sum + line.amount, 0);
           await db.invoiceAudit
@@ -44,14 +50,15 @@ export class SubscriptionManagement extends StripeBilling {
                   subscription.metadata?.userId ||
                   stripeRefId(subscription.customer) ||
                   "unknown",
+                stripeInvoiceId: invoice.id ?? null,
                 type: "PRORATION",
                 amount: new Prisma.Decimal(
-                  ((preview.amount_due || 0) / 100).toFixed(2),
+                  ((invoice.amount_paid || 0) / 100).toFixed(2),
                 ),
-                currency: preview.currency,
+                currency: invoice.currency,
                 metadata: {
-                  previewInvoiceId: preview.id ?? null,
-                  prorationCents,
+                  chargedCents: invoice.amount_paid ?? 0,
+                  creditedCents: prorationCents,
                   stripeSubscriptionId,
                   newPriceId,
                 },

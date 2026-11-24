@@ -76,7 +76,7 @@ beforeEach(() => {
     priceId: "price_monthly",
   });
   h.stripe.subscriptions.retrieve.mockResolvedValue(clone(f.subscriptionRetrieved));
-  h.stripe.subscriptions.update.mockResolvedValue({});
+  h.stripe.subscriptions.update.mockResolvedValue({ latest_invoice: clone(f.invoiceRetrieved) });
   h.stripe.subscriptions.cancel.mockResolvedValue(clone(f.subscriptionRetrieved));
   h.stripe.invoices.list.mockResolvedValue({ data: [clone(f.invoiceRetrieved)] });
   h.stripe.invoices.createPreview.mockResolvedValue(clone(f.invoicePreview));
@@ -102,15 +102,17 @@ describe("recorded Stripe answers used by the refund", () => {
 describe("switchSubscriptionPlan (recorded Stripe answers)", () => {
   const item = () => f.subscriptionRetrieved.items.data[0];
 
-  it("swaps the item price, audits the proration with createPreview, stores the item period", async () => {
+  it("swaps the item price, invoices the switch now, audits what was charged, stores the item period", async () => {
     const result = await switchSubscriptionPlan({ newPriceId: "price_yearly" });
 
     expect(h.stripe.subscriptions.update).toHaveBeenCalledWith(SUB, {
       cancel_at_period_end: false,
-      proration_behavior: "create_prorations",
+      proration_behavior: "always_invoice",
+      payment_behavior: "error_if_incomplete",
       items: [{ id: item().id, price: "price_yearly" }],
+      expand: ["latest_invoice"],
     });
-    expect(h.stripe.invoices.createPreview).toHaveBeenCalledWith({ subscription: SUB });
+    expect(h.stripe.invoices.createPreview).not.toHaveBeenCalled();
     expect(result).toMatchObject({ success: true });
     expect(mem().db.subscription.rows[0]).toMatchObject({
       priceId: "price_yearly",
@@ -122,11 +124,12 @@ describe("switchSubscriptionPlan (recorded Stripe answers)", () => {
     expect(audits).toEqual(["PLAN_CHANGE", "PRORATION"]);
     const proration = mem().db.invoiceAudit.rows.find((a) => a.type === "PRORATION")!;
     expect(proration.userId).toBe("user_1");
-    expect(proration.stripeInvoiceId).toBeUndefined();
-    expect(proration.metadata).toMatchObject({ previewInvoiceId: f.invoicePreview.id });
+    expect(proration.stripeInvoiceId).toBe(f.invoiceRetrieved.id);
+    expect(proration.metadata).toMatchObject({ chargedCents: f.invoiceRetrieved.amount_paid });
+    expect(Number(proration.amount)).toBe(f.invoiceRetrieved.amount_paid / 100);
   });
 
-  it("two switches leave two proration audits (a preview id is not an invoice id)", async () => {
+  it("two switches leave two proration audits", async () => {
     await switchSubscriptionPlan({ newPriceId: "price_yearly" });
     await switchSubscriptionPlan({ newPriceId: "price_monthly" });
     expect(mem().db.invoiceAudit.rows.filter((a) => a.type === "PRORATION")).toHaveLength(2);
@@ -141,8 +144,16 @@ describe("switchSubscriptionPlan (recorded Stripe answers)", () => {
     );
   });
 
-  it("the preview failing never fails the switch", async () => {
-    h.stripe.invoices.createPreview.mockRejectedValue(new Error("preview"));
+  it("a refused card fails the switch and changes nothing stored", async () => {
+    h.stripe.subscriptions.update.mockRejectedValue(new Error("card_declined"));
+    const result = await switchSubscriptionPlan({ newPriceId: "price_yearly" });
+    expect(result.success).toBe(false);
+    expect(mem().db.subscription.rows[0]).toMatchObject({ priceId: "price_monthly" });
+    expect(mem().db.invoiceAudit.rows).toHaveLength(0);
+  });
+
+  it("an answer without the invoice never fails the switch (the audit is only a record)", async () => {
+    h.stripe.subscriptions.update.mockResolvedValue({});
     expect((await switchSubscriptionPlan({ newPriceId: "price_yearly" })).success).toBe(true);
     expect(mem().db.invoiceAudit.rows.map((a) => a.type)).toEqual(["PLAN_CHANGE"]);
   });
