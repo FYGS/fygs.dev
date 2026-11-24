@@ -9,9 +9,11 @@
  * Credentials: ~/.config/fygs-dev/staging-admin.env (STAGING_URL) and ~/.config/fygs-dev/stripe.env.txt (test key).
  * Refuses to run against anything that is not a *.fygs.dev staging host or with a live Stripe key.
  */
+import { randomUUID } from "node:crypto";
 import { readFileSync, mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { hashPassword } from "better-auth/crypto";
 import { chromium } from "@playwright/test";
 import pg from "pg";
 
@@ -71,13 +73,16 @@ async function newLearner(browser, tag) {
   const password = `Rc-${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}Aa1`;
   const ctx = await browser.newContext({ baseURL: BASE, locale: "fr-FR", timezoneId: "Europe/Paris", viewport: { width: 1280, height: 1000 } });
   const headers = { origin: BASE, "content-type": "application/json" };
-  const up = await ctx.request.post("/api/auth/sign-up/email", { headers, data: { email, password, name: `Recette ${tag}` } });
-  if (!up.ok()) throw new Error(`sign-up failed (${up.status()})`);
-  await db.query(`update "user" set "emailVerified" = true where email = $1`, [email]);
+  // Created straight in the database, like tests/e2e/support/db.ts: the sign-up route is rate limited (5 an hour), and what
+  // is under test here is billing, not registration
+  const userId = randomUUID();
+  await db.query(`insert into "user" (id, name, email, "emailVerified", role, "updatedAt") values ($1, $2, $3, true, 'STUDENT', now())`, [userId, `Recette ${tag}`, email]);
+  await db.query(`insert into account (id, "userId", "accountId", "providerId", password, "updatedAt") values ($1, $2, $2, 'credential', $3, now())`, [randomUUID(), userId, await hashPassword(password)]);
   const inn = await ctx.request.post("/api/auth/sign-in/email", { headers, data: { email, password } });
   if (!inn.ok()) throw new Error(`sign-in failed (${inn.status()})`);
-  const { rows } = await db.query(`select id from "user" where email = $1`, [email]);
-  return { ctx, email, userId: rows[0].id, page: await ctx.newPage() };
+  const page = await ctx.newPage();
+  page.on("pageerror", (e) => console.log(`  [pageerror] ${e.message.slice(0, 200)}`));
+  return { ctx, email, userId, page };
 }
 
 const snap = (page, name) => page.screenshot({ path: join(OUT, `${name}.png`), fullPage: true }).catch(() => {});
@@ -114,6 +119,34 @@ async function subscribe(page, planLabel = /Commencer maintenant/) {
   await page.waitForURL((u) => u.hostname === "staging.fygs.dev", { timeout: 90_000 });
 }
 
+
+
+/** A brand-new account is first offered a language: choose French, like a person would. */
+async function ready(page) {
+  await page.waitForLoadState("networkidle", { timeout: 15_000 }).catch(() => {});
+  const french = page.getByRole("button", { name: /Français/ });
+  if (await french.isVisible({ timeout: 3_000 }).catch(() => false)) {
+    await french.click();
+    await page.waitForTimeout(800);
+  }
+}
+
+/** Opens a confirmation dialog from its trigger and confirms inside it (the page must be interactive first). */
+async function confirmDialog(page, triggerName, confirmName) {
+  await ready(page);
+  try {
+    await page.getByRole("button", { name: triggerName }).first().click({ timeout: 20_000 });
+  } catch (e) {
+    await snap(page, "dialog-trigger-missing");
+    console.log(`  page ${page.url()} | buttons: ${JSON.stringify((await page.getByRole("button").allInnerTexts()).map((t) => t.trim()).filter(Boolean)).slice(0, 300)}`);
+    throw e;
+  }
+  const dialog = page.getByRole("alertdialog");
+  await dialog.waitFor({ timeout: 20_000 });
+  await dialog.getByRole("button", { name: confirmName }).click();
+  await dialog.waitFor({ state: "hidden", timeout: 30_000 }).catch(() => {});
+}
+
 const invoicesOf = async (customer) => (await stripe(`invoices?customer=${customer}&limit=20`)).data.sort((a, b) => a.created - b.created);
 
 // ── scenario A: subscribe, upgrade, scheduled downgrade, refund ─────────────────────────────────────────────────────
@@ -133,8 +166,7 @@ async function scenarioA(browser) {
   // upgrade
   await page.goto("/fr/dashboard/billing");
   await snap(page, "billing-monthly");
-  await page.getByRole("button", { name: /Passer à la formule annuelle/ }).click();
-  await page.getByRole("button", { name: /Confirmer le changement/ }).click();
+  await confirmDialog(page, /Passer à la formule annuelle/, /Confirmer le changement/);
   await until(async () => (await invoicesOf(customer)).filter((i) => i.status === "paid").length >= 2, "second paid invoice (the switch)");
   const inv = (await invoicesOf(customer)).filter((i) => i.status === "paid");
   const upgrade = inv.find((i) => i.billing_reason === "subscription_update");
@@ -165,8 +197,7 @@ async function scenarioA(browser) {
   check("A9 billing page announces a refund of 290.00 EUR", /vous récupérez 290\.00 EUR/.test(text), (text.match(/vous récupérez[^.]*\./) || [""])[0].slice(0, 90));
 
   // scheduled downgrade, cancelled, scheduled again
-  await page.getByRole("button", { name: /Passer à la formule mensuelle/ }).click();
-  await page.getByRole("button", { name: /Confirmer le changement/ }).click();
+  await confirmDialog(page, /Passer à la formule mensuelle/, /Confirmer le changement/);
   const scheduled = await until(async () => {
     const s = await stripe(`subscriptions/${sub1.stripeSubscriptionId}`);
     return s.schedule ? s : null;
@@ -179,18 +210,17 @@ async function scenarioA(browser) {
   await page.reload();
   await snap(page, "billing-scheduled");
   check("A12 the page shows the scheduled change and its cancel button", await page.getByRole("button", { name: /Annuler le changement/ }).isVisible());
+  await ready(page);
   await page.getByRole("button", { name: /Annuler le changement/ }).click();
   await until(async () => !(await stripe(`subscriptions/${sub1.stripeSubscriptionId}`)).schedule, "schedule released");
   check("A13 cancelling the scheduled change releases the Stripe schedule", true);
   await page.reload();
-  await page.getByRole("button", { name: /Passer à la formule mensuelle/ }).click();
-  await page.getByRole("button", { name: /Confirmer le changement/ }).click();
+  await confirmDialog(page, /Passer à la formule mensuelle/, /Confirmer le changement/);
   await until(async () => (await stripe(`subscriptions/${sub1.stripeSubscriptionId}`)).schedule, "schedule again");
 
   // refund, with a schedule still attached
   await page.goto("/fr/dashboard/billing");
-  await page.getByRole("button", { name: /Demander un remboursement/ }).click();
-  await page.getByRole("button", { name: /Confirmer le remboursement/ }).click();
+  await confirmDialog(page, /Demander un remboursement/, /Confirmer le remboursement/);
   await until(async () => (await db.query(`select status from "Subscription" where id = $1`, [sub1.id])).rows[0].status === "CANCELED", "subscription canceled after refund");
   const charges = (await stripe(`charges?customer=${customer}&limit=10`)).data;
   check("A14 every charge is refunded in full (29 and 261)", charges.length === 2 && charges.every((c) => c.amount_refunded === c.amount), charges.map((c) => `${c.amount / 100}/${c.amount_refunded / 100}`).join(", "));
@@ -213,8 +243,7 @@ async function scenarioB(browser) {
   await subscribe(page);
   const sub = await until(async () => (await db.query(`select * from "Subscription" where "userId" = $1 and status = 'ACTIVE'`, [userId])).rows[0], "active subscription");
   await page.goto("/fr/dashboard/billing");
-  await page.getByRole("button", { name: /Annuler l'abonnement/ }).click();
-  await page.getByRole("button", { name: /Confirmer l'annulation/ }).click();
+  await confirmDialog(page, /Annuler l'abonnement/, /Confirmer l'annulation/);
   const s = await until(async () => {
     const x = await stripe(`subscriptions/${sub.stripeSubscriptionId}`);
     return x.cancel_at_period_end ? x : null;
