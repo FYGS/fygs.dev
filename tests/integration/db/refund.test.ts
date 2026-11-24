@@ -7,7 +7,7 @@ import { createSubscription, createUser, sessionFor } from "../../support/factor
 const h = vi.hoisted(() => ({
   session: null as { user: { id: string } } | null,
   stripe: {
-    getLatestSubscriptionPayment: vi.fn(),
+    getRefundableSubscriptionPayments: vi.fn(),
     refundPayment: vi.fn(),
     cancelImmediately: vi.fn(),
   },
@@ -39,7 +39,8 @@ afterAll(async () => {
 async function subscribed(paidAgoMs: number, data = {}) {
   const user = await createUser();
   const sub = await createSubscription(user.id, { ...data });
-  h.stripe.getLatestSubscriptionPayment.mockResolvedValue({ ...payment, paidAt: new Date(Date.now() - paidAgoMs) });
+  const paidAt = new Date(Date.now() - paidAgoMs);
+  h.stripe.getRefundableSubscriptionPayments.mockResolvedValue({ windowStart: paidAt, payments: [{ ...payment, paidAt }] });
   h.session = sessionFor(user.id);
   return { user, sub };
 }
@@ -98,6 +99,42 @@ describe("requestRefund (real database, Stripe mocked)", () => {
     expect(h.stripe.refundPayment).not.toHaveBeenCalled();
   });
 
+  it("after a plan switch it gives back every invoice of the period, each on its own payment", async () => {
+    const { user, sub } = await subscribed(DAY);
+    const opening = { paymentIntentId: "pi_open", invoiceId: "in_open", amountPaidCents: 2900, currency: "eur", paidAt: new Date(Date.now() - 2 * DAY) };
+    const upgrade = { paymentIntentId: "pi_up", invoiceId: "in_up", amountPaidCents: 26100, currency: "eur", paidAt: new Date(Date.now() - DAY) };
+    h.stripe.getRefundableSubscriptionPayments.mockResolvedValue({ windowStart: opening.paidAt, payments: [opening, upgrade] });
+    h.stripe.refundPayment.mockResolvedValueOnce("re_open").mockResolvedValueOnce("re_up");
+    await db.payment.createMany({
+      data: [
+        { userId: user.id, kind: "SUBSCRIPTION", status: "COMPLETED", amount: "29", stripePaymentIntentId: "in_open", description: "Abonnement Premium" },
+        { userId: user.id, kind: "SUBSCRIPTION", status: "COMPLETED", amount: "261", stripePaymentIntentId: "in_up", description: "Ajustement d’abonnement Premium" },
+      ],
+    });
+
+    const result = await requestRefund({ subscriptionId: sub.stripeSubscriptionId! });
+
+    expect(result).toMatchObject({ success: true, refund: { amount: 290, currency: "eur", refundId: "re_open" } });
+    expect(h.stripe.refundPayment).toHaveBeenCalledTimes(2);
+    expect(h.stripe.refundPayment).toHaveBeenCalledWith("pi_open", 2900, { idempotencyKey: `refund:${sub.id}:pi_open` });
+    expect(h.stripe.refundPayment).toHaveBeenCalledWith("pi_up", 26100, { idempotencyKey: `refund:${sub.id}:pi_up` });
+    expect(await db.payment.count({ where: { userId: user.id, status: "REFUNDED" } })).toBe(2);
+    const audit = await db.invoiceAudit.findFirstOrThrow({ where: { userId: user.id } });
+    expect(Number(audit.amount)).toBe(290);
+    expect(audit.metadata).toMatchObject({ stripeRefundIds: ["re_open", "re_up"], stripePaymentIntentIds: ["pi_open", "pi_up"] });
+  });
+
+  it("the window runs from the opening payment: an adjustment invoice does not reopen it", async () => {
+    const { sub } = await subscribed(DAY);
+    const opening = { paymentIntentId: "pi_open", invoiceId: "in_open", amountPaidCents: 2900, currency: "eur", paidAt: new Date(Date.now() - 15 * DAY) };
+    const upgrade = { paymentIntentId: "pi_up", invoiceId: "in_up", amountPaidCents: 26100, currency: "eur", paidAt: new Date(Date.now() - DAY) };
+    h.stripe.getRefundableSubscriptionPayments.mockResolvedValue({ windowStart: opening.paidAt, payments: [opening, upgrade] });
+
+    expect(await requestRefund({ subscriptionId: sub.stripeSubscriptionId! }))
+      .toMatchObject({ success: false, error: "REFUND_PERIOD_EXPIRED" });
+    expect(h.stripe.refundPayment).not.toHaveBeenCalled();
+  });
+
   it("validates the input", async () => {
     expect(await requestRefund({ subscriptionId: "" })).toMatchObject({ error: "VALIDATION_ERROR" });
   });
@@ -105,7 +142,7 @@ describe("requestRefund (real database, Stripe mocked)", () => {
   it("reports a missing payment and a Stripe failure without changing the subscription", async () => {
     const { sub } = await subscribed(DAY);
 
-    h.stripe.getLatestSubscriptionPayment.mockResolvedValueOnce({ ...payment, amountPaidCents: 0, paidAt: new Date() });
+    h.stripe.getRefundableSubscriptionPayments.mockResolvedValueOnce({ windowStart: new Date(), payments: [{ ...payment, amountPaidCents: 0, paidAt: new Date() }] });
     expect(await requestRefund({ subscriptionId: sub.stripeSubscriptionId! }))
       .toMatchObject({ success: false, error: "NO_PAYMENT_FOUND" });
 

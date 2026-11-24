@@ -24,6 +24,10 @@ vi.mock('next/cache', () => ({
 vi.mock('@/lib/payment-service', () => ({
   paymentService: {
     switchSubscriptionPrice: vi.fn().mockResolvedValue(undefined),
+    // yearly -> monthly waits for the end of the paid year
+    schedulePriceChangeAtPeriodEnd: vi.fn().mockResolvedValue({ effectiveAt: new Date('2027-01-01T00:00:00.000Z') }),
+    getScheduledPriceChange: vi.fn().mockResolvedValue(null),
+    cancelScheduledPriceChange: vi.fn().mockResolvedValue(undefined),
     getSubscription: vi.fn().mockResolvedValue({
       current_period_start: Math.floor(Date.now() / 1000),
       current_period_end: Math.floor((Date.now() + 365 * 24 * 60 * 60 * 1000) / 1000)
@@ -33,6 +37,8 @@ vi.mock('@/lib/payment-service', () => ({
 
 // Mock resolveRequestedPriceId
 vi.mock('@/lib/subscription-pricing', () => ({
+  classifyBillingCycle: vi.fn((priceId?: string) =>
+    !priceId ? 'unknown' : priceId.includes('yearly') ? 'yearly' : priceId.includes('monthly') ? 'monthly' : 'unknown'),
   resolveRequestedPriceId: vi.fn((priceId: string) => {
     if (priceId === 'price_invalid_plan') {
       throw new Error('Invalid price ID')
@@ -187,12 +193,17 @@ describe('T104: Plan Switch Proration Audit Tests', () => {
       })
     })
 
-    test('creates proration audit record for yearly to monthly downgrade', async () => {
+    test('creates a plan change audit record, effective at the end of the paid year', async () => {
       const result = await switchSubscriptionPlan({
         newPriceId: 'price_premium_monthly'
       })
 
       expect(result.success).toBe(true)
+      expect(result.scheduledFor).toEqual(new Date('2027-01-01T00:00:00.000Z'))
+
+      // Nothing changes now: the learner keeps the yearly plan they paid for
+      const unchanged = await db.subscription.findUniqueOrThrow({ where: { id: activeSubscriptionId } })
+      expect(unchanged.priceId).toBe('price_premium_yearly')
 
       // Verify InvoiceAudit record was created
       const auditRecord = await db.invoiceAudit.findFirst({
@@ -208,7 +219,8 @@ describe('T104: Plan Switch Proration Audit Tests', () => {
         newPriceId: 'price_premium_monthly',
         oldCycle: 'yearly',
         newCycle: 'monthly',
-        effectiveDate: expect.any(String)
+        scheduled: true,
+        effectiveDate: '2027-01-01T00:00:00.000Z'
       })
     })
   })

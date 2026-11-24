@@ -31,6 +31,7 @@ vi.mock("@/lib/stripe", async () => {
     invoices: { list: vi.fn(), createPreview: vi.fn() },
     invoicePayments: { list: vi.fn() },
     refunds: { create: vi.fn() },
+    subscriptionSchedules: { create: vi.fn(), retrieve: vi.fn(), update: vi.fn(), release: vi.fn() },
   };
   return { stripe: h.stripe, stripeKeyMode: () => "unknown" };
 });
@@ -129,10 +130,18 @@ describe("switchSubscriptionPlan (recorded Stripe answers)", () => {
     expect(Number(proration.amount)).toBe(f.invoiceRetrieved.amount_paid / 100);
   });
 
-  it("two switches leave two proration audits", async () => {
-    await switchSubscriptionPlan({ newPriceId: "price_yearly" });
-    await switchSubscriptionPlan({ newPriceId: "price_monthly" });
-    expect(mem().db.invoiceAudit.rows.filter((a) => a.type === "PRORATION")).toHaveLength(2);
+  it("going back to monthly after a switch is scheduled: two plan changes, one invoice audit", async () => {
+    h.stripe.subscriptionSchedules.create.mockResolvedValue({
+      id: "sub_sched_1",
+      phases: [{ start_date: 1, end_date: 2_000_000_000, items: [{ price: "price_yearly", quantity: 1 }] }],
+    });
+    h.stripe.subscriptionSchedules.update.mockResolvedValue({});
+    const first = await switchSubscriptionPlan({ newPriceId: "price_yearly" });
+    const second = await switchSubscriptionPlan({ newPriceId: "price_monthly" });
+    expect(first.success).toBe(true);
+    expect(second).toMatchObject({ success: true, scheduledFor: new Date(2_000_000_000 * 1000) });
+    expect(mem().db.invoiceAudit.rows.filter((a) => a.type === "PRORATION")).toHaveLength(1);
+    expect(mem().db.invoiceAudit.rows.filter((a) => a.type === "PLAN_CHANGE")).toHaveLength(2);
   });
 
   it("a subscription in the pre-basil shape (period on the root) gives the same dates", async () => {
@@ -142,6 +151,64 @@ describe("switchSubscriptionPlan (recorded Stripe answers)", () => {
     expect(mem().db.subscription.rows[0].currentPeriodEnd).toEqual(
       new Date(item().current_period_end * 1000),
     );
+  });
+
+  describe("yearly -> monthly waits for the end of the paid year", () => {
+    const PERIOD_START = 1_800_000_000;
+    const PERIOD_END = 1_831_536_000;
+    const yearlySchedule = { id: "sub_sched_1", phases: [{ start_date: PERIOD_START, end_date: PERIOD_END, items: [{ price: "price_yearly", quantity: 1 }] }] };
+
+    beforeEach(() => {
+      mem().db.subscription.rows[0].priceId = "price_yearly";
+      h.stripe.subscriptionSchedules.create.mockResolvedValue(clone(yearlySchedule));
+      h.stripe.subscriptionSchedules.update.mockResolvedValue({});
+    });
+
+    it("schedules the monthly price after the current phase: nothing is charged, credited or changed now", async () => {
+      const result = await switchSubscriptionPlan({ newPriceId: "price_monthly" });
+
+      expect(result).toMatchObject({ success: true, scheduledFor: new Date(PERIOD_END * 1000) });
+      expect(h.stripe.subscriptionSchedules.create).toHaveBeenCalledWith({ from_subscription: SUB });
+      expect(h.stripe.subscriptionSchedules.update).toHaveBeenCalledWith("sub_sched_1", {
+        end_behavior: "release",
+        phases: [
+          { items: [{ price: "price_yearly", quantity: 1 }], start_date: PERIOD_START, end_date: PERIOD_END },
+          { items: [{ price: "price_monthly", quantity: 1 }], proration_behavior: "none" },
+        ],
+      });
+      expect(h.stripe.subscriptions.update).not.toHaveBeenCalled();
+      expect(h.stripe.invoices.createPreview).not.toHaveBeenCalled();
+      expect(mem().db.subscription.rows[0]).toMatchObject({ priceId: "price_yearly" });
+      const audits = mem().db.invoiceAudit.rows;
+      expect(audits.map((a) => a.type)).toEqual(["PLAN_CHANGE"]);
+      expect(audits[0].metadata).toMatchObject({ scheduled: true, newCycle: "monthly", effectiveDate: new Date(PERIOD_END * 1000).toISOString() });
+    });
+
+    it("reuses the schedule the subscription already has", async () => {
+      h.stripe.subscriptions.retrieve.mockResolvedValue({ ...clone(f.subscriptionRetrieved), schedule: "sub_sched_1" });
+      h.stripe.subscriptionSchedules.retrieve.mockResolvedValue(clone(yearlySchedule));
+      await switchSubscriptionPlan({ newPriceId: "price_monthly" });
+      expect(h.stripe.subscriptionSchedules.create).not.toHaveBeenCalled();
+      expect(h.stripe.subscriptionSchedules.update).toHaveBeenCalledTimes(1);
+    });
+
+    it("choosing the current plan again drops the scheduled change", async () => {
+      h.stripe.subscriptions.retrieve.mockResolvedValue({ ...clone(f.subscriptionRetrieved), schedule: "sub_sched_1" });
+      h.stripe.subscriptionSchedules.retrieve.mockResolvedValue({
+        ...clone(yearlySchedule),
+        phases: [...clone(yearlySchedule).phases, { start_date: PERIOD_END, items: [{ price: "price_monthly", quantity: 1 }] }],
+      });
+      h.stripe.subscriptionSchedules.release.mockResolvedValue({});
+      const result = await switchSubscriptionPlan({ newPriceId: "price_yearly" });
+      expect(result.success).toBe(true);
+      expect(h.stripe.subscriptionSchedules.release).toHaveBeenCalledWith("sub_sched_1");
+    });
+
+    it("choosing the current plan with nothing scheduled is still refused", async () => {
+      const result = await switchSubscriptionPlan({ newPriceId: "price_yearly" });
+      expect(result).toMatchObject({ success: false, error: "SAME_PLAN" });
+      expect(h.stripe.subscriptionSchedules.release).not.toHaveBeenCalled();
+    });
   });
 
   it("a refused card fails the switch and changes nothing stored", async () => {

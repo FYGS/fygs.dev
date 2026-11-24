@@ -16,7 +16,7 @@ const h = vi.hoisted(() => ({
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
 vi.mock("next/headers", () => ({ headers: vi.fn(() => Promise.resolve(new Headers())) }));
 vi.mock("@/lib/payment-service", () => ({
-  paymentService: { refundPayment: h.refund, cancelImmediately: h.cancel, getLatestSubscriptionPayment: h.latest },
+  paymentService: { refundPayment: h.refund, cancelImmediately: h.cancel, getRefundableSubscriptionPayments: h.latest },
 }));
 vi.mock("@/lib/payments/notify", () => ({ notifyRefund: vi.fn(async () => {}), notifyDispute: vi.fn(async () => {}) }));
 vi.mock("@/lib/analytics-helper", () => ({ AnalyticsHelper: { recordRefund: vi.fn(async () => {}) } }));
@@ -136,7 +136,7 @@ describe("subscription refund", () => {
     await db.payment.create({
       data: { userId: user.id, kind: PaymentKind.SUBSCRIPTION, status: PaymentStatus.COMPLETED, amount: "19.99", stripePaymentIntentId: "in_r", description: "Abonnement Premium", updatedAt: paidAt },
     });
-    h.latest.mockResolvedValue({ paymentIntentId: "pi_r", invoiceId: "in_r", amountPaidCents: 1999, currency: "eur", paidAt });
+    h.latest.mockResolvedValue({ windowStart: paidAt, payments: [{ paymentIntentId: "pi_r", invoiceId: "in_r", amountPaidCents: 1999, currency: "eur", paidAt }] });
     vi.mocked(auth.api.getSession).mockResolvedValue({ user: { id: user.id } } as never);
     return { user, subscription };
   }

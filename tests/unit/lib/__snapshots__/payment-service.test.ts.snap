@@ -47,9 +47,49 @@ exports[`paymentService (pinned behaviour) > cancelImmediatelyOk 1`] = `
 }
 `;
 
+exports[`paymentService (pinned behaviour) > cancelScheduleNone 1`] = `
+{
+  "log": [
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+      ],
+    ],
+  ],
+  "outcome": {},
+}
+`;
+
+exports[`paymentService (pinned behaviour) > cancelSchedulePending 1`] = `
+{
+  "log": [
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+      ],
+    ],
+    [
+      "stripe.subscriptionSchedules.release",
+      [
+        "sub_sched_9",
+      ],
+    ],
+  ],
+  "outcome": {},
+}
+`;
+
 exports[`paymentService (pinned behaviour) > cancelSubFail 1`] = `
 {
   "log": [
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+      ],
+    ],
     [
       "stripe.subscriptions.update",
       [
@@ -78,6 +118,12 @@ exports[`paymentService (pinned behaviour) > cancelSubFail 1`] = `
 exports[`paymentService (pinned behaviour) > cancelSubOk 1`] = `
 {
   "log": [
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+      ],
+    ],
     [
       "stripe.subscriptions.update",
       [
@@ -625,16 +671,20 @@ exports[`paymentService (pinned behaviour) > grantCourseOk 1`] = `
 exports[`paymentService (pinned behaviour) > is a singleton with the expected API 1`] = `
 [
   "cancelImmediately",
+  "cancelScheduledPriceChange",
   "cancelSubscription",
   "createCheckoutSession",
   "createSubscriptionSession",
   "getLatestSubscriptionPayment",
+  "getRefundableSubscriptionPayments",
+  "getScheduledPriceChange",
   "getSubscription",
   "grantCourseAccess",
   "grantSubscriptionAccess",
   "handlePaymentSuccess",
   "refundDuplicatePurchase",
   "refundPayment",
+  "schedulePriceChangeAtPeriodEnd",
   "switchSubscriptionPrice",
   "syncPaths",
   "verifyWebhookSignature",
@@ -859,6 +909,268 @@ exports[`paymentService (pinned behaviour) > refundPartialKey 1`] = `
   ],
   "outcome": {
     "value": "re_1",
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > refundableAfterSwitch 1`] = `
+{
+  "log": [
+    [
+      "stripe.invoices.list",
+      [
+        {
+          "limit": 20,
+          "status": "paid",
+          "subscription": "sub_1",
+        },
+      ],
+    ],
+    [
+      "stripe.invoicePayments.list",
+      [
+        {
+          "invoice": "in_up",
+          "limit": 1,
+          "status": "paid",
+        },
+      ],
+    ],
+    [
+      "stripe.invoicePayments.list",
+      [
+        {
+          "invoice": "in_open",
+          "limit": 1,
+          "status": "paid",
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": {
+      "payments": [
+        {
+          "amountPaidCents": 2900,
+          "currency": "eur",
+          "invoiceId": "in_open",
+          "paidAt": "2023-11-14T22:15:00.000Z",
+          "paymentIntentId": "pi_1",
+        },
+        {
+          "amountPaidCents": 26100,
+          "currency": "eur",
+          "invoiceId": "in_up",
+          "paidAt": "2023-11-14T22:23:20.000Z",
+          "paymentIntentId": "pi_1",
+        },
+      ],
+      "windowStart": "2023-11-14T22:15:00.000Z",
+    },
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > refundableNone 1`] = `
+{
+  "log": [
+    [
+      "stripe.invoices.list",
+      [
+        {
+          "limit": 20,
+          "status": "paid",
+          "subscription": "sub_1",
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": null,
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > scheduleExisting 1`] = `
+{
+  "log": [
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+      ],
+    ],
+    [
+      "stripe.subscriptionSchedules.retrieve",
+      [
+        "sub_sched_9",
+      ],
+    ],
+    [
+      "stripe.subscriptionSchedules.update",
+      [
+        "sub_sched_9",
+        {
+          "end_behavior": "release",
+          "phases": [
+            {
+              "end_date": 1731536000,
+              "items": [
+                {
+                  "price": "price_y",
+                  "quantity": 1,
+                },
+              ],
+              "start_date": 1700000000,
+            },
+            {
+              "items": [
+                {
+                  "price": "price_m",
+                  "quantity": 1,
+                },
+              ],
+              "proration_behavior": "none",
+            },
+          ],
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": {
+      "effectiveAt": "2024-11-13T22:13:20.000Z",
+    },
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > scheduleFails 1`] = `
+{
+  "log": [
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+      ],
+    ],
+    [
+      "stripe.subscriptionSchedules.create",
+      [
+        {
+          "from_subscription": "sub_1",
+        },
+      ],
+    ],
+    [
+      "console.error",
+      [
+        "Failed to schedule the price change",
+        "stripe",
+      ],
+    ],
+  ],
+  "outcome": {
+    "instanceOfWebhook": false,
+    "name": "Error",
+    "thrown": "PRICE_SCHEDULE_FAILED",
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > scheduleNew 1`] = `
+{
+  "log": [
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+      ],
+    ],
+    [
+      "stripe.subscriptionSchedules.create",
+      [
+        {
+          "from_subscription": "sub_1",
+        },
+      ],
+    ],
+    [
+      "stripe.subscriptionSchedules.update",
+      [
+        "sub_sched_1",
+        {
+          "end_behavior": "release",
+          "phases": [
+            {
+              "end_date": 1731536000,
+              "items": [
+                {
+                  "price": "price_y",
+                  "quantity": 1,
+                },
+              ],
+              "start_date": 1700000000,
+            },
+            {
+              "items": [
+                {
+                  "price": "price_m",
+                  "quantity": 1,
+                },
+              ],
+              "proration_behavior": "none",
+            },
+          ],
+        },
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": {
+      "effectiveAt": "2024-11-13T22:13:20.000Z",
+    },
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > scheduledChangeNone 1`] = `
+{
+  "log": [
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": null,
+  },
+}
+`;
+
+exports[`paymentService (pinned behaviour) > scheduledChangePending 1`] = `
+{
+  "log": [
+    [
+      "stripe.subscriptions.retrieve",
+      [
+        "sub_1",
+      ],
+    ],
+    [
+      "stripe.subscriptionSchedules.retrieve",
+      [
+        "sub_sched_9",
+      ],
+    ],
+  ],
+  "outcome": {
+    "value": {
+      "effectiveAt": "2024-11-13T22:13:20.000Z",
+      "priceId": "price_m",
+    },
   },
 }
 `;

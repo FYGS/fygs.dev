@@ -190,9 +190,138 @@ export class SubscriptionManagement extends StripeBilling {
     };
   }
 
+  /**
+   * Everything paid for the current period, for a refund: the payment that opened the period (first invoice or
+   * renewal) and the adjustment invoices a plan switch produced since (a monthly -> yearly switch is invoiced at once).
+   * The refund window runs from the opening payment: a switch neither reopens it nor makes it larger. Asking for the
+   * refund inside the window gives back all of it, so "refund" means "I get back what I paid".
+   */
+  async getRefundableSubscriptionPayments(
+    stripeSubscriptionId: string,
+  ): Promise<{
+    /** When Stripe collected the payment that opened the period: the refund window runs from here. */
+    windowStart: Date;
+    payments: Array<{
+      paymentIntentId: string;
+      invoiceId: string;
+      amountPaidCents: number;
+      currency: string;
+      paidAt: Date;
+    }>;
+  } | null> {
+    const invoices = await stripe.invoices.list({
+      subscription: stripeSubscriptionId,
+      status: "paid",
+      limit: 20,
+    });
+    const opening = invoices.data.find(
+      (candidate) =>
+        !!candidate.id &&
+        candidate.amount_paid > 0 &&
+        (candidate.billing_reason === "subscription_create" ||
+          candidate.billing_reason === "subscription_cycle"),
+    );
+    if (!opening?.id) return null;
+
+    const payments: NonNullable<Awaited<ReturnType<SubscriptionManagement["getRefundableSubscriptionPayments"]>>>["payments"] = [];
+    for (const invoice of invoices.data) {
+      if (!invoice.id || invoice.amount_paid <= 0 || invoice.created < opening.created) continue;
+      const list = await stripe.invoicePayments.list({ invoice: invoice.id, status: "paid", limit: 1 });
+      const payment = list.data[0]?.payment;
+      // Paid with the customer's balance (a credit from an earlier switch): no card payment to give back
+      if (!payment || payment.type !== "payment_intent" || !payment.payment_intent) continue;
+      payments.push({
+        paymentIntentId:
+          typeof payment.payment_intent === "string" ? payment.payment_intent : payment.payment_intent.id,
+        invoiceId: invoice.id,
+        amountPaidCents: invoice.amount_paid,
+        currency: invoice.currency,
+        paidAt: new Date((invoice.status_transitions?.paid_at ?? invoice.created) * 1000),
+      });
+    }
+    if (payments.length === 0) return null;
+    payments.sort((a, b) => a.paidAt.getTime() - b.paidAt.getTime());
+    const first = payments.find((p) => p.invoiceId === opening.id) ?? payments[0];
+    return { windowStart: first.paidAt, payments };
+  }
+
+  /**
+   * Plan change that takes effect when the current period ends (yearly -> monthly): a Stripe subscription schedule with
+   * the current phase unchanged and a second phase on the new price, no proration. Nothing is credited or refunded, so
+   * no balance is left on the customer's account; until then the learner keeps what they paid for.
+   * Returns the day the new price starts.
+   */
+  async schedulePriceChangeAtPeriodEnd(
+    stripeSubscriptionId: string,
+    newPriceId: string,
+  ): Promise<{ effectiveAt: Date }> {
+    try {
+      const subscription = await stripe.subscriptions.retrieve(stripeSubscriptionId);
+      const existing = typeof subscription.schedule === "string" ? subscription.schedule : subscription.schedule?.id;
+      const schedule = existing
+        ? await stripe.subscriptionSchedules.retrieve(existing)
+        : await stripe.subscriptionSchedules.create({ from_subscription: stripeSubscriptionId });
+      const current = schedule.phases[0];
+      if (!current?.end_date) throw new Error("NO_CURRENT_PHASE");
+      const priceOf = (item: { price: string | { id: string } }) =>
+        typeof item.price === "string" ? item.price : item.price.id;
+      await stripe.subscriptionSchedules.update(schedule.id, {
+        end_behavior: "release",
+        phases: [
+          {
+            items: current.items.map((item) => ({ price: priceOf(item), quantity: item.quantity ?? 1 })),
+            start_date: current.start_date,
+            end_date: current.end_date,
+          },
+          { items: [{ price: newPriceId, quantity: 1 }], proration_behavior: "none" },
+        ],
+      });
+      return { effectiveAt: new Date(current.end_date * 1000) };
+    } catch (error) {
+      console.error("Failed to schedule the price change", error);
+      throw new Error("PRICE_SCHEDULE_FAILED");
+    }
+  }
+
+  /** The plan change waiting for the end of the period, if any (read from Stripe, the source of truth). */
+  async getScheduledPriceChange(
+    stripeSubscriptionId: string,
+  ): Promise<{ priceId: string; effectiveAt: Date } | null> {
+    try {
+      const subscription = await stripe.subscriptions.retrieve(stripeSubscriptionId);
+      const scheduleId = typeof subscription.schedule === "string" ? subscription.schedule : subscription.schedule?.id;
+      if (!scheduleId) return null;
+      const schedule = await stripe.subscriptionSchedules.retrieve(scheduleId);
+      const [current, next] = schedule.phases;
+      if (!current?.end_date || !next) return null;
+      const item = next.items[0];
+      const priceId = typeof item.price === "string" ? item.price : item.price.id;
+      return { priceId, effectiveAt: new Date(current.end_date * 1000) };
+    } catch (error) {
+      console.warn("Could not read the scheduled price change", error);
+      return null;
+    }
+  }
+
+  /** Drops a scheduled plan change: the subscription goes on as it is. Nothing to do when there is none. */
+  async cancelScheduledPriceChange(stripeSubscriptionId: string): Promise<void> {
+    try {
+      const subscription = await stripe.subscriptions.retrieve(stripeSubscriptionId);
+      const scheduleId = typeof subscription.schedule === "string" ? subscription.schedule : subscription.schedule?.id;
+      if (!scheduleId) return;
+      await stripe.subscriptionSchedules.release(scheduleId);
+    } catch (error) {
+      console.error("Failed to cancel the scheduled price change", error);
+      throw new Error("PRICE_SCHEDULE_CANCEL_FAILED");
+    }
+  }
+
   // Cancel subscription
   async cancelSubscription(subscriptionId: string): Promise<void> {
     try {
+      // A plan change waiting for the end of the period is dropped with the subscription's end: a subscription managed
+      // by a schedule cannot be edited directly
+      await this.cancelScheduledPriceChange(subscriptionId);
       await stripe.subscriptions.update(subscriptionId, {
         cancel_at_period_end: true,
       });

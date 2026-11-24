@@ -55,6 +55,12 @@ const stripeDefaults: Record<string, unknown> = {
     },
   },
   "subscriptions.cancel": {},
+  "subscriptionSchedules.create": {
+    id: "sub_sched_1",
+    phases: [{ start_date: 1700000000, end_date: 1731536000, items: [{ price: "price_y", quantity: 1 }] }],
+  },
+  "subscriptionSchedules.update": {},
+  "subscriptionSchedules.release": {},
   "invoices.list": {
     data: [
       // a plan-change adjustment is skipped: the payment that opened the period is the one to refund
@@ -278,6 +284,58 @@ describe("paymentService (pinned behaviour)", () => {
         () => p.getLatestSubscriptionPayment("sub_1"),
       ),
     latestPaymentNone: () => scenario({ stripe: { "invoicePayments.list": { data: [] } } }, () => p.getLatestSubscriptionPayment("sub_1")),
+    // everything paid for the period: the opening payment and the adjustment invoice of a switch, never an older period
+    refundableAfterSwitch: () =>
+      scenario(
+        {
+          stripe: {
+            "invoices.list": {
+              data: [
+                { id: "in_up", amount_paid: 26100, currency: "eur", billing_reason: "subscription_update", created: 1700000500, status_transitions: { paid_at: 1700000600 } },
+                { id: "in_open", amount_paid: 2900, currency: "eur", billing_reason: "subscription_create", created: 1700000000, status_transitions: { paid_at: 1700000100 } },
+                { id: "in_old", amount_paid: 2900, currency: "eur", billing_reason: "subscription_cycle", created: 1690000000, status_transitions: { paid_at: 1690000100 } },
+              ],
+            },
+          },
+        },
+        () => p.getRefundableSubscriptionPayments("sub_1"),
+      ),
+    refundableNone: () => scenario({ stripe: { "invoices.list": { data: [] } } }, () => p.getRefundableSubscriptionPayments("sub_1")),
+    scheduleNew: () => scenario({}, () => p.schedulePriceChangeAtPeriodEnd("sub_1", "price_m")),
+    scheduleExisting: () =>
+      scenario(
+        {
+          stripe: {
+            "subscriptions.retrieve": subscriptionFixture({ schedule: "sub_sched_9" }),
+            "subscriptionSchedules.retrieve": {
+              id: "sub_sched_9",
+              phases: [{ start_date: 1700000000, end_date: 1731536000, items: [{ price: { id: "price_y" }, quantity: 1 }] }],
+            },
+          },
+        },
+        () => p.schedulePriceChangeAtPeriodEnd("sub_1", "price_m"),
+      ),
+    scheduleFails: () => scenario({ stripe: { "subscriptionSchedules.create": new Error("stripe") } }, () => p.schedulePriceChangeAtPeriodEnd("sub_1", "price_m")),
+    scheduledChangeNone: () => scenario({}, () => p.getScheduledPriceChange("sub_1")),
+    scheduledChangePending: () =>
+      scenario(
+        {
+          stripe: {
+            "subscriptions.retrieve": subscriptionFixture({ schedule: "sub_sched_9" }),
+            "subscriptionSchedules.retrieve": {
+              id: "sub_sched_9",
+              phases: [
+                { start_date: 1700000000, end_date: 1731536000, items: [{ price: "price_y" }] },
+                { start_date: 1731536000, items: [{ price: "price_m" }] },
+              ],
+            },
+          },
+        },
+        () => p.getScheduledPriceChange("sub_1"),
+      ),
+    cancelScheduleNone: () => scenario({}, () => p.cancelScheduledPriceChange("sub_1")),
+    cancelSchedulePending: () =>
+      scenario({ stripe: { "subscriptions.retrieve": subscriptionFixture({ schedule: "sub_sched_9" }) } }, () => p.cancelScheduledPriceChange("sub_1")),
     verifyOk: () => scenario({ env: { STRIPE_WEBHOOK_SECRET: "whsec" } }, () => p.verifyWebhookSignature("{}", "sig")),
     verifyNoSecret: () => scenario({ env: { STRIPE_WEBHOOK_SECRET: undefined } }, () => p.verifyWebhookSignature("{}", "sig")),
     verifyBadSig: () =>

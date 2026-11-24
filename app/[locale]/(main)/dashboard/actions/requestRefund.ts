@@ -37,10 +37,12 @@ const fail = (message: string, error: string): RequestRefundResult => ({
 });
 
 /**
- * Refunds the payment that opened the current period of the Premium subscription and ends the subscription.
+ * Refunds everything paid for the current period of the Premium subscription (the payment that opened it and the
+ *  adjustment invoices of a plan switch since) and ends the subscription.
  *
- *  - The 14 days run from the day Stripe collected that payment (`paidAt`), not from the period start, which a plan
- *    change moves: a switch can neither reopen the window nor make an older, larger invoice refundable.
+ *  - The 14 days run from the day Stripe collected the payment that opened the period, not from the period start,
+ *    which a plan change moves: a switch can neither reopen the window nor make an older, larger invoice refundable.
+ *    Inside the window the whole amount paid since is given back, each invoice on its own payment.
  *  - Refused once the learner earned a certificate with the subscription, as for a course bought on its own.
  *  - The whole operation runs under the buyer's purchase lock (shared with certificate issuance and checkout) and the
  *    Stripe calls are made inside the transaction: a failure records nothing, a retry is idempotent (same refund,
@@ -93,12 +95,13 @@ export async function requestRefund(
     try {
       // Stripe is the source of truth for what was paid, on which PaymentIntent and WHEN.
       // (A subscription id is not a PaymentIntent id, so it cannot be refunded directly.)
-      const payment = await paymentService.getLatestSubscriptionPayment(stripeSubscriptionId);
+      const refundable = await paymentService.getRefundableSubscriptionPayments(stripeSubscriptionId);
 
-      if (!payment || payment.amountPaidCents <= 0) {
+      if (!refundable || refundable.payments.every((p) => p.amountPaidCents <= 0)) {
         return fail("Aucun paiement à rembourser n’a été trouvé.", "NO_PAYMENT_FOUND");
       }
-      if (!isRefundEligible(payment.paidAt, now)) {
+      const { windowStart, payments } = refundable;
+      if (!isRefundEligible(windowStart, now)) {
         return fail(`Le délai de remboursement de ${REFUND_WINDOW_DAYS} jours est dépassé.`, "REFUND_PERIOD_EXPIRED");
       }
 
@@ -116,7 +119,7 @@ export async function requestRefund(
         const earned = await tx.certificate.findFirst({
           where: {
             userId,
-            issuedAt: { gte: payment.paidAt },
+            issuedAt: { gte: windowStart },
             course: {
               accessTier: CourseAccessTier.PREMIUM,
               payments: { none: { userId, kind: PaymentKind.COURSE, status: PaymentStatus.COMPLETED } },
@@ -126,16 +129,24 @@ export async function requestRefund(
         });
         if (earned) return { ok: false as const, error: "CERTIFICATE_EARNED" };
 
-        // Idempotent: retrying after a later step failed returns the same refund
-        const refundId = await paymentService.refundPayment(payment.paymentIntentId, payment.amountPaidCents, {
-          idempotencyKey: `refund:${subscription.id}:${payment.paymentIntentId}`,
-        });
+        // One refund per payment, each idempotent: retrying after a later step failed returns the same refunds
+        const refundIds: string[] = [];
+        for (const payment of payments) {
+          refundIds.push(
+            await paymentService.refundPayment(payment.paymentIntentId, payment.amountPaidCents, {
+              idempotencyKey: `refund:${subscription.id}:${payment.paymentIntentId}`,
+            }),
+          );
+        }
+        const refundId = refundIds[0];
+        const currency = payments[0].currency;
+        const amountCents = payments.reduce((sum, payment) => sum + payment.amountPaidCents, 0);
         // Stop future billing; otherwise the customer would be refunded and charged again
         await paymentService.cancelImmediately(stripeSubscriptionId, {
           idempotencyKey: `cancel:${stripeSubscriptionId}:immediate`,
         });
 
-        const amount = payment.amountPaidCents / 100;
+        const amount = amountCents / 100;
         await tx.subscription.update({
           where: { id: subscription.id },
           data: { status: SubscriptionStatus.CANCELED, cancelAtPeriodEnd: false, updatedAt: now },
@@ -145,7 +156,7 @@ export async function requestRefund(
             userId,
             kind: PaymentKind.SUBSCRIPTION,
             status: PaymentStatus.COMPLETED,
-            stripePaymentIntentId: { in: [payment.invoiceId, payment.paymentIntentId] },
+            stripePaymentIntentId: { in: payments.flatMap((payment) => [payment.invoiceId, payment.paymentIntentId]) },
           },
           data: { status: PaymentStatus.REFUNDED },
         });
@@ -155,12 +166,14 @@ export async function requestRefund(
             subscriptionId: subscription.id,
             type: "REFUND_PROCESSED",
             amount,
-            currency: payment.currency,
+            currency,
             metadata: {
               refundReason: reason || "User requested refund",
               refundedAt: now.toISOString(),
               stripeRefundId: refundId,
-              stripePaymentIntentId: payment.paymentIntentId,
+              stripeRefundIds: refundIds,
+              stripePaymentIntentId: payments[0].paymentIntentId,
+              stripePaymentIntentIds: payments.map((payment) => payment.paymentIntentId),
               stripeSubscriptionId,
             },
           },
@@ -171,11 +184,11 @@ export async function requestRefund(
             action: "payment.refunded",
             targetType: "subscription",
             targetId: subscription.id,
-            metadata: { refundId, amount, currency: payment.currency },
+            metadata: { refundId, refundIds, amount, currency },
           },
           tx,
         );
-        return { ok: true as const, refundId, amount, currency: payment.currency };
+        return { ok: true as const, refundId, amount, currency };
       });
 
       if (!outcome.ok) {

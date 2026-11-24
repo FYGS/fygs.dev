@@ -4,7 +4,8 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { AlertCircle, Crown, FileText, Receipt } from "lucide-react";
 import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { db } from "@/lib/db";
+import { paymentService } from "@/lib/payment-service";
 import { isSubscriptionActive } from "@/lib/access/entitlement";
 import { courseRefundDecision, getRefundDeadline, isRefundEligible, REFUND_WINDOW_DAYS } from "@/lib/refund-policy";
 import { classifyBillingCycle, getSubscriptionPrices } from "@/lib/subscription-pricing";
@@ -130,12 +131,29 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
     )
     .map((p) => p.updatedAt)
     .sort((a, b) => b.getTime() - a.getTime())[0];
+  // A refund gives back everything paid since that payment: the period's payment and the invoices of a plan switch
+  const refundablePayments = lastPeriodPaidAt
+    ? payments.filter(
+        (p) =>
+          p.kind === PaymentKind.SUBSCRIPTION &&
+          p.status === PaymentStatus.COMPLETED &&
+          p.updatedAt.getTime() >= lastPeriodPaidAt.getTime(),
+      )
+    : [];
+  // A plan change waiting for the end of the paid year (read from Stripe, only asked for a yearly subscription)
+  const scheduled =
+    active && cycle === "yearly" && subscription?.stripeSubscriptionId
+      ? await paymentService.getScheduledPriceChange(subscription.stripeSubscriptionId)
+      : null;
+  const scheduledCycle = scheduled ? classifyBillingCycle(scheduled.priceId) : "unknown";
   const subscriptionRefund =
     subscription?.status === SubscriptionStatus.ACTIVE && lastPeriodPaidAt && subscription.stripeSubscriptionId
       ? {
           eligible: isRefundEligible(lastPeriodPaidAt, now),
           deadline: getRefundDeadline(lastPeriodPaidAt),
           subscriptionId: subscription.stripeSubscriptionId,
+          amount: refundablePayments.reduce((sum, p) => sum + Number(p.amount), 0),
+          currency: (refundablePayments[0]?.currency ?? "eur").toUpperCase(),
         }
       : null;
 
@@ -195,7 +213,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
                 <div className="flex flex-wrap items-center gap-3 rounded-lg border p-3 text-sm">
                   <p className="min-w-0 flex-1">
                     {subscriptionRefund.eligible
-                      ? `Remboursement possible jusqu’au ${date(subscriptionRefund.deadline)} (${REFUND_WINDOW_DAYS} jours après le début de la période).`
+                      ? `Remboursement possible jusqu’au ${date(subscriptionRefund.deadline)} (${REFUND_WINDOW_DAYS} jours après le paiement de la période) : vous récupérez ${subscriptionRefund.amount.toFixed(2)} ${subscriptionRefund.currency}, tout ce que vous avez payé depuis.`
                       : `Le délai de remboursement de ${REFUND_WINDOW_DAYS} jours s’est terminé le ${date(subscriptionRefund.deadline)}.`}
                   </p>
                   {subscriptionRefund.eligible && (
@@ -208,6 +226,11 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
                 cancelAtPeriodEnd={subscription.cancelAtPeriodEnd}
                 currentCycle={cycle}
                 availableCycles={availableCycles}
+                scheduledChange={
+                  scheduled && scheduledCycle !== "unknown"
+                    ? { cycle: scheduledCycle, effectiveAt: date(scheduled.effectiveAt) }
+                    : null
+                }
                 periodEnd={subscription.currentPeriodEnd ? date(subscription.currentPeriodEnd) : null}
               />
             </>

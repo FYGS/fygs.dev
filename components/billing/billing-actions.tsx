@@ -25,6 +25,8 @@ interface BillingActionsProps {
   /** The billing cycle of the subscription, and the cycles that are configured for sale */
   currentCycle?: "monthly" | "yearly" | "unknown";
   availableCycles?: Array<"monthly" | "yearly">;
+  /** A plan change waiting for the end of the paid period (yearly -> monthly), with its formatted date */
+  scheduledChange?: { cycle: "monthly" | "yearly"; effectiveAt: string } | null;
 }
 
 /** What the user is told when the cancellation did not go through (the server messages are not translated). */
@@ -54,6 +56,7 @@ export function BillingActions({
   periodEnd,
   currentCycle = "unknown",
   availableCycles = [],
+  scheduledChange = null,
 }: BillingActionsProps) {
   const router = useRouter();
   const [loadingAction, setLoadingAction] = useState<"portal" | "cancel" | "switch" | null>(null);
@@ -99,7 +102,13 @@ export function BillingActions({
     try {
       const result = await switchSubscriptionPlan({ newPriceId: cycle });
       if (result.success) {
-        toast.success(`Formule ${CYCLE_LABEL[cycle]} activée.`);
+        if (result.scheduledFor) {
+          toast.success(`Passage à la formule ${CYCLE_LABEL[cycle]} programmé : il prend effet à la fin de votre période payée.`);
+        } else if (cycle === currentCycle) {
+          toast.success("Le changement programmé est annulé : votre abonnement continue comme avant.");
+        } else {
+          toast.success(`Formule ${CYCLE_LABEL[cycle]} activée.`);
+        }
         router.refresh();
       } else {
         toast.error(SWITCH_ERRORS[result.error ?? ""] ?? "Le changement de formule a échoué, réessayez plus tard.");
@@ -128,7 +137,7 @@ export function BillingActions({
           {loadingAction === "portal" ? "Redirection..." : "Gérer l'abonnement"}
         </Button>
 
-        {canSwitch && otherCycle && (
+        {canSwitch && otherCycle && !scheduledChange && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="outline" disabled={loadingAction !== null}>
@@ -139,8 +148,9 @@ export function BillingActions({
               <AlertDialogHeader>
                 <AlertDialogTitle>Passer à la formule {CYCLE_LABEL[otherCycle]} ?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Le changement s&apos;applique tout de suite. Stripe calcule le prorata : le temps déjà payé de votre formule actuelle est déduit de la
-                  prochaine facture.
+                  {otherCycle === "yearly"
+                    ? "Le changement s'applique tout de suite. La formule annuelle est facturée maintenant, déduction faite du temps déjà payé sur votre formule mensuelle."
+                    : `Le passage à la formule mensuelle prendra effet à la fin de votre année payée${periodEnd ? `, le ${periodEnd}` : ""}. Vous gardez la formule annuelle jusque-là, sans prélèvement ni remboursement entre-temps.`}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -174,6 +184,19 @@ export function BillingActions({
           </AlertDialog>
         )}
       </div>
+      {scheduledChange && canCancel && (
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border p-3 text-sm">
+          <p className="min-w-0 flex-1">
+            Passage à la formule {CYCLE_LABEL[scheduledChange.cycle]} programmé le {scheduledChange.effectiveAt} : jusque-là vous gardez
+            votre formule actuelle.
+          </p>
+          {currentCycle !== "unknown" && (
+            <Button variant="outline" disabled={loadingAction !== null} onClick={() => switchTo(currentCycle)}>
+              Annuler le changement
+            </Button>
+          )}
+        </div>
+      )}
       {cancelAtPeriodEnd && (
         <p className="text-sm text-muted-foreground">
           Pour reprendre votre abonnement avant la fin de la période, utilisez « Gérer l&apos;abonnement ».
