@@ -28,10 +28,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js (for the policy check)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -39,12 +39,12 @@ jobs:
         run: node scripts/ci/check-secrets-in-workflows.mjs
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4 # pin-exception: tag kept current by Dependabot (github-actions); a SHA is pinned when the maintainers publish one we have verified
+        uses: pnpm/action-setup@v6 # pin-exception: tag kept current by Dependabot (github-actions); a SHA is pinned when the maintainers publish one we have verified
         with:
           run_install: false
 
@@ -54,7 +54,7 @@ jobs:
         run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
       - name: Setup pnpm cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -85,15 +85,15 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4 # pin-exception: tag kept current by Dependabot (github-actions); a SHA is pinned when the maintainers publish one we have verified
+        uses: pnpm/action-setup@v6 # pin-exception: tag kept current by Dependabot (github-actions); a SHA is pinned when the maintainers publish one we have verified
         with:
           run_install: false
 
@@ -103,7 +103,7 @@ jobs:
         run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
       - name: Setup pnpm cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -151,15 +151,15 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4 # pin-exception: tag kept current by Dependabot (github-actions); a SHA is pinned when the maintainers publish one we have verified
+        uses: pnpm/action-setup@v6 # pin-exception: tag kept current by Dependabot (github-actions); a SHA is pinned when the maintainers publish one we have verified
         with:
           run_install: false
 
@@ -169,7 +169,7 @@ jobs:
         run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
       - name: Setup pnpm cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -201,15 +201,15 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4 # pin-exception: tag kept current by Dependabot (github-actions); a SHA is pinned when the maintainers publish one we have verified
+        uses: pnpm/action-setup@v6 # pin-exception: tag kept current by Dependabot (github-actions); a SHA is pinned when the maintainers publish one we have verified
         with:
           run_install: false
 
@@ -219,7 +219,7 @@ jobs:
         run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
       - name: Setup pnpm cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -227,7 +227,7 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - name: Cache Next.js build
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: .next/cache
           key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx', '**/*.css') }}
@@ -261,7 +261,7 @@ jobs:
         run: node scripts/ci/check-nonce-routes-dynamic.mjs
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-files
           path: |
@@ -277,15 +277,15 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4 # pin-exception: tag kept current by Dependabot (github-actions); a SHA is pinned when the maintainers publish one we have verified
+        uses: pnpm/action-setup@v6 # pin-exception: tag kept current by Dependabot (github-actions); a SHA is pinned when the maintainers publish one we have verified
         with:
           run_install: false
 
@@ -295,7 +295,7 @@ jobs:
         run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
       - name: Setup pnpm cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -311,7 +311,7 @@ jobs:
       # System Chrome driven by Playwright (no browser download): stable channel, path handed to the config.
       - name: Setup Chrome
         id: chrome
-        uses: browser-actions/setup-chrome@v1 # pin-exception: tag kept current by Dependabot (github-actions); test job only, no secret in its environment
+        uses: browser-actions/setup-chrome@v2 # pin-exception: tag kept current by Dependabot (github-actions); test job only, no secret in its environment
         with:
           chrome-version: stable
 
@@ -339,7 +339,7 @@ jobs:
 
       - name: Upload traces and screenshots
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: e2e-traces
           path: |
