@@ -204,6 +204,25 @@ describe("switchSubscriptionPlan (recorded Stripe answers)", () => {
       expect(h.stripe.subscriptionSchedules.release).toHaveBeenCalledWith("sub_sched_1");
     });
 
+    it("the billing screen names the plan by its cycle keyword: 'yearly' on a yearly plan drops the scheduled change", async () => {
+      h.stripe.subscriptions.retrieve.mockResolvedValue({ ...clone(f.subscriptionRetrieved), schedule: "sub_sched_1" });
+      h.stripe.subscriptionSchedules.retrieve.mockResolvedValue({
+        ...clone(yearlySchedule),
+        phases: [...clone(yearlySchedule).phases, { start_date: PERIOD_END, items: [{ price: "price_monthly", quantity: 1 }] }],
+      });
+      h.stripe.subscriptionSchedules.release.mockResolvedValue({});
+      const result = await switchSubscriptionPlan({ newPriceId: "yearly" });
+      expect(result.success).toBe(true);
+      expect(h.stripe.subscriptionSchedules.release).toHaveBeenCalledWith("sub_sched_1");
+      expect(h.stripe.subscriptions.update).not.toHaveBeenCalled();
+    });
+
+    it("the same keyword with nothing scheduled is refused as the same plan, never sent to Stripe", async () => {
+      const result = await switchSubscriptionPlan({ newPriceId: "yearly" });
+      expect(result).toMatchObject({ success: false, error: "SAME_PLAN" });
+      expect(h.stripe.subscriptions.update).not.toHaveBeenCalled();
+    });
+
     it("choosing the current plan with nothing scheduled is still refused", async () => {
       const result = await switchSubscriptionPlan({ newPriceId: "price_yearly" });
       expect(result).toMatchObject({ success: false, error: "SAME_PLAN" });

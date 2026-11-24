@@ -76,8 +76,20 @@ export async function switchSubscriptionPlan(
       };
     }
 
+    // The caller may name a plan by its cycle keyword ("yearly"), as the billing screen does, or by price id: resolve it
+    // first, so that "the plan I am on" is recognised whichever way it is written
+    let resolvedPriceInfo: { priceId: string; cycle: 'monthly' | 'yearly' } | null = null
+    try {
+      resolvedPriceInfo = resolveRequestedPriceId(newPriceId, { strict: true })
+    } catch {
+      resolvedPriceInfo = null
+    }
+    const samePlan =
+      subscription.priceId === newPriceId ||
+      (resolvedPriceInfo !== null && subscription.priceId === resolvedPriceInfo.priceId)
+
     // Choosing the plan the subscription is on drops a change that was waiting for the end of the period
-    if (subscription.priceId === newPriceId && subscription.stripeSubscriptionId) {
+    if (samePlan && subscription.stripeSubscriptionId) {
       const pending = await paymentService.getScheduledPriceChange(subscription.stripeSubscriptionId)
       if (pending) {
         await paymentService.cancelScheduledPriceChange(subscription.stripeSubscriptionId)
@@ -90,7 +102,7 @@ export async function switchSubscriptionPlan(
     }
 
     // Check if switching to same plan
-    if (subscription.priceId === newPriceId) {
+    if (samePlan) {
       return {
         success: false,
         message: 'You are already on this plan',
@@ -99,16 +111,14 @@ export async function switchSubscriptionPlan(
     }
 
     // Validate price ID
-    let resolvedPriceInfo: { priceId: string; cycle: 'monthly' | 'yearly' }
-    try {
-      resolvedPriceInfo = resolveRequestedPriceId(newPriceId, { strict: true })
-    } catch {
+    if (!resolvedPriceInfo) {
       return {
         success: false,
         message: 'Invalid price ID',
         error: 'INVALID_PRICE_ID'
       }
     }
+    const targetPrice = resolvedPriceInfo
 
     if (!subscription.stripeSubscriptionId) {
       return {
@@ -120,11 +130,11 @@ export async function switchSubscriptionPlan(
 
     // Yearly -> monthly waits for the end of the paid year: nothing is credited, charged or refunded now, and the
     // learner keeps the plan they paid for until then. Monthly -> yearly (below) is invoiced at once.
-    if (classifyBillingCycle(subscription.priceId ?? undefined) === 'yearly' && resolvedPriceInfo.cycle === 'monthly') {
+    if (classifyBillingCycle(subscription.priceId ?? undefined) === 'yearly' && targetPrice.cycle === 'monthly') {
       const scheduled = await withPurchaseLock(userId, null, async (tx) => {
         const fresh = await tx.subscription.findUnique({ where: { id: subscription.id } })
         if (!fresh || !isSubscriptionActive(fresh)) return null
-        return paymentService.schedulePriceChangeAtPeriodEnd(fresh.stripeSubscriptionId!, resolvedPriceInfo.priceId)
+        return paymentService.schedulePriceChangeAtPeriodEnd(fresh.stripeSubscriptionId!, targetPrice.priceId)
       })
       if (!scheduled) {
         return { success: false, message: 'Subscription is not active', error: 'NO_ACTIVE_SUBSCRIPTION' }
@@ -137,7 +147,7 @@ export async function switchSubscriptionPlan(
           currency: 'EUR',
           metadata: {
             oldPriceId: subscription.priceId,
-            newPriceId: resolvedPriceInfo.priceId,
+            newPriceId: targetPrice.priceId,
             effectiveDate: scheduled.effectiveAt.toISOString(),
             scheduled: true,
             oldCycle: 'yearly',
@@ -149,7 +159,7 @@ export async function switchSubscriptionPlan(
         userId,
         type: 'SUBSCRIPTION_PLAN_SWITCHED',
         source: 'server',
-        properties: { oldPriceId: subscription.priceId, newPriceId: resolvedPriceInfo.priceId, oldCycle: 'yearly', newCycle: 'monthly', scheduled: true },
+        properties: { oldPriceId: subscription.priceId, newPriceId: targetPrice.priceId, oldCycle: 'yearly', newCycle: 'monthly', scheduled: true },
       })
       revalidatePath('/dashboard')
       revalidatePath('/pricing')
@@ -169,7 +179,7 @@ export async function switchSubscriptionPlan(
 
       await paymentService.switchSubscriptionPrice(
         fresh.stripeSubscriptionId!,
-        resolvedPriceInfo.priceId
+        targetPrice.priceId
       )
 
       const stripeSubscription = await paymentService.getSubscription(
@@ -182,7 +192,7 @@ export async function switchSubscriptionPlan(
       return tx.subscription.update({
         where: { id: subscription.id },
         data: {
-          priceId: resolvedPriceInfo.priceId,
+          priceId: targetPrice.priceId,
           ...(period.start ? { currentPeriodStart: new Date(period.start * 1000) } : {}),
           ...(period.end ? { currentPeriodEnd: new Date(period.end * 1000) } : {}),
           cancelAtPeriodEnd: false,
@@ -200,7 +210,7 @@ export async function switchSubscriptionPlan(
     }
 
     // Only two cycles exist and the plan is different from the current one
-    const newCycle = resolvedPriceInfo.cycle
+    const newCycle = targetPrice.cycle
     const oldCycle = newCycle === 'yearly' ? 'monthly' : 'yearly'
 
     // The change itself. The amounts Stripe computed for it are audited by paymentService
@@ -213,7 +223,7 @@ export async function switchSubscriptionPlan(
         currency: 'EUR',
         metadata: {
           oldPriceId: subscription.priceId,
-          newPriceId: resolvedPriceInfo.priceId,
+          newPriceId: targetPrice.priceId,
           effectiveDate: new Date().toISOString(),
           oldCycle,
           newCycle
@@ -228,7 +238,7 @@ export async function switchSubscriptionPlan(
       source: 'server',
       properties: {
         oldPriceId: subscription.priceId,
-        newPriceId: resolvedPriceInfo.priceId,
+        newPriceId: targetPrice.priceId,
         oldCycle,
         newCycle
       }
