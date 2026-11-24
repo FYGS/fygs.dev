@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SubscriptionStatus } from "@/lib/generated/prisma/browser";
 import { clone, fixtures as f, toLegacySubscription } from "../../fixtures/stripe";
 
@@ -58,6 +58,10 @@ const SUB = f.subscriptionRetrieved.id;
 const PI = f.invoicePaymentsList.data[0].payment.payment_intent;
 
 beforeEach(() => {
+  // The recorded subscription has a fixed billing period (the entitlement rule looks at the clock): stay inside it, or this
+  // test would start failing the day the recording is older than the period plus the grace days.
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(new Date((f.subscriptionRetrieved.items.data[0].current_period_start + 2 * 24 * 3600) * 1000));
   mem().reset();
   vi.clearAllMocks();
   h.session = { user: { id: "user_1" } };
@@ -78,6 +82,10 @@ beforeEach(() => {
   h.stripe.invoices.createPreview.mockResolvedValue(clone(f.invoicePreview));
   h.stripe.invoicePayments.list.mockResolvedValue(clone(f.invoicePaymentsList));
   h.stripe.refunds.create.mockResolvedValue(clone(f.refundCreated));
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe("recorded Stripe answers used by the refund", () => {
