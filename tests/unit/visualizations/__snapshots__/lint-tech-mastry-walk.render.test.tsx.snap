@@ -70,34 +70,34 @@ exports[`tech-mastry components rewritten for the lint rules > git-hero renders 
 
 exports[`tech-mastry components rewritten for the lint rules > knapsack renders the same markup in every state reachable by clicking 1`] = `
 [
-  "019c04b4",
-  "9d44c947",
-  "ac6d46de",
-  "b057289d",
-  "b057289d",
-  "b057289d",
-  "95a2264b",
-  "159b8ca2",
-  "67f76ba9",
-  "8826a539",
-  "b9f3c66b",
-  "b9f3c66b",
-  "6ef9224b",
-  "7a1b7953",
+  "749bff6e",
+  "2a8e3132",
+  "8860af2f",
+  "834b96dd",
+  "834b96dd",
+  "834b96dd",
+  "1ab2db92",
+  "615a2a96",
+  "a07e3962",
+  "0b3b70d7",
+  "f5ffa682",
+  "f5ffa682",
+  "f76d34c7",
+  "05d59b38",
 ]
 `;
 
 exports[`tech-mastry components rewritten for the lint rules > lcs renders the same markup in every state reachable by clicking 1`] = `
 [
-  "3908100d",
-  "3908100d",
-  "3908100d",
-  "9d7cc463",
-  "d5b5ce2a",
-  "29e90f94",
-  "29e90f94",
-  "9d7cc463",
-  "d5b5ce2a",
+  "06c32d9f",
+  "06c32d9f",
+  "06c32d9f",
+  "f3089abe",
+  "741703fe",
+  "72ad4665",
+  "72ad4665",
+  "f3089abe",
+  "741703fe",
 ]
 `;
 
@@ -148,13 +148,13 @@ exports[`tech-mastry components rewritten for the lint rules > quiz renders the 
 
 exports[`tech-mastry components rewritten for the lint rules > realtime-performance renders the same markup in every state reachable by clicking 1`] = `
 [
-  "ef8f2535",
-  "54ecb1c0",
-  "54ecb1c0",
-  "bcc0ad4d",
-  "3246e4f0",
-  "ef8f2535",
-  "3246e4f0",
+  "8d8cf1ca",
+  "6a9131be",
+  "6a9131be",
+  "9694fd27",
+  "03f2c82a",
+  "8d8cf1ca",
+  "03f2c82a",
 ]
 `;
 
@@ -200,19 +200,19 @@ exports[`tech-mastry components rewritten for the lint rules > sorting-algorithm
 
 exports[`tech-mastry components rewritten for the lint rules > sorting-exercises renders the same markup in every state reachable by clicking 1`] = `
 [
-  "1892fbda",
-  "1892fbda",
-  "1892fbda",
-  "bc679f3e",
-  "ccc37248",
-  "ccc37248",
-  "ccc37248",
-  "1892fbda",
-  "40ee75a6",
-  "40ee75a6",
-  "c91424f5",
-  "e0d3f148",
-  "32fdd9fa",
+  "55c57f70",
+  "55c57f70",
+  "55c57f70",
+  "23cc61fd",
+  "4c3a01c9",
+  "4c3a01c9",
+  "4c3a01c9",
+  "55c57f70",
+  "5336e6a6",
+  "5336e6a6",
+  "036206e9",
+  "ab88a75d",
+  "1fa5978c",
 ]
 `;
 
