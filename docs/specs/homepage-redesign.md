@@ -33,7 +33,7 @@ Brouillon d'accroche (à reformuler à l'implémentation, première personne, to
 7. **Contact** : le bloc contact reste, adapté (voir §6).
 8. **Pied de page** : ligne discrète vers `/formations`, sans prix ni chiffres.
 
-**Retirés de l'accueil** : section formations, témoignages, appel à l'action « offre limitée », blog (reste dans la navigation).
+**Retirés de l'accueil** : section formations, témoignages, appel à l'action « offre limitée » (le bloc « Transformez votre carrière » déménage sur `/formations` et `/parcours`). **Conservé** : le bloc « Ressources & Tendances » (aperçu du blog).
 
 ## 4. Règle d'or du contenu : rien sans preuve
 
@@ -102,4 +102,5 @@ Français et anglais, complets (Intlayer). L'espagnol retombe sur l'anglais pour
 - **2026-11-27, amendement 2** : photo fournie, copiée dans `public/images/fernand_photo.png`.
 - **2026-11-27, amendement 4** : axe « conception de SaaS sur mesure et d'applications web métier » dans le hero, le format de mission « delivery » (renommé SaaS & applications métier sur mesure), l'à-propos et le SEO. Stack regroupée en 3 blocs (backend & cloud, web & produit, ingénierie IA agentique avec harnais d'agents) et note sur le rôle du harnais.
 - **2026-11-27, amendement 5** : contact. Nouveau type « Un projet ou une mission » (valeur `project`, par défaut du formulaire) et deux champs optionnels, délai (`timeline`) et cadrage (`framing`), affichés pour les types projet et collaboration. Schéma partagé dans `lib/contact-qualification.ts` (formulaire et API), lignes « Délai » et « Cadrage » dans l'email reçu. Bouton « Me contacter » dans l'en-tête (bureau et mobile) vers `/#contact`. Le pied de page lie déjà `/formations` : inchangé.
+- **2026-11-27, amendement 6** : le bloc « Ressources & Tendances » (aperçu du blog) revient sur l'accueil, entre À propos et Contact (il avait été retiré à tort, §3 le disait retiré : corrigé). Le bloc « Transformez votre carrière de développeur » quitte l'accueil et passe en bas de `/formations` et `/parcours` (composant `components/formations/formations-cta.tsx`), réécrit sans chiffres, garantie ni offre limitée : seuls les faits du catalogue (formations pratiques, exercices et quiz, certificat) restent. L'ancien composant `CallToAction` est supprimé.
 - **2026-11-27, amendement 3** : lancement local obligatoire à la fin de chaque PR (§11).

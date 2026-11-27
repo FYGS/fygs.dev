@@ -1,3 +1,4 @@
+import { BlogPreview } from "@/app/_components/BlogPreview";
 import { Contact } from "@/app/_components/Contact";
 import { ContactSection } from "@/app/_components/ContactSection";
 import { Hero } from "@/app/_components/Hero";
@@ -13,6 +14,7 @@ import { sectionSEO } from "@/app/_lib/seo-config";
 
 import { type NextPageIntlayer, type LocalPromiseParams } from "next-intlayer";
 import { IntlayerServerProvider } from "next-intlayer/server";
+import { Suspense } from "react";
 
 export async function generateMetadata({ params }: LocalPromiseParams) {
   return generateRouteMetadata(params, sectionSEO.home);
@@ -29,6 +31,9 @@ const Home: NextPageIntlayer = async ({ params }) => {
       <HomeProjects />
       <HomeWork />
       <HomeAbout />
+      <Suspense>
+        <BlogPreview />
+      </Suspense>
       <Spacing size="sm" />
       <Contact />
       <div id="contact" className="scroll-mt-24">
