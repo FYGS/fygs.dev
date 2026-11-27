@@ -5,6 +5,7 @@ import { Route } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Button } from "@/components/ui/button";
+import { FormationsCta } from "@/components/formations/formations-cta";
 import { Input } from "@/components/ui/input";
 import { PathCard, type PathCardProgress } from "@/components/paths/path-card";
 import { listPublishedPaths } from "@/lib/paths/queries";
@@ -137,6 +138,7 @@ export default async function PathsCatalogPage({ searchParams }: { searchParams:
           ))}
         </ul>
       )}
+      <FormationsCta other="formations" />
     </div>
   );
 }
