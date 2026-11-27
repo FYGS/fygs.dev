@@ -16,6 +16,7 @@ import { CourseGrid } from "./_components/course-grid";
 import { CourseFilters } from "./_components/course-filters";
 import { CourseHero, type CatalogStats } from "./_components/course-hero";
 import { CatalogPager } from "./_components/catalog-pager";
+import { FormationsCta } from "@/components/formations/formations-cta";
 
 interface FormationsPageProps {
   searchParams: Promise<{ category?: string; level?: string; access?: string; search?: string; sort?: string; page?: string }>;
@@ -93,6 +94,7 @@ export default async function FormationsPage({ searchParams }: FormationsPagePro
             </div>
           )}
         </div>
+        <FormationsCta other="parcours" />
       </div>
     </div>
   );

@@ -3,6 +3,11 @@ import { t, type Dictionary } from "intlayer";
 const headerContent = {
   key: "header",
   content: {
+    contactCta: t({
+      en: "Contact me",
+      fr: "Me contacter",
+      es: "Contact me",
+    }),
     navigation: {
       primary: [
         {
