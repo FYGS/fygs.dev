@@ -35,3 +35,18 @@ describe("hero first paint", () => {
     expect(hero).not.toContain("framer-motion");
   });
 });
+
+describe("recette findings (Lighthouse on staging)", () => {
+  // Lighthouse "LCP request discovery": the portrait is the LCP element and must carry fetchpriority=high,
+  // `priority` alone only adds the preload link.
+  it("marks the portrait fetchpriority high", () => {
+    const hero = readFileSync("app/_components/Hero.tsx", "utf8");
+    expect(hero).toMatch(/fetchPriority="high"/);
+  });
+
+  // Lighthouse "color-contrast": the method step numbers were text-primary/40, too pale on the card.
+  it("keeps the method step numbers readable", () => {
+    const sections = readFileSync("app/_components/HomeSections.tsx", "utf8");
+    expect(sections).not.toMatch(/text-primary\/\d+/);
+  });
+});
