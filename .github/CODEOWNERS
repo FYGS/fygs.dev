@@ -1,0 +1,8 @@
+# Files whose change can reach production secrets, the database or money. Review-required settings (require_code_owner_reviews)
+# are off while the repository has a single maintainer; the file documents the owner and enables the switch later (#47).
+/docker-entrypoint.sh   @FYGS
+/Dockerfile             @FYGS
+/.github/               @FYGS
+/scripts/ops/           @FYGS
+/prisma/migrations/     @FYGS
+/lib/payments/          @FYGS

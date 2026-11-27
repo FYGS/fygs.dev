@@ -18,6 +18,14 @@ async function fillLogin(page: import("@playwright/test").Page, email: string, p
   await page.getByRole("button", { name: "Se connecter" }).click();
 }
 
+async function enterCode(page: import("@playwright/test").Page, code: string) {
+  // The form is server-rendered: a value typed before React hydrates is lost and the button stays disabled, so type again until it takes
+  await expect(async () => {
+    await page.locator("#two-factor-code").fill(code);
+    await expect(page.getByRole("button", { name: "Vérifier" })).toBeEnabled({ timeout: 1_000 });
+  }).toPass({ timeout: 15_000 });
+}
+
 const HOSTILE = ["https://evil.example/phish", "//evil.example/phish", "javascript:window.__pwned=1", "/\\evil.example"];
 
 test.describe("sign-in redirects stay on the site (fr)", () => {
@@ -85,11 +93,11 @@ test.describe("staff and the second factor (fr)", () => {
     await page.goto("/fr/auth/login");
     await fillLogin(page, user.email, user.password);
     await expect(page).toHaveURL(/\/fr\/auth\/two-factor/);
-    await page.locator("#two-factor-code").fill("000000");
+    await enterCode(page, "000000");
     await page.getByRole("button", { name: "Vérifier" }).click();
     await expect(page.locator("#two-factor-error")).toContainText("Code incorrect");
 
-    await page.locator("#two-factor-code").fill(totpNow());
+    await enterCode(page, totpNow());
     await page.getByRole("button", { name: "Vérifier" }).click();
     await expect(page).toHaveURL(/\/fr\/dashboard/);
     await page.goto("/fr/admin");

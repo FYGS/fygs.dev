@@ -8,21 +8,21 @@ describe("CachingVisualization rendering", () => {
     expect(states).toBeGreaterThanOrEqual(5);
     expect(hashes).toMatchInlineSnapshot(`
       [
-        "631eaaa3",
-        "631eaaa3",
-        "6eaa477e",
-        "aa88c88a",
-        "2e0185a3",
-        "538ce351",
-        "2e0185a3",
-        "83d6ad95",
-        "d0a88c52",
-        "2e0185a3",
-        "aa88c88a",
-        "23a9e7c3",
-        "aa88c88a",
-        "f0269343",
-        "0439cf7e",
+        "8a007a92",
+        "8a007a92",
+        "7b88f6cf",
+        "e55a1865",
+        "bf22daf6",
+        "99b69e56",
+        "bf22daf6",
+        "5e9409b5",
+        "8bc4840c",
+        "bf22daf6",
+        "e55a1865",
+        "830d56d2",
+        "e55a1865",
+        "f97bcf7a",
+        "520a5af4",
       ]
     `);
   });
