@@ -208,6 +208,10 @@ curl -fsS -H "Authorization: Bearer $CRON_SECRET" https://fygs.dev/api/cron/week
 - **DNS (Cloudflare)**: DKIM `resend._domainkey`, SPF and MX of `send` (Resend), root SPF `v=spf1 include:_spf.mx.cloudflare.net include:amazonses.com ~all`
   (**one** SPF record only), DMARC `v=DMARC1; p=quarantine; pct=100; rua=mailto:dmarc@fygs.dev; fo=1; adkim=r; aspf=r`, CAA for Let's Encrypt, DigiCert,
   Google (`pki.goog`), SSL.com and Sectigo only.
+- **Resend Forge** (Resend's own sending infrastructure) is enabled on the domain, verified on 2026-11-27. Only its sending record was added in Cloudflare
+  (`CNAME mail` → `send.forge.rmta.net`, DNS only). Its root "Receiving" MX (`receive-euw1.forge.rmta.net`) is deliberately **not** added, and Resend's
+  receiving is disabled on the domain: inbound goes through Cloudflare Email Routing. The Resend key used for the activation had full access and was
+  revoked afterwards; the application only holds the sending-only key.
 - **Next**: read the DMARC reports for a few days, then `p=reject`. Check a received message ("show original": SPF, DKIM, DMARC all PASS).
 
 ## 9. After every deployment
