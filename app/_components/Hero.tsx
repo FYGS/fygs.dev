@@ -65,6 +65,7 @@ export const Hero = () => {
                   sizes="(min-width: 1024px) 400px, 288px"
                   className="w-72 lg:w-100 h-auto object-cover"
                   priority
+                  fetchPriority="high"
                 />
               </div>
             </div>
