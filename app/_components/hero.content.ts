@@ -1,33 +1,39 @@
 import { t, type Dictionary } from "intlayer";
 
+// Spec: docs/specs/homepage-redesign.md (es falls back to the English copy)
 const heroContent = {
   key: "hero",
   content: {
+    eyebrow: t({
+      en: "Freelance · Custom SaaS & business web apps · AI-augmented developer",
+      fr: "Freelance · SaaS sur mesure & applications web métier · Développeur augmenté par l'IA",
+      es: "Freelance · Custom SaaS & business web apps · AI-augmented developer",
+    }),
     title: t({
-      en: "Fernand Soualo",
-      fr: "Fernand Soualo",
-      es: "Fernand Soualo",
+      en: "I design custom SaaS and business web applications, built on solid backends.",
+      fr: "Je conçois des SaaS et des applications web métier sur mesure, sur des backends solides.",
+      es: "I design custom SaaS and business web applications, built on solid backends.",
     }),
     subtitle: t({
-      en: "Software Engineer & Tech Educator",
-      fr: "Ingénieur Logiciel & Éducateur Tech",
-      es: "Ingeniero de Software y Educador Técnico",
+      en: "Backend and cloud engineer (AWS, microservices, REST APIs), comfortable full-stack. I build with AI agents inside a strict flow: a frozen spec, failing tests first, systematic review. Not vibe coding.",
+      fr: "Ingénieur backend et cloud (AWS, microservices, API REST), à l'aise en fullstack. Je construis avec des agents IA dans un flow strict : spec figée, tests qui échouent d'abord, revue systématique. Pas du vibe coding.",
+      es: "Backend and cloud engineer (AWS, microservices, REST APIs), comfortable full-stack. I build with AI agents inside a strict flow: a frozen spec, failing tests first, systematic review. Not vibe coding.",
     }),
-    description: t({
-      en: "I am passionate about creating impactful software and empowering developers through education. With expertise in modern fullstack development, I build solutions that are both functional and aesthetically pleasing.",
-      fr: "Je suis passionné par la création de logiciels impactants et l'autonomisation des développeurs par l'éducation. Avec une expertise dans le développement fullstack moderne, je construis des solutions à la fois fonctionnelles et esthétiquement agréables.",
-      es: "Me apasiona crear software impactante y empoderar a los desarrolladores a través de la educación. Con experiencia en desarrollo fullstack moderno, construyo soluciones que son tanto funcionales como estéticamente agradables.",
+    primaryCta: t({
+      en: "Talk about your project",
+      fr: "Parler de votre projet",
+      es: "Talk about your project",
     }),
-    techStack: ["React", "Next.js", "TypeScript", "Node.js", "NestJS", "AWS"],
+    secondaryCta: t({
+      en: "See my work",
+      fr: "Voir mes projets",
+      es: "See my work",
+    }),
+    techStack: ["AWS", "Node.js", "TypeScript", "NestJS", "PostgreSQL", "Next.js"],
     location: t({
-      en: "Paris, France",
-      fr: "Paris, France",
-      es: "París, Francia",
-    }),
-    contact: t({
-      en: "Contact",
-      fr: "Contact",
-      es: "Contacto",
+      en: "Remote · France & Europe",
+      fr: "Remote · France & Europe",
+      es: "Remote · France & Europe",
     }),
   },
 } satisfies Dictionary;

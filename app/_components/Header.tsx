@@ -128,6 +128,13 @@ export const Header = () => {
                 </LocaleAwareLink>
               ))}
 
+              <LocaleAwareLink
+                href="/#contact"
+                className={cn(buttonVariants({ size: "sm" }), "font-semibold")}
+              >
+                {content.contactCta}
+              </LocaleAwareLink>
+
               <div className="flex items-center gap-2 ml-2 border-l pl-4 border-border">
                 <LocaleSwitcher />
                 <AuthNav />
@@ -178,6 +185,12 @@ export const Header = () => {
 
           {/* Mobile Menu */}
           <div className="flex items-center gap-2 md:hidden">
+            <LocaleAwareLink
+              href="/#contact"
+              className={cn(buttonVariants({ size: "sm" }), "font-semibold")}
+            >
+              {content.contactCta}
+            </LocaleAwareLink>
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger
                 className={cn(
