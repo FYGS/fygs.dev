@@ -43,7 +43,7 @@ export const HomeMethod = () => {
               key={i}
               className="rounded-2xl border bg-card p-6 shadow-sm"
             >
-              <span className="font-caption text-4xl font-bold text-primary/40">
+              <span className="font-caption text-4xl font-bold text-primary">
                 {String(i + 1).padStart(2, "0")}
               </span>
               <h3 className="mt-2 text-xl font-semibold">{step.title}</h3>
