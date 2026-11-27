@@ -199,13 +199,14 @@ finish() {
 # ──────────────────────────────────────────────────────────────────────────
 
 # ── Helpers of this wizard (below the library, above run_wizard) ───────────
-LIVE_APP="ljml6qqgunnoa1iyvgctcl7t"      # current site (Railpack, branch main)
-V2_APP="dyvhvasvhwmzoc22iodzuygm"        # refonte (Dockerfile)
+# Scope (issue #40, rechecked 2026-11-27 by comparing fingerprints of the git-history values with Coolify): the production app still
+# uses the EXPOSED Gmail app password, Google OAuth secret and GitHub OAuth secret. Everything else exposed is already dead on fygs
+# (new database, new session secret, new Stripe account). This wizard rotates those three and touches NOTHING else: in particular
+# never the STRIPE_* variables (production is in live mode, STRIPE_EXPECT_MODE=live).
+PROD_APP="dyvhvasvhwmzoc22iodzuygm"      # fygs, production (https://fygs.dev), follows main
 COOLIFY_URL="https://deploy.bonsprofs.com"
 COOLIFY_FILE="${COOLIFY_FILE:-$HOME/.config/fygs-dev/coolify.env}"
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
-
-gen_secret() { openssl rand -base64 48 | tr -dc 'A-Za-z0-9' | head -c "${1:-48}"; }
 
 # coolify_env APP_UUID ACTION KEY [VALUE-from-env-VALUE]
 #   ACTION: set (create or update the runtime variable) | delete
@@ -228,6 +229,9 @@ def call(method, path, body=None):
             return json.loads(raw) if raw else {}
     except urllib.error.HTTPError as e:
         print(f"  HTTP {e.code} on {method} {path.split('?')[0]}", file=sys.stderr); sys.exit(1)
+if action not in ("set", "delete"): sys.exit("unknown action")
+if key.startswith("STRIPE_") or key in ("DATABASE_URL", "BETTER_AUTH_SECRET"):
+    sys.exit(f"refusing to touch {key}: outside the scope of this wizard")
 envs = [e for e in call("GET", f"/applications/{app}/envs") if not e.get("is_preview")]
 mine = [e for e in envs if e["key"] == key]
 if action == "delete":
@@ -243,6 +247,21 @@ else:
 PY
 }
 
+# prod_is_fygs: the app behind $PROD_APP must serve https://fygs.dev (guards against a stale UUID). Prints nothing from the API.
+prod_is_fygs() {
+  COOLIFY_FILE="$(cygpath -m "$COOLIFY_FILE" 2>/dev/null || printf %s "$COOLIFY_FILE")" COOLIFY_URL="$COOLIFY_URL" python - "$PROD_APP" <<'PY'
+import json, os, sys, urllib.request
+tok = [l.split("=", 1)[1].strip().strip('"') for l in open(os.environ["COOLIFY_FILE"]) if l.startswith("COOLIFY_API_KEY")][0]
+req = urllib.request.Request(os.environ["COOLIFY_URL"] + "/api/v1/applications/" + sys.argv[1],
+    headers={"Authorization": "Bearer " + tok, "Accept": "application/json"})
+try:
+    d = json.load(urllib.request.urlopen(req, timeout=30))
+except Exception:
+    sys.exit(1)
+sys.exit(0 if "https://fygs.dev" in (d.get("fqdn") or "").split(",") else 1)
+PY
+}
+
 coolify_restart() {
   local tok
   tok=$(grep '^COOLIFY_API_KEY=' "$COOLIFY_FILE" | cut -d= -f2- | tr -d '\r"')
@@ -252,128 +271,119 @@ coolify_restart() {
 
 http_code() { curl -s -m 20 -o /dev/null -w '%{http_code}' "$1" || true; }
 
+# check_old_stripe: every Stripe secret key that ever sat in a committed .env* file must now answer 401. Keys are never printed in full.
+check_old_stripe() {
+  local c f k n=0 bad=0 code
+  local keys=()
+  while read -r c; do
+    for f in .env .env.production .env.test; do
+      while read -r k; do [[ -n "$k" ]] && keys+=("$k"); done < <(git -C "$REPO_ROOT" show "$c:$f" 2>/dev/null | tr -d '\r"' | grep -oE '(sk|rk)_(test|live)_[A-Za-z0-9]+' || true)
+    done
+  done < <(git -C "$REPO_ROOT" log --all --format=%h -- .env .env.production .env.test 2>/dev/null)
+  (( ${#keys[@]} )) || { note "no Stripe key found in the git history of this clone"; return 0; }
+  while read -r k; do
+    [[ -n "$k" ]] || continue
+    n=$((n + 1))
+    code=$(curl -s -m 20 -o /dev/null -w '%{http_code}' https://api.stripe.com/v1/balance -u "$k:" || true)
+    if [[ "$code" == "401" ]]; then
+      say "${GREEN}✓${RESET} old Stripe key #$n rejected (401)"
+    else
+      bad=$((bad + 1)); warn "old Stripe key #$n (ends …${k: -4}) answers $code: it is STILL VALID, roll or delete it in the Stripe account it belongs to"
+    fi
+  done < <(printf '%s\n' "${keys[@]}" | sort -u)
+  return $bad
+}
+
+# not_exposed VALUE: refuses a "new" secret that is actually one of the values committed in the git history (e.g. an Enter that kept
+# the old value). The value goes through the environment, never on a command line.
+not_exposed() {
+  local out
+  out=$(VALUE="$1" REPO="$REPO_ROOT" python - <<'PY2'
+import os, subprocess, sys
+v = os.environ["VALUE"]
+log = subprocess.run(["git", "-C", os.environ["REPO"], "log", "--all", "-p", "--format=", "--", ".env", ".env.production", ".env.test"],
+                     capture_output=True, text=True, errors="replace").stdout
+sys.exit(1 if v and v in log else 0)
+PY2
+  ) || { warn "this value is one of the secrets exposed in the git history: it is NOT new. Create a fresh one in the console."; return 1; }
+}
+
 run_wizard() {
 
-TOTAL_STAGES=12
+TOTAL_STAGES=10
 ENV_FILE="${WIZARD_ENV_FILE:-$HOME/.config/fygs-dev/rotation.env}"   # the library defaults to ./.env: never write secrets there
 mkdir -p "$(dirname "$ENV_FILE")"
 
-banner "fygs.dev: rotate every secret that is in the git history (issue #40)"
+banner "fygs.dev: rotate the exposed secrets still in use (issue #40)"
 
 # ── 1. Preflight ───────────────────────────────────────────────────────────
 stage "Check the tools and what will change"
-for tool in openssl curl python git; do
+for tool in curl python git; do
   command -v "$tool" >/dev/null 2>&1 && say "✓ $tool" || { warn "$tool is missing"; exit 1; }
 done
 [[ -f "$COOLIFY_FILE" ]] && say "✓ Coolify token ($COOLIFY_FILE)" || { warn "no Coolify token at $COOLIFY_FILE"; exit 1; }
+prod_is_fygs && say "✓ the Coolify app $PROD_APP serves https://fygs.dev" || { warn "the Coolify app $PROD_APP does not serve https://fygs.dev (wrong UUID or no access): stopping, nothing changed"; exit 1; }
 say ""
-say "Values rotated: session secret, Gmail app password, Google and GitHub OAuth secrets,"
-say "Stripe secret key and webhook secret. The OpenAI key is revoked (the code uses Anthropic, not OpenAI)."
+say "Rotated: the Gmail app password, the Google OAuth client secret, the GitHub OAuth client secret (the ones in the git history)."
+say "Revoked: the exposed OpenAI key. Checked: the old Stripe keys. The Stripe, database and session variables are NOT touched."
 say ""
-say "New values are kept in $ENV_FILE (mode 0600, outside the repository). They go to Coolify for the LIVE site and for fygs-v2."
+say "New values are kept in $ENV_FILE (mode 0600, outside the repository). They go to Coolify for the production app only."
+warn "Order matters: Google, GitHub and Gmail accept two secrets at once, so the old ones stay valid until the revoke stage."
+warn "Nobody is signed out: the session secret is not changed."
 say ""
-note "The database is already on Coolify (scripts/ops/migrate-neon-to-coolify.sh): the old Neon password only opened throwaway dev data."
-warn "Order matters: every old value stays valid until the revoke stage. Stages 3-6 can be done calmly."
-warn "Everyone is signed out at the end (the session secret changes): expected."
+say "Where the exposed Stripe keys stand right now:"
+check_old_stripe || warn "see above: handle it at the revoke stage"
 say ""
 confirm "Start the rotation?" || { say "Nothing was changed."; exit 0; }
 
-# ── 2. Local secrets ───────────────────────────────────────────────────────
-stage "Generate the secrets that no provider issues"
-say "BETTER_AUTH_SECRET for the live site (fygs-v2 keeps its own, never exposed), CRON_SECRET and ADMIN_API_KEY for the live site."
-warn "Rotate BETTER_AUTH_SECRET BEFORE any staff member enrols a second factor: those secrets are encrypted with it."
-warn "Today the live site (old code) has no 2FA data, so this is safe now and would not be later."
-write_env LIVE_BETTER_AUTH_SECRET "$(gen_secret 64)"
-write_env LIVE_CRON_SECRET "$(gen_secret 48)"
-write_env LIVE_ADMIN_API_KEY "$(gen_secret 48)"
-pause
-
-# ── 3. Gmail ───────────────────────────────────────────────────────────────
-stage "Gmail: a new app password (the old one keeps working for now)"
+# ── 2. Gmail ───────────────────────────────────────────────────────────────
+stage "Gmail: a new app password (the old ones keep working for now)"
 open_url "https://myaccount.google.com/apppasswords"
-step "Create a new app password named 'fygs-v2-2026-11'."
+step "Create a new app password named 'fygs-2026-11'."
 step "Copy the 16 characters Google shows once (spaces do not matter)."
 ask_secret NEW_EMAIL_SERVER_PASSWORD "Paste the new app password:"
 NEW_EMAIL_SERVER_PASSWORD="${NEW_EMAIL_SERVER_PASSWORD// /}"
+[[ ${#NEW_EMAIL_SERVER_PASSWORD} -eq 16 ]] || { warn "an app password has 16 characters, this one has ${#NEW_EMAIL_SERVER_PASSWORD}"; exit 1; }
+not_exposed "$NEW_EMAIL_SERVER_PASSWORD" || { write_env NEW_EMAIL_SERVER_PASSWORD ""; exit 1; }
 write_env NEW_EMAIL_SERVER_PASSWORD "$NEW_EMAIL_SERVER_PASSWORD"
-note "Later (issue #46) replace Gmail with a transactional SMTP; this keeps the site sending until then."
+note "Later (issue #46) replace Gmail with Resend; this keeps the site sending until then."
 pause
 
-# ── 4. Google OAuth ────────────────────────────────────────────────────────
-stage "Google OAuth: a second client secret"
+# ── 3. Google OAuth ────────────────────────────────────────────────────────
+stage "Google OAuth: a second secret on the client fygs.dev uses today"
 open_url "https://console.cloud.google.com/apis/credentials"
-step "Open the OAuth 2.0 Client ID used by fygs.dev (the one whose redirect URI is https://fygs.dev/api/auth/callback/google)."
-step "In 'Client secrets', click 'Add secret' and copy the new secret (shown once)."
-note "Google keeps both secrets valid; the old one is deleted at the revoke stage. If the UI differs, see the Google Cloud docs on client secrets."
-step "Add https://fygs.dev/api/auth/callback/google to 'Authorized redirect URIs' and https://fygs.dev to 'Authorized JavaScript origins' (exactly, no trailing slash)."
-note "The client ID and the secret must belong to the SAME client: the ID goes to Coolify together with the secret (an ID is not secret)."
-ask NEW_GOOGLE_CLIENT_ID "Client ID of that client (…apps.googleusercontent.com):"
-[[ "$NEW_GOOGLE_CLIENT_ID" == *.apps.googleusercontent.com ]] || { warn "that does not look like a Google client ID"; exit 1; }
-write_env NEW_GOOGLE_CLIENT_ID "$NEW_GOOGLE_CLIENT_ID"
+step "Open the OAuth 2.0 Client ID that fygs.dev uses (client ID starting 616225891630-93kb40thk…; check every Google Cloud project you own)."
+step "In 'Client secrets', click 'Add secret' and copy the new secret (shown once). Google keeps the old secrets valid for now."
+step "Check 'Authorized redirect URIs' contains https://fygs.dev/api/auth/callback/google and 'Authorized JavaScript origins' contains https://fygs.dev (no trailing slash)."
+note "The client ID does not change (it is not a secret): only the secret is replaced."
 ask_secret NEW_GOOGLE_CLIENT_SECRET "Paste the new Google client secret:"
+not_exposed "$NEW_GOOGLE_CLIENT_SECRET" || { write_env NEW_GOOGLE_CLIENT_SECRET ""; exit 1; }
 write_env NEW_GOOGLE_CLIENT_SECRET "$NEW_GOOGLE_CLIENT_SECRET"
 pause
 
-# ── 5. GitHub OAuth ────────────────────────────────────────────────────────
-stage "GitHub OAuth: a second client secret"
+# ── 4. GitHub OAuth ────────────────────────────────────────────────────────
+stage "GitHub OAuth: a second secret on the app fygs.dev uses today"
 open_url "https://github.com/settings/developers"
-step "OAuth Apps → the app of fygs.dev (callback https://fygs.dev/api/auth/callback/github)."
-step "Click 'Generate a new client secret' and copy it (shown once). GitHub allows two secrets at the same time."
-step "Check 'Authorization callback URL' is exactly https://fygs.dev/api/auth/callback/github (GitHub accepts one URL per app: fygs-v2 needs its own app later, issue #57)."
-note "The client ID and the secret must belong to the SAME OAuth app: the ID goes to Coolify together with the secret (an ID is not secret)."
-ask NEW_GITHUB_CLIENT_ID "Client ID of that OAuth app (shown at the top of its page, e.g. Ov23li…):"
-[[ -n "$NEW_GITHUB_CLIENT_ID" && "$NEW_GITHUB_CLIENT_ID" != *" "* ]] || { warn "the client ID is empty or contains spaces"; exit 1; }
-write_env NEW_GITHUB_CLIENT_ID "$NEW_GITHUB_CLIENT_ID"
+step "OAuth Apps → the app whose callback is https://fygs.dev/api/auth/callback/github."
+step "Click 'Generate a new client secret' and copy it (shown once). GitHub allows two secrets at once."
+note "The client ID does not change: only the secret is replaced."
 ask_secret NEW_GITHUB_CLIENT_SECRET "Paste the new GitHub client secret:"
+not_exposed "$NEW_GITHUB_CLIENT_SECRET" || { write_env NEW_GITHUB_CLIENT_SECRET ""; exit 1; }
 write_env NEW_GITHUB_CLIENT_SECRET "$NEW_GITHUB_CLIENT_SECRET"
 pause
 
-# ── 6. Stripe ──────────────────────────────────────────────────────────────
-stage "Stripe: roll the secret key and the webhook secret (test mode keys for now)"
-open_url "https://dashboard.stripe.com/test/apikeys"
-step "On the 'Secret key' row: ⋯ → 'Roll key'. Choose to expire the old key in 24 hours (not now), then copy the new key."
-ask_secret NEW_STRIPE_SECRET_KEY "Paste the new secret key (sk_test_… or rk_test_…):"
-case "$NEW_STRIPE_SECRET_KEY" in
-  sk_test_*|rk_test_*|sk_live_*|rk_live_*) ;;
-  *) warn "that does not look like a Stripe secret key"; exit 1;;
-esac
-write_env NEW_STRIPE_SECRET_KEY "$NEW_STRIPE_SECRET_KEY"
-open_url "https://dashboard.stripe.com/test/webhooks"
-step "Open the endpoint https://fygs.dev/api/stripe/webhook → 'Roll secret', old secret expiring in 24 hours, copy the new 'whsec_…'."
-ask_secret NEW_STRIPE_WEBHOOK_SECRET "Paste the new webhook signing secret (whsec_…):"
-write_env NEW_STRIPE_WEBHOOK_SECRET "$NEW_STRIPE_WEBHOOK_SECRET"
-pause
-
-# ── 7. Apply ───────────────────────────────────────────────────────────────
-stage "Apply the new values in Coolify (live site and fygs-v2)"
+# ── 5. Apply ───────────────────────────────────────────────────────────────
+stage "Apply the new values in Coolify (production app only)"
 say "Nothing the API answers is printed (it echoes the values)."
+VALUE="$NEW_EMAIL_SERVER_PASSWORD"  coolify_env "$PROD_APP" set EMAIL_SERVER_PASSWORD
+VALUE="$NEW_GOOGLE_CLIENT_SECRET"   coolify_env "$PROD_APP" set GOOGLE_CLIENT_SECRET
+VALUE="$NEW_GITHUB_CLIENT_SECRET"   coolify_env "$PROD_APP" set GITHUB_CLIENT_SECRET
 say ""
-say "LIVE site:"
-VALUE="$LIVE_BETTER_AUTH_SECRET"      coolify_env "$LIVE_APP" set BETTER_AUTH_SECRET
-VALUE="$NEW_EMAIL_SERVER_PASSWORD"    coolify_env "$LIVE_APP" set EMAIL_SERVER_PASSWORD
-VALUE="$NEW_GOOGLE_CLIENT_ID"         coolify_env "$LIVE_APP" set GOOGLE_CLIENT_ID
-VALUE="$NEW_GOOGLE_CLIENT_SECRET"     coolify_env "$LIVE_APP" set GOOGLE_CLIENT_SECRET
-VALUE="$NEW_GITHUB_CLIENT_ID"         coolify_env "$LIVE_APP" set GITHUB_CLIENT_ID
-VALUE="$NEW_GITHUB_CLIENT_SECRET"     coolify_env "$LIVE_APP" set GITHUB_CLIENT_SECRET
-VALUE="$NEW_STRIPE_SECRET_KEY"        coolify_env "$LIVE_APP" set STRIPE_SECRET_KEY
-VALUE="$NEW_STRIPE_WEBHOOK_SECRET"    coolify_env "$LIVE_APP" set STRIPE_WEBHOOK_SECRET
-coolify_env "$LIVE_APP" delete OPENAI_API_KEY
-say ""
-say "fygs-v2 (BETTER_AUTH_SECRET, CRON_SECRET and ADMIN_API_KEY are its own and were never exposed):"
-VALUE="$NEW_EMAIL_SERVER_PASSWORD"    coolify_env "$V2_APP" set EMAIL_SERVER_PASSWORD
-VALUE="$NEW_GOOGLE_CLIENT_ID"         coolify_env "$V2_APP" set GOOGLE_CLIENT_ID
-VALUE="$NEW_GOOGLE_CLIENT_SECRET"     coolify_env "$V2_APP" set GOOGLE_CLIENT_SECRET
-VALUE="$NEW_GITHUB_CLIENT_ID"         coolify_env "$V2_APP" set GITHUB_CLIENT_ID
-VALUE="$NEW_GITHUB_CLIENT_SECRET"     coolify_env "$V2_APP" set GITHUB_CLIENT_SECRET
-VALUE="$NEW_STRIPE_SECRET_KEY"        coolify_env "$V2_APP" set STRIPE_SECRET_KEY
-VALUE="$NEW_STRIPE_WEBHOOK_SECRET"    coolify_env "$V2_APP" set STRIPE_WEBHOOK_SECRET
-say ""
-coolify_restart "$LIVE_APP"
-coolify_restart "$V2_APP"
-pause "Restarts are queued. Press Enter to check them…"
+coolify_restart "$PROD_APP"
+pause "Restart queued. Press Enter to check it…"
 
-# ── 8. Verify ──────────────────────────────────────────────────────────────
-stage "Check that both sites are back"
+# ── 6. Verify ──────────────────────────────────────────────────────────────
+stage "Check that production is back and works with the NEW values"
 say "Waiting up to 3 minutes for https://fygs.dev …"
 ok=0
 for _ in $(seq 1 36); do
@@ -381,54 +391,49 @@ for _ in $(seq 1 36); do
   sleep 5
 done
 (( ok )) && say "${GREEN}✓${RESET} https://fygs.dev/fr answers 200" || warn "fygs.dev did not answer 200: look at the logs in Coolify before going on"
-say "fygs-v2 health: $(curl -s -m 15 https://fygs-v2.51.68.121.128.sslip.io/api/health | head -c 70)"
+say "health: $(curl -s -m 15 https://fygs.dev/api/health | head -c 70)"
 say ""
-step "Open https://fygs.dev, sign in with Google, GitHub and e-mail/password, and send a test e-mail (password reset)."
-step "Make a test payment in Stripe test mode."
-confirm "Do all of these work with the NEW values?" || { warn "Do not go on to the revoke stage: fix this first, the old values still work."; exit 1; }
+step "Open https://fygs.dev in a private window: sign in with Google, then with GitHub."
+step "Trigger an e-mail (password reset on a test account) and check it arrives."
+confirm "Do all three work with the NEW values?" || { warn "Do NOT go to the revoke stage: the old values still work. Fix this first (re-run: it remembers what you entered)."; exit 1; }
 
-# ── 9. Revoke the old values ──────────────────────────────────────────────
+# ── 7. Revoke the exposed values ───────────────────────────────────────────
 stage "Revoke what the git history exposed"
 open_url "https://console.cloud.google.com/apis/credentials"
-step "Google: the exposed secret belongs to the client 616225891630-93kb40thk… : find it in every Google Cloud project you own and DELETE that whole client (or its secret). If you cannot find it, note it in issue #40."
+step "Google: in the same client, DELETE every secret except the one you just added (two older secrets were committed; Google lists them by creation date)."
 open_url "https://github.com/settings/developers"
-step "GitHub: the exposed secret belongs to the OAuth app whose client ID was in Coolify before (see the list below). Delete that secret, or the whole app if you replaced it. Check also github.com/settings/applications (authorized apps) and any organisation you belong to."
+step "GitHub: in the same OAuth app, delete every client secret except the new one (check the 'last used' column)."
 open_url "https://myaccount.google.com/apppasswords"
-step "Gmail: revoke the OLD app password (the one used before 'fygs-v2-2026-11')."
+step "Gmail: revoke every app password except 'fygs-2026-11' (two were committed)."
 open_url "https://platform.openai.com/api-keys"
-step "OpenAI: delete the exposed key (it is no longer used by the application)."
-open_url "https://dashboard.stripe.com/test/apikeys"
-step "Stripe: on the rolled key, choose 'Expire now' for the OLD secret key; same for the old webhook secret."
-confirm "All five are revoked?" || { warn "The exposed values stay valid until you do this. Re-run, it remembers what you entered."; exit 1; }
+step "OpenAI: delete the exposed key (the application uses Anthropic, not OpenAI). If you do not recognise it, delete the keys created around 2025-10."
+confirm "Google, GitHub, Gmail and OpenAI are done?" || { warn "The exposed values stay valid until you do this. Re-run, it remembers what you entered."; exit 1; }
 
-# ── 10. Prove the old values are dead ──────────────────────────────────────
-stage "Check that the exposed values no longer work"
-hist=$(git -C "$REPO_ROOT" log --all --format=%h -- .env.production 2>/dev/null | head -1 || true)
-if [[ -n "$hist" ]]; then
-  OLD_SK=$(git -C "$REPO_ROOT" show "$hist:.env.production" 2>/dev/null | grep '^STRIPE_SECRET_KEY=' | head -1 | cut -d= -f2- | tr -d '"\r' || true)
-  note "The old Neon database cannot be revoked (the account is lost): it only held throwaway dev data. Ask Neon support to delete the project."
-  if [[ -n "$OLD_SK" ]]; then
-    code=$(curl -s -m 20 -o /dev/null -w '%{http_code}' https://api.stripe.com/v1/balance -u "$OLD_SK:" || true)
-    [[ "$code" == "401" ]] && say "${GREEN}✓${RESET} old Stripe key rejected (401)" || warn "old Stripe key answers $code (expected 401): did you choose 'Expire now'?"
-  fi
-else
-  note "no .env.production in the git history of this clone: nothing to compare against"
+# ── 8. Prove it ────────────────────────────────────────────────────────────
+stage "Check that the exposed values are dead"
+say "Stripe (the only provider that can be tested without the secret in hand):"
+if ! check_old_stripe; then
+  warn "At least one old Stripe key is still valid. Open the Stripe account it belongs to (the former fygs account, ids ending …HORHAFva9),"
+  note "Developers → API keys → roll the key with 'Expire now'. NEVER do this in the account HPUmmWxi4t (QuizZen)."
+  confirm "Handled?" || warn "Left open: note it in issue #40."
 fi
-pause
-
-# ── 11. History ────────────────────────────────────────────────────────────
-stage "The git history still contains the dead values"
-say "They are harmless now, but remove them so that nobody has to wonder:"
-step "Run scripts/ops/purge-env-history.sh (backup, rewrite, force-push, with a confirmation at each step)."
-step "GitHub keeps the old commits reachable through pull-request refs: ask GitHub Support to run a garbage collection (the script gives the link)."
-pause
-
-# ── 12. Record ─────────────────────────────────────────────────────────────
-stage "Close the loop"
-step "Comment on issue #40 that the rotation is done (the old values are dead, the new ones are in Coolify only)."
-step "Keep $ENV_FILE only until you have stored the values in your password manager, then delete it: shred -u '$ENV_FILE' (or rm)."
 say ""
-note "The next rotation date for these secrets: put it in your calendar (every 6 to 12 months)."
+say "Google, GitHub and Gmail cannot be tested from here without the old values: the consoles you just used are the proof (the old secrets are no longer listed)."
+pause
+
+# ── 9. Neon and the history ────────────────────────────────────────────────
+stage "What is left after the rotation"
+step "Neon: ask support to delete the orphan project (the account is lost). It only ever held throwaway dev data and fygs no longer uses it."
+step "Git history: run scripts/ops/purge-env-history.sh (backup, rewrite, force-push, confirmation at each step)."
+step "GitHub keeps the old commits reachable through pull-request refs: ask GitHub Support to run a garbage collection (the purge script gives the link)."
+pause
+
+# ── 10. Record ─────────────────────────────────────────────────────────────
+stage "Close the loop"
+step "Comment on issue #40: Gmail, Google and GitHub rotated, OpenAI revoked, Stripe checked; remaining: Neon deletion and the history purge."
+step "Keep $ENV_FILE only until the values are in your password manager, then delete it: shred -u '$ENV_FILE' (or rm)."
+say ""
+note "Put the next rotation (6 to 12 months) in your calendar."
 # ──────────────────────────────────────────────────────────────────────────
 
 finish
