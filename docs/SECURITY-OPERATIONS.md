@@ -18,7 +18,7 @@ stay in [security-ops-2026-10.md](security-ops-2026-10.md).
 | `CSP_NONCE_ENFORCE`, `CSP_NONCE_EXCLUDE` | See section 2. | |
 | `DISPOSABLE_EMAIL_EXTRA_DOMAINS`, `EMAIL_DOMAIN_ALLOWLIST` | Comma-separated: add disposable-address providers without a deploy, or exempt a domain that was listed by mistake. | |
 | `S3_PUBLIC_URL`, `S3_IMAGES_PUBLIC_URL`, `IMAGE_REMOTE_HOSTS` | Hosts the image optimiser may fetch from. **Read at build time**: they must be build variables (Coolify: "Build variable"), not only runtime ones. Without them uploaded cover images stop displaying after a build. | A build warning `No storage host for the image optimiser` says so. |
-| `STRIPE_ALLOW_PROMOTION_CODES` | `1` to allow promotion codes at checkout (default off). A 100 % code grants access for free. | |
+| `STRIPE_ALLOW_PROMOTION_CODES` | `true` (exactly) to allow promotion codes at checkout (default off). A 100 % code grants access for free. | |
 
 ## 2. Content-Security-Policy and the nonce switch
 
