@@ -153,6 +153,9 @@ try {
     BETTER_AUTH_URL: baseURL,
     NEXT_PUBLIC_SITE_URL: `http://localhost:${BUILD_PORT}`,
     EMAIL_TRANSPORT: "capture",
+    // the contact route refuses to run without a mail account; with the capture transport nothing is ever sent
+    EMAIL_SERVER_USER: "e2e@example.com",
+    EMAIL_SERVER_PASSWORD: "e2e-capture-only",
     E2E_ALLOW_EMAIL_CAPTURE: "yes-this-is-a-disposable-environment",
     EMAIL_CAPTURE_FILE: mailFile,
     REDIS_URL: "", // in-memory rate limiter (and no stats store: lib/redis falls back to these)
