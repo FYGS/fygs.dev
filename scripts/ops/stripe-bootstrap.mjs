@@ -10,7 +10,7 @@
  * The webhook signing secret is returned by Stripe only at creation: it is written next to the env file
  * (<file>.webhook-<host>.env), never printed. Nothing secret is logged.
  */
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 
 const args = process.argv.slice(2);
 const opt = (name) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : undefined; };
