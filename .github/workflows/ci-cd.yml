@@ -119,6 +119,9 @@ jobs:
       - name: Generate Prisma client
         run: pnpm prisma generate
 
+      - name: Generate Intlayer dictionaries
+        run: pnpm exec intlayer build
+
       - name: Run unit tests
         run: pnpm test:ci
         env:
