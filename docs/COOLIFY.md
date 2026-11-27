@@ -39,7 +39,7 @@ production.
 | Database | `fygs-prod-db` (Postgres 17): `fygs_v2`, empty, builds itself with `migrate deploy` | `fygs-staging-db` (Postgres 17): fictional seed data |
 | Redis | `fygs-redis` | `fygs-staging-redis` |
 | Storage | `fygs-s3` on `https://s3.fygs.dev` (CORS limited to `fygs.dev` and `www.fygs.dev`) | `fygs-staging-s3` on `https://s3-staging.fygs.dev` (its own keys, its own CORS middleware `fygs-s3-staging-headers`, runs as uid 1000) |
-| Stripe | test keys until you go live (`STRIPE_EXPECT_MODE`) | test keys, webhook `https://staging.fygs.dev/api/stripe/webhook` |
+| Stripe | test keys of the FYGS DEV account until you go live (`STRIPE_EXPECT_MODE`) | test keys of the FYGS DEV account, webhook `https://staging.fygs.dev/api/stripe/webhook` (see section 8) |
 | Content | real training content, created later | seeded courses (fictional, to be thrown away) |
 
 Coolify's API cannot move a resource from one environment to another: create the staging ones in `staging`, never move them.
@@ -189,6 +189,30 @@ curl -fsS -H "Authorization: Bearer $CRON_SECRET" https://fygs.dev/api/cron/week
 - Live webhook endpoint `https://fygs.dev/api/stripe/webhook`, events listed in [SECURITY-OPERATIONS.md](SECURITY-OPERATIONS.md) section 5
   and `DEPLOYMENT.md`. Its signing secret goes into `STRIPE_WEBHOOK_SECRET`.
 - Restricted API key, one webhook secret per environment, live and test keys never mixed.
+- **Own Stripe account.** fygs has its own account, **FYGS DEV**, inside the Stripe organisation FYGS DEV; it shares nothing with the
+  QuizZen account (its own keys, customers, balance, payouts and branding). Never use a QuizZen key here, nor a fygs key there.
+- **Configuration as code**: `node scripts/ops/stripe-bootstrap.mjs --env <env file> --webhook <url> [--live]` creates, idempotently, the Premium
+  product and its two prices (lookup keys `fygs_premium_monthly` 29 EUR and `fygs_premium_yearly` 290 EUR), the webhook endpoint with the 13 handled
+  events and the customer portal (no plan change, cancellation at the end of the period). It refuses a live key without `--live` and a test key with
+  it, writes the webhook signing secret next to the env file (never printed) and prints the `STRIPE_*_PRICE_ID` values to put in Coolify.
+  Test: `--webhook https://staging.fygs.dev/api/stripe/webhook`. Live: the same command with the live key file, `https://fygs.dev/api/stripe/webhook`
+  and `--live`, then `STRIPE_EXPECT_MODE=live` (#44).
+
+## 8b. E-mail (sending, receiving, DNS) — #46
+
+- **Sending**: Resend over SMTP, no code change. `EMAIL_SERVER_HOST=smtp.resend.com`, `EMAIL_SERVER_PORT=465`, `EMAIL_SERVER_USER=resend`,
+  `EMAIL_SERVER_PASSWORD` = a Resend key with the **sending access** permission restricted to the domain `fygs.dev` (never a full-access key in the
+  application), `EMAIL_FROM=noreply@fygs.dev`. Set `CONTACT_EMAIL` too: the contact form falls back to `EMAIL_SERVER_USER` otherwise, which is now `resend`.
+- **Receiving**: Cloudflare Email Routing (free, forward only): `contact@fygs.dev` and `dmarc@fygs.dev` go to the owner's mailbox, every other address of the
+  domain is rejected. The old Amazon SES inbound MX of the root was removed; do not add a second set of root MX records (Resend "Receiving" MX included).
+- **DNS (Cloudflare)**: DKIM `resend._domainkey`, SPF and MX of `send` (Resend), root SPF `v=spf1 include:_spf.mx.cloudflare.net include:amazonses.com ~all`
+  (**one** SPF record only), DMARC `v=DMARC1; p=quarantine; pct=100; rua=mailto:dmarc@fygs.dev; fo=1; adkim=r; aspf=r`, CAA for Let's Encrypt, DigiCert,
+  Google (`pki.goog`), SSL.com and Sectigo only.
+- **Resend Forge** (Resend's own sending infrastructure) is enabled on the domain, verified on 2026-11-27. Only its sending record was added in Cloudflare
+  (`CNAME mail` → `send.forge.rmta.net`, DNS only). Its root "Receiving" MX (`receive-euw1.forge.rmta.net`) is deliberately **not** added, and Resend's
+  receiving is disabled on the domain: inbound goes through Cloudflare Email Routing. The Resend key used for the activation had full access and was
+  revoked afterwards; the application only holds the sending-only key.
+- **Next**: read the DMARC reports for a few days, then `p=reject`. Check a received message ("show original": SPF, DKIM, DMARC all PASS).
 
 ## 9. After every deployment
 
