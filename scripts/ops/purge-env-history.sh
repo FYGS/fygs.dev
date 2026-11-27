@@ -205,7 +205,8 @@ WORK_DIR="${WORK_DIR:-$(mktemp -d)}"
 PURGE_PATHS=(.env .env.production .env.local .env.test .env.development)
 
 # pip --user installs scripts in a directory that is rarely on PATH (notably on Windows): add it for this run
-_user_scripts="$(python -c "import sysconfig,os;print(sysconfig.get_path('scripts', 'nt_user' if os.name == 'nt' else 'posix_user'))" 2>/dev/null | tr -d '' || true)"
+_user_scripts="$(python -c "import sysconfig,os;print(sysconfig.get_path('scripts', 'nt_user' if os.name == 'nt' else 'posix_user'))" 2>/dev/null | tr -d '
+' || true)"
 [[ -n "$_user_scripts" ]] && PATH="$(cygpath -u "$_user_scripts" 2>/dev/null || printf %s "$_user_scripts"):$PATH"
 
 has_filter_repo() { git filter-repo --version >/dev/null 2>&1; }
@@ -223,7 +224,8 @@ stage "Before anything: the secrets must already be dead"
 say "This rewrites every commit hash (about 500) and force-pushes every branch and tag."
 say "It removes: ${PURGE_PATHS[*]}"
 say ""
-warn "Run it only AFTER scripts/ops/rotate-secrets.sh finished (stage 10 and 11 green)."
+warn "Run it only AFTER scripts/ops/rotate-secrets.sh finished (old secrets revoked and checked)."
+warn "Freeze the repository first: no other session, clone or CI may push or merge until stage 5 is done."
 warn "Rotation is what protects you. This purge only tidies the history."
 warn "Pull requests keep their old commits at GitHub (refs/pull/*): stage 7 asks GitHub Support to clean those."
 say ""
@@ -259,6 +261,7 @@ pause
 # ── 4 ──────────────────────────────────────────────────────────────────────
 stage "Rewrite a working copy (nothing is pushed yet)"
 WORK="$WORK_DIR/fygs.dev-rewrite.git"
+HEADS_BEFORE="$(git ls-remote --heads "$REMOTE_URL" | sort)"   # what the remote looked like when the rewrite started
 git clone --mirror "$REMOTE_URL" "$WORK"
 before=$(git -C "$WORK" rev-list --all --count)
 args=(--invert-paths --force)
@@ -283,6 +286,11 @@ warn "This replaces the history on GitHub. Anyone with a clone must re-clone. Co
 warn "Open pull requests will show a different base. Your local clones and worktrees of this repository become unusable."
 confirm "Force-push every branch and tag of $REMOTE_URL?" || { say "Stopped. Nothing was pushed. The backup is at $BACKUP"; exit 0; }
 confirm "Last chance: really overwrite the remote history?" || { say "Stopped."; exit 0; }
+# Anyone who pushed since the clone would be silently overwritten: refuse if the remote moved
+if [[ "$(git ls-remote --heads "$REMOTE_URL" | sort)" != "$HEADS_BEFORE" ]]; then
+  warn "A branch changed on the remote since the rewrite started (someone pushed or merged). Nothing was pushed: re-run from stage 3."
+  exit 1
+fi
 git -C "$WORK" remote add origin "$REMOTE_URL" 2>/dev/null || git -C "$WORK" remote set-url origin "$REMOTE_URL"
 git -C "$WORK" push --force --all origin
 git -C "$WORK" push --force --tags origin
