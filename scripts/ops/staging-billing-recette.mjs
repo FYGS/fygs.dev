@@ -360,7 +360,9 @@ async function scenarioD(browser) {
   await stripePost(`customers/${stripeSub.customer}`, { "invoice_settings[default_payment_method]": bad.id });
   // A charge that must happen now and fails: moving the subscription to the yearly price invoices 261 EUR at once; the card
   // refuses it and, with allow_incomplete, the subscription stays but turns past_due (what a failed renewal looks like)
-  const yearly = "price_1SBfFOHORHAFva9IYfXuLWhc"; // the yearly Premium price of the fygs Stripe account (test mode)
+  // the yearly Premium price of the fygs Stripe account, found by its lookup key (created by scripts/ops/stripe-bootstrap.mjs)
+  const yearly = (await stripe("prices?lookup_keys[]=fygs_premium_yearly&active=true")).data?.[0]?.id;
+  if (!yearly) throw new Error("price with lookup key fygs_premium_yearly not found: run scripts/ops/stripe-bootstrap.mjs");
   await stripePost(`subscriptions/${sub.stripeSubscriptionId}`, {
     default_payment_method: bad.id,
     "items[0][id]": stripeSub.items.data[0].id,

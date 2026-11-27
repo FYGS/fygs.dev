@@ -39,7 +39,7 @@ production.
 | Database | `fygs-prod-db` (Postgres 17): `fygs_v2`, empty, builds itself with `migrate deploy` | `fygs-staging-db` (Postgres 17): fictional seed data |
 | Redis | `fygs-redis` | `fygs-staging-redis` |
 | Storage | `fygs-s3` on `https://s3.fygs.dev` (CORS limited to `fygs.dev` and `www.fygs.dev`) | `fygs-staging-s3` on `https://s3-staging.fygs.dev` (its own keys, its own CORS middleware `fygs-s3-staging-headers`, runs as uid 1000) |
-| Stripe | test keys until you go live (`STRIPE_EXPECT_MODE`) | test keys, webhook `https://staging.fygs.dev/api/stripe/webhook` |
+| Stripe | test keys of the FYGS DEV account until you go live (`STRIPE_EXPECT_MODE`) | test keys of the FYGS DEV account, webhook `https://staging.fygs.dev/api/stripe/webhook` (see section 8) |
 | Content | real training content, created later | seeded courses (fictional, to be thrown away) |
 
 Coolify's API cannot move a resource from one environment to another: create the staging ones in `staging`, never move them.
@@ -189,6 +189,14 @@ curl -fsS -H "Authorization: Bearer $CRON_SECRET" https://fygs.dev/api/cron/week
 - Live webhook endpoint `https://fygs.dev/api/stripe/webhook`, events listed in [SECURITY-OPERATIONS.md](SECURITY-OPERATIONS.md) section 5
   and `DEPLOYMENT.md`. Its signing secret goes into `STRIPE_WEBHOOK_SECRET`.
 - Restricted API key, one webhook secret per environment, live and test keys never mixed.
+- **Own Stripe account.** fygs has its own account, **FYGS DEV**, inside the Stripe organisation FYGS DEV; it shares nothing with the
+  QuizZen account (its own keys, customers, balance, payouts and branding). Never use a QuizZen key here, nor a fygs key there.
+- **Configuration as code**: `node scripts/ops/stripe-bootstrap.mjs --env <env file> --webhook <url> [--live]` creates, idempotently, the Premium
+  product and its two prices (lookup keys `fygs_premium_monthly` 29 EUR and `fygs_premium_yearly` 290 EUR), the webhook endpoint with the 13 handled
+  events and the customer portal (no plan change, cancellation at the end of the period). It refuses a live key without `--live` and a test key with
+  it, writes the webhook signing secret next to the env file (never printed) and prints the `STRIPE_*_PRICE_ID` values to put in Coolify.
+  Test: `--webhook https://staging.fygs.dev/api/stripe/webhook`. Live: the same command with the live key file, `https://fygs.dev/api/stripe/webhook`
+  and `--live`, then `STRIPE_EXPECT_MODE=live` (#44).
 
 ## 9. After every deployment
 
