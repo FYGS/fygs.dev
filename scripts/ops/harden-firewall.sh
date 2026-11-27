@@ -215,7 +215,7 @@ SITES=(
 )
 BASELINE_FILE=""
 
-rssh() { ssh -o BatchMode=yes -o ConnectTimeout=10 -p "$SSH_PORT" "$SSH_TARGET" "$@"; }
+rssh() { ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -p "$SSH_PORT" "$SSH_TARGET" "$@"; }
 # run a command as root on the server (sudo when the login is not root)
 rroot() { if [[ "$SSH_TARGET" == root@* ]]; then rssh "$1"; else rssh "sudo -n sh -c $(printf '%q' "$1")"; fi; }
 
@@ -280,16 +280,27 @@ if confirm "Set up Tailscale now (recommended)?"; then
   warn "Next, the official installer from tailscale.com is downloaded and run as root on the SHARED server (it adds Tailscale's apt repository)."
   confirm "Install Tailscale on the server?" || { say "Stopped. Nothing was changed."; exit 0; }
   rroot "command -v tailscale >/dev/null 2>&1 || (curl -fsSL https://tailscale.com/install.sh -o /tmp/tailscale-install.sh && sh /tmp/tailscale-install.sh && rm -f /tmp/tailscale-install.sh)"
-  rroot "rm -f /tmp/ts-up.log; nohup tailscale up --accept-dns=false --hostname=vps-coolify >/tmp/ts-up.log 2>&1 &" || true
-  sleep 8
-  TS_URL=$(rroot "cat /tmp/ts-up.log 2>/dev/null" | grep -o 'https://login.tailscale.com/[^ ]*' | head -1 || true)
+  # A machine deleted from the tailnet leaves the server with a dead identity (old address, "offline", no login link): forget it and register anew
+  ts_online() { rroot "tailscale status --json 2>/dev/null | python3 -c 'import sys,json; d=json.load(sys.stdin); sys.exit(0 if d.get(\"BackendState\")==\"Running\" and d.get(\"Self\",{}).get(\"Online\") else 1)'" >/dev/null 2>&1; }
+  TS_URL=""
+  if ts_online; then
+    say "The server is already online on your private network: keeping its registration."
+  else
+    say "The server is not (or no longer) registered on your private network: forgetting its old identity and registering it again."
+    rroot "timeout 20 tailscale logout >/dev/null 2>&1 || true; systemctl restart tailscaled; sleep 3"
+    rroot "rm -f /tmp/ts-up.log; nohup tailscale up --force-reauth --accept-dns=false --hostname=vps-coolify >/tmp/ts-up.log 2>&1 &" || true
+    sleep 8
+    TS_URL=$(rroot "cat /tmp/ts-up.log 2>/dev/null" | grep -o 'https://login.tailscale.com/[^ ]*' | head -1 || true)
+  fi
   if [[ -n "$TS_URL" ]]; then
     open_url "$TS_URL"
     step "Sign in with the SAME account as on your PC and approve the machine 'vps-coolify'."
-  else
-    say "Already connected, or the login link did not show. Server says:"; rroot "tailscale status 2>&1 | head -5"
+  elif ! ts_online; then
+    warn "No login link appeared. Server says:"; rroot "tailscale status 2>&1 | head -5"; rroot "cat /tmp/ts-up.log 2>/dev/null | head -5"
   fi
   pause "Press Enter once the machine is approved…"
+  for _ in $(seq 1 20); do ts_online && break; sleep 3; done
+  ts_online || { warn "the server is still not online on the private network. Check the approval at https://login.tailscale.com/admin/machines, then re-run. Nothing was changed on the firewall."; exit 1; }
   TS_IP=$(rroot "tailscale ip -4 2>/dev/null" | head -1 | tr -d "[:space:]" || true)
   [[ "$TS_IP" =~ ^100\.[0-9]+\.[0-9]+\.[0-9]+$ ]] || { warn "the server has no Tailscale address yet ($TS_IP). Check the approval, then re-run."; exit 1; }
   say "Server address on the private network: $TS_IP"
@@ -297,11 +308,11 @@ if confirm "Set up Tailscale now (recommended)?"; then
   step "On the machine 'vps-coolify': ⋯ → 'Disable key expiry'. WITHOUT this, the server drops off your private network after about 6 months and SSH is lost."
   confirm "Key expiry disabled for vps-coolify?" || { warn "Do it before going on, otherwise you will lock yourself out later."; exit 1; }
   TS_TARGET="${SSH_TARGET%@*}@$TS_IP"
-  if ssh -o BatchMode=yes -o ConnectTimeout=10 -p "$SSH_PORT" "$TS_TARGET" true 2>/dev/null; then
+  if ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -p "$SSH_PORT" "$TS_TARGET" true 2>/dev/null; then
     say "${GREEN}✓${RESET} SSH works through the private network ($TS_TARGET)"
     SSH_TARGET="$TS_TARGET"; write_env SSH_TARGET "$SSH_TARGET"; write_env TAILSCALE_IP "$TS_IP"
   else
-    warn "SSH through $TS_IP failed (is Tailscale connected on this PC?). Fix it first: stopping before any change."; exit 1
+    warn "SSH through $TS_IP failed (is Tailscale connected on this PC? a changed host key is refused on purpose). Fix it first: stopping before any change."; exit 1
   fi
 else
   warn "Without Tailscale, SSH is reachable only from the addresses you list: a new home IP means using the OVH rescue console."
@@ -346,7 +357,7 @@ stage "Install the rules, with an automatic undo after 2 minutes"
 say "Public rules stay as they are: 80 and 443 remain open. Only 22, 8000, 6001 and 6002 become admin-only."
 say ""
 confirm "Copy the script and apply the rules now?" || { say "Nothing was changed."; exit 0; }
-scp -o BatchMode=yes -P "$SSH_PORT" "$SERVER_SCRIPT" "$SSH_TARGET:/tmp/fygs-firewall.sh" >/dev/null
+scp -o BatchMode=yes -o StrictHostKeyChecking=accept-new -P "$SSH_PORT" "$SERVER_SCRIPT" "$SSH_TARGET:/tmp/fygs-firewall.sh" >/dev/null
 rroot "install -m 0750 /tmp/fygs-firewall.sh $REMOTE_SCRIPT && rm -f /tmp/fygs-firewall.sh"
 rroot "$REMOTE_SCRIPT apply-guarded '$ADMIN_ADDRESSES' 120"
 say ""

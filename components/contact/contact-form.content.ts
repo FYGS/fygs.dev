@@ -26,6 +26,28 @@ const contactFormContent = {
       }),
     },
     contactTypes: {
+      project: {
+        label: t({
+          en: "A project or a mission",
+          fr: "Un projet ou une mission",
+          es: "A project or a mission",
+        }),
+        title: t({
+          en: "A project or a mission",
+          fr: "Un projet ou une mission",
+          es: "A project or a mission",
+        }),
+        description: t({
+          en: "A custom SaaS, a business web application, an audit or a team reinforcement.",
+          fr: "Un SaaS sur mesure, une application web métier, un audit ou un renfort d'équipe.",
+          es: "A custom SaaS, a business web application, an audit or a team reinforcement.",
+        }),
+        placeholder: t({
+          en: "Describe the need, the users, the constraints and what already exists...",
+          fr: "Décrivez le besoin, les utilisateurs, les contraintes et ce qui existe déjà...",
+          es: "Describe the need, the users, the constraints and what already exists...",
+        }),
+      },
       general: {
         label: t({
           en: "General Contact",
@@ -174,6 +196,53 @@ const contactFormContent = {
           es: "Su rol",
         }),
       },
+      timeline: {
+        label: t({
+          en: "Timeline",
+          fr: "Délai",
+          es: "Timeline",
+        }),
+        placeholder: t({
+          en: "When should it start?",
+          fr: "Pour quand ?",
+          es: "When should it start?",
+        }),
+        options: {
+          asap: t({ en: "As soon as possible", fr: "Dès que possible", es: "As soon as possible" }),
+          oneToThreeMonths: t({ en: "In 1 to 3 months", fr: "Dans 1 à 3 mois", es: "In 1 to 3 months" }),
+          later: t({ en: "Later", fr: "Plus tard", es: "Later" }),
+          exploring: t({ en: "Just exploring", fr: "Je me renseigne", es: "Just exploring" }),
+        },
+      },
+      framing: {
+        label: t({
+          en: "Framing",
+          fr: "Cadrage",
+          es: "Framing",
+        }),
+        placeholder: t({
+          en: "Is the need already framed?",
+          fr: "Le besoin est-il déjà cadré ?",
+          es: "Is the need already framed?",
+        }),
+        options: {
+          writtenSpec: t({
+            en: "Yes, a written spec exists",
+            fr: "Oui, une spec écrite existe",
+            es: "Yes, a written spec exists",
+          }),
+          partial: t({
+            en: "Partly framed",
+            fr: "Partiellement cadré",
+            es: "Partly framed",
+          }),
+          none: t({
+            en: "Not yet: I need help to frame it",
+            fr: "Pas encore : j'ai besoin d'aide pour le cadrer",
+            es: "Not yet: I need help to frame it",
+          }),
+        },
+      },
       subject: {
         label: t({
           en: "Subject",
@@ -181,6 +250,11 @@ const contactFormContent = {
           es: "Asunto",
         }),
         placeholder: {
+          project: t({
+            en: "Ex: Custom SaaS for managing our appointments",
+            fr: "Ex: SaaS sur mesure pour gérer nos rendez-vous",
+            es: "Ex: Custom SaaS for managing our appointments",
+          }),
           recruitment: t({
             en: "Ex: Full-Stack Developer - 6 month mission",
             fr: "Ex: Développeur Full-Stack - Mission de 6 mois",

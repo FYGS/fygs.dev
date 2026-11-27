@@ -1,3 +1,5 @@
+import type { ContactFraming, ContactTimeline, ContactType } from "../../contact-qualification";
+
 export interface EmailOptions {
   to: string;
   subject: string;
@@ -16,9 +18,11 @@ export interface ContactFormData {
   email: string;
   subject: string;
   message: string;
-  type?: "recruitment" | "collaboration" | "training" | "general";
+  type?: ContactType;
   company?: string;
   position?: string;
+  timeline?: ContactTimeline;
+  framing?: ContactFraming;
 }
 
 export interface CourseData {

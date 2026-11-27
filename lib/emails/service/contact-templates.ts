@@ -21,10 +21,26 @@ export class ContactEmailTemplates {
       type = "general",
       company,
       position,
+      timeline,
+      framing,
     } = data;
+
+    const timelineLabels: Record<string, string> = {
+      asap: "Dès que possible",
+      "one-to-three-months": "Dans 1 à 3 mois",
+      later: "Plus tard",
+      exploring: "Je me renseigne",
+    };
+    const framingLabels: Record<string, string> = {
+      "written-spec": "Cadrage et spec écrite existants",
+      partial: "Cadrage partiel",
+      none: "Pas de cadrage",
+    };
 
     const getTypeIcon = (type: string) => {
       switch (type) {
+        case "project":
+          return "🚀";
         case "recruitment":
           return "💼";
         case "collaboration":
@@ -38,6 +54,8 @@ export class ContactEmailTemplates {
 
     const getTypeLabel = (type: string) => {
       switch (type) {
+        case "project":
+          return "Demande de Projet";
         case "recruitment":
           return "Opportunité de Recrutement";
         case "collaboration":
@@ -51,6 +69,8 @@ export class ContactEmailTemplates {
 
     const getTypeColor = (type: string) => {
       switch (type) {
+        case "project":
+          return "#f59e0b";
         case "recruitment":
           return "#10b981";
         case "collaboration":
@@ -61,6 +81,13 @@ export class ContactEmailTemplates {
           return "#6b7280";
       }
     };
+
+    // Qualification rows: empty (no whitespace at all) when the visitor did not fill them, so older mails stay identical
+    const qualificationRow = (label: string, value: string) =>
+      `<div class="metadata-item"><div class="metadata-label">${label}</div><div class="metadata-value">${escapeHtml(value)}</div></div>`;
+    const qualificationRows =
+      (timeline ? qualificationRow("Délai", timelineLabels[timeline] ?? timeline) : "") +
+      (framing ? qualificationRow("Cadrage", framingLabels[framing] ?? framing) : "");
 
     // The subject is a header: one line, bounded, whatever the visitor typed
     const adminSubject = `${getTypeIcon(type)} [FYGS.dev] ${getTypeLabel(
@@ -147,7 +174,7 @@ export class ContactEmailTemplates {
                             </div>
                             `
                                 : ""
-                            }
+                            }${qualificationRows}
                         </div>
                     </div>
 

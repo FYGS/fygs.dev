@@ -50,6 +50,7 @@ vi.mock("@/lib/stripe", () => ({ stripe: {}, stripeKeyMode: () => "unknown", ass
 
 import { PATCH, GET } from "@/app/api/profile/route";
 import { POST as contactPOST } from "@/app/api/contact/route";
+import { __resetRateLimitMemory } from "@/lib/rate-limit";
 import { POST as webhookPOST } from "@/app/api/stripe/webhook/route";
 
 function jsonRequest(url: string, method: string, body: unknown) {
@@ -202,6 +203,8 @@ describe("POST /api/contact", () => {
   };
 
   beforeEach(() => {
+    // The form allows 5 requests an hour per address: each case starts with an empty window
+    __resetRateLimitMemory();
     process.env.EMAIL_SERVER_USER = "user";
     process.env.EMAIL_SERVER_PASSWORD = "pass";
   });
@@ -255,6 +258,30 @@ describe("POST /api/contact", () => {
     const res = await contactPOST(jsonRequest("/api/contact", "POST", valid));
     expect(res.status).toBe(500);
     expect(await res.json()).toEqual({ error: "Failed to send email" });
+  });
+
+  it("passes the project type, timeline and framing to the emails", async () => {
+    m.sendContactFormEmails.mockResolvedValue({ adminSent: true, userSent: true });
+    const res = await contactPOST(
+      jsonRequest("/api/contact", "POST", {
+        ...valid,
+        type: "project",
+        timeline: "one-to-three-months",
+        framing: "written-spec",
+      }),
+    );
+    expect(res.status).toBe(200);
+    expect(m.sendContactFormEmails.mock.calls[0][0]).toMatchObject({
+      type: "project",
+      timeline: "one-to-three-months",
+      framing: "written-spec",
+    });
+  });
+
+  it("400 on an unknown timeline or framing", async () => {
+    const res = await contactPOST(jsonRequest("/api/contact", "POST", { ...valid, timeline: "yesterday" }));
+    expect(res.status).toBe(400);
+    expect(m.sendContactFormEmails).not.toHaveBeenCalled();
   });
 });
 
