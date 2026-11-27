@@ -72,6 +72,9 @@ jobs:
         env:
           SKIP_ENV_VALIDATION: true
 
+      - name: Generate Intlayer types
+        run: pnpm exec intlayer build
+
       - name: Run TypeScript check
         run: pnpm tsc --noEmit
         env:
