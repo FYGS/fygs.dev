@@ -215,7 +215,7 @@ SITES=(
 )
 BASELINE_FILE=""
 
-rssh() { ssh -o BatchMode=yes -o ConnectTimeout=10 -p "$SSH_PORT" "$SSH_TARGET" "$@"; }
+rssh() { ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -p "$SSH_PORT" "$SSH_TARGET" "$@"; }
 # run a command as root on the server (sudo when the login is not root)
 rroot() { if [[ "$SSH_TARGET" == root@* ]]; then rssh "$1"; else rssh "sudo -n sh -c $(printf '%q' "$1")"; fi; }
 
@@ -308,11 +308,11 @@ if confirm "Set up Tailscale now (recommended)?"; then
   step "On the machine 'vps-coolify': ⋯ → 'Disable key expiry'. WITHOUT this, the server drops off your private network after about 6 months and SSH is lost."
   confirm "Key expiry disabled for vps-coolify?" || { warn "Do it before going on, otherwise you will lock yourself out later."; exit 1; }
   TS_TARGET="${SSH_TARGET%@*}@$TS_IP"
-  if ssh -o BatchMode=yes -o ConnectTimeout=10 -p "$SSH_PORT" "$TS_TARGET" true 2>/dev/null; then
+  if ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -p "$SSH_PORT" "$TS_TARGET" true 2>/dev/null; then
     say "${GREEN}✓${RESET} SSH works through the private network ($TS_TARGET)"
     SSH_TARGET="$TS_TARGET"; write_env SSH_TARGET "$SSH_TARGET"; write_env TAILSCALE_IP "$TS_IP"
   else
-    warn "SSH through $TS_IP failed (is Tailscale connected on this PC?). Fix it first: stopping before any change."; exit 1
+    warn "SSH through $TS_IP failed (is Tailscale connected on this PC? a changed host key is refused on purpose). Fix it first: stopping before any change."; exit 1
   fi
 else
   warn "Without Tailscale, SSH is reachable only from the addresses you list: a new home IP means using the OVH rescue console."
@@ -357,7 +357,7 @@ stage "Install the rules, with an automatic undo after 2 minutes"
 say "Public rules stay as they are: 80 and 443 remain open. Only 22, 8000, 6001 and 6002 become admin-only."
 say ""
 confirm "Copy the script and apply the rules now?" || { say "Nothing was changed."; exit 0; }
-scp -o BatchMode=yes -P "$SSH_PORT" "$SERVER_SCRIPT" "$SSH_TARGET:/tmp/fygs-firewall.sh" >/dev/null
+scp -o BatchMode=yes -o StrictHostKeyChecking=accept-new -P "$SSH_PORT" "$SERVER_SCRIPT" "$SSH_TARGET:/tmp/fygs-firewall.sh" >/dev/null
 rroot "install -m 0750 /tmp/fygs-firewall.sh $REMOTE_SCRIPT && rm -f /tmp/fygs-firewall.sh"
 rroot "$REMOTE_SCRIPT apply-guarded '$ADMIN_ADDRESSES' 120"
 say ""
