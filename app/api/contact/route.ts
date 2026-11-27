@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { emailService, ContactFormData } from "@/lib/email-service";
+import { qualificationSchema } from "@/lib/contact-qualification";
 import { humanProofRefusal, verifyHumanProof } from "@/lib/anti-automation";
 import { isDisposableEmail } from "@/lib/anti-automation/disposable-domains";
 import { isHoneypotTripped } from "@/lib/anti-automation/honeypot";
@@ -29,10 +30,9 @@ const contactSchema = z.object({
   email: z.string().trim().toLowerCase().email("Adresse email invalide").max(254),
   subject: z.string().trim().min(5, "Le sujet doit contenir au moins 5 caractères").max(200),
   message: z.string().trim().min(10, "Le message doit contenir au moins 10 caractères").max(5000),
-  type: z.enum(["recruitment", "collaboration", "training", "general"]).optional(),
   company: z.string().trim().max(200).optional(),
   position: z.string().trim().max(200).optional(),
-});
+}).extend(qualificationSchema.shape); // type (with "project"), timeline, framing
 
 export async function POST(request: NextRequest) {
   const limited = await enforceRateLimit(request, "contact", {
@@ -68,6 +68,8 @@ export async function POST(request: NextRequest) {
       subject: singleLine(validated.subject),
       message: validated.message,
       type: validated.type || "general",
+      timeline: validated.timeline,
+      framing: validated.framing,
       company: validated.company ? singleLine(validated.company) : undefined,
       position: validated.position ? singleLine(validated.position) : undefined,
     };
