@@ -198,6 +198,18 @@ curl -fsS -H "Authorization: Bearer $CRON_SECRET" https://fygs.dev/api/cron/week
   Test: `--webhook https://staging.fygs.dev/api/stripe/webhook`. Live: the same command with the live key file, `https://fygs.dev/api/stripe/webhook`
   and `--live`, then `STRIPE_EXPECT_MODE=live` (#44).
 
+## 8b. E-mail (sending, receiving, DNS) — #46
+
+- **Sending**: Resend over SMTP, no code change. `EMAIL_SERVER_HOST=smtp.resend.com`, `EMAIL_SERVER_PORT=465`, `EMAIL_SERVER_USER=resend`,
+  `EMAIL_SERVER_PASSWORD` = a Resend key with the **sending access** permission restricted to the domain `fygs.dev` (never a full-access key in the
+  application), `EMAIL_FROM=noreply@fygs.dev`. Set `CONTACT_EMAIL` too: the contact form falls back to `EMAIL_SERVER_USER` otherwise, which is now `resend`.
+- **Receiving**: Cloudflare Email Routing (free, forward only): `contact@fygs.dev` and `dmarc@fygs.dev` go to the owner's mailbox, every other address of the
+  domain is rejected. The old Amazon SES inbound MX of the root was removed; do not add a second set of root MX records (Resend "Receiving" MX included).
+- **DNS (Cloudflare)**: DKIM `resend._domainkey`, SPF and MX of `send` (Resend), root SPF `v=spf1 include:_spf.mx.cloudflare.net include:amazonses.com ~all`
+  (**one** SPF record only), DMARC `v=DMARC1; p=quarantine; pct=100; rua=mailto:dmarc@fygs.dev; fo=1; adkim=r; aspf=r`, CAA for Let's Encrypt, DigiCert,
+  Google (`pki.goog`), SSL.com and Sectigo only.
+- **Next**: read the DMARC reports for a few days, then `p=reject`. Check a received message ("show original": SPF, DKIM, DMARC all PASS).
+
 ## 9. After every deployment
 
 Follow section 4 of [SECURITY-OPERATIONS.md](SECURITY-OPERATIONS.md), plus:
