@@ -8,8 +8,3 @@ allow-licenses:
   - 0BSD
   - CC0-1.0
   - Unlicense
-deny-licenses:
-  - GPL-2.0
-  - GPL-3.0
-  - AGPL-1.0
-  - AGPL-3.0
