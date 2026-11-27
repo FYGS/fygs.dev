@@ -5,14 +5,14 @@ export const mainSections = {
   /** Home page — / */
   home: {
     title: {
-      fr: "FYGS Learning Platform | Formations Premium pour Développeurs",
-      en: "FYGS Learning Platform | Premium Courses for Developers",
-      es: "FYGS Learning Platform | Cursos Premium para Desarrolladores",
+      fr: "Fernand Soualo | Ingénieur backend & cloud, développeur augmenté par l'IA",
+      en: "Fernand Soualo | Backend & cloud engineer, AI-augmented developer",
+      es: "Fernand Soualo | Backend & cloud engineer, AI-augmented developer",
     },
     description: {
-      fr: "Transformez votre carrière avec nos formations premium en JavaScript, TypeScript, React, Next.js, Node.js, IA et Cloud. Rejoignez 15 000+ développeurs qui ont boosté leur carrière.",
-      en: "Transform your career with our premium courses in JavaScript, TypeScript, React, Next.js, Node.js, AI and Cloud. Join 15,000+ developers who boosted their careers.",
-      es: "Transforme su carrera con nuestros cursos premium en JavaScript, TypeScript, React, Next.js, Node.js, IA y Cloud. Únete a más de 15 000 desarrolladores.",
+      fr: "Freelance : conception de SaaS et d'applications web métier sur mesure (AWS, microservices, API REST). Je livre avec des agents IA et une méthode : spec figée, tests d'abord, revue systématique.",
+      en: "Freelance: design of custom SaaS and business web applications (AWS, microservices, REST APIs). I deliver with AI agents and a method: frozen spec, tests first, systematic review.",
+      es: "Freelance: design of custom SaaS and business web applications (AWS, microservices, REST APIs). I deliver with AI agents and a method: frozen spec, tests first, systematic review.",
     },
     keywords: [
       {
