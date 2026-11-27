@@ -1,7 +1,6 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { ArrowRight, MapPin } from "lucide-react";
 import { useIntlayer } from "next-intlayer";
 import { Section } from "./Section";
@@ -14,12 +13,7 @@ export const Hero = () => {
       <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-background to-secondary/5" />
       <div className="relative container max-w-7xl mx-auto px-4 z-10">
         <div className="flex flex-col-reverse lg:flex-row items-center gap-12 lg:gap-16">
-          <motion.div
-            className="flex-1 w-full text-center lg:text-left"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
+          <div className="flex-1 w-full text-center lg:text-left">
             <p className="inline-block rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary mb-6">
               {content.eyebrow}
             </p>
@@ -57,29 +51,24 @@ export const Hero = () => {
               <MapPin className="h-4 w-4" />
               {content.location}
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            className="flex-1 flex justify-center"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-          >
+          <div className="flex-1 flex justify-center">
             <div className="relative">
               <div className="absolute -inset-4 rounded-3xl bg-primary/20 blur-xl opacity-70" />
               <div className="relative overflow-hidden rounded-3xl border-4 border-primary/20 bg-white">
                 <Image
-                  src="/images/fernand_photo.png"
+                  src="/images/fernand_photo.webp"
                   alt="Fernand Soualo"
-                  width={400}
-                  height={480}
+                  width={800}
+                  height={960}
                   sizes="(min-width: 1024px) 400px, 288px"
                   className="w-72 lg:w-100 h-auto object-cover"
                   priority
                 />
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </Section>
