@@ -280,16 +280,27 @@ if confirm "Set up Tailscale now (recommended)?"; then
   warn "Next, the official installer from tailscale.com is downloaded and run as root on the SHARED server (it adds Tailscale's apt repository)."
   confirm "Install Tailscale on the server?" || { say "Stopped. Nothing was changed."; exit 0; }
   rroot "command -v tailscale >/dev/null 2>&1 || (curl -fsSL https://tailscale.com/install.sh -o /tmp/tailscale-install.sh && sh /tmp/tailscale-install.sh && rm -f /tmp/tailscale-install.sh)"
-  rroot "rm -f /tmp/ts-up.log; nohup tailscale up --accept-dns=false --hostname=vps-coolify >/tmp/ts-up.log 2>&1 &" || true
-  sleep 8
-  TS_URL=$(rroot "cat /tmp/ts-up.log 2>/dev/null" | grep -o 'https://login.tailscale.com/[^ ]*' | head -1 || true)
+  # A machine deleted from the tailnet leaves the server with a dead identity (old address, "offline", no login link): forget it and register anew
+  ts_online() { rroot "tailscale status --json 2>/dev/null | python3 -c 'import sys,json; d=json.load(sys.stdin); sys.exit(0 if d.get(\"BackendState\")==\"Running\" and d.get(\"Self\",{}).get(\"Online\") else 1)'" >/dev/null 2>&1; }
+  TS_URL=""
+  if ts_online; then
+    say "The server is already online on your private network: keeping its registration."
+  else
+    say "The server is not (or no longer) registered on your private network: forgetting its old identity and registering it again."
+    rroot "timeout 20 tailscale logout >/dev/null 2>&1 || true; systemctl restart tailscaled; sleep 3"
+    rroot "rm -f /tmp/ts-up.log; nohup tailscale up --force-reauth --accept-dns=false --hostname=vps-coolify >/tmp/ts-up.log 2>&1 &" || true
+    sleep 8
+    TS_URL=$(rroot "cat /tmp/ts-up.log 2>/dev/null" | grep -o 'https://login.tailscale.com/[^ ]*' | head -1 || true)
+  fi
   if [[ -n "$TS_URL" ]]; then
     open_url "$TS_URL"
     step "Sign in with the SAME account as on your PC and approve the machine 'vps-coolify'."
-  else
-    say "Already connected, or the login link did not show. Server says:"; rroot "tailscale status 2>&1 | head -5"
+  elif ! ts_online; then
+    warn "No login link appeared. Server says:"; rroot "tailscale status 2>&1 | head -5"; rroot "cat /tmp/ts-up.log 2>/dev/null | head -5"
   fi
   pause "Press Enter once the machine is approved…"
+  for _ in $(seq 1 20); do ts_online && break; sleep 3; done
+  ts_online || { warn "the server is still not online on the private network. Check the approval at https://login.tailscale.com/admin/machines, then re-run. Nothing was changed on the firewall."; exit 1; }
   TS_IP=$(rroot "tailscale ip -4 2>/dev/null" | head -1 | tr -d "[:space:]" || true)
   [[ "$TS_IP" =~ ^100\.[0-9]+\.[0-9]+\.[0-9]+$ ]] || { warn "the server has no Tailscale address yet ($TS_IP). Check the approval, then re-run."; exit 1; }
   say "Server address on the private network: $TS_IP"
