@@ -28,6 +28,8 @@ import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { useIntlayer } from "next-intlayer";
 import { qualificationSchema } from "@/lib/contact-qualification";
+import { solveHumanProof } from "@/lib/anti-automation/client";
+import { HONEYPOT_FIELD, honeypotFields } from "@/lib/anti-automation/honeypot";
 
 const contactSchema = z.object({
   name: z.string().min(2, "Name must contain at least 2 characters"),
@@ -71,12 +73,17 @@ export function ContactForm() {
   const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true);
     try {
+      // The route asks for a proof of work in production (lib/anti-automation); the honeypot travels in the body,
+      // only when a script filled it. Without a proof the server decides: the form is never blocked here.
+      const proof = await solveHumanProof("contact");
+      const trap = document.querySelector<HTMLInputElement>(`input[name="${HONEYPOT_FIELD}"]`)?.value ?? "";
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...proof,
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(trap ? { ...data, [HONEYPOT_FIELD]: trap } : data),
       });
 
       const result = await response.json();
@@ -166,6 +173,7 @@ export function ContactForm() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {honeypotFields()}
         {/* Contact Type Selection */}
         <div className="space-y-2">
           <Label htmlFor="type">{content.contactType.label.value}</Label>
