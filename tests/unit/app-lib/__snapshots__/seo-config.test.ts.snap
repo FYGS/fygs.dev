@@ -185,7 +185,7 @@ exports[`seo-config (pinned) > sectionSEO.contact 1`] = `"c211220c353f33fa5092e3
 
 exports[`seo-config (pinned) > sectionSEO.formations 1`] = `"159fd7749841d2925353d591ee2b252b9d29a90ca88553bd349f44173dab9c29"`;
 
-exports[`seo-config (pinned) > sectionSEO.home 1`] = `"2a45b3ac7b4235a8ce6ccf0f9afd5fd1d6ac5fe0c98aaca58f32e2506e1c76ad"`;
+exports[`seo-config (pinned) > sectionSEO.home 1`] = `"ccca65112991701f3c2ecb9516ae1facfa80e4b9e34de21ea6b683ac9d887bd9"`;
 
 exports[`seo-config (pinned) > sectionSEO.me 1`] = `"4b04721ba0b8c63afc1a7ce2453ca78889c012053a0872379f9c2154cc3f692d"`;
 
@@ -221,4 +221,4 @@ exports[`seo-config (pinned) > sectionSEO.techMastrySystemDesign 1`] = `"432ad57
 
 exports[`seo-config (pinned) > sectionSEO.techMastryTypeScriptMastery 1`] = `"3106e711677667985b31d8d028bf0e041054ab1fe9ba6b64c366d967238511ff"`;
 
-exports[`seo-config (pinned) > whole sectionSEO hash 1`] = `"ea1ad33d55f069ed4a151ecb90b6caf2bd38172526241a0ea8b4d3d5a99514bd"`;
+exports[`seo-config (pinned) > whole sectionSEO hash 1`] = `"b656ee59ffb684e9fb8ec7222125b22d587affb1cc39095c911eb122200f8f20"`;

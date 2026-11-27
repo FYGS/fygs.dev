@@ -18,6 +18,7 @@ import { notify } from "@/lib/notification-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Loader2,
+  Rocket,
   Briefcase,
   Handshake,
   GraduationCap,
@@ -26,18 +27,16 @@ import {
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { useIntlayer } from "next-intlayer";
+import { qualificationSchema } from "@/lib/contact-qualification";
 
 const contactSchema = z.object({
   name: z.string().min(2, "Name must contain at least 2 characters"),
   email: z.string().email("Invalid email address"),
   subject: z.string().min(5, "Subject must contain at least 5 characters"),
   message: z.string().min(10, "Message must contain at least 10 characters"),
-  type: z
-    .enum(["recruitment", "collaboration", "training", "general"])
-    .optional(),
   company: z.string().optional(),
   position: z.string().optional(),
-});
+}).extend(qualificationSchema.shape); // type, timeline, framing: same values as POST /api/contact
 
 type ContactFormData = z.infer<typeof contactSchema>;
 
@@ -54,11 +53,13 @@ export function ContactForm() {
   } = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema),
     defaultValues: {
-      type: "general",
+      type: "project",
     },
   });
 
   const watchedType = useWatch({ control, name: "type" });
+  const watchedTimeline = useWatch({ control, name: "timeline" });
+  const watchedFraming = useWatch({ control, name: "framing" });
 
   // Sync watchedType with form value management
   useEffect(() => {
@@ -114,6 +115,13 @@ export function ContactForm() {
 
   const getContactTypeInfo = (type: string) => {
     switch (type) {
+      case "project":
+        return {
+          icon: Rocket,
+          title: content.contactTypes.project.title.value,
+          description: content.contactTypes.project.description.value,
+          placeholder: content.contactTypes.project.placeholder.value,
+        };
       case "recruitment":
         return {
           icon: Briefcase,
@@ -145,7 +153,7 @@ export function ContactForm() {
     }
   };
 
-  const typeInfo = getContactTypeInfo(watchedType || "general");
+  const typeInfo = getContactTypeInfo(watchedType || "project");
   const TypeIcon = typeInfo.icon;
 
   return (
@@ -162,9 +170,9 @@ export function ContactForm() {
         <div className="space-y-2">
           <Label htmlFor="type">{content.contactType.label.value}</Label>
           <Select
-            value={watchedType || "general"}
+            value={watchedType || "project"}
             onValueChange={(value) => {
-              setValue("type", value as any);
+              setValue("type", value as ContactFormData["type"]);
             }}
           >
             <SelectTrigger id="type" className="transition-all duration-200 focus:ring-2 focus:ring-primary/20">
@@ -173,6 +181,12 @@ export function ContactForm() {
               />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="project">
+                <div className="flex items-center gap-2">
+                  <Rocket className="h-4 w-4" />
+                  {content.contactTypes.project.label.value}
+                </div>
+              </SelectItem>
               <SelectItem value="general">
                 <div className="flex items-center gap-2">
                   <MessageCircle className="h-4 w-4" />
@@ -273,6 +287,71 @@ export function ContactForm() {
           </div>
         )}
 
+        {/* Qualification: a mission request arrives with its timeline and its level of framing */}
+        {(watchedType === "project" || watchedType === "collaboration") && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="timeline">
+                {content.formFields.timeline.label.value}
+              </Label>
+              <Select
+                value={watchedTimeline ?? ""}
+                onValueChange={(value) =>
+                  setValue("timeline", value as ContactFormData["timeline"])
+                }
+              >
+                <SelectTrigger id="timeline">
+                  <SelectValue
+                    placeholder={content.formFields.timeline.placeholder.value}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="asap">
+                    {content.formFields.timeline.options.asap.value}
+                  </SelectItem>
+                  <SelectItem value="one-to-three-months">
+                    {content.formFields.timeline.options.oneToThreeMonths.value}
+                  </SelectItem>
+                  <SelectItem value="later">
+                    {content.formFields.timeline.options.later.value}
+                  </SelectItem>
+                  <SelectItem value="exploring">
+                    {content.formFields.timeline.options.exploring.value}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="framing">
+                {content.formFields.framing.label.value}
+              </Label>
+              <Select
+                value={watchedFraming ?? ""}
+                onValueChange={(value) =>
+                  setValue("framing", value as ContactFormData["framing"])
+                }
+              >
+                <SelectTrigger id="framing">
+                  <SelectValue
+                    placeholder={content.formFields.framing.placeholder.value}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="written-spec">
+                    {content.formFields.framing.options.writtenSpec.value}
+                  </SelectItem>
+                  <SelectItem value="partial">
+                    {content.formFields.framing.options.partial.value}
+                  </SelectItem>
+                  <SelectItem value="none">
+                    {content.formFields.framing.options.none.value}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        )}
+
         <div className="space-y-2">
           <Label htmlFor="subject">
             {content.formFields.subject.label.value}
@@ -280,7 +359,9 @@ export function ContactForm() {
           <Input
             id="subject"
             placeholder={
-              watchedType === "recruitment"
+              watchedType === "project"
+                ? content.formFields.subject.placeholder.project.value
+                : watchedType === "recruitment"
                 ? content.formFields.subject.placeholder.recruitment.value
                 : watchedType === "collaboration"
                   ? content.formFields.subject.placeholder.collaboration.value
