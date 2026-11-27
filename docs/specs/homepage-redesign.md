@@ -29,7 +29,7 @@ Brouillon d'accroche (à reformuler à l'implémentation, première personne, to
 3. **Projets** (5 fiches, voir §5).
 4. **Façons de travailler** : 2 ou 3 formats (audit/cadrage, mission de delivery, renfort d'équipe), sans prix affiché, plus un bloc « Ce que je ne fais pas » : pas de design, pas de mission sans cadrage.
 5. **Stack** : liste courte, sans barres de niveau ni « Expert 5+ ans ».
-6. **À propos et Ouestech** : quelques lignes, vraie photo (`public/images/fernand_photo.png`, portrait fond blanc : à cadrer dans une carte ou un masque pour la page sombre, servie via `next/image`), « 9 ans d'ingénierie logicielle », Ouestech comme référence et lien sortant.
+6. **À propos et Ouestech** : quelques lignes, vraie photo (`public/images/fernand_photo.webp`, portrait fond blanc : à cadrer dans une carte ou un masque pour la page sombre, servie via `next/image`), « 9 ans d'ingénierie logicielle », Ouestech comme référence et lien sortant.
 7. **Contact** : le bloc contact reste, adapté (voir §6).
 8. **Pied de page** : ligne discrète vers `/formations`, sans prix ni chiffres.
 
@@ -99,8 +99,9 @@ Français et anglais, complets (Intlayer). L'espagnol retombe sur l'anglais pour
 ## Amendements
 
 - **2026-11-27, amendement 1** : axe « IA agentique / développeur augmenté par l'IA, flow rigoureux, pas du vibe coding » ajouté au §2 et à la structure (§3).
-- **2026-11-27, amendement 2** : photo fournie, copiée dans `public/images/fernand_photo.png`.
+- **2026-11-27, amendement 2** : photo fournie, copiée dans `public/images/fernand_photo.webp`.
 - **2026-11-27, amendement 4** : axe « conception de SaaS sur mesure et d'applications web métier » dans le hero, le format de mission « delivery » (renommé SaaS & applications métier sur mesure), l'à-propos et le SEO. Stack regroupée en 3 blocs (backend & cloud, web & produit, ingénierie IA agentique avec harnais d'agents) et note sur le rôle du harnais.
 - **2026-11-27, amendement 5** : contact. Nouveau type « Un projet ou une mission » (valeur `project`, par défaut du formulaire) et deux champs optionnels, délai (`timeline`) et cadrage (`framing`), affichés pour les types projet et collaboration. Schéma partagé dans `lib/contact-qualification.ts` (formulaire et API), lignes « Délai » et « Cadrage » dans l'email reçu. Bouton « Me contacter » dans l'en-tête (bureau et mobile) vers `/#contact`. Le pied de page lie déjà `/formations` : inchangé.
 - **2026-11-27, amendement 6** : le bloc « Ressources & Tendances » (aperçu du blog) revient sur l'accueil, entre À propos et Contact (il avait été retiré à tort, §3 le disait retiré : corrigé). Le bloc « Transformez votre carrière de développeur » quitte l'accueil et passe en bas de `/formations` et `/parcours` (composant `components/formations/formations-cta.tsx`), réécrit sans chiffres, garantie ni offre limitée : seuls les faits du catalogue (formations pratiques, exercices et quiz, certificat) restent. L'ancien composant `CallToAction` est supprimé.
+- **2026-11-27, amendement 7** : performance (PR 4). Le portrait passe de 1,7 Mo (PNG) à 36 Ko (WebP 800 px, `public/images/fernand_photo.webp`), budget de 150 Ko verrouillé par test. Le hero n'utilise plus Framer Motion : titre et portrait (le LCP) sont visibles dès le HTML serveur au lieu de démarrer à `opacity: 0`. Les scores Lighthouse (§9) restent à mesurer.
 - **2026-11-27, amendement 3** : lancement local obligatoire à la fin de chaque PR (§11).
