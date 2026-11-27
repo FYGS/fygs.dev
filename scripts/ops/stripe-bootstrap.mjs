@@ -63,9 +63,14 @@ if (!product) {
 
 async function ensurePrice(lookup_key, unit_amount, interval) {
   const found = (await api("GET", `/v1/prices?lookup_keys[]=${lookup_key}&active=true`)).data[0];
-  if (found) { console.log(`price ${lookup_key} exists`, found.id); return found; }
+  if (found) {
+    // Prices are TTC (tax included). Stripe lets the behaviour be set once, while it is still unspecified.
+    if (found.tax_behavior === "unspecified") await api("POST", `/v1/prices/${found.id}`, { tax_behavior: "inclusive" });
+    console.log(`price ${lookup_key} exists`, found.id);
+    return found;
+  }
   const p = await api("POST", "/v1/prices", {
-    product: product.id, currency: "eur", unit_amount, lookup_key, recurring: { interval },
+    product: product.id, currency: "eur", unit_amount, lookup_key, tax_behavior: "inclusive", recurring: { interval },
     metadata: { fygs_plan: "premium", cycle: interval === "year" ? "yearly" : "monthly" },
   });
   console.log(`price ${lookup_key} created`, p.id);
